@@ -2,3 +2,7 @@
 	path = godot-cpp
 	url = https://github.com/godotengine/godot-cpp
 	branch = master
+[submodule "solana"]
+	path = solana
+	url = git@github.com:solana-labs/solana.git
+	branch = master
