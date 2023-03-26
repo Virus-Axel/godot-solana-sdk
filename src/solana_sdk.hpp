@@ -16,7 +16,6 @@ protected:
 public:
     SolanaSDK();
     ~SolanaSDK();
-
 };
 
 }
