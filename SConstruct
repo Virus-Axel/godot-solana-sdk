@@ -5,9 +5,24 @@ import sys
 from pathlib import Path
 
 home_directory = Path.home()
+cargo_build_command = str(home_directory) + '/.cargo/bin/cargo build --release'
 
 env = SConscript("godot-cpp/SConstruct")
-env.Command ('solana/target/release/libsolana_sdk.so', '', 'cd solana/sdk && ' + str(home_directory) + '/.cargo/bin/cargo build --release')
+
+platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
+
+# Link rust solana sdk library
+
+if platform_arg == "android":
+    linker_settings = 'AR=llvm-ar RUSTFLAGS="-C linker=aarch64-linux-android30-clang"'
+    env.Command ('solana/target/aarch64-linux-android/release/libsolana_sdk.so', '', 'cd solana/sdk && ' + linker_settings + ' ' + cargo_build_command + " --target aarch64-linux-android")
+    env.Append(LIBPATH = ['solana/target/aarch64-linux-android/release'])
+    env.Append(LIBS = ['libsolana_sdk'])
+else:
+    env.Command ('solana/target/release/libsolana_sdk.so', '', 'cd solana/sdk && ' + cargo_build_command)
+    env.Append(LIBPATH = ['solana/target/release'])
+    env.Append(LIBS = ['libsolana_sdk'])
+
 
 # For reference:
 # - CCFLAGS are compilation flags shared between C and C++
@@ -21,9 +36,6 @@ env.Command ('solana/target/release/libsolana_sdk.so', '', 'cd solana/sdk && ' +
 env.Append(CPPPATH=["src/"])
 sources = Glob("src/*.cpp")
 
-# Link rust solana sdk library
-env.Append(LIBPATH = ['solana/target/release'])
-env.Append(LIBS = ['libsolana_sdk'])
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(
