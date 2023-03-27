@@ -11,5 +11,6 @@ Cargo.lock
 
 **/*.so
 *.dblite
+**/*.os
 
 .godot/
