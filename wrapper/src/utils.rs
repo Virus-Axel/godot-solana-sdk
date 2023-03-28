@@ -9,7 +9,7 @@ use solana_sdk::{
     signer::keypair::Keypair,
 };
 
-pub fn pointer_to_key(pointer: *mut c_char) -> Result<Pubkey, c_int>{
+pub fn pointer_to_key(pointer: *const c_char) -> Result<Pubkey, c_int>{
     let key_string = unsafe { CStr::from_ptr(pointer).to_string_lossy().into_owned() };
 
     let decoded_key = match bs58::decode(&key_string).into_vec() {
@@ -25,7 +25,7 @@ pub fn pointer_to_key(pointer: *mut c_char) -> Result<Pubkey, c_int>{
     Ok(key)
 }
 
-pub fn pointers_to_keypair(priv_key_pointer: *mut c_char, pub_key_pointer: *mut c_char) -> Result<Keypair, c_int>{
+pub fn pointers_to_keypair(priv_key_pointer: *const c_char, pub_key_pointer: *const c_char) -> Result<Keypair, c_int>{
     let priv_key_string = unsafe { CStr::from_ptr(priv_key_pointer).to_string_lossy().into_owned() };
     let pub_key_string = unsafe { CStr::from_ptr(pub_key_pointer).to_string_lossy().into_owned() };
 

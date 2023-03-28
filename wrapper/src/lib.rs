@@ -36,7 +36,7 @@ lazy_static! {
 }
 
 #[no_mangle]
-pub extern fn append_account(account_pointer: *mut c_char) -> c_int {
+pub extern fn append_account(account_pointer: *const c_char) -> c_int {
     // Convert the key
     let pub_key = match pointer_to_key(account_pointer){
         Ok(v) => v,
@@ -55,7 +55,7 @@ pub extern fn append_account(account_pointer: *mut c_char) -> c_int {
 }
 
 #[no_mangle]
-pub extern fn append_signer(priv_key_pointer: *mut c_char, pub_key_pointer: *mut c_char) -> c_int{
+pub extern fn append_signer(priv_key_pointer: *const c_char, pub_key_pointer: *const c_char) -> c_int{
     // Convert the keys
     let keypair = match pointers_to_keypair(priv_key_pointer, pub_key_pointer){
         Ok(v) => v,
