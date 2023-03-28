@@ -14,12 +14,12 @@ pub fn pointer_to_key(pointer: *const c_char) -> Result<Pubkey, c_int>{
 
     let decoded_key = match bs58::decode(&key_string).into_vec() {
         Ok(v) => v,
-        Err(_) => return Err(-1),
+        Err(_) => return Err(1),
     };
 
     let key = match Pubkey::try_from(decoded_key.as_slice()){
         Ok(v) => v,
-        Err(_) => return Err(-1)
+        Err(_) => return Err(1)
     };
 
     Ok(key)
@@ -32,12 +32,12 @@ pub fn pointers_to_keypair(priv_key_pointer: *const c_char, pub_key_pointer: *co
     // Set private bytes
     let mut keypair_bytes = match bs58::decode(&priv_key_string).into_vec() {
         Ok(v) => v,
-        Err(_) => return Err(-1),
+        Err(_) => return Err(1),
     };
 
     let mut pubkey_bytes = match bs58::decode(&pub_key_string).into_vec() {
         Ok(v) => v,
-        Err(_) => return Err(-1),
+        Err(_) => return Err(1),
     };
 
     // Append public bytes
@@ -45,7 +45,7 @@ pub fn pointers_to_keypair(priv_key_pointer: *const c_char, pub_key_pointer: *co
 
     let keypair = match Keypair::from_bytes(&keypair_bytes){
         Ok(v) => v,
-        Err(_) => return Err(-1),
+        Err(_) => return Err(1),
     };
 
     Ok(keypair)

@@ -11,4 +11,4 @@ solana-sdk = "*"
 bs58 = "*"
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["staticlib"]

@@ -9,7 +9,7 @@
     Returns:
     An integer indicating the status of the operation
 */
-int append_account(const char* key_pointer);
+int append_account_w(const char* key_pointer);
 
 /*
     Description:
@@ -26,4 +26,4 @@ int append_account(const char* key_pointer);
     Returns:
     An integer indicating the status of the operation
 */
-int append_signer(const char* priv_key_pointer, const char* pub_key_pointer);
+int append_signer_w(const char* priv_key_pointer, const char* pub_key_pointer);
