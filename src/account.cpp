@@ -3,20 +3,22 @@
 
 #include <godot_cpp/core/class_db.hpp>
 
-using namespace godot;
+namespace godot{
 
 void Account::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("create", "lamports", "data_size", "owner"), &Pubkey::create);
 }
 
 Account::Account() {
-    // initialize any variables here
+    data_pointer = nullptr;
 }
 
-Error Account::create(uint64_t lamports, uint64_t size, const Pubkey& owner){
-
+void Account::create(uint64_t lamports, uint64_t space, const Pubkey& owner){
+    data_pointer = create_account(lamports, space, owner.to_ptr());
 }
 
 Account::~Account() {
-    // add your cleanup here
+    if(data_pointer != nullptr){
+        free_account(data_pointer);
+    }
+}
 }

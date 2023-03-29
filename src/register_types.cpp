@@ -1,6 +1,7 @@
 #include "register_types.hpp"
 
 #include "solana_sdk.hpp"
+#include "pubkey.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>

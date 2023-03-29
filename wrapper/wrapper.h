@@ -1,3 +1,8 @@
+#ifndef _SOLANA_SDK_RUST_WRAPPER
+#define _SOLANA_SDK_RUST_WRAPPER
+
+#include <cstdint>
+
 extern "C"{
 
     /*
@@ -30,4 +35,12 @@ extern "C"{
     */
     int append_signer_w(const char* priv_key_pointer, const char* pub_key_pointer);
 
+    void *create_pubkey();
+    void print_pubkey(const void*);
+    void free_pubkey(const void*);
+
+    void *create_account(uint64_t lamports, uint64_t space, const void* owner);
+    void free_account(const void*);
 }
+
+#endif

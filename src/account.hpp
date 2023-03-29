@@ -20,7 +20,8 @@ protected:
 
 public:
     Account();
-    Error create(uint64_t lamports, uint64_t size, const Pubkey& owner);
+
+    void create(uint64_t lamports, uint64_t space, const Pubkey& owner);
 
     ~Account();
 };

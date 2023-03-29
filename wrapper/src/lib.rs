@@ -8,7 +8,7 @@ use crate::utils::{
     pointers_to_keypair,
 };
 
-use std::sync::Mutex;
+use std::{sync::Mutex, ffi::c_ulonglong};
 use core::ffi::{
     c_char,
     c_int,
@@ -17,6 +17,7 @@ use core::ffi::{
 use solana_sdk::{
     instruction::AccountMeta,
     signer::keypair::Keypair,
+    pubkey::Pubkey, account::Account,
 };
 
 pub struct AccountManager {
@@ -73,13 +74,44 @@ pub extern "C" fn append_signer_w(priv_key_pointer: *const c_char, pub_key_point
     0
 }
 
+#[no_mangle]
+pub extern "C" fn create_pubkey() -> *mut Pubkey{
+    Box::into_raw(Box::new(Pubkey::new_unique()))
+}
+
+#[no_mangle]
+pub extern "C" fn print_pubkey(key: *const Pubkey){
+    unsafe{
+        println!("{}\n", (*key).to_string());
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn free_pubkey(key: *mut Pubkey){
+    unsafe{
+        drop(Box::from_raw(key));
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn create_account(lamports: c_ulonglong, space: c_ulonglong, owner: *const Pubkey) -> *mut Account{
+    let pubkey_ref = unsafe{*owner};
+    Box::into_raw(Box::new(Account::new(lamports, space as usize, &pubkey_ref)))
+}
+
+#[no_mangle]
+pub extern "C" fn free_account(account: *mut Account){
+    unsafe{
+        drop(Box::from_raw(account));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+        
     }
 }
