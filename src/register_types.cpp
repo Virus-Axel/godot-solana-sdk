@@ -15,6 +15,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     }
 
     ClassDB::register_class<SolanaSDK>();
+    ClassDB::register_class<Pubkey>();
 }
 
 void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {

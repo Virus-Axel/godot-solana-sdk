@@ -36,7 +36,7 @@ lazy_static! {
 }
 
 #[no_mangle]
-pub extern "C" fn _Z16append_account_wPKc(account_pointer: *const c_char) -> c_int {
+pub extern "C" fn append_account_w(account_pointer: *const c_char) -> c_int {
     // Convert the key
     let pub_key = match pointer_to_key(account_pointer){
         Ok(v) => v,

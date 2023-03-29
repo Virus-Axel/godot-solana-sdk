@@ -19,7 +19,6 @@ public:
     Error append_account(String account_key);
     ~SolanaSDK();
 };
-
 }
 
 #endif
