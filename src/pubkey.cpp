@@ -2,7 +2,7 @@
 
 #include <godot_cpp/core/class_db.hpp>
 
-using namespace godot;
+namespace godot{
 
 void Pubkey::_bind_methods() {
 }
@@ -17,4 +17,6 @@ const void* Pubkey::to_ptr() const{
 
 Pubkey::~Pubkey() {
     free_pubkey(data_pointer);
+}
+
 }

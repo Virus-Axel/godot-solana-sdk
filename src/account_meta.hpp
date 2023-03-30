@@ -9,6 +9,7 @@
 #include <godot_cpp/classes/node.hpp>
 
 namespace godot{
+
 class AccountMeta : public Node {
     GDCLASS(AccountMeta, Node)
 
@@ -21,7 +22,8 @@ protected:
 public:
     AccountMeta();
 
-    void create(const Pubkey& account_key, bool is_signer, bool writeable);
+    void *to_ptr();
+    void create_new(const Variant& account_key, bool is_signer, bool writeable);
 
     ~AccountMeta();
 };

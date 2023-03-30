@@ -42,8 +42,10 @@ extern "C"{
     void *create_account(uint64_t lamports, uint64_t space, const void* owner);
     void free_account(const void*);
 
-    void *create_account_meta(const void*, bool is_signer, bool writeable);
-    void free_account_meta(const void*);
+    void *create_account_meta(const void* account_key, bool is_signer, bool writeable);
+    void free_account_meta(const void* account_key);
+
+    void *create_instruction_with_bytes(const void* program_id, unsigned char* data, int data_size, void**, int account_meta_length);
 }
 
 #endif

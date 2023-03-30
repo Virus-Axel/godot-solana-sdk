@@ -9,6 +9,7 @@
 #include <godot_cpp/classes/node.hpp>
 
 namespace godot{
+
 class Account : public Node {
     GDCLASS(Account, Node)
 
@@ -21,7 +22,7 @@ protected:
 public:
     Account();
 
-    void create(uint64_t lamports, uint64_t space, const Pubkey& owner);
+    void create_new(uint64_t lamports, uint64_t space, const Variant& owner);
 
     ~Account();
 };
