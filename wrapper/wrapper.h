@@ -39,6 +39,9 @@ extern "C"{
     void print_pubkey(const void*);
     void free_pubkey(const void*);
 
+    void *create_keypair();
+    void free_keypair(const void*);
+
     void *create_account(uint64_t lamports, uint64_t space, const void* owner);
     void free_account(const void*);
 
@@ -46,6 +49,10 @@ extern "C"{
     void free_account_meta(const void* account_key);
 
     void *create_instruction_with_bytes(const void* program_id, unsigned char* data, int data_size, void**, int account_meta_length);
+    void free_instruction(const void* instruction);
+
+    void *create_transaction_signed_with_payer(void** instruction_array, int array_size, const void* payer, void** signers_array, int signers_array_size, const void* latest_blockhash);
+    void free_transaction(const void* transaction);
 }
 
 #endif

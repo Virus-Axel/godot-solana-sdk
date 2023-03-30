@@ -18,7 +18,7 @@ use core::ffi::{
 use solana_sdk::{
     instruction::{AccountMeta, Instruction},
     signer::keypair::Keypair,
-    pubkey::Pubkey, account::Account,
+    pubkey::Pubkey, account::Account, transaction::Transaction, hash::Hash,
 };
 
 pub struct AccountManager {
@@ -95,6 +95,18 @@ pub extern "C" fn free_pubkey(key: *mut Pubkey){
 }
 
 #[no_mangle]
+pub extern "C" fn create_keypair() -> *mut Keypair{
+    Box::into_raw(Box::new(Keypair::new()))
+}
+
+#[no_mangle]
+pub extern "C" fn free_keypair(key: *mut Keypair){
+    unsafe{
+        drop(Box::from_raw(key));
+    }
+}
+
+#[no_mangle]
 pub extern "C" fn create_account(lamports: c_ulonglong, space: c_ulonglong, owner: *const Pubkey) -> *mut Account{
     let pubkey_ref = unsafe{*owner};
     Box::into_raw(Box::new(Account::new(lamports, space as usize, &pubkey_ref)))
@@ -148,6 +160,43 @@ pub extern "C" fn create_instruction_with_bytes(program_id: *const Pubkey, data_
 
 #[no_mangle]
 pub extern "C" fn free_instruction(account_meta: *mut Instruction){
+    unsafe{
+        drop(Box::from_raw(account_meta));
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn create_transaction_signed_with_payer(instruction_array: *mut *mut Instruction, array_size: c_int, payer: *const Pubkey, signers_array: *mut *mut Keypair, signers_array_size: c_int, latest_blockhash: *const Pubkey) -> *mut Transaction{
+    let instruction_pointer_array = unsafe {
+        Vec::from_raw_parts(instruction_array, array_size as usize, array_size as usize)
+    };
+    let signer_pointer_array = unsafe {
+        Vec::from_raw_parts(signers_array, signers_array_size as usize, signers_array_size as usize)
+    };
+
+    let payer_ref = unsafe{*payer};
+    let latest_blockhash_ref = unsafe{*latest_blockhash};
+
+    let mut instructions = vec![];
+    for i in 0..instruction_pointer_array.len(){
+        let instruction_ref = unsafe{(*instruction_pointer_array[i]).clone()};
+        instructions.push(instruction_ref);
+    };
+
+    let mut signers = vec![];
+    for i in 0..signer_pointer_array.len(){
+        let signer_ref = unsafe{&(*signer_pointer_array[i])};
+        signers.push(signer_ref);
+    };
+
+    let hash = Hash::new_from_array(latest_blockhash_ref.to_bytes());
+    let ret = Transaction::new_signed_with_payer(&instructions, Some(&payer_ref), &signers, hash);
+
+    Box::into_raw(Box::new(ret))
+}
+
+#[no_mangle]
+pub extern "C" fn free_transaction(account_meta: *mut Transaction){
     unsafe{
         drop(Box::from_raw(account_meta));
     }

@@ -12,6 +12,10 @@ Instruction::Instruction() {
     data_pointer = nullptr;
 }
 
+void *Instruction::to_ptr() const{
+    return data_pointer;
+}
+
 void Instruction::create_new(const Variant& program_id, PackedByteArray data, Array account_metas){
     // Rust wants to deallocate its memory, so we allocate new to avoid double free
     void** account_pointers = new void*[account_metas.size()];
@@ -33,7 +37,7 @@ void Instruction::create_new(const Variant& program_id, PackedByteArray data, Ar
 
 Instruction::~Instruction() {
     if(data_pointer != nullptr){
-        free_account(data_pointer);
+        free_instruction(data_pointer);
     }
 }
 }

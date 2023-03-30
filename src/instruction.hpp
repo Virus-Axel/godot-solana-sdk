@@ -21,6 +21,7 @@ protected:
 public:
     Instruction();
 
+    void *to_ptr() const;
     void create_new(const Variant& program_id, PackedByteArray data, Array account_metas);
 
     ~Instruction();
