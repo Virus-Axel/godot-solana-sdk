@@ -41,6 +41,9 @@ extern "C"{
 
     void *create_account(uint64_t lamports, uint64_t space, const void* owner);
     void free_account(const void*);
+
+    void *create_account_meta(const void*, bool is_signer, bool writeable);
+    void free_account_meta(const void*);
 }
 
 #endif
