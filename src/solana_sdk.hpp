@@ -1,6 +1,7 @@
 #ifndef GDEXAMPLE_H
 #define GDEXAMPLE_H
 
+#include "../wrapper/wrapper.h"
 #include <godot_cpp/classes/node.hpp>
 
 namespace godot {
@@ -15,9 +16,9 @@ protected:
 
 public:
     SolanaSDK();
+    Error append_account(String account_key);
     ~SolanaSDK();
 };
-
 }
 
 #endif

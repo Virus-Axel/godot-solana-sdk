@@ -1,6 +1,12 @@
 #include "register_types.hpp"
 
 #include "solana_sdk.hpp"
+#include "pubkey.hpp"
+#include "account.hpp"
+#include "account_meta.hpp"
+#include "instruction.hpp"
+#include "keypair.hpp"
+#include "transaction.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -15,6 +21,12 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     }
 
     ClassDB::register_class<SolanaSDK>();
+    ClassDB::register_class<Pubkey>();
+    ClassDB::register_class<Account>();
+    ClassDB::register_class<AccountMeta>();
+    ClassDB::register_class<Instruction>();
+    ClassDB::register_class<Transaction>();
+    ClassDB::register_class<Keypair>();
 }
 
 void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {
