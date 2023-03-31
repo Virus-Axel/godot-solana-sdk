@@ -32,7 +32,7 @@ void Instruction::create_new(const Variant& program_id, PackedByteArray data, Ar
 
     memcpy(allocated_data, data.get_string_from_utf8().utf8().get_data(), data.size());
 
-    create_instruction_with_bytes(program_id_ptr->to_ptr(), allocated_data, data.size(), account_pointers, account_metas.size());
+    data_pointer = create_instruction_with_bytes(program_id_ptr->to_ptr(), allocated_data, data.size(), account_pointers, account_metas.size());
 }
 
 Instruction::~Instruction() {

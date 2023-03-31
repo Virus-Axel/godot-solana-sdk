@@ -166,7 +166,7 @@ pub extern "C" fn free_instruction(account_meta: *mut Instruction){
 }
 
 #[no_mangle]
-pub extern "C" fn create_transaction_signed_with_payer(instruction_array: *mut *mut Instruction, array_size: c_int, payer: *const Pubkey, signers_array: *mut *mut Keypair, signers_array_size: c_int, latest_blockhash: *const Pubkey) -> *mut Transaction{
+pub extern "C" fn create_transaction_signed_with_payer(instruction_array: *mut *mut Instruction, array_size: c_int, payer: *const Pubkey, signers_array: *mut *mut Keypair, signers_array_size: c_int, latest_blockhash: *const Pubkey) -> *const Transaction{
     let instruction_pointer_array = unsafe {
         Vec::from_raw_parts(instruction_array, array_size as usize, array_size as usize)
     };
@@ -190,9 +190,11 @@ pub extern "C" fn create_transaction_signed_with_payer(instruction_array: *mut *
     };
 
     let hash = Hash::new_from_array(latest_blockhash_ref.to_bytes());
-    let ret = Transaction::new_signed_with_payer(&instructions, Some(&payer_ref), &signers, hash);
-
-    Box::into_raw(Box::new(ret))
+    let mut ret = Transaction::new_with_payer(&instructions, Some(&payer_ref));
+    match ret.try_sign(&signers, hash){
+        Ok(_) => Box::into_raw(Box::new(ret)),
+        Err(_) => std::ptr::null(),
+    }
 }
 
 #[no_mangle]
