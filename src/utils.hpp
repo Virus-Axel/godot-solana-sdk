@@ -121,4 +121,21 @@ PackedByteArray bs58_decode(String str){
 	return result.slice(0, resultlen);
 }
 
+template <typename T>
+inline T* variant_to_type(Variant var){
+	Object *payer_cast = var;
+    T *ret = Object::cast_to<T>(payer_cast);
+
+	return ret;
+}
+
+template <typename T>
+void array_to_pointer_array(Array arr, void** destination){
+	for(int i = 0; i < arr.size(); i++){
+        Object *object_cast = arr[i];
+        T *element = Object::cast_to<T>(object_cast);
+        destination[i] = element->to_ptr();
+    }
+}
+
 #endif
