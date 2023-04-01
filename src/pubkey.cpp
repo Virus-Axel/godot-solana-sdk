@@ -19,7 +19,7 @@ void Pubkey::_update_pointer(){
         data_pointer = create_pubkey_from_array(key_array);
     }
     else{
-        data_pointer = nullptr;
+        _free_pointer_if_not_null();
     }
 }
 
