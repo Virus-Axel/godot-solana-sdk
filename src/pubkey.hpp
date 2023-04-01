@@ -2,11 +2,12 @@
 #define SOLANA_SDK_PUBKEY_HPP
 
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/resource.hpp>
 #include "../wrapper/wrapper.h"
 
 namespace godot{
-class Pubkey : public Node {
-    GDCLASS(Pubkey, Node)
+class Pubkey : public Resource {
+    GDCLASS(Pubkey, Resource)
 
 private:
     const int PUBKEY_LENGTH = 32;
@@ -27,6 +28,16 @@ protected:
 
 public:
     Pubkey();
+
+    void set_value(const String& p_value);
+    String get_value();
+
+    void set_bytes(const PackedByteArray& p_value);
+    PackedByteArray get_bytes();
+
+    void set_unique(const bool p_value);
+    bool get_unique();
+
     const void* to_ptr() const;
 
     ~Pubkey();

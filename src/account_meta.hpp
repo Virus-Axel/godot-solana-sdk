@@ -5,24 +5,34 @@
 
 #include "pubkey.hpp"
 #include "account_meta.hpp"
+#include "utils.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 
 namespace godot{
 
-class AccountMeta : public Pubkey {
-    GDCLASS(AccountMeta, Pubkey)
+class AccountMeta : public Node {
+    GDCLASS(AccountMeta, Node)
 
 private:
     bool is_signer = false;
     bool writeable = false;
+
+    Variant key;
+
     void *data_pointer;
+
+    void _update_pointer();
+    void _free_pointer_if_not_null();
 
 protected:
     static void _bind_methods();
 
 public:
     AccountMeta();
+
+    void set_pubkey(const Variant &p_value);
+    Variant get_pubkey() const;
 
     void set_is_signer(const bool p_value);
     bool get_is_signer() const;
