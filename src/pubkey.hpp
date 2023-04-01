@@ -39,6 +39,7 @@ public:
     bool get_unique();
 
     const void* to_ptr() const;
+    bool is_null() const;
 
     ~Pubkey();
 };

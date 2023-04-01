@@ -11,8 +11,8 @@
 
 namespace godot{
 
-class AccountMeta : public Node {
-    GDCLASS(AccountMeta, Node)
+class AccountMeta : public Resource {
+    GDCLASS(AccountMeta, Resource)
 
 private:
     bool is_signer = false;

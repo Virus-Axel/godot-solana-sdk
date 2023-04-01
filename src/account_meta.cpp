@@ -13,12 +13,31 @@ void AccountMeta::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_pubkey", "p_value"), &AccountMeta::set_pubkey);
     ClassDB::add_property("AccountMeta", PropertyInfo(Variant::BOOL, "is_signer"), "set_is_signer", "get_is_signer");
     ClassDB::add_property("AccountMeta", PropertyInfo(Variant::BOOL, "writeable"), "set_writeable", "get_writeable");
-    ClassDB::add_property("AccountMeta", PropertyInfo(Variant::OBJECT, "key", PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, "Pubkey", PROPERTY_USAGE_DEFAULT), "set_pubkey", "get_pubkey");
+    ClassDB::add_property("AccountMeta", PropertyInfo(Variant::OBJECT, "key", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", PROPERTY_USAGE_DEFAULT), "set_pubkey", "get_pubkey");
     ClassDB::bind_method(D_METHOD("create_new", "account_key", "is_signer", "writeable"), &AccountMeta::create_new);
 }
 
 void AccountMeta::_update_pointer(){
+    std::cout << "jajaj" << std::endl;
     _free_pointer_if_not_null();
+    std::cout << "jajaj" << std::endl;
+    if (key.get_type() != Variant::OBJECT){
+        return;
+    }
+
+    std::cout << "jajaj" << std::endl;
+
+    Pubkey *key_ref = variant_to_type<Pubkey>(key);
+
+    std::cout << "jajaj" << std::endl;
+
+    if (key_ref->is_null()){
+        return;
+    }
+
+    data_pointer = create_account_meta(key_ref->to_ptr(), is_signer, writeable);
+
+    std::cout << "POINTER_UPDATE" << std::endl;
 }
 
 void AccountMeta::_free_pointer_if_not_null(){
@@ -30,6 +49,7 @@ void AccountMeta::_free_pointer_if_not_null(){
 
 void AccountMeta::set_pubkey(const Variant &p_value) {
     key = p_value;
+    _update_pointer();
 }
 
 Variant AccountMeta::get_pubkey() const {
@@ -38,6 +58,7 @@ Variant AccountMeta::get_pubkey() const {
 
 void AccountMeta::set_is_signer(const bool p_value) {
     is_signer = p_value;
+    _update_pointer();
 }
 
 bool AccountMeta::get_is_signer() const {
@@ -46,6 +67,7 @@ bool AccountMeta::get_is_signer() const {
 
 void AccountMeta::set_writeable(const bool p_value) {
     writeable = p_value;
+    _update_pointer();
 }
 
 bool AccountMeta::get_writeable() const {

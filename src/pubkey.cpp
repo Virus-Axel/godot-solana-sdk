@@ -8,6 +8,7 @@ namespace godot{
 void Pubkey::_update_pointer(){
     _free_pointer_if_not_null();
     if (unique){
+        std::cout << "TRIED" << std::endl;
         data_pointer = create_unique_pubkey();
     }
     else if (bytes.size() == PUBKEY_LENGTH){
@@ -169,10 +170,15 @@ void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
 
 Pubkey::Pubkey() {
     data_pointer = nullptr;
+    _update_pointer();
 }
 
 const void* Pubkey::to_ptr() const{
     return data_pointer;
+}
+
+bool Pubkey::is_null() const{
+    return (data_pointer == nullptr);
 }
 
 Pubkey::~Pubkey() {
