@@ -76,8 +76,14 @@ pub extern "C" fn append_signer_w(priv_key_pointer: *const c_char, pub_key_point
 }
 
 #[no_mangle]
-pub extern "C" fn create_pubkey() -> *mut Pubkey{
+pub extern "C" fn create_unique_pubkey() -> *mut Pubkey{
     Box::into_raw(Box::new(Pubkey::new_unique()))
+}
+
+#[no_mangle]
+pub extern "C" fn create_pubkey_from_array(bytes: *mut u8) -> *mut Pubkey{
+    let arr = unsafe{Vec::from_raw_parts(bytes, 32, 32)};
+    Box::into_raw(Box::new(Pubkey::new_from_array(arr.try_into().unwrap())))
 }
 
 #[no_mangle]

@@ -9,10 +9,15 @@ class Pubkey : public Node {
     GDCLASS(Pubkey, Node)
 
 private:
+    const int PUBKEY_LENGTH = 32;
+
     bool unique = true;
     String value = "";
     PackedByteArray bytes;
     void *data_pointer;
+
+    void _free_pointer_if_not_null();
+    void _update_pointer();
 
 protected:
     static void _bind_methods();

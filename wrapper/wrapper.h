@@ -35,7 +35,8 @@ extern "C"{
     */
     int append_signer_w(const char* priv_key_pointer, const char* pub_key_pointer);
 
-    void *create_pubkey();
+    void *create_unique_pubkey();
+    void *create_pubkey_from_array(const unsigned char* data);
     void print_pubkey(const void*);
     void free_pubkey(const void*);
 

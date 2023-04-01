@@ -5,6 +5,31 @@
 
 namespace godot{
 
+void Pubkey::_update_pointer(){
+    _free_pointer_if_not_null();
+    if (unique){
+        data_pointer = create_unique_pubkey();
+    }
+    else if (bytes.size() == PUBKEY_LENGTH){
+        // Allocate space for rust to free
+        unsigned char* key_array = new unsigned char[PUBKEY_LENGTH];
+
+        memcpy(key_array, bytes.ptr(), PUBKEY_LENGTH);
+
+        data_pointer = create_pubkey_from_array(key_array);
+    }
+    else{
+        data_pointer = nullptr;
+    }
+}
+
+void Pubkey::_free_pointer_if_not_null(){
+    if(data_pointer != nullptr){
+        free_pubkey(data_pointer);
+        data_pointer = nullptr;
+    }
+}
+
 void Pubkey::_bind_methods() {
 }
 
@@ -16,9 +41,14 @@ bool Pubkey::_set(const StringName &p_name, const Variant &p_value) {
         bytes = decoded_value;
         if(decoded_value.is_empty() && value.length() != 0){
             internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", 18, false);
+            _free_pointer_if_not_null();
         }
         else if (decoded_value.size() != 32){
             internal::gde_interface->print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 21, false);
+            _free_pointer_if_not_null();
+        }
+        else{
+            _update_pointer();
         }
 		return true;
 	}
@@ -32,12 +62,17 @@ bool Pubkey::_set(const StringName &p_name, const Variant &p_value) {
         value = encoded_value;
         if (bytes.size() != 32){
             internal::gde_interface->print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 14, false);
+            _free_pointer_if_not_null();
+        }
+        else{
+            _update_pointer();
         }
 		return true;
     }
     else if(name == "unique"){
         unique = p_value;
         notify_property_list_changed();
+        _update_pointer();
         return true;
     }
 	return false;
@@ -71,7 +106,7 @@ void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 Pubkey::Pubkey() {
-    data_pointer = create_pubkey();
+    data_pointer = nullptr;
 }
 
 const void* Pubkey::to_ptr() const{
@@ -79,7 +114,7 @@ const void* Pubkey::to_ptr() const{
 }
 
 Pubkey::~Pubkey() {
-    free_pubkey(data_pointer);
+    _free_pointer_if_not_null();
 }
 
 }
