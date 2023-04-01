@@ -14,8 +14,11 @@ bool Pubkey::_set(const StringName &p_name, const Variant &p_value) {
 		value = p_value;
         PackedByteArray decoded_value = bs58_decode(value);
         bytes = decoded_value;
-        if (decoded_value.size() != 32){
-            internal::gde_interface->print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 14, false);
+        if(decoded_value.is_empty() && value.length() != 0){
+            internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", 18, false);
+        }
+        else if (decoded_value.size() != 32){
+            internal::gde_interface->print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 21, false);
         }
 		return true;
 	}
