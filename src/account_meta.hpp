@@ -10,10 +10,12 @@
 
 namespace godot{
 
-class AccountMeta : public Node {
-    GDCLASS(AccountMeta, Node)
+class AccountMeta : public Pubkey {
+    GDCLASS(AccountMeta, Pubkey)
 
 private:
+    bool is_signer = false;
+    bool writeable = false;
     void *data_pointer;
 
 protected:
@@ -21,6 +23,12 @@ protected:
 
 public:
     AccountMeta();
+
+    void set_is_signer(const bool p_value);
+    bool get_is_signer() const;
+
+    void set_writeable(const bool p_value);
+    bool get_writeable() const;
 
     void *to_ptr();
     void create_new(const Variant& account_key, bool is_signer, bool writeable);
