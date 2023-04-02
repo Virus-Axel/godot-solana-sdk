@@ -18,26 +18,18 @@ void AccountMeta::_bind_methods() {
 }
 
 void AccountMeta::_update_pointer(){
-    std::cout << "jajaj" << std::endl;
     _free_pointer_if_not_null();
-    std::cout << "jajaj" << std::endl;
     if (key.get_type() != Variant::OBJECT){
         return;
     }
 
-    std::cout << "jajaj" << std::endl;
-
     Pubkey *key_ref = variant_to_type<Pubkey>(key);
-
-    std::cout << "jajaj" << std::endl;
 
     if (key_ref->is_null()){
         return;
     }
 
     data_pointer = create_account_meta(key_ref->to_ptr(), is_signer, writeable);
-
-    std::cout << "POINTER_UPDATE" << std::endl;
 }
 
 void AccountMeta::_free_pointer_if_not_null(){
@@ -76,6 +68,20 @@ bool AccountMeta::get_writeable() const {
 
 AccountMeta::AccountMeta() {
     data_pointer = nullptr;
+}
+
+bool AccountMeta::is_valid() const{
+    if(key.get_type() != Variant::OBJECT){
+        return false;
+    }
+
+    Pubkey *key_ref = variant_to_type<Pubkey>(key);
+    if(key_ref->is_null()){
+        return false;
+    }
+    else{
+        return true;
+    }
 }
 
 void *AccountMeta::to_ptr(){
