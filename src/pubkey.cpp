@@ -8,7 +8,6 @@ namespace godot{
 void Pubkey::_update_pointer(){
     _free_pointer_if_not_null();
     if (unique){
-        std::cout << "TRIED" << std::endl;
         data_pointer = create_unique_pubkey();
     }
     else if (bytes.size() == PUBKEY_LENGTH){

@@ -8,13 +8,11 @@ bool Instruction::_is_accounts_valid(){
     for(int i = 0; i < accounts.size(); i++){
 
         if(accounts[i].get_type() != Variant::OBJECT){
-            std::cout << "NOT OBJECT"<<std::endl;
             return false;
         }
 
         AccountMeta *account_ref = variant_to_type<AccountMeta>(accounts[i]);
         if(!account_ref->is_valid()){
-            std::cout << "WOAAA" << std::endl;
             return false;
         }
     }
@@ -52,11 +50,7 @@ void Instruction::_update_pointer(){
 
     memcpy(allocated_data, data.get_string_from_utf8().utf8().get_data(), data.size());
 
-    std::cout << "GOT HERE" << std::endl;
-
     data_pointer = create_instruction_with_bytes(program_id_ptr->to_ptr(), allocated_data, data.size(), account_pointers, accounts.size());
-
-    std::cout << "OUCH" << std::endl;
 }
 
 void Instruction::_bind_methods() {
