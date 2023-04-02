@@ -5,18 +5,21 @@
 
 #include "pubkey.hpp"
 #include "account.hpp"
+#include "solana_node.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 
 namespace godot{
 
-class Transaction : public Node {
+class Transaction : public SolanaNode {
     GDCLASS(Transaction, Node)
 
 private:
-    void *data_pointer;
     Array instructions;
     Variant payer;
+
+    void _update_pointer() override;
+    void _free_pointer() override;
 
 protected:
     static void _bind_methods();

@@ -8,6 +8,13 @@
 
 namespace godot{
 
+void Transaction::_update_pointer(){
+
+}
+void Transaction::_free_pointer(){
+    free_transaction(data_pointer);
+}
+
 void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_instructions"), &Transaction::get_instructions);
     ClassDB::bind_method(D_METHOD("set_instructions", "p_value"), &Transaction::set_instructions);
@@ -20,7 +27,6 @@ void Transaction::_bind_methods() {
 }
 
 Transaction::Transaction() {
-    data_pointer = nullptr;
 }
 
 void Transaction::create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash){
@@ -31,8 +37,8 @@ void Transaction::create_signed_with_payer(Array instructions, Variant payer, Ar
     array_to_pointer_array<Instruction>(instructions, instruction_pointers);
     array_to_pointer_array<Keypair>(signers, signer_pointers);
 
-    Pubkey *latest_blockhash_ptr =  variant_to_type<Pubkey>(latest_blockhash);
-    Pubkey *payer_ptr = variant_to_type<Pubkey>(payer);
+    void *latest_blockhash_ptr =  variant_to_type<Pubkey>(latest_blockhash);
+    void *payer_ptr = variant_to_type<Pubkey>(payer);
 
     create_transaction_signed_with_payer(instruction_pointers, instructions.size(), payer_ptr, signer_pointers, signers.size(), latest_blockhash_ptr);
 }
@@ -59,9 +65,7 @@ Variant Transaction::get_payer(){
     return payer;
 }
 
-Transaction::~Transaction() {
-    if(data_pointer != nullptr){
-        free_account(data_pointer);
-    }
+Transaction::~Transaction(){
+    _free_pointer_if_not_null();
 }
 }
