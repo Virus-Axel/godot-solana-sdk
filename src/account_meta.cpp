@@ -18,30 +18,25 @@ void AccountMeta::_bind_methods() {
 }
 
 void AccountMeta::_update_pointer(){
-    _free_pointer_if_not_null();
     if (key.get_type() != Variant::OBJECT){
         return;
     }
 
-    Pubkey *key_ref = variant_to_type<Pubkey>(key);
+    void *key_ref = variant_to_type<Pubkey>(key);
 
-    if (key_ref->is_null()){
+    if (key_ref == nullptr){
         return;
     }
 
-    data_pointer = create_account_meta(key_ref->to_ptr(), is_signer, writeable);
+    data_pointer = create_account_meta(key_ref, is_signer, writeable);
 }
 
-void AccountMeta::_free_pointer_if_not_null(){
-    if(data_pointer != nullptr){
-        free_account(data_pointer);
-        data_pointer = nullptr;
-    }
+void AccountMeta::_free_pointer(){
+    free_account(data_pointer);
 }
 
 void AccountMeta::set_pubkey(const Variant &p_value) {
     key = p_value;
-    _update_pointer();
 }
 
 Variant AccountMeta::get_pubkey() const {
@@ -50,7 +45,6 @@ Variant AccountMeta::get_pubkey() const {
 
 void AccountMeta::set_is_signer(const bool p_value) {
     is_signer = p_value;
-    _update_pointer();
 }
 
 bool AccountMeta::get_is_signer() const {
@@ -59,7 +53,6 @@ bool AccountMeta::get_is_signer() const {
 
 void AccountMeta::set_writeable(const bool p_value) {
     writeable = p_value;
-    _update_pointer();
 }
 
 bool AccountMeta::get_writeable() const {
@@ -67,7 +60,6 @@ bool AccountMeta::get_writeable() const {
 }
 
 AccountMeta::AccountMeta() {
-    data_pointer = nullptr;
 }
 
 bool AccountMeta::is_valid() const{
@@ -75,17 +67,13 @@ bool AccountMeta::is_valid() const{
         return false;
     }
 
-    Pubkey *key_ref = variant_to_type<Pubkey>(key);
-    if(key_ref->is_null()){
+    void *key_ref = variant_to_type<Pubkey>(key);
+    if(key_ref == nullptr){
         return false;
     }
     else{
         return true;
     }
-}
-
-void *AccountMeta::to_ptr(){
-    return data_pointer;
 }
 
 void AccountMeta::create_new(const Variant& account_key, bool is_signer, bool writeable){
@@ -94,7 +82,7 @@ void AccountMeta::create_new(const Variant& account_key, bool is_signer, bool wr
     data_pointer = create_account_meta(account_key_ptr->to_ptr(), is_signer, writeable);
 }
 
-AccountMeta::~AccountMeta() {
+AccountMeta::~AccountMeta(){
     _free_pointer_if_not_null();
 }
 }

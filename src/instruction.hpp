@@ -5,12 +5,13 @@
 #include "account_meta.hpp"
 #include "pubkey.hpp"
 #include "utils.hpp"
+#include "solana_resource.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 
 namespace godot{
 
-class Instruction : public Resource {
+class Instruction : public SolanaResource {
     GDCLASS(Instruction, Resource)
 
 private:
@@ -18,9 +19,8 @@ private:
     Variant program_id;
     PackedByteArray data;
     TypedArray<AccountMeta> accounts;
-    bool _is_accounts_valid();
-    void _update_pointer();
-    void _free_pointer_if_not_null();
+    void _update_pointer() override;
+    void _free_pointer() override;
 
 protected:
     static void _bind_methods();
@@ -37,7 +37,6 @@ public:
     void set_accounts(const TypedArray<AccountMeta>& p_value);
     TypedArray<AccountMeta> get_accounts();
 
-    void *to_ptr() const;
     void create_new(const Variant& program_id, PackedByteArray data, Array account_metas);
 
     ~Instruction();

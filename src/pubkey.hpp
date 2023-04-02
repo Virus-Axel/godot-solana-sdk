@@ -3,10 +3,12 @@
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/resource.hpp>
+
+#include "solana_resource.hpp"
 #include "../wrapper/wrapper.h"
 
 namespace godot{
-class Pubkey : public Resource {
+class Pubkey : public SolanaResource {
     GDCLASS(Pubkey, Resource)
 
 private:
@@ -15,10 +17,9 @@ private:
     bool unique = true;
     String value = "";
     PackedByteArray bytes;
-    void *data_pointer;
 
-    void _free_pointer_if_not_null();
-    void _update_pointer();
+    void _free_pointer() override;
+    void _update_pointer() override;
 
 protected:
     static void _bind_methods();
@@ -37,9 +38,6 @@ public:
 
     void set_unique(const bool p_value);
     bool get_unique();
-
-    const void* to_ptr() const;
-    bool is_null() const;
 
     ~Pubkey();
 };

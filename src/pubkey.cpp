@@ -6,7 +6,6 @@
 namespace godot{
 
 void Pubkey::_update_pointer(){
-    _free_pointer_if_not_null();
     if (unique){
         data_pointer = create_unique_pubkey();
     }
@@ -18,16 +17,10 @@ void Pubkey::_update_pointer(){
 
         data_pointer = create_pubkey_from_array(key_array);
     }
-    else{
-        _free_pointer_if_not_null();
-    }
 }
 
-void Pubkey::_free_pointer_if_not_null(){
-    if(data_pointer != nullptr){
-        free_pubkey(data_pointer);
-        data_pointer = nullptr;
-    }
+void Pubkey::_free_pointer(){
+    free_pubkey(data_pointer);
 }
 
 void Pubkey::_bind_methods() {
@@ -37,52 +30,21 @@ void Pubkey::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_bytes", "p_value"), &Pubkey::set_bytes);
     ClassDB::bind_method(D_METHOD("get_unique"), &Pubkey::get_unique);
     ClassDB::bind_method(D_METHOD("set_unique", "p_value"), &Pubkey::set_unique);
-    //ClassDB::add_property("Pubkey", PropertyInfo(Variant::STRING, "value"), "set_value", "get_value");
-    //ClassDB::add_property("Pubkey", PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytes"), "set_bytes", "get_bytes");
-    //ClassDB::add_property("Pubkey", PropertyInfo(Variant::BOOL, "unique"), "set_unique", "get_unique");
 }
 
 
 bool Pubkey::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 	if (name == "value") {
-		value = p_value;
-        PackedByteArray decoded_value = bs58_decode(value);
-        bytes = decoded_value;
-        if(decoded_value.is_empty() && value.length() != 0){
-            internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", 18, false);
-            _free_pointer_if_not_null();
-        }
-        else if (decoded_value.size() != 32){
-            internal::gde_interface->print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 21, false);
-            _free_pointer_if_not_null();
-        }
-        else{
-            _update_pointer();
-        }
+		set_value(p_value);
 		return true;
 	}
     else if(name == "bytes"){
-        bytes = p_value;
-        if (bytes.size() == 0){
-            value = "";
-            return true;
-        }
-        String encoded_value = bs58_encode(bytes);
-        value = encoded_value;
-        if (bytes.size() != 32){
-            internal::gde_interface->print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 14, false);
-            _free_pointer_if_not_null();
-        }
-        else{
-            _update_pointer();
-        }
+        set_bytes(p_value);
 		return true;
     }
     else if(name == "unique"){
-        unique = p_value;
-        notify_property_list_changed();
-        _update_pointer();
+        set_unique(p_value);
         return true;
     }
 	return false;
@@ -168,16 +130,6 @@ void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 Pubkey::Pubkey() {
-    data_pointer = nullptr;
-    _update_pointer();
-}
-
-const void* Pubkey::to_ptr() const{
-    return data_pointer;
-}
-
-bool Pubkey::is_null() const{
-    return (data_pointer == nullptr);
 }
 
 Pubkey::~Pubkey() {

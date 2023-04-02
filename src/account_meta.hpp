@@ -6,12 +6,13 @@
 #include "pubkey.hpp"
 #include "account_meta.hpp"
 #include "utils.hpp"
+#include "solana_resource.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 
 namespace godot{
 
-class AccountMeta : public Resource {
+class AccountMeta : public SolanaResource {
     GDCLASS(AccountMeta, Resource)
 
 private:
@@ -22,8 +23,8 @@ private:
 
     void *data_pointer;
 
-    void _update_pointer();
-    void _free_pointer_if_not_null();
+    void _update_pointer() override;
+    void _free_pointer() override;
 
 protected:
     static void _bind_methods();
@@ -41,7 +42,6 @@ public:
     bool get_writeable() const;
 
     bool is_valid() const;
-    void *to_ptr();
     void create_new(const Variant& account_key, bool is_signer, bool writeable);
 
     ~AccountMeta();

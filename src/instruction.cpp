@@ -4,53 +4,27 @@
 
 namespace godot{
 
-bool Instruction::_is_accounts_valid(){
-    for(int i = 0; i < accounts.size(); i++){
-
-        if(accounts[i].get_type() != Variant::OBJECT){
-            return false;
-        }
-
-        AccountMeta *account_ref = variant_to_type<AccountMeta>(accounts[i]);
-        if(!account_ref->is_valid()){
-            return false;
-        }
-    }
-    return true;
-}
-
-void Instruction::_free_pointer_if_not_null(){
-    if(data_pointer != nullptr){
-        free_instruction(data_pointer);
-        data_pointer = nullptr;
-    }
+void Instruction::_free_pointer(){
+    free_instruction(data_pointer);
 }
 
 void Instruction::_update_pointer(){
-    _free_pointer_if_not_null();
-    if(program_id.get_type() != Variant::OBJECT){
-        return;
-    }
-    Pubkey *program_id_ref = variant_to_type<Pubkey>(program_id);
-    if(program_id_ref->is_null()){
-        return;
-    }
-    if(!_is_accounts_valid()){
-        return;
-    }
-    
     // Rust wants to deallocate its memory, so we allocate new to avoid double free
     void** account_pointers = new void*[accounts.size()];
-    unsigned char* allocated_data = new unsigned char[data.size()]; 
+    unsigned char* allocated_data = new unsigned char[data.size()];
 
-    array_to_pointer_array<AccountMeta>(accounts, account_pointers);
+    if (!array_to_pointer_array<AccountMeta>(accounts, account_pointers)){
+        return;
+    }
 
-    Object *program_id_cast = program_id;
-    Pubkey *program_id_ptr = Object::cast_to<Pubkey>(program_id_cast);
+    void *program_id_ptr = variant_to_type<Pubkey>(program_id);
+    if(program_id_ptr == nullptr){
+        return;
+    }
 
     memcpy(allocated_data, data.get_string_from_utf8().utf8().get_data(), data.size());
 
-    data_pointer = create_instruction_with_bytes(program_id_ptr->to_ptr(), allocated_data, data.size(), account_pointers, accounts.size());
+    data_pointer = create_instruction_with_bytes(program_id_ptr, allocated_data, data.size(), account_pointers, accounts.size());
 }
 
 void Instruction::_bind_methods() {
@@ -68,12 +42,10 @@ void Instruction::_bind_methods() {
 }
 
 Instruction::Instruction() {
-    data_pointer = nullptr;
 }
 
 void Instruction::set_program_id(const Variant& p_value){
     program_id = p_value;
-    _update_pointer();
 }
 Variant Instruction::get_program_id(){
     return program_id;
@@ -81,7 +53,6 @@ Variant Instruction::get_program_id(){
 
 void Instruction::set_data(const PackedByteArray& p_value){
     data = p_value;
-    _update_pointer();
 }
 PackedByteArray Instruction::get_data(){
     return data;
@@ -95,14 +66,10 @@ void Instruction::set_accounts(const TypedArray<AccountMeta>& p_value){
             accounts[i] = Variant(resource);
         }
     }
-    _update_pointer();
-}
-TypedArray<AccountMeta> Instruction::get_accounts(){
-    return accounts;
 }
 
-void *Instruction::to_ptr() const{
-    return data_pointer;
+TypedArray<AccountMeta> Instruction::get_accounts(){
+    return accounts;
 }
 
 void Instruction::create_new(const Variant& program_id, PackedByteArray data, Array account_metas){
@@ -125,8 +92,6 @@ void Instruction::create_new(const Variant& program_id, PackedByteArray data, Ar
 }
 
 Instruction::~Instruction() {
-    if(data_pointer != nullptr){
-        free_instruction(data_pointer);
-    }
+    _free_pointer_if_not_null();
 }
 }
