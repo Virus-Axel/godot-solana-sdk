@@ -42,7 +42,7 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
     ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
     ClassDB::bind_method(D_METHOD("sign", "latest_blockhash"), &Transaction::sign);
-    ClassDB::bind_method(D_METHOD("partially_sign"), &Transaction::partially_sign);
+    ClassDB::bind_method(D_METHOD("partially_sign", "latest_blockhash"), &Transaction::partially_sign);
 }
 
 bool Transaction::_set(const StringName &p_name, const Variant &p_value){
@@ -158,18 +158,66 @@ PackedByteArray Transaction::serialize(){
     }
 }
 
-Error Transaction::sign(const String& latest_blockhash){
+Error Transaction::sign(const Variant& latest_blockhash){
+    if (latest_blockhash.get_type() != Variant::OBJECT){
+        return Error::ERR_INVALID_PARAMETER;
+    }
+
+    void* latest_blockhash_ptr = variant_to_type<Hash>(latest_blockhash);
+    if(latest_blockhash_ptr == nullptr){
+        return Error::ERR_INVALID_PARAMETER;
+    }
+
     void* tx = to_ptr();
 
     if (tx == nullptr){
         return Error::ERR_INVALID_DATA;
     }
 
-    
+    void** signer_pointers = new void*[signers.size()];
+    if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
+        delete [] signer_pointers;
+        return Error::ERR_INVALID_DATA;
+    }
+
+    int status = sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
+
+    if (status != 0){
+        return Error::ERR_INVALID_DATA;
+    }
+
+    return OK;
 }
 
-Error Transaction::partially_sign(){
+Error Transaction::partially_sign(const Variant& latest_blockhash){
+    if (latest_blockhash.get_type() != Variant::OBJECT){
+        return Error::ERR_INVALID_PARAMETER;
+    }
 
+    void* latest_blockhash_ptr = variant_to_type<Hash>(latest_blockhash);
+    if(latest_blockhash_ptr == nullptr){
+        return Error::ERR_INVALID_PARAMETER;
+    }
+
+    void* tx = to_ptr();
+
+    if (tx == nullptr){
+        return Error::ERR_INVALID_DATA;
+    }
+
+    void** signer_pointers = new void*[signers.size()];
+    if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
+        delete [] signer_pointers;
+        return Error::ERR_INVALID_DATA;
+    }
+
+    int status = partially_sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
+
+    if (status != 0){
+        return Error::ERR_INVALID_DATA;
+    }
+
+    return OK;
 }
 
 Transaction::~Transaction(){

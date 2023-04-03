@@ -3,6 +3,7 @@
 
 #include "../wrapper/wrapper.h"
 
+#include "hash.hpp"
 #include "pubkey.hpp"
 #include "account.hpp"
 #include "solana_node.hpp"
@@ -46,8 +47,8 @@ public:
     Array get_signers();
 
     PackedByteArray serialize();
-    Error Transaction::sign(const String &latest_blockhash);
-    Error Transaction::partially_sign();
+    Error sign(const Variant &latest_blockhash);
+    Error partially_sign(const Variant& latest_blockhash);
 
     void create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash);
 
