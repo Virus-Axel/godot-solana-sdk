@@ -8,9 +8,23 @@
 
 namespace godot{
 
+
 void Transaction::_update_pointer(){
-    
+    // Rust wants to deallocate its memory, so we allocate new to avoid double free
+    void** instruction_pointers = new void*[instructions.size()];
+
+    if (!array_to_pointer_array<Instruction>(instructions, instruction_pointers)){
+        return;
+    }
+
+    void *payer_ptr = variant_to_type<Pubkey>(payer);
+    if(payer_ptr == nullptr){
+        return;
+    }
+
+    data_pointer = create_transaction_unsigned_with_payer(instruction_pointers, instructions.size(), payer_ptr);
 }
+
 void Transaction::_free_pointer(){
     free_transaction(data_pointer);
 }
@@ -22,12 +36,13 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_payer", "p_value"), &Transaction::set_payer);
     ClassDB::bind_method(D_METHOD("get_signers"), &Transaction::get_signers);
     ClassDB::bind_method(D_METHOD("set_signers", "p_value"), &Transaction::set_signers);
-    ClassDB::bind_method(D_METHOD("get_signed_transaction"), &Transaction::get_signed_transaction);
-    ClassDB::bind_method(D_METHOD("set_signed_transaction", "p_value"), &Transaction::set_signed_transaction);
     //ClassDB::add_property("Transaction", PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey"), "set_payer", "get_payer");
     //ClassDB::add_property("Transaction", PropertyInfo(Variant::ARRAY, "instructions", PROPERTY_HINT_RESOURCE_TYPE, "Instruction"), "set_instructions", "get_instructions");
 
     ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
+    ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
+    ClassDB::bind_method(D_METHOD("sign", "latest_blockhash"), &Transaction::sign);
+    ClassDB::bind_method(D_METHOD("partially_sign"), &Transaction::partially_sign);
 }
 
 bool Transaction::_set(const StringName &p_name, const Variant &p_value){
@@ -39,10 +54,6 @@ bool Transaction::_set(const StringName &p_name, const Variant &p_value){
     else if(name == "payer"){
         set_payer(p_value);
 		return true;
-    }
-    else if(name == "signed_transaction"){
-        set_signed_transaction(p_value);
-        return true;
     }
     else if(name == "signers"){
         set_signers(p_value);
@@ -60,10 +71,6 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
         r_ret = payer;
 		return true;
     }
-    else if(name == "signed_transaction"){
-        r_ret = signed_transaction;
-        return true;
-    }
     else if(name == "signers"){
         r_ret = signers;
         return true;
@@ -72,14 +79,9 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
 }
 
 void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
-    PropertyUsageFlags visibility = PROPERTY_USAGE_NO_EDITOR;
-    if(signed_transaction){
-        visibility = PROPERTY_USAGE_DEFAULT;
-    }
     p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey"));
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "instructions", PROPERTY_HINT_RESOURCE_TYPE, "Instruction"));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "signed_transaction", PROPERTY_HINT_RESOURCE_TYPE, "Instruction"));
-    p_list->push_back(PropertyInfo(Variant::ARRAY, "signers", PROPERTY_HINT_NONE, "", visibility, ""));
+    p_list->push_back(PropertyInfo(Variant::ARRAY, "signers", PROPERTY_HINT_NONE));
 }
 
 Transaction::Transaction() {
@@ -134,20 +136,40 @@ Array Transaction::get_signers(){
     return signers;
 }
 
-void Transaction::set_signed_transaction(const bool p_value){
-    signed_transaction = p_value;
-    notify_property_list_changed();
-}
-bool Transaction::get_signed_transaction(){
-    return signed_transaction;
+PackedByteArray Transaction::serialize(){
+    void* tx = to_ptr();
+
+    if (tx == nullptr){
+        return PackedByteArray();
+    }
+
+    unsigned char buffer[MAXIMUM_SERIALIZED_BUFFER + 1];
+
+    int written_bytes = serialize_transaction(tx, buffer, MAXIMUM_SERIALIZED_BUFFER);
+    if (written_bytes <= 0)
+        return PackedByteArray();
+    else{
+        PackedByteArray ret;
+        ret.resize(written_bytes);
+        for(int i = 0; i < written_bytes; i++){
+            ret[i] = buffer[i];
+        }
+        return ret;
+    }
 }
 
-Error Transaction::serialize(){
+Error Transaction::sign(const String& latest_blockhash){
     void* tx = to_ptr();
+
     if (tx == nullptr){
-        return Error::ERR_CANT_CREATE;
+        return Error::ERR_INVALID_DATA;
     }
-    return Error::OK;
+
+    
+}
+
+Error Transaction::partially_sign(){
+
 }
 
 Transaction::~Transaction(){

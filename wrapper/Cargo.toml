@@ -9,6 +9,7 @@ edition = "2021"
 lazy_static = "*"
 solana-sdk = "*"
 bs58 = "*"
+bincode = "*"
 
 [lib]
 crate-type = ["staticlib"]

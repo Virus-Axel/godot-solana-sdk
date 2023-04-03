@@ -15,14 +15,17 @@ class Transaction : public SolanaNode {
     GDCLASS(Transaction, Node)
 
 private:
+    const int MAXIMUM_SERIALIZED_BUFFER = 10000;
+
     Array instructions;
     Variant payer;
-    bool signed_transaction = false;
     Array signers;
 
     void _update_pointer() override;
     void _free_pointer() override;
     void _get_property_list(List<PropertyInfo> *p_list) const;
+    void _update_unsigned();
+    void _update_signed();
 
 protected:
     static void _bind_methods();
@@ -42,10 +45,9 @@ public:
     void set_signers(const Array& p_value);
     Array get_signers();
 
-    void set_signed_transaction(const bool p_value);
-    bool get_signed_transaction();
-
-    Error serialize();
+    PackedByteArray serialize();
+    Error Transaction::sign(const String &latest_blockhash);
+    Error Transaction::partially_sign();
 
     void create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash);
 

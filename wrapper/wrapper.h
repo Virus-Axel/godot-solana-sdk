@@ -53,6 +53,8 @@ extern "C"{
     void free_instruction(const void* instruction);
 
     void *create_transaction_signed_with_payer(void** instruction_array, int array_size, const void* payer, void** signers_array, int signers_array_size, const void* latest_blockhash);
+    void *create_transaction_unsigned_with_payer(void** instruction_array, int array_size, const void* payer);
+    int serialize_transaction(const void* transaction, unsigned char* buffer, const int buffer_size);
     void free_transaction(const void* transaction);
 }
 

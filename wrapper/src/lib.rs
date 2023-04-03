@@ -8,7 +8,7 @@ use crate::utils::{
     pointers_to_keypair,
 };
 
-use std::{sync::Mutex, ffi::c_ulonglong};
+use std::{sync::Mutex, ffi::c_ulonglong, ptr,};
 use core::ffi::{
     c_char,
     c_uchar,
@@ -204,9 +204,42 @@ pub extern "C" fn create_transaction_signed_with_payer(instruction_array: *mut *
 }
 
 #[no_mangle]
-pub extern "C" fn free_transaction(account_meta: *mut Transaction){
+pub extern "C" fn create_transaction_unsigned_with_payer(instruction_array: *mut *mut Instruction, array_size: c_int, payer: *const Pubkey) -> *const Transaction{
+    let instruction_pointer_array = unsafe {
+        Vec::from_raw_parts(instruction_array, array_size as usize, array_size as usize)
+    };
+
+    let payer_ref = unsafe{*payer};
+
+    let mut instructions = vec![];
+    for i in 0..instruction_pointer_array.len(){
+        let instruction_ref = unsafe{(*instruction_pointer_array[i]).clone()};
+        instructions.push(instruction_ref);
+    };
+
+    let ret = Transaction::new_with_payer(&instructions, Some(&payer_ref));
+    Box::into_raw(Box::new(ret))
+}
+
+#[no_mangle]
+pub extern "C" fn serialize_transaction(transaction: *mut Transaction, buffer: *mut c_uchar, buffer_size: c_int) -> c_int{
+    let tx = unsafe{&(*transaction)};
+    let serialized_tx = bincode::serialize(&tx).unwrap();
+    if serialized_tx.len() > buffer_size as usize{
+        return 0;
+    }
+
     unsafe{
-        drop(Box::from_raw(account_meta));
+        ptr::copy_nonoverlapping(serialized_tx.as_ptr(), buffer as *mut u8, serialized_tx.len());
+    };
+
+    serialized_tx.len() as i32
+}
+
+#[no_mangle]
+pub extern "C" fn free_transaction(transaction: *mut Transaction){
+    unsafe{
+        drop(Box::from_raw(transaction));
     }
 }
 
