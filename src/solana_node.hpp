@@ -28,6 +28,12 @@ public:
         data_pointer = nullptr;
     }
 
+    void* to_ptr(){
+        _free_pointer_if_not_null();
+        _update_pointer();
+        return data_pointer;
+    }
+
     ~SolanaNode() = default;
 };
 }

@@ -40,6 +40,10 @@ extern "C"{
     void print_pubkey(const void*);
     void free_pubkey(const void*);
 
+    void *create_unique_hash();
+    void *create_hash_from_array(const unsigned char* data);
+    void free_hash(const void*);
+
     void *create_keypair();
     void free_keypair(const void*);
 
@@ -53,6 +57,10 @@ extern "C"{
     void free_instruction(const void* instruction);
 
     void *create_transaction_signed_with_payer(void** instruction_array, int array_size, const void* payer, void** signers_array, int signers_array_size, const void* latest_blockhash);
+    void *create_transaction_unsigned_with_payer(void** instruction_array, int array_size, const void* payer);
+    int serialize_transaction(const void* transaction, unsigned char* buffer, const int buffer_size);
+    int sign_transaction(const void* transaction, void** signer_array, int signer_size, const void* latest_blockhash);
+    int partially_sign_transaction(const void* transaction, void** signer_array, int signer_size, const void* latest_blockhash);
     void free_transaction(const void* transaction);
 }
 
