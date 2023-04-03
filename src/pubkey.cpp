@@ -73,14 +73,9 @@ void Pubkey::set_value(const String& p_value){
     bytes = decoded_value;
     if(decoded_value.is_empty() && value.length() != 0){
         internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", 18, false);
-        _free_pointer_if_not_null();
     }
     else if (decoded_value.size() != 32){
         internal::gde_interface->print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 21, false);
-        _free_pointer_if_not_null();
-    }
-    else{
-        _update_pointer();
     }
 }
 
@@ -92,17 +87,12 @@ void Pubkey::set_bytes(const PackedByteArray& p_value){
     bytes = p_value;
     if (bytes.size() == 0){
         value = "";
-        _free_pointer_if_not_null();
         return;
     }
     String encoded_value = bs58_encode(bytes);
     value = encoded_value;
     if (bytes.size() != 32){
         internal::gde_interface->print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 14, false);
-        _free_pointer_if_not_null();
-    }
-    else{
-        _update_pointer();
     }
 }
 PackedByteArray Pubkey::get_bytes(){
@@ -112,7 +102,6 @@ PackedByteArray Pubkey::get_bytes(){
 void Pubkey::set_unique(const bool p_value){
     unique = p_value;
     notify_property_list_changed();
-    _update_pointer();
 }
 
 bool Pubkey::get_unique(){
