@@ -14,6 +14,7 @@ void Transaction::_update_pointer(){
     void** instruction_pointers = new void*[instructions.size()];
 
     if (!array_to_pointer_array<Instruction>(instructions, instruction_pointers)){
+        std::cout << "instruction array is bad" << std::endl;
         return;
     }
 
@@ -140,6 +141,7 @@ PackedByteArray Transaction::serialize(){
     void* tx = to_ptr();
 
     if (tx == nullptr){
+        std::cout << "invalid transaction" << std::endl;
         return PackedByteArray();
     }
 
@@ -160,29 +162,35 @@ PackedByteArray Transaction::serialize(){
 
 Error Transaction::sign(const Variant& latest_blockhash){
     if (latest_blockhash.get_type() != Variant::OBJECT){
+        std::cout << "not object" << std::endl;
         return Error::ERR_INVALID_PARAMETER;
     }
 
     void* latest_blockhash_ptr = variant_to_type<Hash>(latest_blockhash);
     if(latest_blockhash_ptr == nullptr){
+        std::cout << "hash is niull" << std::endl;
         return Error::ERR_INVALID_PARAMETER;
     }
 
     void* tx = to_ptr();
 
     if (tx == nullptr){
+        std::cout << "transaction is shit" << std::endl;
         return Error::ERR_INVALID_DATA;
     }
 
     void** signer_pointers = new void*[signers.size()];
     if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
         delete [] signer_pointers;
+
+        std::cout << "signers are trash" << std::endl;
         return Error::ERR_INVALID_DATA;
     }
 
     int status = sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
 
     if (status != 0){
+        std::cout << "It just failed" << std::endl;
         return Error::ERR_INVALID_DATA;
     }
 

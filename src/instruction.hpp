@@ -15,7 +15,6 @@ class Instruction : public SolanaResource {
     GDCLASS(Instruction, Resource)
 
 private:
-    void *data_pointer;
     Variant program_id;
     PackedByteArray data;
     TypedArray<AccountMeta> accounts;

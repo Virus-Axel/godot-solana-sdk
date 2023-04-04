@@ -21,7 +21,21 @@ void Keypair::_free_pointer(){
     free_keypair(data_pointer);
 }
 void Keypair::_update_pointer(){
-
+    if(unique){
+        data_pointer = create_keypair();
+    }
+    else{
+        if(private_bytes.size() != KEY_LENGTH || public_bytes.size() != KEY_LENGTH){
+            _free_pointer_if_not_null();
+            return;
+        }
+        unsigned char bytes[KEY_LENGTH * 2];
+        for(int i = 0; i < KEY_LENGTH; i++){
+            bytes[i] = private_bytes[i];
+            bytes[KEY_LENGTH + i] = public_bytes[i];
+        }
+        data_pointer = create_keypair_from_bytes(bytes);
+    }
 }
 
 void Keypair::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -128,7 +142,7 @@ void Keypair::set_private_value(const String& p_value){
     if(decoded_value.is_empty() && private_value.length() != 0){
         internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "keypair.cpp", 129, false);
     }
-    else if (decoded_value.size() != 32){
+    else if (decoded_value.size() != KEY_LENGTH){
         internal::gde_interface->print_warning("Private key must be 32 bytes", "_set", "keypair.cpp", 132, false);
     }
 }
@@ -146,7 +160,7 @@ void Keypair::set_private_bytes(const PackedByteArray& p_value){
     }
     String encoded_value = bs58_encode(private_bytes);
     private_value = encoded_value;
-    if (private_bytes.size() != 32){
+    if (private_bytes.size() != KEY_LENGTH){
         internal::gde_interface->print_warning("Private key must be 32 bytes", "_set", "keypair.cpp", 150, false);
     }
 }

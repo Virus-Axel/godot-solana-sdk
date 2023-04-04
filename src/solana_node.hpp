@@ -29,8 +29,9 @@ public:
     }
 
     void* to_ptr(){
-        _free_pointer_if_not_null();
-        _update_pointer();
+        if (data_pointer == nullptr){
+            _update_pointer();
+        }
         return data_pointer;
     }
 

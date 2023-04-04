@@ -14,11 +14,13 @@ void Instruction::_update_pointer(){
     unsigned char* allocated_data = new unsigned char[data.size()];
 
     if (!array_to_pointer_array<AccountMeta>(accounts, account_pointers)){
+        std::cout << "accounts are bad" << std::endl;
         return;
     }
 
     void *program_id_ptr = variant_to_type<Pubkey>(program_id);
     if(program_id_ptr == nullptr){
+        std::cout << "program id is bad" << std::endl;
         return;
     }
 
