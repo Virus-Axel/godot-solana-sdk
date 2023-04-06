@@ -86,6 +86,7 @@ pub extern "C" fn sign_transaction(transaction: *mut Transaction, signers_array:
     };
 
     let latest_blockhash_ref = unsafe{*latest_blockhash};
+    print!("hash from rust is: {}\n", latest_blockhash_ref.to_string());
 
     let mut signers = vec![];
     for i in 0..signer_pointer_array.len(){
