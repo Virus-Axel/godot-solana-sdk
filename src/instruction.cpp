@@ -4,25 +4,31 @@
 
 namespace godot{
 
+using internal::gde_interface;
+
 void Instruction::_free_pointer(){
     free_instruction(data_pointer);
 }
 
 void Instruction::_update_pointer(){
+    // Allocate buffers.
     void* account_pointers[accounts.size()];
     unsigned char allocated_data[data.size()];
 
+    // Write account pointer array.
     if (!array_to_pointer_array<AccountMeta>(accounts, account_pointers)){
-        std::cout << "accounts are bad" << std::endl;
+        gde_interface->print_warning("Bad accounts", "_update_pointer", "instruction.cpp", 20, false);
         return;
     }
 
+    // Get program ID object.
     void *program_id_ptr = variant_to_type<Pubkey>(program_id);
     if(program_id_ptr == nullptr){
-        std::cout << "program id is bad" << std::endl;
+        gde_interface->print_warning("Bad program ID", "_update_pointer", "instruction.cpp", 26, false);
         return;
     }
 
+    // Rust requires a mutable pointer so we make a copy.
     memcpy(allocated_data, data.get_string_from_utf8().utf8().get_data(), data.size());
 
     data_pointer = create_instruction_with_bytes(program_id_ptr, allocated_data, data.size(), account_pointers, accounts.size());
@@ -37,10 +43,7 @@ void Instruction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_accounts", "p_value"), &Instruction::set_accounts);
     ClassDB::add_property("Instruction", PropertyInfo(Variant::OBJECT, "program_id", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", PROPERTY_USAGE_DEFAULT), "set_program_id", "get_program_id");
     ClassDB::add_property("Instruction", PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data"), "set_data", "get_data");
-    ClassDB::add_property("Instruction", PropertyInfo(Variant::ARRAY, "accounts", PROPERTY_HINT_ARRAY_TYPE, "AccountMeta"), "set_accounts", "get_accounts");
-
-    ClassDB::bind_method(D_METHOD("create_new", "program_id", "data", "account_metas"), &Instruction::create_new);
-}
+    ClassDB::add_property("Instruction", PropertyInfo(Variant::ARRAY, "accounts", PROPERTY_HINT_ARRAY_TYPE, "AccountMeta"), "set_accounts", "get_accounts");}
 
 Instruction::Instruction() {
 }
@@ -61,6 +64,8 @@ PackedByteArray Instruction::get_data(){
 
 void Instruction::set_accounts(const TypedArray<AccountMeta>& p_value){
     accounts = p_value;
+
+    // If we have a new item, create an AccountMeta object.
     for(int i = 0; i < accounts.size(); i++){
         if(accounts[i].get_type() == Variant::NIL){
             Ref<AccountMeta> resource = memnew(AccountMeta);
@@ -71,24 +76,6 @@ void Instruction::set_accounts(const TypedArray<AccountMeta>& p_value){
 
 TypedArray<AccountMeta> Instruction::get_accounts(){
     return accounts;
-}
-
-void Instruction::create_new(const Variant& program_id, PackedByteArray data, Array account_metas){
-    void* account_pointers[account_metas.size()];
-    unsigned char allocated_data[data.size()]; 
-
-    for(int i = 0; i < account_metas.size(); i++){
-        Object *object_cast = account_metas[i];
-        AccountMeta *element = Object::cast_to<AccountMeta>(object_cast);
-        account_pointers[i] = element->to_ptr();
-    }
-
-    Object *program_id_cast = program_id;
-    Pubkey *program_id_ptr = Object::cast_to<Pubkey>(program_id_cast);
-
-    memcpy(allocated_data, data.get_string_from_utf8().utf8().get_data(), data.size());
-
-    data_pointer = create_instruction_with_bytes(program_id_ptr->to_ptr(), allocated_data, data.size(), account_pointers, account_metas.size());
 }
 
 Instruction::~Instruction() {

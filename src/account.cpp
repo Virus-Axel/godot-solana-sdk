@@ -1,5 +1,7 @@
 #include "account.hpp"
 
+#include "utils.hpp"
+
 #include <godot_cpp/core/class_db.hpp>
 
 using namespace godot;
@@ -13,9 +15,8 @@ Account::Account() {
 }
 
 void Account::create_new(uint64_t lamports, uint64_t space, const Variant& owner){
-    Object *owner_cast = owner;
-    Pubkey *owner_ptr = Object::cast_to<Pubkey>(owner_cast);
-    data_pointer = create_account(lamports, space, owner_ptr->to_ptr());
+    void* owner_ptr = variant_to_type<Pubkey>(owner);
+    data_pointer = create_account(lamports, space, owner_ptr);
 }
 
 Account::~Account() {

@@ -8,17 +8,21 @@
 
 namespace godot{
 
+using internal::gde_interface;
 
 void Transaction::_update_pointer(){
     void* instruction_pointers[instructions.size()];
 
+    // Write instruction pointer array.
     if (!array_to_pointer_array<Instruction>(instructions, instruction_pointers)){
-        std::cout << "instruction array is bad" << std::endl;
+        gde_interface->print_warning("Bad Instruction array", "_update_pointer", "transaction.cpp", 17, false);
         return;
     }
 
+    // Get payer pointer.
     void *payer_ptr = variant_to_type<Pubkey>(payer);
     if(payer_ptr == nullptr){
+        gde_interface->print_warning("Bad transaction payer", "_update_pointer", "transaction.cpp", 23, false);
         return;
     }
 
@@ -36,8 +40,6 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_payer", "p_value"), &Transaction::set_payer);
     ClassDB::bind_method(D_METHOD("get_signers"), &Transaction::get_signers);
     ClassDB::bind_method(D_METHOD("set_signers", "p_value"), &Transaction::set_signers);
-    //ClassDB::add_property("Transaction", PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey"), "set_payer", "get_payer");
-    //ClassDB::add_property("Transaction", PropertyInfo(Variant::ARRAY, "instructions", PROPERTY_HINT_RESOURCE_TYPE, "Instruction"), "set_instructions", "get_instructions");
 
     ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
     ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
@@ -102,6 +104,8 @@ void Transaction::create_signed_with_payer(Array instructions, Variant payer, Ar
 
 void Transaction::set_instructions(const Array& p_value){
     instructions = p_value;
+
+    // Check for new items and allocate Instruction objects.
     for(int i = 0; i < instructions.size(); i++){
         if(instructions[i].get_type() == Variant::NIL){
             Ref<Instruction> resource = memnew(Instruction);
@@ -124,6 +128,8 @@ Variant Transaction::get_payer(){
 
 void Transaction::set_signers(const Array& p_value){
     signers = p_value;
+
+    // Check for new items and allocate new Keypair objects.
     for(int i = 0; i < signers.size(); i++){
         if(signers[i].get_type() == Variant::NIL){
             Ref<Keypair> resource = memnew(Keypair);
@@ -136,16 +142,17 @@ Array Transaction::get_signers(){
 }
 
 PackedByteArray Transaction::serialize(){
+    // Get and verify transaction pointer.
     void* tx = to_ptr();
-
     if (tx == nullptr){
-        std::cout << "invalid transaction" << std::endl;
         return PackedByteArray();
     }
 
+    // Write the serialized transaction into a buffer.
     unsigned char buffer[MAXIMUM_SERIALIZED_BUFFER + 1];
-
     int written_bytes = serialize_transaction(tx, buffer, MAXIMUM_SERIALIZED_BUFFER);
+
+    // Return the amount of bytes written.
     if (written_bytes <= 0)
         return PackedByteArray();
     else{
@@ -159,35 +166,37 @@ PackedByteArray Transaction::serialize(){
 }
 
 Error Transaction::sign(const Variant& latest_blockhash){
+    // Check Variant type.
     if (latest_blockhash.get_type() != Variant::OBJECT){
-        std::cout << "not object" << std::endl;
+        gde_interface->print_warning("Latest Blockhash must be a Hash object", "sign", "transaction.cpp", 170, false);
         return Error::ERR_INVALID_PARAMETER;
     }
 
+    // Get Hash and validate it.
     void* latest_blockhash_ptr = variant_to_type<Hash>(latest_blockhash);
     if(latest_blockhash_ptr == nullptr){
-        std::cout << "hash is niull" << std::endl;
+        gde_interface->print_warning("Provided hash is invalid.", "sign", "transaction.cpp", 179, false);
         return Error::ERR_INVALID_PARAMETER;
     }
 
+    // Get transaction pointer and validate is.
     void* tx = to_ptr();
-
     if (tx == nullptr){
-        std::cout << "transaction is shit" << std::endl;
         return Error::ERR_INVALID_DATA;
     }
 
+    // Get array of pointers to signers
     void* signer_pointers[signers.size()];
     if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
-
-        std::cout << "signers are trash" << std::endl;
+        gde_interface->print_warning("Bad signer array", "sign", "transaction.cpp", 192, false);
         return Error::ERR_INVALID_DATA;
     }
 
     int status = sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
 
+    // Check status from rust library.
     if (status != 0){
-        std::cout << "It just failed" << std::endl;
+        gde_interface->print_warning("Unknown signing error", "sign", "transaction.cpp", 198, false);
         return Error::ERR_INVALID_DATA;
     }
 
@@ -195,21 +204,26 @@ Error Transaction::sign(const Variant& latest_blockhash){
 }
 
 Error Transaction::partially_sign(const Variant& latest_blockhash){
+    // Check type of latest blockhash.
     if (latest_blockhash.get_type() != Variant::OBJECT){
+        gde_interface->print_warning("Latest Blockhash must be a Hash object", "sign", "transaction.cpp", 209, false);
         return Error::ERR_INVALID_PARAMETER;
     }
 
+    // Check if blockhash is valid.
     void* latest_blockhash_ptr = variant_to_type<Hash>(latest_blockhash);
     if(latest_blockhash_ptr == nullptr){
+        gde_interface->print_warning("Provided hash is invalid.", "sign", "transaction.cpp", 216, false);
         return Error::ERR_INVALID_PARAMETER;
     }
 
+    // Get pointer to transaction.
     void* tx = to_ptr();
-
     if (tx == nullptr){
         return Error::ERR_INVALID_DATA;
     }
 
+    // Write an array of pointers to signers.
     void* signer_pointers[signers.size()];
     if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
         return Error::ERR_INVALID_DATA;
@@ -217,7 +231,9 @@ Error Transaction::partially_sign(const Variant& latest_blockhash){
 
     int status = partially_sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
 
+    // Check status of rust library function.
     if (status != 0){
+        gde_interface->print_warning("Unknown signing error", "sign", "transaction.cpp", 236, false);
         return Error::ERR_INVALID_DATA;
     }
 

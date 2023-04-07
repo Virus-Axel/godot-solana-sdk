@@ -24,22 +24,23 @@ void Keypair::_update_pointer(){
     if(unique){
         data_pointer = create_keypair();
     }
-    else{
-        if(private_bytes.size() != KEY_LENGTH || public_bytes.size() != KEY_LENGTH){
-            _free_pointer_if_not_null();
-            return;
-        }
+    else if(private_bytes.size() == KEY_LENGTH && public_bytes.size() == KEY_LENGTH){
+
+        // Concatinate private key and public key.
         unsigned char bytes[KEY_LENGTH * 2];
         for(int i = 0; i < KEY_LENGTH; i++){
             bytes[i] = private_bytes[i];
             bytes[KEY_LENGTH + i] = public_bytes[i];
         }
+
         data_pointer = create_keypair_from_bytes(bytes);
     }
 }
 
 void Keypair::_get_property_list(List<PropertyInfo> *p_list) const {
     PropertyUsageFlags visibility = PROPERTY_USAGE_DEFAULT;
+
+    // Hide other properties if unique is true.
     if(unique){
         visibility = PROPERTY_USAGE_NO_EDITOR;
     }
@@ -105,13 +106,20 @@ Keypair::Keypair() {
 
 void Keypair::set_public_value(const String& p_value){
     public_value = p_value;
+
+    // Keypair is not unique anymore.
+    unique = false;
+
+    // Update public bytes accordingly.
     PackedByteArray decoded_value = bs58_decode(public_value);
     public_bytes = decoded_value;
+
+    // Print warnings if key length is bad.
     if(decoded_value.is_empty() && public_value.length() != 0){
-        internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "keypair.cpp", 97, false);
+        internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "keypair.cpp", 119, false);
     }
     else if (decoded_value.size() != 32){
-        internal::gde_interface->print_warning("Public key must be 32 bytes", "_set", "keypair.cpp", 100, false);
+        internal::gde_interface->print_warning("Public key must be 32 bytes", "_set", "keypair.cpp", 122, false);
     }
 }
 
@@ -121,14 +129,22 @@ String Keypair::get_public_value(){
 
 void Keypair::set_public_bytes(const PackedByteArray& p_value){
     public_bytes = p_value;
+
+    // Keypair is not unique.
+    unique = false;
+
+    // Do not feed empty value to encode function.
     if (public_bytes.size() == 0){
         public_value = "";
-        return;
     }
-    String encoded_value = bs58_encode(public_bytes);
-    public_value = encoded_value;
+    else{
+        String encoded_value = bs58_encode(public_bytes);
+        public_value = encoded_value;
+    }
+
+    // Print warning if key length is bad.
     if (public_bytes.size() != 32){
-        internal::gde_interface->print_warning("Public key must be 32 bytes", "_set", "pubkey.cpp", 117, false);
+        internal::gde_interface->print_warning("Public key must be 32 bytes", "_set", "pubkey.cpp", 147, false);
     }
 }
 PackedByteArray Keypair::get_public_bytes(){
@@ -137,16 +153,20 @@ PackedByteArray Keypair::get_public_bytes(){
 
 void Keypair::set_private_value(const String& p_value){
     private_value = p_value;
+    unique = false;
+
+    // Update private bytes accordingly.
     PackedByteArray decoded_value = bs58_decode(private_value);
     private_bytes = decoded_value;
+
+    // Print warnings if key length is bad.
     if(decoded_value.is_empty() && private_value.length() != 0){
-        internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "keypair.cpp", 129, false);
+        internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "keypair.cpp", 164, false);
     }
     else if (decoded_value.size() != KEY_LENGTH){
-        internal::gde_interface->print_warning("Private key must be 32 bytes", "_set", "keypair.cpp", 132, false);
+        internal::gde_interface->print_warning("Private key must be 32 bytes", "_set", "keypair.cpp", 167, false);
     }
 }
-
 
 String Keypair::get_private_value(){
     return private_value;
@@ -154,20 +174,26 @@ String Keypair::get_private_value(){
 
 void Keypair::set_private_bytes(const PackedByteArray& p_value){
     private_bytes = p_value;
+    unique = false;
+
+    // Do not feed 0 bytes to encode algorithm.
     if (private_bytes.size() == 0){
         private_value = "";
-        return;
     }
-    String encoded_value = bs58_encode(private_bytes);
-    private_value = encoded_value;
+    else{
+        String encoded_value = bs58_encode(private_bytes);
+        private_value = encoded_value;
+    }
+
+    // Print warnings if key length is bad.
     if (private_bytes.size() != KEY_LENGTH){
         internal::gde_interface->print_warning("Private key must be 32 bytes", "_set", "keypair.cpp", 150, false);
     }
 }
+
 PackedByteArray Keypair::get_private_bytes(){
     return private_bytes;
 }
-
 
 void Keypair::set_unique(const bool p_value){
     unique = p_value;
