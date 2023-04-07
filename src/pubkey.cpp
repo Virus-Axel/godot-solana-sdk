@@ -69,6 +69,7 @@ bool Pubkey::_get(const StringName &p_name, Variant &r_ret) const {
 
 void Pubkey::set_value(const String& p_value){
     value = p_value;
+    unique = false;
     PackedByteArray decoded_value = bs58_decode(value);
     bytes = decoded_value;
     if(decoded_value.is_empty() && value.length() != 0){
@@ -85,6 +86,7 @@ String Pubkey::get_value(){
 
 void Pubkey::set_bytes(const PackedByteArray& p_value){
     bytes = p_value;
+    unique = false;
     if (bytes.size() == 0){
         value = "";
         return;

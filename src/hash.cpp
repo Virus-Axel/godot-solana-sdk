@@ -11,9 +11,13 @@ void Hash::_update_pointer(){
     }
     else if (bytes.size() == HASH_LENGTH){
         // Allocate space for rust to free
-        unsigned char* key_array = new unsigned char[HASH_LENGTH];
+        unsigned char key_array[HASH_LENGTH];
 
         memcpy(key_array, bytes.ptr(), HASH_LENGTH);
+
+        for(int i = 0; i < 32; i++)
+            std::cout << (int)key_array[i];
+        std::cout << std::endl;
 
         data_pointer = create_hash_from_array(key_array);
     }
@@ -69,6 +73,7 @@ bool Hash::_get(const StringName &p_name, Variant &r_ret) const {
 
 void Hash::set_value(const String& p_value){
     value = p_value;
+    unique = false;
     PackedByteArray decoded_value = bs58_decode(value);
     bytes = decoded_value;
     if(decoded_value.is_empty() && value.length() != 0){
@@ -85,6 +90,7 @@ String Hash::get_value(){
 
 void Hash::set_bytes(const PackedByteArray& p_value){
     bytes = p_value;
+    unique = false;
     if (bytes.size() == 0){
         value = "";
         return;

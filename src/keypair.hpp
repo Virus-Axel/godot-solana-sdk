@@ -11,6 +11,8 @@ class Keypair : public SolanaResource {
     GDCLASS(Keypair, Resource)
 
 private:
+    const int KEY_LENGTH = 32;
+
     bool unique = true;
     String public_value = "";
     PackedByteArray public_bytes;

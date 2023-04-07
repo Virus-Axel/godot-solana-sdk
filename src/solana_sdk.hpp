@@ -16,7 +16,6 @@ protected:
 
 public:
     SolanaSDK();
-    Error append_account(String account_key);
     ~SolanaSDK();
 };
 }
