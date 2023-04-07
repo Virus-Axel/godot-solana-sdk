@@ -9,9 +9,8 @@ void Instruction::_free_pointer(){
 }
 
 void Instruction::_update_pointer(){
-    // Rust wants to deallocate its memory, so we allocate new to avoid double free
-    void** account_pointers = new void*[accounts.size()];
-    unsigned char* allocated_data = new unsigned char[data.size()];
+    void* account_pointers[accounts.size()];
+    unsigned char allocated_data[data.size()];
 
     if (!array_to_pointer_array<AccountMeta>(accounts, account_pointers)){
         std::cout << "accounts are bad" << std::endl;
@@ -75,9 +74,8 @@ TypedArray<AccountMeta> Instruction::get_accounts(){
 }
 
 void Instruction::create_new(const Variant& program_id, PackedByteArray data, Array account_metas){
-    // Rust wants to deallocate its memory, so we allocate new to avoid double free
-    void** account_pointers = new void*[account_metas.size()];
-    unsigned char* allocated_data = new unsigned char[data.size()]; 
+    void* account_pointers[account_metas.size()];
+    unsigned char allocated_data[data.size()]; 
 
     for(int i = 0; i < account_metas.size(); i++){
         Object *object_cast = account_metas[i];
