@@ -10,11 +10,7 @@ void Pubkey::_update_pointer(){
         data_pointer = create_unique_pubkey();
     }
     else if (bytes.size() == PUBKEY_LENGTH){
-        unsigned char key_array[PUBKEY_LENGTH];
-
-        memcpy(key_array, bytes.ptr(), PUBKEY_LENGTH);
-
-        data_pointer = create_pubkey_from_array(key_array);
+        data_pointer = create_pubkey_from_array(bytes.ptr());
     }
 }
 
@@ -69,8 +65,12 @@ bool Pubkey::_get(const StringName &p_name, Variant &r_ret) const {
 void Pubkey::set_value(const String& p_value){
     value = p_value;
     unique = false;
+
+    // Update bytes accordingly.
     PackedByteArray decoded_value = bs58_decode(value);
     bytes = decoded_value;
+
+    // Print warnings if key length is bad.
     if(decoded_value.is_empty() && value.length() != 0){
         internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", 18, false);
     }
@@ -86,12 +86,17 @@ String Pubkey::get_value(){
 void Pubkey::set_bytes(const PackedByteArray& p_value){
     bytes = p_value;
     unique = false;
+
+    // Do not feed zero bytes into encode function.
     if (bytes.size() == 0){
         value = "";
-        return;
     }
-    String encoded_value = bs58_encode(bytes);
-    value = encoded_value;
+    else{
+        String encoded_value = bs58_encode(bytes);
+        value = encoded_value;
+    }
+
+    // Print warnings if byte length is bad.
     if (bytes.size() != 32){
         internal::gde_interface->print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 14, false);
     }
@@ -111,6 +116,8 @@ bool Pubkey::get_unique(){
 
 void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
     PropertyUsageFlags visibility = PROPERTY_USAGE_DEFAULT;
+
+    // Hide other properties if key is unique.
     if(unique){
         visibility = PROPERTY_USAGE_NO_EDITOR;
     }

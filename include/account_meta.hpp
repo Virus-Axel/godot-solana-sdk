@@ -41,7 +41,6 @@ public:
     void set_writeable(const bool p_value);
     bool get_writeable() const;
 
-    bool is_valid() const;
     void create_new(const Variant& account_key, bool is_signer, bool writeable);
 
     ~AccountMeta();

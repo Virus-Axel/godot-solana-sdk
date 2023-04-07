@@ -35,9 +35,7 @@ public:
 
     void set_accounts(const TypedArray<AccountMeta>& p_value);
     TypedArray<AccountMeta> get_accounts();
-
-    void create_new(const Variant& program_id, PackedByteArray data, Array account_metas);
-
+    
     ~Instruction();
 };
 }

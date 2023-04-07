@@ -10,16 +10,7 @@ void Hash::_update_pointer(){
         data_pointer = create_unique_hash();
     }
     else if (bytes.size() == HASH_LENGTH){
-        // Allocate space for rust to free
-        unsigned char key_array[HASH_LENGTH];
-
-        memcpy(key_array, bytes.ptr(), HASH_LENGTH);
-
-        for(int i = 0; i < 32; i++)
-            std::cout << (int)key_array[i];
-        std::cout << std::endl;
-
-        data_pointer = create_hash_from_array(key_array);
+        data_pointer = create_hash_from_array(bytes.ptr());
     }
 }
 
@@ -73,13 +64,19 @@ bool Hash::_get(const StringName &p_name, Variant &r_ret) const {
 
 void Hash::set_value(const String& p_value){
     value = p_value;
+
+    // Hash is not unique if value is set.
     unique = false;
+
+    // Update byte representation accordingly.
     PackedByteArray decoded_value = bs58_decode(value);
     bytes = decoded_value;
+
+    // Print warnings if bytes are bad.
     if(decoded_value.is_empty() && value.length() != 0){
         internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", 18, false);
     }
-    else if (decoded_value.size() != 32){
+    else if (decoded_value.size() != HASH_LENGTH){
         internal::gde_interface->print_warning("Hash must be 32 bytes", "_set", "hash.cpp", 78, false);
     }
 }
@@ -90,16 +87,22 @@ String Hash::get_value(){
 
 void Hash::set_bytes(const PackedByteArray& p_value){
     bytes = p_value;
+
+    // Hash is not unique anymore.
     unique = false;
+
+    // Empty byte array could give 1 as encoded string. Avoid this.
     if (bytes.size() == 0){
         value = "";
-        return;
     }
-    String encoded_value = bs58_encode(bytes);
-    value = encoded_value;
-
-    if (bytes.size() != 32){
-        internal::gde_interface->print_warning("Hash must be 32 bytes", "_set", "hash.cpp", 96, false);
+    else{
+        String encoded_value = bs58_encode(bytes);
+        value = encoded_value;
+    }
+    
+    // Print warning if key is bad
+    if (bytes.size() != HASH_LENGTH){
+        internal::gde_interface->print_warning("Hash must be 32 bytes", "_set", "hash.cpp", 105, false);
     }
 }
 PackedByteArray Hash::get_bytes(){
@@ -117,9 +120,12 @@ bool Hash::get_unique(){
 
 void Hash::_get_property_list(List<PropertyInfo> *p_list) const {
     PropertyUsageFlags visibility = PROPERTY_USAGE_DEFAULT;
+
+    // Make other properties invisible if key is unique
     if(unique){
         visibility = PROPERTY_USAGE_NO_EDITOR;
     }
+    
     p_list->push_back(PropertyInfo(Variant::BOOL, "unique"));
 	p_list->push_back(PropertyInfo(Variant::STRING, "value", PROPERTY_HINT_NONE, "", visibility, ""));
     p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytes", PROPERTY_HINT_NONE, "", visibility, ""));

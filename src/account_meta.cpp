@@ -62,20 +62,6 @@ bool AccountMeta::get_writeable() const {
 AccountMeta::AccountMeta() {
 }
 
-bool AccountMeta::is_valid() const{
-    if(key.get_type() != Variant::OBJECT){
-        return false;
-    }
-
-    void *key_ref = variant_to_type<Pubkey>(key);
-    if(key_ref == nullptr){
-        return false;
-    }
-    else{
-        return true;
-    }
-}
-
 void AccountMeta::create_new(const Variant& account_key, bool is_signer, bool writeable){
     Object *account_key_cast = account_key;
     Pubkey *account_key_ptr = Object::cast_to<Pubkey>(account_key_cast);
