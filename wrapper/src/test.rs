@@ -8,3 +8,5 @@ pub mod hash;
 pub mod instruction;
 #[cfg(test)]
 pub mod transaction;
+#[cfg(test)]
+pub mod account;
