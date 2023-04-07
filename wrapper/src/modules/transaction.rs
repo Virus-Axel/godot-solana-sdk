@@ -46,7 +46,7 @@ pub extern "C" fn create_transaction_signed_with_payer(instruction_array: *mut *
 }
 
 #[no_mangle]
-pub extern "C" fn create_transaction_unsigned_with_payer(instruction_array: *mut *mut Instruction, array_size: c_int, payer: *const Pubkey) -> *const Transaction{
+pub extern "C" fn create_transaction_unsigned_with_payer(instruction_array: *mut *mut Instruction, array_size: c_int, payer: *const Pubkey) -> *mut Transaction{
     let instruction_pointer_array = unsafe {
         Vec::from_raw_parts(instruction_array, array_size as usize, array_size as usize)
     };
@@ -58,6 +58,8 @@ pub extern "C" fn create_transaction_unsigned_with_payer(instruction_array: *mut
         let instruction_ref = unsafe{(*instruction_pointer_array[i]).clone()};
         instructions.push(instruction_ref);
     };
+
+    std::mem::forget(instruction_pointer_array);
 
     let ret = Transaction::new_with_payer(&instructions, Some(&payer_ref));
     Box::into_raw(Box::new(ret))
@@ -86,13 +88,14 @@ pub extern "C" fn sign_transaction(transaction: *mut Transaction, signers_array:
     };
 
     let latest_blockhash_ref = unsafe{*latest_blockhash};
-    print!("hash from rust is: {}\n", latest_blockhash_ref.to_string());
 
     let mut signers = vec![];
     for i in 0..signer_pointer_array.len(){
         let signer_ref = unsafe{&(*signer_pointer_array[i])};
         signers.push(signer_ref);
     };
+
+    std::mem::forget(signer_pointer_array);
 
     let transaction_ref = unsafe{&mut(*transaction)};
     match transaction_ref.try_sign(&signers, latest_blockhash_ref){
@@ -114,6 +117,8 @@ pub extern "C" fn partially_sign_transaction(transaction: *mut Transaction, sign
         let signer_ref = unsafe{&(*signer_pointer_array[i])};
         signers.push(signer_ref);
     };
+
+    std::mem::forget(signer_pointer_array);
 
     let transaction_ref = unsafe{&mut(*transaction)};
     match transaction_ref.try_partial_sign(&signers, latest_blockhash_ref){

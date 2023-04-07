@@ -4,3 +4,7 @@ pub mod pubkey;
 pub mod keypair;
 #[cfg(test)]
 pub mod hash;
+#[cfg(test)]
+pub mod instruction;
+#[cfg(test)]
+pub mod transaction;
