@@ -10,8 +10,7 @@ void Pubkey::_update_pointer(){
         data_pointer = create_unique_pubkey();
     }
     else if (bytes.size() == PUBKEY_LENGTH){
-        // Allocate space for rust to free
-        unsigned char* key_array = new unsigned char[PUBKEY_LENGTH];
+        unsigned char key_array[PUBKEY_LENGTH];
 
         memcpy(key_array, bytes.ptr(), PUBKEY_LENGTH);
 

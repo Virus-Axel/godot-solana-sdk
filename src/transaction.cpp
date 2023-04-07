@@ -10,8 +10,7 @@ namespace godot{
 
 
 void Transaction::_update_pointer(){
-    // Rust wants to deallocate its memory, so we allocate new to avoid double free
-    void** instruction_pointers = new void*[instructions.size()];
+    void* instruction_pointers[instructions.size()];
 
     if (!array_to_pointer_array<Instruction>(instructions, instruction_pointers)){
         std::cout << "instruction array is bad" << std::endl;
@@ -89,9 +88,8 @@ Transaction::Transaction() {
 }
 
 void Transaction::create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash){
-    // Rust wants to deallocate its memory, so we allocate new to avoid double free
-    void** instruction_pointers = new void*[instructions.size()];
-    void** signer_pointers = new void*[signers.size()];
+    void* instruction_pointers[instructions.size()];
+    void* signer_pointers[signers.size()];
 
     array_to_pointer_array<Instruction>(instructions, instruction_pointers);
     array_to_pointer_array<Keypair>(signers, signer_pointers);
@@ -179,9 +177,8 @@ Error Transaction::sign(const Variant& latest_blockhash){
         return Error::ERR_INVALID_DATA;
     }
 
-    void** signer_pointers = new void*[signers.size()];
+    void* signer_pointers[signers.size()];
     if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
-        delete [] signer_pointers;
 
         std::cout << "signers are trash" << std::endl;
         return Error::ERR_INVALID_DATA;
@@ -213,9 +210,8 @@ Error Transaction::partially_sign(const Variant& latest_blockhash){
         return Error::ERR_INVALID_DATA;
     }
 
-    void** signer_pointers = new void*[signers.size()];
+    void* signer_pointers[signers.size()];
     if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
-        delete [] signer_pointers;
         return Error::ERR_INVALID_DATA;
     }
 
