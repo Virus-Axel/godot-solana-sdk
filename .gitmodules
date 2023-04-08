@@ -6,3 +6,7 @@
 	path = solana
 	url = git@github.com:solana-labs/solana.git
 	branch = master
+[submodule "doctest"]
+	path = doctest
+	url = git@github.com:doctest/doctest.git
+	branch = master
