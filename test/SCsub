@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+from os import remove
+
+env = Environment()
+
+test_program = env.Program(target = 'bin/test', source = Glob("src/*.cpp"))
+
+# Run the unit test program
+env.Command(target = 'test', source = test_program, action = test_program[0].abspath)

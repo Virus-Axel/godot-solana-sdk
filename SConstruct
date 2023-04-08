@@ -59,7 +59,6 @@ env.Append(CPPPATH=["src/"])
 env.Append(CPPPATH=["include/"])
 sources = Glob("src/*.cpp")
 
-
 if env["platform"] == "macos":
     library = env.SharedLibrary(
         "example/bin/libgdexample.{}.{}.framework/libgdexample.{}.{}".format(
@@ -73,4 +72,6 @@ else:
         source=sources,
     )
 
-Default(library)
+env.Default(library)
+
+SConscript("test/SCsub")
