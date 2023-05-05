@@ -5,13 +5,11 @@ use solana_sdk::{
     pubkey::Pubkey,
     hash::Hash,
 };
-use std::{
-    ffi::{
-        c_int,
-        c_uchar,
-    },
-    ptr,
-};
+
+extern crate alloc;
+
+use alloc::{vec, boxed::Box, vec::Vec};
+use core::ffi::{c_int, c_uchar};
 
 #[no_mangle]
 pub extern "C" fn create_transaction_signed_with_payer(instruction_array: *mut *mut Instruction, array_size: c_int, payer: *const Pubkey, signers_array: *mut *mut Keypair, signers_array_size: c_int, latest_blockhash: *const Pubkey) -> *const Transaction{
@@ -41,7 +39,7 @@ pub extern "C" fn create_transaction_signed_with_payer(instruction_array: *mut *
     let mut ret = Transaction::new_with_payer(&instructions, Some(&payer_ref));
     match ret.try_sign(&signers, hash){
         Ok(_) => Box::into_raw(Box::new(ret)),
-        Err(_) => std::ptr::null(),
+        Err(_) => core::ptr::null(),
     }
 }
 
@@ -59,7 +57,7 @@ pub extern "C" fn create_transaction_unsigned_with_payer(instruction_array: *mut
         instructions.push(instruction_ref);
     };
 
-    std::mem::forget(instruction_pointer_array);
+    core::mem::forget(instruction_pointer_array);
 
     let ret = Transaction::new_with_payer(&instructions, Some(&payer_ref));
     Box::into_raw(Box::new(ret))
@@ -74,7 +72,7 @@ pub extern "C" fn serialize_transaction(transaction: *mut Transaction, buffer: *
     }
 
     unsafe{
-        ptr::copy_nonoverlapping(serialized_tx.as_ptr(), buffer as *mut u8, serialized_tx.len());
+        core::ptr::copy_nonoverlapping(serialized_tx.as_ptr(), buffer as *mut u8, serialized_tx.len());
     };
 
     serialized_tx.len() as i32
@@ -95,7 +93,7 @@ pub extern "C" fn sign_transaction(transaction: *mut Transaction, signers_array:
         signers.push(signer_ref);
     };
 
-    std::mem::forget(signer_pointer_array);
+    core::mem::forget(signer_pointer_array);
 
     let transaction_ref = unsafe{&mut(*transaction)};
     match transaction_ref.try_sign(&signers, latest_blockhash_ref){
@@ -118,7 +116,7 @@ pub extern "C" fn partially_sign_transaction(transaction: *mut Transaction, sign
         signers.push(signer_ref);
     };
 
-    std::mem::forget(signer_pointer_array);
+    core::mem::forget(signer_pointer_array);
 
     let transaction_ref = unsafe{&mut(*transaction)};
     match transaction_ref.try_partial_sign(&signers, latest_blockhash_ref){

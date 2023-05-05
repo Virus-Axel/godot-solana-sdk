@@ -16,7 +16,7 @@ Cargo.lock
 example/SolanaSDK.gd
 example/solana_sdk.tscn
 example/addons/
-
+/bin/
 
 .vscode/
 .godot/

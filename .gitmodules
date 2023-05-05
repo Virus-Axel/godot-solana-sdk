@@ -6,3 +6,6 @@
 	path = solana
 	url = git@github.com:solana-labs/solana.git
 	branch = master
+[submodule "build-containers-with-rust"]
+	path = build-containers-with-rust
+	url = git@github.com:Virus-Axel/build-containers-with-rust.git

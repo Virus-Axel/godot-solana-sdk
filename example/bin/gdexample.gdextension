@@ -1,7 +1,0 @@
-[configuration]
-
-entry_symbol = "solana_sdk_library_init"
-
-[libraries]
-
-linux.64="libgdexample.linux.template_debug.x86_64.so"

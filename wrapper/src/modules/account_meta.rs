@@ -2,6 +2,10 @@ use solana_sdk::{
     pubkey::Pubkey,
     instruction::AccountMeta,
 };
+
+extern crate alloc;
+use alloc::boxed::Box;
+
 #[no_mangle]
 pub extern "C" fn create_account_meta(account_key: *const Pubkey, is_signer: bool, is_writeable: bool) -> *mut AccountMeta{
     let account_ref = unsafe{*account_key};

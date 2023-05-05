@@ -1,5 +1,9 @@
 use solana_sdk::signer::keypair::Keypair;
-use std::mem;
+use core::mem;
+
+extern crate alloc;
+
+use alloc::{boxed::Box, vec::Vec};
 
 #[no_mangle]
 pub extern "C" fn create_keypair() -> *mut Keypair{
@@ -12,7 +16,7 @@ pub extern "C" fn create_keypair_from_bytes(bytes: *mut u8) -> *mut Keypair{
 
     let ret = match Keypair::from_bytes(arr.clone().as_slice()){
         Ok(v) => v,
-        Err(_) => return std::ptr::null::<Keypair>() as *mut Keypair,
+        Err(_) => return core::ptr::null::<Keypair>() as *mut Keypair,
     };
 
     mem::forget(arr);
