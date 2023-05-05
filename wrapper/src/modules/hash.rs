@@ -1,6 +1,9 @@
-use std::mem;
+use core::mem;
 
 use solana_sdk::hash::Hash;
+
+extern crate alloc;
+use alloc::{boxed::Box, vec::Vec};
 
 #[no_mangle]
 pub extern "C" fn create_unique_hash() -> *mut Hash{

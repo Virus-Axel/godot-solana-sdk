@@ -1,13 +1,9 @@
-use std::mem;
+use core::mem;
+
+extern crate alloc;
 
 use solana_sdk::pubkey::Pubkey;
-
-#[no_mangle]
-pub extern "C" fn print_pubkey(key: *const Pubkey){
-    unsafe{
-        println!("{}\n", (*key).to_string());
-    }
-}
+use alloc::{boxed::Box, vec::Vec};
 
 #[no_mangle]
 pub extern "C" fn create_unique_pubkey() -> *mut Pubkey{

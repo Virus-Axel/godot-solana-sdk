@@ -5,7 +5,11 @@ use solana_sdk::{
     },
     pubkey::Pubkey,
 };
-use std::ffi::{
+
+extern crate alloc;
+use alloc::{vec, boxed::Box, vec::Vec};
+
+use core::ffi::{
     c_uchar,
     c_int,
 };
@@ -22,7 +26,7 @@ pub extern "C" fn create_instruction_with_bytes(program_id: *const Pubkey, data_
         account_metas.push(account_meta_ref);
     };
 
-    std::mem::forget(pointer_array);
+    core::mem::forget(pointer_array);
 
     let data = unsafe {
         Vec::from_raw_parts(data_array, data_size as usize, data_size as usize)
@@ -30,7 +34,7 @@ pub extern "C" fn create_instruction_with_bytes(program_id: *const Pubkey, data_
 
     let ret = Instruction::new_with_bytes(program_id_ref, &data, account_metas);
 
-    std::mem::forget(data);
+    core::mem::forget(data);
 
     Box::into_raw(Box::new(ret))
 }
