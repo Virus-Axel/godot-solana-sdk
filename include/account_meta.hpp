@@ -21,8 +21,6 @@ private:
 
     Variant key;
 
-    void *data_pointer;
-
     void _update_pointer() override;
     void _free_pointer() override;
 
