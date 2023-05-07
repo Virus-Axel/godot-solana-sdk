@@ -1,6 +1,7 @@
 #include "pubkey.hpp"
 #include "utils.hpp"
 
+#include <solana_sdk.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
 namespace godot{
@@ -67,7 +68,7 @@ void Pubkey::set_value(const String& p_value){
     unique = false;
 
     // Update bytes accordingly.
-    PackedByteArray decoded_value = bs58_decode(value);
+    PackedByteArray decoded_value = SolanaSDK::bs58_decode(value);
     bytes = decoded_value;
 
     // Print warnings if key length is bad.
@@ -92,7 +93,7 @@ void Pubkey::set_bytes(const PackedByteArray& p_value){
         value = "";
     }
     else{
-        String encoded_value = bs58_encode(bytes);
+        String encoded_value = SolanaSDK::bs58_encode(bytes);
         value = encoded_value;
     }
 

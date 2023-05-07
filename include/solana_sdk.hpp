@@ -1,7 +1,6 @@
 #ifndef GDEXAMPLE_H
 #define GDEXAMPLE_H
 
-#include "../wrapper/wrapper.h"
 #include <godot_cpp/classes/node.hpp>
 
 namespace godot {
@@ -16,6 +15,8 @@ protected:
 
 public:
     SolanaSDK();
+    static PackedByteArray bs58_decode(String str);
+    static String bs58_encode(PackedByteArray input);
     ~SolanaSDK();
 };
 }

@@ -8,6 +8,7 @@
 #include "keypair.hpp"
 #include "transaction.hpp"
 #include "hash.hpp"
+#include "utils.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>

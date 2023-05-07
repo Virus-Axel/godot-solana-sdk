@@ -3,7 +3,11 @@
 
 #include <cstdint>
 
+
 extern "C"{
+    unsigned int bs58_decode(const char* input, unsigned int input_length, char* result);
+    unsigned int bs58_encode(const char* input, unsigned int input_length, char* result);
+
     void *create_unique_pubkey();
     void *create_pubkey_from_array(const unsigned char* data);
     void print_pubkey(const void*);

@@ -1,6 +1,7 @@
 #include "keypair.hpp"
 
 #include <godot_cpp/core/class_db.hpp>
+#include <solana_sdk.hpp>
 
 namespace godot{
 
@@ -111,7 +112,7 @@ void Keypair::set_public_value(const String& p_value){
     unique = false;
 
     // Update public bytes accordingly.
-    PackedByteArray decoded_value = bs58_decode(public_value);
+    PackedByteArray decoded_value = SolanaSDK::bs58_decode(public_value);
     public_bytes = decoded_value;
 
     // Print warnings if key length is bad.
@@ -138,7 +139,7 @@ void Keypair::set_public_bytes(const PackedByteArray& p_value){
         public_value = "";
     }
     else{
-        String encoded_value = bs58_encode(public_bytes);
+        String encoded_value = SolanaSDK::bs58_encode(public_bytes);
         public_value = encoded_value;
     }
 
@@ -156,7 +157,7 @@ void Keypair::set_private_value(const String& p_value){
     unique = false;
 
     // Update private bytes accordingly.
-    PackedByteArray decoded_value = bs58_decode(private_value);
+    PackedByteArray decoded_value = SolanaSDK::bs58_decode(private_value);
     private_bytes = decoded_value;
 
     // Print warnings if key length is bad.
@@ -181,7 +182,7 @@ void Keypair::set_private_bytes(const PackedByteArray& p_value){
         private_value = "";
     }
     else{
-        String encoded_value = bs58_encode(private_bytes);
+        String encoded_value = SolanaSDK::bs58_encode(private_bytes);
         private_value = encoded_value;
     }
 
