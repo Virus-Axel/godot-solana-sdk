@@ -79,7 +79,7 @@ platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 # Link rust solana sdk library
 target_arg = ""
 linker_settings = ""
-library_path = "wrapper/target/debug/"
+library_path = "wrapper/target/release/"
 
 if platform_arg == "android":
     linker_settings = 'AR=llvm-ar RUSTFLAGS="-C linker=aarch64-linux-android31-clang"'
