@@ -3,6 +3,8 @@ use core::ffi::{
     c_uint,
 };
 
+use core::mem;
+
 
 #[no_mangle]
 pub extern "C" fn bs58_decode(pointer: *const c_char, input_length: c_uint, result: *mut c_char) -> c_uint{
@@ -17,6 +19,8 @@ pub extern "C" fn bs58_decode(pointer: *const c_char, input_length: c_uint, resu
         core::ptr::copy_nonoverlapping(decoded_vec.as_ptr(), result as *mut u8, decoded_vec.len());
     }
     
+    mem::forget(pointer);
+
     decoded_vec.len() as c_uint
 }
 
@@ -30,5 +34,7 @@ pub extern "C" fn bs58_encode(pointer: *const c_char, input_length: c_uint, resu
         core::ptr::copy_nonoverlapping(encoded_vec.as_ptr(), result as *mut u8, encoded_vec.len());
     }
     
+    mem::forget(pointer);
+
     encoded_vec.len() as c_uint
 }
