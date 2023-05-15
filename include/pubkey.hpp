@@ -14,9 +14,12 @@ class Pubkey : public SolanaResource {
 private:
     const int PUBKEY_LENGTH = 32;
 
-    bool unique = true;
+    String type = "UNIQUE";
+    String seed = "";
     String value = "";
     PackedByteArray bytes;
+    Variant base;
+    Variant owner;
 
     void _free_pointer() override;
     void _update_pointer() override;
@@ -33,11 +36,20 @@ public:
     void set_value(const String& p_value);
     String get_value();
 
+    void set_seed(const String& p_value);
+    String get_seed();
+
     void set_bytes(const PackedByteArray& p_value);
     PackedByteArray get_bytes();
 
-    void set_unique(const bool p_value);
-    bool get_unique();
+    void set_type(const String p_value);
+    String get_type();
+
+    void set_base(const Variant p_value);
+    Variant get_base();
+
+    void set_owner(const Variant p_value);
+    Variant get_owner();
 
     ~Pubkey();
 };

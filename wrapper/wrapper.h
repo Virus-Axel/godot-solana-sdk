@@ -10,6 +10,8 @@ extern "C"{
 
     void *create_unique_pubkey();
     void *create_pubkey_from_array(const unsigned char* data);
+    void *create_pubkey_with_seed(const void* basePubkey, const char* seed, unsigned int seed_length, const void* owner_pubkey);
+
     void print_pubkey(const void*);
     void free_pubkey(const void*);
 

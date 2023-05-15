@@ -4,11 +4,31 @@
 #include <solana_sdk.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
+using internal::gde_interface;
+
 namespace godot{
 
 void Pubkey::_update_pointer(){
-    if (unique){
+    if (type == "UNIQUE"){
         data_pointer = create_unique_pubkey();
+    }
+    else if (type == "SEED"){
+        void *base_ptr = variant_to_type<Pubkey>(base);
+        if(base_ptr == nullptr){
+            gde_interface->print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 18, false);
+            return;
+        }
+
+        void *owner_ptr = variant_to_type<Pubkey>(owner);
+        if(owner_ptr == nullptr){
+            gde_interface->print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 24, false);
+            return;
+        }
+
+        data_pointer = create_pubkey_with_seed(base_ptr, (const char*) seed.to_utf8_buffer().ptr(), seed.length(), owner_ptr);
+        if(data_pointer == nullptr){
+            gde_interface->print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 30, false);
+        }
     }
     else if (bytes.size() == PUBKEY_LENGTH){
         data_pointer = create_pubkey_from_array(bytes.ptr());
@@ -24,8 +44,14 @@ void Pubkey::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_value", "p_value"), &Pubkey::set_value);
     ClassDB::bind_method(D_METHOD("get_bytes"), &Pubkey::get_bytes);
     ClassDB::bind_method(D_METHOD("set_bytes", "p_value"), &Pubkey::set_bytes);
-    ClassDB::bind_method(D_METHOD("get_unique"), &Pubkey::get_unique);
-    ClassDB::bind_method(D_METHOD("set_unique", "p_value"), &Pubkey::set_unique);
+    ClassDB::bind_method(D_METHOD("get_seed"), &Pubkey::get_seed);
+    ClassDB::bind_method(D_METHOD("set_seed", "p_value"), &Pubkey::set_seed);
+    ClassDB::bind_method(D_METHOD("get_type"), &Pubkey::get_type);
+    ClassDB::bind_method(D_METHOD("set_type", "p_value"), &Pubkey::set_type);
+    ClassDB::bind_method(D_METHOD("get_base"), &Pubkey::get_base);
+    ClassDB::bind_method(D_METHOD("set_base", "p_value"), &Pubkey::set_base);
+    ClassDB::bind_method(D_METHOD("get_owner"), &Pubkey::get_owner);
+    ClassDB::bind_method(D_METHOD("set_owner", "p_value"), &Pubkey::set_owner);
 }
 
 
@@ -33,39 +59,57 @@ bool Pubkey::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 	if (name == "value") {
 		set_value(p_value);
-		return true;
 	}
     else if(name == "bytes"){
         set_bytes(p_value);
-		return true;
     }
-    else if(name == "unique"){
-        set_unique(p_value);
-        return true;
+    else if(name == "seed"){
+        set_seed(p_value);
     }
-	return false;
+    else if(name == "type"){
+        set_type(p_value);
+    }
+    else if(name == "base"){
+        set_base(p_value);
+    }
+    else if(name == "owner"){
+        set_owner(p_value);
+    }
+    else{
+	    return false;
+    }
+    return true;
 }
 
 bool Pubkey::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
 	if (name == "value") {
 		r_ret = value;
-		return true;
 	}
     else if (name == "bytes") {
 		r_ret = bytes;
-		return true;
 	}
-    else if (name == "unique") {
-		r_ret = unique;
-		return true;
-	}
-	return false;
+    else if (name == "seed"){
+        r_ret = seed;
+    }
+    else if (name == "type"){
+        r_ret = type;
+    }
+    else if (name == "base"){
+        r_ret = base;
+    }
+    else if (name == "owner"){
+        r_ret = owner;
+    }
+    else{
+	    return false;
+    }
+    return true;
 }
 
 void Pubkey::set_value(const String& p_value){
     value = p_value;
-    unique = false;
+    type = "CUSTOM";
 
     // Update bytes accordingly.
     PackedByteArray decoded_value = SolanaSDK::bs58_decode(value);
@@ -84,9 +128,17 @@ String Pubkey::get_value(){
     return value;
 }
 
+void Pubkey::set_seed(const String& p_value){
+    seed = p_value;
+}
+
+String Pubkey::get_seed(){
+    return seed;
+}
+
 void Pubkey::set_bytes(const PackedByteArray& p_value){
     bytes = p_value;
-    unique = false;
+    type = "CUSTOM";
 
     // Do not feed zero bytes into encode function.
     if (bytes.size() == 0){
@@ -106,25 +158,51 @@ PackedByteArray Pubkey::get_bytes(){
     return bytes;
 }
 
-void Pubkey::set_unique(const bool p_value){
-    unique = p_value;
+void Pubkey::set_type(const String p_value){
+    type = p_value;
     notify_property_list_changed();
 }
 
-bool Pubkey::get_unique(){
-    return unique;
+String Pubkey::get_type(){
+    return type;
+}
+
+void Pubkey::set_base(const Variant p_value){
+    base = p_value;
+}
+Variant Pubkey::get_base(){
+    return base;
+}
+
+void Pubkey::set_owner(const Variant p_value){
+    owner = p_value;
+}
+Variant Pubkey::get_owner(){
+    return owner;
 }
 
 void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
-    PropertyUsageFlags visibility = PROPERTY_USAGE_DEFAULT;
+    PropertyUsageFlags seed_visibility = PROPERTY_USAGE_DEFAULT;
+    PropertyUsageFlags custom_visibility = PROPERTY_USAGE_DEFAULT;
 
-    // Hide other properties if key is unique.
-    if(unique){
-        visibility = PROPERTY_USAGE_NO_EDITOR;
+    p_list->push_back(PropertyInfo(Variant::STRING, "type", PROPERTY_HINT_ENUM, "UNIQUE,SEED,CUSTOM"));
+
+    if(type == "UNIQUE"){
+        seed_visibility = PROPERTY_USAGE_NO_EDITOR;
+        custom_visibility = PROPERTY_USAGE_NO_EDITOR;
     }
-    p_list->push_back(PropertyInfo(Variant::BOOL, "unique"));
-	p_list->push_back(PropertyInfo(Variant::STRING, "value", PROPERTY_HINT_NONE, "", visibility, ""));
-    p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytes", PROPERTY_HINT_NONE, "", visibility, ""));
+    else if(type == "SEED"){
+        custom_visibility = PROPERTY_USAGE_NO_EDITOR;
+    }
+    else if(type == "CUSTOM"){
+        seed_visibility = PROPERTY_USAGE_NO_EDITOR;
+    }
+
+    p_list->push_back(PropertyInfo(Variant::STRING, "seed", PROPERTY_HINT_NONE, "", seed_visibility, ""));
+    p_list->push_back(PropertyInfo(Variant::OBJECT, "base", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", seed_visibility, ""));
+    p_list->push_back(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", seed_visibility, ""));
+	p_list->push_back(PropertyInfo(Variant::STRING, "value", PROPERTY_HINT_NONE, "", custom_visibility, ""));
+    p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytes", PROPERTY_HINT_NONE, "", custom_visibility, ""));
 }
 
 Pubkey::Pubkey() {
