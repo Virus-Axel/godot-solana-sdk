@@ -4,6 +4,8 @@
 #include <solana_sdk.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
+using internal::gde_interface;
+
 namespace godot{
 
 void Pubkey::_update_pointer(){
@@ -11,8 +13,22 @@ void Pubkey::_update_pointer(){
         data_pointer = create_unique_pubkey();
     }
     else if (type == "SEED"){
-        
-        data_pointer = create_pubkey_with_seed(base, (const char*) seed.to_utf8_buffer().ptr(), seed.length(), owner);
+        void *base_ptr = variant_to_type<Pubkey>(base);
+        if(base_ptr == nullptr){
+            gde_interface->print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 18, false);
+            return;
+        }
+
+        void *owner_ptr = variant_to_type<Pubkey>(owner);
+        if(owner_ptr == nullptr){
+            gde_interface->print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 24, false);
+            return;
+        }
+
+        data_pointer = create_pubkey_with_seed(base_ptr, (const char*) seed.to_utf8_buffer().ptr(), seed.length(), owner_ptr);
+        if(data_pointer == nullptr){
+            gde_interface->print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 30, false);
+        }
     }
     else if (bytes.size() == PUBKEY_LENGTH){
         data_pointer = create_pubkey_from_array(bytes.ptr());
