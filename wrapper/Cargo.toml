@@ -9,6 +9,7 @@ edition = "2021"
 solana-sdk = "*"
 bs58 = "*"
 bincode = "*"
+spl-associated-token-account = "*"
 
 [lib]
 crate-type = ["staticlib"]
