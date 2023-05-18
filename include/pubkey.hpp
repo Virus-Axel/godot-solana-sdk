@@ -18,8 +18,12 @@ private:
     String seed = "";
     String value = "";
     PackedByteArray bytes;
+
     Variant base;
     Variant owner;
+
+    Variant wallet_address;
+    Variant token_mint_address;
 
     void _free_pointer() override;
     void _update_pointer() override;
@@ -50,6 +54,12 @@ public:
 
     void set_owner(const Variant p_value);
     Variant get_owner();
+
+    void set_wallet_address(const Variant p_value);
+    Variant get_wallet_address();
+
+    void set_token_mint_address(const Variant p_value);
+    Variant get_token_mint_address();
 
     ~Pubkey();
 };

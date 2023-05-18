@@ -5,6 +5,8 @@ extern crate alloc;
 use solana_sdk::pubkey::Pubkey;
 use alloc::{boxed::Box, vec::Vec};
 
+use spl_associated_token_account::get_associated_token_address;
+
 #[no_mangle]
 pub extern "C" fn create_unique_pubkey() -> *mut Pubkey{
     Box::into_raw(Box::new(Pubkey::new_unique()))
@@ -36,6 +38,16 @@ pub extern "C" fn create_pubkey_with_seed(base: *mut Pubkey, seed: *mut c_char, 
         Ok(v) => v,
         Err(_) => return core::ptr::null(),
     };
+
+    Box::into_raw(Box::new(ret))
+}
+
+#[no_mangle]
+pub extern "C" fn create_associated_token_account(wallet_key: *mut Pubkey, token_mint: *mut Pubkey) -> *const Pubkey{
+    let wallet_pubkey = unsafe{*wallet_key};
+    let token_mint_key = unsafe{*token_mint};
+
+    let ret = get_associated_token_address(&wallet_pubkey, &token_mint_key);
 
     Box::into_raw(Box::new(ret))
 }

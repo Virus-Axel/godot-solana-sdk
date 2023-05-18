@@ -30,6 +30,24 @@ void Pubkey::_update_pointer(){
             gde_interface->print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 30, false);
         }
     }
+    else if (type == "ASSOCIATED_TOKEN"){
+        void *wallet_address_ptr = variant_to_type<Pubkey>(wallet_address);
+        if(wallet_address_ptr == nullptr){
+            gde_interface->print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 36, false);
+            return;
+        }
+
+        void *token_mint_address_ptr = variant_to_type<Pubkey>(token_mint_address);
+        if(token_mint_address_ptr == nullptr){
+            gde_interface->print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 42, false);
+            return;
+        }
+
+        data_pointer = create_associated_token_account(wallet_address_ptr, token_mint_address_ptr);
+        if(data_pointer == nullptr){
+            gde_interface->print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 48, false);
+        }
+    }
     else if (bytes.size() == PUBKEY_LENGTH){
         data_pointer = create_pubkey_from_array(bytes.ptr());
     }
@@ -52,6 +70,10 @@ void Pubkey::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_base", "p_value"), &Pubkey::set_base);
     ClassDB::bind_method(D_METHOD("get_owner"), &Pubkey::get_owner);
     ClassDB::bind_method(D_METHOD("set_owner", "p_value"), &Pubkey::set_owner);
+    ClassDB::bind_method(D_METHOD("get_wallet_address"), &Pubkey::get_wallet_address);
+    ClassDB::bind_method(D_METHOD("set_wallet_address", "p_value"), &Pubkey::set_wallet_address);
+    ClassDB::bind_method(D_METHOD("get_token_mint_address"), &Pubkey::get_token_mint_address);
+    ClassDB::bind_method(D_METHOD("set_token_mint_address", "p_value"), &Pubkey::set_token_mint_address);
 }
 
 
@@ -74,6 +96,12 @@ bool Pubkey::_set(const StringName &p_name, const Variant &p_value) {
     }
     else if(name == "owner"){
         set_owner(p_value);
+    }
+    else if (name == "wallet_address"){
+        set_wallet_address(p_value);
+    }
+    else if (name == "token_mint_address"){
+        set_token_mint_address(p_value);
     }
     else{
 	    return false;
@@ -101,6 +129,12 @@ bool Pubkey::_get(const StringName &p_name, Variant &r_ret) const {
     else if (name == "owner"){
         r_ret = owner;
     }
+    else if (name == "wallet_address"){
+        r_ret = wallet_address;
+    }
+    else if (name == "token_mint_address"){
+        r_ret = token_mint_address;
+    }
     else{
 	    return false;
     }
@@ -109,7 +143,6 @@ bool Pubkey::_get(const StringName &p_name, Variant &r_ret) const {
 
 void Pubkey::set_value(const String& p_value){
     value = p_value;
-    type = "CUSTOM";
 
     // Update bytes accordingly.
     PackedByteArray decoded_value = SolanaSDK::bs58_decode(value);
@@ -138,7 +171,6 @@ String Pubkey::get_seed(){
 
 void Pubkey::set_bytes(const PackedByteArray& p_value){
     bytes = p_value;
-    type = "CUSTOM";
 
     // Do not feed zero bytes into encode function.
     if (bytes.size() == 0){
@@ -181,21 +213,35 @@ Variant Pubkey::get_owner(){
     return owner;
 }
 
+void Pubkey::set_wallet_address(const Variant p_value){
+    wallet_address = p_value;
+}
+Variant Pubkey::get_wallet_address(){
+    return wallet_address;
+}
+
+void Pubkey::set_token_mint_address(const Variant p_value){
+    token_mint_address = p_value;
+}
+Variant Pubkey::get_token_mint_address(){
+    return token_mint_address;
+}
+
 void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
-    PropertyUsageFlags seed_visibility = PROPERTY_USAGE_DEFAULT;
-    PropertyUsageFlags custom_visibility = PROPERTY_USAGE_DEFAULT;
+    PropertyUsageFlags seed_visibility = PROPERTY_USAGE_NO_EDITOR;
+    PropertyUsageFlags custom_visibility = PROPERTY_USAGE_NO_EDITOR;
+    PropertyUsageFlags atoken_visibility = PROPERTY_USAGE_NO_EDITOR;
 
-    p_list->push_back(PropertyInfo(Variant::STRING, "type", PROPERTY_HINT_ENUM, "UNIQUE,SEED,CUSTOM"));
+    p_list->push_back(PropertyInfo(Variant::STRING, "type", PROPERTY_HINT_ENUM, "UNIQUE,SEED,CUSTOM,ASSOCIATED_TOKEN"));
 
-    if(type == "UNIQUE"){
-        seed_visibility = PROPERTY_USAGE_NO_EDITOR;
-        custom_visibility = PROPERTY_USAGE_NO_EDITOR;
-    }
-    else if(type == "SEED"){
-        custom_visibility = PROPERTY_USAGE_NO_EDITOR;
+    if(type == "SEED"){
+        seed_visibility = PROPERTY_USAGE_DEFAULT;
     }
     else if(type == "CUSTOM"){
-        seed_visibility = PROPERTY_USAGE_NO_EDITOR;
+        custom_visibility = PROPERTY_USAGE_DEFAULT;
+    }
+    else if(type == "ASSOCIATED_TOKEN"){
+        atoken_visibility = PROPERTY_USAGE_DEFAULT;
     }
 
     p_list->push_back(PropertyInfo(Variant::STRING, "seed", PROPERTY_HINT_NONE, "", seed_visibility, ""));
@@ -203,6 +249,8 @@ void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
     p_list->push_back(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", seed_visibility, ""));
 	p_list->push_back(PropertyInfo(Variant::STRING, "value", PROPERTY_HINT_NONE, "", custom_visibility, ""));
     p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "bytes", PROPERTY_HINT_NONE, "", custom_visibility, ""));
+    p_list->push_back(PropertyInfo(Variant::OBJECT, "wallet_address", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", atoken_visibility, ""));
+    p_list->push_back(PropertyInfo(Variant::OBJECT, "token_mint_address", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", atoken_visibility, ""));
 }
 
 Pubkey::Pubkey() {
