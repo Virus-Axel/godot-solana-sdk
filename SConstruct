@@ -42,14 +42,14 @@ def build_in_container(platform, container_path, architecture, keep_container=Fa
 
     image_id = image_id_from_repo_name(REPOSITORY_NAME[platform])
 
-    env.Execute('podman run -d -it --name test_container ' + image_id)
-    env.Execute('podman cp . test_container:/root/')
+    env.Execute('podman run --mount type=bind,source=.,target=/root/godot-solana-sdk -d -it --name test_container ' + image_id)
+    #env.Execute('podman cp . test_container:/root/')
     
     build_command = get_build_command(platform, architecture)
     
     env.Execute('podman exec -w /root/godot-solana-sdk/ test_container ' + build_command)
 
-    env.Execute('podman cp test_container:/root/godot-solana-sdk/example/bin/ .')
+    #env.Execute('podman cp test_container:/root/godot-solana-sdk/example/bin/ .')
     
     if not keep_container:
         env.Execute('podman rm -f test_container')
@@ -162,8 +162,10 @@ sources = Glob("src/*.cpp")
 
 if env["platform"] == "macos":
     library = env.SharedLibrary(
-        "example/bin/lib" + LIBRARY_NAME + ".{}.{}.framework/lib" + LIBRARY_NAME + ".{}.{}".format(
-            env["platform"], env["target"], env["platform"], env["target"]
+        "example/bin/lib" + LIBRARY_NAME + ".{}.{}.framework/lib".format(
+            env["platform"], env["target"],
+        ) + LIBRARY_NAME + ".{}.{}".format(
+            env["platform"], env["target"]
         ),
         source=sources,
     )
