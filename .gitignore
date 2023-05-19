@@ -13,6 +13,9 @@ Cargo.lock
 *.dblite
 **/*.os
 
+*.bc
+
+example
 example/SolanaSDK.gd
 example/solana_sdk.tscn
 example/addons/

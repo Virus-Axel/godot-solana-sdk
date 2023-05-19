@@ -1,0 +1,13 @@
+[configuration]
+
+entry_symbol = "solana_sdk_library_init"
+
+[libraries]
+
+linux.64="libgodot-solana-sdk.linux.template_release.x86_64.so"
+linux.template_release.64="libgodot-solana-sdk.linux.template_release.x86_64.so"
+ios.template_release.arm64="libgodot-solana-sdk.ios.template_release.arm64.dylib"
+windows.template_release.x86_64="libgodot-solana-sdk.windows.template_release.x86_64.so"
+macos.template_release.64="libgodot-solana-sdk.macos.template_release.framework"
+web.template_release.wasm32="libgodot-solana-sdk.javascript.template_release.wasm32.wasm"
+android.template_release.arm64="libgodot-solana-sdk.android.template_release.arm64.so"
