@@ -82,8 +82,8 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
 
 void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
     p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey"));
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "instructions", PROPERTY_HINT_RESOURCE_TYPE, "Instruction"));
-    p_list->push_back(PropertyInfo(Variant::ARRAY, "signers", PROPERTY_HINT_NONE));
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "instructions", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Instruction")));
+    p_list->push_back(PropertyInfo(Variant::ARRAY, "signers", PROPERTY_HINT_NONE, MAKE_RESOURCE_TYPE_HINT("Keypair")));
 }
 
 Transaction::Transaction() {
@@ -104,14 +104,6 @@ void Transaction::create_signed_with_payer(Array instructions, Variant payer, Ar
 
 void Transaction::set_instructions(const Array& p_value){
     instructions = p_value;
-
-    // Check for new items and allocate Instruction objects.
-    for(int i = 0; i < instructions.size(); i++){
-        if(instructions[i].get_type() == Variant::NIL){
-            Ref<Instruction> resource = memnew(Instruction);
-            instructions[i] = Variant(resource);
-        }
-    }
 }
 
 Array Transaction::get_instructions(){
@@ -128,15 +120,8 @@ Variant Transaction::get_payer(){
 
 void Transaction::set_signers(const Array& p_value){
     signers = p_value;
-
-    // Check for new items and allocate new Keypair objects.
-    for(int i = 0; i < signers.size(); i++){
-        if(signers[i].get_type() == Variant::NIL){
-            Ref<Keypair> resource = memnew(Keypair);
-            signers[i] = Variant(resource);
-        }
-    }
 }
+
 Array Transaction::get_signers(){
     return signers;
 }
