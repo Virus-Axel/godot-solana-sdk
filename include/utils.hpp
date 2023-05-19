@@ -3,6 +3,8 @@
 
 #include <godot_cpp/classes/node.hpp>
 
+#define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
+
 
 using namespace godot;
 

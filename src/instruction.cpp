@@ -1,5 +1,7 @@
 #include "instruction.hpp"
 
+#include "utils.hpp"
+
 #include <godot_cpp/core/class_db.hpp>
 
 namespace godot{
@@ -43,7 +45,7 @@ void Instruction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_accounts", "p_value"), &Instruction::set_accounts);
     ClassDB::add_property("Instruction", PropertyInfo(Variant::OBJECT, "program_id", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", PROPERTY_USAGE_DEFAULT), "set_program_id", "get_program_id");
     ClassDB::add_property("Instruction", PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data"), "set_data", "get_data");
-    ClassDB::add_property("Instruction", PropertyInfo(Variant::ARRAY, "accounts", PROPERTY_HINT_ARRAY_TYPE, "AccountMeta"), "set_accounts", "get_accounts");}
+    ClassDB::add_property("Instruction", PropertyInfo(Variant::ARRAY, "accounts", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("AccountMeta")), "set_accounts", "get_accounts");}
 
 Instruction::Instruction() {
 }
@@ -64,14 +66,6 @@ PackedByteArray Instruction::get_data(){
 
 void Instruction::set_accounts(const TypedArray<AccountMeta>& p_value){
     accounts = p_value;
-
-    // If we have a new item, create an AccountMeta object.
-    for(int i = 0; i < accounts.size(); i++){
-        if(accounts[i].get_type() == Variant::NIL){
-            Ref<AccountMeta> resource = memnew(AccountMeta);
-            accounts[i] = Variant(resource);
-        }
-    }
 }
 
 TypedArray<AccountMeta> Instruction::get_accounts(){

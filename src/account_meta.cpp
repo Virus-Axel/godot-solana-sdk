@@ -1,6 +1,7 @@
 #include "account_meta.hpp"
 
 #include <godot_cpp/core/class_db.hpp>
+#include <keypair.hpp>
 
 namespace godot{
 
@@ -13,7 +14,7 @@ void AccountMeta::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_pubkey", "p_value"), &AccountMeta::set_pubkey);
     ClassDB::add_property("AccountMeta", PropertyInfo(Variant::BOOL, "is_signer"), "set_is_signer", "get_is_signer");
     ClassDB::add_property("AccountMeta", PropertyInfo(Variant::BOOL, "writeable"), "set_writeable", "get_writeable");
-    ClassDB::add_property("AccountMeta", PropertyInfo(Variant::OBJECT, "key", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", PROPERTY_USAGE_DEFAULT), "set_pubkey", "get_pubkey");
+    ClassDB::add_property("AccountMeta", PropertyInfo(Variant::OBJECT, "key", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair", PROPERTY_USAGE_DEFAULT), "set_pubkey", "get_pubkey");
     ClassDB::bind_method(D_METHOD("create_new", "account_key", "is_signer", "writeable"), &AccountMeta::create_new);
 }
 
@@ -22,7 +23,22 @@ void AccountMeta::_update_pointer(){
         return;
     }
 
-    void *key_ref = variant_to_type<Pubkey>(key);
+    void *key_ref = nullptr;
+    Object *object_cast = key;
+    Pubkey temp_key;
+    if(object_cast->is_class("Pubkey")){
+        key_ref = variant_to_type<Pubkey>(key);
+    }
+    else if(object_cast->is_class("Keypair")){
+        // Make sure we have a pubkey in the end.
+        Keypair *keypair = Object::cast_to<Keypair>(object_cast);
+        temp_key.set_type("CUSTOM");
+        temp_key.set_value(keypair->get_public_value());
+        key_ref = &temp_key;
+    }
+    else{
+        return;
+    }
 
     if (key_ref == nullptr){
         return;
