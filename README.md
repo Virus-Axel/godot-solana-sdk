@@ -28,7 +28,7 @@ The AccountMeta consists of an account key (A pubkey or a keypair) and informati
 ![Screenshot from 2023-05-20 17-49-50](https://github.com/Virus-Axel/godot-solana-sdk/assets/14315050/ccd8b08a-a134-48ee-8623-0cc049a6b6fa)
 
 ## Pubkey
-The pubkey is used for many things. It can be created from seeds, from associated tokens and by setting the base58 value or bytes yourself.
+The pubkey is used for many things. It can be created from seeds, from associated tokens and by setting the base58 value or bytes yourself.  
 ![Screenshot from 2023-05-20 17-50-58](https://github.com/Virus-Axel/godot-solana-sdk/assets/14315050/7eea01f5-f99a-4174-a27e-9a860d1de82f)
 
 ## Keypair
