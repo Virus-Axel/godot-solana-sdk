@@ -1,4 +1,4 @@
-use core::{mem, ffi::{c_char, c_uint}};
+use core::{mem, ffi::{c_char, c_uint, c_uchar}};
 
 extern crate alloc;
 
@@ -57,4 +57,12 @@ pub extern "C" fn free_pubkey(key: *mut Pubkey){
     unsafe{
         drop(Box::from_raw(key));
     }
+}
+
+#[no_mangle]
+pub extern "C" fn get_pubkey_bytes(key: *mut Pubkey, bytes: *mut c_uchar){
+    let mut pubkey = unsafe{*key};
+    unsafe{
+        core::ptr::copy_nonoverlapping(pubkey.as_mut().as_ptr(), bytes as *mut u8, 32);
+    };
 }

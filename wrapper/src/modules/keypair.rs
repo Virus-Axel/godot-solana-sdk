@@ -1,5 +1,8 @@
 use solana_sdk::signer::keypair::Keypair;
-use core::mem;
+use core::{
+    mem,
+    ffi::c_uchar,
+};
 
 extern crate alloc;
 
@@ -22,6 +25,14 @@ pub extern "C" fn create_keypair_from_bytes(bytes: *mut u8) -> *mut Keypair{
     mem::forget(arr);
 
     Box::into_raw(Box::new(ret))
+}
+
+#[no_mangle]
+pub extern "C" fn get_keypair_bytes(key: *const Keypair, bytes: *mut c_uchar){
+    let keypair = unsafe{&*key};
+    unsafe{
+        core::ptr::copy_nonoverlapping(keypair.to_bytes().as_ptr(), bytes as *mut u8, 32);
+    };
 }
 
 #[no_mangle]
