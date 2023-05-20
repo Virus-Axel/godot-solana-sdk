@@ -125,7 +125,24 @@ void Keypair::set_public_value(const String& p_value){
 }
 
 String Keypair::get_public_value(){
-    return public_value;
+    if(unique){
+        void* key = to_ptr();
+        if(key == nullptr){
+            internal::gde_interface->print_warning("Invalid keypair", "get_public_value", "keypair.cpp", 132, false);
+            return "";
+        }
+        unsigned char keypair_bytes[64];
+        get_keypair_bytes(key, keypair_bytes);
+        PackedByteArray keypair_array;
+        keypair_array.resize(KEY_LENGTH);
+        for(int i = 0; i < KEY_LENGTH; i++){
+            keypair_array[KEY_LENGTH + i] = keypair_bytes[KEY_LENGTH + i];
+        }
+        return SolanaSDK::bs58_encode(keypair_array);
+    }
+    else{
+        return public_value;
+    }
 }
 
 void Keypair::set_public_bytes(const PackedByteArray& p_value){
@@ -149,7 +166,24 @@ void Keypair::set_public_bytes(const PackedByteArray& p_value){
     }
 }
 PackedByteArray Keypair::get_public_bytes(){
-    return public_bytes;
+    if(unique){
+        void* key = to_ptr();
+        if(key == nullptr){
+            internal::gde_interface->print_warning("Invalid keypair", "get_public_bytes", "keypair.cpp", 172, false);
+            return public_bytes;
+        }
+        unsigned char keypair_bytes[64];
+        get_keypair_bytes(key, keypair_bytes);
+        PackedByteArray keypair_array;
+        keypair_array.resize(KEY_LENGTH);
+        for(int i = 0; i < KEY_LENGTH; i++){
+            keypair_array[KEY_LENGTH + i] = keypair_bytes[KEY_LENGTH + i];
+        }
+        return keypair_array;
+    }
+    else{
+        return public_bytes;
+    }
 }
 
 void Keypair::set_private_value(const String& p_value){
@@ -170,7 +204,24 @@ void Keypair::set_private_value(const String& p_value){
 }
 
 String Keypair::get_private_value(){
-    return private_value;
+    if(unique){
+        void* key = to_ptr();
+        if(key == nullptr){
+            internal::gde_interface->print_warning("Invalid keypair", "get_private_value", "keypair.cpp", 210, false);
+            return "";
+        }
+        unsigned char keypair_bytes[64];
+        get_keypair_bytes(key, keypair_bytes);
+        PackedByteArray keypair_array;
+        keypair_array.resize(KEY_LENGTH);
+        for(int i = 0; i < KEY_LENGTH; i++){
+            keypair_array[i] = keypair_bytes[i];
+        }
+        return SolanaSDK::bs58_encode(keypair_array);
+    }
+    else{
+        return private_value;
+    }
 }
 
 void Keypair::set_private_bytes(const PackedByteArray& p_value){
@@ -193,7 +244,24 @@ void Keypair::set_private_bytes(const PackedByteArray& p_value){
 }
 
 PackedByteArray Keypair::get_private_bytes(){
-    return private_bytes;
+    if(unique){
+        void* key = to_ptr();
+        if(key == nullptr){
+            internal::gde_interface->print_warning("Invalid keypair", "get_private_bytes", "keypair.cpp", 250, false);
+            return private_bytes;
+        }
+        unsigned char keypair_bytes[64];
+        get_keypair_bytes(key, keypair_bytes);
+        PackedByteArray keypair_array;
+        keypair_array.resize(KEY_LENGTH);
+        for(int i = 0; i < KEY_LENGTH; i++){
+            keypair_array[i] = keypair_bytes[i];
+        }
+        return keypair_array;
+    }
+    else{
+        return private_bytes;
+    }
 }
 
 void Keypair::set_unique(const bool p_value){

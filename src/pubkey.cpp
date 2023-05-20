@@ -33,23 +33,29 @@ void Pubkey::_update_pointer(){
     else if (type == "ASSOCIATED_TOKEN"){
         void *wallet_address_ptr = variant_to_type<Pubkey>(wallet_address);
         if(wallet_address_ptr == nullptr){
-            gde_interface->print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 36, false);
+            gde_interface->print_warning("Bad wallet address pubkey", "_update_pointer", "pubkey.cpp", 36, false);
             return;
         }
 
         void *token_mint_address_ptr = variant_to_type<Pubkey>(token_mint_address);
         if(token_mint_address_ptr == nullptr){
-            gde_interface->print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 42, false);
+            gde_interface->print_warning("Bad token mint pubkey", "_update_pointer", "pubkey.cpp", 42, false);
             return;
         }
 
         data_pointer = create_associated_token_account(wallet_address_ptr, token_mint_address_ptr);
         if(data_pointer == nullptr){
+            std::cout << "hej" << std::endl;
             gde_interface->print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 48, false);
+            std::cout << "hej" << std::endl;
         }
     }
     else if (bytes.size() == PUBKEY_LENGTH){
         data_pointer = create_pubkey_from_array(bytes.ptr());
+    }
+    else{
+        gde_interface->print_warning("Unknown pubkey type", "_update_pointer", "pubkey.cpp", 57, false);
+        data_pointer = nullptr;
     }
 }
 
@@ -158,7 +164,27 @@ void Pubkey::set_value(const String& p_value){
 }
 
 String Pubkey::get_value(){
-    return value;
+    if(type == "CUSTOM"){
+        return value;
+    }
+    else{
+        void* key = to_ptr();
+        String ret = "";
+        if (key == nullptr){
+            internal::gde_interface->print_warning("Invalid Pubkey", "get_value", "pubkey.cpp", 167, false);
+        }
+        else{
+            PackedByteArray byte_array;
+            byte_array.resize(32);
+            unsigned char key_bytes[32];
+            get_pubkey_bytes(key, key_bytes);
+            for(int i = 0; i < 32; i++){
+                byte_array[i] = key_bytes[i];
+            }
+            ret = SolanaSDK::bs58_encode(byte_array);
+        }
+        return ret;
+    }
 }
 
 void Pubkey::set_seed(const String& p_value){
@@ -185,9 +211,28 @@ void Pubkey::set_bytes(const PackedByteArray& p_value){
     if (bytes.size() != 32){
         internal::gde_interface->print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 14, false);
     }
+    
 }
 PackedByteArray Pubkey::get_bytes(){
-    return bytes;
+    if (type == "CUSTOM"){
+        return bytes;
+    }
+    else{
+        void* key = to_ptr();
+        if (key == nullptr){
+            internal::gde_interface->print_warning("Invalid Pubkey", "get_bytes", "pubkey.cpp", 218, false);
+            return bytes;
+        }
+        PackedByteArray byte_array;
+        byte_array.resize(32);
+        unsigned char key_bytes[32];
+        get_pubkey_bytes(key, key_bytes);
+        std::cout << "We are here" << std::endl;
+        for(int i = 0; i < 32; i++){
+            byte_array[i] = key_bytes[i];
+        }
+        return byte_array;
+    }
 }
 
 void Pubkey::set_type(const String p_value){

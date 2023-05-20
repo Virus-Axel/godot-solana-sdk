@@ -13,6 +13,8 @@ extern "C"{
     void *create_pubkey_with_seed(const void* basePubkey, const char* seed, unsigned int seed_length, const void* owner_pubkey);
     void *create_associated_token_account(const void* basePubkey, const void* owner_pubkey);
 
+    void get_pubkey_bytes(const void* key, unsigned char* bytes);
+
     void print_pubkey(const void*);
     void free_pubkey(const void*);
 
@@ -22,6 +24,9 @@ extern "C"{
 
     void *create_keypair();
     void *create_keypair_from_bytes(const unsigned char* data);
+
+    void get_keypair_bytes(const void* key, unsigned char* bytes);
+
     void free_keypair(const void*);
 
     void *create_account(uint64_t lamports, uint64_t space, const void* owner);

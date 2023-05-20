@@ -29,7 +29,7 @@ PackedByteArray SolanaSDK::bs58_decode(String str){
 
 String SolanaSDK::bs58_encode(PackedByteArray input){
 	PackedByteArray result;
-	char buffer[input.size()];
+	char buffer[input.size() * 2];
 	unsigned int resultlen = ::bs58_encode((const char*) input.ptr(), input.size(), buffer);
 	result.resize(resultlen);
 	for(unsigned int i = 0; i < resultlen; i++){
