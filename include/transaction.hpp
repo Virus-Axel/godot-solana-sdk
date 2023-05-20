@@ -48,6 +48,7 @@ public:
 
     PackedByteArray serialize();
     Error sign(const Variant &latest_blockhash);
+    Variant sign_and_send();
     Error partially_sign(const Variant& latest_blockhash);
 
     void create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash);

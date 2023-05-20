@@ -1,10 +1,12 @@
 #include "transaction.hpp"
 #include "instruction.hpp"
 #include "keypair.hpp"
+#include "pubkey.hpp"
 
 #include "utils.hpp"
 
 #include <godot_cpp/core/class_db.hpp>
+#include <solana_sdk.hpp>
 
 namespace godot{
 
@@ -44,6 +46,7 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
     ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
     ClassDB::bind_method(D_METHOD("sign", "latest_blockhash"), &Transaction::sign);
+    ClassDB::bind_method(D_METHOD("sign_and_send"), &Transaction::sign_and_send);
     ClassDB::bind_method(D_METHOD("partially_sign", "latest_blockhash"), &Transaction::partially_sign);
 }
 
@@ -81,7 +84,7 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
 }
 
 void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
-    p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey"));
+    p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair"));
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "instructions", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Instruction")));
     p_list->push_back(PropertyInfo(Variant::ARRAY, "signers", PROPERTY_HINT_NONE, MAKE_RESOURCE_TYPE_HINT("Keypair")));
 }
@@ -150,8 +153,48 @@ PackedByteArray Transaction::serialize(){
     }
 }
 
+Variant Transaction::sign_and_send(){
+    const String hash_string = SolanaSDK::get_latest_blockhash();
+    Hash hash;
+    hash.set_value(hash_string);
+
+    // Get Hash and validate it.
+    void* latest_blockhash_ptr = hash.to_ptr();
+    if(latest_blockhash_ptr == nullptr){
+        gde_interface->print_warning("Provided hash is invalid.", "sign", "transaction.cpp", 179, false);
+        return Error::ERR_INVALID_PARAMETER;
+    }
+
+    // Get transaction pointer and validate is.
+    void* tx = to_ptr();
+    if (tx == nullptr){
+        return Error::ERR_INVALID_DATA;
+    }
+
+    // Get array of pointers to signers
+    void* signer_pointers[signers.size()];
+    if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
+        gde_interface->print_warning("Bad signer array", "sign", "transaction.cpp", 192, false);
+        return Error::ERR_INVALID_DATA;
+    }
+
+    int status = sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
+
+    // Check status from rust library.
+    if (status != 0){
+        gde_interface->print_warning("Unknown signing error", "sign", "transaction.cpp", 198, false);
+        return Error::ERR_INVALID_DATA;
+    }
+
+    PackedByteArray serialized_bytes = serialize();
+
+    return SolanaSDK::send_transaction(encode64(serialized_bytes));
+
+    return OK;
+}
+
 Error Transaction::sign(const Variant& latest_blockhash){
-    // Check Variant type.
+
     if (latest_blockhash.get_type() != Variant::OBJECT){
         gde_interface->print_warning("Latest Blockhash must be a Hash object", "sign", "transaction.cpp", 170, false);
         return Error::ERR_INVALID_PARAMETER;
@@ -169,6 +212,12 @@ Error Transaction::sign(const Variant& latest_blockhash){
     if (tx == nullptr){
         return Error::ERR_INVALID_DATA;
     }
+
+    std::cout << Object::cast_to<Keypair>(Object::cast_to<AccountMeta>(Object::cast_to<Instruction>(instructions[0])->get_accounts()[0])->get_pubkey())->get_public_value().to_utf8_buffer().ptr() << std::endl;
+
+    std::cout << "signer key is: " << std::endl;
+    std::cout << Object::cast_to<Keypair>(signers[0])->get_public_value().to_utf8_buffer().ptr() << std::endl;
+    std::cout << Object::cast_to<Keypair>(signers[0])->get_private_value().to_utf8_buffer().ptr() << std::endl;
 
     // Get array of pointers to signers
     void* signer_pointers[signers.size()];

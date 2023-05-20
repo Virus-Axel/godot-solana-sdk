@@ -2,6 +2,7 @@
 #define GDEXAMPLE_H
 
 #include <godot_cpp/classes/node.hpp>
+#include <hash.hpp>
 
 namespace godot {
 
@@ -17,6 +18,8 @@ public:
     SolanaSDK();
     static PackedByteArray bs58_decode(String str);
     static String bs58_encode(PackedByteArray input);
+    static String get_latest_blockhash();
+    static Variant send_transaction(const String& transaction);
     ~SolanaSDK();
 };
 }

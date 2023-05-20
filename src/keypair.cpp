@@ -119,7 +119,7 @@ void Keypair::set_public_value(const String& p_value){
     if(decoded_value.is_empty() && public_value.length() != 0){
         internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "keypair.cpp", 119, false);
     }
-    else if (decoded_value.size() != 32){
+    else if (decoded_value.size() != KEY_LENGTH){
         internal::gde_interface->print_warning("Public key must be 32 bytes", "_set", "keypair.cpp", 122, false);
     }
 }
@@ -136,7 +136,7 @@ String Keypair::get_public_value(){
         PackedByteArray keypair_array;
         keypair_array.resize(KEY_LENGTH);
         for(int i = 0; i < KEY_LENGTH; i++){
-            keypair_array[KEY_LENGTH + i] = keypair_bytes[KEY_LENGTH + i];
+            keypair_array[i] = keypair_bytes[KEY_LENGTH + i];
         }
         return SolanaSDK::bs58_encode(keypair_array);
     }
@@ -161,7 +161,7 @@ void Keypair::set_public_bytes(const PackedByteArray& p_value){
     }
 
     // Print warning if key length is bad.
-    if (public_bytes.size() != 32){
+    if (public_bytes.size() != KEY_LENGTH){
         internal::gde_interface->print_warning("Public key must be 32 bytes", "_set", "pubkey.cpp", 147, false);
     }
 }
@@ -177,7 +177,8 @@ PackedByteArray Keypair::get_public_bytes(){
         PackedByteArray keypair_array;
         keypair_array.resize(KEY_LENGTH);
         for(int i = 0; i < KEY_LENGTH; i++){
-            keypair_array[KEY_LENGTH + i] = keypair_bytes[KEY_LENGTH + i];
+            std::cout << (int)keypair_bytes[KEY_LENGTH + i] << std::endl;
+            keypair_array[i] = keypair_bytes[KEY_LENGTH + i];
         }
         return keypair_array;
     }
@@ -215,6 +216,7 @@ String Keypair::get_private_value(){
         PackedByteArray keypair_array;
         keypair_array.resize(KEY_LENGTH);
         for(int i = 0; i < KEY_LENGTH; i++){
+            std::cout << (int)keypair_bytes[KEY_LENGTH + i] << std::endl;
             keypair_array[i] = keypair_bytes[i];
         }
         return SolanaSDK::bs58_encode(keypair_array);

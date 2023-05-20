@@ -5,6 +5,8 @@
 
 namespace godot{
 
+using internal::gde_interface;
+
 void AccountMeta::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_is_signer"), &AccountMeta::get_is_signer);
     ClassDB::bind_method(D_METHOD("set_is_signer", "p_value"), &AccountMeta::set_is_signer);
@@ -31,16 +33,20 @@ void AccountMeta::_update_pointer(){
     }
     else if(object_cast->is_class("Keypair")){
         // Make sure we have a pubkey in the end.
-        Keypair *keypair = Object::cast_to<Keypair>(object_cast);
+        Keypair *keypair = Object::cast_to<Keypair>(key);
         temp_key.set_type("CUSTOM");
         temp_key.set_value(keypair->get_public_value());
-        key_ref = &temp_key;
+        key_ref = temp_key.to_ptr();
+        std::cout << "alalalala" << std::endl;
+        //std::cout << ((Pubkey*)key_ref)->get_value().to_utf8_buffer().ptr() << std::endl;
     }
     else{
+        gde_interface->print_warning("Account Meta does not have a valid key", "_update_pointer", "account_meta.cpp", 44, false);
         return;
     }
 
     if (key_ref == nullptr){
+        gde_interface->print_warning("Account Meta does not have a valid key", "_update_pointer", "account_meta.cpp", 50, false);
         return;
     }
 
@@ -48,7 +54,7 @@ void AccountMeta::_update_pointer(){
 }
 
 void AccountMeta::_free_pointer(){
-    free_account(data_pointer);
+    free_account_meta(data_pointer);
 }
 
 void AccountMeta::set_pubkey(const Variant &p_value) {
