@@ -59,12 +59,13 @@ def build_in_container(platform, container_path, architecture, keep_container=Fa
 
 
 def build_all(env, container_path, keep_images):
-    build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
-    build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
-    build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images)
-    build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
-    build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
-    build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
+    pass
+    #build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
+    #build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
+    #build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images)
+    #build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
+    #build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
+    #build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
 
 home_directory = Path.home()
 cargo_build_command = str(home_directory) + '/.cargo/bin/cargo build'
@@ -160,22 +161,6 @@ env.Append(CPPPATH=["include/"])
 sources = Glob("src/*.cpp")
 
 
-if env["platform"] == "macos":
-    library = env.SharedLibrary(
-        "bin/lib" + LIBRARY_NAME + ".{}.{}.framework/lib".format(
-            env["platform"], env["target"],
-        ) + LIBRARY_NAME + ".{}.{}".format(
-            env["platform"], env["target"]
-        ),
-        source=sources,
-    )
-else:
-    library = env.SharedLibrary(
-        "bin/lib" + LIBRARY_NAME + "{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-        source=sources,
-    )
-
-
 # Handle the container build
 if env.GetOption('container_build'):
     keep_images = False
@@ -193,4 +178,21 @@ if env.GetOption('container_build'):
     else:
         build_all(env, CONTAINER_BUILD_PATH, keep_images)
 
-Default(library)
+else:
+
+    if env["platform"] == "macos":
+        library = env.SharedLibrary(
+            "bin/lib" + LIBRARY_NAME + ".{}.{}.framework/lib".format(
+                env["platform"], env["target"],
+            ) + LIBRARY_NAME + ".{}.{}".format(
+                env["platform"], env["target"]
+            ),
+            source=sources,
+        )
+    else:
+        library = env.SharedLibrary(
+            "bin/lib" + LIBRARY_NAME + "{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+            source=sources,
+        )
+
+    Default(library)
