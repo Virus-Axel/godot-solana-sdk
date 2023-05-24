@@ -7,6 +7,17 @@ from pathlib import Path
 CONTAINER_BUILD_PATH = "build-containers-with-rust"
 LIBRARY_NAME = "godot-solana-sdk"
 
+target_arg = "";
+home_directory = Path.home()
+cargo_build_command = str(home_directory) + '/.cargo/bin/cargo build'
+linker_settings = ""
+
+def build_rustlib(target, source, env):
+    env.Execute('cd wrapper && ' + linker_settings + ' ' + cargo_build_command + ' ' + target_arg + ' --release')
+    if platform_arg == 'javascript':
+        env.Execute('emcc -s MODULARIZE=1 wrapper/target/wasm32-unknown-unknown/release/libwrapper.a -o wrapper/target/wasm32-unknown-unknown/release/module.js')
+
+
 def image_id_from_repo_name(repository_name):
     return os.popen('podman images --format {{.ID}} --filter=reference=' + repository_name).read()
 
@@ -59,15 +70,13 @@ def build_in_container(platform, container_path, architecture, keep_container=Fa
 
 
 def build_all(env, container_path, keep_images):
-    build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
-    build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
-    build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images)
-    build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
-    build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
-    build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
-
-home_directory = Path.home()
-cargo_build_command = str(home_directory) + '/.cargo/bin/cargo build'
+    pass
+    #build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
+    #build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
+    #build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images)
+    #build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
+    #build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
+    #build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
 
 AddOption('--keep_images', dest='keep_images', default=False, action='store_true', help='Keeps the podman images for future builds.')
 AddOption('--container_build', dest='container_build', default=False, action='store_true', help='Build in containers for all platforms (specify one to override)')
@@ -77,8 +86,6 @@ env = SConscript("godot-cpp/SConstruct")
 platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
 # Link rust solana sdk library
-target_arg = ""
-linker_settings = ""
 library_path = "wrapper/target/release/"
 
 if platform_arg == "android":
@@ -129,10 +136,6 @@ elif platform_arg == "ios":
 
 rust_env = Environment(ENV=os.environ)
 
-rust_env.Execute('cd wrapper && ' + linker_settings + ' ' + cargo_build_command + ' ' + target_arg + ' --release')
-if platform_arg == 'javascript':
-    rust_env.Execute('emcc -s MODULARIZE=1 wrapper/target/wasm32-unknown-unknown/release/libwrapper.a -o wrapper/target/wasm32-unknown-unknown/release/module.js')
-
 env.Append(LIBPATH = [library_path])
 
 if platform_arg != 'javascript':
@@ -160,22 +163,6 @@ env.Append(CPPPATH=["include/"])
 sources = Glob("src/*.cpp")
 
 
-if env["platform"] == "macos":
-    library = env.SharedLibrary(
-        "bin/lib" + LIBRARY_NAME + ".{}.{}.framework/lib".format(
-            env["platform"], env["target"],
-        ) + LIBRARY_NAME + ".{}.{}".format(
-            env["platform"], env["target"]
-        ),
-        source=sources,
-    )
-else:
-    library = env.SharedLibrary(
-        "bin/lib" + LIBRARY_NAME + "{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-        source=sources,
-    )
-
-
 # Handle the container build
 if env.GetOption('container_build'):
     keep_images = False
@@ -193,4 +180,26 @@ if env.GetOption('container_build'):
     else:
         build_all(env, CONTAINER_BUILD_PATH, keep_images)
 
-Default(library)
+else:
+    if env["platform"] == "macos":
+        library = env.SharedLibrary(
+            "bin/lib" + LIBRARY_NAME + ".{}.{}.framework/lib".format(
+                env["platform"], env["target"],
+            ) + LIBRARY_NAME + ".{}.{}".format(
+                env["platform"], env["target"]
+            ),
+            source=sources,
+        )
+    else:
+        library = env.SharedLibrary(
+            "bin/lib" + LIBRARY_NAME + "{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+            source=sources,
+        )
+
+    rust_sources = Glob("wrapper/src/*.rs")
+    rust_sources += Glob("wrapper/src/*/*.rs")
+    wrapper = rust_env.AlwaysBuild(rust_env.Alias("phony", rust_sources, build_rustlib))
+
+    env.Depends(library, wrapper)
+
+    Default(library)
