@@ -71,12 +71,12 @@ def build_in_container(platform, container_path, architecture, keep_container=Fa
 
 def build_all(env, container_path, keep_images):
     pass
-    #build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
-    #build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
-    #build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images)
-    #build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
-    #build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
-    #build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
+    build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
+    build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
+    build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images)
+    build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
+    build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
+    build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
 
 AddOption('--keep_images', dest='keep_images', default=False, action='store_true', help='Keeps the podman images for future builds.')
 AddOption('--container_build', dest='container_build', default=False, action='store_true', help='Build in containers for all platforms (specify one to override)')
