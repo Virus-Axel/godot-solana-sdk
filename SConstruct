@@ -6,6 +6,7 @@ from pathlib import Path
 
 CONTAINER_BUILD_PATH = "build-containers-with-rust"
 LIBRARY_NAME = "godot-solana-sdk"
+WRAPPER_NAME = 'wrapper'
 
 target_arg = "";
 home_directory = Path.home()
@@ -13,9 +14,18 @@ cargo_build_command = str(home_directory) + '/.cargo/bin/cargo build'
 linker_settings = ""
 
 def build_rustlib(target, source, env):
-    env.Execute('cd wrapper && ' + linker_settings + ' ' + cargo_build_command + ' ' + target_arg + ' --release')
+    build_type = ''
+    if target == 'template_release':
+        build_type = '--release'
+
+    command = 'cd {} && {} {} {} {}'.format(WRAPPER_NAME, linker_settings, cargo_build_command, target_arg, build_type)
+    env.Execute(command)
     if platform_arg == 'javascript':
-        env.Execute('emcc -s MODULARIZE=1 wrapper/target/wasm32-unknown-unknown/release/libwrapper.a -o wrapper/target/wasm32-unknown-unknown/release/module.js')
+        target_dir = 'target/wasm32-unknown-unknown/debug/'
+        if target == 'template_release':
+            target_dir = 'target/wasm32-unknown-unknown/release/'
+        emcc_command = 'emcc -s MODULARIZE=1 {}/{}libwrapper.a -o {}/{}module.js'.format(WRAPPER_NAME, target_dir, WRAPPER_NAME, target_dir)
+        env.Execute(emcc_command)
 
 
 def image_id_from_repo_name(repository_name):
@@ -70,7 +80,6 @@ def build_in_container(platform, container_path, architecture, keep_container=Fa
 
 
 def build_all(env, container_path, keep_images):
-    pass
     build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
     build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
     build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images)
