@@ -1,32 +1,10 @@
 #!/usr/bin/env python
 
 import os
-import sys
-from pathlib import Path
 
 CONTAINER_BUILD_PATH = "build-containers-with-rust"
+CONTAINER_NAME = "godot-solana-sdk-container"
 LIBRARY_NAME = "godot-solana-sdk"
-WRAPPER_NAME = 'wrapper'
-
-target_arg = "";
-home_directory = Path.home()
-cargo_build_command = str(home_directory) + '/.cargo/bin/cargo build'
-linker_settings = ""
-
-def build_rustlib(target, source, env):
-    build_type = ''
-    if target == 'template_release':
-        build_type = '--release'
-
-    command = 'cd {} && {} {} {} {}'.format(WRAPPER_NAME, linker_settings, cargo_build_command, target_arg, build_type)
-    env.Execute(command)
-    if platform_arg == 'javascript':
-        target_dir = 'target/wasm32-unknown-unknown/debug/'
-        if target == 'template_release':
-            target_dir = 'target/wasm32-unknown-unknown/release/'
-        emcc_command = 'emcc -s MODULARIZE=1 {}/{}libwrapper.a -o {}/{}module.js'.format(WRAPPER_NAME, target_dir, WRAPPER_NAME, target_dir)
-        env.Execute(emcc_command)
-
 
 def image_id_from_repo_name(repository_name):
     return os.popen('podman images --format {{.ID}} --filter=reference=' + repository_name).read()
@@ -35,16 +13,16 @@ def get_build_command(platform, architecture):
     arguments = ""
     env_options = ""
     if platform == 'ios':
-        arguments = ' IOS_SDK_PATH="/root/ioscross/arm64/SDK/iPhoneOS16.1.sdk" IOS_TOOLCHAIN_PATH="/root/ioscross/arm64" ios_triple="arm-apple-darwin11-"'
+        arguments = 'IOS_SDK_PATH="/root/ioscross/arm64/SDK/iPhoneOS16.1.sdk" IOS_TOOLCHAIN_PATH="/root/ioscross/arm64" ios_triple="arm-apple-darwin11-"'
     elif platform == 'macos':
-        arguments = ' macos_sdk_path="/root/osxcross/target/SDK/MacOSX13.0.sdk/" osxcross_sdk="darwin22"'    
+        arguments = 'macos_sdk_path="/root/osxcross/target/SDK/MacOSX13.0.sdk/" osxcross_sdk="darwin22"'    
     elif platform == 'android':
         arguments = ""
     elif platform == 'javascript':
         env_options = 'bash -c "source /root/emsdk/emsdk_env.sh && '
         arguments = '"'
 
-    return env_options + 'scons -j 4 platform=' + platform + ' arch=' + architecture + ' target=template_release' + arguments
+    return '{} scons -j 4 platform={} arch={} target=template_release {}'.format(env_options, platform, architecture, arguments)
 
 
 def build_in_container(platform, container_path, architecture, keep_container=False, keep_images=False):
@@ -59,24 +37,24 @@ def build_in_container(platform, container_path, architecture, keep_container=Fa
     }
 
     # Build missing containers
-    env.Execute('cd ' + container_path + ' && ' + CONTAINER_BUILD_COMMAND)
+    env.Execute('cd {} && {}'.format(container_path, CONTAINER_BUILD_COMMAND))
 
     image_id = image_id_from_repo_name(REPOSITORY_NAME[platform])
 
-    env.Execute('podman run --mount type=bind,source=.,target=/root/godot-solana-sdk -d -it --name test_container ' + image_id)
+    env.Execute('podman run --mount type=bind,source=.,target=/root/godot-solana-sdk -d -it --name {} {}'.format(CONTAINER_NAME, image_id))
     #env.Execute('podman cp . test_container:/root/')
     
     build_command = get_build_command(platform, architecture)
     
-    env.Execute('podman exec -w /root/godot-solana-sdk/ test_container ' + build_command)
+    env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
 
     #env.Execute('podman cp test_container:/root/godot-solana-sdk/example/bin/ .')
     
     if not keep_container:
-        env.Execute('podman rm -f test_container')
+        env.Execute('podman rm -f {}'.format(CONTAINER_NAME))
 
     if not keep_images:
-        env.Execute('podman rmi -f ' + image_id)
+        env.Execute('podman rmi -f {}'.format(image_id))
 
 
 def build_all(env, container_path, keep_images):
@@ -92,68 +70,7 @@ AddOption('--container_build', dest='container_build', default=False, action='st
 
 env = SConscript("godot-cpp/SConstruct")
 
-platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
-
 # Link rust solana sdk library
-library_path = "wrapper/target/release/"
-
-if platform_arg == "android":
-    linker_settings = 'AR=llvm-ar RUSTFLAGS="-C linker=aarch64-linux-android31-clang"'
-    target_arg = "--target aarch64-linux-android"
-    library_path = "wrapper/target/aarch64-linux-android/release/"
-
-elif platform_arg == "macos":
-    target_arg = "--target aarch64-apple-darwin"
-    library_path = "wrapper/target/aarch64-apple-darwin/release/"
-
-elif platform_arg == "windows":
-    target_arg = "--target x86_64-pc-windows-gnu"
-    library_path = "wrapper/target/x86_64-pc-windows-gnu/release/"
-
-elif platform_arg == "linux":
-    target_arg = "--target x86_64-unknown-linux-gnu"
-    library_path = "wrapper/target/x86_64-unknown-linux-gnu/release/"
-
-elif platform_arg == "javascript":
-    target_arg = "--target wasm32-unknown-unknown"
-    library_path = "wrapper/target/wasm32-unknown-unknown/release/"
-    env.Append(LINKFLAGS=['--js-library', 'wrapper/target/wasm32-unknown-unknown/release/module.js'])
-
-elif platform_arg == "ios":
-    linker_settings = 'LD_LIBRARY_PATH=/root/ioscross/arm64/lib/ SDKROOT=/root/ioscross/arm64/SDK/iPhoneOS16.1.sdk/'
-    target_arg = "--target aarch64-apple-ios"
-    library_path = "wrapper/target/aarch64-apple-ios/release/"
-    # Adjust environment in build containers to work with rust wrapper
-
-    env.Append(LIBS = ['objc'])
-    env.Append(LIBS = ['c'])
-    env.Append(LIBS = ['c++'])
-    env.Append(LINKFLAGS=['-framework', 'Security', '-L', '/root/ioscross/arm64/lib/'])
-
-    env['LINK'] = "/root/osxcross/target/bin/aarch64-apple-darwin22-ld"
-    env.Append(LD_LIBRARY_PATH=['/root/ioscross/arm64/lib/'])
-
-    #env['LINKFLAGS'].remove(["-isysroot", env["IOS_SDK_PATH"], "-F" + env["IOS_SDK_PATH"]])
-    #env.Subst('LINKFLAGS', "-isysroot", "-syslibroot")
-    #env['LINKFLAGS'] = [s.subst('-isysroot', '-syslibroot') for s in env['LINKFLAGS']]
-    for index in range(len(env['LINKFLAGS'])):
-        if env['LINKFLAGS'][index] == "-isysroot":
-            env['LINKFLAGS'][index] = "-syslibroot"
-
-    env['SHLINKFLAGS'].remove("-shared")
-    env.Append(LINKFLAGS=['-dylib'])
-
-rust_env = Environment(ENV=os.environ)
-
-env.Append(LIBPATH = [library_path])
-
-if platform_arg != 'javascript':
-    env.Append(LIBS = ['wrapper'])
-
-if platform_arg == 'windows':
-    env.Append(LIBS = ['ws2_32'])
-    env.Append(LIBS = ['bcrypt'])
-    env.Append(LIBS = ['userenv'])
 
 # Build wrapper library
 
@@ -205,10 +122,7 @@ else:
             source=sources,
         )
 
-    rust_sources = Glob("wrapper/src/*.rs")
-    rust_sources += Glob("wrapper/src/*/*.rs")
-    wrapper = rust_env.AlwaysBuild(rust_env.Alias("phony", rust_sources, build_rustlib))
+    wrapper = SConscript("wrapper/SConstruct", exports={'env': env})
 
     env.Depends(library, wrapper)
-
     Default(library)
