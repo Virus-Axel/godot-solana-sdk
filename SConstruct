@@ -58,6 +58,9 @@ def build_in_container(platform, container_path, architecture, keep_container=Fa
 
 
 def build_all(env, container_path, keep_images):
+    # Remove existing container
+    env.Execute('podman rm -fi {}'.format(CONTAINER_NAME))
+
     build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
     build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
     build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images)
