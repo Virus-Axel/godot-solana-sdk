@@ -2,9 +2,15 @@
 
 import os
 
+from SCons.Script.SConscript import *
+
 CONTAINER_BUILD_PATH = "build-containers-with-rust"
 CONTAINER_NAME = "godot-solana-sdk-container"
 LIBRARY_NAME = "godot-solana-sdk"
+
+def run_cargo(target, source, env):
+
+    SConscript("wrapper/SConstruct", exports={'env': env})
 
 def image_id_from_repo_name(repository_name):
     return os.popen('podman images --format {{.ID}} --filter=reference=' + repository_name).read()
@@ -46,7 +52,7 @@ def build_in_container(platform, container_path, architecture, keep_container=Fa
     
     build_command = get_build_command(platform, architecture)
     
-    env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
+    env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME, build_command))
 
     #env.Execute('podman cp test_container:/root/godot-solana-sdk/example/bin/ .')
     
@@ -61,12 +67,12 @@ def build_all(env, container_path, keep_images):
     # Remove existing container
     env.Execute('podman rm -fi {}'.format(CONTAINER_NAME))
 
-    build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
-    build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
-    build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images)
-    build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
-    build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
-    build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
+    #build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
+    build_in_container('windows', container_path, 'x86_64', keep_images=keep_images, keep_container=True)
+    #build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images)
+    #build_in_container('android', container_path, 'aarch64', keep_images=keep_images, keep_container=True)
+    #build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
+    #build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
 
 AddOption('--keep_images', dest='keep_images', default=False, action='store_true', help='Keeps the podman images for future builds.')
 AddOption('--container_build', dest='container_build', default=False, action='store_true', help='Build in containers for all platforms (specify one to override)')
@@ -104,7 +110,7 @@ if env.GetOption('container_build'):
         if 'arch' in ARGUMENTS:
             architecture = ARGUMENTS['arch']
 
-            build_in_container(ARGUMENTS['platform'], CONTAINER_BUILD_PATH, architecture, keep_images=keep_images, keep_container=True)
+        build_in_container(ARGUMENTS['platform'], CONTAINER_BUILD_PATH, architecture, keep_images=keep_images, keep_container=True)
 
     else:
         build_all(env, CONTAINER_BUILD_PATH, keep_images)
@@ -117,15 +123,13 @@ else:
             ) + LIBRARY_NAME + ".{}.{}".format(
                 env["platform"], env["target"]
             ),
-            source=sources,
+            source=[sources],
         )
     else:
         library = env.SharedLibrary(
             "bin/lib" + LIBRARY_NAME + "{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-            source=sources,
+            source=[sources],
         )
 
-    wrapper = SConscript("wrapper/SConstruct", exports={'env': env})
-
-    env.Depends(library, wrapper)
+    AddPreAction(library, run_cargo)
     Default(library)

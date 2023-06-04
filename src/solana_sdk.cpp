@@ -13,6 +13,8 @@ using namespace godot;
 
 using internal::gde_interface;
 
+String SolanaSDK::url = "https://api.testnet.solana.com";
+
 void SolanaSDK::_bind_methods() {
     ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs58_encode", "input"), &SolanaSDK::bs58_encode);
     ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs58_decode", "input"), &SolanaSDK::bs58_decode);

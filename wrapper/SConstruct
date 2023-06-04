@@ -61,7 +61,7 @@ def get_platform_arg_and_adjust():
 
 
     if env["platform"] != 'javascript':
-        env.Append(LIBS = [WRAPPER_NAME])
+        env.Prepend(LIBS = [WRAPPER_NAME])
 
     library_path = "{}/target/{}/{}/".format(WRAPPER_NAME, rust_target, debug_or_release)
 
@@ -70,32 +70,23 @@ def get_platform_arg_and_adjust():
     return {'linker_settings': linker_settings, 'target': rust_target}
 
 
-def build_rustlib(target, rust_env):
-    build_type = ''
-    if target == 'template_release':
-        build_type = '--release'
-
-    build_settings = get_platform_arg_and_adjust()
-
-    command = '{} {} --target {} {}'.format(build_settings['linker_settings'], cargo_build_command, build_settings['target'], build_type)
-    #env.Execute(command)
-    action = rust_env.Action(command, chdir=WRAPPER_NAME)
-
-    if env["platform"] == 'javascript':
-        target_dir = 'target/wasm32-unknown-unknown/debug/'
-        if target == 'template_release':
-            target_dir = 'target/wasm32-unknown-unknown/release/'
-        emcc_command = 'emcc -s MODULARIZE=1 {}libwrapper.a -o {}module.js'.format(target_dir, target_dir)
-        action += rust_env.Action(emcc_command, chdir=WRAPPER_NAME)
-    
-    return action
-
 rust_env = Environment(ENV=os.environ)
 
-rust_sources = Glob("wrapper/src/*.rs")
-rust_sources += Glob("wrapper/src/*/*.rs")
+build_type = ''
+if env["target"] == 'template_release':
+    build_type = '--release'
 
-build_action = build_rustlib(env["target"], rust_env)
-wrapper = rust_env.AlwaysBuild(rust_env.Alias("phony", rust_sources, build_action))
+build_settings = get_platform_arg_and_adjust()
+print(build_settings)
 
-Return('wrapper')
+command = '{} {} --target {} {}'.format(build_settings['linker_settings'], cargo_build_command, build_settings['target'], build_type)
+
+Execute(command, env=rust_env)
+
+if env["platform"] == 'javascript':
+    target_dir = 'target/wasm32-unknown-unknown/debug/'
+    if env["target"] == 'template_release':
+        target_dir = 'target/wasm32-unknown-unknown/release/'
+    emcc_command = 'emcc -s MODULARIZE=1 {}libwrapper.a -o {}module.js'.format(target_dir, target_dir)
+    
+    rust_env.Execute(emcc_command)
