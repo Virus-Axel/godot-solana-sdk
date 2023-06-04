@@ -59,7 +59,6 @@ def get_platform_arg_and_adjust():
         env.Append(LIBS = ['bcrypt'])
         env.Append(LIBS = ['userenv'])
 
-
     if env["platform"] != 'javascript':
         env.Prepend(LIBS = [WRAPPER_NAME])
 
@@ -81,7 +80,7 @@ print(build_settings)
 
 command = '{} {} --target {} {}'.format(build_settings['linker_settings'], cargo_build_command, build_settings['target'], build_type)
 
-Execute(command, env=rust_env)
+rust_env.Execute(command)
 
 if env["platform"] == 'javascript':
     target_dir = 'target/wasm32-unknown-unknown/debug/'

@@ -9,3 +9,7 @@ linker = "aarch64-apple-darwin22-clang"
 [target.aarch64-apple-ios]
 ar = "arm-apple-darwin11-ar"
 linker = "arm-apple-darwin11-clang"
+
+[target.x86_64-pc-windows-gnu]
+ar = "x86_64-w64-mingw32-ar"
+linker = "x86_64-w64-mingw32-gcc"
