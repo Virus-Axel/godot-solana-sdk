@@ -3,13 +3,13 @@ name = "wrapper"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+godot = { git = "https://github.com/godot-rust/gdext", branch = "master" }
 solana-sdk = "*"
 bs58 = "*"
 bincode = "*"
 spl-associated-token-account = "*"
 
 [lib]
-crate-type = ["staticlib"]
+crate-type = ["cdylib"]

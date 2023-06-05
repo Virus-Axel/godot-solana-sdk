@@ -1,68 +1,48 @@
-use core::{mem, ffi::{c_char, c_uint, c_uchar}};
+use godot::engine::Node;
+use godot::prelude::*;
+use godot::prelude::GodotClass;
+use godot::engine::NodeVirtual;
+use godot::builtin::GodotString;
 
-extern crate alloc;
+use solana_sdk::pubkey;
 
-use solana_sdk::pubkey::Pubkey;
-use alloc::{boxed::Box, vec::Vec};
 
-use spl_associated_token_account::get_associated_token_address;
+#[derive(GodotClass)]
+#[class(base=Node)]
+struct Pubkey {
+    #[export]
+    key: GodotString,
+    #[export]
+    seed: GodotString,
+    #[export]
+    base_key: Gd<Pubkey>,
 
-#[no_mangle]
-pub extern "C" fn create_unique_pubkey() -> *mut Pubkey{
-    Box::into_raw(Box::new(Pubkey::new_unique()))
+    #[base]
+    base: Base<Node>
 }
 
-#[no_mangle]
-pub extern "C" fn create_pubkey_from_array(bytes: *mut u8) -> *mut Pubkey{
-    let arr = unsafe{Vec::from_raw_parts(bytes, 32, 32)};
-    let ret = Pubkey::new_from_array(arr.clone().try_into().unwrap());
-
-    mem::forget(arr);
-    Box::into_raw(Box::new(ret))
-}
-
-#[no_mangle]
-pub extern "C" fn create_pubkey_with_seed(base: *mut Pubkey, seed: *mut c_char, seed_length: c_uint, owner: *mut Pubkey) -> *const Pubkey{
-    let seed_bytes = unsafe { core::slice::from_raw_parts(seed as *const u8, seed_length as usize) };
-    let base_key = unsafe{*base};
-    let owner_key = unsafe{*owner};
-
-    mem::forget(seed);
-
-    let seed_slice = match core::str::from_utf8(seed_bytes){
-        Ok(v) => v,
-        Err(_) => return core::ptr::null(),
-    };
-
-    let ret = match Pubkey::create_with_seed(&base_key, seed_slice, &owner_key){
-        Ok(v) => v,
-        Err(_) => return core::ptr::null(),
-    };
-
-    Box::into_raw(Box::new(ret))
-}
-
-#[no_mangle]
-pub extern "C" fn create_associated_token_account(wallet_key: *mut Pubkey, token_mint: *mut Pubkey) -> *const Pubkey{
-    let wallet_pubkey = unsafe{*wallet_key};
-    let token_mint_key = unsafe{*token_mint};
-
-    let ret = get_associated_token_address(&wallet_pubkey, &token_mint_key);
-
-    Box::into_raw(Box::new(ret))
-}
-
-#[no_mangle]
-pub extern "C" fn free_pubkey(key: *mut Pubkey){
-    unsafe{
-        drop(Box::from_raw(key));
+#[godot_api]
+impl Pubkey {
+    fn empty() -> Pubkey{
+        Pubkey {base: Base::<Node>::from(Node::new_alloc().into()), key: GodotString::new(), seed: GodotString::new(), base_key: Gd::new_default() }
     }
+
+    #[func]
+    fn increase_speed(&mut self, body: Gd<Pubkey>) {
+        
+    }
+    #[func]
+    fn print(&mut self) -> GodotString{
+        return GodotString::from(self.key_object.to_string());
+    }
+
+    #[signal]
+    fn speed_increased();
 }
 
-#[no_mangle]
-pub extern "C" fn get_pubkey_bytes(key: *mut Pubkey, bytes: *mut c_uchar){
-    let mut pubkey = unsafe{*key};
-    unsafe{
-        core::ptr::copy_nonoverlapping(pubkey.as_mut().as_ptr(), bytes as *mut u8, 32);
-    };
+#[godot_api]
+impl NodeVirtual for Pubkey {
+    fn init(base: Base<Self::Base>) -> Self {
+        Self { base, key: GodotString::new(), base_key: Pubkey::empty() }
+    }
 }
