@@ -4,7 +4,7 @@
 #include <solana_sdk.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
-using internal::gde_interface;
+using internal::gdextension_interface_print_warning;
 
 namespace godot{
 
@@ -15,38 +15,38 @@ void Pubkey::_update_pointer(){
     else if (type == "SEED"){
         void *base_ptr = variant_to_type<Pubkey>(base);
         if(base_ptr == nullptr){
-            gde_interface->print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 18, false);
+            gdextension_interface_print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 18, false);
             return;
         }
 
         void *owner_ptr = variant_to_type<Pubkey>(owner);
         if(owner_ptr == nullptr){
-            gde_interface->print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 24, false);
+            gdextension_interface_print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 24, false);
             return;
         }
 
         data_pointer = create_pubkey_with_seed(base_ptr, (const char*) seed.to_utf8_buffer().ptr(), seed.length(), owner_ptr);
         if(data_pointer == nullptr){
-            gde_interface->print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 30, false);
+            gdextension_interface_print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 30, false);
         }
     }
     else if (type == "ASSOCIATED_TOKEN"){
         void *wallet_address_ptr = variant_to_type<Pubkey>(wallet_address);
         if(wallet_address_ptr == nullptr){
-            gde_interface->print_warning("Bad wallet address pubkey", "_update_pointer", "pubkey.cpp", 36, false);
+            gdextension_interface_print_warning("Bad wallet address pubkey", "_update_pointer", "pubkey.cpp", 36, false);
             return;
         }
 
         void *token_mint_address_ptr = variant_to_type<Pubkey>(token_mint_address);
         if(token_mint_address_ptr == nullptr){
-            gde_interface->print_warning("Bad token mint pubkey", "_update_pointer", "pubkey.cpp", 42, false);
+            gdextension_interface_print_warning("Bad token mint pubkey", "_update_pointer", "pubkey.cpp", 42, false);
             return;
         }
 
         data_pointer = create_associated_token_account(wallet_address_ptr, token_mint_address_ptr);
         if(data_pointer == nullptr){
             std::cout << "hej" << std::endl;
-            gde_interface->print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 48, false);
+            gdextension_interface_print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 48, false);
             std::cout << "hej" << std::endl;
         }
     }
@@ -54,7 +54,7 @@ void Pubkey::_update_pointer(){
         data_pointer = create_pubkey_from_array(bytes.ptr());
     }
     else{
-        gde_interface->print_warning("Unknown pubkey type", "_update_pointer", "pubkey.cpp", 57, false);
+        gdextension_interface_print_warning("Unknown pubkey type", "_update_pointer", "pubkey.cpp", 57, false);
         data_pointer = nullptr;
     }
 }
@@ -156,10 +156,10 @@ void Pubkey::set_value(const String& p_value){
 
     // Print warnings if key length is bad.
     if(decoded_value.is_empty() && value.length() != 0){
-        internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", 18, false);
+        internal::gdextension_interface_print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", 18, false);
     }
     else if (decoded_value.size() != 32){
-        internal::gde_interface->print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 21, false);
+        internal::gdextension_interface_print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 21, false);
     }
 }
 
@@ -171,7 +171,7 @@ String Pubkey::get_value(){
         void* key = to_ptr();
         String ret = "";
         if (key == nullptr){
-            internal::gde_interface->print_warning("Invalid Pubkey", "get_value", "pubkey.cpp", 167, false);
+            internal::gdextension_interface_print_warning("Invalid Pubkey", "get_value", "pubkey.cpp", 167, false);
         }
         else{
             PackedByteArray byte_array;
@@ -209,7 +209,7 @@ void Pubkey::set_bytes(const PackedByteArray& p_value){
 
     // Print warnings if byte length is bad.
     if (bytes.size() != 32){
-        internal::gde_interface->print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 14, false);
+        internal::gdextension_interface_print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 14, false);
     }
     
 }
@@ -220,7 +220,7 @@ PackedByteArray Pubkey::get_bytes(){
     else{
         void* key = to_ptr();
         if (key == nullptr){
-            internal::gde_interface->print_warning("Invalid Pubkey", "get_bytes", "pubkey.cpp", 218, false);
+            internal::gdextension_interface_print_warning("Invalid Pubkey", "get_bytes", "pubkey.cpp", 218, false);
             return bytes;
         }
         PackedByteArray byte_array;

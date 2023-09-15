@@ -11,7 +11,7 @@
 
 using namespace godot;
 
-using internal::gde_interface;
+using internal::gdextension_interface_print_warning;
 
 void SolanaSDK::_bind_methods() {
     ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs58_encode", "input"), &SolanaSDK::bs58_encode);
@@ -49,7 +49,7 @@ Dictionary SolanaSDK::quick_http_request(const String& request_body){
 	err = handler.request(godot::HTTPClient::METHOD_POST, "/", http_headers, request_body);
 
 	if(err != Error::OK){
-		gde_interface->print_error("Error sending request.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
+		gdextension_interface_print_warning("Error sending request.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
 		return Dictionary();
 	}
 
@@ -76,7 +76,7 @@ Dictionary SolanaSDK::quick_http_request(const String& request_body){
 	err = json.parse(response_data.get_string_from_utf8());
 
 	if(err != Error::OK){
-		gde_interface->print_error("Error getting response data.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
+		gdextension_interface_print_warning("Error getting response data.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
 		return Dictionary();
 	}
 
@@ -111,17 +111,17 @@ String SolanaSDK::get_latest_blockhash(){
 	Dictionary data = quick_http_request(REQUEST_DATA);
 
 	if(!data.has("result")){
-		gde_interface->print_error("Unexpected response.", "get_latest_blockhash", "solana_sdk.cpp", __LINE__, false);
+		gdextension_interface_print_warning("Unexpected response.", "get_latest_blockhash", "solana_sdk.cpp", __LINE__, false);
 		return "";
 	}
 	data = data["result"];
 	if(!data.has("value")){
-		gde_interface->print_error("Unexpected response.", "get_latest_blockhash", "solana_sdk.cpp", __LINE__, false);
+		gdextension_interface_print_warning("Unexpected response.", "get_latest_blockhash", "solana_sdk.cpp", __LINE__, false);
 		return "";
 	}
 	data = data["value"];
 	if(!data.has("blockhash")){
-		gde_interface->print_error("Unexpected response.", "get_latest_blockhash", "solana_sdk.cpp", __LINE__, false);
+		gdextension_interface_print_warning("Unexpected response.", "get_latest_blockhash", "solana_sdk.cpp", __LINE__, false);
 		return "";
 	}
 

@@ -75,10 +75,10 @@ void Hash::set_value(const String& p_value){
 
     // Print warnings if bytes are bad.
     if(decoded_value.is_empty() && value.length() != 0){
-        internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", 18, false);
+        internal::gdextension_interface_print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", __LINE__, false);
     }
     else if (decoded_value.size() != HASH_LENGTH){
-        internal::gde_interface->print_warning("Hash must be 32 bytes", "_set", "hash.cpp", 78, false);
+        internal::gdextension_interface_print_warning("Hash must be 32 bytes", "_set", "hash.cpp", 78, false);
     }
 }
 
@@ -103,7 +103,7 @@ void Hash::set_bytes(const PackedByteArray& p_value){
     
     // Print warning if key is bad
     if (bytes.size() != HASH_LENGTH){
-        internal::gde_interface->print_warning("Hash must be 32 bytes", "_set", "hash.cpp", 105, false);
+        internal::gdextension_interface_print_warning("Hash must be 32 bytes", "_set", "hash.cpp", 105, false);
     }
 }
 PackedByteArray Hash::get_bytes(){

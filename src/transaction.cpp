@@ -10,21 +10,21 @@
 
 namespace godot{
 
-using internal::gde_interface;
+using internal::gdextension_interface_print_warning;
 
 void Transaction::_update_pointer(){
     void* instruction_pointers[instructions.size()];
 
     // Write instruction pointer array.
     if (!array_to_pointer_array<Instruction>(instructions, instruction_pointers)){
-        gde_interface->print_warning("Bad Instruction array", "_update_pointer", "transaction.cpp", 17, false);
+        gdextension_interface_print_warning("Bad Instruction array", "_update_pointer", "transaction.cpp", 17, false);
         return;
     }
 
     // Get payer pointer.
     void *payer_ptr = variant_to_type<Pubkey>(payer);
     if(payer_ptr == nullptr){
-        gde_interface->print_warning("Bad transaction payer", "_update_pointer", "transaction.cpp", 23, false);
+        gdextension_interface_print_warning("Bad transaction payer", "_update_pointer", "transaction.cpp", 23, false);
         return;
     }
 
@@ -161,7 +161,7 @@ Variant Transaction::sign_and_send(){
     // Get Hash and validate it.
     void* latest_blockhash_ptr = hash.to_ptr();
     if(latest_blockhash_ptr == nullptr){
-        gde_interface->print_warning("Provided hash is invalid.", "sign", "transaction.cpp", 179, false);
+        gdextension_interface_print_warning("Provided hash is invalid.", "sign", "transaction.cpp", 179, false);
         return Error::ERR_INVALID_PARAMETER;
     }
 
@@ -174,7 +174,7 @@ Variant Transaction::sign_and_send(){
     // Get array of pointers to signers
     void* signer_pointers[signers.size()];
     if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
-        gde_interface->print_warning("Bad signer array", "sign", "transaction.cpp", 192, false);
+        gdextension_interface_print_warning("Bad signer array", "sign", "transaction.cpp", 192, false);
         return Error::ERR_INVALID_DATA;
     }
 
@@ -182,7 +182,7 @@ Variant Transaction::sign_and_send(){
 
     // Check status from rust library.
     if (status != 0){
-        gde_interface->print_warning("Unknown signing error", "sign", "transaction.cpp", 198, false);
+        gdextension_interface_print_warning("Unknown signing error", "sign", "transaction.cpp", 198, false);
         return Error::ERR_INVALID_DATA;
     }
 
@@ -196,14 +196,14 @@ Variant Transaction::sign_and_send(){
 Error Transaction::sign(const Variant& latest_blockhash){
 
     if (latest_blockhash.get_type() != Variant::OBJECT){
-        gde_interface->print_warning("Latest Blockhash must be a Hash object", "sign", "transaction.cpp", 170, false);
+        gdextension_interface_print_warning("Latest Blockhash must be a Hash object", "sign", "transaction.cpp", 170, false);
         return Error::ERR_INVALID_PARAMETER;
     }
 
     // Get Hash and validate it.
     void* latest_blockhash_ptr = variant_to_type<Hash>(latest_blockhash);
     if(latest_blockhash_ptr == nullptr){
-        gde_interface->print_warning("Provided hash is invalid.", "sign", "transaction.cpp", 179, false);
+        gdextension_interface_print_warning("Provided hash is invalid.", "sign", "transaction.cpp", 179, false);
         return Error::ERR_INVALID_PARAMETER;
     }
 
@@ -222,7 +222,7 @@ Error Transaction::sign(const Variant& latest_blockhash){
     // Get array of pointers to signers
     void* signer_pointers[signers.size()];
     if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
-        gde_interface->print_warning("Bad signer array", "sign", "transaction.cpp", 192, false);
+        gdextension_interface_print_warning("Bad signer array", "sign", "transaction.cpp", 192, false);
         return Error::ERR_INVALID_DATA;
     }
 
@@ -230,7 +230,7 @@ Error Transaction::sign(const Variant& latest_blockhash){
 
     // Check status from rust library.
     if (status != 0){
-        gde_interface->print_warning("Unknown signing error", "sign", "transaction.cpp", 198, false);
+        gdextension_interface_print_warning("Unknown signing error", "sign", "transaction.cpp", 198, false);
         return Error::ERR_INVALID_DATA;
     }
 
@@ -240,14 +240,14 @@ Error Transaction::sign(const Variant& latest_blockhash){
 Error Transaction::partially_sign(const Variant& latest_blockhash){
     // Check type of latest blockhash.
     if (latest_blockhash.get_type() != Variant::OBJECT){
-        gde_interface->print_warning("Latest Blockhash must be a Hash object", "sign", "transaction.cpp", 209, false);
+        gdextension_interface_print_warning("Latest Blockhash must be a Hash object", "sign", "transaction.cpp", 209, false);
         return Error::ERR_INVALID_PARAMETER;
     }
 
     // Check if blockhash is valid.
     void* latest_blockhash_ptr = variant_to_type<Hash>(latest_blockhash);
     if(latest_blockhash_ptr == nullptr){
-        gde_interface->print_warning("Provided hash is invalid.", "sign", "transaction.cpp", 216, false);
+        gdextension_interface_print_warning("Provided hash is invalid.", "sign", "transaction.cpp", 216, false);
         return Error::ERR_INVALID_PARAMETER;
     }
 
@@ -267,7 +267,7 @@ Error Transaction::partially_sign(const Variant& latest_blockhash){
 
     // Check status of rust library function.
     if (status != 0){
-        gde_interface->print_warning("Unknown signing error", "sign", "transaction.cpp", 236, false);
+        gdextension_interface_print_warning("Unknown signing error", "sign", "transaction.cpp", 236, false);
         return Error::ERR_INVALID_DATA;
     }
 

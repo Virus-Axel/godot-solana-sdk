@@ -117,10 +117,10 @@ void Keypair::set_public_value(const String& p_value){
 
     // Print warnings if key length is bad.
     if(decoded_value.is_empty() && public_value.length() != 0){
-        internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "keypair.cpp", 119, false);
+        internal::gdextension_interface_print_warning("Value contains non-base58 characters", "_set", "keypair.cpp", 119, false);
     }
     else if (decoded_value.size() != KEY_LENGTH){
-        internal::gde_interface->print_warning("Public key must be 32 bytes", "_set", "keypair.cpp", 122, false);
+        internal::gdextension_interface_print_warning("Public key must be 32 bytes", "_set", "keypair.cpp", 122, false);
     }
 }
 
@@ -128,7 +128,7 @@ String Keypair::get_public_value(){
     if(unique){
         void* key = to_ptr();
         if(key == nullptr){
-            internal::gde_interface->print_warning("Invalid keypair", "get_public_value", "keypair.cpp", 132, false);
+            internal::gdextension_interface_print_warning("Invalid keypair", "get_public_value", "keypair.cpp", 132, false);
             return "";
         }
         unsigned char keypair_bytes[64];
@@ -162,14 +162,14 @@ void Keypair::set_public_bytes(const PackedByteArray& p_value){
 
     // Print warning if key length is bad.
     if (public_bytes.size() != KEY_LENGTH){
-        internal::gde_interface->print_warning("Public key must be 32 bytes", "_set", "pubkey.cpp", 147, false);
+        internal::gdextension_interface_print_warning("Public key must be 32 bytes", "_set", "pubkey.cpp", 147, false);
     }
 }
 PackedByteArray Keypair::get_public_bytes(){
     if(unique){
         void* key = to_ptr();
         if(key == nullptr){
-            internal::gde_interface->print_warning("Invalid keypair", "get_public_bytes", "keypair.cpp", 172, false);
+            internal::gdextension_interface_print_warning("Invalid keypair", "get_public_bytes", "keypair.cpp", 172, false);
             return public_bytes;
         }
         unsigned char keypair_bytes[64];
@@ -197,10 +197,10 @@ void Keypair::set_private_value(const String& p_value){
 
     // Print warnings if key length is bad.
     if(decoded_value.is_empty() && private_value.length() != 0){
-        internal::gde_interface->print_warning("Value contains non-base58 characters", "_set", "keypair.cpp", 164, false);
+        internal::gdextension_interface_print_warning("Value contains non-base58 characters", "_set", "keypair.cpp", 164, false);
     }
     else if (decoded_value.size() != KEY_LENGTH){
-        internal::gde_interface->print_warning("Private key must be 32 bytes", "_set", "keypair.cpp", 167, false);
+        internal::gdextension_interface_print_warning("Private key must be 32 bytes", "_set", "keypair.cpp", 167, false);
     }
 }
 
@@ -208,7 +208,7 @@ String Keypair::get_private_value(){
     if(unique){
         void* key = to_ptr();
         if(key == nullptr){
-            internal::gde_interface->print_warning("Invalid keypair", "get_private_value", "keypair.cpp", 210, false);
+            internal::gdextension_interface_print_warning("Invalid keypair", "get_private_value", "keypair.cpp", 210, false);
             return "";
         }
         unsigned char keypair_bytes[64];
@@ -241,7 +241,7 @@ void Keypair::set_private_bytes(const PackedByteArray& p_value){
 
     // Print warnings if key length is bad.
     if (private_bytes.size() != KEY_LENGTH){
-        internal::gde_interface->print_warning("Private key must be 32 bytes", "_set", "keypair.cpp", 150, false);
+        internal::gdextension_interface_print_warning("Private key must be 32 bytes", "_set", "keypair.cpp", 150, false);
     }
 }
 
@@ -249,7 +249,7 @@ PackedByteArray Keypair::get_private_bytes(){
     if(unique){
         void* key = to_ptr();
         if(key == nullptr){
-            internal::gde_interface->print_warning("Invalid keypair", "get_private_bytes", "keypair.cpp", 250, false);
+            internal::gdextension_interface_print_warning("Invalid keypair", "get_private_bytes", "keypair.cpp", 250, false);
             return private_bytes;
         }
         unsigned char keypair_bytes[64];

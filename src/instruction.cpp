@@ -6,7 +6,7 @@
 
 namespace godot{
 
-using internal::gde_interface;
+using internal::gdextension_interface_print_warning;
 
 void Instruction::_free_pointer(){
     free_instruction(data_pointer);
@@ -19,14 +19,14 @@ void Instruction::_update_pointer(){
 
     // Write account pointer array.
     if (!array_to_pointer_array<AccountMeta>(accounts, account_pointers)){
-        gde_interface->print_warning("Bad accounts", "_update_pointer", "instruction.cpp", 20, false);
+        gdextension_interface_print_warning("Bad accounts", "_update_pointer", "instruction.cpp", 20, false);
         return;
     }
 
     // Get program ID object.
     void *program_id_ptr = variant_to_type<Pubkey>(program_id);
     if(program_id_ptr == nullptr){
-        gde_interface->print_warning("Bad program ID", "_update_pointer", "instruction.cpp", 26, false);
+        gdextension_interface_print_warning("Bad program ID", "_update_pointer", "instruction.cpp", 26, false);
         return;
     }
 

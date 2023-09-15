@@ -5,7 +5,7 @@
 
 namespace godot{
 
-using internal::gde_interface;
+using internal::gdextension_interface_print_warning;
 
 void AccountMeta::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_is_signer"), &AccountMeta::get_is_signer);
@@ -41,12 +41,12 @@ void AccountMeta::_update_pointer(){
         //std::cout << ((Pubkey*)key_ref)->get_value().to_utf8_buffer().ptr() << std::endl;
     }
     else{
-        gde_interface->print_warning("Account Meta does not have a valid key", "_update_pointer", "account_meta.cpp", 44, false);
+        gdextension_interface_print_warning("Account Meta does not have a valid key", "_update_pointer", "account_meta.cpp", 44, false);
         return;
     }
 
     if (key_ref == nullptr){
-        gde_interface->print_warning("Account Meta does not have a valid key", "_update_pointer", "account_meta.cpp", 50, false);
+        gdextension_interface_print_warning("Account Meta does not have a valid key", "_update_pointer", "account_meta.cpp", 50, false);
         return;
     }
 
