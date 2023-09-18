@@ -13,6 +13,8 @@ using namespace godot;
 
 using internal::gdextension_interface_print_warning;
 
+std::string SolanaSDK::url;
+
 void SolanaSDK::_bind_methods() {
     ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs58_encode", "input"), &SolanaSDK::bs58_encode);
     ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs58_decode", "input"), &SolanaSDK::bs58_decode);
@@ -22,7 +24,7 @@ void SolanaSDK::_bind_methods() {
 }
 
 SolanaSDK::SolanaSDK() {
-	url = TESTNET_URL;
+	url = TESTNET_URL.ascii();
 }
 
 Dictionary SolanaSDK::quick_http_request(const String& request_body){
@@ -35,7 +37,7 @@ Dictionary SolanaSDK::quick_http_request(const String& request_body){
 	
 	// Connect to RPC API URL.
 	HTTPClient handler;
-	Error err = handler.connect_to_host(url, 443, TLSOptions::client_unsafe());
+	Error err = handler.connect_to_host(String(url.c_str()), 443, TLSOptions::client_unsafe());
 
 	// Wait until a connection is established.
 	godot::HTTPClient::Status status = handler.get_status();
@@ -135,11 +137,11 @@ Variant SolanaSDK::send_transaction(const String& transaction){
 }
 
 void SolanaSDK::set_url(const String& url){
-	SolanaSDK::url = url;
+	SolanaSDK::url = url.ascii();
 }
 
 String SolanaSDK::get_url(){
-	return SolanaSDK::url;
+	return String(SolanaSDK::url.c_str());
 }
 
 SolanaSDK::~SolanaSDK() {

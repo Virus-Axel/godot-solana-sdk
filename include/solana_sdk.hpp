@@ -10,7 +10,7 @@ class SolanaSDK : public Node {
     GDCLASS(SolanaSDK, Node)
 
 private:
-    static String url;
+    static std::string url;
 
     static Dictionary quick_http_request(const String& request_body);
 
