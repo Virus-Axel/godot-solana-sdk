@@ -6,10 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-solana-sdk = "*"
+#solana-sdk = "*"
+solana-sdk = {path="solana/sdk"}
 bs58 = "*"
 bincode = "*"
-spl-associated-token-account = "*"
+spl-associated-token-account = {path="solana-program-library/associated-token-account/program"}
+#spl-associated-token-account = "*"
 
 [lib]
 crate-type = ["staticlib"]

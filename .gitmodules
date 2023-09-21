@@ -9,3 +9,9 @@
 [submodule "build-containers-with-rust"]
 	path = build-containers-with-rust
 	url = git@github.com:Virus-Axel/build-containers-with-rust.git
+[submodule "wrapper/solana-program-library"]
+	path = wrapper/solana-program-library
+	url = git@github.com:solana-labs/solana-program-library.git
+[submodule "wrapper/solana"]
+	path = wrapper/solana
+	url = git@github.com:solana-labs/solana.git
