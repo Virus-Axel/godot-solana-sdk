@@ -77,16 +77,16 @@ def build_rustlib(target, rust_env):
 
     build_settings = get_platform_arg_and_adjust()
 
-    command = '{} {} --target {} {}'.format(build_settings['linker_settings'], cargo_build_command, build_settings['target'], build_type)
+    command = '{} {} --manifest-path=wrapper/Cargo.toml --target {} {}'.format(build_settings['linker_settings'], cargo_build_command, build_settings['target'], build_type)
     #env.Execute(command)
-    action = rust_env.Action(command, chdir=WRAPPER_NAME)
+    action = rust_env.Action(command)
 
     if env["platform"] == 'javascript':
         target_dir = 'target/wasm32-unknown-unknown/debug/'
         if target == 'template_release':
             target_dir = 'target/wasm32-unknown-unknown/release/'
         emcc_command = 'emcc -s MODULARIZE=1 {}libwrapper.a -o {}module.js'.format(target_dir, target_dir)
-        action += rust_env.Action(emcc_command, chdir=WRAPPER_NAME)
+        action += rust_env.Action(emcc_command)
     
     return action
 
