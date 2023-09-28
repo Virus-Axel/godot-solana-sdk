@@ -3,6 +3,7 @@
 
 #include <solana_sdk.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include "blake3.h"
 
 using internal::gdextension_interface_print_warning;
 
@@ -10,7 +11,7 @@ namespace godot{
 
 void Pubkey::_update_pointer(){
     if (type == "UNIQUE"){
-        data_pointer = create_unique_pubkey();
+        //data_pointer = create_unique();
     }
     else if (type == "SEED"){
         void *base_ptr = variant_to_type<Pubkey>(base);
@@ -25,7 +26,7 @@ void Pubkey::_update_pointer(){
             return;
         }
 
-        data_pointer = create_pubkey_with_seed(base_ptr, (const char*) seed.to_utf8_buffer().ptr(), seed.length(), owner_ptr);
+        create_with_seed(*(Pubkey*)base_ptr, seed, *(Pubkey*)owner_ptr);
         if(data_pointer == nullptr){
             gdextension_interface_print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 30, false);
         }
@@ -50,8 +51,8 @@ void Pubkey::_update_pointer(){
             std::cout << "hej" << std::endl;
         }
     }
-    else if (bytes.size() == PUBKEY_LENGTH){
-        data_pointer = create_pubkey_from_array(bytes.ptr());
+    else if (bytes.size() == PUBKEY_BYTES){
+        create_from_array(bytes.ptr());
     }
     else{
         gdextension_interface_print_warning("Unknown pubkey type", "_update_pointer", "pubkey.cpp", 57, false);
@@ -270,6 +271,30 @@ void Pubkey::set_token_mint_address(const Variant p_value){
 }
 Variant Pubkey::get_token_mint_address(){
     return token_mint_address;
+}
+
+void Pubkey::create_from_array(const unsigned char* data){
+    bytes.resize(PUBKEY_BYTES);
+    for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
+        bytes[i] = data[i];
+    }
+}
+
+void Pubkey::create_with_seed(Pubkey basePubkey, String seed, Pubkey owner_pubkey){
+    blake3_hasher hasher;
+    blake3_hasher_init(&hasher);
+ 
+    blake3_hasher_update(&hasher, basePubkey.get_bytes().ptr(), basePubkey.get_bytes().size());
+    blake3_hasher_update(&hasher, seed.ptr(), seed.length());
+    blake3_hasher_update(&hasher, owner_pubkey.get_bytes().ptr(), owner_pubkey.get_bytes().size());
+
+    uint8_t hash[PUBKEY_BYTES];
+    blake3_hasher_finalize(&hasher, hash, PUBKEY_BYTES);
+
+    bytes.resize(PUBKEY_BYTES);
+    for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
+        bytes[i] = hash[i];
+    }
 }
 
 void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {

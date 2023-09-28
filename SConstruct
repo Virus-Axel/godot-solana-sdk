@@ -89,7 +89,9 @@ env = SConscript("godot-cpp/SConstruct")
 # tweak this if you want to use different folders, or more folders, to store your source code in.
 env.Append(CPPPATH=["src/"])
 env.Append(CPPPATH=["include/"])
+env.Append(CPPPATH=["BLAKE3/c"])
 sources = Glob("src/*.cpp")
+sources += Glob("*.c")
 
 
 # Handle the container build
@@ -125,7 +127,7 @@ else:
             source=sources,
         )
 
-    wrapper = SConscript("wrapper/SConstruct", exports={'env': env})
+    #wrapper = SConscript("wrapper/SConstruct", exports={'env': env})
 
-    env.Depends(library, wrapper)
+    #env.Depends(library, wrapper)
     Default(library)

@@ -5,14 +5,22 @@
 #include <godot_cpp/classes/resource.hpp>
 
 #include "solana_resource.hpp"
-#include "../wrapper/wrapper.h"
 
 namespace godot{
 class Pubkey : public SolanaResource {
     GDCLASS(Pubkey, Resource)
 
 private:
-    const int PUBKEY_LENGTH = 32;
+    // Number of bytes in a pubkey
+    const unsigned int PUBKEY_BYTES = 32;
+    // maximum length of derived `Pubkey` seed
+    const unsigned int MAX_SEED_LEN = 32;
+    // Maximum number of seeds
+    const unsigned int MAX_SEEDS = 16;
+    // Maximum string length of a base58 encoded pubkey
+    const unsigned int MAX_BASE58_LEN = 44;
+
+    const unsigned char PDA_MARKER[22] = "ProgramDerivedAddress";
 
     String type = "UNIQUE";
     String seed = "";
@@ -60,6 +68,10 @@ public:
 
     void set_token_mint_address(const Variant p_value);
     Variant get_token_mint_address();
+
+    void create_from_array(const unsigned char* data);
+    void create_with_seed(Pubkey basePubkey, String seed, Pubkey owner_pubkey);
+    bool create_program_address(const Array<String> seeds, const Pubkey &program_id);
 
     ~Pubkey();
 };
