@@ -52,7 +52,7 @@ public:
     String get_seed();
 
     void set_bytes(const PackedByteArray& p_value);
-    PackedByteArray get_bytes();
+    PackedByteArray get_bytes() const;
 
     void set_type(const String p_value);
     String get_type();
@@ -71,7 +71,7 @@ public:
 
     void create_from_array(const unsigned char* data);
     void create_with_seed(Pubkey basePubkey, String seed, Pubkey owner_pubkey);
-    bool create_program_address(const Array<String> seeds, const Pubkey &program_id);
+    bool create_program_address(const PackedStringArray seeds, const Pubkey &program_id);
 
     ~Pubkey();
 };

@@ -44,11 +44,9 @@ void Pubkey::_update_pointer(){
             return;
         }
 
-        data_pointer = create_associated_token_account(wallet_address_ptr, token_mint_address_ptr);
+        data_pointer = nullptr;// create_associated_token_account(wallet_address_ptr, token_mint_address_ptr);
         if(data_pointer == nullptr){
-            std::cout << "hej" << std::endl;
             gdextension_interface_print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 48, false);
-            std::cout << "hej" << std::endl;
         }
     }
     else if (bytes.size() == PUBKEY_BYTES){
@@ -214,12 +212,12 @@ void Pubkey::set_bytes(const PackedByteArray& p_value){
     }
     
 }
-PackedByteArray Pubkey::get_bytes(){
+PackedByteArray Pubkey::get_bytes() const{
     if (type == "CUSTOM"){
         return bytes;
     }
     else{
-        void* key = to_ptr();
+        void* key = nullptr;
         if (key == nullptr){
             internal::gdextension_interface_print_warning("Invalid Pubkey", "get_bytes", "pubkey.cpp", 218, false);
             return bytes;
@@ -295,6 +293,33 @@ void Pubkey::create_with_seed(Pubkey basePubkey, String seed, Pubkey owner_pubke
     for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
         bytes[i] = hash[i];
     }
+}
+
+bool Pubkey::create_program_address(const PackedStringArray seeds, const Pubkey &program_id){
+    // Perform seeds checks.
+    if(seeds.size() > MAX_SEEDS){
+        return false;
+    }
+    for(unsigned int i = 0; i < seeds.size(); i++){
+        if(seeds[i].length() > MAX_SEED_LEN){
+            return false;
+        }
+    }
+
+    // Create the hash from seeds.
+    blake3_hasher hasher;
+    blake3_hasher_init(&hasher);
+ 
+    for(unsigned int i = 0; i < seeds.size(); i++){
+        blake3_hasher_update(&hasher, seeds[i].ptr(), seeds[i].length());
+    }
+
+    // Include program ID and PDA marker in hash.
+    blake3_hasher_update(&hasher, program_id.get_bytes().ptr(), program_id.get_bytes().size());
+    blake3_hasher_update(&hasher, PDA_MARKER, 21);
+
+    uint8_t hash[PUBKEY_BYTES];
+    blake3_hasher_finalize(&hasher, hash, PUBKEY_BYTES);
 }
 
 void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
