@@ -5,7 +5,35 @@ inline __uint128_t m(uint64_t x, uint64_t y){
     return ((__uint128_t) x) * ((__uint128_t) y);
 }
 
-bool FieldElement::pow2k(uint32_t k){
+const FieldElement SQRT_M1((uint64_t[]){
+    1718705420411056,
+    234908883556509,
+    2233514472574048,
+    2117202627021982,
+    765476049583133,
+});
+
+const FieldElement FieldElement::ONE((const uint64_t[]){
+    1, 0, 0, 0, 0
+});
+
+const FieldElement FieldElement::EDWARDS_D((const uint64_t[]){
+    929955233495203,
+    466365720129213,
+    1662059464998953,
+    2033849074728123,
+    1442794654840575,
+});
+
+uint64_t FieldElement::load8(const uint8_t *data){
+    uint64_t ret = 0;
+    for(unsigned int i = 0; i < 8; i++){
+        ret |= ((uint64_t)data + i) << 8*i;
+    }
+    return ret;
+}
+
+FieldElement FieldElement::pow2k(uint32_t k){
 
     uint64_t a[5];
     for(int i = 0; i < 5; i++){
@@ -51,15 +79,78 @@ bool FieldElement::pow2k(uint32_t k){
         k -= 1;
     }
 
+    FieldElement ret;
     for(int i = 0; i < 5; i++){
-        this->nums[i] = a[i];
+        ret.nums[i] = a[i];
     }
-    return true;
+    return ret;
+}
+
+FieldElement& FieldElement::reduce(){
+    const uint64_t LOW_51_BIT_MASK = (uint64_t(1) << 51) - 1;
+
+    uint64_t c0 = nums[0] >> 51;
+    uint64_t c1 = nums[1] >> 51;
+    uint64_t c2 = nums[2] >> 51;
+    uint64_t c3 = nums[3] >> 51;
+    uint64_t c4 = nums[4] >> 51;
+
+    nums[0] &= LOW_51_BIT_MASK;
+    nums[1] &= LOW_51_BIT_MASK;
+    nums[2] &= LOW_51_BIT_MASK;
+    nums[3] &= LOW_51_BIT_MASK;
+    nums[4] &= LOW_51_BIT_MASK;
+
+    nums[0] += c4 * 19;
+    nums[1] += c0;
+    nums[2] += c1;
+    nums[3] += c2;
+    nums[4] += c3;
+
+    return *this;
+}
+
+void FieldElement::conditional_assign(const FieldElement& other, bool condition){
+    if(condition){
+        *this = other;
+    }
+}
+
+void FieldElement::conditional_negate(bool condition){
+    if(condition){
+        *this = -*this;
+    }
 }
 
 FieldElement::FieldElement(){
     for(int i = 0; i < 5; i++){
         nums[i] = 0;
+    }
+}
+
+FieldElement::FieldElement(const uint64_t from[5]){
+    for(int i = 0; i < 5; i++){
+        nums[i] = from[i];
+    }
+}
+
+FieldElement::FieldElement(const uint8_t *bytes){
+    const uint64_t low_51_bit_mask = (uint64_t(1) << 51) - 1;
+
+    const uint64_t new_nums[5] = {
+        load8(bytes) & low_51_bit_mask,
+        // load bits [ 48,112), shift to [ 51,112)
+        (load8(bytes + 6) >>  3) & low_51_bit_mask,
+        // load bits [ 96,160), shift to [102,160)
+        (load8(bytes + 12) >>  6) & low_51_bit_mask,
+        // load bits [152,216), shift to [153,216)
+        (load8(bytes + 19) >>  1) & low_51_bit_mask,
+        // load bits [192,256), shift to [204,112)
+        (load8(bytes + 24) >> 12) & low_51_bit_mask
+    };
+
+    for(int i = 0; i < 5; i++){
+        this->nums[i] = new_nums[i];
     }
 }
 
@@ -70,6 +161,15 @@ FieldElement& FieldElement::operator=(const FieldElement &other){
     return *this;
 }
 
+bool FieldElement::operator==(const FieldElement &other) const{
+    for(int i = 0; i < 5; i++){
+        if (nums[i] != other.nums[i]){
+            return false;
+        }
+    }
+    return true;
+}
+
 FieldElement FieldElement::square() const{
     FieldElement ret;
     ret = *this;
@@ -77,7 +177,7 @@ FieldElement FieldElement::square() const{
     return ret;
 }
 
-FieldElement FieldElement::operator*(const FieldElement &other){
+FieldElement FieldElement::operator*(const FieldElement &other) const{
 
     const uint64_t *b = other.nums;
     const uint64_t *a = this->nums;
@@ -124,16 +224,117 @@ FieldElement FieldElement::operator*(const FieldElement &other){
     return ret;
 }
 
+FieldElement FieldElement::operator-() const{
+
+    uint64_t inverted[] = {
+        (uint64_t)36028797018963664 - nums[0],
+        (uint64_t)36028797018963952 - nums[1],
+        (uint64_t)36028797018963952 - nums[2],
+        (uint64_t)36028797018963952 - nums[3],
+        (uint64_t)36028797018963952 - nums[4],
+    };
+    return FieldElement(inverted).reduce();
+}
+
+FieldElement FieldElement::operator-(const FieldElement &other) const{
+    const uint64_t new_nums[] = {
+        (nums[0] + (uint64_t)36028797018963664) - other.nums[0],
+        (nums[1] + (uint64_t)36028797018963952) - other.nums[1],
+        (nums[2] + (uint64_t)36028797018963952) - other.nums[2],
+        (nums[3] + (uint64_t)36028797018963952) - other.nums[3],
+        (nums[4] + (uint64_t)36028797018963952) - other.nums[4],
+    };
+    FieldElement ret(new_nums);
+    ret.reduce();
+
+    return ret;
+}
+
+FieldElement FieldElement::operator+(const FieldElement &other) const{
+    const uint64_t new_nums[] = {
+        nums[0] + other.nums[0],
+        nums[1] + other.nums[1],
+        nums[2] + other.nums[2],
+        nums[3] + other.nums[3],
+        nums[4] + other.nums[4],
+    };
+    return FieldElement(new_nums); 
+}
+
+bool FieldElement::is_negative() const{
+    return (bool)(nums[0] & 1);
+}
+
 FieldElement::~FieldElement(){
     
 }
 
-FieldElement sqrt_ratio_i(const FieldElement &u, const FieldElement &v){
+void FieldElement::pow22501(FieldElement &t3, FieldElement &t19) const{
+    FieldElement t0 = square();
+    FieldElement t1 = t0.square().square();
+    FieldElement t2 = (*this) * t1;
+    t3 = t0 * t2;
+    FieldElement t4 = t3.square();
+    FieldElement t5 = t2 * t4;
+    FieldElement t6 = t5.pow2k(5);
+    FieldElement t7 = t6 * t5;
+    FieldElement t8 = t7.pow2k(10);
+    FieldElement t9 = t8 * t7;
+    FieldElement t10 = t9.pow2k(20);
+    FieldElement t11 = t10 * t9;
+    FieldElement t12 = t11.pow2k(10);
+    FieldElement t13 = t12 * t7;
+    FieldElement t14 = t13.pow2k(50);
+    FieldElement t15 = t14 * t13;
+    FieldElement t16 = t15.pow2k(100);
+    FieldElement t17 = t16 * t15;
+    FieldElement t18 = t17.pow2k(50);
+    t19 = t18 * t13;
+}
+
+FieldElement FieldElement::pow_p58() const{
+    FieldElement t19;
+    FieldElement dummy;
+    pow22501(t19, dummy);
+    FieldElement t20 = t19.pow2k(2);
+    FieldElement t21 = *this * t20;
+
+    return t21;
+}
+
+FieldElement sqrt_ratio_i(const FieldElement &u, const FieldElement &v, bool &was_nonzero_square){
     FieldElement v3 = u.square() * v;
     FieldElement v7 = v3.square() * v;
 
-    // TODO
-    //FieldElement r = (u * v3) * (u * v7).pow_p58();
+    FieldElement r = (u * v3) * (u * v7).pow_p58();
 
-    return v3;
+    FieldElement check = v * r.square();
+    FieldElement i = SQRT_M1;
+
+    bool correct_sign_sqrt = check == u;
+    bool flipped_sign_sqrt = check == (-u);
+    bool flipped_sign_sqrt_i = check == ((-u) * i);
+
+    FieldElement r_prime = SQRT_M1 * r;
+    r.conditional_assign(r_prime, flipped_sign_sqrt | flipped_sign_sqrt_i);
+    bool r_is_negative = r.is_negative();
+    r.conditional_negate(r_is_negative);
+
+    was_nonzero_square = correct_sign_sqrt | flipped_sign_sqrt;
+
+    return r;
+}
+
+bool decompress_step_1(const uint8_t *repr, FieldElement &x, FieldElement &y, FieldElement &z){
+    y = FieldElement(repr);
+    z = FieldElement::ONE;
+
+    FieldElement YY = y.square();
+    FieldElement u = YY - z;
+
+    FieldElement v = (YY * FieldElement::EDWARDS_D) + z;
+    bool is_valid_y_point = false;
+    x = sqrt_ratio_i(u, v, is_valid_y_point);
+
+    return is_valid_y_point;
 }
