@@ -46,6 +46,7 @@ protected:
 
 public:
     Pubkey();
+    Pubkey(const String& from);
 
     void set_value(const String& p_value);
     String get_value();
@@ -71,9 +72,11 @@ public:
     void set_token_mint_address(const Variant p_value);
     Variant get_token_mint_address();
 
+    void create_from_string(const String& from);
     void create_from_array(const unsigned char* data);
     void create_with_seed(Variant basePubkey, String seed, Variant owner_pubkey);
     bool create_program_address(const PackedStringArray seeds, const Variant &program_id);
+    bool get_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address);
 
     ~Pubkey();
 };

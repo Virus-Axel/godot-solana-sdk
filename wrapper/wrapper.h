@@ -5,12 +5,12 @@
 
 
 extern "C"{
-    unsigned int bs58_decode(const char* input, unsigned int input_length, char* result);
-    unsigned int bs58_encode(const char* input, unsigned int input_length, char* result);
+    //unsigned int bs58_decode(const char* input, unsigned int input_length, char* result);
+    //unsigned int bs58_encode(const char* input, unsigned int input_length, char* result);
 
     //void *create_unique_pubkey();
-    //void *create_pubkey_from_array(const unsigned char* data);
-    //void *create_pubkey_with_seed(const void* basePubkey, const char* seed, unsigned int seed_length, const void* owner_pubkey);
+    //void *create_pubkey_from_array(const unsigned char* data); DONE
+    //void *create_pubkey_with_seed(const void* basePubkey, const char* seed, unsigned int seed_length, const void* owner_pubkey); DONE
     //void *create_associated_token_account(const void* basePubkey, const void* owner_pubkey);
 
     void get_pubkey_bytes(const void* key, unsigned char* bytes);

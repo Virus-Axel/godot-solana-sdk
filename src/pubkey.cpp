@@ -44,8 +44,12 @@ void Pubkey::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_token_mint_address"), &Pubkey::get_token_mint_address);
     ClassDB::bind_method(D_METHOD("set_token_mint_address", "p_value"), &Pubkey::set_token_mint_address);
 
+    
+    ClassDB::bind_method(D_METHOD("create_from_string", "from"), &Pubkey::create_from_string);
     ClassDB::bind_method(D_METHOD("create_program_address", "seeds", "program_id"), &Pubkey::create_program_address);
     ClassDB::bind_method(D_METHOD("create_with_seed", "basePubkey", "seed", "owner_pubkey"), &Pubkey::create_with_seed);
+    ClassDB::bind_method(D_METHOD("get_associated_token_address", "wallet_pubkey", "token_mint_pubkey"), &Pubkey::get_associated_token_address);
+
 }
 
 
@@ -220,6 +224,10 @@ Variant Pubkey::get_token_mint_address(){
     return token_mint_address;
 }
 
+void Pubkey::create_from_string(const String& from){
+    bytes = SolanaSDK::bs58_decode(from);
+}
+
 void Pubkey::create_from_array(const unsigned char* data){
     bytes.resize(PUBKEY_BYTES);
     for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
@@ -314,6 +322,17 @@ bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant
     return true;
 }
 
+bool Pubkey::get_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address){
+    PackedStringArray arr;
+    arr.append(wallet_address);
+    arr.append(token_mint_address);
+    arr.append(String(SolanaSDK::SPL_TOKEN_ADDRESS.c_str()));
+
+    String pid = String(SolanaSDK::SPL_ASSOCIATED_TOKEN_ADDRESS.c_str());
+
+    return create_program_address(arr, (Variant*) &pid);
+}
+
 void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
     PropertyUsageFlags seed_visibility = PROPERTY_USAGE_NO_EDITOR;
     PropertyUsageFlags custom_visibility = PROPERTY_USAGE_NO_EDITOR;
@@ -341,6 +360,10 @@ void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 Pubkey::Pubkey() {
+}
+
+Pubkey::Pubkey(const String& from){
+    create_from_string(from);
 }
 
 Pubkey::~Pubkey() {
