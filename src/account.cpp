@@ -16,11 +16,11 @@ Account::Account() {
 
 void Account::create_new(uint64_t lamports, uint64_t space, const Variant& owner){
     void* owner_ptr = variant_to_type<Pubkey>(owner);
-    data_pointer = create_account(lamports, space, owner_ptr);
+    data_pointer = nullptr;//create_account(lamports, space, owner_ptr);
 }
 
 Account::~Account() {
     if(data_pointer != nullptr){
-        free_account(data_pointer);
+        ;//free_account(data_pointer);
     }
 }

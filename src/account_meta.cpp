@@ -50,11 +50,11 @@ void AccountMeta::_update_pointer(){
         return;
     }
 
-    data_pointer = create_account_meta(key_ref, is_signer, writeable);
+    data_pointer = nullptr;//create_account_meta(key_ref, is_signer, writeable);
 }
 
 void AccountMeta::_free_pointer(){
-    free_account_meta(data_pointer);
+    ;//free_account_meta(data_pointer);
 }
 
 void AccountMeta::set_pubkey(const Variant &p_value) {
@@ -87,7 +87,7 @@ AccountMeta::AccountMeta() {
 void AccountMeta::create_new(const Variant& account_key, bool is_signer, bool writeable){
     Object *account_key_cast = account_key;
     Pubkey *account_key_ptr = Object::cast_to<Pubkey>(account_key_cast);
-    data_pointer = create_account_meta(account_key_ptr->to_ptr(), is_signer, writeable);
+    data_pointer = nullptr;//create_account_meta(account_key_ptr->to_ptr(), is_signer, writeable);
 }
 
 AccountMeta::~AccountMeta(){

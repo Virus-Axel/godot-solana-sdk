@@ -36,6 +36,8 @@ private:
     void _free_pointer() override;
     void _update_pointer() override;
 
+    bool are_bytes_curve_point() const;
+
 protected:
     static void _bind_methods();
     bool _set(const StringName &p_name, const Variant &p_value);
@@ -70,8 +72,8 @@ public:
     Variant get_token_mint_address();
 
     void create_from_array(const unsigned char* data);
-    void create_with_seed(Pubkey basePubkey, String seed, Pubkey owner_pubkey);
-    bool create_program_address(const PackedStringArray seeds, const Pubkey &program_id);
+    void create_with_seed(Variant basePubkey, String seed, Variant owner_pubkey);
+    bool create_program_address(const PackedStringArray seeds, const Variant &program_id);
 
     ~Pubkey();
 };

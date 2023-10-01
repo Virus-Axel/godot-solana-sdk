@@ -69,8 +69,6 @@ FieldElement FieldElement::pow2k(uint32_t k){
         uint64_t carry = (uint64_t)(c4 >> 51);
         a[4] = ((uint64_t)c4) & LOW_51_BIT_MASK;
 
-        k -= 1;
-
         a[0] += carry * 19;
 
         a[1] += a[0] >> 51;
@@ -335,6 +333,22 @@ bool decompress_step_1(const uint8_t *repr, FieldElement &x, FieldElement &y, Fi
     FieldElement v = (YY * FieldElement::EDWARDS_D) + z;
     bool is_valid_y_point = false;
     x = sqrt_ratio_i(u, v, is_valid_y_point);
+
+    return is_valid_y_point;
+}
+
+bool is_y_point_valid(const uint8_t *repr){
+    FieldElement y(repr);
+
+    std::cout << "sq" << std::endl;
+    FieldElement YY = y.square();
+    std::cout << "uar" << std::endl;
+    FieldElement u = YY - FieldElement::ONE;
+
+    FieldElement v = (YY * FieldElement::EDWARDS_D) + FieldElement::ONE;
+    bool is_valid_y_point = false;
+    std::cout << "ratio" << std::endl;
+    sqrt_ratio_i(u, v, is_valid_y_point);
 
     return is_valid_y_point;
 }

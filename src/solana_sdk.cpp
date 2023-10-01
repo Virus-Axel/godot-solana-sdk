@@ -88,7 +88,7 @@ Dictionary SolanaSDK::quick_http_request(const String& request_body){
 PackedByteArray SolanaSDK::bs58_decode(String str){
 	PackedByteArray result;
 	char buffer[str.length() * 2];
-	unsigned int resultlen = ::bs58_decode((const char*) str.to_utf8_buffer().ptr(), str.length(), buffer);
+	unsigned int resultlen = 0;//::bs58_decode((const char*) str.to_utf8_buffer().ptr(), str.length(), buffer);
 	result.resize(resultlen);
 	for(unsigned int i = 0; i < resultlen; i++){
 		result[i] = buffer[i];
@@ -99,7 +99,7 @@ PackedByteArray SolanaSDK::bs58_decode(String str){
 String SolanaSDK::bs58_encode(PackedByteArray input){
 	PackedByteArray result;
 	char buffer[input.size() * 2];
-	unsigned int resultlen = ::bs58_encode((const char*) input.ptr(), input.size(), buffer);
+	unsigned int resultlen = 0;//::bs58_encode((const char*) input.ptr(), input.size(), buffer);
 	result.resize(resultlen);
 	for(unsigned int i = 0; i < resultlen; i++){
 		result[i] = buffer[i];

@@ -33,6 +33,7 @@ public:
 };
 
 bool decompress_step_1(const uint8_t *repr, FieldElement &x, FieldElement &y, FieldElement &z);
+bool is_y_point_valid(const uint8_t *repr);
 FieldElement sqrt_ratio_i(const FieldElement &u, const FieldElement &v, bool &was_nonzero_square);
 
 #endif

@@ -8,15 +8,15 @@ namespace godot{
 
 void Hash::_update_pointer(){
     if (unique){
-        data_pointer = create_unique_hash();
+        data_pointer = nullptr;//create_unique_hash();
     }
     else if (bytes.size() == HASH_LENGTH){
-        data_pointer = create_hash_from_array(bytes.ptr());
+        data_pointer = nullptr;//create_hash_from_array(bytes.ptr());
     }
 }
 
 void Hash::_free_pointer(){
-    free_hash(data_pointer);
+    //free_hash(data_pointer);
 }
 
 void Hash::_bind_methods() {

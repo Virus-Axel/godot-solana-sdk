@@ -28,11 +28,11 @@ void Transaction::_update_pointer(){
         return;
     }
 
-    data_pointer = create_transaction_unsigned_with_payer(instruction_pointers, instructions.size(), payer_ptr);
+    data_pointer = nullptr;//create_transaction_unsigned_with_payer(instruction_pointers, instructions.size(), payer_ptr);
 }
 
 void Transaction::_free_pointer(){
-    free_transaction(data_pointer);
+    ;//free_transaction(data_pointer);
 }
 
 void Transaction::_bind_methods() {
@@ -102,7 +102,7 @@ void Transaction::create_signed_with_payer(Array instructions, Variant payer, Ar
     void *latest_blockhash_ptr =  variant_to_type<Pubkey>(latest_blockhash);
     void *payer_ptr = variant_to_type<Pubkey>(payer);
 
-    create_transaction_signed_with_payer(instruction_pointers, instructions.size(), payer_ptr, signer_pointers, signers.size(), latest_blockhash_ptr);
+    //create_transaction_signed_with_payer(instruction_pointers, instructions.size(), payer_ptr, signer_pointers, signers.size(), latest_blockhash_ptr);
 }
 
 void Transaction::set_instructions(const Array& p_value){
@@ -138,7 +138,7 @@ PackedByteArray Transaction::serialize(){
 
     // Write the serialized transaction into a buffer.
     unsigned char buffer[MAXIMUM_SERIALIZED_BUFFER + 1];
-    int written_bytes = serialize_transaction(tx, buffer, MAXIMUM_SERIALIZED_BUFFER);
+    int written_bytes = 0;//serialize_transaction(tx, buffer, MAXIMUM_SERIALIZED_BUFFER);
 
     // Return the amount of bytes written.
     if (written_bytes <= 0)
@@ -178,7 +178,7 @@ Variant Transaction::sign_and_send(){
         return Error::ERR_INVALID_DATA;
     }
 
-    int status = sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
+    int status = 0;//sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
 
     // Check status from rust library.
     if (status != 0){
@@ -226,7 +226,7 @@ Error Transaction::sign(const Variant& latest_blockhash){
         return Error::ERR_INVALID_DATA;
     }
 
-    int status = sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
+    int status = 0;//sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
 
     // Check status from rust library.
     if (status != 0){
@@ -263,7 +263,7 @@ Error Transaction::partially_sign(const Variant& latest_blockhash){
         return Error::ERR_INVALID_DATA;
     }
 
-    int status = partially_sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
+    int status = 0;//partially_sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
 
     // Check status of rust library function.
     if (status != 0){

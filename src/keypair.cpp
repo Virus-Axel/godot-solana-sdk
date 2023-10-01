@@ -19,11 +19,11 @@ void Keypair::_bind_methods() {
 }
 
 void Keypair::_free_pointer(){
-    free_keypair(data_pointer);
+    //free_keypair(data_pointer);
 }
 void Keypair::_update_pointer(){
     if(unique){
-        data_pointer = create_keypair();
+        data_pointer = nullptr;//create_keypair();
     }
     else if(private_bytes.size() == KEY_LENGTH && public_bytes.size() == KEY_LENGTH){
 
@@ -34,7 +34,7 @@ void Keypair::_update_pointer(){
             bytes[KEY_LENGTH + i] = public_bytes[i];
         }
 
-        data_pointer = create_keypair_from_bytes(bytes);
+        data_pointer = nullptr;//create_keypair_from_bytes(bytes);
     }
 }
 
@@ -132,7 +132,7 @@ String Keypair::get_public_value(){
             return "";
         }
         unsigned char keypair_bytes[64];
-        get_keypair_bytes(key, keypair_bytes);
+        //get_keypair_bytes(key, keypair_bytes);
         PackedByteArray keypair_array;
         keypair_array.resize(KEY_LENGTH);
         for(int i = 0; i < KEY_LENGTH; i++){
@@ -173,7 +173,7 @@ PackedByteArray Keypair::get_public_bytes(){
             return public_bytes;
         }
         unsigned char keypair_bytes[64];
-        get_keypair_bytes(key, keypair_bytes);
+        //get_keypair_bytes(key, keypair_bytes);
         PackedByteArray keypair_array;
         keypair_array.resize(KEY_LENGTH);
         for(int i = 0; i < KEY_LENGTH; i++){
@@ -212,7 +212,7 @@ String Keypair::get_private_value(){
             return "";
         }
         unsigned char keypair_bytes[64];
-        get_keypair_bytes(key, keypair_bytes);
+        //get_keypair_bytes(key, keypair_bytes);
         PackedByteArray keypair_array;
         keypair_array.resize(KEY_LENGTH);
         for(int i = 0; i < KEY_LENGTH; i++){
@@ -253,7 +253,7 @@ PackedByteArray Keypair::get_private_bytes(){
             return private_bytes;
         }
         unsigned char keypair_bytes[64];
-        get_keypair_bytes(key, keypair_bytes);
+        //get_keypair_bytes(key, keypair_bytes);
         PackedByteArray keypair_array;
         keypair_array.resize(KEY_LENGTH);
         for(int i = 0; i < KEY_LENGTH; i++){

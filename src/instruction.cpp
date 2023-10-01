@@ -9,7 +9,7 @@ namespace godot{
 using internal::gdextension_interface_print_warning;
 
 void Instruction::_free_pointer(){
-    free_instruction(data_pointer);
+    ;//free_instruction(data_pointer);
 }
 
 void Instruction::_update_pointer(){
@@ -33,7 +33,7 @@ void Instruction::_update_pointer(){
     // Rust requires a mutable pointer so we make a copy.
     memcpy(allocated_data, data.get_string_from_utf8().utf8().get_data(), data.size());
 
-    data_pointer = create_instruction_with_bytes(program_id_ptr, allocated_data, data.size(), account_pointers, accounts.size());
+    data_pointer = nullptr;//create_instruction_with_bytes(program_id_ptr, allocated_data, data.size(), account_pointers, accounts.size());
 }
 
 void Instruction::_bind_methods() {

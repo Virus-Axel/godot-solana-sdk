@@ -4,62 +4,26 @@
 #include <solana_sdk.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include "blake3.h"
+#include "sha256.hpp"
+
+#include "curve25519.hpp"
+#include <iostream>
+#include <string.h>
 
 using internal::gdextension_interface_print_warning;
 
 namespace godot{
 
 void Pubkey::_update_pointer(){
-    if (type == "UNIQUE"){
-        //data_pointer = create_unique();
-    }
-    else if (type == "SEED"){
-        void *base_ptr = variant_to_type<Pubkey>(base);
-        if(base_ptr == nullptr){
-            gdextension_interface_print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 18, false);
-            return;
-        }
 
-        void *owner_ptr = variant_to_type<Pubkey>(owner);
-        if(owner_ptr == nullptr){
-            gdextension_interface_print_warning("Bad base pubkey", "_update_pointer", "pubkey.cpp", 24, false);
-            return;
-        }
-
-        create_with_seed(*(Pubkey*)base_ptr, seed, *(Pubkey*)owner_ptr);
-        if(data_pointer == nullptr){
-            gdextension_interface_print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 30, false);
-        }
-    }
-    else if (type == "ASSOCIATED_TOKEN"){
-        void *wallet_address_ptr = variant_to_type<Pubkey>(wallet_address);
-        if(wallet_address_ptr == nullptr){
-            gdextension_interface_print_warning("Bad wallet address pubkey", "_update_pointer", "pubkey.cpp", 36, false);
-            return;
-        }
-
-        void *token_mint_address_ptr = variant_to_type<Pubkey>(token_mint_address);
-        if(token_mint_address_ptr == nullptr){
-            gdextension_interface_print_warning("Bad token mint pubkey", "_update_pointer", "pubkey.cpp", 42, false);
-            return;
-        }
-
-        data_pointer = nullptr;// create_associated_token_account(wallet_address_ptr, token_mint_address_ptr);
-        if(data_pointer == nullptr){
-            gdextension_interface_print_warning("Creating pubkey with seed failed", "_update_pointer", "pubkey.cpp", 48, false);
-        }
-    }
-    else if (bytes.size() == PUBKEY_BYTES){
-        create_from_array(bytes.ptr());
-    }
-    else{
-        gdextension_interface_print_warning("Unknown pubkey type", "_update_pointer", "pubkey.cpp", 57, false);
-        data_pointer = nullptr;
-    }
 }
 
 void Pubkey::_free_pointer(){
-    free_pubkey(data_pointer);
+    //free_pubkey(data_pointer);
+}
+
+bool Pubkey::are_bytes_curve_point() const{
+    return is_y_point_valid(bytes.ptr());
 }
 
 void Pubkey::_bind_methods() {
@@ -79,6 +43,9 @@ void Pubkey::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_wallet_address", "p_value"), &Pubkey::set_wallet_address);
     ClassDB::bind_method(D_METHOD("get_token_mint_address"), &Pubkey::get_token_mint_address);
     ClassDB::bind_method(D_METHOD("set_token_mint_address", "p_value"), &Pubkey::set_token_mint_address);
+
+    ClassDB::bind_method(D_METHOD("create_program_address", "seeds", "program_id"), &Pubkey::create_program_address);
+    ClassDB::bind_method(D_METHOD("create_with_seed", "basePubkey", "seed", "owner_pubkey"), &Pubkey::create_with_seed);
 }
 
 
@@ -176,7 +143,7 @@ String Pubkey::get_value(){
             PackedByteArray byte_array;
             byte_array.resize(32);
             unsigned char key_bytes[32];
-            get_pubkey_bytes(key, key_bytes);
+            //get_pubkey_bytes(key, key_bytes);
             for(int i = 0; i < 32; i++){
                 byte_array[i] = key_bytes[i];
             }
@@ -213,25 +180,7 @@ void Pubkey::set_bytes(const PackedByteArray& p_value){
     
 }
 PackedByteArray Pubkey::get_bytes() const{
-    if (type == "CUSTOM"){
-        return bytes;
-    }
-    else{
-        void* key = nullptr;
-        if (key == nullptr){
-            internal::gdextension_interface_print_warning("Invalid Pubkey", "get_bytes", "pubkey.cpp", 218, false);
-            return bytes;
-        }
-        PackedByteArray byte_array;
-        byte_array.resize(32);
-        unsigned char key_bytes[32];
-        get_pubkey_bytes(key, key_bytes);
-        std::cout << "We are here" << std::endl;
-        for(int i = 0; i < 32; i++){
-            byte_array[i] = key_bytes[i];
-        }
-        return byte_array;
-    }
+    return bytes;
 }
 
 void Pubkey::set_type(const String p_value){
@@ -278,24 +227,44 @@ void Pubkey::create_from_array(const unsigned char* data){
     }
 }
 
-void Pubkey::create_with_seed(Pubkey basePubkey, String seed, Pubkey owner_pubkey){
-    blake3_hasher hasher;
-    blake3_hasher_init(&hasher);
- 
-    blake3_hasher_update(&hasher, basePubkey.get_bytes().ptr(), basePubkey.get_bytes().size());
-    blake3_hasher_update(&hasher, seed.ptr(), seed.length());
-    blake3_hasher_update(&hasher, owner_pubkey.get_bytes().ptr(), owner_pubkey.get_bytes().size());
+void Pubkey::create_with_seed(Variant basePubkey, String seed, Variant owner_pubkey){
 
-    uint8_t hash[PUBKEY_BYTES];
-    blake3_hasher_finalize(&hasher, hash, PUBKEY_BYTES);
+    Object *base_pubkey_cast = basePubkey;
+    Pubkey *base_pubkey_type = Object::cast_to<Pubkey>(base_pubkey_cast);
+
+    Object *owner_pubkey_cast = basePubkey;
+    Pubkey *owner_pubkey_type = Object::cast_to<Pubkey>(owner_pubkey_cast);
+ 
+    std::cout << base_pubkey_type->get_bytes().size() << std::endl;
+    std::cout << owner_pubkey_type->get_bytes().size() << std::endl;
+    std::cout << seed.length() << std::endl;
+    for(int i = 0; i < 32; i++){
+        std::cout << (int)owner_pubkey_type->get_bytes().ptr()[i] << std::endl;
+    }
+
+    SHA256 hasher;
+
+    hasher.update(base_pubkey_type->get_bytes().ptr(), base_pubkey_type->get_bytes().size());
+    hasher.update(seed.to_utf8_buffer().ptr(), seed.length());
+    hasher.update(owner_pubkey_type->get_bytes().ptr(), owner_pubkey_type->get_bytes().size());
+
+    //blake3_hasher_update(&hasher, base_pubkey_type->get_bytes().ptr(), base_pubkey_type->get_bytes().size());
+    //blake3_hasher_update(&hasher, seed.to_utf8_buffer().ptr(), seed.length());
+    //blake3_hasher_update(&hasher, owner_pubkey_type->get_bytes().ptr(), owner_pubkey_type->get_bytes().size());
+
+    uint8_t *sha256_hash = hasher.digest();
+
+    //blake3_hasher_finalize(&hasher, hash, BLAKE3_OUT_LEN);
 
     bytes.resize(PUBKEY_BYTES);
     for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
-        bytes[i] = hash[i];
+        std::cout << (int) sha256_hash[i] << std::endl;
+        bytes[i] = sha256_hash[i];
     }
+    delete[] sha256_hash;
 }
 
-bool Pubkey::create_program_address(const PackedStringArray seeds, const Pubkey &program_id){
+bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant &program_id){
     // Perform seeds checks.
     if(seeds.size() > MAX_SEEDS){
         return false;
@@ -307,19 +276,42 @@ bool Pubkey::create_program_address(const PackedStringArray seeds, const Pubkey 
     }
 
     // Create the hash from seeds.
-    blake3_hasher hasher;
-    blake3_hasher_init(&hasher);
+    //blake3_hasher hasher;
+    //blake3_hasher_init(&hasher);
+    SHA256 hasher;
  
     for(unsigned int i = 0; i < seeds.size(); i++){
-        blake3_hasher_update(&hasher, seeds[i].ptr(), seeds[i].length());
+        hasher.update(seeds[i].to_utf8_buffer().ptr(), seeds[i].length());
     }
 
     // Include program ID and PDA marker in hash.
-    blake3_hasher_update(&hasher, program_id.get_bytes().ptr(), program_id.get_bytes().size());
-    blake3_hasher_update(&hasher, PDA_MARKER, 21);
+    Object *program_id_cast = program_id;
+    Pubkey *program_id_type = Object::cast_to<Pubkey>(program_id_cast);
+    
+    hasher.update((*program_id_type).get_bytes().ptr(), (*program_id_type).get_bytes().size());
+    hasher.update(PDA_MARKER, 21);
 
     uint8_t hash[PUBKEY_BYTES];
-    blake3_hasher_finalize(&hasher, hash, PUBKEY_BYTES);
+    uint8_t *hash_ptr;
+    hash_ptr = hasher.digest();
+    for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
+        hash[i] = hash_ptr[i];
+    }
+
+    // Remove this memory ASAP.
+    delete[] hash_ptr;
+    
+    //blake3_hasher_finalize(&hasher, hash, PUBKEY_BYTES);
+
+    if(is_y_point_valid(hash)){
+        return false;
+    }
+
+    bytes.resize(PUBKEY_BYTES);
+    for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
+        bytes[i] = hash[i];
+    }
+    return true;
 }
 
 void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
