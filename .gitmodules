@@ -18,3 +18,6 @@
 [submodule "BLAKE3"]
 	path = BLAKE3
 	url = git@github.com:BLAKE3-team/BLAKE3.git
+[submodule "cryptopp"]
+	path = cryptopp
+	url = git@github.com:weidai11/cryptopp.git

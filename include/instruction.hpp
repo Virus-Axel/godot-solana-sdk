@@ -6,10 +6,50 @@
 #include "pubkey.hpp"
 #include "utils.hpp"
 #include "solana_resource.hpp"
+#include "hash.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 
 namespace godot{
+
+class Instruction;
+
+class Message{
+private:
+public:
+    Message();
+    ~Message();
+};
+
+class CompiledKeyMeta{
+public:
+    bool is_writer = false;
+    bool is_signer = false;
+    bool is_invoked = false;
+};
+
+class CompiledKeys{
+private:
+    unsigned int num_required_signatures = 0;
+    unsigned int num_readonly_signed_accounts = 0;
+    unsigned int num_readonly_unsigned_accounts = 0;
+    Pubkey* payer = nullptr;
+    TypedArray<Pubkey> account_keys;
+public:
+    CompiledKeys();
+    CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, const Hash &latest_blockhash);
+    ~CompiledKeys();
+};
+
+class CompiledInstruction{
+private:
+    unsigned int program_id_index = 0;
+    PackedInt32Array accounts;
+    PackedByteArray data;
+public:
+    CompiledInstruction();
+    ~CompiledInstruction();
+};
 
 class Instruction : public SolanaResource {
     GDCLASS(Instruction, Resource)

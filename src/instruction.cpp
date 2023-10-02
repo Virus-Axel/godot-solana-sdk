@@ -8,31 +8,62 @@ namespace godot{
 
 using internal::gdextension_interface_print_warning;
 
+CompiledKeys::CompiledKeys(){
+
+}
+
+CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, const Hash &latest_blockhash){
+    TypedArray<Pubkey> writable_signer_keys;
+    TypedArray<Pubkey> readonly_signer_keys;
+    TypedArray<Pubkey> writable_non_signer_keys;
+    TypedArray<Pubkey> readonly_non_signer_keys;
+
+    for(unsigned int i = 0; i < instructions.size(); i++){
+        Instruction *element = Object::cast_to<Instruction>((Object*) instructions[i]);
+        Pubkey *program_id = Object::cast_to<Pubkey>((Object*) element->get_program_id());
+
+        readonly_non_signer_keys.append(element->get_program_id());
+        const TypedArray<AccountMeta> &account_metas = element->get_accounts();
+
+        for(unsigned int j = 0; j < account_metas.size(); j++){
+            AccountMeta *account_meta = Object::cast_to<AccountMeta>((Object*)account_metas[i]);
+            if(account_meta->get_is_signer() && account_meta->get_writeable()){
+                writable_signer_keys.append(account_meta->get_pubkey());
+            }
+            else if(!account_meta->get_is_signer() && account_meta->get_writeable()){
+                writable_non_signer_keys.append(account_meta->get_pubkey());
+            }
+            else if(!account_meta->get_is_signer() && !account_meta->get_writeable()){
+                readonly_non_signer_keys.append(account_meta->get_pubkey());
+            }
+            else{
+                readonly_signer_keys.append(account_meta->get_pubkey());
+            }
+        }
+    }
+
+    account_keys.append_array(writable_signer_keys);
+    account_keys.append_array(readonly_signer_keys);
+    account_keys.append_array(writable_non_signer_keys);
+    account_keys.append_array(readonly_non_signer_keys);
+
+    num_required_signatures = writable_signer_keys.size() + readonly_signer_keys.size();
+    num_readonly_unsigned_accounts = readonly_non_signer_keys.size();
+    num_readonly_signed_accounts = readonly_signer_keys.size();
+}
+
+CompiledKeys::~CompiledKeys(){
+    if(payer != nullptr){
+        delete payer;
+    }
+}
+
+
 void Instruction::_free_pointer(){
     ;//free_instruction(data_pointer);
 }
 
 void Instruction::_update_pointer(){
-    // Allocate buffers.
-    void* account_pointers[accounts.size()];
-    unsigned char allocated_data[data.size()];
-
-    // Write account pointer array.
-    if (!array_to_pointer_array<AccountMeta>(accounts, account_pointers)){
-        gdextension_interface_print_warning("Bad accounts", "_update_pointer", "instruction.cpp", 20, false);
-        return;
-    }
-
-    // Get program ID object.
-    void *program_id_ptr = variant_to_type<Pubkey>(program_id);
-    if(program_id_ptr == nullptr){
-        gdextension_interface_print_warning("Bad program ID", "_update_pointer", "instruction.cpp", 26, false);
-        return;
-    }
-
-    // Rust requires a mutable pointer so we make a copy.
-    memcpy(allocated_data, data.get_string_from_utf8().utf8().get_data(), data.size());
-
     data_pointer = nullptr;//create_instruction_with_bytes(program_id_ptr, allocated_data, data.size(), account_pointers, accounts.size());
 }
 
@@ -71,6 +102,8 @@ void Instruction::set_accounts(const TypedArray<AccountMeta>& p_value){
 TypedArray<AccountMeta> Instruction::get_accounts(){
     return accounts;
 }
+
+
 
 Instruction::~Instruction() {
     _free_pointer_if_not_null();

@@ -1,4 +1,6 @@
 #include "keypair.hpp"
+#include "xed25519.h"
+#include "osrng.h"
 
 #include <godot_cpp/core/class_db.hpp>
 #include <solana_sdk.hpp>
@@ -22,20 +24,7 @@ void Keypair::_free_pointer(){
     //free_keypair(data_pointer);
 }
 void Keypair::_update_pointer(){
-    if(unique){
-        data_pointer = nullptr;//create_keypair();
-    }
-    else if(private_bytes.size() == KEY_LENGTH && public_bytes.size() == KEY_LENGTH){
-
-        // Concatinate private key and public key.
-        unsigned char bytes[KEY_LENGTH * 2];
-        for(int i = 0; i < KEY_LENGTH; i++){
-            bytes[i] = private_bytes[i];
-            bytes[KEY_LENGTH + i] = public_bytes[i];
-        }
-
-        data_pointer = nullptr;//create_keypair_from_bytes(bytes);
-    }
+    
 }
 
 void Keypair::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -103,6 +92,30 @@ bool Keypair::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 Keypair::Keypair() {
+    CryptoPP::AutoSeededRandomPool prng;
+    signer.AccessPrivateKey().GenerateRandom(prng);
+        
+    const CryptoPP::ed25519PrivateKey& privKey = dynamic_cast<const CryptoPP::ed25519PrivateKey&>(signer.GetPrivateKey());
+    
+    private_bytes.resize(CryptoPP::ed25519PrivateKey::SECRET_KEYLENGTH);
+    const CryptoPP::byte *private_byte_pointer = privKey.GetPrivateKeyBytePtr();
+    for(unsigned int i = 0; i < CryptoPP::ed25519PrivateKey::SECRET_KEYLENGTH; i++){
+        private_bytes[i] = private_byte_pointer[i];
+    }
+    verifier = CryptoPP::ed25519::Verifier(signer);
+
+    const CryptoPP::ed25519PublicKey& pubKey = dynamic_cast<const CryptoPP::ed25519PublicKey&>(verifier.GetPublicKey());
+    const CryptoPP::byte *public_byte_pointer = pubKey.GetPublicKeyBytePtr();
+    public_bytes.resize(CryptoPP::ed25519PublicKey::PUBLIC_KEYLENGTH);
+    for(unsigned int i = 0; i < CryptoPP::ed25519PublicKey::PUBLIC_KEYLENGTH; i++){
+        public_bytes[i] = public_byte_pointer[i];
+    }
+
+    private_value = SolanaSDK::bs58_encode(private_bytes);
+
+    std::cout << "privvalue: " << private_value.to_ascii_buffer().ptr() << std::endl;
+    public_value = SolanaSDK::bs58_encode(public_bytes);
+    std::cout << "privvalue: " << public_value.to_ascii_buffer().ptr() << std::endl;
 }
 
 void Keypair::set_public_value(const String& p_value){
@@ -125,24 +138,7 @@ void Keypair::set_public_value(const String& p_value){
 }
 
 String Keypair::get_public_value(){
-    if(unique){
-        void* key = to_ptr();
-        if(key == nullptr){
-            internal::gdextension_interface_print_warning("Invalid keypair", "get_public_value", "keypair.cpp", 132, false);
-            return "";
-        }
-        unsigned char keypair_bytes[64];
-        //get_keypair_bytes(key, keypair_bytes);
-        PackedByteArray keypair_array;
-        keypair_array.resize(KEY_LENGTH);
-        for(int i = 0; i < KEY_LENGTH; i++){
-            keypair_array[i] = keypair_bytes[KEY_LENGTH + i];
-        }
-        return SolanaSDK::bs58_encode(keypair_array);
-    }
-    else{
-        return public_value;
-    }
+    return public_value;
 }
 
 void Keypair::set_public_bytes(const PackedByteArray& p_value){
@@ -166,25 +162,7 @@ void Keypair::set_public_bytes(const PackedByteArray& p_value){
     }
 }
 PackedByteArray Keypair::get_public_bytes(){
-    if(unique){
-        void* key = to_ptr();
-        if(key == nullptr){
-            internal::gdextension_interface_print_warning("Invalid keypair", "get_public_bytes", "keypair.cpp", 172, false);
-            return public_bytes;
-        }
-        unsigned char keypair_bytes[64];
-        //get_keypair_bytes(key, keypair_bytes);
-        PackedByteArray keypair_array;
-        keypair_array.resize(KEY_LENGTH);
-        for(int i = 0; i < KEY_LENGTH; i++){
-            std::cout << (int)keypair_bytes[KEY_LENGTH + i] << std::endl;
-            keypair_array[i] = keypair_bytes[KEY_LENGTH + i];
-        }
-        return keypair_array;
-    }
-    else{
-        return public_bytes;
-    }
+    return public_bytes;
 }
 
 void Keypair::set_private_value(const String& p_value){
@@ -205,25 +183,7 @@ void Keypair::set_private_value(const String& p_value){
 }
 
 String Keypair::get_private_value(){
-    if(unique){
-        void* key = to_ptr();
-        if(key == nullptr){
-            internal::gdextension_interface_print_warning("Invalid keypair", "get_private_value", "keypair.cpp", 210, false);
-            return "";
-        }
-        unsigned char keypair_bytes[64];
-        //get_keypair_bytes(key, keypair_bytes);
-        PackedByteArray keypair_array;
-        keypair_array.resize(KEY_LENGTH);
-        for(int i = 0; i < KEY_LENGTH; i++){
-            std::cout << (int)keypair_bytes[KEY_LENGTH + i] << std::endl;
-            keypair_array[i] = keypair_bytes[i];
-        }
-        return SolanaSDK::bs58_encode(keypair_array);
-    }
-    else{
-        return private_value;
-    }
+    return private_value;
 }
 
 void Keypair::set_private_bytes(const PackedByteArray& p_value){
@@ -246,24 +206,7 @@ void Keypair::set_private_bytes(const PackedByteArray& p_value){
 }
 
 PackedByteArray Keypair::get_private_bytes(){
-    if(unique){
-        void* key = to_ptr();
-        if(key == nullptr){
-            internal::gdextension_interface_print_warning("Invalid keypair", "get_private_bytes", "keypair.cpp", 250, false);
-            return private_bytes;
-        }
-        unsigned char keypair_bytes[64];
-        //get_keypair_bytes(key, keypair_bytes);
-        PackedByteArray keypair_array;
-        keypair_array.resize(KEY_LENGTH);
-        for(int i = 0; i < KEY_LENGTH; i++){
-            keypair_array[i] = keypair_bytes[i];
-        }
-        return keypair_array;
-    }
-    else{
-        return private_bytes;
-    }
+    return private_bytes;
 }
 
 void Keypair::set_unique(const bool p_value){

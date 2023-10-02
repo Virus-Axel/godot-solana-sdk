@@ -1,16 +1,21 @@
 #ifndef SOLANA_SDK_KEYPAIR_HPP
 #define SOLANA_SDK_KEYPAIR_HPP
 
+
 #include <godot_cpp/classes/resource.hpp>
 #include "../wrapper/wrapper.h"
 #include "utils.hpp"
 #include "solana_resource.hpp"
+#include "xed25519.h"
 
 namespace godot{
 class Keypair : public SolanaResource {
     GDCLASS(Keypair, Resource)
 
 private:
+    CryptoPP::ed25519::Signer signer;
+    CryptoPP::ed25519::Verifier verifier;
+
     const int KEY_LENGTH = 32;
 
     bool unique = true;
