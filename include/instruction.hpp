@@ -12,7 +12,9 @@
 
 namespace godot{
 
+// Predefine some classes.
 class Instruction;
+class CompiledInstruction;
 
 class Message{
 private:
@@ -21,33 +23,38 @@ public:
     ~Message();
 };
 
-class CompiledKeyMeta{
-public:
-    bool is_writer = false;
-    bool is_signer = false;
-    bool is_invoked = false;
-};
 
-class CompiledKeys{
+class CompiledKeys: public Resource{ // Message
+
 private:
     unsigned int num_required_signatures = 0;
     unsigned int num_readonly_signed_accounts = 0;
     unsigned int num_readonly_unsigned_accounts = 0;
-    Pubkey* payer = nullptr;
     TypedArray<Pubkey> account_keys;
+    Hash latest_blockhash;
+    TypedArray<CompiledInstruction> compiled_instructions;
+
 public:
     CompiledKeys();
     CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, const Hash &latest_blockhash);
     ~CompiledKeys();
 };
 
-class CompiledInstruction{
-private:
-    unsigned int program_id_index = 0;
-    PackedInt32Array accounts;
-    PackedByteArray data;
+class CompiledInstruction: public Resource{
+    GDCLASS(CompiledInstruction, Resource)
+
+protected:
+    static void _bind_methods();
+
 public:
+    uint8_t program_id_index = 0;
+    PackedByteArray accounts;
+    PackedByteArray data;
+
     CompiledInstruction();
+
+    //CompiledInstruction& operator=(const CompiledInstruction& other);
+
     ~CompiledInstruction();
 };
 

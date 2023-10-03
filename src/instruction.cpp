@@ -18,6 +18,13 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
     TypedArray<Pubkey> writable_non_signer_keys;
     TypedArray<Pubkey> readonly_non_signer_keys;
 
+    PackedByteArray writable_signer_indicies;
+    PackedByteArray readonly_signer_indicies;
+    PackedByteArray writable_non_signer_indicies;
+    PackedByteArray readonly_non_signer_indicies;
+
+    //this->latest_blockhash = latest_blockhash; 
+
     for(unsigned int i = 0; i < instructions.size(); i++){
         Instruction *element = Object::cast_to<Instruction>((Object*) instructions[i]);
         Pubkey *program_id = Object::cast_to<Pubkey>((Object*) element->get_program_id());
@@ -42,6 +49,50 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
         }
     }
 
+    // Loop again to figure out indices.
+    for(unsigned int i = 0; i < instructions.size(); i++){
+        Instruction *element = Object::cast_to<Instruction>((Object*) instructions[i]);
+        const TypedArray<AccountMeta> &account_metas = element->get_accounts();
+
+        CompiledInstruction compiled_instruction;
+        compiled_instruction.data = element->get_data();
+        compiled_instruction.data = element->get_program_id();
+
+        for(unsigned int j = 0; j < account_metas.size(); j++){
+            AccountMeta *account_meta = Object::cast_to<AccountMeta>((Object*)account_metas[i]);
+            if(account_meta->get_is_signer() && account_meta->get_writeable()){
+                writable_signer_indicies.push_back(
+                    writable_signer_indicies.size()
+                    );
+                compiled_instruction.accounts.push_back(*writable_signer_indicies.end());
+            }
+            else if(!account_meta->get_is_signer() && account_meta->get_writeable()){
+                writable_non_signer_indicies.push_back(
+                    writable_signer_keys.size() +
+                    readonly_signer_keys.size() +
+                    writable_non_signer_indicies.size()
+                );
+                compiled_instruction.accounts.push_back(*writable_non_signer_indicies.end());
+            }
+            else if(!account_meta->get_is_signer() && !account_meta->get_writeable()){
+                readonly_non_signer_indicies.push_back(
+                    writable_signer_keys.size() +
+                    readonly_signer_keys.size() +
+                    writable_non_signer_keys.size() +
+                    readonly_non_signer_indicies.size());
+                compiled_instruction.accounts.push_back(*readonly_non_signer_indicies.end());
+            }
+            else{
+                readonly_signer_indicies.push_back(
+                    writable_signer_keys.size() +
+                    readonly_signer_indicies.size()
+                );
+                compiled_instruction.accounts.push_back(*readonly_signer_indicies.end());
+            }
+        }
+        compiled_instructions.push_back((Variant&)compiled_instruction);
+    }
+
     account_keys.append_array(writable_signer_keys);
     account_keys.append_array(readonly_signer_keys);
     account_keys.append_array(writable_non_signer_keys);
@@ -53,9 +104,6 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
 }
 
 CompiledKeys::~CompiledKeys(){
-    if(payer != nullptr){
-        delete payer;
-    }
 }
 
 
@@ -108,4 +156,17 @@ TypedArray<AccountMeta> Instruction::get_accounts(){
 Instruction::~Instruction() {
     _free_pointer_if_not_null();
 }
+
+CompiledInstruction::CompiledInstruction(){
+
+}
+
+void CompiledInstruction::_bind_methods(){
+
+}
+
+CompiledInstruction::~CompiledInstruction(){
+
+}
+
 }
