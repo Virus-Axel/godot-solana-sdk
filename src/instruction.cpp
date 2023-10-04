@@ -12,7 +12,7 @@ CompiledKeys::CompiledKeys(){
 
 }
 
-CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, const Hash &latest_blockhash){
+CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, const Variant &latest_blockhash){
     TypedArray<Pubkey> writable_signer_keys;
     TypedArray<Pubkey> readonly_signer_keys;
     TypedArray<Pubkey> writable_non_signer_keys;
@@ -23,7 +23,7 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
     PackedByteArray writable_non_signer_indicies;
     PackedByteArray readonly_non_signer_indicies;
 
-    //this->latest_blockhash = latest_blockhash; 
+    this->latest_blockhash = latest_blockhash; 
 
     for(unsigned int i = 0; i < instructions.size(); i++){
         Instruction *element = Object::cast_to<Instruction>((Object*) instructions[i]);
@@ -103,6 +103,30 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
     num_readonly_signed_accounts = readonly_signer_keys.size();
 }
 
+PackedByteArray CompiledKeys::serialize(){
+    PackedByteArray result;
+    result.append(num_required_signatures);
+    result.append(num_readonly_signed_accounts);
+    result.append(num_readonly_unsigned_accounts);
+
+    result.append(account_keys.size());
+    for(unsigned int i = 0; i < account_keys.size(); i++){
+        Pubkey *account_key = Object::cast_to<Pubkey>(account_keys[i]);
+        result.append_array(account_key->get_bytes());
+    }
+
+    result.append(1);
+    Pubkey *latest_blockhash_pubkey = Object::cast_to<Pubkey>(latest_blockhash);
+    result.append_array(latest_blockhash_pubkey->get_bytes());
+
+    result.append(compiled_instructions.size());
+    for(unsigned int i = 0; i < compiled_instructions.size(); i++){
+        CompiledInstruction *compiled_instruction = Object::cast_to<CompiledInstruction>(compiled_instructions[i]);
+        result.append_array(compiled_instruction->serialize());
+    }
+    return result;
+}
+
 CompiledKeys::~CompiledKeys(){
 }
 
@@ -163,6 +187,20 @@ CompiledInstruction::CompiledInstruction(){
 
 void CompiledInstruction::_bind_methods(){
 
+}
+
+PackedByteArray CompiledInstruction::serialize(){
+    PackedByteArray result;
+    result.append(program_id_index);
+    result.append(accounts.size());
+    for(unsigned int i = 0; i < accounts.size(); i++){
+        result.append(accounts[i]);
+    }
+    result.append(data.size());
+    for(unsigned int i = 0; i < data.size(); i++){
+        result.append(data[i]);
+    }
+    return result;
 }
 
 CompiledInstruction::~CompiledInstruction(){

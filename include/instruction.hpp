@@ -27,16 +27,17 @@ public:
 class CompiledKeys: public Resource{ // Message
 
 private:
-    unsigned int num_required_signatures = 0;
-    unsigned int num_readonly_signed_accounts = 0;
-    unsigned int num_readonly_unsigned_accounts = 0;
+    uint8_t num_required_signatures = 0;
+    uint8_t num_readonly_signed_accounts = 0;
+    uint8_t num_readonly_unsigned_accounts = 0;
     TypedArray<Pubkey> account_keys;
-    Hash latest_blockhash;
+    Variant latest_blockhash;
     TypedArray<CompiledInstruction> compiled_instructions;
 
 public:
     CompiledKeys();
-    CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, const Hash &latest_blockhash);
+    CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, const Variant &latest_blockhash);
+    PackedByteArray serialize();
     ~CompiledKeys();
 };
 
@@ -54,6 +55,7 @@ public:
     CompiledInstruction();
 
     //CompiledInstruction& operator=(const CompiledInstruction& other);
+    PackedByteArray serialize();
 
     ~CompiledInstruction();
 };

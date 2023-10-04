@@ -130,27 +130,8 @@ Array Transaction::get_signers(){
 }
 
 PackedByteArray Transaction::serialize(){
-    // Get and verify transaction pointer.
-    void* tx = to_ptr();
-    if (tx == nullptr){
-        return PackedByteArray();
-    }
-
-    // Write the serialized transaction into a buffer.
-    unsigned char buffer[MAXIMUM_SERIALIZED_BUFFER + 1];
-    int written_bytes = 0;//serialize_transaction(tx, buffer, MAXIMUM_SERIALIZED_BUFFER);
-
-    // Return the amount of bytes written.
-    if (written_bytes <= 0)
-        return PackedByteArray();
-    else{
-        PackedByteArray ret;
-        ret.resize(written_bytes);
-        for(int i = 0; i < written_bytes; i++){
-            ret[i] = buffer[i];
-        }
-        return ret;
-    }
+    CompiledKeys cp(instructions, nullptr, 32);
+    return cp.serialize();
 }
 
 Variant Transaction::sign_and_send(){

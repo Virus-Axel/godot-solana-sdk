@@ -24,11 +24,11 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 
     ClassDB::register_class<SolanaSDK>();
     ClassDB::register_class<Pubkey>();
-    //ClassDB::register_class<Hash>();
-    //ClassDB::register_class<Account>();
-    //ClassDB::register_class<AccountMeta>();
-    //ClassDB::register_class<Instruction>();
-    //ClassDB::register_class<Transaction>();
+    ClassDB::register_class<Hash>();
+    ClassDB::register_class<Account>();
+    ClassDB::register_class<AccountMeta>();
+    ClassDB::register_class<Instruction>();
+    ClassDB::register_class<Transaction>();
     ClassDB::register_class<Keypair>();
 }
 
