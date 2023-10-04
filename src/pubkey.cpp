@@ -14,14 +14,6 @@ using internal::gdextension_interface_print_warning;
 
 namespace godot{
 
-void Pubkey::_update_pointer(){
-
-}
-
-void Pubkey::_free_pointer(){
-    //free_pubkey(data_pointer);
-}
-
 bool Pubkey::are_bytes_curve_point() const{
     return is_y_point_valid(bytes.ptr());
 }
@@ -134,27 +126,7 @@ void Pubkey::set_value(const String& p_value){
 }
 
 String Pubkey::get_value(){
-    if(type == "CUSTOM"){
-        return value;
-    }
-    else{
-        void* key = to_ptr();
-        String ret = "";
-        if (key == nullptr){
-            internal::gdextension_interface_print_warning("Invalid Pubkey", "get_value", "pubkey.cpp", 167, false);
-        }
-        else{
-            PackedByteArray byte_array;
-            byte_array.resize(32);
-            unsigned char key_bytes[32];
-            //get_pubkey_bytes(key, key_bytes);
-            for(int i = 0; i < 32; i++){
-                byte_array[i] = key_bytes[i];
-            }
-            ret = SolanaSDK::bs58_encode(byte_array);
-        }
-        return ret;
-    }
+    return value;
 }
 
 void Pubkey::set_seed(const String& p_value){
@@ -367,7 +339,6 @@ Pubkey::Pubkey(const String& from){
 }
 
 Pubkey::~Pubkey() {
-    _free_pointer_if_not_null();
 }
 
 }

@@ -130,15 +130,6 @@ PackedByteArray CompiledKeys::serialize(){
 CompiledKeys::~CompiledKeys(){
 }
 
-
-void Instruction::_free_pointer(){
-    ;//free_instruction(data_pointer);
-}
-
-void Instruction::_update_pointer(){
-    data_pointer = nullptr;//create_instruction_with_bytes(program_id_ptr, allocated_data, data.size(), account_pointers, accounts.size());
-}
-
 void Instruction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_program_id"), &Instruction::get_program_id);
     ClassDB::bind_method(D_METHOD("set_program_id", "p_value"), &Instruction::set_program_id);
@@ -178,7 +169,6 @@ TypedArray<AccountMeta> Instruction::get_accounts(){
 
 
 Instruction::~Instruction() {
-    _free_pointer_if_not_null();
 }
 
 CompiledInstruction::CompiledInstruction(){

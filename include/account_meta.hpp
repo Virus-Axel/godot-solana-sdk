@@ -1,18 +1,15 @@
 #ifndef SOLANA_SDK_ACCOUNT_META_HPP
 #define SOLANA_SDK_ACCOUNT_META_HPP
 
-#include "../wrapper/wrapper.h"
-
 #include "pubkey.hpp"
 #include "account_meta.hpp"
 #include "utils.hpp"
-#include "solana_resource.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 
 namespace godot{
 
-class AccountMeta : public SolanaResource {
+class AccountMeta : public Resource {
     GDCLASS(AccountMeta, Resource)
 
 private:
@@ -20,9 +17,6 @@ private:
     bool writeable = false;
 
     Variant key;
-
-    void _update_pointer() override;
-    void _free_pointer() override;
 
 protected:
     static void _bind_methods();

@@ -20,13 +20,6 @@ void Keypair::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_unique", "p_value"), &Keypair::set_unique);
 }
 
-void Keypair::_free_pointer(){
-    //free_keypair(data_pointer);
-}
-void Keypair::_update_pointer(){
-    
-}
-
 void Keypair::_get_property_list(List<PropertyInfo> *p_list) const {
     PropertyUsageFlags visibility = PROPERTY_USAGE_DEFAULT;
 
@@ -219,7 +212,6 @@ bool Keypair::get_unique(){
 }
 
 Keypair::~Keypair() {
-    _free_pointer_if_not_null();
 }
 
 }

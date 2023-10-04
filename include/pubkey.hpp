@@ -4,10 +4,8 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/resource.hpp>
 
-#include "solana_resource.hpp"
-
 namespace godot{
-class Pubkey : public SolanaResource {
+class Pubkey : public Resource {
     GDCLASS(Pubkey, Resource)
 
 private:
@@ -32,9 +30,6 @@ private:
 
     Variant wallet_address;
     Variant token_mint_address;
-
-    void _free_pointer() override;
-    void _update_pointer() override;
 
     bool are_bytes_curve_point() const;
 

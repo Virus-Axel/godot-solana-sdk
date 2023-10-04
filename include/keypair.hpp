@@ -3,13 +3,11 @@
 
 
 #include <godot_cpp/classes/resource.hpp>
-#include "../wrapper/wrapper.h"
 #include "utils.hpp"
-#include "solana_resource.hpp"
 #include "xed25519.h"
 
 namespace godot{
-class Keypair : public SolanaResource {
+class Keypair : public Resource {
     GDCLASS(Keypair, Resource)
 
 private:
@@ -24,9 +22,6 @@ private:
 
     String private_value = "";
     PackedByteArray private_bytes;
-
-    void _free_pointer() override;
-    void _update_pointer() override;
 
 protected:
     static void _bind_methods();

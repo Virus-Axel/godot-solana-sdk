@@ -20,43 +20,6 @@ void AccountMeta::_bind_methods() {
     ClassDB::bind_method(D_METHOD("create_new", "account_key", "is_signer", "writeable"), &AccountMeta::create_new);
 }
 
-void AccountMeta::_update_pointer(){
-    if (key.get_type() != Variant::OBJECT){
-        return;
-    }
-
-    void *key_ref = nullptr;
-    Object *object_cast = key;
-    Pubkey temp_key;
-    if(object_cast->is_class("Pubkey")){
-        key_ref = variant_to_type<Pubkey>(key);
-    }
-    else if(object_cast->is_class("Keypair")){
-        // Make sure we have a pubkey in the end.
-        Keypair *keypair = Object::cast_to<Keypair>(key);
-        temp_key.set_type("CUSTOM");
-        temp_key.set_value(keypair->get_public_value());
-        key_ref = temp_key.to_ptr();
-        std::cout << "alalalala" << std::endl;
-        //std::cout << ((Pubkey*)key_ref)->get_value().to_utf8_buffer().ptr() << std::endl;
-    }
-    else{
-        gdextension_interface_print_warning("Account Meta does not have a valid key", "_update_pointer", "account_meta.cpp", 44, false);
-        return;
-    }
-
-    if (key_ref == nullptr){
-        gdextension_interface_print_warning("Account Meta does not have a valid key", "_update_pointer", "account_meta.cpp", 50, false);
-        return;
-    }
-
-    data_pointer = nullptr;//create_account_meta(key_ref, is_signer, writeable);
-}
-
-void AccountMeta::_free_pointer(){
-    ;//free_account_meta(data_pointer);
-}
-
 void AccountMeta::set_pubkey(const Variant &p_value) {
     key = p_value;
 }
@@ -87,10 +50,8 @@ AccountMeta::AccountMeta() {
 void AccountMeta::create_new(const Variant& account_key, bool is_signer, bool writeable){
     Object *account_key_cast = account_key;
     Pubkey *account_key_ptr = Object::cast_to<Pubkey>(account_key_cast);
-    data_pointer = nullptr;//create_account_meta(account_key_ptr->to_ptr(), is_signer, writeable);
 }
 
 AccountMeta::~AccountMeta(){
-    _free_pointer_if_not_null();
 }
 }

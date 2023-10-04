@@ -1,18 +1,15 @@
 #ifndef SOLANA_SDK_TRANSACTION_HPP
 #define SOLANA_SDK_TRANSACTION_HPP
 
-#include "../wrapper/wrapper.h"
-
 #include "hash.hpp"
 #include "pubkey.hpp"
 #include "account.hpp"
-#include "solana_node.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 
 namespace godot{
 
-class Transaction : public SolanaNode {
+class Transaction : public Node {
     GDCLASS(Transaction, Node)
 
 private:
@@ -22,8 +19,6 @@ private:
     Variant payer;
     Array signers;
 
-    void _update_pointer() override;
-    void _free_pointer() override;
     void _get_property_list(List<PropertyInfo> *p_list) const;
     void _update_unsigned();
     void _update_signed();

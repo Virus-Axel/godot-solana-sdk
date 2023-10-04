@@ -6,19 +6,6 @@
 
 namespace godot{
 
-void Hash::_update_pointer(){
-    if (unique){
-        data_pointer = nullptr;//create_unique_hash();
-    }
-    else if (bytes.size() == HASH_LENGTH){
-        data_pointer = nullptr;//create_hash_from_array(bytes.ptr());
-    }
-}
-
-void Hash::_free_pointer(){
-    //free_hash(data_pointer);
-}
-
 void Hash::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_value"), &Hash::get_value);
     ClassDB::bind_method(D_METHOD("set_value", "p_value"), &Hash::set_value);
@@ -136,7 +123,6 @@ Hash::Hash() {
 }
 
 Hash::~Hash() {
-    _free_pointer_if_not_null();
 }
 
 }

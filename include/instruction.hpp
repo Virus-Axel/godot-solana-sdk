@@ -1,11 +1,9 @@
 #ifndef SOLANA_SDK_INSTRUCTION_HPP
 #define SOLANA_SDK_INSTRUCTION_HPP
 
-#include "../wrapper/wrapper.h"
 #include "account_meta.hpp"
 #include "pubkey.hpp"
 #include "utils.hpp"
-#include "solana_resource.hpp"
 #include "hash.hpp"
 
 #include <godot_cpp/classes/node.hpp>
@@ -60,15 +58,13 @@ public:
     ~CompiledInstruction();
 };
 
-class Instruction : public SolanaResource {
+class Instruction : public Resource {
     GDCLASS(Instruction, Resource)
 
 private:
     Variant program_id;
     PackedByteArray data;
     TypedArray<AccountMeta> accounts;
-    void _update_pointer() override;
-    void _free_pointer() override;
 
 protected:
     static void _bind_methods();

@@ -1,7 +1,5 @@
 #include "solana_sdk.hpp"
 
-#include "../wrapper/wrapper.h"
-
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/http_request.hpp>
 #include <godot_cpp/classes/tls_options.hpp>
