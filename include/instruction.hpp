@@ -5,6 +5,7 @@
 #include "pubkey.hpp"
 #include "utils.hpp"
 #include "hash.hpp"
+#include <vector>
 
 #include <godot_cpp/classes/node.hpp>
 
@@ -12,35 +13,8 @@ namespace godot{
 
 // Predefine some classes.
 class Instruction;
-class CompiledInstruction;
 
-class Message{
-private:
-public:
-    Message();
-    ~Message();
-};
-
-
-class CompiledKeys: public Resource{ // Message
-
-private:
-    uint8_t num_required_signatures = 0;
-    uint8_t num_readonly_signed_accounts = 0;
-    uint8_t num_readonly_unsigned_accounts = 0;
-    TypedArray<Pubkey> account_keys;
-    Variant latest_blockhash;
-    TypedArray<CompiledInstruction> compiled_instructions;
-
-public:
-    CompiledKeys();
-    CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, const Variant &latest_blockhash);
-    PackedByteArray serialize();
-    ~CompiledKeys();
-};
-
-class CompiledInstruction: public Resource{
-    GDCLASS(CompiledInstruction, Resource)
+class CompiledInstruction{
 
 protected:
     static void _bind_methods();
@@ -52,10 +26,34 @@ public:
 
     CompiledInstruction();
 
-    //CompiledInstruction& operator=(const CompiledInstruction& other);
+    CompiledInstruction& operator=(const CompiledInstruction& other);
     PackedByteArray serialize();
 
     ~CompiledInstruction();
+};
+
+
+
+class CompiledKeys: public Object{ // Message
+
+private:
+    uint8_t num_required_signatures = 0;
+    uint8_t num_readonly_signed_accounts = 0;
+    uint8_t num_readonly_unsigned_accounts = 0;
+    TypedArray<Pubkey> account_keys;
+    Hash *latest_blockhash;
+    std::vector<CompiledInstruction> compiled_instructions;
+
+protected:
+    static void _bind_methods(){
+
+    }
+
+public:
+    CompiledKeys();
+    CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, Hash &latest_blockhash);
+    PackedByteArray serialize();
+    ~CompiledKeys();
 };
 
 class Instruction : public Resource {

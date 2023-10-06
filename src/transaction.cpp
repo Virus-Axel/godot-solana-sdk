@@ -98,7 +98,13 @@ Array Transaction::get_signers(){
 }
 
 PackedByteArray Transaction::serialize(){
-    CompiledKeys cp(instructions, nullptr, 32);
+    Pubkey *payer_key = Object::cast_to<Pubkey>(payer);
+    const String hash_string = "11111111111111111111111111111111";//SolanaSDK::get_latest_blockhash();
+    Hash hash;
+    hash.set_value(hash_string);
+
+    CompiledKeys cp(instructions, payer_key, hash);
+    //return PackedByteArray();
     return cp.serialize();
 }
 

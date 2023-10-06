@@ -12,7 +12,7 @@ CompiledKeys::CompiledKeys(){
 
 }
 
-CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, const Variant &latest_blockhash){
+CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, Hash &latest_blockhash){
     TypedArray<Pubkey> writable_signer_keys;
     TypedArray<Pubkey> readonly_signer_keys;
     TypedArray<Pubkey> writable_non_signer_keys;
@@ -23,7 +23,7 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
     PackedByteArray writable_non_signer_indicies;
     PackedByteArray readonly_non_signer_indicies;
 
-    this->latest_blockhash = latest_blockhash; 
+    this->latest_blockhash = &latest_blockhash; 
 
     for(unsigned int i = 0; i < instructions.size(); i++){
         Instruction *element = Object::cast_to<Instruction>((Object*) instructions[i]);
@@ -56,17 +56,32 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
 
         CompiledInstruction compiled_instruction;
         compiled_instruction.data = element->get_data();
-        compiled_instruction.data = element->get_program_id();
+        
+        compiled_instruction.program_id_index =
+            writable_signer_keys.size() +
+            readonly_signer_keys.size() +
+            writable_non_signer_keys.size() +
+            readonly_non_signer_indicies.size();
 
         for(unsigned int j = 0; j < account_metas.size(); j++){
+
             AccountMeta *account_meta = Object::cast_to<AccountMeta>((Object*)account_metas[i]);
             if(account_meta->get_is_signer() && account_meta->get_writeable()){
+                std::cout << "Pushing (1) " << 
+                    writable_signer_indicies.size()
+                    << std::endl;
                 writable_signer_indicies.push_back(
                     writable_signer_indicies.size()
                     );
                 compiled_instruction.accounts.push_back(*writable_signer_indicies.end());
             }
             else if(!account_meta->get_is_signer() && account_meta->get_writeable()){
+                std::cout << "Pushing (2) " << 
+                writable_signer_keys.size() +
+                    readonly_signer_keys.size() +
+                    writable_non_signer_keys.size() +
+                    readonly_non_signer_indicies.size()
+                    << std::endl;
                 writable_non_signer_indicies.push_back(
                     writable_signer_keys.size() +
                     readonly_signer_keys.size() +
@@ -75,6 +90,12 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
                 compiled_instruction.accounts.push_back(*writable_non_signer_indicies.end());
             }
             else if(!account_meta->get_is_signer() && !account_meta->get_writeable()){
+                std::cout << "Pushing (3) " << 
+                writable_signer_keys.size() +
+                    readonly_signer_keys.size() +
+                    writable_non_signer_keys.size() +
+                    readonly_non_signer_indicies.size()
+                    << std::endl;
                 readonly_non_signer_indicies.push_back(
                     writable_signer_keys.size() +
                     readonly_signer_keys.size() +
@@ -83,6 +104,12 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
                 compiled_instruction.accounts.push_back(*readonly_non_signer_indicies.end());
             }
             else{
+                std::cout << "Pushing (4) " << 
+                writable_signer_keys.size() +
+                    readonly_signer_keys.size() +
+                    writable_non_signer_keys.size() +
+                    readonly_non_signer_indicies.size()
+                    << std::endl;
                 readonly_signer_indicies.push_back(
                     writable_signer_keys.size() +
                     readonly_signer_indicies.size()
@@ -90,7 +117,7 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
                 compiled_instruction.accounts.push_back(*readonly_signer_indicies.end());
             }
         }
-        compiled_instructions.push_back((Variant&)compiled_instruction);
+        compiled_instructions.push_back(compiled_instruction);
     }
 
     account_keys.append_array(writable_signer_keys);
@@ -116,13 +143,12 @@ PackedByteArray CompiledKeys::serialize(){
     }
 
     result.append(1);
-    Pubkey *latest_blockhash_pubkey = Object::cast_to<Pubkey>(latest_blockhash);
-    result.append_array(latest_blockhash_pubkey->get_bytes());
+    //Hash *latest_blockhash_pubkey = Object::cast_to<Hash>(latest_blockhash);
+    result.append_array(latest_blockhash->get_bytes());
 
     result.append(compiled_instructions.size());
     for(unsigned int i = 0; i < compiled_instructions.size(); i++){
-        CompiledInstruction *compiled_instruction = Object::cast_to<CompiledInstruction>(compiled_instructions[i]);
-        result.append_array(compiled_instruction->serialize());
+        result.append_array(compiled_instructions[i].serialize());
     }
     return result;
 }
@@ -181,16 +207,27 @@ void CompiledInstruction::_bind_methods(){
 
 PackedByteArray CompiledInstruction::serialize(){
     PackedByteArray result;
-    result.append(program_id_index);
+
+    result.append((int64_t) 0);
     result.append(accounts.size());
     for(unsigned int i = 0; i < accounts.size(); i++){
         result.append(accounts[i]);
     }
+
     result.append(data.size());
     for(unsigned int i = 0; i < data.size(); i++){
         result.append(data[i]);
     }
+
     return result;
+}
+
+CompiledInstruction& CompiledInstruction::operator=(const CompiledInstruction& other){
+    this->accounts = other.accounts;
+    this->data = other.data;
+    this->program_id_index = other.program_id_index;
+
+    return *this;
 }
 
 CompiledInstruction::~CompiledInstruction(){
