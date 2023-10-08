@@ -11,10 +11,14 @@
 
 namespace godot{
 
+MAKE_TYPED_ARRAY(Ref<AccountMeta>, Variant::OBJECT)
+MAKE_TYPED_ARRAY(Pubkey, Variant::OBJECT)
+
 // Predefine some classes.
 class Instruction;
 
-class CompiledInstruction{
+class CompiledInstruction : public Object{
+    GDCLASS(CompiledInstruction, Object)
 
 protected:
     static void _bind_methods();
@@ -25,29 +29,32 @@ public:
     PackedByteArray data;
 
     CompiledInstruction();
+    //CompiledInstruction(godot::Variant& other);
 
-    CompiledInstruction& operator=(const CompiledInstruction& other);
+    //const CompiledInstruction& operator=(const CompiledInstruction& other);
     PackedByteArray serialize();
 
     ~CompiledInstruction();
 };
 
+MAKE_TYPED_ARRAY(CompiledInstruction, Variant::OBJECT)
+MAKE_TYPED_ARRAY(Instruction, Variant::OBJECT)
 
 
 class CompiledKeys: public Object{ // Message
-
+    GDCLASS(CompiledKeys, Object)
 private:
     uint8_t num_required_signatures = 0;
     uint8_t num_readonly_signed_accounts = 0;
     uint8_t num_readonly_unsigned_accounts = 0;
     TypedArray<Pubkey> account_keys;
     Hash *latest_blockhash;
-    std::vector<CompiledInstruction> compiled_instructions;
+    TypedArray<CompiledInstruction> compiled_instructions;
+
+    int locate_account_meta(const TypedArray<Resource>& arr, const AccountMeta &input);
 
 protected:
-    static void _bind_methods(){
-
-    }
+    static void _bind_methods();
 
 public:
     CompiledKeys();
@@ -81,6 +88,7 @@ public:
     
     ~Instruction();
 };
+
 }
 
 #endif

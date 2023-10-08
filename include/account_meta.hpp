@@ -20,9 +20,13 @@ private:
 
 protected:
     static void _bind_methods();
+    bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
 
 public:
     AccountMeta();
+    AccountMeta(const Variant& pid, bool signer, bool writeable);
+    //AccountMeta(const Variant& other);
 
     void set_pubkey(const Variant &p_value);
     Variant get_pubkey() const;
@@ -34,6 +38,13 @@ public:
     bool get_writeable() const;
 
     void create_new(const Variant& account_key, bool is_signer, bool writeable);
+
+    //const AccountMeta &operator=(const Variant& other);
+    bool operator<(const AccountMeta& other) const;
+    bool operator<=(const AccountMeta& other) const;
+    bool operator>=(const AccountMeta& other) const;
+    bool operator>(const AccountMeta& other) const;
+    bool operator==(const AccountMeta& other) const;
 
     ~AccountMeta();
 };

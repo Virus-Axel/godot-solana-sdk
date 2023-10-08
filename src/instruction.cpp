@@ -2,132 +2,140 @@
 
 #include "utils.hpp"
 
+#include <vector>
+#include <algorithm>
+
 #include <godot_cpp/core/class_db.hpp>
 
 namespace godot{
 
 using internal::gdextension_interface_print_warning;
 
+TypedArray<Resource> sort_metas(TypedArray<Resource> input){
+    TypedArray<AccountMeta> m1;
+    TypedArray<AccountMeta> m2;
+    TypedArray<AccountMeta> m3;
+    TypedArray<AccountMeta> m4;
+    for(unsigned int i = 0; i < input.size(); i++){
+        AccountMeta* element = Object::cast_to<AccountMeta>(input[i]);
+        const int value = element->get_is_signer() * 2 + element->get_writeable() * 1;
+
+        switch(value){
+            case 3:
+                m1.append(element);
+            break;
+            case 2:
+                m2.append(element);
+            break;
+            case 1:
+                m3.append(element);
+            break;
+            case 0:
+                m4.append(element);
+            break;
+        }
+    }
+    TypedArray<AccountMeta> result;
+    result.append_array(m1);
+    result.append_array(m2);
+    result.append_array(m3);
+    result.append_array(m4);
+
+    return result;
+}
+
+
 CompiledKeys::CompiledKeys(){
 
 }
 
+void CompiledKeys::_bind_methods(){
+}
+
 CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, Hash &latest_blockhash){
-    TypedArray<Pubkey> writable_signer_keys;
-    TypedArray<Pubkey> readonly_signer_keys;
-    TypedArray<Pubkey> writable_non_signer_keys;
-    TypedArray<Pubkey> readonly_non_signer_keys;
+    unsigned int writable_signer_total = 0;
+    unsigned int readonly_signer_total = 0;
+    unsigned int writable_non_signer_total = 0;
+    unsigned int readonly_non_signer_total = 0;
 
-    PackedByteArray writable_signer_indicies;
-    PackedByteArray readonly_signer_indicies;
-    PackedByteArray writable_non_signer_indicies;
-    PackedByteArray readonly_non_signer_indicies;
-
-    this->latest_blockhash = &latest_blockhash; 
+    TypedArray<Resource> merged_metas;
+    
+    this->latest_blockhash = &latest_blockhash;
 
     for(unsigned int i = 0; i < instructions.size(); i++){
-        Instruction *element = Object::cast_to<Instruction>((Object*) instructions[i]);
-        Pubkey *program_id = Object::cast_to<Pubkey>((Object*) element->get_program_id());
-
-        readonly_non_signer_keys.append(element->get_program_id());
+        Instruction *element = Object::cast_to<Instruction>(instructions[i]);
         const TypedArray<AccountMeta> &account_metas = element->get_accounts();
 
+        AccountMeta *pid_meta = new AccountMeta(element->get_program_id(), false, false);
+
+        // If keys match, merge metas
+        if(locate_account_meta(merged_metas, *pid_meta) != -1){
+            const int index = locate_account_meta(merged_metas, *pid_meta);
+            AccountMeta *meta_1 = Object::cast_to<AccountMeta>(merged_metas[index]);
+            meta_1->set_is_signer(meta_1->get_is_signer() || pid_meta->get_is_signer());
+            meta_1->set_writeable(meta_1->get_writeable() || pid_meta->get_writeable());
+        }
+        else{
+            AccountMeta *play_meta = memnew(AccountMeta(element->get_program_id(), false, false));
+            merged_metas.append(play_meta);
+        }
+
         for(unsigned int j = 0; j < account_metas.size(); j++){
-            AccountMeta *account_meta = Object::cast_to<AccountMeta>((Object*)account_metas[i]);
-            if(account_meta->get_is_signer() && account_meta->get_writeable()){
-                writable_signer_keys.append(account_meta->get_pubkey());
-            }
-            else if(!account_meta->get_is_signer() && account_meta->get_writeable()){
-                writable_non_signer_keys.append(account_meta->get_pubkey());
-            }
-            else if(!account_meta->get_is_signer() && !account_meta->get_writeable()){
-                readonly_non_signer_keys.append(account_meta->get_pubkey());
+            AccountMeta *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
+            
+            // If keys match, merge metas
+            if(locate_account_meta(merged_metas, *account_meta) != -1){
+                const int index = locate_account_meta(merged_metas, *account_meta);
+
+                AccountMeta *meta_1 = Object::cast_to<AccountMeta>(merged_metas[index]);
+                AccountMeta *meta_2 = account_meta;
+                meta_1->set_is_signer(meta_1->get_is_signer() || meta_2->get_is_signer());
+                meta_1->set_writeable(meta_1->get_writeable() || meta_2->get_writeable());
             }
             else{
-                readonly_signer_keys.append(account_meta->get_pubkey());
+                AccountMeta *new_meta = Object::cast_to<AccountMeta>(account_metas[j]);
+                merged_metas.push_back(new_meta);
             }
         }
     }
 
-    // Loop again to figure out indices.
+    // Sort with custom function that looks at signer/writeable.
+    TypedArray<Resource> temp;
+    merged_metas = sort_metas(merged_metas);
+
     for(unsigned int i = 0; i < instructions.size(); i++){
-        Instruction *element = Object::cast_to<Instruction>((Object*) instructions[i]);
+        Instruction *element = Object::cast_to<Instruction>(instructions[i]);
         const TypedArray<AccountMeta> &account_metas = element->get_accounts();
 
-        CompiledInstruction compiled_instruction;
-        compiled_instruction.data = element->get_data();
-        
-        compiled_instruction.program_id_index =
-            writable_signer_keys.size() +
-            readonly_signer_keys.size() +
-            writable_non_signer_keys.size() +
-            readonly_non_signer_indicies.size();
+        CompiledInstruction *compiled_instruction = memnew(CompiledInstruction);
+        compiled_instruction->data = element->get_data();
+        AccountMeta pid_meta(element->get_program_id(), false, false);
+        compiled_instruction->program_id_index = locate_account_meta(merged_metas, pid_meta);
 
         for(unsigned int j = 0; j < account_metas.size(); j++){
-
-            AccountMeta *account_meta = Object::cast_to<AccountMeta>((Object*)account_metas[i]);
-            if(account_meta->get_is_signer() && account_meta->get_writeable()){
-                std::cout << "Pushing (1) " << 
-                    writable_signer_indicies.size()
-                    << std::endl;
-                writable_signer_indicies.push_back(
-                    writable_signer_indicies.size()
-                    );
-                compiled_instruction.accounts.push_back(*writable_signer_indicies.end());
-            }
-            else if(!account_meta->get_is_signer() && account_meta->get_writeable()){
-                std::cout << "Pushing (2) " << 
-                writable_signer_keys.size() +
-                    readonly_signer_keys.size() +
-                    writable_non_signer_keys.size() +
-                    readonly_non_signer_indicies.size()
-                    << std::endl;
-                writable_non_signer_indicies.push_back(
-                    writable_signer_keys.size() +
-                    readonly_signer_keys.size() +
-                    writable_non_signer_indicies.size()
-                );
-                compiled_instruction.accounts.push_back(*writable_non_signer_indicies.end());
-            }
-            else if(!account_meta->get_is_signer() && !account_meta->get_writeable()){
-                std::cout << "Pushing (3) " << 
-                writable_signer_keys.size() +
-                    readonly_signer_keys.size() +
-                    writable_non_signer_keys.size() +
-                    readonly_non_signer_indicies.size()
-                    << std::endl;
-                readonly_non_signer_indicies.push_back(
-                    writable_signer_keys.size() +
-                    readonly_signer_keys.size() +
-                    writable_non_signer_keys.size() +
-                    readonly_non_signer_indicies.size());
-                compiled_instruction.accounts.push_back(*readonly_non_signer_indicies.end());
-            }
-            else{
-                std::cout << "Pushing (4) " << 
-                writable_signer_keys.size() +
-                    readonly_signer_keys.size() +
-                    writable_non_signer_keys.size() +
-                    readonly_non_signer_indicies.size()
-                    << std::endl;
-                readonly_signer_indicies.push_back(
-                    writable_signer_keys.size() +
-                    readonly_signer_indicies.size()
-                );
-                compiled_instruction.accounts.push_back(*readonly_signer_indicies.end());
-            }
+            AccountMeta *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
+            compiled_instruction->accounts.push_back(locate_account_meta(merged_metas, *account_meta));
         }
         compiled_instructions.push_back(compiled_instruction);
     }
 
-    account_keys.append_array(writable_signer_keys);
-    account_keys.append_array(readonly_signer_keys);
-    account_keys.append_array(writable_non_signer_keys);
-    account_keys.append_array(readonly_non_signer_keys);
+    for(unsigned int i = 0; i < merged_metas.size(); i++){
+        AccountMeta *account_meta = Object::cast_to<AccountMeta>(merged_metas[i]);
+        if(account_meta->get_is_signer()){
+            num_required_signatures++;
+            if(!account_meta->get_writeable()){
+                readonly_signer_total++;
+            }
+        }
+        else if(!account_meta->get_writeable()){
+            readonly_non_signer_total++;
+        }
+        account_keys.push_back(account_meta->get_pubkey());
+    }
 
-    num_required_signatures = writable_signer_keys.size() + readonly_signer_keys.size();
-    num_readonly_unsigned_accounts = readonly_non_signer_keys.size();
-    num_readonly_signed_accounts = readonly_signer_keys.size();
+    num_required_signatures = writable_signer_total + readonly_signer_total;
+    num_readonly_unsigned_accounts = readonly_non_signer_total;
+    num_readonly_signed_accounts = readonly_signer_total;
 }
 
 PackedByteArray CompiledKeys::serialize(){
@@ -143,14 +151,30 @@ PackedByteArray CompiledKeys::serialize(){
     }
 
     result.append(1);
-    //Hash *latest_blockhash_pubkey = Object::cast_to<Hash>(latest_blockhash);
+    Hash *latest_blockhash_pubkey = Object::cast_to<Hash>(latest_blockhash);
     result.append_array(latest_blockhash->get_bytes());
 
     result.append(compiled_instructions.size());
+
     for(unsigned int i = 0; i < compiled_instructions.size(); i++){
-        result.append_array(compiled_instructions[i].serialize());
+        CompiledInstruction *inst = Object::cast_to<CompiledInstruction>(compiled_instructions[i]);
+        result.append_array(inst->serialize());
     }
     return result;
+}
+
+
+int CompiledKeys::locate_account_meta(const TypedArray<Resource>& arr, const AccountMeta &input){
+    for(unsigned int i = 0; i < arr.size(); i++){
+        AccountMeta *element = Object::cast_to<AccountMeta>(arr[i]);
+        Pubkey *key = Object::cast_to<Pubkey>(element->get_pubkey());
+        PackedByteArray element_bytes = key->get_bytes();
+        Pubkey *other_key = Object::cast_to<Pubkey>(input.get_pubkey());
+        if (*other_key == *key){
+            return i;
+        }
+    }
+    return -1;
 }
 
 CompiledKeys::~CompiledKeys(){
@@ -198,7 +222,8 @@ Instruction::~Instruction() {
 }
 
 CompiledInstruction::CompiledInstruction(){
-
+    accounts = PackedByteArray();
+    data = PackedByteArray();
 }
 
 void CompiledInstruction::_bind_methods(){
@@ -208,8 +233,9 @@ void CompiledInstruction::_bind_methods(){
 PackedByteArray CompiledInstruction::serialize(){
     PackedByteArray result;
 
-    result.append((int64_t) 0);
+    result.append(program_id_index);
     result.append(accounts.size());
+
     for(unsigned int i = 0; i < accounts.size(); i++){
         result.append(accounts[i]);
     }
@@ -222,13 +248,13 @@ PackedByteArray CompiledInstruction::serialize(){
     return result;
 }
 
-CompiledInstruction& CompiledInstruction::operator=(const CompiledInstruction& other){
+/*const CompiledInstruction& CompiledInstruction::operator=(const CompiledInstruction& other){
     this->accounts = other.accounts;
     this->data = other.data;
     this->program_id_index = other.program_id_index;
 
     return *this;
-}
+}*/
 
 CompiledInstruction::~CompiledInstruction(){
 

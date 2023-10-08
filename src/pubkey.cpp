@@ -334,8 +334,24 @@ void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
 Pubkey::Pubkey() {
 }
 
+/*Pubkey::Pubkey(const Variant &other) {
+    bool valid = false;
+    PackedByteArray bytes = other.get("bytes", &valid);
+    if(!valid){
+        exit(1);
+    }
+}*/
+
 Pubkey::Pubkey(const String& from){
     create_from_string(from);
+}
+
+void Pubkey::operator=(const Variant& other){
+    this->bytes = static_cast<Pubkey>(other).get_bytes();
+}
+
+bool Pubkey::operator==(const Pubkey& other) const{
+    return (bytes == other.bytes);
 }
 
 Pubkey::~Pubkey() {
