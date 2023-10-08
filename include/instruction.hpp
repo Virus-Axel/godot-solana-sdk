@@ -47,9 +47,10 @@ private:
     uint8_t num_required_signatures = 0;
     uint8_t num_readonly_signed_accounts = 0;
     uint8_t num_readonly_unsigned_accounts = 0;
-    TypedArray<Pubkey> account_keys;
+    TypedArray<Resource> account_keys;
     Hash *latest_blockhash;
     TypedArray<CompiledInstruction> compiled_instructions;
+    TypedArray<Resource> signers;
 
     int locate_account_meta(const TypedArray<Resource>& arr, const AccountMeta &input);
 
@@ -60,6 +61,7 @@ public:
     CompiledKeys();
     CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, Hash &latest_blockhash);
     PackedByteArray serialize();
+    TypedArray<Resource> &get_signers();
     ~CompiledKeys();
 };
 

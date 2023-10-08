@@ -211,6 +211,25 @@ bool Keypair::get_unique(){
     return unique;
 }
 
+PackedByteArray Keypair::sign_message(const PackedByteArray& message){
+    CryptoPP::AutoSeededRandomPool prng;
+    std::cout << "1" << std::endl;
+    unsigned char signature[signer.MaxSignatureLength()];
+    std::cout << "1 size = " << this->get_public_bytes().size() << std::endl;
+    const char* te = "hello";
+    int len = signer.SignMessage(prng, message.ptr(), 5, &signature[0]);
+    std::cout << "1" << std::endl;
+    PackedByteArray result;
+    std::cout << "1" << std::endl;
+    result.resize(len);
+    std::cout << "1" << std::endl;
+    for(int i = 0; i < len; i++){
+        result[i] = signature[i];
+    }
+    std::cout << "1" << std::endl;
+    return result;
+}
+
 Keypair::~Keypair() {
 }
 

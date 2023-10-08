@@ -99,13 +99,13 @@ Array Transaction::get_signers(){
 
 PackedByteArray Transaction::serialize(){
     Pubkey *payer_key = Object::cast_to<Pubkey>(payer);
-    const String hash_string = "11111111111111111111111111111111";//SolanaSDK::get_latest_blockhash();
+    const String hash_string = "4uQeVj5tqViQh7yWWGStvkEG1Zmhx6uasJtWCJziofM";//SolanaSDK::get_latest_blockhash();
     Hash hash;
     hash.set_value(hash_string);
 
-    CompiledKeys cp(instructions, payer_key, hash);
+    message = memnew(CompiledKeys(instructions, payer_key, hash));
     //return PackedByteArray();
-    return cp.serialize();
+    return Object::cast_to<CompiledKeys>(message)->serialize();
 }
 
 Variant Transaction::sign_and_send(){
@@ -121,6 +121,16 @@ Variant Transaction::sign_and_send(){
 }
 
 Error Transaction::sign(const Variant& latest_blockhash){
+
+    PackedByteArray msg = serialize();
+
+    TypedArray<Resource> &signers = Object::cast_to<CompiledKeys>(message)->get_signers();
+    for (unsigned int i = 0; i < signers.size(); i++){
+        Keypair *kp = Object::cast_to<Keypair>(signers[i]);
+        PackedByteArray signature = kp->sign_message(msg);
+        signatures.append_array(signature);
+    }
+    std::cout << "# signatures size " << signatures.size() << std::endl;
 
     return OK;
 }

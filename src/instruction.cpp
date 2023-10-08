@@ -1,4 +1,5 @@
 #include "instruction.hpp"
+#include "keypair.hpp"
 
 #include "utils.hpp"
 
@@ -16,6 +17,7 @@ TypedArray<Resource> sort_metas(TypedArray<Resource> input){
     TypedArray<AccountMeta> m2;
     TypedArray<AccountMeta> m3;
     TypedArray<AccountMeta> m4;
+    std::cout << "in" << std::endl;
     for(unsigned int i = 0; i < input.size(); i++){
         AccountMeta* element = Object::cast_to<AccountMeta>(input[i]);
         const int value = element->get_is_signer() * 2 + element->get_writeable() * 1;
@@ -40,6 +42,8 @@ TypedArray<Resource> sort_metas(TypedArray<Resource> input){
     result.append_array(m2);
     result.append_array(m3);
     result.append_array(m4);
+
+    std::cout << "out" << std::endl;
 
     return result;
 }
@@ -66,31 +70,46 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
         Instruction *element = Object::cast_to<Instruction>(instructions[i]);
         const TypedArray<AccountMeta> &account_metas = element->get_accounts();
 
-        AccountMeta *pid_meta = new AccountMeta(element->get_program_id(), false, false);
+        AccountMeta *pid_meta = memnew(AccountMeta(element->get_program_id(), false, false));
 
         // If keys match, merge metas
         if(locate_account_meta(merged_metas, *pid_meta) != -1){
+            std::cout << "NO" << std::endl;
             const int index = locate_account_meta(merged_metas, *pid_meta);
             AccountMeta *meta_1 = Object::cast_to<AccountMeta>(merged_metas[index]);
             meta_1->set_is_signer(meta_1->get_is_signer() || pid_meta->get_is_signer());
             meta_1->set_writeable(meta_1->get_writeable() || pid_meta->get_writeable());
         }
         else{
-            AccountMeta *play_meta = memnew(AccountMeta(element->get_program_id(), false, false));
-            merged_metas.append(play_meta);
+            std::cout << "NOP" << std::endl;
+            merged_metas.append(pid_meta);
         }
 
         for(unsigned int j = 0; j < account_metas.size(); j++){
             AccountMeta *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
             
+            if(account_meta->get_is_signer()){
+                // Actually a keypair.
+                signers.push_back(account_meta->get_pubkey());
+            }
+
+            std::cout << "sAA" << std::endl;
+
             // If keys match, merge metas
             if(locate_account_meta(merged_metas, *account_meta) != -1){
+                std::cout << "POP" << std::endl;
                 const int index = locate_account_meta(merged_metas, *account_meta);
 
                 AccountMeta *meta_1 = Object::cast_to<AccountMeta>(merged_metas[index]);
                 AccountMeta *meta_2 = account_meta;
                 meta_1->set_is_signer(meta_1->get_is_signer() || meta_2->get_is_signer());
                 meta_1->set_writeable(meta_1->get_writeable() || meta_2->get_writeable());
+
+                // Signers should make Keypair override pubkey.
+                if(meta_2->get_is_signer()){
+                    std::cout << "POP" << std::endl;
+                    meta_1->set_pubkey(meta_2->get_pubkey());
+                }
             }
             else{
                 AccountMeta *new_meta = Object::cast_to<AccountMeta>(account_metas[j]);
@@ -130,7 +149,14 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
         else if(!account_meta->get_writeable()){
             readonly_non_signer_total++;
         }
-        account_keys.push_back(account_meta->get_pubkey());
+        if(account_meta->get_is_signer()){
+            Pubkey *new_key = memnew(Pubkey);
+            new_key->set_bytes(Object::cast_to<Keypair>(account_meta->get_pubkey())->get_public_bytes());
+            account_keys.push_back(new_key);
+        }
+        else{
+            account_keys.push_back(account_meta->get_pubkey());
+        }
     }
 
     num_required_signatures = writable_signer_total + readonly_signer_total;
@@ -150,7 +176,6 @@ PackedByteArray CompiledKeys::serialize(){
         result.append_array(account_key->get_bytes());
     }
 
-    result.append(1);
     Hash *latest_blockhash_pubkey = Object::cast_to<Hash>(latest_blockhash);
     result.append_array(latest_blockhash->get_bytes());
 
@@ -163,14 +188,30 @@ PackedByteArray CompiledKeys::serialize(){
     return result;
 }
 
+TypedArray<Resource> &CompiledKeys::get_signers(){
+    return signers;
+}
 
 int CompiledKeys::locate_account_meta(const TypedArray<Resource>& arr, const AccountMeta &input){
     for(unsigned int i = 0; i < arr.size(); i++){
         AccountMeta *element = Object::cast_to<AccountMeta>(arr[i]);
-        Pubkey *key = Object::cast_to<Pubkey>(element->get_pubkey());
-        PackedByteArray element_bytes = key->get_bytes();
-        Pubkey *other_key = Object::cast_to<Pubkey>(input.get_pubkey());
-        if (*other_key == *key){
+        
+        PackedByteArray key;
+        PackedByteArray other_key;
+        if(element->get_is_signer()){
+            Keypair *kp = Object::cast_to<Keypair>(element->get_pubkey());
+            key = kp->get_public_bytes();
+        }
+        else{
+            key = Object::cast_to<Pubkey>(element->get_pubkey())->get_bytes();
+        }
+        if(input.get_is_signer()){
+            other_key = Object::cast_to<Keypair>(input.get_pubkey())->get_public_bytes();
+        }
+        else{
+            other_key = Object::cast_to<Pubkey>(input.get_pubkey())->get_bytes();
+        }
+        if (other_key == key){
             return i;
         }
     }

@@ -4,6 +4,7 @@
 #include "hash.hpp"
 #include "pubkey.hpp"
 #include "account.hpp"
+#include "instruction.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 
@@ -15,9 +16,12 @@ class Transaction : public Node {
 private:
     const int MAXIMUM_SERIALIZED_BUFFER = 10000;
 
+    Variant message;
+
     Array instructions;
     Variant payer;
     Array signers;
+    PackedByteArray signatures;
 
     void _get_property_list(List<PropertyInfo> *p_list) const;
     void _update_unsigned();

@@ -44,6 +44,8 @@ public:
     void set_private_bytes(const PackedByteArray& p_value);
     PackedByteArray get_private_bytes();
 
+    PackedByteArray sign_message(const PackedByteArray& message);
+
     void set_unique(const bool p_value);
     bool get_unique();
 
