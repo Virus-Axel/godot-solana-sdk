@@ -14,8 +14,6 @@ class Transaction : public Node {
     GDCLASS(Transaction, Node)
 
 private:
-    const int MAXIMUM_SERIALIZED_BUFFER = 10000;
-
     Variant message;
 
     Array instructions;

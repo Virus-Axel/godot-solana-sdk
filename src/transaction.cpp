@@ -8,6 +8,8 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <solana_sdk.hpp>
 
+//#include <emscripten.h>
+
 namespace godot{
 
 using internal::gdextension_interface_print_warning;
@@ -100,8 +102,8 @@ Array Transaction::get_signers(){
 PackedByteArray Transaction::serialize(){
     Pubkey *payer_key = Object::cast_to<Pubkey>(payer);
     const String hash_string = "4uQeVj5tqViQh7yWWGStvkEG1Zmhx6uasJtWCJziofM";//SolanaSDK::get_latest_blockhash();
-    Hash hash;
-    hash.set_value(hash_string);
+    Variant hash = memnew(Hash);
+    Object::cast_to<Hash>(hash)->set_value(hash_string);
 
     message = memnew(CompiledKeys(instructions, payer_key, hash));
     //return PackedByteArray();
@@ -121,6 +123,7 @@ Variant Transaction::sign_and_send(){
 }
 
 Error Transaction::sign(const Variant& latest_blockhash){
+    std::cout << "signing this ***" << std::endl;
 
     PackedByteArray msg = serialize();
 
@@ -131,6 +134,7 @@ Error Transaction::sign(const Variant& latest_blockhash){
         signatures.append_array(signature);
     }
     std::cout << "# signatures size " << signatures.size() << std::endl;
+    //emscripten_run_script("alert('hi from emscripten')");
 
     return OK;
 }

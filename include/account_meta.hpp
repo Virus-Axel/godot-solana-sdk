@@ -39,11 +39,6 @@ public:
 
     void create_new(const Variant& account_key, bool is_signer, bool writeable);
 
-    //const AccountMeta &operator=(const Variant& other);
-    bool operator<(const AccountMeta& other) const;
-    bool operator<=(const AccountMeta& other) const;
-    bool operator>=(const AccountMeta& other) const;
-    bool operator>(const AccountMeta& other) const;
     bool operator==(const AccountMeta& other) const;
 
     ~AccountMeta();

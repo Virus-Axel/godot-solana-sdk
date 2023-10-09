@@ -56,7 +56,7 @@ CompiledKeys::CompiledKeys(){
 void CompiledKeys::_bind_methods(){
 }
 
-CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, Hash &latest_blockhash){
+CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, Variant &latest_blockhash){
     unsigned int writable_signer_total = 0;
     unsigned int readonly_signer_total = 0;
     unsigned int writable_non_signer_total = 0;
@@ -64,7 +64,7 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
 
     TypedArray<Resource> merged_metas;
     
-    this->latest_blockhash = &latest_blockhash;
+    this->latest_blockhash = latest_blockhash;
 
     for(unsigned int i = 0; i < instructions.size(); i++){
         Instruction *element = Object::cast_to<Instruction>(instructions[i]);
@@ -177,7 +177,7 @@ PackedByteArray CompiledKeys::serialize(){
     }
 
     Hash *latest_blockhash_pubkey = Object::cast_to<Hash>(latest_blockhash);
-    result.append_array(latest_blockhash->get_bytes());
+    result.append_array(latest_blockhash_pubkey->get_bytes());
 
     result.append(compiled_instructions.size());
 

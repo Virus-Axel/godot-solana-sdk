@@ -85,19 +85,20 @@ bool Keypair::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 Keypair::Keypair() {
+    signer = new CryptoPP::ed25519::Signer();
     CryptoPP::AutoSeededRandomPool prng;
-    signer.AccessPrivateKey().GenerateRandom(prng);
+    ((CryptoPP::ed25519::Signer*)signer)->AccessPrivateKey().GenerateRandom(prng);
         
-    const CryptoPP::ed25519PrivateKey& privKey = dynamic_cast<const CryptoPP::ed25519PrivateKey&>(signer.GetPrivateKey());
+    const CryptoPP::ed25519PrivateKey& privKey = dynamic_cast<const CryptoPP::ed25519PrivateKey&>(((CryptoPP::ed25519::Signer*)signer)->GetPrivateKey());
     
     private_bytes.resize(CryptoPP::ed25519PrivateKey::SECRET_KEYLENGTH);
     const CryptoPP::byte *private_byte_pointer = privKey.GetPrivateKeyBytePtr();
     for(unsigned int i = 0; i < CryptoPP::ed25519PrivateKey::SECRET_KEYLENGTH; i++){
         private_bytes[i] = private_byte_pointer[i];
     }
-    verifier = CryptoPP::ed25519::Verifier(signer);
+    verifier = new CryptoPP::ed25519::Verifier(*(CryptoPP::ed25519::Signer*)signer);
 
-    const CryptoPP::ed25519PublicKey& pubKey = dynamic_cast<const CryptoPP::ed25519PublicKey&>(verifier.GetPublicKey());
+    const CryptoPP::ed25519PublicKey& pubKey = dynamic_cast<const CryptoPP::ed25519PublicKey&>(((CryptoPP::ed25519::Verifier*)verifier)->GetPublicKey());
     const CryptoPP::byte *public_byte_pointer = pubKey.GetPublicKeyBytePtr();
     public_bytes.resize(CryptoPP::ed25519PublicKey::PUBLIC_KEYLENGTH);
     for(unsigned int i = 0; i < CryptoPP::ed25519PublicKey::PUBLIC_KEYLENGTH; i++){
@@ -213,24 +214,20 @@ bool Keypair::get_unique(){
 
 PackedByteArray Keypair::sign_message(const PackedByteArray& message){
     CryptoPP::AutoSeededRandomPool prng;
-    std::cout << "1" << std::endl;
-    unsigned char signature[signer.MaxSignatureLength()];
-    std::cout << "1 size = " << this->get_public_bytes().size() << std::endl;
-    const char* te = "hello";
-    int len = signer.SignMessage(prng, message.ptr(), 5, &signature[0]);
-    std::cout << "1" << std::endl;
+    unsigned char signature[((CryptoPP::ed25519::Signer*)signer)->MaxSignatureLength()];
+
+    int len = ((CryptoPP::ed25519::Signer*)signer)->SignMessage(prng, message.ptr(), message.size(), &signature[0]);
+
     PackedByteArray result;
-    std::cout << "1" << std::endl;
     result.resize(len);
-    std::cout << "1" << std::endl;
     for(int i = 0; i < len; i++){
         result[i] = signature[i];
     }
-    std::cout << "1" << std::endl;
     return result;
 }
 
 Keypair::~Keypair() {
+
 }
 
 }

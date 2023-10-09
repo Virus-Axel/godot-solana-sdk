@@ -11,8 +11,11 @@ class Keypair : public Resource {
     GDCLASS(Keypair, Resource)
 
 private:
-    CryptoPP::ed25519::Signer signer;
-    CryptoPP::ed25519::Verifier verifier;
+    //Ref<CryptoPP::ed25519::Signer> signer;
+    //Ref<CryptoPP::ed25519::Verifier> verifier;
+    GDExtensionObjectPtr signer;
+    GDExtensionObjectPtr verifier;
+
 
     const int KEY_LENGTH = 32;
 
