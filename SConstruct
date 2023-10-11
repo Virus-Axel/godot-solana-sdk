@@ -90,38 +90,54 @@ env = SConscript("godot-cpp/SConstruct")
 env.Append(CPPPATH=["src/"])
 env.Append(CPPPATH=["include/"])
 env.Append(CPPPATH=["sha256/"])
-env.Append(CPPPATH=["cryptopp/"])
+#env.Append(CPPPATH=["cryptopp/"])
 env.Append(CPPPATH=["BLAKE3/c/"])
+env.Append(CPPPATH=["ed25519/src/"])
 env.Append(CCFLAGS=[
     "-DBLAKE3_NO_SSE41",
     "-DBLAKE3_NO_SSE2",
     "-DBLAKE3_NO_AVX512",
     "-DBLAKE3_NO_AVX2",
-    "-DCRYPTOPP_DISABLE_SSE3",
-    "-DCRYPTOPP_DISABLE_SSSE3",
-    "-DCRYPTOPP_DISABLE_SSE4",
-    "-DCRYPTOPP_DISABLE_CLMUL",
-    "-DCRYPTOPP_DISABLE_AESNI",
-    "-DCRYPTOPP_DISABLE_AVX",
-    "-DCRYPTOPP_DISABLE_AVX2",
-    "-DCRYPTOPP_DISABLE_SHANI",])
+])
+#    "-DCRYPTOPP_DISABLE_SSE3",
+#    "-DCRYPTOPP_DISABLE_SSSE3",
+#    "-DCRYPTOPP_DISABLE_SSE4",
+#    "-DCRYPTOPP_DISABLE_CLMUL",
+#    "-DCRYPTOPP_DISABLE_AESNI",
+#    "-DCRYPTOPP_DISABLE_AVX",
+#    "-DCRYPTOPP_DISABLE_AVX2",
+#    "-DCRYPTOPP_DISABLE_SHANI",
+#    "-DNDEBUG"])
 sources = Glob("src/*.cpp")
 blak3_sources = Glob("BLAKE3/c/blake3.c")
 blak3_sources.append(Glob("BLAKE3/c/blake3_dispatch.c")[0])
 blak3_sources.append(Glob("BLAKE3/c/blake3_portable.c")[0])
 
 sha256_sources = Glob("sha256/sha256.cpp")
+ed25519_sources = Glob("ed25519/src/*.c")
 
-#cryptopp_sources = ['cryptopp/randpool.cpp',
-#                    'cryptopp/xed25519.cpp',
-#                    'cryptopp/osrng.cpp',
-#                    'cryptopp/cryptlib.cpp',
-#                    'cryptopp/rng.cpp',
-#                    'cryptopp/fips140.cpp',
-#                    'cryptopp/sha.cpp',
-#                    'cryptopp/rijndael.cpp',
-#                    'cryptopp/modes.cpp',]
-cryptopp_sources = Glob('cryptopp/*.cpp')
+cryptopp_sources = [
+                    'cryptopp/cryptlib.cpp',
+                    'cryptopp/cpu.cpp',
+                    'cryptopp/integer.cpp',
+                    'cryptopp/randpool.cpp',
+                    'cryptopp/xed25519.cpp',
+                    'cryptopp/osrng.cpp',
+                    
+                    'cryptopp/rng.cpp',
+                    'cryptopp/fips140.cpp',
+                    'cryptopp/sha.cpp',
+                    'cryptopp/rijndael.cpp',
+                    'cryptopp/modes.cpp',
+                    'cryptopp/bench3.cpp',
+                    'cryptopp/hrtimer.cpp',
+                    'cryptopp/filters.cpp',
+                    'cryptopp/iterhash.cpp',
+#                    'cryptopp/strcipher.cpp',
+                    'cryptopp/authenc.cpp',
+]
+#]
+#cryptopp_sources = Glob('cryptopp/*.cpp')
 
 # Handle the container build
 if env.GetOption('container_build'):
@@ -148,12 +164,12 @@ else:
             ) + LIBRARY_NAME + ".{}.{}".format(
                 env["platform"], env["target"]
             ),
-            source=sources + blak3_sources + sha256_sources + cryptopp_sources,
+            source=sources + blak3_sources + sha256_sources + ed25519_sources #+ cryptopp_sources,
         )
     else:
         library = env.SharedLibrary(
             "bin/lib" + LIBRARY_NAME + "{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-            source=sources + blak3_sources + sha256_sources + cryptopp_sources,
+            source=sources + blak3_sources + sha256_sources + ed25519_sources #+ cryptopp_sources,
         )
 
     #wrapper = SConscript("wrapper/SConstruct", exports={'env': env})

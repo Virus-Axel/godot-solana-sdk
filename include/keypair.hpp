@@ -4,7 +4,7 @@
 
 #include <godot_cpp/classes/resource.hpp>
 #include "utils.hpp"
-#include "xed25519.h"
+#include "ed25519.h"
 
 namespace godot{
 class Keypair : public Resource {
@@ -13,11 +13,12 @@ class Keypair : public Resource {
 private:
     //Ref<CryptoPP::ed25519::Signer> signer;
     //Ref<CryptoPP::ed25519::Verifier> verifier;
-    GDExtensionObjectPtr signer;
-    GDExtensionObjectPtr verifier;
+    //GDExtensionObjectPtr signer;
+    //GDExtensionObjectPtr verifier;
 
 
     const int KEY_LENGTH = 32;
+    const int SIGNATURE_LENGTH = 64;
 
     bool unique = true;
     String public_value = "";

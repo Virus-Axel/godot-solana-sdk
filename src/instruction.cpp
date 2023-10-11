@@ -257,8 +257,6 @@ TypedArray<AccountMeta> Instruction::get_accounts(){
     return accounts;
 }
 
-
-
 Instruction::~Instruction() {
 }
 

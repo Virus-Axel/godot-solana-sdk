@@ -21,3 +21,6 @@
 [submodule "cryptopp"]
 	path = cryptopp
 	url = git@github.com:weidai11/cryptopp.git
+[submodule "ed25519"]
+	path = ed25519
+	url = git@github.com:orlp/ed25519.git

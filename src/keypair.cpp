@@ -1,9 +1,10 @@
 #include "keypair.hpp"
-#include "xed25519.h"
-#include "osrng.h"
 
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/classes/random_number_generator.hpp>
 #include <solana_sdk.hpp>
+
+//#include <emscripten.h>
 
 namespace godot{
 
@@ -85,31 +86,25 @@ bool Keypair::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 Keypair::Keypair() {
-    signer = new CryptoPP::ed25519::Signer();
-    CryptoPP::AutoSeededRandomPool prng;
-    ((CryptoPP::ed25519::Signer*)signer)->AccessPrivateKey().GenerateRandom(prng);
-        
-    const CryptoPP::ed25519PrivateKey& privKey = dynamic_cast<const CryptoPP::ed25519PrivateKey&>(((CryptoPP::ed25519::Signer*)signer)->GetPrivateKey());
-    
-    private_bytes.resize(CryptoPP::ed25519PrivateKey::SECRET_KEYLENGTH);
-    const CryptoPP::byte *private_byte_pointer = privKey.GetPrivateKeyBytePtr();
-    for(unsigned int i = 0; i < CryptoPP::ed25519PrivateKey::SECRET_KEYLENGTH; i++){
-        private_bytes[i] = private_byte_pointer[i];
-    }
-    verifier = new CryptoPP::ed25519::Verifier(*(CryptoPP::ed25519::Signer*)signer);
+    RandomNumberGenerator rand;
+    rand.randomize();
 
-    const CryptoPP::ed25519PublicKey& pubKey = dynamic_cast<const CryptoPP::ed25519PublicKey&>(((CryptoPP::ed25519::Verifier*)verifier)->GetPublicKey());
-    const CryptoPP::byte *public_byte_pointer = pubKey.GetPublicKeyBytePtr();
-    public_bytes.resize(CryptoPP::ed25519PublicKey::PUBLIC_KEYLENGTH);
-    for(unsigned int i = 0; i < CryptoPP::ed25519PublicKey::PUBLIC_KEYLENGTH; i++){
-        public_bytes[i] = public_byte_pointer[i];
+    private_bytes.resize(KEY_LENGTH*2);
+    public_bytes.resize(KEY_LENGTH);
+
+    unsigned char seed[KEY_LENGTH];
+    for(unsigned int i = 0; i < KEY_LENGTH; i++){
+        seed[i] = rand.randi();
     }
+
+    ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed);
 
     private_value = SolanaSDK::bs58_encode(private_bytes);
 
     std::cout << "privvalue: " << private_value.to_ascii_buffer().ptr() << std::endl;
     public_value = SolanaSDK::bs58_encode(public_bytes);
     std::cout << "privvalue: " << public_value.to_ascii_buffer().ptr() << std::endl;
+    
 }
 
 void Keypair::set_public_value(const String& p_value){
@@ -213,18 +208,17 @@ bool Keypair::get_unique(){
 }
 
 PackedByteArray Keypair::sign_message(const PackedByteArray& message){
-    CryptoPP::AutoSeededRandomPool prng;
-    unsigned char signature[((CryptoPP::ed25519::Signer*)signer)->MaxSignatureLength()];
+    //emscripten_run_script("alert('hi from em')");
+    unsigned char signature[64];
 
-    int len = ((CryptoPP::ed25519::Signer*)signer)->SignMessage(prng, message.ptr(), message.size(), &signature[0]);
+    ed25519_sign(signature, message.ptr(), message.size(), public_bytes.ptr(), private_bytes.ptr());
 
     PackedByteArray result;
-    result.resize(len);
-    for(int i = 0; i < len; i++){
+    result.resize(SIGNATURE_LENGTH);
+    for(int i = 0; i < SIGNATURE_LENGTH; i++){
         result[i] = signature[i];
     }
-    return result;
-}
+    return result;}
 
 Keypair::~Keypair() {
 
