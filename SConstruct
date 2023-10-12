@@ -93,6 +93,7 @@ env.Append(CPPPATH=["sha256/"])
 #env.Append(CPPPATH=["cryptopp/"])
 env.Append(CPPPATH=["BLAKE3/c/"])
 env.Append(CPPPATH=["ed25519/src/"])
+env.Append(CPPPATH=["phantom/"])
 env.Append(CCFLAGS=[
     "-DBLAKE3_NO_SSE41",
     "-DBLAKE3_NO_SSE2",
@@ -116,6 +117,8 @@ blak3_sources.append(Glob("BLAKE3/c/blake3_portable.c")[0])
 sha256_sources = Glob("sha256/sha256.cpp")
 ed25519_sources = Glob("ed25519/src/*.c")
 
+phantom_sources = Glob("phantom/*.cpp")
+
 cryptopp_sources = [
                     'cryptopp/cryptlib.cpp',
                     'cryptopp/cpu.cpp',
@@ -138,6 +141,10 @@ cryptopp_sources = [
 ]
 #]
 #cryptopp_sources = Glob('cryptopp/*.cpp')
+
+if env["platform"] == "javascript":
+    env.Append(CCFLAGS=["-DSOLANA_SDK_WEBBUILD"])
+#    env.Append(LINKFLAGS=["-lembind", "--bind"])
 
 # Handle the container build
 if env.GetOption('container_build'):
@@ -164,12 +171,12 @@ else:
             ) + LIBRARY_NAME + ".{}.{}".format(
                 env["platform"], env["target"]
             ),
-            source=sources + blak3_sources + sha256_sources + ed25519_sources #+ cryptopp_sources,
+            source=sources + blak3_sources + sha256_sources + ed25519_sources + phantom_sources #+ cryptopp_sources,
         )
     else:
         library = env.SharedLibrary(
             "bin/lib" + LIBRARY_NAME + "{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-            source=sources + blak3_sources + sha256_sources + ed25519_sources #+ cryptopp_sources,
+            source=sources + blak3_sources + sha256_sources + ed25519_sources + phantom_sources #+ cryptopp_sources,
         )
 
     #wrapper = SConscript("wrapper/SConstruct", exports={'env': env})

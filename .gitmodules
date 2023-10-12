@@ -24,3 +24,6 @@
 [submodule "ed25519"]
 	path = ed25519
 	url = git@github.com:orlp/ed25519.git
+[submodule "phantom/wallet-adapter"]
+	path = phantom/wallet-adapter
+	url = git@github.com:solana-labs/wallet-adapter.git
