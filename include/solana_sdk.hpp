@@ -29,6 +29,8 @@ public:
     SolanaSDK();
     static PackedByteArray bs58_decode(String str);
     static String bs58_encode(PackedByteArray input);
+    static String bs64_encode(PackedByteArray bytes);
+    static PackedByteArray bs64_decode(String input);
     static String get_latest_blockhash();
     static Variant send_transaction(const String& transaction);
     static void set_url(const String& url);

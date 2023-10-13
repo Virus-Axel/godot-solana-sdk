@@ -117,7 +117,7 @@ Variant Transaction::sign_and_send(){
 
     PackedByteArray serialized_bytes = serialize();
 
-    return SolanaSDK::send_transaction(encode64(serialized_bytes));
+    return SolanaSDK::send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
 
     return OK;
 }

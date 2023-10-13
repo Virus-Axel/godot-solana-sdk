@@ -12,12 +12,17 @@ private:
     enum State{
         IDLE = 0,
         CONNECTING = 1,
+        SIGNING = 2,
     };
 
     PackedByteArray connected_key;
     State phantom_state = State::IDLE;
 
+    void clear_state();
     void poll_connection();
+    void poll_message_signing();
+    void store_serialized_message(const PackedByteArray &store_serialized_message);
+    PackedByteArray get_message_signature();
 
 protected:
     static void _bind_methods();
@@ -25,10 +30,9 @@ public:
     static int data;
     static void set_data();
     void _process(double delta) override;
-
     PhantomController();
     void connect_phantom();
-    void sign_and_send_transaction();
+    void sign_message(const PackedByteArray &serialized_message);
     ~PhantomController();
 };
 }

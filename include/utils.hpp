@@ -17,7 +17,7 @@ const char mapping[] = {
 #include "utils.hpp"
 
 
-String encode64(PackedByteArray bytes);
+//String encode64(PackedByteArray bytes);
 	
 /*
 static func decode(str: String) -> PackedByteArray:

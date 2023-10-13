@@ -17,8 +17,11 @@
 const char *sign_and_send_script = "\
   async function foo() {\
     const { solana } = window;\
-    const response = await solana.connect();\
+    Module.message_signature = (await solana.signMessage(Module.serialized_message)).signature;\
+    Module.phantom_status = 1;\
   }\
+  \
+  foo();\
 ";
 
 const char* js_script = "\
@@ -50,6 +53,52 @@ namespace godot{
 
 int PhantomController::data = 0;
 
+void PhantomController::clear_state(){
+  phantom_state = State::IDLE;
+  #ifdef SOLANA_SDK_WEBBUILD
+  emscripten_run_script("Module.phantom_status = 0;");
+  #endif
+}
+
+void PhantomController::store_serialized_message(const PackedByteArray &serialized_message){
+  #ifdef SOLANA_SDK_WEBBUILD
+  String script = "Module.serialized_message = new Uint8Array(";
+  script += String::num_uint64(serialized_message.size());
+  script += ");";
+  std::cout << "running " << script.utf8() << std::endl;
+  emscripten_run_script(script.utf8());
+
+  for(unsigned int i = 0; i < serialized_message.size(); i++){
+    script = "Module.serialized_message[";
+    script += String::num_uint64(i);
+    script += "] = ";
+    script += String::num_uint64(serialized_message[i]);
+    script += ';';
+    std::cout << "running " << script.utf8() << std::endl;
+    emscripten_run_script(script.utf8());
+  }
+  
+  #endif
+}
+
+PackedByteArray PhantomController::get_message_signature(){
+  #ifdef SOLANA_SDK_WEBBUILD
+  PackedByteArray message_signature;
+
+  // TODO: replace with named constant.
+  message_signature.resize(64);
+
+  for(unsigned int i = 0; i < 64; i++){
+    String script = "Module.message_signature[";
+    script += String::num_uint64(i);
+    script += "]";
+    message_signature[i] = emscripten_run_script_int(script.utf8());
+  }
+
+  return message_signature;
+  #endif
+}
+
 void PhantomController::poll_connection(){
   #ifdef SOLANA_SDK_WEBBUILD
   int phantom_connect_status = emscripten_run_script_int("Module.phantom_status");
@@ -67,16 +116,38 @@ void PhantomController::poll_connection(){
         std::cout << "ERRORRR" << std::endl;
       }
       connected_key = decoded_bytes;
+      clear_state();
       emit_signal("connection_established");
       break;
     }
     default:
       connected = false;
+      clear_state();
       emit_signal("connection_error");
       break;
   }
+  #endif
+}
 
-  phantom_state = State::IDLE;
+
+void PhantomController::poll_message_signing(){
+  #ifdef SOLANA_SDK_WEBBUILD
+  int phantom_signing_status = emscripten_run_script_int("Module.phantom_status");
+  switch(phantom_signing_status){
+    case 0:
+      return;
+      break;
+
+    case 1:{
+      clear_state();
+      emit_signal("message_signed", get_message_signature());
+      break;
+    }
+    default:
+      clear_state();
+      emit_signal("signing_error");
+      break;
+  }
   #endif
 }
 
@@ -88,6 +159,9 @@ void PhantomController::_process(double delta){
     case State::CONNECTING:
       poll_connection();
     break;
+    case State::SIGNING:
+      poll_message_signing();
+    break;
   }
 
 }
@@ -95,7 +169,10 @@ void PhantomController::_process(double delta){
 void PhantomController::_bind_methods(){
   ClassDB::add_signal("PhantomController", MethodInfo("connection_established"));
   ClassDB::add_signal("PhantomController", MethodInfo("connection_error"));
+  ClassDB::add_signal("PhantomController", MethodInfo("message_signed", PropertyInfo(Variant::PACKED_BYTE_ARRAY, "signature")));
+  ClassDB::add_signal("PhantomController", MethodInfo("signing_error"));
   ClassDB::bind_method(D_METHOD("connect_phantom"), &PhantomController::connect_phantom);
+  ClassDB::bind_method(D_METHOD("sign_message", "serialized_message"), &PhantomController::sign_message);
 }
 
 PhantomController::PhantomController(){
@@ -119,8 +196,11 @@ void PhantomController::connect_phantom(){
  */   #endif
 }
 
-void PhantomController::sign_and_send_transaction(){
+void PhantomController::sign_message(const PackedByteArray &serialized_message){
   #ifdef SOLANA_SDK_WEBBUILD
+
+  phantom_state = State::SIGNING;
+  store_serialized_message(serialized_message);
 
   emscripten_run_script(sign_and_send_script);
 
