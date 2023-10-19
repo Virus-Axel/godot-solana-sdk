@@ -61,12 +61,12 @@ def build_all(env, container_path, keep_images):
     # Remove existing container
     env.Execute('podman rm -fi {}'.format(CONTAINER_NAME))
 
-    build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
+    #build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
     build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
-    build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images, keep_container=True)
-    build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
-    build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
-    build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
+    #build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images, keep_container=True)
+    #build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
+    #build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
+    #build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
 
 AddOption('--keep_images', dest='keep_images', default=False, action='store_true', help='Keeps the podman images for future builds.')
 AddOption('--container_build', dest='container_build', default=False, action='store_true', help='Build in containers for all platforms (specify one to override)')
@@ -144,7 +144,7 @@ cryptopp_sources = [
 
 if env["platform"] == "javascript":
     env.Append(CCFLAGS=["-DSOLANA_SDK_WEBBUILD"])
-#    env.Append(LINKFLAGS=["-lembind", "--bind"])
+    #env.Append(LINKFLAGS=["-sASYNCIFY", "--no-entry"])
 
 # Handle the container build
 if env.GetOption('container_build'):

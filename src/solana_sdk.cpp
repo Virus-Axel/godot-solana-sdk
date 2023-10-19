@@ -65,7 +65,7 @@ SolanaSDK::SolanaSDK() {
 }
 
 Dictionary SolanaSDK::quick_http_request(const String& request_body){
-	const int32_t POLL_DELAY_MSEC = 10;
+	const int32_t POLL_DELAY_MSEC = 100;
 
 	// Set headers
 	PackedStringArray http_headers;
@@ -74,6 +74,7 @@ Dictionary SolanaSDK::quick_http_request(const String& request_body){
 	
 	// Connect to RPC API URL.
 	HTTPClient handler;
+
 	Error err = handler.connect_to_host(String(url.c_str()), 443, TLSOptions::client_unsafe());
 
 	// Wait until a connection is established.
@@ -92,6 +93,8 @@ Dictionary SolanaSDK::quick_http_request(const String& request_body){
 		return Dictionary();
 	}
 
+	std::cout << "request sent" << std::endl;
+
 	// Poll until we have a response.
 	status = handler.get_status();
 	while(status == HTTPClient::STATUS_REQUESTING){
@@ -100,13 +103,18 @@ Dictionary SolanaSDK::quick_http_request(const String& request_body){
 		status = handler.get_status();
 	}
 
+	std::cout << "request answrd" << std::endl;
+
 	// Collect the response body.
 	PackedByteArray response_data;
 	while(status == HTTPClient::STATUS_BODY){
 		response_data.append_array(handler.read_response_body_chunk());
 		handler.poll();
+		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
 		status = handler.get_status();
 	}
+
+	std::cout << "request resporns" << std::endl;
 
 	handler.close();
 
