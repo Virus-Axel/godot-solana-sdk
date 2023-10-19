@@ -83,7 +83,7 @@ protected:
 
 public:
     CompiledKeys();
-    CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, Variant &latest_blockhash);
+    CompiledKeys(TypedArray<Instruction> instructions, Variant &payer, Variant &latest_blockhash);
     PackedByteArray serialize();
     TypedArray<Resource> &get_signers();
     ~CompiledKeys();

@@ -116,6 +116,8 @@ void PhantomController::poll_connection(){
         std::cout << "ERRORRR" << std::endl;
       }
       connected_key = decoded_bytes;
+      std::cout << connected_key.size() << std::endl;
+      std::cout << decoded_bytes.size() << std::endl;
       clear_state();
       emit_signal("connection_established");
       break;

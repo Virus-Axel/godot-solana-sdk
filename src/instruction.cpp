@@ -1,10 +1,13 @@
 #include "instruction.hpp"
 #include "keypair.hpp"
+#include "solana_sdk.hpp"
 
 #include "utils.hpp"
 
 #include <vector>
 #include <algorithm>
+
+#include <phantom.hpp>
 
 #include <godot_cpp/core/class_db.hpp>
 
@@ -56,7 +59,7 @@ CompiledKeys::CompiledKeys(){
 void CompiledKeys::_bind_methods(){
 }
 
-CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, Variant &latest_blockhash){
+CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Variant &payer, Variant &latest_blockhash){
     unsigned int writable_signer_total = 0;
     unsigned int readonly_signer_total = 0;
     unsigned int writable_non_signer_total = 0;
@@ -65,6 +68,17 @@ CompiledKeys::CompiledKeys(TypedArray<Instruction> instructions, Pubkey* payer, 
     TypedArray<Resource> merged_metas;
     
     this->latest_blockhash = latest_blockhash;
+
+    // Append payer
+    PhantomController *phantom = Object::cast_to<PhantomController>(payer);
+    if(!phantom->is_connected()){
+        std::cout << "TERROR" << std::endl;
+    }
+    PackedByteArray payer_key_bytes = phantom->get_connected_key();
+    Pubkey *payer_key = memnew(Pubkey);
+    payer_key->set_bytes(payer_key_bytes);
+    merged_metas.append(memnew(AccountMeta(payer_key, true, true)));
+    std::cout << payer_key_bytes.size() << " DEBUGGG: " << SolanaSDK::bs58_encode(payer_key_bytes).to_utf8_buffer().ptr() << std::endl;
 
     for(unsigned int i = 0; i < instructions.size(); i++){
         Instruction *element = Object::cast_to<Instruction>(instructions[i]);

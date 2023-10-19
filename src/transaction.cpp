@@ -53,7 +53,10 @@ void Transaction::_payer_signed(PackedByteArray signature){
     std::cout << "payer is signed" << std::endl;
     PhantomController *controller = Object::cast_to<PhantomController>(payer);
     controller->disconnect("message_signed", Callable(this, "_payer_signed"));
-    signatures.append_array(controller->get_message_signature());
+    PackedByteArray temp = signatures;
+    signatures  = controller->get_message_signature();
+    signatures.append_array(temp);
+
     std::cout << "# signatures size " << signatures.size() << std::endl;
 
     emit_signal("fully_signed");
@@ -152,12 +155,12 @@ Array Transaction::get_signers(){
 }
 
 PackedByteArray Transaction::serialize(){
-    Pubkey *payer_key = Object::cast_to<Pubkey>(payer);
+    Pubkey *payer_key = nullptr;// Object::cast_to<Pubkey>(payer);
     const String hash_string = "4uQeVj5tqViQh7yWWGStvkEG1Zmhx6uasJtWCJziofM";//SolanaSDK::get_latest_blockhash();
     Variant hash = memnew(Hash);
     Object::cast_to<Hash>(hash)->set_value(hash_string);
 
-    message = memnew(CompiledKeys(instructions, payer_key, hash));
+    message = memnew(CompiledKeys(instructions, payer, hash));
     //return PackedByteArray();
     return Object::cast_to<CompiledKeys>(message)->serialize();
 }
@@ -212,6 +215,7 @@ Error Transaction::sign(const Variant& latest_blockhash){
         PhantomController *controller = Object::cast_to<PhantomController>(payer);
 
         controller->connect("message_signed", Callable(this, "_payer_signed"));
+        std::cout << "it was ser " << std::endl;
         controller->sign_message(msg);
 
         /*while(!controller->is_idle()){
