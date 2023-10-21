@@ -11,6 +11,7 @@
 #include <godot_cpp/classes/http_request.hpp>
 #include <solana_sdk.hpp>
 #include <phantom.hpp>
+#include <message.hpp>
 
 //#include <emscripten.h>
 
@@ -53,9 +54,8 @@ void Transaction::_payer_signed(PackedByteArray signature){
     std::cout << "payer is signed" << std::endl;
     PhantomController *controller = Object::cast_to<PhantomController>(payer);
     controller->disconnect("message_signed", Callable(this, "_payer_signed"));
-    PackedByteArray temp = signatures;
-    signatures  = controller->get_message_signature();
-    signatures.append_array(temp);
+
+    signatures.append_array(controller->get_message_signature());
 
     std::cout << "# signatures size " << signatures.size() << std::endl;
 
@@ -160,9 +160,9 @@ PackedByteArray Transaction::serialize(){
     Variant hash = memnew(Hash);
     Object::cast_to<Hash>(hash)->set_value(hash_string);
 
-    message = memnew(CompiledKeys(instructions, payer, hash));
+    message = memnew(Message(instructions, payer, hash));
     //return PackedByteArray();
-    return Object::cast_to<CompiledKeys>(message)->serialize();
+    return Object::cast_to<Message>(message)->serialize();
 }
 
 Variant Transaction::sign_and_send(){
@@ -178,8 +178,10 @@ Variant Transaction::sign_and_send(){
 }
 
 Error Transaction::send(){
-    PackedByteArray serialized_bytes = serialize();
+    PackedByteArray serialized_bytes;
+    serialized_bytes.append(signatures.size() / 64);
     serialized_bytes.append_array(signatures);
+    serialized_bytes.append_array(serialize());
 
     // Set headers
 	PackedStringArray http_headers;
@@ -192,6 +194,8 @@ Error Transaction::send(){
 
     const godot::String REQUEST_DATA = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"sendTransaction\",\"params\":[\"" + SolanaSDK::bs64_encode(serialized_bytes) + "\",{\"encoding\":\"base64\"}]}";
 
+    std::cout << REQUEST_DATA.utf8() << std::endl;
+
 	request->request("https://api.devnet.solana.com", http_headers, HTTPClient::METHOD_POST, REQUEST_DATA);
 
     return OK;
@@ -202,7 +206,7 @@ Error Transaction::sign(const Variant& latest_blockhash){
 
     PackedByteArray msg = serialize();
 
-    TypedArray<Resource> &signers = Object::cast_to<CompiledKeys>(message)->get_signers();
+    TypedArray<Resource> &signers = Object::cast_to<Message>(message)->get_signers();
 
     for (unsigned int i = 0; i < signers.size(); i++){
         Keypair *kp = Object::cast_to<Keypair>(signers[i]);
