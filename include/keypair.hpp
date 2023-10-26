@@ -27,6 +27,8 @@ private:
     String private_value = "";
     PackedByteArray private_bytes;
 
+    PackedByteArray seed;
+
 protected:
     static void _bind_methods();
     bool _set(const StringName &p_name, const Variant &p_value);
@@ -35,6 +37,7 @@ protected:
 
 public:
     Keypair();
+    Keypair(const PackedByteArray &seed);
     
     void set_public_value(const String& p_value);
     String get_public_value();
@@ -49,9 +52,16 @@ public:
     PackedByteArray get_private_bytes();
 
     PackedByteArray sign_message(const PackedByteArray& message);
+    bool verify_signature(const PackedByteArray& signature, const PackedByteArray& message);
 
     void set_unique(const bool p_value);
     bool get_unique();
+
+    void set_seed(const PackedByteArray &p_value);
+    PackedByteArray get_seed();
+
+    void random();
+    void from_seed();
 
     ~Keypair();
 };

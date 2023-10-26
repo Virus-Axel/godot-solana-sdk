@@ -1,5 +1,6 @@
 #include "phantom.hpp"
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/java_script_bridge.hpp>
 #include <solana_sdk.hpp>
 #include <godot_cpp/classes/thread.hpp>
 
@@ -8,11 +9,28 @@
 #include <emscripten/val.h>
 
 
-const char *sign_and_send_script = "\
+const std::string sign_and_send_script = "\
+  const url = 'https://unpkg.com/@solana/web3.js@1.87.2/lib/index.iife.min.js';\
+  fetch(url)\
+    .then(response => response.text())\
+    .then(script => {\
+      eval(script);\
+    })\
+    .catch(error => {\
+      console.error('Error loading script:', error);\
+    });\
   Module.phantom_status = 0;\
   async function foo() {\
+    \
     const { solana } = window;\
-    Module.message_signature = (await solana.signMessage(Module.serialized_message)).signature;\
+    console.log(Module.serialized_message);\
+    Module.message_signature = (await solana.request({\
+      method: 'signTransaction',\
+      params: {\
+        message: Module.encoded_message,\
+      }\
+    }));\
+    console.log(Module.message_signature);\
     Module.phantom_status = 1;\
   }\
   \
@@ -57,6 +75,7 @@ void PhantomController::clear_state(){
 
 bool PhantomController::is_idle(){
   return phantom_state == State::IDLE;
+  
 }
 
 void PhantomController::store_serialized_message(const PackedByteArray &serialized_message){
@@ -76,6 +95,12 @@ void PhantomController::store_serialized_message(const PackedByteArray &serializ
     std::cout << "running " << script.utf8() << std::endl;
     emscripten_run_script(script.utf8());
   }
+
+  script = "Module.encoded_message = '";
+  script += SolanaSDK::bs58_encode(serialized_message);
+  script += "';";
+  std::cout << "running " << script.utf8() << std::endl;
+  emscripten_run_script(script.utf8());
   
   #endif
 }
@@ -215,7 +240,7 @@ void PhantomController::sign_message(const PackedByteArray &serialized_message){
   phantom_state = State::SIGNING;
   store_serialized_message(serialized_message);
 
-  emscripten_run_script(sign_and_send_script);
+  JavaScriptBridge::get_singleton()->eval(String(sign_and_send_script.c_str()));
 
   #endif
 }

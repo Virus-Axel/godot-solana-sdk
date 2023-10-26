@@ -19,6 +19,11 @@ void Keypair::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_private_bytes", "p_value"), &Keypair::set_private_bytes);
     ClassDB::bind_method(D_METHOD("get_unique"), &Keypair::get_unique);
     ClassDB::bind_method(D_METHOD("set_unique", "p_value"), &Keypair::set_unique);
+    ClassDB::bind_method(D_METHOD("get_seed"), &Keypair::get_seed);
+    ClassDB::bind_method(D_METHOD("set_seed", "p_value"), &Keypair::set_seed);
+
+    ClassDB::bind_method(D_METHOD("sign_message", "message"), &Keypair::sign_message);
+    ClassDB::bind_method(D_METHOD("verify_signature", "signature", "message"), &Keypair::verify_signature);
 }
 
 void Keypair::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -27,6 +32,9 @@ void Keypair::_get_property_list(List<PropertyInfo> *p_list) const {
     // Hide other properties if unique is true.
     if(unique){
         visibility = PROPERTY_USAGE_NO_EDITOR;
+    }
+    else{
+        p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "seed"));
     }
     p_list->push_back(PropertyInfo(Variant::BOOL, "unique"));
 	p_list->push_back(PropertyInfo(Variant::STRING, "public_value", PROPERTY_HINT_NONE, "", visibility, ""));
@@ -57,6 +65,10 @@ bool Keypair::_set(const StringName &p_name, const Variant &p_value) {
         set_unique(p_value);
         return true;
     }
+    else if(name == "seed"){
+        set_seed(p_value);
+        return true;
+    }
 	return false;
 }
 
@@ -82,29 +94,65 @@ bool Keypair::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = unique;
 		return true;
 	}
+    else if (name == "seed") {
+		r_ret = seed;
+		return true;
+	}
 	return false;
 }
 
 Keypair::Keypair() {
-    RandomNumberGenerator rand;
-    rand.randomize();
-
+    seed.resize(KEY_LENGTH);
     private_bytes.resize(KEY_LENGTH*2);
     public_bytes.resize(KEY_LENGTH);
+    from_seed();
+}
 
-    unsigned char seed[KEY_LENGTH];
-    for(unsigned int i = 0; i < KEY_LENGTH; i++){
-        seed[i] = rand.randi();
-    }
-
-    ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed);
+void Keypair::from_seed(){
+    ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed.ptr());
 
     private_value = SolanaSDK::bs58_encode(private_bytes);
 
     std::cout << "privvalue: " << private_value.to_ascii_buffer().ptr() << std::endl;
     public_value = SolanaSDK::bs58_encode(public_bytes);
     std::cout << "privvalue: " << public_value.to_ascii_buffer().ptr() << std::endl;
-    
+}
+
+void Keypair::random(){
+
+    RandomNumberGenerator rand;
+    rand.randomize();
+
+    private_bytes.resize(KEY_LENGTH*2);
+    public_bytes.resize(KEY_LENGTH);
+
+    unsigned char random_seed[KEY_LENGTH];
+    for(unsigned int i = 0; i < KEY_LENGTH; i++){
+        random_seed[i] = rand.randi();
+    }
+
+    ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), random_seed);
+
+    private_value = SolanaSDK::bs58_encode(private_bytes);
+
+    std::cout << "privvalue: " << private_value.to_ascii_buffer().ptr() << std::endl;
+    public_value = SolanaSDK::bs58_encode(public_bytes);
+    std::cout << "privvalue: " << public_value.to_ascii_buffer().ptr() << std::endl;
+}
+
+Keypair::Keypair(const PackedByteArray &seed){
+    private_bytes.resize(KEY_LENGTH*2);
+    public_bytes.resize(KEY_LENGTH);
+
+    // TODO: Check seed size.
+
+    ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed.ptr());
+
+    private_value = SolanaSDK::bs58_encode(private_bytes);
+
+    std::cout << "privvalue: " << private_value.to_ascii_buffer().ptr() << std::endl;
+    public_value = SolanaSDK::bs58_encode(public_bytes);
+    std::cout << "privvalue: " << public_value.to_ascii_buffer().ptr() << std::endl;
 }
 
 void Keypair::set_public_value(const String& p_value){
@@ -207,6 +255,18 @@ bool Keypair::get_unique(){
     return unique;
 }
 
+void Keypair::set_seed(const PackedByteArray &p_value){
+    seed = p_value;
+
+    // TODO: Check length == 32.
+
+    from_seed();
+}
+
+PackedByteArray Keypair::get_seed(){
+    return seed;
+}
+
 PackedByteArray Keypair::sign_message(const PackedByteArray& message){
     //emscripten_run_script("alert('hi from em')");
     unsigned char signature[64];
@@ -218,7 +278,26 @@ PackedByteArray Keypair::sign_message(const PackedByteArray& message){
     for(int i = 0; i < SIGNATURE_LENGTH; i++){
         result[i] = signature[i];
     }
-    return result;}
+    std::cout << "Sign round: " << std::endl;
+    std::cout << "Signature: " << std::endl;
+    for(int i = 0; i < SIGNATURE_LENGTH; i++){
+        std::cout << (int)result[i] << ", ";
+    }
+    std::cout << std::endl << "message:" << std::endl;
+    for(int i = 0; i < message.size(); i++){
+        std::cout << (int)*(message.ptr() + i) << ", ";
+    }
+    for(int i = 0; i < 32; i++){
+        std::cout << (int)*(public_bytes.ptr() + i) << ", ";
+    }
+    std::cout << "Sign round end: " << std::endl;
+
+    return result;
+}
+
+bool Keypair::verify_signature(const PackedByteArray& signature, const PackedByteArray& message){
+    return ed25519_verify(signature.ptr(), message.ptr(), message.size(), public_bytes.ptr()) == 1;
+}
 
 Keypair::~Keypair() {
 

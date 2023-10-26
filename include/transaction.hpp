@@ -19,13 +19,15 @@ private:
     Array instructions;
     Variant payer;
     Array signers;
-    PackedByteArray signatures;
+    TypedArray<PackedByteArray> signatures;
     bool use_phantom_payer;
 
     void _get_property_list(List<PropertyInfo> *p_list) const;
 
     void _transaction_response(int result, int response_code, PackedStringArray headers, PackedByteArray body);
     void _payer_signed(PackedByteArray signature);
+
+    void create_message();
 
 protected:
     static void _bind_methods();
@@ -48,7 +50,10 @@ public:
     void set_use_phantom_payer(bool p_value);
     bool get_use_phantom_payer();
 
+    void update_latest_blockhash(const String &custom_hash = "");
+
     PackedByteArray serialize();
+    PackedByteArray serialize_signers();
     Error sign(const Variant &latest_blockhash);
     Error send();
     Variant sign_and_send();

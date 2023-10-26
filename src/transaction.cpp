@@ -35,8 +35,10 @@ void Transaction::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
     ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
+    ClassDB::bind_method(D_METHOD("update_latest_blockhash"), &Transaction::update_latest_blockhash);
     ClassDB::bind_method(D_METHOD("sign", "latest_blockhash"), &Transaction::sign);
     ClassDB::bind_method(D_METHOD("sign_and_send"), &Transaction::sign_and_send);
+    ClassDB::bind_method(D_METHOD("create_message"), &Transaction::create_message);
     ClassDB::bind_method(D_METHOD("send"), &Transaction::send);
     ClassDB::bind_method(D_METHOD("partially_sign", "latest_blockhash"), &Transaction::partially_sign);
 }
@@ -54,12 +56,41 @@ void Transaction::_payer_signed(PackedByteArray signature){
     std::cout << "payer is signed" << std::endl;
     PhantomController *controller = Object::cast_to<PhantomController>(payer);
     controller->disconnect("message_signed", Callable(this, "_payer_signed"));
-
-    signatures.append_array(controller->get_message_signature());
+    
+    signatures.back() = controller->get_message_signature();
+    /*PackedByteArray temp = controller->get_message_signature();
+    for(unsigned int i = 0; i < temp.size(); i++){
+        signatures.insert(i, temp[i]);
+    }*/
 
     std::cout << "# signatures size " << signatures.size() << std::endl;
 
+    
+
+    for(unsigned int i = 0; i < signatures.size(); i++){
+        std::cout << (int)signatures[i] << ", ";
+    }
+    std::cout << std::endl;
+
     emit_signal("fully_signed");
+}
+
+void Transaction::create_message(){
+    // Free existing memory.
+    message.clear();
+    if(instructions.is_empty() || (payer.get_type() == Variant::NIL)){
+        signatures.clear();
+        return;
+    }
+
+    message = memnew(Message(instructions, payer));
+    const int amount_of_signers = Object::cast_to<Message>(message)->get_amount_signers();
+    signatures.resize(amount_of_signers);
+    for(unsigned int i = 0; i < signatures.size(); i++){
+        PackedByteArray temp;
+        temp.resize(64);
+        signatures[i] = temp;
+    }
 }
 
 bool Transaction::_set(const StringName &p_name, const Variant &p_value){
@@ -123,6 +154,7 @@ void Transaction::create_signed_with_payer(Array instructions, Variant payer, Ar
 
 void Transaction::set_instructions(const Array& p_value){
     instructions = p_value;
+    create_message();
 }
 
 Array Transaction::get_instructions(){
@@ -131,6 +163,12 @@ Array Transaction::get_instructions(){
 
 void Transaction::set_payer(const Variant& p_value){
     payer = p_value;
+    if(use_phantom_payer){
+        Object::cast_to<PhantomController>(payer)->connect("connection_established", Callable(this, "create_message"));
+    }
+    else{
+        create_message();
+    }
 }
 
 Variant Transaction::get_payer(){
@@ -146,6 +184,16 @@ bool Transaction::get_use_phantom_payer(){
     return use_phantom_payer;
 }
 
+void Transaction::update_latest_blockhash(const String &custom_hash){
+    if(!custom_hash.is_empty()){
+        const String latest_blockhash = SolanaSDK::get_latest_blockhash();
+        Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash);
+    }
+    else{
+        Object::cast_to<Message>(message)->set_latest_blockhash(custom_hash);
+    }
+}
+
 void Transaction::set_signers(const Array& p_value){
     signers = p_value;
 }
@@ -155,14 +203,17 @@ Array Transaction::get_signers(){
 }
 
 PackedByteArray Transaction::serialize(){
-    Pubkey *payer_key = nullptr;// Object::cast_to<Pubkey>(payer);
-    const String hash_string = "4uQeVj5tqViQh7yWWGStvkEG1Zmhx6uasJtWCJziofM";//SolanaSDK::get_latest_blockhash();
-    Variant hash = memnew(Hash);
-    Object::cast_to<Hash>(hash)->set_value(hash_string);
-
-    message = memnew(Message(instructions, payer, hash));
-    //return PackedByteArray();
+    create_message();
     return Object::cast_to<Message>(message)->serialize();
+}
+
+PackedByteArray Transaction::serialize_signers(){
+    PackedByteArray serialized_bytes;
+    serialized_bytes.append(signatures.size());
+    for(unsigned int i = 0; i < signatures.size(); i++){
+        serialized_bytes.append_array(signatures[i]);
+    }
+    return serialized_bytes;
 }
 
 Variant Transaction::sign_and_send(){
@@ -179,8 +230,7 @@ Variant Transaction::sign_and_send(){
 
 Error Transaction::send(){
     PackedByteArray serialized_bytes;
-    serialized_bytes.append(signatures.size() / 64);
-    serialized_bytes.append_array(signatures);
+    serialized_bytes.append_array(serialize_signers());
     serialized_bytes.append_array(serialize());
 
     // Set headers
@@ -204,14 +254,15 @@ Error Transaction::send(){
 Error Transaction::sign(const Variant& latest_blockhash){
     std::cout << "signing this ***" << std::endl;
 
-    PackedByteArray msg = serialize();
+    PackedByteArray msg = serialize_signers();
+    msg.append_array(serialize());
 
     TypedArray<Resource> &signers = Object::cast_to<Message>(message)->get_signers();
 
     for (unsigned int i = 0; i < signers.size(); i++){
         Keypair *kp = Object::cast_to<Keypair>(signers[i]);
         PackedByteArray signature = kp->sign_message(msg);
-        signatures.append_array(signature);
+        signatures[i] = signature;
     }
     //emscripten_run_script("alert('hi from emscripten')");
 

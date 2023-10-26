@@ -82,8 +82,8 @@ AccountMeta::AccountMeta() : Resource(){
 
 AccountMeta::AccountMeta(const Variant& pid, bool signer, bool writeable){
     this->set_pubkey(pid);
-    is_signer = false;
-    writeable = false;
+    this->is_signer = signer;
+    this->writeable = writeable;
 }
 
 void AccountMeta::create_new(const Variant& account_key, bool is_signer, bool writeable){

@@ -9,23 +9,32 @@ TypedArray<Resource> sort_metas(TypedArray<Resource> input){
     TypedArray<AccountMeta> m2;
     TypedArray<AccountMeta> m3;
     TypedArray<AccountMeta> m4;
-    std::cout << "in" << std::endl;
+    std::cout << "in" << input.size() << std::endl;
     for(unsigned int i = 0; i < input.size(); i++){
+        std::cout << "it: " << i << " : " << input.size() << std::endl;
         AccountMeta* element = Object::cast_to<AccountMeta>(input[i]);
         const int value = element->get_is_signer() * 2 + element->get_writeable() * 1;
 
         switch(value){
             case 3:
+                std::cout << "m1" << Object::cast_to<Pubkey>(element->get_pubkey())->get_value().utf8() << std::endl;
                 m1.append(element);
             break;
             case 2:
+                std::cout << "m2" << Object::cast_to<Keypair>(element->get_pubkey())->get_public_value().utf8() << std::endl;
                 m2.append(element);
             break;
             case 1:
+                std::cout << "m3" << Object::cast_to<Pubkey>(element->get_pubkey())->get_value().utf8() << std::endl;
                 m3.append(element);
             break;
             case 0:
+                std::cout << "m4 " << Object::cast_to<Pubkey>(element->get_pubkey())->get_value().utf8() << std::endl;
                 m4.append(element);
+            break;
+            default:
+                std::cout << "TERROR3000" << std::endl;
+                exit(1);
             break;
         }
     }
@@ -67,7 +76,6 @@ void Message::compile_instruction(Variant instruction){
 
 void Message::recalculate_headers(){
     // Phantom signer (fee payer) is mandatory.
-    num_required_signatures = 1;
     num_readonly_signed_accounts = 1;
 
     for(unsigned int i = 0; i < merged_metas.size(); i++){
@@ -84,7 +92,14 @@ void Message::recalculate_headers(){
         
         if(account_meta->get_is_signer()){
             Pubkey *new_key = memnew(Pubkey);
-            new_key->set_bytes(Object::cast_to<Keypair>(account_meta->get_pubkey())->get_public_bytes());
+            std::cout << "1111" << std::endl;
+            if(i == 0){
+                new_key->set_bytes(Object::cast_to<Pubkey>(account_meta->get_pubkey())->get_bytes());
+            }
+            else{
+                new_key->set_bytes(Object::cast_to<Keypair>(account_meta->get_pubkey())->get_public_bytes());
+            }
+            std::cout << "2222" << std::endl;
             account_keys.push_back(new_key);
         }
         else{
@@ -96,14 +111,12 @@ void Message::recalculate_headers(){
     num_readonly_unsigned_accounts = 2;
 }
 
-Message::Message(TypedArray<Instruction> instructions, Variant &payer, Variant &latest_blockhash){
-    
-    this->latest_blockhash = latest_blockhash;
+Message::Message(TypedArray<Instruction> instructions, Variant &payer){
 
     // Append payer
     PhantomController *phantom = Object::cast_to<PhantomController>(payer);
     if(!phantom->is_connected()){
-        std::cout << "TERROR" << std::endl;
+        return;
     }
     PackedByteArray payer_key_bytes = phantom->get_connected_key();
     Pubkey *payer_key = memnew(Pubkey);
@@ -180,7 +193,17 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer, Variant &
     recalculate_headers();
 }
 
+void Message::set_latest_blockhash(const String& blockhash){
+    if(latest_blockhash.get_type() != Variant::NIL){
+        memfree(latest_blockhash);
+    }
+
+    latest_blockhash = memnew(Hash);
+    Object::cast_to<Hash>(latest_blockhash)->set_value(blockhash);
+}
+
 PackedByteArray Message::serialize(){
+    std::cout << "Ser message " << std::endl;
     PackedByteArray result;
 
     result.append(num_required_signatures);
@@ -193,8 +216,7 @@ PackedByteArray Message::serialize(){
         result.append_array(account_key->get_bytes());
     }
 
-    Hash *latest_blockhash_pubkey = Object::cast_to<Hash>(latest_blockhash);
-    result.append_array(latest_blockhash_pubkey->get_bytes());
+    result.append_array(serialize_blockhash());
 
     result.append(compiled_instructions.size());
 
@@ -233,6 +255,22 @@ int Message::locate_account_meta(const TypedArray<Resource>& arr, const AccountM
         }
     }
     return -1;
+}
+
+PackedByteArray Message::serialize_blockhash(){
+    Hash *latest_blockhash_pubkey = Object::cast_to<Hash>(latest_blockhash);
+    PackedByteArray result = latest_blockhash_pubkey->get_bytes();
+
+    // If blockhash is not set yet, return 32 zeros.
+    if(result.size() != 32){
+        result.resize(32);
+    }
+
+    return result;
+}
+
+int Message::get_amount_signers(){
+    return num_required_signatures;
 }
 
 Message::~Message(){

@@ -33,8 +33,11 @@ protected:
 
 public:
     Message();
-    Message(TypedArray<Instruction> instructions, Variant &payer, Variant &latest_blockhash);
+    Message(TypedArray<Instruction> instructions, Variant &payer);
+    void set_latest_blockhash(const String& blockhash);
     PackedByteArray serialize();
+    PackedByteArray serialize_blockhash();
+    int get_amount_signers();
     TypedArray<Resource> &get_signers();
     ~Message();
 };
