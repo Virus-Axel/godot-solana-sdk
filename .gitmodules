@@ -2,28 +2,12 @@
 	path = godot-cpp
 	url = https://github.com/godotengine/godot-cpp
 	branch = master
-[submodule "solana"]
-	path = solana
-	url = git@github.com:solana-labs/solana.git
-	branch = master
 [submodule "build-containers-with-rust"]
 	path = build-containers-with-rust
 	url = git@github.com:Virus-Axel/build-containers-with-rust.git
-[submodule "wrapper/solana-program-library"]
-	path = wrapper/solana-program-library
-	url = git@github.com:solana-labs/solana-program-library.git
-[submodule "wrapper/solana"]
-	path = wrapper/solana
-	url = git@github.com:solana-labs/solana.git
 [submodule "BLAKE3"]
 	path = BLAKE3
 	url = git@github.com:BLAKE3-team/BLAKE3.git
-[submodule "cryptopp"]
-	path = cryptopp
-	url = git@github.com:weidai11/cryptopp.git
 [submodule "ed25519"]
 	path = ed25519
 	url = git@github.com:orlp/ed25519.git
-[submodule "phantom/wallet-adapter"]
-	path = phantom/wallet-adapter
-	url = git@github.com:solana-labs/wallet-adapter.git
