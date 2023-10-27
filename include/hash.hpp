@@ -4,11 +4,9 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/resource.hpp>
 
-#include "solana_resource.hpp"
-#include "../wrapper/wrapper.h"
 
 namespace godot{
-class Hash : public SolanaResource {
+class Hash : public Resource {
     GDCLASS(Hash, Resource)
 
 private:
@@ -17,9 +15,6 @@ private:
     bool unique = true;
     String value = "";
     PackedByteArray bytes;
-
-    void _free_pointer() override;
-    void _update_pointer() override;
 
 protected:
     static void _bind_methods();

@@ -1,40 +1,19 @@
 #include "instruction.hpp"
+#include "keypair.hpp"
+#include "solana_sdk.hpp"
 
 #include "utils.hpp"
+
+#include <vector>
+#include <algorithm>
+
+#include <phantom.hpp>
 
 #include <godot_cpp/core/class_db.hpp>
 
 namespace godot{
 
 using internal::gdextension_interface_print_warning;
-
-void Instruction::_free_pointer(){
-    free_instruction(data_pointer);
-}
-
-void Instruction::_update_pointer(){
-    // Allocate buffers.
-    void* account_pointers[accounts.size()];
-    unsigned char allocated_data[data.size()];
-
-    // Write account pointer array.
-    if (!array_to_pointer_array<AccountMeta>(accounts, account_pointers)){
-        gdextension_interface_print_warning("Bad accounts", "_update_pointer", "instruction.cpp", 20, false);
-        return;
-    }
-
-    // Get program ID object.
-    void *program_id_ptr = variant_to_type<Pubkey>(program_id);
-    if(program_id_ptr == nullptr){
-        gdextension_interface_print_warning("Bad program ID", "_update_pointer", "instruction.cpp", 26, false);
-        return;
-    }
-
-    // Rust requires a mutable pointer so we make a copy.
-    memcpy(allocated_data, data.get_string_from_utf8().utf8().get_data(), data.size());
-
-    data_pointer = create_instruction_with_bytes(program_id_ptr, allocated_data, data.size(), account_pointers, accounts.size());
-}
 
 void Instruction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_program_id"), &Instruction::get_program_id);
@@ -73,6 +52,45 @@ TypedArray<AccountMeta> Instruction::get_accounts(){
 }
 
 Instruction::~Instruction() {
-    _free_pointer_if_not_null();
 }
+
+CompiledInstruction::CompiledInstruction(){
+    accounts = PackedByteArray();
+    data = PackedByteArray();
+}
+
+void CompiledInstruction::_bind_methods(){
+
+}
+
+PackedByteArray CompiledInstruction::serialize(){
+    PackedByteArray result;
+
+    result.append(program_id_index);
+    result.append(accounts.size());
+
+    for(unsigned int i = 0; i < accounts.size(); i++){
+        result.append(accounts[i]);
+    }
+
+    result.append(data.size());
+    for(unsigned int i = 0; i < data.size(); i++){
+        result.append(data[i]);
+    }
+
+    return result;
+}
+
+/*const CompiledInstruction& CompiledInstruction::operator=(const CompiledInstruction& other){
+    this->accounts = other.accounts;
+    this->data = other.data;
+    this->program_id_index = other.program_id_index;
+
+    return *this;
+}*/
+
+CompiledInstruction::~CompiledInstruction(){
+
+}
+
 }

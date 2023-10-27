@@ -6,36 +6,23 @@
 #include "utils.hpp"
 
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/thread.hpp>
+#include <godot_cpp/classes/http_request.hpp>
 #include <solana_sdk.hpp>
+#include <phantom.hpp>
+#include <message.hpp>
+
+//#include <emscripten.h>
 
 namespace godot{
 
 using internal::gdextension_interface_print_warning;
 
-void Transaction::_update_pointer(){
-    void* instruction_pointers[instructions.size()];
-
-    // Write instruction pointer array.
-    if (!array_to_pointer_array<Instruction>(instructions, instruction_pointers)){
-        gdextension_interface_print_warning("Bad Instruction array", "_update_pointer", "transaction.cpp", 17, false);
-        return;
-    }
-
-    // Get payer pointer.
-    void *payer_ptr = variant_to_type<Pubkey>(payer);
-    if(payer_ptr == nullptr){
-        gdextension_interface_print_warning("Bad transaction payer", "_update_pointer", "transaction.cpp", 23, false);
-        return;
-    }
-
-    data_pointer = create_transaction_unsigned_with_payer(instruction_pointers, instructions.size(), payer_ptr);
-}
-
-void Transaction::_free_pointer(){
-    free_transaction(data_pointer);
-}
 
 void Transaction::_bind_methods() {
+    ClassDB::add_signal("Transaction", MethodInfo("fully_signed"));
+
     ClassDB::bind_method(D_METHOD("get_instructions"), &Transaction::get_instructions);
     ClassDB::bind_method(D_METHOD("set_instructions", "p_value"), &Transaction::set_instructions);
     ClassDB::bind_method(D_METHOD("get_payer"), &Transaction::get_payer);
@@ -43,11 +30,67 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_signers"), &Transaction::get_signers);
     ClassDB::bind_method(D_METHOD("set_signers", "p_value"), &Transaction::set_signers);
 
+    ClassDB::bind_method(D_METHOD("_transaction_response", "result", "response_code", "headers", "body"), &Transaction::_transaction_response);
+    ClassDB::bind_method(D_METHOD("_payer_signed", "signature"), &Transaction::_payer_signed);
+
     ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
     ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
+    ClassDB::bind_method(D_METHOD("update_latest_blockhash"), &Transaction::update_latest_blockhash);
     ClassDB::bind_method(D_METHOD("sign", "latest_blockhash"), &Transaction::sign);
     ClassDB::bind_method(D_METHOD("sign_and_send"), &Transaction::sign_and_send);
+    ClassDB::bind_method(D_METHOD("create_message"), &Transaction::create_message);
+    ClassDB::bind_method(D_METHOD("send"), &Transaction::send);
     ClassDB::bind_method(D_METHOD("partially_sign", "latest_blockhash"), &Transaction::partially_sign);
+}
+
+void Transaction::_transaction_response(int result, int response_code, PackedStringArray headers, PackedByteArray body){
+    Node *req = get_child(0);
+    remove_child(req);
+    req->queue_free();
+
+    std::cout << "response is " << result << " & " << response_code << std::endl;
+    std::cout << body.get_string_from_utf8().ascii() << std::endl;
+}
+
+void Transaction::_payer_signed(PackedByteArray signature){
+    std::cout << "payer is signed" << std::endl;
+    PhantomController *controller = Object::cast_to<PhantomController>(payer);
+    controller->disconnect("message_signed", Callable(this, "_payer_signed"));
+    
+    signatures[0] = controller->get_message_signature();
+    /*PackedByteArray temp = controller->get_message_signature();
+    for(unsigned int i = 0; i < temp.size(); i++){
+        signatures.insert(i, temp[i]);
+    }*/
+
+    std::cout << "# signatures size " << signatures.size() << std::endl;
+
+    
+
+    for(unsigned int i = 0; i < serialize_signers().size(); i++){
+        std::cout << (int)serialize_signers()[i] << ", ";
+    }
+    std::cout << std::endl;
+
+    emit_signal("fully_signed");
+}
+
+void Transaction::create_message(){
+    // Free existing memory.
+    message.clear();
+    if(instructions.is_empty() || (payer.get_type() == Variant::NIL)){
+        signatures.clear();
+        return;
+    }
+
+    message = memnew(Message(instructions, payer));
+    const int amount_of_signers = Object::cast_to<Message>(message)->get_amount_signers();
+    signatures.resize(amount_of_signers);
+    for(unsigned int i = 0; i < signatures.size(); i++){
+        PackedByteArray temp;
+        temp.resize(64);
+        signatures[i] = temp;
+    }
 }
 
 bool Transaction::_set(const StringName &p_name, const Variant &p_value){
@@ -62,6 +105,10 @@ bool Transaction::_set(const StringName &p_name, const Variant &p_value){
     }
     else if(name == "signers"){
         set_signers(p_value);
+        return true;
+    }
+    else if(name == "use_phantom_payer"){
+        set_use_phantom_payer(p_value);
         return true;
     }
 	return false;
@@ -80,11 +127,21 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
         r_ret = signers;
         return true;
     }
+    else if(name == "use_phantom_payer"){
+        r_ret = use_phantom_payer;
+        return true;
+    }
 	return false;
 }
 
 void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
-    p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair"));
+    p_list->push_back(PropertyInfo(Variant::BOOL, "use_phantom_payer", PROPERTY_HINT_NONE, "false"));
+    if(!use_phantom_payer){
+        p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair"));
+    }
+    else{
+        p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_NODE_TYPE, "PhantomController"));
+    }
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "instructions", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Instruction")));
     p_list->push_back(PropertyInfo(Variant::ARRAY, "signers", PROPERTY_HINT_NONE, MAKE_RESOURCE_TYPE_HINT("Keypair")));
 }
@@ -93,20 +150,11 @@ Transaction::Transaction() {
 }
 
 void Transaction::create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash){
-    void* instruction_pointers[instructions.size()];
-    void* signer_pointers[signers.size()];
-
-    array_to_pointer_array<Instruction>(instructions, instruction_pointers);
-    array_to_pointer_array<Keypair>(signers, signer_pointers);
-
-    void *latest_blockhash_ptr =  variant_to_type<Pubkey>(latest_blockhash);
-    void *payer_ptr = variant_to_type<Pubkey>(payer);
-
-    create_transaction_signed_with_payer(instruction_pointers, instructions.size(), payer_ptr, signer_pointers, signers.size(), latest_blockhash_ptr);
 }
 
 void Transaction::set_instructions(const Array& p_value){
     instructions = p_value;
+    create_message();
 }
 
 Array Transaction::get_instructions(){
@@ -115,10 +163,35 @@ Array Transaction::get_instructions(){
 
 void Transaction::set_payer(const Variant& p_value){
     payer = p_value;
+    if(use_phantom_payer){
+        Object::cast_to<PhantomController>(payer)->connect("connection_established", Callable(this, "create_message"));
+    }
+    else{
+        create_message();
+    }
 }
 
 Variant Transaction::get_payer(){
     return payer;
+}
+
+void Transaction::set_use_phantom_payer(bool p_value){
+    use_phantom_payer = p_value;
+    notify_property_list_changed();
+}
+
+bool Transaction::get_use_phantom_payer(){
+    return use_phantom_payer;
+}
+
+void Transaction::update_latest_blockhash(const String &custom_hash){
+    if(!custom_hash.is_empty()){
+        const String latest_blockhash = SolanaSDK::get_latest_blockhash();
+        Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash);
+    }
+    else{
+        Object::cast_to<Message>(message)->set_latest_blockhash(custom_hash);
+    }
 }
 
 void Transaction::set_signers(const Array& p_value){
@@ -130,27 +203,24 @@ Array Transaction::get_signers(){
 }
 
 PackedByteArray Transaction::serialize(){
-    // Get and verify transaction pointer.
-    void* tx = to_ptr();
-    if (tx == nullptr){
-        return PackedByteArray();
-    }
+    PackedByteArray serialized_bytes;
+    serialized_bytes.append_array(serialize_signers());
+    serialized_bytes.append_array(serialize_message());
 
-    // Write the serialized transaction into a buffer.
-    unsigned char buffer[MAXIMUM_SERIALIZED_BUFFER + 1];
-    int written_bytes = serialize_transaction(tx, buffer, MAXIMUM_SERIALIZED_BUFFER);
+    return serialized_bytes;
+}
 
-    // Return the amount of bytes written.
-    if (written_bytes <= 0)
-        return PackedByteArray();
-    else{
-        PackedByteArray ret;
-        ret.resize(written_bytes);
-        for(int i = 0; i < written_bytes; i++){
-            ret[i] = buffer[i];
-        }
-        return ret;
+PackedByteArray Transaction::serialize_message(){
+    return Object::cast_to<Message>(message)->serialize();
+}
+
+PackedByteArray Transaction::serialize_signers(){
+    PackedByteArray serialized_bytes;
+    serialized_bytes.append(signatures.size());
+    for(unsigned int i = 0; i < signatures.size(); i++){
+        serialized_bytes.append_array(signatures[i]);
     }
+    return serialized_bytes;
 }
 
 Variant Transaction::sign_and_send(){
@@ -158,123 +228,72 @@ Variant Transaction::sign_and_send(){
     Hash hash;
     hash.set_value(hash_string);
 
-    // Get Hash and validate it.
-    void* latest_blockhash_ptr = hash.to_ptr();
-    if(latest_blockhash_ptr == nullptr){
-        gdextension_interface_print_warning("Provided hash is invalid.", "sign", "transaction.cpp", 179, false);
-        return Error::ERR_INVALID_PARAMETER;
-    }
-
-    // Get transaction pointer and validate is.
-    void* tx = to_ptr();
-    if (tx == nullptr){
-        return Error::ERR_INVALID_DATA;
-    }
-
-    // Get array of pointers to signers
-    void* signer_pointers[signers.size()];
-    if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
-        gdextension_interface_print_warning("Bad signer array", "sign", "transaction.cpp", 192, false);
-        return Error::ERR_INVALID_DATA;
-    }
-
-    int status = sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
-
-    // Check status from rust library.
-    if (status != 0){
-        gdextension_interface_print_warning("Unknown signing error", "sign", "transaction.cpp", 198, false);
-        return Error::ERR_INVALID_DATA;
-    }
-
     PackedByteArray serialized_bytes = serialize();
 
-    return SolanaSDK::send_transaction(encode64(serialized_bytes));
+    return SolanaSDK::send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
+
+    return OK;
+}
+
+Error Transaction::send(){
+    PackedByteArray serialized_bytes = serialize();
+
+    // Set headers
+	PackedStringArray http_headers;
+	http_headers.append("Content-Type: application/json");
+	http_headers.append("Accept-Encoding: json");
+
+    HTTPRequest *request = memnew(HTTPRequest);
+    request->connect("request_completed", Callable(this, "_transaction_response"));
+    add_child(request);
+
+    const godot::String REQUEST_DATA = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"sendTransaction\",\"params\":[\"" + SolanaSDK::bs64_encode(serialized_bytes) + "\",{\"encoding\":\"base64\"}]}";
+
+    std::cout << REQUEST_DATA.utf8() << std::endl;
+
+	request->request("https://api.devnet.solana.com", http_headers, HTTPClient::METHOD_POST, REQUEST_DATA);
 
     return OK;
 }
 
 Error Transaction::sign(const Variant& latest_blockhash){
+    std::cout << "signing this ***" << std::endl;
 
-    if (latest_blockhash.get_type() != Variant::OBJECT){
-        gdextension_interface_print_warning("Latest Blockhash must be a Hash object", "sign", "transaction.cpp", 170, false);
-        return Error::ERR_INVALID_PARAMETER;
+    PackedByteArray msg = serialize();
+
+    TypedArray<Resource> &signers = Object::cast_to<Message>(message)->get_signers();
+
+    std::cout << "Keypair signers: " << signers.size() << std::endl;
+    for (unsigned int i = 0; i < signers.size(); i++){
+        Keypair *kp = Object::cast_to<Keypair>(signers[i]);
+        PackedByteArray signature = kp->sign_message(serialize_message());
+        signatures[1 + i] = signature;
+    }
+    //emscripten_run_script("alert('hi from emscripten')");
+
+    if(use_phantom_payer){
+        PhantomController *controller = Object::cast_to<PhantomController>(payer);
+
+        controller->connect("message_signed", Callable(this, "_payer_signed"));
+        std::cout << "it was ser " << std::endl;
+        controller->sign_message(serialize());
+
+        /*while(!controller->is_idle()){
+            std::cout << "Y from phantom " << std::endl;
+            OS::get_singleton()->delay_msec(100);
+        }*/
     }
 
-    // Get Hash and validate it.
-    void* latest_blockhash_ptr = variant_to_type<Hash>(latest_blockhash);
-    if(latest_blockhash_ptr == nullptr){
-        gdextension_interface_print_warning("Provided hash is invalid.", "sign", "transaction.cpp", 179, false);
-        return Error::ERR_INVALID_PARAMETER;
-    }
-
-    // Get transaction pointer and validate is.
-    void* tx = to_ptr();
-    if (tx == nullptr){
-        return Error::ERR_INVALID_DATA;
-    }
-
-    std::cout << Object::cast_to<Keypair>(Object::cast_to<AccountMeta>(Object::cast_to<Instruction>(instructions[0])->get_accounts()[0])->get_pubkey())->get_public_value().to_utf8_buffer().ptr() << std::endl;
-
-    std::cout << "signer key is: " << std::endl;
-    std::cout << Object::cast_to<Keypair>(signers[0])->get_public_value().to_utf8_buffer().ptr() << std::endl;
-    std::cout << Object::cast_to<Keypair>(signers[0])->get_private_value().to_utf8_buffer().ptr() << std::endl;
-
-    // Get array of pointers to signers
-    void* signer_pointers[signers.size()];
-    if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
-        gdextension_interface_print_warning("Bad signer array", "sign", "transaction.cpp", 192, false);
-        return Error::ERR_INVALID_DATA;
-    }
-
-    int status = sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
-
-    // Check status from rust library.
-    if (status != 0){
-        gdextension_interface_print_warning("Unknown signing error", "sign", "transaction.cpp", 198, false);
-        return Error::ERR_INVALID_DATA;
-    }
+    std::cout << "# signatures size " << signatures.size() << std::endl;
 
     return OK;
 }
 
 Error Transaction::partially_sign(const Variant& latest_blockhash){
-    // Check type of latest blockhash.
-    if (latest_blockhash.get_type() != Variant::OBJECT){
-        gdextension_interface_print_warning("Latest Blockhash must be a Hash object", "sign", "transaction.cpp", 209, false);
-        return Error::ERR_INVALID_PARAMETER;
-    }
-
-    // Check if blockhash is valid.
-    void* latest_blockhash_ptr = variant_to_type<Hash>(latest_blockhash);
-    if(latest_blockhash_ptr == nullptr){
-        gdextension_interface_print_warning("Provided hash is invalid.", "sign", "transaction.cpp", 216, false);
-        return Error::ERR_INVALID_PARAMETER;
-    }
-
-    // Get pointer to transaction.
-    void* tx = to_ptr();
-    if (tx == nullptr){
-        return Error::ERR_INVALID_DATA;
-    }
-
-    // Write an array of pointers to signers.
-    void* signer_pointers[signers.size()];
-    if(!array_to_pointer_array<Keypair>(signers, signer_pointers)){
-        return Error::ERR_INVALID_DATA;
-    }
-
-    int status = partially_sign_transaction(tx, signer_pointers, signers.size(), latest_blockhash_ptr);
-
-    // Check status of rust library function.
-    if (status != 0){
-        gdextension_interface_print_warning("Unknown signing error", "sign", "transaction.cpp", 236, false);
-        return Error::ERR_INVALID_DATA;
-    }
 
     return OK;
 }
 
 Transaction::~Transaction(){
-    _free_pointer_if_not_null();
 }
 }

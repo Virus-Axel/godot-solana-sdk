@@ -1,18 +1,15 @@
 #ifndef SOLANA_SDK_ACCOUNT_META_HPP
 #define SOLANA_SDK_ACCOUNT_META_HPP
 
-#include "../wrapper/wrapper.h"
-
 #include "pubkey.hpp"
 #include "account_meta.hpp"
 #include "utils.hpp"
-#include "solana_resource.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 
 namespace godot{
 
-class AccountMeta : public SolanaResource {
+class AccountMeta : public Resource {
     GDCLASS(AccountMeta, Resource)
 
 private:
@@ -21,14 +18,15 @@ private:
 
     Variant key;
 
-    void _update_pointer() override;
-    void _free_pointer() override;
-
 protected:
     static void _bind_methods();
+    bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
 
 public:
     AccountMeta();
+    AccountMeta(const Variant& pid, bool signer, bool writeable);
+    //AccountMeta(const Variant& other);
 
     void set_pubkey(const Variant &p_value);
     Variant get_pubkey() const;
@@ -40,6 +38,8 @@ public:
     bool get_writeable() const;
 
     void create_new(const Variant& account_key, bool is_signer, bool writeable);
+
+    bool operator==(const AccountMeta& other) const;
 
     ~AccountMeta();
 };

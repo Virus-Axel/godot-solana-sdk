@@ -8,14 +8,16 @@
 
 using namespace godot;
 
-
 const char mapping[] = {
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/', '=',
 };
 
-String encode64(PackedByteArray bytes);
+#include "utils.hpp"
+
+
+//String encode64(PackedByteArray bytes);
 	
 /*
 static func decode(str: String) -> PackedByteArray:
@@ -48,27 +50,5 @@ static func decode(str: String) -> PackedByteArray:
 
 	return ret.slice(0, ret.size() - cutoff)*/
 
-template <typename T>
-void* variant_to_type(Variant var){
-	if(var.get_type() != Variant::OBJECT){
-		return nullptr;
-	}
-	Object *payer_cast = var;
-    T *ret = Object::cast_to<T>(payer_cast);
-
-	return ret->to_ptr();
-}
-
-template <typename T>
-bool array_to_pointer_array(Array arr, void** destination){
-	for(int i = 0; i < arr.size(); i++){
-        void *element_ptr = variant_to_type<T>(arr[i]);
-		if (element_ptr == nullptr){
-			return false;
-		}
-        destination[i] = element_ptr;
-    }
-	return true;
-}
 
 #endif

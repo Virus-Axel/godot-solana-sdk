@@ -1,17 +1,24 @@
 #ifndef SOLANA_SDK_KEYPAIR_HPP
 #define SOLANA_SDK_KEYPAIR_HPP
 
+
 #include <godot_cpp/classes/resource.hpp>
-#include "../wrapper/wrapper.h"
 #include "utils.hpp"
-#include "solana_resource.hpp"
+#include "ed25519.h"
 
 namespace godot{
-class Keypair : public SolanaResource {
+class Keypair : public Resource {
     GDCLASS(Keypair, Resource)
 
 private:
+    //Ref<CryptoPP::ed25519::Signer> signer;
+    //Ref<CryptoPP::ed25519::Verifier> verifier;
+    //GDExtensionObjectPtr signer;
+    //GDExtensionObjectPtr verifier;
+
+
     const int KEY_LENGTH = 32;
+    const int SIGNATURE_LENGTH = 64;
 
     bool unique = true;
     String public_value = "";
@@ -20,8 +27,7 @@ private:
     String private_value = "";
     PackedByteArray private_bytes;
 
-    void _free_pointer() override;
-    void _update_pointer() override;
+    PackedByteArray seed;
 
 protected:
     static void _bind_methods();
@@ -31,6 +37,7 @@ protected:
 
 public:
     Keypair();
+    Keypair(const PackedByteArray &seed);
     
     void set_public_value(const String& p_value);
     String get_public_value();
@@ -44,8 +51,17 @@ public:
     void set_private_bytes(const PackedByteArray& p_value);
     PackedByteArray get_private_bytes();
 
+    PackedByteArray sign_message(const PackedByteArray& message);
+    bool verify_signature(const PackedByteArray& signature, const PackedByteArray& message);
+
     void set_unique(const bool p_value);
     bool get_unique();
+
+    void set_seed(const PackedByteArray &p_value);
+    PackedByteArray get_seed();
+
+    void random();
+    void from_seed();
 
     ~Keypair();
 };
