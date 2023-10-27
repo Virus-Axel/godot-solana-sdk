@@ -57,7 +57,7 @@ void Transaction::_payer_signed(PackedByteArray signature){
     PhantomController *controller = Object::cast_to<PhantomController>(payer);
     controller->disconnect("message_signed", Callable(this, "_payer_signed"));
     
-    signatures.back() = controller->get_message_signature();
+    signatures[0] = controller->get_message_signature();
     /*PackedByteArray temp = controller->get_message_signature();
     for(unsigned int i = 0; i < temp.size(); i++){
         signatures.insert(i, temp[i]);
@@ -67,8 +67,8 @@ void Transaction::_payer_signed(PackedByteArray signature){
 
     
 
-    for(unsigned int i = 0; i < signatures.size(); i++){
-        std::cout << (int)signatures[i] << ", ";
+    for(unsigned int i = 0; i < serialize_signers().size(); i++){
+        std::cout << (int)serialize_signers()[i] << ", ";
     }
     std::cout << std::endl;
 
@@ -203,7 +203,14 @@ Array Transaction::get_signers(){
 }
 
 PackedByteArray Transaction::serialize(){
-    create_message();
+    PackedByteArray serialized_bytes;
+    serialized_bytes.append_array(serialize_signers());
+    serialized_bytes.append_array(serialize_message());
+
+    return serialized_bytes;
+}
+
+PackedByteArray Transaction::serialize_message(){
     return Object::cast_to<Message>(message)->serialize();
 }
 
@@ -229,9 +236,7 @@ Variant Transaction::sign_and_send(){
 }
 
 Error Transaction::send(){
-    PackedByteArray serialized_bytes;
-    serialized_bytes.append_array(serialize_signers());
-    serialized_bytes.append_array(serialize());
+    PackedByteArray serialized_bytes = serialize();
 
     // Set headers
 	PackedStringArray http_headers;
@@ -254,15 +259,15 @@ Error Transaction::send(){
 Error Transaction::sign(const Variant& latest_blockhash){
     std::cout << "signing this ***" << std::endl;
 
-    PackedByteArray msg = serialize_signers();
-    msg.append_array(serialize());
+    PackedByteArray msg = serialize();
 
     TypedArray<Resource> &signers = Object::cast_to<Message>(message)->get_signers();
 
+    std::cout << "Keypair signers: " << signers.size() << std::endl;
     for (unsigned int i = 0; i < signers.size(); i++){
         Keypair *kp = Object::cast_to<Keypair>(signers[i]);
-        PackedByteArray signature = kp->sign_message(msg);
-        signatures[i] = signature;
+        PackedByteArray signature = kp->sign_message(serialize_message());
+        signatures[1 + i] = signature;
     }
     //emscripten_run_script("alert('hi from emscripten')");
 
@@ -271,7 +276,7 @@ Error Transaction::sign(const Variant& latest_blockhash){
 
         controller->connect("message_signed", Callable(this, "_payer_signed"));
         std::cout << "it was ser " << std::endl;
-        controller->sign_message(msg);
+        controller->sign_message(serialize());
 
         /*while(!controller->is_idle()){
             std::cout << "Y from phantom " << std::endl;

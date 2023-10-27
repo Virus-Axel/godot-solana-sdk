@@ -53,6 +53,7 @@ public:
     void update_latest_blockhash(const String &custom_hash = "");
 
     PackedByteArray serialize();
+    PackedByteArray serialize_message();
     PackedByteArray serialize_signers();
     Error sign(const Variant &latest_blockhash);
     Error send();

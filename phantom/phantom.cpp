@@ -29,7 +29,7 @@ const std::string sign_and_send_script = "\
       params: {\
         message: Module.encoded_message,\
       }\
-    }));\
+    })).signatures[0];\
     console.log(Module.message_signature);\
     Module.phantom_status = 1;\
   }\

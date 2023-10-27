@@ -75,9 +75,6 @@ void Message::compile_instruction(Variant instruction){
 }
 
 void Message::recalculate_headers(){
-    // Phantom signer (fee payer) is mandatory.
-    num_readonly_signed_accounts = 1;
-
     for(unsigned int i = 0; i < merged_metas.size(); i++){
         AccountMeta *account_meta = Object::cast_to<AccountMeta>(merged_metas[i]);
         if(account_meta->get_is_signer()){
@@ -106,9 +103,6 @@ void Message::recalculate_headers(){
             account_keys.push_back(account_meta->get_pubkey());
         }
     }
-
-    num_readonly_signed_accounts = 1;
-    num_readonly_unsigned_accounts = 2;
 }
 
 Message::Message(TypedArray<Instruction> instructions, Variant &payer){

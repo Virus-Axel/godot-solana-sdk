@@ -287,10 +287,11 @@ PackedByteArray Keypair::sign_message(const PackedByteArray& message){
     for(int i = 0; i < message.size(); i++){
         std::cout << (int)*(message.ptr() + i) << ", ";
     }
+    std::cout << std::endl << "public bytes: " << std::endl; 
     for(int i = 0; i < 32; i++){
         std::cout << (int)*(public_bytes.ptr() + i) << ", ";
     }
-    std::cout << "Sign round end: " << std::endl;
+    std::cout << std::endl << "Sign round end: " << std::endl;
 
     return result;
 }
