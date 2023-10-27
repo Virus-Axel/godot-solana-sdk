@@ -1,5 +1,12 @@
 # godot-solana-sdk
-A GDExtention with bindings to the solana-sdk. This plugin provides the possibility to create Solana transaction in your Godot game. This can be usefull when utilizing NFTs or other Solana smart contracts. The plugin builds for all platforms supported by Godot, but currently not verified on version >= 4.1.
+A GDExtention with bindings to the solana-sdk. This plugin provides the possibility to create Solana transaction in your Godot game. This can be usefull when utilizing NFTs or other Solana smart contracts. The plugin builds for all platforms supported by Godot. The plugin builds for Godot 4.1.
+
+# Version history
+| SDK         | Godot     | Platforms |
+|--------------|-----------|------------|
+| Unstable | 4.1      | Windows, Linux, Web, Android, IOS        |
+| v0.2      | 4.0  | Windows, Linux, Web, Android, IOS       |
+| v0.1      | 4.0  | Windows, Linux, Web, Android, IOS       |
 
 # How to use
 Download the binaries in the release section [here](https://github.com/Virus-Axel/godot-solana-sdk/releases). place the binaries anywhere in your godot project directory under res://bin/. Reload your project and you are good to go.
@@ -43,3 +50,18 @@ A simpler version of pubkey. Used to pass blockhashes when signing transactions.
 
 # Work in Progress
 I will continue to work on this plugin. Feel free to open issues or feature requests.
+
+# Setting up Build Environment
+The plugin builds easily for your host platform with [SCons](https://www.scons.org/).
+
+```
+git clone --recurse-submodules git@github.com:Virus-Axel/godot-solana-sdk.git
+cd godot-solana-sdk
+scons
+```
+
+This repository also includes means to build all the binaries in containers. This requires [Podman](https://podman.io/) to be installed.
+
+```
+scons --container_build
+```
