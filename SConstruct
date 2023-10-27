@@ -61,12 +61,12 @@ def build_all(env, container_path, keep_images):
     # Remove existing container
     env.Execute('podman rm -fi {}'.format(CONTAINER_NAME))
 
-    #build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
+    build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
     build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
-    #build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images, keep_container=True)
-    #build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
-    #build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
-    #build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
+    build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images)
+    build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
+    build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
+    build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
 
 AddOption('--keep_images', dest='keep_images', default=False, action='store_true', help='Keeps the podman images for future builds.')
 AddOption('--container_build', dest='container_build', default=False, action='store_true', help='Build in containers for all platforms (specify one to override)')
@@ -99,6 +99,7 @@ env.Append(CCFLAGS=[
     "-DBLAKE3_NO_SSE2",
     "-DBLAKE3_NO_AVX512",
     "-DBLAKE3_NO_AVX2",
+    "-DBLAKE3_USE_NEON=0",
 ])
 #    "-DCRYPTOPP_DISABLE_SSE3",
 #    "-DCRYPTOPP_DISABLE_SSSE3",
@@ -164,6 +165,22 @@ if env.GetOption('container_build'):
         build_all(env, CONTAINER_BUILD_PATH, keep_images)
 
 else:
+    if env["platform"] == "ios":
+        env.Append(LIBS = ['objc'])
+        env.Append(LIBS = ['c'])
+        env.Append(LIBS = ['c++'])
+        env.Append(LINKFLAGS=['-framework', 'Security', '-L', '/root/ioscross/arm64/lib/'])
+
+        env['LINK'] = "/root/osxcross/target/bin/aarch64-apple-darwin22-ld"
+        env.Append(LD_LIBRARY_PATH=['/root/ioscross/arm64/lib/'])
+
+        for index in range(len(env['LINKFLAGS'])):
+            if env['LINKFLAGS'][index] == "-isysroot":
+                env['LINKFLAGS'][index] = "-syslibroot"
+
+        env['SHLINKFLAGS'].remove("-shared")
+        env.Append(LINKFLAGS=['-dylib'])
+
     if env["platform"] == "macos":
         library = env.SharedLibrary(
             "bin/lib" + LIBRARY_NAME + ".{}.{}.framework/lib".format(
