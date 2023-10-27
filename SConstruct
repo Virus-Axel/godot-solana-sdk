@@ -142,7 +142,7 @@ cryptopp_sources = [
 #]
 #cryptopp_sources = Glob('cryptopp/*.cpp')
 
-if env["platform"] == "javascript":
+if env["platform"] == "web":
     env.Append(CCFLAGS=["-DSOLANA_SDK_WEBBUILD"])
     #env.Append(LINKFLAGS=["-sASYNCIFY", "--no-entry"])
 
