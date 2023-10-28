@@ -4,8 +4,6 @@
 #include <godot_cpp/classes/random_number_generator.hpp>
 #include <solana_sdk.hpp>
 
-//#include <emscripten.h>
-
 namespace godot{
 
 void Keypair::_bind_methods() {
@@ -112,10 +110,7 @@ void Keypair::from_seed(){
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed.ptr());
 
     private_value = SolanaSDK::bs58_encode(private_bytes);
-
-    std::cout << "privvalue: " << private_value.to_ascii_buffer().ptr() << std::endl;
     public_value = SolanaSDK::bs58_encode(public_bytes);
-    std::cout << "privvalue: " << public_value.to_ascii_buffer().ptr() << std::endl;
 }
 
 void Keypair::random(){
@@ -134,10 +129,7 @@ void Keypair::random(){
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), random_seed);
 
     private_value = SolanaSDK::bs58_encode(private_bytes);
-
-    std::cout << "privvalue: " << private_value.to_ascii_buffer().ptr() << std::endl;
     public_value = SolanaSDK::bs58_encode(public_bytes);
-    std::cout << "privvalue: " << public_value.to_ascii_buffer().ptr() << std::endl;
 }
 
 Keypair::Keypair(const PackedByteArray &seed){
@@ -149,10 +141,7 @@ Keypair::Keypair(const PackedByteArray &seed){
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed.ptr());
 
     private_value = SolanaSDK::bs58_encode(private_bytes);
-
-    std::cout << "privvalue: " << private_value.to_ascii_buffer().ptr() << std::endl;
     public_value = SolanaSDK::bs58_encode(public_bytes);
-    std::cout << "privvalue: " << public_value.to_ascii_buffer().ptr() << std::endl;
 }
 
 void Keypair::set_public_value(const String& p_value){
@@ -268,7 +257,6 @@ PackedByteArray Keypair::get_seed(){
 }
 
 PackedByteArray Keypair::sign_message(const PackedByteArray& message){
-    //emscripten_run_script("alert('hi from em')");
     unsigned char signature[64];
 
     ed25519_sign(signature, message.ptr(), message.size(), public_bytes.ptr(), private_bytes.ptr());
@@ -278,20 +266,6 @@ PackedByteArray Keypair::sign_message(const PackedByteArray& message){
     for(int i = 0; i < SIGNATURE_LENGTH; i++){
         result[i] = signature[i];
     }
-    std::cout << "Sign round: " << std::endl;
-    std::cout << "Signature: " << std::endl;
-    for(int i = 0; i < SIGNATURE_LENGTH; i++){
-        std::cout << (int)result[i] << ", ";
-    }
-    std::cout << std::endl << "message:" << std::endl;
-    for(int i = 0; i < message.size(); i++){
-        std::cout << (int)*(message.ptr() + i) << ", ";
-    }
-    std::cout << std::endl << "public bytes: " << std::endl; 
-    for(int i = 0; i < 32; i++){
-        std::cout << (int)*(public_bytes.ptr() + i) << ", ";
-    }
-    std::cout << std::endl << "Sign round end: " << std::endl;
 
     return result;
 }

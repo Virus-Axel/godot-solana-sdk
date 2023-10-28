@@ -340,14 +340,12 @@ bool decompress_step_1(const uint8_t *repr, FieldElement &x, FieldElement &y, Fi
 bool is_y_point_valid(const uint8_t *repr){
     FieldElement y(repr);
 
-    std::cout << "sq" << std::endl;
     FieldElement YY = y.square();
-    std::cout << "uar" << std::endl;
     FieldElement u = YY - FieldElement::ONE;
 
     FieldElement v = (YY * FieldElement::EDWARDS_D) + FieldElement::ONE;
     bool is_valid_y_point = false;
-    std::cout << "ratio" << std::endl;
+    
     sqrt_ratio_i(u, v, is_valid_y_point);
 
     return is_valid_y_point;

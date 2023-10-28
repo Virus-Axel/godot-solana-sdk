@@ -19,7 +19,7 @@ private:
     State phantom_state = State::IDLE;
 
     void clear_state();
-    void store_serialized_message(const PackedByteArray &store_serialized_message);
+    void store_encoded_message(const PackedByteArray &store_serialized_message);
     void _connect_phantom_thread();
 
 protected:

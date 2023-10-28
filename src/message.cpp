@@ -9,32 +9,27 @@ TypedArray<Resource> sort_metas(TypedArray<Resource> input){
     TypedArray<AccountMeta> m2;
     TypedArray<AccountMeta> m3;
     TypedArray<AccountMeta> m4;
-    std::cout << "in" << input.size() << std::endl;
+
     for(unsigned int i = 0; i < input.size(); i++){
-        std::cout << "it: " << i << " : " << input.size() << std::endl;
         AccountMeta* element = Object::cast_to<AccountMeta>(input[i]);
         const int value = element->get_is_signer() * 2 + element->get_writeable() * 1;
 
         switch(value){
             case 3:
-                std::cout << "m1" << Object::cast_to<Pubkey>(element->get_pubkey())->get_value().utf8() << std::endl;
                 m1.append(element);
             break;
             case 2:
-                std::cout << "m2" << Object::cast_to<Keypair>(element->get_pubkey())->get_public_value().utf8() << std::endl;
                 m2.append(element);
             break;
             case 1:
-                std::cout << "m3" << Object::cast_to<Pubkey>(element->get_pubkey())->get_value().utf8() << std::endl;
                 m3.append(element);
             break;
             case 0:
-                std::cout << "m4 " << Object::cast_to<Pubkey>(element->get_pubkey())->get_value().utf8() << std::endl;
                 m4.append(element);
             break;
             default:
-                std::cout << "TERROR3000" << std::endl;
-                exit(1);
+                // TODO: Handle error.
+                return Array();
             break;
         }
     }
@@ -44,13 +39,10 @@ TypedArray<Resource> sort_metas(TypedArray<Resource> input){
     result.append_array(m3);
     result.append_array(m4);
 
-    std::cout << "out" << std::endl;
-
     return result;
 }
 
 Message::Message(){
-
 }
 
 void Message::_bind_methods(){
@@ -89,14 +81,14 @@ void Message::recalculate_headers(){
         
         if(account_meta->get_is_signer()){
             Pubkey *new_key = memnew(Pubkey);
-            std::cout << "1111" << std::endl;
+
             if(i == 0){
                 new_key->set_bytes(Object::cast_to<Pubkey>(account_meta->get_pubkey())->get_bytes());
             }
             else{
                 new_key->set_bytes(Object::cast_to<Keypair>(account_meta->get_pubkey())->get_public_bytes());
             }
-            std::cout << "2222" << std::endl;
+
             account_keys.push_back(new_key);
         }
         else{
@@ -117,7 +109,6 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
     payer_key->set_bytes(payer_key_bytes);
     AccountMeta *payer_meta = memnew(AccountMeta(payer_key, true, true));
     merged_metas.append(payer_meta);
-    std::cout << payer_key_bytes.size() << " DEBUGGG: " << SolanaSDK::bs58_encode(payer_key_bytes).to_utf8_buffer().ptr() << std::endl;
 
     for(unsigned int i = 0; i < instructions.size(); i++){
         Instruction *element = Object::cast_to<Instruction>(instructions[i]);
@@ -127,14 +118,15 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
 
         // If keys match, merge metas
         if(locate_account_meta(merged_metas, *pid_meta) != -1){
-            std::cout << "NO" << std::endl;
             const int index = locate_account_meta(merged_metas, *pid_meta);
             AccountMeta *meta_1 = Object::cast_to<AccountMeta>(merged_metas[index]);
             meta_1->set_is_signer(meta_1->get_is_signer() || pid_meta->get_is_signer());
             meta_1->set_writeable(meta_1->get_writeable() || pid_meta->get_writeable());
+
+            // One data object is not needed so free it.
+            memfree(pid_meta);
         }
         else{
-            std::cout << "NOP" << std::endl;
             merged_metas.append(pid_meta);
         }
 
@@ -146,11 +138,8 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
                 signers.push_back(account_meta->get_pubkey());
             }
 
-            std::cout << "sAA" << std::endl;
-
-            // If keys match, merge metas
+            // If keys match, merge metas.
             if(locate_account_meta(merged_metas, *account_meta) != -1){
-                std::cout << "POP" << std::endl;
                 const int index = locate_account_meta(merged_metas, *account_meta);
 
                 AccountMeta *meta_1 = Object::cast_to<AccountMeta>(merged_metas[index]);
@@ -160,7 +149,6 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
 
                 // Signers should make Keypair override pubkey.
                 if(meta_2->get_is_signer()){
-                    std::cout << "POP" << std::endl;
                     meta_1->set_pubkey(meta_2->get_pubkey());
                 }
             }
@@ -174,8 +162,6 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
     // Sort with custom function that looks at signer/writeable.
     TypedArray<Resource> temp;
     merged_metas = sort_metas(merged_metas);
-
-    std::cout << "Sorted merged meta size is: " << merged_metas.size() << std::endl;
 
     // Store payer index.
     payer_index = locate_account_meta(merged_metas, *payer_meta);
@@ -197,7 +183,6 @@ void Message::set_latest_blockhash(const String& blockhash){
 }
 
 PackedByteArray Message::serialize(){
-    std::cout << "Ser message " << std::endl;
     PackedByteArray result;
 
     result.append(num_required_signatures);

@@ -93,8 +93,6 @@ Dictionary SolanaSDK::quick_http_request(const String& request_body){
 		return Dictionary();
 	}
 
-	std::cout << "request sent" << std::endl;
-
 	// Poll until we have a response.
 	status = handler.get_status();
 	while(status == HTTPClient::STATUS_REQUESTING){
@@ -102,8 +100,6 @@ Dictionary SolanaSDK::quick_http_request(const String& request_body){
 		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
 		status = handler.get_status();
 	}
-
-	std::cout << "request answrd" << std::endl;
 
 	// Collect the response body.
 	PackedByteArray response_data;
@@ -113,8 +109,6 @@ Dictionary SolanaSDK::quick_http_request(const String& request_body){
 		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
 		status = handler.get_status();
 	}
-
-	std::cout << "request resporns" << std::endl;
 
 	handler.close();
 
@@ -274,36 +268,6 @@ PackedByteArray SolanaSDK::bs64_decode(String input){
 	return result.slice(0, result.size() - cutoff);
 }
 
-/*
-static func decode(str: String) -> PackedByteArray:
-	var ret := PackedByteArray()
-	var cutoff: int = 0
-	
-	# Buffer size with padding
-	ret.resize(str.length() * 6 / 8)
-	
-	for i in range(str.length()):
-		var val := int(mapping.find(str[i]))
-		
-		# If we find padding find how much we need to cut off
-		if str[i] == "=":
-			if i == str.to_utf8_buffer().size() - 1:
-				cutoff = 1
-			else:
-				cutoff = 2
-			break
-		
-		# Arrange bits in 8 bit chunks from 6 bit
-		var index: int = ceil(float(i) * 6.0 / 8.0)
-		var splash: int = val >> ((3 - (i % 4)) * 2)
-		if splash != 0:
-			ret[index - 1] += splash
-		if index >= ret.size():
-			break
-			
-		ret[index] += val << (2 + (i % 4) * 2)
-
-	return ret.slice(0, ret.size() - cutoff)*/
 
 String SolanaSDK::get_latest_blockhash(){
 	const godot::String REQUEST_DATA = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"getLatestBlockhash\",\"params\":[{\"commitment\":\"finalized\"}]}";
@@ -343,5 +307,4 @@ String SolanaSDK::get_url(){
 }
 
 SolanaSDK::~SolanaSDK() {
-    // add your cleanup here
 }
