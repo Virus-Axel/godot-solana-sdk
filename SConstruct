@@ -18,7 +18,7 @@ def get_build_command(platform, architecture):
         arguments = 'macos_sdk_path="/root/osxcross/target/SDK/MacOSX13.0.sdk/" osxcross_sdk="darwin22"'    
     elif platform == 'android':
         arguments = ""
-    elif platform == 'javascript':
+    elif platform == 'web':
         env_options = 'bash -c "source /root/emsdk/emsdk_env.sh && '
         arguments = '"'
 
@@ -33,7 +33,7 @@ def build_in_container(platform, container_path, architecture, keep_container=Fa
         'linux': 'localhost/godot-linux',
         'windows': 'localhost/godot-windows',
         'android': 'localhost/godot-android',
-        'javascript': 'localhost/godot-web'
+        'web': 'localhost/godot-web'
     }
 
     # Build missing containers
@@ -63,7 +63,7 @@ def build_all(env, container_path, keep_images):
 
     build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
     build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
-    build_in_container('javascript', container_path, 'wasm32', keep_images=keep_images)
+    build_in_container('web', container_path, 'wasm32', keep_images=keep_images)
     build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
     build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
     build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
