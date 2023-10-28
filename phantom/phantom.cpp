@@ -4,7 +4,7 @@
 #include <solana_sdk.hpp>
 #include <godot_cpp/classes/thread.hpp>
 
-#ifdef SOLANA_SDK_WEBBUILD
+#ifdef WEB_ENABLED
 #include <emscripten.h>
 #include <emscripten/val.h>
 
@@ -68,7 +68,7 @@ namespace godot{
 
 void PhantomController::clear_state(){
   phantom_state = State::IDLE;
-  #ifdef SOLANA_SDK_WEBBUILD
+  #ifdef WEB_ENABLED
   emscripten_run_script("Module.phantom_status = 0;");
   #endif
 }
@@ -79,7 +79,7 @@ bool PhantomController::is_idle(){
 }
 
 void PhantomController::store_serialized_message(const PackedByteArray &serialized_message){
-  #ifdef SOLANA_SDK_WEBBUILD
+  #ifdef WEB_ENABLED
   String script = "Module.serialized_message = new Uint8Array(";
   script += String::num_uint64(serialized_message.size());
   script += ");";
@@ -108,7 +108,7 @@ void PhantomController::store_serialized_message(const PackedByteArray &serializ
 PackedByteArray PhantomController::get_message_signature(){
   PackedByteArray message_signature;
 
-  #ifdef SOLANA_SDK_WEBBUILD
+  #ifdef WEB_ENABLED
 
   // TODO: replace with named constant.
   message_signature.resize(64);
@@ -125,7 +125,7 @@ PackedByteArray PhantomController::get_message_signature(){
 }
 
 void PhantomController::poll_connection(){
-  #ifdef SOLANA_SDK_WEBBUILD
+  #ifdef WEB_ENABLED
   int phantom_connect_status = emscripten_run_script_int("Module.phantom_status");
   switch(phantom_connect_status){
     case 0:
@@ -158,7 +158,7 @@ void PhantomController::poll_connection(){
 
 
 void PhantomController::poll_message_signing(){
-  #ifdef SOLANA_SDK_WEBBUILD
+  #ifdef WEB_ENABLED
   int phantom_signing_status = emscripten_run_script_int("Module.phantom_status");
   switch(phantom_signing_status){
     case 0:
@@ -209,7 +209,7 @@ PhantomController::PhantomController(){
 
 void PhantomController::connect_phantom(){
   phantom_state = State::CONNECTING;
-    #ifdef SOLANA_SDK_WEBBUILD
+    #ifdef WEB_ENABLED
     //emscripten::val sol = emscripten::val::global("solana");
     emscripten_run_script(js_script);
 
@@ -235,7 +235,7 @@ PackedByteArray PhantomController::get_connected_key(){
 }
 
 void PhantomController::sign_message(const PackedByteArray &serialized_message){
-  #ifdef SOLANA_SDK_WEBBUILD
+  #ifdef WEB_ENABLED
 
   phantom_state = State::SIGNING;
   store_serialized_message(serialized_message);
