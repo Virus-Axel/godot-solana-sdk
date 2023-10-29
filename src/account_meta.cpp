@@ -99,5 +99,6 @@ bool AccountMeta::operator==(const AccountMeta& other) const{
 }
 
 AccountMeta::~AccountMeta(){
+    key.clear();
 }
 }

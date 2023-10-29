@@ -81,14 +81,6 @@ PackedByteArray CompiledInstruction::serialize(){
     return result;
 }
 
-/*const CompiledInstruction& CompiledInstruction::operator=(const CompiledInstruction& other){
-    this->accounts = other.accounts;
-    this->data = other.data;
-    this->program_id_index = other.program_id_index;
-
-    return *this;
-}*/
-
 CompiledInstruction::~CompiledInstruction(){
 
 }

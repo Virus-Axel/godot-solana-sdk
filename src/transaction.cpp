@@ -47,30 +47,13 @@ void Transaction::_transaction_response(int result, int response_code, PackedStr
     Node *req = get_child(0);
     remove_child(req);
     req->queue_free();
-
-    std::cout << "response is " << result << " & " << response_code << std::endl;
-    std::cout << body.get_string_from_utf8().ascii() << std::endl;
 }
 
 void Transaction::_payer_signed(PackedByteArray signature){
-    std::cout << "payer is signed" << std::endl;
     PhantomController *controller = Object::cast_to<PhantomController>(payer);
     controller->disconnect("message_signed", Callable(this, "_payer_signed"));
     
     signatures[0] = controller->get_message_signature();
-    /*PackedByteArray temp = controller->get_message_signature();
-    for(unsigned int i = 0; i < temp.size(); i++){
-        signatures.insert(i, temp[i]);
-    }*/
-
-    std::cout << "# signatures size " << signatures.size() << std::endl;
-
-    
-
-    for(unsigned int i = 0; i < serialize_signers().size(); i++){
-        std::cout << (int)serialize_signers()[i] << ", ";
-    }
-    std::cout << std::endl;
 
     emit_signal("fully_signed");
 }
@@ -249,42 +232,28 @@ Error Transaction::send(){
 
     const godot::String REQUEST_DATA = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"sendTransaction\",\"params\":[\"" + SolanaSDK::bs64_encode(serialized_bytes) + "\",{\"encoding\":\"base64\"}]}";
 
-    std::cout << REQUEST_DATA.utf8() << std::endl;
-
 	request->request("https://api.devnet.solana.com", http_headers, HTTPClient::METHOD_POST, REQUEST_DATA);
 
     return OK;
 }
 
 Error Transaction::sign(const Variant& latest_blockhash){
-    std::cout << "signing this ***" << std::endl;
-
     PackedByteArray msg = serialize();
 
     TypedArray<Resource> &signers = Object::cast_to<Message>(message)->get_signers();
 
-    std::cout << "Keypair signers: " << signers.size() << std::endl;
     for (unsigned int i = 0; i < signers.size(); i++){
         Keypair *kp = Object::cast_to<Keypair>(signers[i]);
         PackedByteArray signature = kp->sign_message(serialize_message());
         signatures[1 + i] = signature;
     }
-    //emscripten_run_script("alert('hi from emscripten')");
 
     if(use_phantom_payer){
         PhantomController *controller = Object::cast_to<PhantomController>(payer);
 
         controller->connect("message_signed", Callable(this, "_payer_signed"));
-        std::cout << "it was ser " << std::endl;
         controller->sign_message(serialize());
-
-        /*while(!controller->is_idle()){
-            std::cout << "Y from phantom " << std::endl;
-            OS::get_singleton()->delay_msec(100);
-        }*/
     }
-
-    std::cout << "# signatures size " << signatures.size() << std::endl;
 
     return OK;
 }

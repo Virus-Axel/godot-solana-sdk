@@ -42,14 +42,11 @@ def build_in_container(platform, container_path, architecture, keep_container=Fa
     image_id = image_id_from_repo_name(REPOSITORY_NAME[platform])
 
     env.Execute('podman run --mount type=bind,source=.,target=/root/godot-solana-sdk -d -it --name {} {}'.format(CONTAINER_NAME, image_id))
-    #env.Execute('podman cp . test_container:/root/')
     
     build_command = get_build_command(platform, architecture)
     
     env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
 
-    #env.Execute('podman cp test_container:/root/godot-solana-sdk/example/bin/ .')
-    
     if not keep_container:
         env.Execute('podman rm -f {}'.format(CONTAINER_NAME))
 
@@ -73,11 +70,6 @@ AddOption('--container_build', dest='container_build', default=False, action='st
 
 env = SConscript("godot-cpp/SConstruct")
 
-# Link rust solana sdk library
-
-# Build wrapper library
-
-
 # For reference:
 # - CCFLAGS are compilation flags shared between C and C++
 # - CFLAGS are for C-specific compilation flags
@@ -90,7 +82,6 @@ env = SConscript("godot-cpp/SConstruct")
 env.Append(CPPPATH=["src/"])
 env.Append(CPPPATH=["include/"])
 env.Append(CPPPATH=["sha256/"])
-#env.Append(CPPPATH=["cryptopp/"])
 env.Append(CPPPATH=["BLAKE3/c/"])
 env.Append(CPPPATH=["ed25519/src/"])
 env.Append(CPPPATH=["phantom/"])
@@ -101,15 +92,7 @@ env.Append(CCFLAGS=[
     "-DBLAKE3_NO_AVX2",
     "-DBLAKE3_USE_NEON=0",
 ])
-#    "-DCRYPTOPP_DISABLE_SSE3",
-#    "-DCRYPTOPP_DISABLE_SSSE3",
-#    "-DCRYPTOPP_DISABLE_SSE4",
-#    "-DCRYPTOPP_DISABLE_CLMUL",
-#    "-DCRYPTOPP_DISABLE_AESNI",
-#    "-DCRYPTOPP_DISABLE_AVX",
-#    "-DCRYPTOPP_DISABLE_AVX2",
-#    "-DCRYPTOPP_DISABLE_SHANI",
-#    "-DNDEBUG"])
+
 sources = Glob("src/*.cpp")
 blak3_sources = Glob("BLAKE3/c/blake3.c")
 blak3_sources.append(Glob("BLAKE3/c/blake3_dispatch.c")[0])
@@ -119,33 +102,6 @@ sha256_sources = Glob("sha256/sha256.cpp")
 ed25519_sources = Glob("ed25519/src/*.c")
 
 phantom_sources = Glob("phantom/*.cpp")
-
-cryptopp_sources = [
-                    'cryptopp/cryptlib.cpp',
-                    'cryptopp/cpu.cpp',
-                    'cryptopp/integer.cpp',
-                    'cryptopp/randpool.cpp',
-                    'cryptopp/xed25519.cpp',
-                    'cryptopp/osrng.cpp',
-                    
-                    'cryptopp/rng.cpp',
-                    'cryptopp/fips140.cpp',
-                    'cryptopp/sha.cpp',
-                    'cryptopp/rijndael.cpp',
-                    'cryptopp/modes.cpp',
-                    'cryptopp/bench3.cpp',
-                    'cryptopp/hrtimer.cpp',
-                    'cryptopp/filters.cpp',
-                    'cryptopp/iterhash.cpp',
-#                    'cryptopp/strcipher.cpp',
-                    'cryptopp/authenc.cpp',
-]
-#]
-#cryptopp_sources = Glob('cryptopp/*.cpp')
-
-if env["platform"] == "web":
-    env.Append(CCFLAGS=["-DSOLANA_SDK_WEBBUILD"])
-    #env.Append(LINKFLAGS=["-sASYNCIFY", "--no-entry"])
 
 # Handle the container build
 if env.GetOption('container_build'):
@@ -166,11 +122,14 @@ if env.GetOption('container_build'):
 
 else:
     if env["platform"] == "ios":
+
+        # Add linker settings for ios build.
         env.Append(LIBS = ['objc'])
         env.Append(LIBS = ['c'])
         env.Append(LIBS = ['c++'])
         env.Append(LINKFLAGS=['-framework', 'Security', '-L', '/root/ioscross/arm64/lib/'])
 
+        # Workaround for broken ios builds.
         env['LINK'] = "/root/osxcross/target/bin/aarch64-apple-darwin22-ld"
         env.Append(LD_LIBRARY_PATH=['/root/ioscross/arm64/lib/'])
 
@@ -196,7 +155,4 @@ else:
             source=sources + blak3_sources + sha256_sources + ed25519_sources + phantom_sources #+ cryptopp_sources,
         )
 
-    #wrapper = SConscript("wrapper/SConstruct", exports={'env': env})
-
-    #env.Depends(library, wrapper)
     Default(library)

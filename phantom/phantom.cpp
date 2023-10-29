@@ -4,33 +4,21 @@
 #include <solana_sdk.hpp>
 #include <godot_cpp/classes/thread.hpp>
 
-#ifdef SOLANA_SDK_WEBBUILD
+#ifdef WEB_ENABLED
 #include <emscripten.h>
-#include <emscripten/val.h>
 
 
 const std::string sign_and_send_script = "\
-  const url = 'https://unpkg.com/@solana/web3.js@1.87.2/lib/index.iife.min.js';\
-  fetch(url)\
-    .then(response => response.text())\
-    .then(script => {\
-      eval(script);\
-    })\
-    .catch(error => {\
-      console.error('Error loading script:', error);\
-    });\
   Module.phantom_status = 0;\
   async function foo() {\
     \
     const { solana } = window;\
-    console.log(Module.serialized_message);\
     Module.message_signature = (await solana.request({\
       method: 'signTransaction',\
       params: {\
         message: Module.encoded_message,\
       }\
     })).signatures[0];\
-    console.log(Module.message_signature);\
     Module.phantom_status = 1;\
   }\
   \
@@ -44,13 +32,11 @@ const char* js_script = "\
       const { solana } = window;\
       if (solana) {\
         if (solana.isPhantom) {\
-          console.log('Phantom wallet found!');\
           const response = await solana.connect();\
-          Module.phantom_status = 1;\
           Module.phantom_key = response.publicKey.toString();\
+          Module.phantom_status = 1;\
         }\
       } else {\
-        alert('Solana object not found!');\
         Module.phantom_status = -1;\
       }\
       }\
@@ -68,7 +54,7 @@ namespace godot{
 
 void PhantomController::clear_state(){
   phantom_state = State::IDLE;
-  #ifdef SOLANA_SDK_WEBBUILD
+  #ifdef WEB_ENABLED
   emscripten_run_script("Module.phantom_status = 0;");
   #endif
 }
@@ -78,28 +64,13 @@ bool PhantomController::is_idle(){
   
 }
 
-void PhantomController::store_serialized_message(const PackedByteArray &serialized_message){
-  #ifdef SOLANA_SDK_WEBBUILD
-  String script = "Module.serialized_message = new Uint8Array(";
-  script += String::num_uint64(serialized_message.size());
-  script += ");";
-  std::cout << "running " << script.utf8() << std::endl;
-  emscripten_run_script(script.utf8());
+void PhantomController::store_encoded_message(const PackedByteArray &serialized_message){
+  #ifdef WEB_ENABLED
 
-  for(unsigned int i = 0; i < serialized_message.size(); i++){
-    script = "Module.serialized_message[";
-    script += String::num_uint64(i);
-    script += "] = ";
-    script += String::num_uint64(serialized_message[i]);
-    script += ';';
-    std::cout << "running " << script.utf8() << std::endl;
-    emscripten_run_script(script.utf8());
-  }
-
-  script = "Module.encoded_message = '";
+  String script = "Module.encoded_message = '";
   script += SolanaSDK::bs58_encode(serialized_message);
   script += "';";
-  std::cout << "running " << script.utf8() << std::endl;
+
   emscripten_run_script(script.utf8());
   
   #endif
@@ -108,7 +79,7 @@ void PhantomController::store_serialized_message(const PackedByteArray &serializ
 PackedByteArray PhantomController::get_message_signature(){
   PackedByteArray message_signature;
 
-  #ifdef SOLANA_SDK_WEBBUILD
+  #ifdef WEB_ENABLED
 
   // TODO: replace with named constant.
   message_signature.resize(64);
@@ -125,7 +96,7 @@ PackedByteArray PhantomController::get_message_signature(){
 }
 
 void PhantomController::poll_connection(){
-  #ifdef SOLANA_SDK_WEBBUILD
+  #ifdef WEB_ENABLED
   int phantom_connect_status = emscripten_run_script_int("Module.phantom_status");
   switch(phantom_connect_status){
     case 0:
@@ -135,14 +106,10 @@ void PhantomController::poll_connection(){
     case 1:{
       connected = true;
       String connected_pubkey(emscripten_run_script_string("Module.phantom_key"));
-      std::cout << "waaaaaaaaaa " << connected_pubkey.utf8() << std::endl;
+
       PackedByteArray decoded_bytes = SolanaSDK::bs58_decode(connected_pubkey);
-      if(decoded_bytes.size() != 32){
-        std::cout << "ERRORRR" << std::endl;
-      }
       connected_key = decoded_bytes;
-      std::cout << connected_key.size() << std::endl;
-      std::cout << decoded_bytes.size() << std::endl;
+
       clear_state();
       emit_signal("connection_established");
       break;
@@ -158,7 +125,7 @@ void PhantomController::poll_connection(){
 
 
 void PhantomController::poll_message_signing(){
-  #ifdef SOLANA_SDK_WEBBUILD
+  #ifdef WEB_ENABLED
   int phantom_signing_status = emscripten_run_script_int("Module.phantom_status");
   switch(phantom_signing_status){
     case 0:
@@ -204,25 +171,12 @@ void PhantomController::_bind_methods(){
 }
 
 PhantomController::PhantomController(){
-  //connect();
 }
 
 void PhantomController::connect_phantom(){
   phantom_state = State::CONNECTING;
-    #ifdef SOLANA_SDK_WEBBUILD
-    //emscripten::val sol = emscripten::val::global("solana");
+    #ifdef WEB_ENABLED
     emscripten_run_script(js_script);
-
-    /*
-    OS::get_singleton()->delay_msec(1000);
-
-    //checkIfWalletIsConnected();
-    while(emscripten_run_script_int("Module.phantom_status") == 0){
-        std::cout << "Y from phantom " << emscripten_run_script_int("Module.phantom_status") << std::endl;
-        OS::get_singleton()->delay_msec(1000);
-    }
-    std::cout << "DATA IS: " << emscripten_run_script_int("Module.phantom_status") << std::endl;
-    */
     #endif
 }
 
@@ -235,10 +189,10 @@ PackedByteArray PhantomController::get_connected_key(){
 }
 
 void PhantomController::sign_message(const PackedByteArray &serialized_message){
-  #ifdef SOLANA_SDK_WEBBUILD
+  #ifdef WEB_ENABLED
 
   phantom_state = State::SIGNING;
-  store_serialized_message(serialized_message);
+  store_encoded_message(serialized_message);
 
   JavaScriptBridge::get_singleton()->eval(String(sign_and_send_script.c_str()));
 

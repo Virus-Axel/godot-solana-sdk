@@ -41,7 +41,6 @@ protected:
 
 public:
     Pubkey();
-    //Pubkey(const Variant &other);
     Pubkey(const String& from);
 
     void set_value(const String& p_value);

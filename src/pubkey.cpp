@@ -215,30 +215,16 @@ void Pubkey::create_with_seed(Variant basePubkey, String seed, Variant owner_pub
     Object *owner_pubkey_cast = basePubkey;
     Pubkey *owner_pubkey_type = Object::cast_to<Pubkey>(owner_pubkey_cast);
  
-    std::cout << base_pubkey_type->get_bytes().size() << std::endl;
-    std::cout << owner_pubkey_type->get_bytes().size() << std::endl;
-    std::cout << seed.length() << std::endl;
-    for(int i = 0; i < 32; i++){
-        std::cout << (int)owner_pubkey_type->get_bytes().ptr()[i] << std::endl;
-    }
-
     SHA256 hasher;
 
     hasher.update(base_pubkey_type->get_bytes().ptr(), base_pubkey_type->get_bytes().size());
     hasher.update(seed.to_utf8_buffer().ptr(), seed.length());
     hasher.update(owner_pubkey_type->get_bytes().ptr(), owner_pubkey_type->get_bytes().size());
 
-    //blake3_hasher_update(&hasher, base_pubkey_type->get_bytes().ptr(), base_pubkey_type->get_bytes().size());
-    //blake3_hasher_update(&hasher, seed.to_utf8_buffer().ptr(), seed.length());
-    //blake3_hasher_update(&hasher, owner_pubkey_type->get_bytes().ptr(), owner_pubkey_type->get_bytes().size());
-
     uint8_t *sha256_hash = hasher.digest();
-
-    //blake3_hasher_finalize(&hasher, hash, BLAKE3_OUT_LEN);
 
     bytes.resize(PUBKEY_BYTES);
     for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
-        std::cout << (int) sha256_hash[i] << std::endl;
         bytes[i] = sha256_hash[i];
     }
     delete[] sha256_hash;
@@ -255,9 +241,6 @@ bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant
         }
     }
 
-    // Create the hash from seeds.
-    //blake3_hasher hasher;
-    //blake3_hasher_init(&hasher);
     SHA256 hasher;
  
     for(unsigned int i = 0; i < seeds.size(); i++){
@@ -281,8 +264,6 @@ bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant
     // Remove this memory ASAP.
     delete[] hash_ptr;
     
-    //blake3_hasher_finalize(&hasher, hash, PUBKEY_BYTES);
-
     if(is_y_point_valid(hash)){
         return false;
     }
@@ -333,14 +314,6 @@ void Pubkey::_get_property_list(List<PropertyInfo> *p_list) const {
 
 Pubkey::Pubkey() {
 }
-
-/*Pubkey::Pubkey(const Variant &other) {
-    bool valid = false;
-    PackedByteArray bytes = other.get("bytes", &valid);
-    if(!valid){
-        exit(1);
-    }
-}*/
 
 Pubkey::Pubkey(const String& from){
     create_from_string(from);
