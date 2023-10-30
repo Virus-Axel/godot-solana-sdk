@@ -9,7 +9,7 @@ LIBRARY_NAME = "godot-solana-sdk"
 def image_id_from_repo_name(repository_name):
     return os.popen('podman images --format {{.ID}} --filter=reference=' + repository_name).read()
 
-def get_build_command(platform, architecture):
+def get_build_command(platform, architecture, debug=False):
     arguments = ""
     env_options = ""
     if platform == 'ios':
@@ -22,10 +22,14 @@ def get_build_command(platform, architecture):
         env_options = 'bash -c "source /root/emsdk/emsdk_env.sh && '
         arguments = '"'
 
-    return '{} scons -j 4 platform={} arch={} target=template_release {}'.format(env_options, platform, architecture, arguments)
+    debug_or_release = 'release'
+    if debug:
+        debug_or_release = 'debug'
+
+    return '{} scons -j 4 platform={} arch={} target=template_{} {}'.format(env_options, platform, architecture, debug_or_release, arguments)
 
 
-def build_in_container(platform, container_path, architecture, keep_container=False, keep_images=False):
+def build_in_container(platform, container_path, architectures, keep_container=False, keep_images=False):
     CONTAINER_BUILD_COMMAND = 'echo y | ./build.sh 4.x f36'
     REPOSITORY_NAME = {
         'ios': 'localhost/godot-ios',
@@ -43,9 +47,12 @@ def build_in_container(platform, container_path, architecture, keep_container=Fa
 
     env.Execute('podman run --mount type=bind,source=.,target=/root/godot-solana-sdk -d -it --name {} {}'.format(CONTAINER_NAME, image_id))
     
-    build_command = get_build_command(platform, architecture)
-    
-    env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
+    for architecture in architectures:
+        build_command = get_build_command(platform, architecture, True)
+        env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
+
+        build_command = get_build_command(platform, architecture)
+        env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
 
     if not keep_container:
         env.Execute('podman rm -f {}'.format(CONTAINER_NAME))
@@ -58,12 +65,12 @@ def build_all(env, container_path, keep_images):
     # Remove existing container
     env.Execute('podman rm -fi {}'.format(CONTAINER_NAME))
 
-    build_in_container('linux', container_path, 'x86_64', keep_images=keep_images)
-    build_in_container('windows', container_path, 'x86_64', keep_images=keep_images)
-    build_in_container('web', container_path, 'wasm32', keep_images=keep_images)
-    build_in_container('android', container_path, 'aarch64', keep_images=keep_images)
-    build_in_container('ios', container_path, 'arm64', keep_images=keep_images)
-    build_in_container('macos', container_path, 'aarch64', keep_images=keep_images)
+    build_in_container('linux', container_path, ['x86_64', 'rv64', 'arm64'], keep_images=keep_images)
+    build_in_container('windows', container_path, ['x86_64', 'x86_32'], keep_images=keep_images)
+    build_in_container('web', container_path, ['wasm32'], keep_images=keep_images)
+    build_in_container('android', container_path, ['aarch64', 'x86_64'], keep_images=keep_images)
+    build_in_container('ios', container_path, ['arm64'], keep_images=keep_images)
+    build_in_container('macos', container_path, ['aarch64'], keep_images=keep_images)
 
 AddOption('--keep_images', dest='keep_images', default=False, action='store_true', help='Keeps the podman images for future builds.')
 AddOption('--container_build', dest='container_build', default=False, action='store_true', help='Build in containers for all platforms (specify one to override)')
