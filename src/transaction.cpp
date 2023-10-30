@@ -35,7 +35,7 @@ void Transaction::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
     ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
-    ClassDB::bind_method(D_METHOD("update_latest_blockhash"), &Transaction::update_latest_blockhash);
+    ClassDB::bind_method(D_METHOD("update_latest_blockhash", "custom_hash"), &Transaction::update_latest_blockhash);
     ClassDB::bind_method(D_METHOD("sign", "latest_blockhash"), &Transaction::sign);
     ClassDB::bind_method(D_METHOD("sign_and_send"), &Transaction::sign_and_send);
     ClassDB::bind_method(D_METHOD("create_message"), &Transaction::create_message);
