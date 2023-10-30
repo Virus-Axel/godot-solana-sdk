@@ -65,8 +65,8 @@ def build_all(env, container_path, keep_images):
     # Remove existing container
     env.Execute('podman rm -fi {}'.format(CONTAINER_NAME))
 
-    build_in_container('linux', container_path, ['x86_64', 'rv64', 'arm64'], keep_images=keep_images)
-    build_in_container('windows', container_path, ['x86_64', 'x86_32'], keep_images=keep_images)
+    build_in_container('linux', container_path, ['x86_64'], keep_images=keep_images)
+    build_in_container('windows', container_path, ['x86_64'], keep_images=keep_images)
     build_in_container('web', container_path, ['wasm32'], keep_images=keep_images)
     build_in_container('android', container_path, ['aarch64', 'x86_64'], keep_images=keep_images)
     build_in_container('ios', container_path, ['arm64'], keep_images=keep_images)
