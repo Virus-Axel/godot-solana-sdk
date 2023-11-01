@@ -11,6 +11,7 @@
 #include "utils.hpp"
 #include "phantom.hpp"
 #include "message.hpp"
+#include "solana_client.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -25,6 +26,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     }
 
     ClassDB::register_class<SolanaSDK>();
+    ClassDB::register_class<SolanaClient>();
     ClassDB::register_class<Pubkey>();
     ClassDB::register_class<CompiledInstruction>();
     ClassDB::register_class<Message>();
