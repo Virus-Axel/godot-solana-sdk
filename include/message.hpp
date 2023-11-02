@@ -26,7 +26,7 @@ private:
     void compile_instruction(Variant instruction);
     void recalculate_headers();
 
-    int locate_account_meta(const TypedArray<Resource>& arr, const AccountMeta &input);
+    int locate_account_meta(const TypedArray<Resource>& arr, const AccountMeta &input, bool is_payer = false);
 
 protected:
     static void _bind_methods();
