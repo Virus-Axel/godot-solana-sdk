@@ -4,9 +4,9 @@ A GDExtention with bindings to the solana-sdk. This plugin provides the possibil
 # Version history
 | SDK         | Godot     | Platforms |
 |--------------|-----------|------------|
-| Unstable | 4.1      | Windows, Linux, Web, Android, IOS        |
-| v0.2      | 4.0  | Windows, Linux, Web, Android, IOS       |
-| v0.1      | 4.0  | Windows, Linux, Web, Android, IOS       |
+| Unstable | 4.1      | Windows, Linux, Web, Android, IOS, MacOS        |
+| v0.2      | 4.0  | Windows, Linux, Web, Android, IOS, MacOS       |
+| v0.1      | 4.0  | Windows, Linux, Web, Android, IOS, MacOS       |
 
 # How to use
 Download the binaries in the release section [here](https://github.com/Virus-Axel/godot-solana-sdk/releases). place the binaries anywhere in your godot project directory under res://bin/. Reload your project and you are good to go.
