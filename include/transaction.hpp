@@ -35,6 +35,8 @@ protected:
 public:
     Transaction();
 
+    void _ready() override;
+
     void set_instructions(const Array& p_value);
     Array get_instructions();
 

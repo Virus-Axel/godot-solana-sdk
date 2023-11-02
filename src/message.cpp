@@ -61,7 +61,7 @@ void Message::compile_instruction(Variant instruction){
     compiled_instruction->accounts.push_back(payer_index);
     for(unsigned int j = 0; j < account_metas.size(); j++){
         AccountMeta *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
-        compiled_instruction->accounts.push_back(locate_account_meta(merged_metas, *account_meta));
+        compiled_instruction->accounts.push_back(locate_account_meta(merged_metas, *account_meta, (j == 0)));
     }
     compiled_instructions.push_back(compiled_instruction);
 }
@@ -101,14 +101,20 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
 
     // Append payer
     PhantomController *phantom = Object::cast_to<PhantomController>(payer);
+    PackedByteArray payer_key_bytes;
+
     if(!phantom->is_connected()){
-        return;
+        payer_key_bytes.resize(32);
     }
-    PackedByteArray payer_key_bytes = phantom->get_connected_key();
+    else{
+        payer_key_bytes = phantom->get_connected_key();
+    }
     Pubkey *payer_key = memnew(Pubkey);
     payer_key->set_bytes(payer_key_bytes);
     AccountMeta *payer_meta = memnew(AccountMeta(payer_key, true, true));
     merged_metas.append(payer_meta);
+
+    latest_blockhash = memnew(Hash);
 
     for(unsigned int i = 0; i < instructions.size(); i++){
         Instruction *element = Object::cast_to<Instruction>(instructions[i]);
@@ -139,8 +145,8 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
             }
 
             // If keys match, merge metas.
-            if(locate_account_meta(merged_metas, *account_meta) != -1){
-                const int index = locate_account_meta(merged_metas, *account_meta);
+            if(locate_account_meta(merged_metas, *account_meta, (j == 0)) != -1){
+                const int index = locate_account_meta(merged_metas, *account_meta, (j == 0));
 
                 AccountMeta *meta_1 = Object::cast_to<AccountMeta>(merged_metas[index]);
                 AccountMeta *meta_2 = account_meta;
@@ -164,7 +170,7 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
     merged_metas = sort_metas(merged_metas);
 
     // Store payer index.
-    payer_index = locate_account_meta(merged_metas, *payer_meta);
+    payer_index = locate_account_meta(merged_metas, *payer_meta, true);
 
     for(unsigned int i = 0; i < instructions.size(); i++){
         compile_instruction(instructions[i]);
@@ -174,11 +180,10 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
 }
 
 void Message::set_latest_blockhash(const String& blockhash){
-    if(latest_blockhash.get_type() != Variant::NIL){
-        memfree(latest_blockhash);
+    if(latest_blockhash.get_type() == Variant::NIL){
+        latest_blockhash = memnew(Hash);
     }
 
-    latest_blockhash = memnew(Hash);
     Object::cast_to<Hash>(latest_blockhash)->set_value(blockhash);
 }
 
@@ -210,20 +215,20 @@ TypedArray<Resource> &Message::get_signers(){
     return signers;
 }
 
-int Message::locate_account_meta(const TypedArray<Resource>& arr, const AccountMeta &input){
+int Message::locate_account_meta(const TypedArray<Resource>& arr, const AccountMeta &input, bool is_payer){
     for(unsigned int i = 0; i < arr.size(); i++){
         AccountMeta *element = Object::cast_to<AccountMeta>(arr[i]);
         
         PackedByteArray key;
         PackedByteArray other_key;
-        if(element->get_is_signer()){
+        if(element->get_is_signer() && i != 0){
             Keypair *kp = Object::cast_to<Keypair>(element->get_pubkey());
             key = kp->get_public_bytes();
         }
         else{
             key = Object::cast_to<Pubkey>(element->get_pubkey())->get_bytes();
         }
-        if(input.get_is_signer()){
+        if(input.get_is_signer() && !is_payer){
             other_key = Object::cast_to<Keypair>(input.get_pubkey())->get_public_bytes();
         }
         else{
@@ -237,6 +242,12 @@ int Message::locate_account_meta(const TypedArray<Resource>& arr, const AccountM
 }
 
 PackedByteArray Message::serialize_blockhash(){
+    if(latest_blockhash.get_type() != Variant::OBJECT){
+        PackedByteArray result;
+        result.resize(32);
+        return result;
+    }
+
     Hash *latest_blockhash_pubkey = Object::cast_to<Hash>(latest_blockhash);
     PackedByteArray result = latest_blockhash_pubkey->get_bytes();
 

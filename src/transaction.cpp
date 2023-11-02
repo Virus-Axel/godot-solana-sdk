@@ -9,6 +9,7 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/thread.hpp>
 #include <godot_cpp/classes/http_request.hpp>
+#include <solana_client.hpp>
 #include <solana_sdk.hpp>
 #include <phantom.hpp>
 #include <message.hpp>
@@ -154,6 +155,10 @@ void Transaction::set_payer(const Variant& p_value){
     }
 }
 
+void Transaction::_ready(){
+    create_message();
+}
+
 Variant Transaction::get_payer(){
     return payer;
 }
@@ -168,9 +173,12 @@ bool Transaction::get_use_phantom_payer(){
 }
 
 void Transaction::update_latest_blockhash(const String &custom_hash){
-    if(!custom_hash.is_empty()){
-        const String latest_blockhash = SolanaSDK::get_latest_blockhash();
-        Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash);
+    if(custom_hash.is_empty()){
+        const Dictionary latest_blockhash = SolanaClient::get_latest_blockhash();
+        const Dictionary blockhash_result = latest_blockhash["result"];
+        const Dictionary blockhash_value = blockhash_result["value"];
+        String hash_string = blockhash_value["blockhash"];
+        Object::cast_to<Message>(message)->set_latest_blockhash(hash_string);
     }
     else{
         Object::cast_to<Message>(message)->set_latest_blockhash(custom_hash);
