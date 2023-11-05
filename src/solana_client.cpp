@@ -6,6 +6,7 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/godot.hpp>
+#include <godot_cpp/classes/java_script_bridge.hpp>
 
 namespace godot{
 
@@ -119,6 +120,7 @@ Dictionary SolanaClient::make_rpc_param(const Variant& key, const Variant& value
 }
 
 Dictionary SolanaClient::quick_http_request(const String& request_body){
+#ifndef WEB_ENABLED
 	const int32_t POLL_DELAY_MSEC = 100;
 
 	// Set headers
@@ -176,6 +178,29 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
 	}
 
 	return json.get_data();
+
+#else
+    http_headers.append("Content-Type: application/json");
+	http_headers.append("Accept-Encoding: json");
+    String web_script = "\
+        var request = new XMLHttpRequest();\
+        request.open('POST', '{0}', false);\
+        request.setRequestHeader('Content-Type', 'application/json');\
+        request.setRequestHeader('Accept-Encoding', 'json');\
+        request.send(null);\
+        \
+        Module.solanaClientResponse = request.response;\
+        print(request.response);\
+        return request.response;";
+
+    Array params;
+    params.append(String(url.c_str()));
+
+    return JavaScriptBridge::get_singleton()->eval(web_script.format(params));
+
+#endif
+
+
 }
 
 Dictionary SolanaClient::get_latest_blockhash(){
