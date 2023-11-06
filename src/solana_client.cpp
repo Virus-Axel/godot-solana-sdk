@@ -180,8 +180,6 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
 	return json.get_data();
 
 #else
-    http_headers.append("Content-Type: application/json");
-	http_headers.append("Accept-Encoding: json");
     String web_script = "\
         var request = new XMLHttpRequest();\
         request.open('POST', '{0}', false);\
