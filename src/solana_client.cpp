@@ -168,16 +168,9 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
 
 	handler.close();
 
-	// Parse out the blockhash.
+	// Parse the result json.
 	JSON json;
 	err = json.parse(response_data.get_string_from_utf8());
-
-	if(err != Error::OK){
-		gdextension_interface_print_warning("Error getting response data.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
-		return Dictionary();
-	}
-
-	return json.get_data();
 
 #else
     String web_script = "\
@@ -185,19 +178,28 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
         request.open('POST', '{0}', false);\
         request.setRequestHeader('Content-Type', 'application/json');\
         request.setRequestHeader('Accept-Encoding', 'json');\
-        request.send(null);\
+        request.send('{1}');\
         \
         Module.solanaClientResponse = request.response;\
-        print(request.response);\
-        return request.response;";
+        request.response";
 
     Array params;
     params.append(String(url.c_str()));
+    params.append(request_body);
 
-    return JavaScriptBridge::get_singleton()->eval(web_script.format(params));
+    Variant result = JavaScriptBridge::get_singleton()->eval(web_script.format(params));
+
+    JSON json;
+	Error err = json.parse(result);
 
 #endif
 
+    if(err != Error::OK){
+		gdextension_interface_print_warning("Error getting response data.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
+		return Dictionary();
+	}
+
+	return json.get_data();
 
 }
 
