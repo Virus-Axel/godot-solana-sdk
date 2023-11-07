@@ -24,7 +24,6 @@ private:
 
     void _get_property_list(List<PropertyInfo> *p_list) const;
 
-    void _transaction_response(int result, int response_code, PackedStringArray headers, PackedByteArray body);
     void _payer_signed(PackedByteArray signature);
 
     void create_message();
@@ -57,8 +56,8 @@ public:
     PackedByteArray serialize();
     PackedByteArray serialize_message();
     PackedByteArray serialize_signers();
-    Error sign(const Variant &latest_blockhash);
-    Error send();
+    Error sign();
+    Dictionary send();
     Variant sign_and_send();
     Error partially_sign(const Variant& latest_blockhash);
 

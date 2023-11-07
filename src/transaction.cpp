@@ -31,23 +31,16 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_signers"), &Transaction::get_signers);
     ClassDB::bind_method(D_METHOD("set_signers", "p_value"), &Transaction::set_signers);
 
-    ClassDB::bind_method(D_METHOD("_transaction_response", "result", "response_code", "headers", "body"), &Transaction::_transaction_response);
     ClassDB::bind_method(D_METHOD("_payer_signed", "signature"), &Transaction::_payer_signed);
 
     ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
     ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
     ClassDB::bind_method(D_METHOD("update_latest_blockhash", "custom_hash"), &Transaction::update_latest_blockhash);
-    ClassDB::bind_method(D_METHOD("sign", "latest_blockhash"), &Transaction::sign);
+    ClassDB::bind_method(D_METHOD("sign"), &Transaction::sign);
     ClassDB::bind_method(D_METHOD("sign_and_send"), &Transaction::sign_and_send);
     ClassDB::bind_method(D_METHOD("create_message"), &Transaction::create_message);
     ClassDB::bind_method(D_METHOD("send"), &Transaction::send);
     ClassDB::bind_method(D_METHOD("partially_sign", "latest_blockhash"), &Transaction::partially_sign);
-}
-
-void Transaction::_transaction_response(int result, int response_code, PackedStringArray headers, PackedByteArray body){
-    Node *req = get_child(0);
-    remove_child(req);
-    req->queue_free();
 }
 
 void Transaction::_payer_signed(PackedByteArray signature){
@@ -226,26 +219,12 @@ Variant Transaction::sign_and_send(){
     return OK;
 }
 
-Error Transaction::send(){
+Dictionary Transaction::send(){
     PackedByteArray serialized_bytes = serialize();
-
-    // Set headers
-	PackedStringArray http_headers;
-	http_headers.append("Content-Type: application/json");
-	http_headers.append("Accept-Encoding: json");
-
-    HTTPRequest *request = memnew(HTTPRequest);
-    request->connect("request_completed", Callable(this, "_transaction_response"));
-    add_child(request);
-
-    const godot::String REQUEST_DATA = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"sendTransaction\",\"params\":[\"" + SolanaSDK::bs64_encode(serialized_bytes) + "\",{\"encoding\":\"base64\"}]}";
-
-	request->request("https://api.devnet.solana.com", http_headers, HTTPClient::METHOD_POST, REQUEST_DATA);
-
-    return OK;
+    return SolanaClient::send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
 }
 
-Error Transaction::sign(const Variant& latest_blockhash){
+Error Transaction::sign(){
     PackedByteArray msg = serialize();
 
     TypedArray<Resource> &signers = Object::cast_to<Message>(message)->get_signers();
