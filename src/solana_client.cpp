@@ -93,6 +93,10 @@ void SolanaClient::append_limit(Array& options){
 }
 
 void SolanaClient::add_to_param_dict(Array &options, const String& key, const Variant& value){
+    if(options.is_empty()){
+        options.append(make_rpc_param(key, value));
+        return;
+    }
     if(options.back().get_type() == Variant::DICTIONARY){
         Dictionary dict = options.back();
         dict[key] = value;
@@ -692,10 +696,27 @@ Dictionary SolanaClient::simulate_transaction(const String& encoded_transaction,
 }
 
 void SolanaClient::_bind_methods(){
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("set_url", "url"), &SolanaClient::set_url);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("set_encoding", "encoding"), &SolanaClient::set_encoding);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("set_commitment", "commitment"), &SolanaClient::set_commitment);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("set_transaction_detail", "transaction_detail"), &SolanaClient::set_transaction_detail);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_min_context_slot", "slot"), &SolanaClient::enable_min_context_slot);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_min_context_slot"), &SolanaClient::disable_min_context_slot);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_account_filter", "offset", "length"), &SolanaClient::enable_account_filter);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_account_filter"), &SolanaClient::disable_account_filter);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_max_transaction_version", "version"), &SolanaClient::enable_max_transaction_version);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_max_transaction_version"), &SolanaClient::disable_max_transaction_version);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_rewards"), &SolanaClient::enable_rewards);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_rewards"), &SolanaClient::disable_rewards);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_identity", "identity"), &SolanaClient::enable_identity);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_identity"), &SolanaClient::disable_identity);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_slot_range", "first", "last"), &SolanaClient::enable_slot_range);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_slot_range"), &SolanaClient::disable_slot_range);
+
+
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_latest_blockhash"), &SolanaClient::get_latest_blockhash);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_balance", "account"), &SolanaClient::get_balance);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_account_info", "account"), &SolanaClient::get_account_info);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("set_url", "url"), &SolanaClient::set_url);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_block", "slot"), &SolanaClient::get_block);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_block_height"), &SolanaClient::get_block_height);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_block_commitment", "slot"), &SolanaClient::get_block_commitment);
@@ -749,6 +770,7 @@ void SolanaClient::_bind_methods(){
 
 SolanaClient::SolanaClient(){
     transaction_detail = "full";
+    commitment = "finalized";
 }
 
 void SolanaClient::set_url(const String& url){

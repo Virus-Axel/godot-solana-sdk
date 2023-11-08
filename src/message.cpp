@@ -114,7 +114,7 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
     AccountMeta *payer_meta = memnew(AccountMeta(payer_key, true, true));
     merged_metas.append(payer_meta);
 
-    latest_blockhash = memnew(Hash);
+    latest_blockhash = "";
 
     for(unsigned int i = 0; i < instructions.size(); i++){
         Instruction *element = Object::cast_to<Instruction>(instructions[i]);
@@ -180,11 +180,7 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
 }
 
 void Message::set_latest_blockhash(const String& blockhash){
-    if(latest_blockhash.get_type() == Variant::NIL){
-        latest_blockhash = memnew(Hash);
-    }
-
-    Object::cast_to<Hash>(latest_blockhash)->set_value(blockhash);
+    latest_blockhash = blockhash;
 }
 
 PackedByteArray Message::serialize(){
@@ -242,21 +238,13 @@ int Message::locate_account_meta(const TypedArray<Resource>& arr, const AccountM
 }
 
 PackedByteArray Message::serialize_blockhash(){
-    if(latest_blockhash.get_type() != Variant::OBJECT){
+    if(latest_blockhash.is_empty()){
         PackedByteArray result;
         result.resize(32);
         return result;
     }
 
-    Hash *latest_blockhash_pubkey = Object::cast_to<Hash>(latest_blockhash);
-    PackedByteArray result = latest_blockhash_pubkey->get_bytes();
-
-    // If blockhash is not set yet, return 32 zeros.
-    if(result.size() != 32){
-        result.resize(32);
-    }
-
-    return result;
+    return SolanaSDK::bs58_decode(latest_blockhash);
 }
 
 int Message::get_amount_signers(){

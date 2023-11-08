@@ -17,7 +17,7 @@ private:
     uint8_t num_readonly_signed_accounts = 0;
     uint8_t num_readonly_unsigned_accounts = 0;
     TypedArray<Resource> account_keys;
-    Variant latest_blockhash;
+    String latest_blockhash;
     TypedArray<CompiledInstruction> compiled_instructions;
     TypedArray<Resource> signers;
 
