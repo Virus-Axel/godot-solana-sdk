@@ -60,6 +60,10 @@ void Transaction::create_message(){
         return;
     }
 
+    if(!has_cumpute_budget_instructions){
+        prepend_compute_budget_instructions();
+    }
+
     message = memnew(Message(instructions, payer));
     const int amount_of_signers = Object::cast_to<Message>(message)->get_amount_signers();
     signatures.resize(amount_of_signers);
@@ -68,6 +72,34 @@ void Transaction::create_message(){
         temp.resize(64);
         signatures[i] = temp;
     }
+}
+
+void Transaction::prepend_compute_budget_instructions(){
+    // TODO(Virax): Replace with system instruction class.
+
+    String compute_budget_id = "ComputeBudget111111111111111111111111111111";
+    Instruction* inst = memnew(Instruction);
+    PackedByteArray data;
+    data.resize(9);
+    data[0] = 3;
+    data[1] = 64;
+    data[2] = 31;
+    inst->set_program_id(memnew(Pubkey(compute_budget_id)));
+    inst->set_data(data);
+    instructions.insert(0, inst);
+
+    inst = memnew(Instruction);
+    data.clear();
+    data.resize(5);
+    data[0] = 2;
+    data[1] = 64;
+    data[2] = 13;
+    data[3] = 3;
+    inst->set_program_id(memnew(Pubkey(compute_budget_id)));
+    inst->set_data(data);
+    instructions.insert(1, inst);
+
+    has_cumpute_budget_instructions = true;
 }
 
 bool Transaction::_set(const StringName &p_name, const Variant &p_value){

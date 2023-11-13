@@ -37,6 +37,8 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<Transaction>();
     ClassDB::register_class<Keypair>();
     ClassDB::register_class<PhantomController>();
+
+    SolanaClient::set_commitment("finalized");
 }
 
 void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {

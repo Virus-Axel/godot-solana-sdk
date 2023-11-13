@@ -20,6 +20,8 @@ private:
     Variant payer;
     Array signers;
     TypedArray<PackedByteArray> signatures;
+
+    bool has_cumpute_budget_instructions = false;
     bool use_phantom_payer;
 
     void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -27,6 +29,7 @@ private:
     void _payer_signed(PackedByteArray signature);
 
     void create_message();
+    void prepend_compute_budget_instructions();
 
 protected:
     static void _bind_methods();
