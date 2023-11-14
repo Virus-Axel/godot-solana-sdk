@@ -2,9 +2,6 @@
 	path = godot-cpp
 	url = https://github.com/godotengine/godot-cpp
 	branch = 4.1
-[submodule "build-containers-with-rust"]
-	path = build-containers-with-rust
-	url = git@github.com:Virus-Axel/build-containers-with-rust.git
 [submodule "BLAKE3"]
 	path = BLAKE3
 	url = git@github.com:BLAKE3-team/BLAKE3.git
@@ -13,3 +10,6 @@
 	path = ed25519
 	url = git@github.com:orlp/ed25519.git
 	ignore=untracked
+[submodule "build-containers"]
+	path = build-containers
+	url = git@github.com:godotengine/build-containers.git

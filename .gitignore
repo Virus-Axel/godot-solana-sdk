@@ -13,6 +13,7 @@ Cargo.lock
 *.dblite
 **/*.os
 
+*.os.tmp
 *.bc
 *.o
 
