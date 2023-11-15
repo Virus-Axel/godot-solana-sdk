@@ -2,9 +2,11 @@
 
 import os
 
-CONTAINER_BUILD_PATH = "build-containers-with-rust"
+CONTAINER_BUILD_PATH = "build-containers"
 CONTAINER_NAME = "godot-solana-sdk-container"
 LIBRARY_NAME = "godot-solana-sdk"
+IPHONE_SDK_VERSION = 17.0
+IOS_OSXCROSS_TRIPPLE = 23
 
 def image_id_from_repo_name(repository_name):
     return os.popen('podman images --format {{.ID}} --filter=reference=' + repository_name).read()
@@ -13,7 +15,7 @@ def get_build_command(platform, architecture, debug=False):
     arguments = ""
     env_options = ""
     if platform == 'ios':
-        arguments = 'IOS_SDK_PATH="/root/ioscross/arm64/SDK/iPhoneOS16.1.sdk" IOS_TOOLCHAIN_PATH="/root/ioscross/arm64" ios_triple="arm-apple-darwin11-"'
+        arguments = 'IOS_SDK_PATH="/root/ioscross/arm64/SDK/iPhoneOS{}.sdk" IOS_TOOLCHAIN_PATH="/root/ioscross/arm64" ios_triple="arm-apple-darwin11-"'.format(IPHONE_SDK_VERSION)
     elif platform == 'macos':
         arguments = 'macos_sdk_path="/root/osxcross/target/SDK/MacOSX13.0.sdk/" osxcross_sdk="darwin22"'    
     elif platform == 'android':
@@ -21,6 +23,11 @@ def get_build_command(platform, architecture, debug=False):
     elif platform == 'web':
         env_options = 'bash -c "source /root/emsdk/emsdk_env.sh && '
         arguments = '"'
+    elif platform == 'linux':
+        if architecture == 'arm64' or architecture == 'arm32':
+            env_options = 'alias g++=/root/arm-godot-linux-gnueabihf_sdk-buildroot/bin/g++ && '
+        else:
+            env_options = 'alias g++=/root/{}-godot-linux-gnueabihf_sdk-buildroot/bin/g++ && '.format(architecture)
 
     debug_or_release = 'release'
     if debug:
@@ -29,8 +36,7 @@ def get_build_command(platform, architecture, debug=False):
     return '{} scons -j 4 platform={} arch={} target=template_{} {}'.format(env_options, platform, architecture, debug_or_release, arguments)
 
 
-def build_in_container(platform, container_path, architectures, keep_container=False, keep_images=False):
-    CONTAINER_BUILD_COMMAND = 'echo y | ./build.sh 4.x f36'
+def build_in_container(platform, architectures, keep_container=False, keep_images=False):
     REPOSITORY_NAME = {
         'ios': 'localhost/godot-ios',
         'macos': 'localhost/godot-osx',
@@ -40,13 +46,10 @@ def build_in_container(platform, container_path, architectures, keep_container=F
         'web': 'localhost/godot-web'
     }
 
-    # Build missing containers
-    env.Execute('cd {} && {}'.format(container_path, CONTAINER_BUILD_COMMAND))
-
     image_id = image_id_from_repo_name(REPOSITORY_NAME[platform])
 
     env.Execute('podman run --mount type=bind,source=.,target=/root/godot-solana-sdk -d -it --name {} {}'.format(CONTAINER_NAME, image_id))
-    
+
     for architecture in architectures:
         build_command = get_build_command(platform, architecture, True)
         env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
@@ -57,23 +60,44 @@ def build_in_container(platform, container_path, architectures, keep_container=F
     if not keep_container:
         env.Execute('podman rm -f {}'.format(CONTAINER_NAME))
 
-    if not keep_images:
-        env.Execute('podman rmi -f {}'.format(image_id))
+
+def remove_all_images(platform):
+    id = image_id_from_repo_name('localhost/godot-' + platform)
+    while(image_id_from_repo_name('localhost/godot-' + platform)):
+        env.Execute('podman rmi -f {}'.format(id))
+        id = image_id_from_repo_name('localhost/godot-' + platform)
 
 
 def build_all(env, container_path, keep_images):
+    CONTAINER_BUILD_COMMAND = 'echo y | ./build.sh 4.x f36'
+
     # Remove existing container
     env.Execute('podman rm -fi {}'.format(CONTAINER_NAME))
 
-    build_in_container('linux', container_path, ['x86_64'], keep_images=keep_images)
-    build_in_container('windows', container_path, ['x86_64'], keep_images=keep_images)
-    build_in_container('web', container_path, ['wasm32'], keep_images=keep_images)
-    build_in_container('android', container_path, ['aarch64', 'x86_64'], keep_images=keep_images)
-    build_in_container('ios', container_path, ['arm64'], keep_images=keep_images)
-    build_in_container('macos', container_path, ['aarch64'], keep_images=keep_images)
+    # Build missing containers
+    env.Execute('cd {} && {}'.format(container_path, CONTAINER_BUILD_COMMAND))
 
-AddOption('--keep_images', dest='keep_images', default=False, action='store_true', help='Keeps the podman images for future builds.')
-AddOption('--container_build', dest='container_build', default=False, action='store_true', help='Build in containers for all platforms (specify one to override)')
+    build_in_container('linux', ['x86_64'], keep_images=keep_images)
+    build_in_container('windows', ['x86_64'], keep_images=keep_images)
+    build_in_container('web', ['wasm32'], keep_images=keep_images)
+    build_in_container('android', ['aarch64', 'x86_64'], keep_images=keep_images)
+    build_in_container('ios', ['arm64'], keep_images=keep_images)
+    build_in_container('macos', ['aarch64'], keep_images=keep_images)
+
+    if not keep_images:
+        # Remove existing images
+        remove_all_images('linux')
+        remove_all_images('windows')
+        remove_all_images('web')
+        remove_all_images('android')
+        remove_all_images('ios')
+        remove_all_images('osx')
+        remove_all_images('fedora')
+        remove_all_images('xcode')
+
+
+AddOption('--remove_images', dest='remove_images', default=True, action='store_false', help='Remove the podman images after the build.')
+AddOption('--container_build', dest='container_build', default=False, action='store_true', help='Build in containers for all platforms.')
 
 env = SConscript("godot-cpp/SConstruct")
 
@@ -112,20 +136,10 @@ phantom_sources = Glob("phantom/*.cpp")
 
 # Handle the container build
 if env.GetOption('container_build'):
-    keep_images = False
-
-    if env.GetOption('keep_images'):
-        keep_images = True
-
-    if 'platform' in ARGUMENTS:
-        architecture = 'x86_64'
-        if 'arch' in ARGUMENTS:
-            architecture = ARGUMENTS['arch']
-
-            build_in_container(ARGUMENTS['platform'], CONTAINER_BUILD_PATH, architecture, keep_images=keep_images, keep_container=True)
-
-    else:
-        build_all(env, CONTAINER_BUILD_PATH, keep_images)
+    build_all(env, CONTAINER_BUILD_PATH, env.GetOption('remove_images'))
+    
+    # Stop default targets from dependency SCons files.
+    exit(0)
 
 else:
     if env["platform"] == "ios":
@@ -137,7 +151,7 @@ else:
         env.Append(LINKFLAGS=['-framework', 'Security', '-L', '/root/ioscross/arm64/lib/'])
 
         # Workaround for broken ios builds.
-        env['LINK'] = "/root/osxcross/target/bin/aarch64-apple-darwin22-ld"
+        env['LINK'] = "/root/osxcross/target/bin/aarch64-apple-darwin{}-ld".format(IOS_OSXCROSS_TRIPPLE)
         env.Append(LD_LIBRARY_PATH=['/root/ioscross/arm64/lib/'])
 
         for index in range(len(env['LINKFLAGS'])):
