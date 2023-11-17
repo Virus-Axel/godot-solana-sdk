@@ -24,12 +24,12 @@ private:
     String latest_blockhash_string = "";
 
     bool has_cumpute_budget_instructions = false;
-    bool use_phantom_payer;
+    bool use_phantom_payer = false;
 
     void _get_property_list(List<PropertyInfo> *p_list) const;
-
     void _payer_signed(PackedByteArray signature);
 
+    bool is_phantom_payer() const;
     void create_message();
 
 protected:

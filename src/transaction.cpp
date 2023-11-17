@@ -52,6 +52,10 @@ void Transaction::_payer_signed(PackedByteArray signature){
     emit_signal("fully_signed");
 }
 
+bool Transaction::is_phantom_payer() const{
+    return payer.has_method("get_connected_key");
+}
+
 void Transaction::create_message(){
     // Free existing memory.
     message.clear();
@@ -110,10 +114,6 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
     }
     else if(name == "signers"){
         r_ret = signers;
-        return true;
-    }
-    else if(name == "use_phantom_payer"){
-        r_ret = use_phantom_payer;
         return true;
     }
 	return false;
@@ -207,13 +207,23 @@ PackedByteArray Transaction::serialize_signers(){
 }
 
 Variant Transaction::sign_and_send(){
-    const String hash_string = SolanaSDK::get_latest_blockhash();
-    Hash hash;
-    hash.set_value(hash_string);
+    create_message();
+    PackedByteArray msg = serialize();
 
-    PackedByteArray serialized_bytes = serialize();
+    TypedArray<Keypair> &signers = Object::cast_to<Message>(message)->get_signers();
 
-    return SolanaSDK::send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
+    for (unsigned int i = 0; i < signers.size(); i++){
+        Keypair *kp = Object::cast_to<Keypair>(signers[i]);
+        PackedByteArray signature = kp->sign_message(serialize_message());
+        signatures[1 + i] = signature;
+    }
+
+    if(is_phantom_payer()){
+        PhantomController *controller = Object::cast_to<PhantomController>(payer);
+
+        controller->connect("message_signed", Callable(this, "_payer_signed"));
+        controller->sign_message(serialize());
+    }
 
     return OK;
 }
@@ -235,7 +245,7 @@ Error Transaction::sign(){
         signatures[1 + i] = signature;
     }
 
-    if(use_phantom_payer){
+    if(is_phantom_payer()){
         PhantomController *controller = Object::cast_to<PhantomController>(payer);
 
         controller->connect("message_signed", Callable(this, "_payer_signed"));
