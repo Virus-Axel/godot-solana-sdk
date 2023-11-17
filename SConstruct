@@ -17,7 +17,7 @@ def get_build_command(platform, architecture, debug=False):
     if platform == 'ios':
         arguments = 'IOS_SDK_PATH="/root/ioscross/arm64/SDK/iPhoneOS{}.sdk" IOS_TOOLCHAIN_PATH="/root/ioscross/arm64" ios_triple="arm-apple-darwin11-"'.format(IPHONE_SDK_VERSION)
     elif platform == 'macos':
-        arguments = 'macos_sdk_path="/root/osxcross/target/SDK/MacOSX13.0.sdk/" osxcross_sdk="darwin22"'    
+        arguments = 'macos_sdk_path="/root/osxcross/target/SDK/MacOSX14.0.sdk/" osxcross_sdk="darwin23"'    
     elif platform == 'android':
         arguments = ""
     elif platform == 'web':
@@ -116,6 +116,8 @@ env.Append(CPPPATH=["sha256/"])
 env.Append(CPPPATH=["BLAKE3/c/"])
 env.Append(CPPPATH=["ed25519/src/"])
 env.Append(CPPPATH=["phantom/"])
+env.Append(CPPPATH=["instructions/include"])
+env.Append(CPPPATH=["instructions/src"])
 env.Append(CCFLAGS=[
     "-DBLAKE3_NO_SSE41",
     "-DBLAKE3_NO_SSE2",
@@ -125,6 +127,7 @@ env.Append(CCFLAGS=[
 ])
 
 sources = Glob("src/*.cpp")
+
 blak3_sources = Glob("BLAKE3/c/blake3.c")
 blak3_sources.append(Glob("BLAKE3/c/blake3_dispatch.c")[0])
 blak3_sources.append(Glob("BLAKE3/c/blake3_portable.c")[0])
@@ -133,6 +136,7 @@ sha256_sources = Glob("sha256/sha256.cpp")
 ed25519_sources = Glob("ed25519/src/*.c")
 
 phantom_sources = Glob("phantom/*.cpp")
+instruction_sources = Glob("instructions/src/*.cpp")
 
 # Handle the container build
 if env.GetOption('container_build'):
@@ -168,12 +172,12 @@ else:
             ) + LIBRARY_NAME + ".{}.{}".format(
                 env["platform"], env["target"]
             ),
-            source=sources + blak3_sources + sha256_sources + ed25519_sources + phantom_sources #+ cryptopp_sources,
+            source=sources + blak3_sources + sha256_sources + ed25519_sources + phantom_sources + instruction_sources,
         )
     else:
         library = env.SharedLibrary(
             "bin/lib" + LIBRARY_NAME + "{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-            source=sources + blak3_sources + sha256_sources + ed25519_sources + phantom_sources #+ cryptopp_sources,
+            source=sources + blak3_sources + sha256_sources + ed25519_sources + phantom_sources + instruction_sources,
         )
 
     Default(library)

@@ -15,6 +15,7 @@ MAKE_TYPED_ARRAY(Pubkey, Variant::OBJECT)
 MAKE_TYPED_ARRAY(AccountMeta, Variant::OBJECT)
 MAKE_TYPED_ARRAY(Resource, Variant::OBJECT)
 
+class CompiledInstruction;
 
 class Instruction : public Resource {
     GDCLASS(Instruction, Resource)
@@ -38,6 +39,8 @@ public:
 
     void set_accounts(const TypedArray<AccountMeta>& p_value);
     TypedArray<AccountMeta> get_accounts();
+
+    PackedByteArray serialize();
     
     ~Instruction();
 };

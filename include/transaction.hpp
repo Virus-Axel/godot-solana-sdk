@@ -21,6 +21,8 @@ private:
     Array signers;
     TypedArray<PackedByteArray> signatures;
 
+    String latest_blockhash_string = "";
+
     bool has_cumpute_budget_instructions = false;
     bool use_phantom_payer;
 
@@ -29,15 +31,12 @@ private:
     void _payer_signed(PackedByteArray signature);
 
     void create_message();
-    void prepend_compute_budget_instructions();
 
 protected:
     static void _bind_methods();
 
 public:
     Transaction();
-
-    void _ready() override;
 
     void set_instructions(const Array& p_value);
     Array get_instructions();

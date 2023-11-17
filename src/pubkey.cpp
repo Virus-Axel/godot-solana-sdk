@@ -7,8 +7,9 @@
 #include "sha256.hpp"
 
 #include "curve25519.hpp"
-#include <iostream>
-#include <string.h>
+#include "keypair.hpp"
+#include "account_meta.hpp"
+#include "phantom.hpp"
 
 using internal::gdextension_interface_print_warning;
 
@@ -118,14 +119,14 @@ void Pubkey::set_value(const String& p_value){
 
     // Print warnings if key length is bad.
     if(decoded_value.is_empty() && value.length() != 0){
-        internal::gdextension_interface_print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", 18, false);
+        internal::gdextension_interface_print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", __LINE__, false);
     }
     else if (decoded_value.size() != 32){
-        internal::gdextension_interface_print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 21, false);
+        internal::gdextension_interface_print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", __LINE__, false);
     }
 }
 
-String Pubkey::get_value(){
+String Pubkey::get_value() const{
     return value;
 }
 
@@ -151,7 +152,7 @@ void Pubkey::set_bytes(const PackedByteArray& p_value){
 
     // Print warnings if byte length is bad.
     if (bytes.size() != 32){
-        internal::gdextension_interface_print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", 14, false);
+        internal::gdextension_interface_print_warning("Pubkey must be 32 bytes", "set_bytes", "pubkey.cpp", __LINE__, false);
     }
     
 }
@@ -164,7 +165,7 @@ void Pubkey::set_type(const String p_value){
     notify_property_list_changed();
 }
 
-String Pubkey::get_type(){
+String Pubkey::get_type() const{
     return type;
 }
 
@@ -316,11 +317,48 @@ Pubkey::Pubkey() {
 }
 
 Pubkey::Pubkey(const String& from){
-    create_from_string(from);
+    set_value(from);
+}
+
+Pubkey::Pubkey(const Variant& from){
+    *this = from;
 }
 
 void Pubkey::operator=(const Variant& other){
-    this->bytes = static_cast<Pubkey>(other).get_bytes();
+    if(other.get_type() != Variant::Type::OBJECT){
+        internal::gdextension_interface_print_warning("Assigning pubkey with an non-object type.", "operator=", __FILE__, __LINE__, false);
+        return;
+    }
+
+    if(other.has_method("get_bytes")){
+        this->bytes = Object::cast_to<Pubkey>(other)->get_bytes();
+        this->value = Object::cast_to<Pubkey>(other)->get_value();
+        this->type = Object::cast_to<Pubkey>(other)->get_type();
+    }
+    else if(other.has_method("get_public_bytes")){
+        this->set_bytes(Object::cast_to<Keypair>(other)->get_public_bytes());
+    }
+    else if(other.has_method("get_pubkey")){
+        const Variant meta = Object::cast_to<AccountMeta>(other)->get_pubkey();
+        const Pubkey* key_ptr = Object::cast_to<Pubkey>(meta);
+        this->bytes = key_ptr->get_bytes();
+        this->value = key_ptr->get_value();
+        this->type = key_ptr->get_type();
+    }
+    else if(other.has_method("connect_phantom")){
+        PhantomController *phantom_controller = Object::cast_to<PhantomController>(other);
+        if(phantom_controller->is_connected()){
+            this->set_bytes(phantom_controller->get_connected_key());
+        }
+        else{
+            // Append placeholder
+            this->bytes.resize(32);
+        }
+    }
+
+    else{
+        internal::gdextension_interface_print_warning("Assigning pubkey with an unexpected object.", "operator=", __FILE__, __LINE__, false);
+    }
 }
 
 bool Pubkey::operator==(const Pubkey& other) const{

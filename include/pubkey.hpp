@@ -42,9 +42,10 @@ protected:
 public:
     Pubkey();
     Pubkey(const String& from);
+    Pubkey(const Variant& from);
 
     void set_value(const String& p_value);
-    String get_value();
+    String get_value() const;
 
     void set_seed(const String& p_value);
     String get_seed();
@@ -53,7 +54,7 @@ public:
     PackedByteArray get_bytes() const;
 
     void set_type(const String p_value);
-    String get_type();
+    String get_type() const;
 
     void set_base(const Variant p_value);
     Variant get_base();

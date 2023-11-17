@@ -46,8 +46,8 @@ void Transaction::_bind_methods() {
 void Transaction::_payer_signed(PackedByteArray signature){
     PhantomController *controller = Object::cast_to<PhantomController>(payer);
     controller->disconnect("message_signed", Callable(this, "_payer_signed"));
-    
-    signatures[0] = controller->get_message_signature();
+
+    signatures[0] = signature;
 
     emit_signal("fully_signed");
 }
@@ -60,46 +60,21 @@ void Transaction::create_message(){
         return;
     }
 
-    if(!has_cumpute_budget_instructions){
-        prepend_compute_budget_instructions();
+    message = memnew(Message(instructions, payer));
+    Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
+
+    const int amount_of_signers = Object::cast_to<Message>(message)->get_amount_signers();
+    
+    if(signers.size() == amount_of_signers){
+        return;
     }
 
-    message = memnew(Message(instructions, payer));
-    const int amount_of_signers = Object::cast_to<Message>(message)->get_amount_signers();
     signatures.resize(amount_of_signers);
     for(unsigned int i = 0; i < signatures.size(); i++){
         PackedByteArray temp;
         temp.resize(64);
         signatures[i] = temp;
     }
-}
-
-void Transaction::prepend_compute_budget_instructions(){
-    // TODO(Virax): Replace with system instruction class.
-
-    String compute_budget_id = "ComputeBudget111111111111111111111111111111";
-    Instruction* inst = memnew(Instruction);
-    PackedByteArray data;
-    data.resize(9);
-    data[0] = 3;
-    data[1] = 64;
-    data[2] = 31;
-    inst->set_program_id(memnew(Pubkey(compute_budget_id)));
-    inst->set_data(data);
-    instructions.insert(0, inst);
-
-    inst = memnew(Instruction);
-    data.clear();
-    data.resize(5);
-    data[0] = 2;
-    data[1] = 64;
-    data[2] = 13;
-    data[3] = 3;
-    inst->set_program_id(memnew(Pubkey(compute_budget_id)));
-    inst->set_data(data);
-    instructions.insert(1, inst);
-
-    has_cumpute_budget_instructions = true;
 }
 
 bool Transaction::_set(const StringName &p_name, const Variant &p_value){
@@ -122,6 +97,7 @@ bool Transaction::_set(const StringName &p_name, const Variant &p_value){
     }
 	return false;
 }
+
 bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
     String name = p_name;
 	if (name == "instructions") {
@@ -163,7 +139,6 @@ void Transaction::create_signed_with_payer(Array instructions, Variant payer, Ar
 
 void Transaction::set_instructions(const Array& p_value){
     instructions = p_value;
-    create_message();
 }
 
 Array Transaction::get_instructions(){
@@ -172,16 +147,6 @@ Array Transaction::get_instructions(){
 
 void Transaction::set_payer(const Variant& p_value){
     payer = p_value;
-    if(use_phantom_payer){
-        Object::cast_to<PhantomController>(payer)->connect("connection_established", Callable(this, "create_message"));
-    }
-    else{
-        create_message();
-    }
-}
-
-void Transaction::_ready(){
-    create_message();
 }
 
 Variant Transaction::get_payer(){
@@ -202,10 +167,11 @@ void Transaction::update_latest_blockhash(const String &custom_hash){
         const Dictionary latest_blockhash = SolanaClient::get_latest_blockhash();
         const Dictionary blockhash_result = latest_blockhash["result"];
         const Dictionary blockhash_value = blockhash_result["value"];
-        String hash_string = blockhash_value["blockhash"];
-        Object::cast_to<Message>(message)->set_latest_blockhash(hash_string);
+        latest_blockhash_string = blockhash_value["blockhash"];
+        Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
     }
     else{
+        latest_blockhash_string = custom_hash;
         Object::cast_to<Message>(message)->set_latest_blockhash(custom_hash);
     }
 }
@@ -220,6 +186,7 @@ Array Transaction::get_signers(){
 
 PackedByteArray Transaction::serialize(){
     PackedByteArray serialized_bytes;
+
     serialized_bytes.append_array(serialize_signers());
     serialized_bytes.append_array(serialize_message());
 
@@ -257,9 +224,10 @@ Dictionary Transaction::send(){
 }
 
 Error Transaction::sign(){
+    create_message();
     PackedByteArray msg = serialize();
 
-    TypedArray<Resource> &signers = Object::cast_to<Message>(message)->get_signers();
+    TypedArray<Keypair> &signers = Object::cast_to<Message>(message)->get_signers();
 
     for (unsigned int i = 0; i < signers.size(); i++){
         Keypair *kp = Object::cast_to<Keypair>(signers[i]);

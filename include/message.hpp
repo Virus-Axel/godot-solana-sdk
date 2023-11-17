@@ -4,6 +4,8 @@
 #include <instruction.hpp>
 #include <godot_cpp/classes/node.hpp>
 
+#include "keypair.hpp"
+
 namespace godot{
 
 MAKE_TYPED_ARRAY(CompiledInstruction, Variant::OBJECT)
@@ -16,17 +18,18 @@ private:
     uint8_t num_required_signatures = 0;
     uint8_t num_readonly_signed_accounts = 0;
     uint8_t num_readonly_unsigned_accounts = 0;
-    TypedArray<Resource> account_keys;
+    TypedArray<Pubkey> account_keys;
     String latest_blockhash;
     TypedArray<CompiledInstruction> compiled_instructions;
-    TypedArray<Resource> signers;
+    TypedArray<Keypair> signers;
 
-    TypedArray<Resource> merged_metas;
+    TypedArray<AccountMeta> merged_metas;
 
     void compile_instruction(Variant instruction);
     void recalculate_headers();
+    void merge_account_meta(const AccountMeta& account_meta);
 
-    int locate_account_meta(const TypedArray<Resource>& arr, const AccountMeta &input, bool is_payer = false);
+    int locate_account_meta(const TypedArray<AccountMeta>& arr, const AccountMeta &input);
 
 protected:
     static void _bind_methods();
@@ -38,7 +41,7 @@ public:
     PackedByteArray serialize();
     PackedByteArray serialize_blockhash();
     int get_amount_signers();
-    TypedArray<Resource> &get_signers();
+    TypedArray<Keypair> &get_signers();
     ~Message();
 };
 }

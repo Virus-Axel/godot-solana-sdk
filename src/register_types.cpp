@@ -12,6 +12,7 @@
 #include "phantom.hpp"
 #include "message.hpp"
 #include "solana_client.hpp"
+#include "compute_budget.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -37,6 +38,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<Transaction>();
     ClassDB::register_class<Keypair>();
     ClassDB::register_class<PhantomController>();
+    ClassDB::register_class<ComputeBudget>();
 
     SolanaClient::set_commitment("finalized");
 }
