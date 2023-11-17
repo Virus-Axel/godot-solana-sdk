@@ -116,6 +116,10 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
         r_ret = signers;
         return true;
     }
+    else if(name == "use_phantom_payer"){
+        r_ret = use_phantom_payer;
+        return true;
+    }
 	return false;
 }
 
