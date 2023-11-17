@@ -81,9 +81,22 @@ AccountMeta::AccountMeta() : Resource(){
 }
 
 AccountMeta::AccountMeta(const Variant& pid, bool signer, bool writeable){
-    this->set_pubkey(pid);
+    const Pubkey *temp = memnew(Pubkey(pid));
+    this->key = temp;
     this->is_signer = signer;
     this->writeable = writeable;
+}
+
+AccountMeta::AccountMeta(const Variant& other){
+    if(other.has_method("get_pubkey")){
+        const AccountMeta* meta_ptr = Object::cast_to<AccountMeta>(other);
+        this->key = meta_ptr->get_pubkey();
+        this->is_signer = meta_ptr->get_is_signer();
+        this->writeable = meta_ptr->get_writeable();
+    }
+    else{
+        internal::gdextension_interface_print_warning("Assigning AccountMeta with an unexpected object.", "assignment constructor", __FILE__, __LINE__, false);
+    }
 }
 
 void AccountMeta::create_new(const Variant& account_key, bool is_signer, bool writeable){

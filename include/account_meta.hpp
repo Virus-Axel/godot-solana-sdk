@@ -26,7 +26,7 @@ protected:
 public:
     AccountMeta();
     AccountMeta(const Variant& pid, bool signer, bool writeable);
-    //AccountMeta(const Variant& other);
+    AccountMeta(const Variant& other);
 
     void set_pubkey(const Variant &p_value);
     Variant get_pubkey() const;

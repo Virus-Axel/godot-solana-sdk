@@ -22,9 +22,12 @@ void Instruction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_data", "p_value"), &Instruction::set_data);
     ClassDB::bind_method(D_METHOD("get_accounts"), &Instruction::get_accounts);
     ClassDB::bind_method(D_METHOD("set_accounts", "p_value"), &Instruction::set_accounts);
+    ClassDB::bind_method(D_METHOD("serialize"), &Instruction::serialize);
+
     ClassDB::add_property("Instruction", PropertyInfo(Variant::OBJECT, "program_id", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", PROPERTY_USAGE_DEFAULT), "set_program_id", "get_program_id");
     ClassDB::add_property("Instruction", PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data"), "set_data", "get_data");
-    ClassDB::add_property("Instruction", PropertyInfo(Variant::ARRAY, "accounts", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("AccountMeta")), "set_accounts", "get_accounts");}
+    ClassDB::add_property("Instruction", PropertyInfo(Variant::ARRAY, "accounts", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("AccountMeta")), "set_accounts", "get_accounts");
+}
 
 Instruction::Instruction() {
 }
@@ -51,6 +54,22 @@ TypedArray<AccountMeta> Instruction::get_accounts(){
     return accounts;
 }
 
+PackedByteArray Instruction::serialize(){
+    PackedByteArray result;
+
+    if(program_id.has_method("get_bytes")){
+        result.append_array(Object::cast_to<Pubkey>(program_id)->get_bytes());
+    }
+    result.append_array(data);
+    for(unsigned int i = 0; i < accounts.size(); i++){
+        const Pubkey key = accounts[i];
+
+        result.append_array(key.get_bytes());
+    }
+
+    return result;
+}
+
 Instruction::~Instruction() {
 }
 
@@ -60,7 +79,6 @@ CompiledInstruction::CompiledInstruction(){
 }
 
 void CompiledInstruction::_bind_methods(){
-
 }
 
 PackedByteArray CompiledInstruction::serialize(){

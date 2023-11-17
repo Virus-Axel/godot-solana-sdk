@@ -3,8 +3,9 @@
 #include <keypair.hpp>
 #include <phantom.hpp>
 #include <solana_sdk.hpp>
+#include "compute_budget.hpp"
 
-TypedArray<Resource> sort_metas(TypedArray<Resource> input){
+TypedArray<AccountMeta> sort_metas(TypedArray<AccountMeta> input){
     TypedArray<AccountMeta> m1;
     TypedArray<AccountMeta> m2;
     TypedArray<AccountMeta> m3;
@@ -58,10 +59,10 @@ void Message::compile_instruction(Variant instruction){
     AccountMeta pid_meta(element->get_program_id(), false, false);
     compiled_instruction->program_id_index = locate_account_meta(merged_metas, pid_meta);
 
-    compiled_instruction->accounts.push_back(payer_index);
+    //compiled_instruction->accounts.push_back(payer_index);
     for(unsigned int j = 0; j < account_metas.size(); j++){
         AccountMeta *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
-        compiled_instruction->accounts.push_back(locate_account_meta(merged_metas, *account_meta, (j == 0)));
+        compiled_instruction->accounts.push_back(locate_account_meta(merged_metas, *account_meta));
     }
     compiled_instructions.push_back(compiled_instruction);
 }
@@ -79,62 +80,39 @@ void Message::recalculate_headers(){
             num_readonly_unsigned_accounts++;
         }
         
-        if(account_meta->get_is_signer()){
-            Pubkey *new_key = memnew(Pubkey);
+        account_keys.push_back(account_meta->get_pubkey());
+    }
+}
 
-            if(i == 0){
-                new_key->set_bytes(Object::cast_to<Pubkey>(account_meta->get_pubkey())->get_bytes());
-            }
-            else{
-                new_key->set_bytes(Object::cast_to<Keypair>(account_meta->get_pubkey())->get_public_bytes());
-            }
-
-            account_keys.push_back(new_key);
-        }
-        else{
-            account_keys.push_back(account_meta->get_pubkey());
-        }
+void Message::merge_account_meta(const AccountMeta &account_meta){
+    const int index = locate_account_meta(merged_metas, account_meta);
+    if(index != -1){
+        AccountMeta *meta_1 = Object::cast_to<AccountMeta>(merged_metas[index]);
+        meta_1->set_is_signer(meta_1->get_is_signer() || account_meta.get_is_signer());
+        meta_1->set_writeable(meta_1->get_writeable() || account_meta.get_writeable());
+    }
+    else{
+        const AccountMeta *new_element = memnew(AccountMeta(account_meta));
+        merged_metas.append(new_element);
     }
 }
 
 Message::Message(TypedArray<Instruction> instructions, Variant &payer){
 
-    // Append payer
-    PhantomController *phantom = Object::cast_to<PhantomController>(payer);
-    PackedByteArray payer_key_bytes;
-
-    if(!phantom->is_connected()){
-        payer_key_bytes.resize(32);
-    }
-    else{
-        payer_key_bytes = phantom->get_connected_key();
-    }
-    Pubkey *payer_key = memnew(Pubkey);
-    payer_key->set_bytes(payer_key_bytes);
-    AccountMeta *payer_meta = memnew(AccountMeta(payer_key, true, true));
+    AccountMeta *payer_meta = memnew(AccountMeta(payer, true, true));
     merged_metas.append(payer_meta);
 
     latest_blockhash = "";
+
+    // Prepend ComputeBudget instructions.
+    instructions.insert(0, ComputeBudget::set_compute_unit_limit(200000));
+    instructions.insert(1, ComputeBudget::set_compute_unit_price(8000));
 
     for(unsigned int i = 0; i < instructions.size(); i++){
         Instruction *element = Object::cast_to<Instruction>(instructions[i]);
         const TypedArray<AccountMeta> &account_metas = element->get_accounts();
 
-        AccountMeta *pid_meta = memnew(AccountMeta(element->get_program_id(), false, false));
-
-        // If keys match, merge metas
-        if(locate_account_meta(merged_metas, *pid_meta) != -1){
-            const int index = locate_account_meta(merged_metas, *pid_meta);
-            AccountMeta *meta_1 = Object::cast_to<AccountMeta>(merged_metas[index]);
-            meta_1->set_is_signer(meta_1->get_is_signer() || pid_meta->get_is_signer());
-            meta_1->set_writeable(meta_1->get_writeable() || pid_meta->get_writeable());
-
-            // One data object is not needed so free it.
-            memfree(pid_meta);
-        }
-        else{
-            merged_metas.append(pid_meta);
-        }
+        merge_account_meta(AccountMeta(element->get_program_id(), false, false));
 
         for(unsigned int j = 0; j < account_metas.size(); j++){
             AccountMeta *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
@@ -144,33 +122,15 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
                 signers.push_back(account_meta->get_pubkey());
             }
 
-            // If keys match, merge metas.
-            if(locate_account_meta(merged_metas, *account_meta, (j == 0)) != -1){
-                const int index = locate_account_meta(merged_metas, *account_meta, (j == 0));
-
-                AccountMeta *meta_1 = Object::cast_to<AccountMeta>(merged_metas[index]);
-                AccountMeta *meta_2 = account_meta;
-                meta_1->set_is_signer(meta_1->get_is_signer() || meta_2->get_is_signer());
-                meta_1->set_writeable(meta_1->get_writeable() || meta_2->get_writeable());
-
-                // Signers should make Keypair override pubkey.
-                if(meta_2->get_is_signer()){
-                    meta_1->set_pubkey(meta_2->get_pubkey());
-                }
-            }
-            else{
-                AccountMeta *new_meta = Object::cast_to<AccountMeta>(account_metas[j]);
-                merged_metas.push_back(new_meta);
-            }
+            merge_account_meta(*account_meta);
         }
     }
 
     // Sort with custom function that looks at signer/writeable.
-    TypedArray<Resource> temp;
     merged_metas = sort_metas(merged_metas);
 
     // Store payer index.
-    payer_index = locate_account_meta(merged_metas, *payer_meta, true);
+    payer_index = locate_account_meta(merged_metas, *payer_meta);
 
     for(unsigned int i = 0; i < instructions.size(); i++){
         compile_instruction(instructions[i]);
@@ -207,30 +167,13 @@ PackedByteArray Message::serialize(){
     return result;
 }
 
-TypedArray<Resource> &Message::get_signers(){
+TypedArray<Keypair> &Message::get_signers(){
     return signers;
 }
 
-int Message::locate_account_meta(const TypedArray<Resource>& arr, const AccountMeta &input, bool is_payer){
+int Message::locate_account_meta(const TypedArray<AccountMeta>& arr, const AccountMeta &input){
     for(unsigned int i = 0; i < arr.size(); i++){
-        AccountMeta *element = Object::cast_to<AccountMeta>(arr[i]);
-        
-        PackedByteArray key;
-        PackedByteArray other_key;
-        if(element->get_is_signer() && i != 0){
-            Keypair *kp = Object::cast_to<Keypair>(element->get_pubkey());
-            key = kp->get_public_bytes();
-        }
-        else{
-            key = Object::cast_to<Pubkey>(element->get_pubkey())->get_bytes();
-        }
-        if(input.get_is_signer() && !is_payer){
-            other_key = Object::cast_to<Keypair>(input.get_pubkey())->get_public_bytes();
-        }
-        else{
-            other_key = Object::cast_to<Pubkey>(input.get_pubkey())->get_bytes();
-        }
-        if (other_key == key){
+        if (Pubkey(merged_metas[i]) == input.get_pubkey()){
             return i;
         }
     }
