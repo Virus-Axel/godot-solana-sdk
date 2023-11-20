@@ -47,83 +47,16 @@ const std::vector<char> BASE_64_MAP = {
 
 using internal::gdextension_interface_print_warning;
 
-std::string SolanaSDK::url;
-
 const std::string SolanaSDK::SPL_TOKEN_ADDRESS = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 const std::string SolanaSDK::SPL_ASSOCIATED_TOKEN_ADDRESS = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
 
 void SolanaSDK::_bind_methods() {
     ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs58_encode", "input"), &SolanaSDK::bs58_encode);
     ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs58_decode", "input"), &SolanaSDK::bs58_decode);
-    ClassDB::bind_static_method("SolanaSDK", D_METHOD("get_latest_blockhash"), &SolanaSDK::get_latest_blockhash);
-    ClassDB::bind_static_method("SolanaSDK", D_METHOD("set_url", "url"), &SolanaSDK::set_url);
-	ClassDB::bind_static_method("SolanaSDK", D_METHOD("get_url"), &SolanaSDK::get_url);
 }
 
 SolanaSDK::SolanaSDK() {
-	url = TESTNET_URL.ascii();
 }
-
-Dictionary SolanaSDK::quick_http_request(const String& request_body){
-	const int32_t POLL_DELAY_MSEC = 100;
-
-	// Set headers
-	PackedStringArray http_headers;
-	http_headers.append("Content-Type: application/json");
-	http_headers.append("Accept-Encoding: json");
-	
-	// Connect to RPC API URL.
-	HTTPClient handler;
-
-	Error err = handler.connect_to_host(String(url.c_str()), 443, TLSOptions::client_unsafe());
-
-	// Wait until a connection is established.
-	godot::HTTPClient::Status status = handler.get_status();
-	while(status == HTTPClient::STATUS_CONNECTING || status == HTTPClient::STATUS_RESOLVING){
-		handler.poll();
-		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
-		status = handler.get_status();
-	}
-
-	// Make a POST request
-	err = handler.request(godot::HTTPClient::METHOD_POST, "/", http_headers, request_body);
-
-	if(err != Error::OK){
-		gdextension_interface_print_warning("Error sending request.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
-		return Dictionary();
-	}
-
-	// Poll until we have a response.
-	status = handler.get_status();
-	while(status == HTTPClient::STATUS_REQUESTING){
-		handler.poll();
-		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
-		status = handler.get_status();
-	}
-
-	// Collect the response body.
-	PackedByteArray response_data;
-	while(status == HTTPClient::STATUS_BODY){
-		response_data.append_array(handler.read_response_body_chunk());
-		handler.poll();
-		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
-		status = handler.get_status();
-	}
-
-	handler.close();
-
-	// Parse out the blockhash.
-	JSON json;
-	err = json.parse(response_data.get_string_from_utf8());
-
-	if(err != Error::OK){
-		gdextension_interface_print_warning("Error getting response data.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
-		return Dictionary();
-	}
-
-	return json.get_data();
-}
-
 
 PackedByteArray SolanaSDK::bs58_decode(String str){
 	PackedByteArray result;
@@ -136,7 +69,7 @@ PackedByteArray SolanaSDK::bs58_decode(String str){
 	result[0] = 0;
 
 	int resultlen = 1;
-	for (unsigned int i = 0; i < str.to_utf8_buffer().size(); i++){
+	for (unsigned int i = 0; i < str.length(); i++){
 		unsigned int carry = (unsigned int) ALPHABET_MAP[str.to_utf8_buffer()[i]];
 		if (carry == 255){
 			return PackedByteArray();
@@ -153,10 +86,17 @@ PackedByteArray SolanaSDK::bs58_decode(String str){
         }
     }
 
-    for (int i = 0; i < str.to_utf8_buffer().size() && str[i] == '1'; i++)
+	int i = 0;
+    for (; (i < str.length()) && (str[i] == '1'); i++){
         result[resultlen++] = 0;
+	}
 
-	int i = resultlen - 1;
+	// Special case for all 1's.
+	if(i == str.length()){
+		resultlen--;
+	}
+
+	i = resultlen - 1;
 	int z = (resultlen >> 1) + (resultlen & 1);
 	
 	while(i >= z){
@@ -266,44 +206,6 @@ PackedByteArray SolanaSDK::bs64_decode(String input){
 		result[index] += val << (2 + (i % 4) * 2);
 	}
 	return result.slice(0, result.size() - cutoff);
-}
-
-
-String SolanaSDK::get_latest_blockhash(){
-	const godot::String REQUEST_DATA = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"getLatestBlockhash\",\"params\":[{\"commitment\":\"finalized\"}]}";
-
-	Dictionary data = quick_http_request(REQUEST_DATA);
-
-	if(!data.has("result")){
-		gdextension_interface_print_warning("Unexpected response.", "get_latest_blockhash", "solana_sdk.cpp", __LINE__, false);
-		return "";
-	}
-	data = data["result"];
-	if(!data.has("value")){
-		gdextension_interface_print_warning("Unexpected response.", "get_latest_blockhash", "solana_sdk.cpp", __LINE__, false);
-		return "";
-	}
-	data = data["value"];
-	if(!data.has("blockhash")){
-		gdextension_interface_print_warning("Unexpected response.", "get_latest_blockhash", "solana_sdk.cpp", __LINE__, false);
-		return "";
-	}
-
-	return data["blockhash"];
-}
-
-Variant SolanaSDK::send_transaction(const String& transaction){
-	const godot::String REQUEST_DATA = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"sendTransaction\",\"params\":[\"" + transaction + "\",{\"encoding\":\"base64\"}]}";
-
-	return quick_http_request(REQUEST_DATA);
-}
-
-void SolanaSDK::set_url(const String& url){
-	SolanaSDK::url = url.ascii();
-}
-
-String SolanaSDK::get_url(){
-	return String(SolanaSDK::url.c_str());
 }
 
 SolanaSDK::~SolanaSDK() {

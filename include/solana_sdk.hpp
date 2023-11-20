@@ -10,10 +10,6 @@ class SolanaSDK : public Node {
     GDCLASS(SolanaSDK, Node)
 
 private:
-    static std::string url;
-
-    static Dictionary quick_http_request(const String& request_body);
-
 protected:
     static void _bind_methods();
 
@@ -31,10 +27,7 @@ public:
     static String bs58_encode(PackedByteArray input);
     static String bs64_encode(PackedByteArray bytes);
     static PackedByteArray bs64_decode(String input);
-    static String get_latest_blockhash();
-    static Variant send_transaction(const String& transaction);
-    static void set_url(const String& url);
-    static String get_url();
+
     ~SolanaSDK();
 };
 }
