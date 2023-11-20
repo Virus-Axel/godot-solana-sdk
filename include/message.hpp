@@ -21,13 +21,14 @@ private:
     TypedArray<Pubkey> account_keys;
     String latest_blockhash;
     TypedArray<CompiledInstruction> compiled_instructions;
-    TypedArray<Keypair> signers;
+    Array signers;
 
     TypedArray<AccountMeta> merged_metas;
 
     void compile_instruction(Variant instruction);
     void recalculate_headers();
     void merge_account_meta(const AccountMeta& account_meta);
+    void merge_signer(const Variant& signer);
 
     int locate_account_meta(const TypedArray<AccountMeta>& arr, const AccountMeta &input);
 
@@ -41,7 +42,7 @@ public:
     PackedByteArray serialize();
     PackedByteArray serialize_blockhash();
     int get_amount_signers();
-    TypedArray<Keypair> &get_signers();
+    Array &get_signers();
     ~Message();
 };
 }

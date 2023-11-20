@@ -54,6 +54,10 @@ TypedArray<AccountMeta> Instruction::get_accounts(){
     return accounts;
 }
 
+void Instruction::append_meta(const AccountMeta& meta){
+    accounts.append(memnew(AccountMeta(meta)));
+}
+
 PackedByteArray Instruction::serialize(){
     PackedByteArray result;
 

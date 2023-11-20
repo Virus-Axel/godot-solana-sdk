@@ -40,6 +40,8 @@ public:
     void set_accounts(const TypedArray<AccountMeta>& p_value);
     TypedArray<AccountMeta> get_accounts();
 
+    void append_meta(const AccountMeta& meta);
+
     PackedByteArray serialize();
     
     ~Instruction();

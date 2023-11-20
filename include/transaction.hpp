@@ -14,6 +14,8 @@ class Transaction : public Node {
     GDCLASS(Transaction, Node)
 
 private:
+    uint32_t ready_signature_amount = 0;
+
     Variant message;
 
     Array instructions;
@@ -27,10 +29,13 @@ private:
     bool use_phantom_payer = false;
 
     void _get_property_list(List<PropertyInfo> *p_list) const;
-    void _payer_signed(PackedByteArray signature);
+    void _signer_signed(PackedByteArray signature);
 
     bool is_phantom_payer() const;
     void create_message();
+    void check_fully_signed();
+
+    void sign_at_index(const uint32_t index);
 
 protected:
     static void _bind_methods();
@@ -54,12 +59,14 @@ public:
     bool get_use_phantom_payer();
 
     void update_latest_blockhash(const String &custom_hash = "");
+    void add_instruction(const Variant &instruction);
 
     PackedByteArray serialize();
     PackedByteArray serialize_message();
     PackedByteArray serialize_signers();
     Error sign();
     Dictionary send();
+    void send_and_disconnect();
     Variant sign_and_send();
     Error partially_sign(const Variant& latest_blockhash);
 

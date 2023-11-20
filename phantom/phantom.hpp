@@ -9,6 +9,7 @@ class PhantomController : public Node{
     GDCLASS(PhantomController, Node)
 private:
     bool connected = false;
+    uint32_t active_signer_index = 0;
     enum State{
         IDLE = 0,
         CONNECTING = 1,
@@ -34,7 +35,9 @@ public:
     void poll_message_signing();
     PackedByteArray get_connected_key();
     PackedByteArray get_message_signature();
-    void sign_message(const PackedByteArray &serialized_message);
+    void sign_message(const PackedByteArray &serialized_message, const uint32_t index);
+
+    uint32_t get_active_signer_index();
     ~PhantomController();
 };
 }

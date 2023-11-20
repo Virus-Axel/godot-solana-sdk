@@ -23,6 +23,7 @@ using internal::gdextension_interface_print_warning;
 
 void Transaction::_bind_methods() {
     ClassDB::add_signal("Transaction", MethodInfo("fully_signed"));
+    ClassDB::add_signal("Transaction", MethodInfo("transaction_response", PropertyInfo(Variant::DICTIONARY, "result")));
 
     ClassDB::bind_method(D_METHOD("get_instructions"), &Transaction::get_instructions);
     ClassDB::bind_method(D_METHOD("set_instructions", "p_value"), &Transaction::set_instructions);
@@ -31,25 +32,32 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_signers"), &Transaction::get_signers);
     ClassDB::bind_method(D_METHOD("set_signers", "p_value"), &Transaction::set_signers);
 
-    ClassDB::bind_method(D_METHOD("_payer_signed", "signature"), &Transaction::_payer_signed);
+    ClassDB::bind_method(D_METHOD("_signer_signed", "signature"), &Transaction::_signer_signed);
 
     ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
     ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
+
+    ClassDB::bind_method(D_METHOD("add_instruction", "instruction"), &Transaction::add_instruction);
     ClassDB::bind_method(D_METHOD("update_latest_blockhash", "custom_hash"), &Transaction::update_latest_blockhash);
+    
     ClassDB::bind_method(D_METHOD("sign"), &Transaction::sign);
     ClassDB::bind_method(D_METHOD("sign_and_send"), &Transaction::sign_and_send);
     ClassDB::bind_method(D_METHOD("create_message"), &Transaction::create_message);
     ClassDB::bind_method(D_METHOD("send"), &Transaction::send);
+    ClassDB::bind_method(D_METHOD("send_and_disconnect"), &Transaction::send_and_disconnect);
     ClassDB::bind_method(D_METHOD("partially_sign", "latest_blockhash"), &Transaction::partially_sign);
 }
 
-void Transaction::_payer_signed(PackedByteArray signature){
+void Transaction::_signer_signed(PackedByteArray signature){
     PhantomController *controller = Object::cast_to<PhantomController>(payer);
-    controller->disconnect("message_signed", Callable(this, "_payer_signed"));
+    controller->disconnect("message_signed", Callable(this, "_signer_signed"));
 
-    signatures[0] = signature;
+    const uint32_t index = controller->get_active_signer_index();
 
-    emit_signal("fully_signed");
+    signatures[index] = signature;
+    ready_signature_amount++;
+
+    check_fully_signed();
 }
 
 bool Transaction::is_phantom_payer() const{
@@ -73,11 +81,39 @@ void Transaction::create_message(){
         return;
     }
 
+    ready_signature_amount = 0;
     signatures.resize(amount_of_signers);
     for(unsigned int i = 0; i < signatures.size(); i++){
         PackedByteArray temp;
         temp.resize(64);
         signatures[i] = temp;
+    }
+}
+
+void Transaction::check_fully_signed(){
+    if(ready_signature_amount == signers.size()){
+        emit_signal("fully_signed");
+    }
+}
+
+void Transaction::sign_at_index(const uint32_t index){
+    if(signers[index].get_type() != Variant::Type::OBJECT){
+        Array params;
+        params.append(signers[index].get_type());
+        internal::gdextension_interface_print_warning(String("Signer is not an object. It is a {0}").format(params).utf8(), "sign_at_index", __FILE__, __LINE__, false);
+    }
+    else if(signers[index].has_method("verify_signature")){
+        Keypair *kp = Object::cast_to<Keypair>(signers[index]);
+
+        PackedByteArray signature = kp->sign_message(serialize_message());
+        signatures[index] = signature;
+        ready_signature_amount++;
+    }
+    else if(signers[index].has_method("sign_message")){
+        PhantomController* controller = Object::cast_to<PhantomController>(signers[index]);
+
+        controller->connect("message_signed", Callable(this, "_signer_signed"));
+        controller->sign_message(serialize(), index);
     }
 }
 
@@ -180,6 +216,10 @@ void Transaction::update_latest_blockhash(const String &custom_hash){
     }
 }
 
+void Transaction::add_instruction(const Variant &instruction){
+    instructions.append(instruction);
+}
+
 void Transaction::set_signers(const Array& p_value){
     signers = p_value;
 }
@@ -211,23 +251,9 @@ PackedByteArray Transaction::serialize_signers(){
 }
 
 Variant Transaction::sign_and_send(){
-    create_message();
-    PackedByteArray msg = serialize();
+    connect("fully_signed", Callable(this, "send_and_disconnect"));
 
-    TypedArray<Keypair> &signers = Object::cast_to<Message>(message)->get_signers();
-
-    for (unsigned int i = 0; i < signers.size(); i++){
-        Keypair *kp = Object::cast_to<Keypair>(signers[i]);
-        PackedByteArray signature = kp->sign_message(serialize_message());
-        signatures[1 + i] = signature;
-    }
-
-    if(is_phantom_payer()){
-        PhantomController *controller = Object::cast_to<PhantomController>(payer);
-
-        controller->connect("message_signed", Callable(this, "_payer_signed"));
-        controller->sign_message(serialize());
-    }
+    sign();
 
     return OK;
 }
@@ -237,23 +263,20 @@ Dictionary Transaction::send(){
     return SolanaClient::send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
 }
 
+void Transaction::send_and_disconnect(){
+    disconnect("fully_signed", Callable(this, "send_and_disconnect"));
+
+    emit_signal("transaction_response", send());
+}
+
 Error Transaction::sign(){
     create_message();
     PackedByteArray msg = serialize();
 
-    TypedArray<Keypair> &signers = Object::cast_to<Message>(message)->get_signers();
+    signers = Object::cast_to<Message>(message)->get_signers();
 
     for (unsigned int i = 0; i < signers.size(); i++){
-        Keypair *kp = Object::cast_to<Keypair>(signers[i]);
-        PackedByteArray signature = kp->sign_message(serialize_message());
-        signatures[1 + i] = signature;
-    }
-
-    if(is_phantom_payer()){
-        PhantomController *controller = Object::cast_to<PhantomController>(payer);
-
-        controller->connect("message_signed", Callable(this, "_payer_signed"));
-        controller->sign_message(serialize());
+        sign_at_index(i);
     }
 
     return OK;
