@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/random_number_generator.hpp>
 
 namespace godot{
 
@@ -23,24 +24,120 @@ const int crypto_sign_SECRETKEYBYTES = 64;
 const int crypto_sign_SEEDBYTES = 32;
 const int crypto_hash_BYTES = 64;
 
-PackedByteArray _0;
-PackedByteArray _9;
+PackedByteArray TweetNacl::_0(){
+    PackedByteArray res;
+    res.resize(16);
+    return res;
+}
+
+PackedByteArray TweetNacl::_9(){
+    PackedByteArray res;
+    res.resize(32);
+    res[0] = 9;
+    return res;
+}
+
+PackedInt64Array TweetNacl::gf0(){
+    return gf(PackedInt64Array());
+}
+
+PackedInt64Array TweetNacl::gf1(){
+    PackedInt64Array param;
+    param.resize(1);
+    param[0] = 1;
+    return gf(param);
+}
+
+PackedInt64Array TweetNacl::_121665(){
+    PackedInt64Array param;
+    param.resize(2);
+    param[0] = 0xdb41;
+    param[1] = 1;
+    return gf(param);
+}
+
+PackedInt64Array TweetNacl::D(){
+    PackedInt64Array param;
+    const uint64_t values[] = {0x78a3, 0x1359, 0x4dca, 0x75eb, 0xd8ab, 0x4141, 0x0a4d, 0x0070, 0xe898, 0x7779, 0x4079, 0x8cc7, 0xfe73, 0x2b6f, 0x6cee, 0x5203};
+    param.resize(16);
+    for(unsigned int i = 0; i < 16; i++){
+        param[i] = values[i];
+    }
+
+    return gf(param);
+}
+
+PackedInt64Array TweetNacl::D2(){
+    PackedInt64Array param;
+    const uint64_t values[] = {0xf159, 0x26b2, 0x9b94, 0xebd6, 0xb156, 0x8283, 0x149a, 0x00e0, 0xd130, 0xeef3, 0x80f2, 0x198e, 0xfce7, 0x56df, 0xd9dc, 0x2406};
+    param.resize(16);
+    for(unsigned int i = 0; i < 16; i++){
+        param[i] = values[i];
+    }
+
+    return gf(param);
+}
+
+PackedInt64Array TweetNacl::X(){
+    PackedInt64Array param;
+    const uint64_t values[] = {0xd51a, 0x8f25, 0x2d60, 0xc956, 0xa7b2, 0x9525, 0xc760, 0x692c, 0xdc5c, 0xfdd6, 0xe231, 0xc0a4, 0x53fe, 0xcd6e, 0x36d3, 0x2169};
+    param.resize(16);
+    for(unsigned int i = 0; i < 16; i++){
+        param[i] = values[i];
+    }
+
+    return gf(param);
+}
+
+PackedInt64Array TweetNacl::Y(){
+    PackedInt64Array param;
+    const uint64_t values[] = {0x6658, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666};
+    param.resize(16);
+    for(unsigned int i = 0; i < 16; i++){
+        param[i] = values[i];
+    }
+
+    return gf(param);
+}
+
+PackedInt64Array TweetNacl::I(){
+    PackedInt64Array param;
+    const uint64_t values[] = {0xa0b0, 0x4a0e, 0x1b27, 0xc4ee, 0xe478, 0xad2f, 0x1806, 0x2f43, 0xd7a7, 0x3dfb, 0x0099, 0x2b4d, 0xdf0b, 0x4fc1, 0x2480, 0x2b83};
+    param.resize(16);
+    for(unsigned int i = 0; i < 16; i++){
+        param[i] = values[i];
+    }
+
+    return gf(param);
+}
 
 
-PackedInt64Array gf0 = gf(PackedInt64Array());
-PackedInt64Array gf1 = gf([1]);
-var _121665 = gf([0xdb41, 1])
-var D = gf([0x78a3, 0x1359, 0x4dca, 0x75eb, 0xd8ab, 0x4141, 0x0a4d, 0x0070, 0xe898, 0x7779, 0x4079, 0x8cc7, 0xfe73, 0x2b6f, 0x6cee, 0x5203])
-var D2 = gf([0xf159, 0x26b2, 0x9b94, 0xebd6, 0xb156, 0x8283, 0x149a, 0x00e0, 0xd130, 0xeef3, 0x80f2, 0x198e, 0xfce7, 0x56df, 0xd9dc, 0x2406])
-var X = gf([0xd51a, 0x8f25, 0x2d60, 0xc956, 0xa7b2, 0x9525, 0xc760, 0x692c, 0xdc5c, 0xfdd6, 0xe231, 0xc0a4, 0x53fe, 0xcd6e, 0x36d3, 0x2169])
-var Y = gf([0x6658, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666])
-var I = gf([0xa0b0, 0x4a0e, 0x1b27, 0xc4ee, 0xe478, 0xad2f, 0x1806, 0x2f43, 0xd7a7, 0x3dfb, 0x0099, 0x2b4d, 0xdf0b, 0x4fc1, 0x2480, 0x2b83])
 
-var sigma = PackedByteArray([101, 120, 112, 97, 110, 100, 32, 51, 50, 45, 98, 121, 116, 101, 32, 107]);
+PackedByteArray TweetNacl::sigma(){
+    const uint8_t values[] = {101, 120, 112, 97, 110, 100, 32, 51, 50, 45, 98, 121, 116, 101, 32, 107};
+    PackedByteArray res;
+    res.resize(16);
+    for(unsigned int i = 0; i < 16; i++){
+        res[i] = values[i];
+    }
 
-var minusp = PackedInt32Array([
-  5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 252
-]);
+    return res;
+}
+
+PackedInt32Array TweetNacl::minusp(){
+    const uint32_t values[] = {5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 252};
+    PackedInt32Array res;
+    res.resize(17);
+    for(unsigned int i = 0; i < 17; i++){
+        res[i] = values[i];
+    }
+
+    return res;
+}
+
+void TweetNacl::_bind_methods(){
+
+}
 
 func pack25519(o, n):
 	var b;
@@ -98,18 +195,23 @@ func inv25519(o, i):
 		o[a] = c[a];
 
 
-func gf(list):
-	var ret = PackedInt64Array(list)
-	ret.resize(16)
-	return ret
+PackedInt64Array gf(const PackedInt64Array &list){
+	PackedInt64Array ret = PackedInt64Array(list);
+	ret.resize(16);
+	return ret;
+}
 
-func A(o, a, b):
-	for i in range(16):
-		o[i] = (a[i] + b[i]) | 0
+void A(PackedInt64Array &o, const PackedInt64Array &a, const PackedInt64Array &b){
+	for(unsigned int i = 0; i < 16; i++){
+		o[i] = (a[i] + b[i]) | 0;
+    }
+}
 
-func Z(o, a, b):
-	for i in range(16):
-		o[i] = (a[i] - b[i]) | 0
+void Z(PackedInt64Array &o, const PackedInt64Array &a, const PackedInt64Array &b){
+	for(unsigned int i = 0; i < 16; i++){
+		o[i] = (a[i] - b[i]) | 0;
+    }
+}
 		
 func S(o, a):
 	M(o, a, a);
@@ -478,33 +580,35 @@ func box_open(msg, nonce, publicKey, secretKey):
 	var k = box_before(publicKey, secretKey);
 	return secretbox_open(msg, nonce, k);
 
-func crypto_scalarmult(q, n, p):
-	var z = PackedByteArray()
-	z.resize(32)
-	var x = PackedInt64Array()
-	x.resize(80)
-	var r
-	var a = gf([])
-	var b = gf([])
-	var c = gf([])
-	var d = gf([])
-	var e = gf([])
-	var f = gf([])
-	for i in range(31):
-		z[i] = n[i]
+void TweetNacl::crypto_scalarmult(PackedByteArray &q, const PackedByteArray &n, const PackedByteArray &p){
+	PackedByteArray z;
+	z.resize(32);
+	PackedInt64Array x;
+	x.resize(80);
+	uint64_t r;
+	PackedInt64Array a = gf0();
+	PackedInt64Array b = gf0();
+	PackedInt64Array c = gf0();
+	PackedInt64Array d = gf0();
+	PackedInt64Array e = gf0();
+	PackedInt64Array f = gf0();
+	for(unsigned int i = 0; i < 31; i++){
+		z[i] = n[i];
+    }
 	
 	z[31] = (n[31] & 127) | 64;
 	z[0] &= 248;
 	unpack25519(x,p);
-	for i in range(16):
+	for(unsigned int i = 0; i < 16; i++){
 		b[i] = x[i];
-		d[i] = 0
-		a[i] = 0
+		d[i] = 0;
+		a[i] = 0;
 		c[i] = 0;
+    }
 
-	a[0] = 1
+	a[0] = 1;
 	d[0] = 1;
-	for i in range(254, -1, -1):
+	for(int i = 254; i > -1; i--){
 		r = (zero_shift_right(z[zero_shift_right(i, 3)], (i & 7))) & 1;
 		sel25519(a,b,r);
 		sel25519(c,d,r);
@@ -528,50 +632,51 @@ func crypto_scalarmult(q, n, p):
 		S(b,e);
 		sel25519(a,b,r);
 		sel25519(c,d,r);
+    }
 
-	for i in range(16):
+	for(unsigned int i = 0; i < 16; i++){
 		x[i+16] = a[i];
 		x[i+32] = c[i];
 		x[i+48] = b[i];
 		x[i+64] = d[i];
+    }
 
-	var x32 = x.slice(32);
-	var x16 = x.slice(16);
+	PackedInt64Array x32 = x.slice(32);
+	PackedInt64Array x16 = x.slice(16);
 	inv25519(x32, x32);
 	M(x16, x16, x32);
 	pack25519(q, x16);
-	return 0;
+}
 
-func randombytes(x, size):
-	for i in range(size):
-		x[i] = randi() % 256
-		#x[i] = 1
+void randombytes(PackedByteArray &x, unsigned int size){
+    PackedByteArray *result = memnew(PackedByteArray);
+    
+    result->resize(size);
+    RandomNumberGenerator rnd;
+	for(unsigned int i = 0; i < size; i++){
+		x[i] = rnd.randi() % 256;
+    }
+}
 
-func crypto_box_keypair(y, x):
+void TweetNacl::crypto_box_keypair(PackedByteArray& y, PackedByteArray &x){
 	randombytes(x, 32);
 	return crypto_scalarmult_base(y, x);
+}
 
-func crypto_scalarmult_base(q, n):
-	return crypto_scalarmult(q, n, _9);
+void TweetNacl::crypto_scalarmult_base(PackedByteArray &q, const PackedByteArray &n){
+	return crypto_scalarmult(q, n, _9());
+}
 
-func box_keypair():
-	var pk = PackedByteArray()
-	pk.resize(crypto_box_PUBLICKEYBYTES)
-	var sk = PackedByteArray()
-	sk.resize(crypto_box_SECRETKEYBYTES)
-	crypto_box_keypair(pk, sk);
-	return [sk, pk];
+TypedArray<PackedByteArray> TweetNacl::box_keypair(){
+	PackedByteArray *pk = memnew(PackedByteArray);
+	pk->resize(crypto_box_PUBLICKEYBYTES);
+	PackedByteArray *sk = memnew(PackedByteArray);
+	sk->resize(crypto_box_SECRETKEYBYTES);
+	crypto_box_keypair(*pk, *sk);
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	_0.resize(16)
-	_9.resize(32)
-	_9[0] = 9;
-	pass # Replace with function body.
+    TypedArray<PackedByteArray> result;
+    result.append(sk);
+    result.append(pk);
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
-
+	return result;
 }
