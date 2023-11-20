@@ -179,6 +179,7 @@ void Transaction::create_signed_with_payer(Array instructions, Variant payer, Ar
 
 void Transaction::set_instructions(const Array& p_value){
     instructions = p_value;
+    create_message();
 }
 
 Array Transaction::get_instructions(){
@@ -187,6 +188,7 @@ Array Transaction::get_instructions(){
 
 void Transaction::set_payer(const Variant& p_value){
     payer = p_value;
+    create_message();
 }
 
 Variant Transaction::get_payer(){
@@ -218,6 +220,7 @@ void Transaction::update_latest_blockhash(const String &custom_hash){
 
 void Transaction::add_instruction(const Variant &instruction){
     instructions.append(instruction);
+    create_message();
 }
 
 void Transaction::set_signers(const Array& p_value){
@@ -270,7 +273,6 @@ void Transaction::send_and_disconnect(){
 }
 
 Error Transaction::sign(){
-    create_message();
     PackedByteArray msg = serialize();
 
     signers = Object::cast_to<Message>(message)->get_signers();
