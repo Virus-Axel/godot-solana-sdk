@@ -5,8 +5,8 @@
 #include <godot_cpp/classes/wrapped.hpp>
 
 namespace godot{
-class PhantomController : public Node{
-    GDCLASS(PhantomController, Node)
+class TweetNacl : public Node{
+    GDCLASS(TweetNacl, Node)
 private:
     bool connected = false;
     uint32_t active_signer_index = 0;

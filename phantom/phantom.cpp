@@ -173,6 +173,10 @@ void PhantomController::_bind_methods(){
 PhantomController::PhantomController(){
 }
 
+void PhantomController::deeplink_connect(){
+  
+}
+
 void PhantomController::connect_phantom(){
   phantom_state = State::CONNECTING;
     #ifdef WEB_ENABLED
