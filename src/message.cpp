@@ -97,7 +97,19 @@ void Message::merge_account_meta(const AccountMeta &account_meta){
     }
 }
 
+void Message::merge_signer(const Variant& signer){
+    for(unsigned int i = 0; i < signers.size(); i++){
+        if(Pubkey(signers[i]) == Pubkey(signer)){
+            return;
+        }
+    }
+
+    signers.append(signer);
+}
+
 Message::Message(TypedArray<Instruction> instructions, Variant &payer){
+    // Payer is signer.
+    signers.append(payer);
 
     AccountMeta *payer_meta = memnew(AccountMeta(payer, true, true));
     merged_metas.append(payer_meta);
@@ -119,7 +131,7 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
             
             if(account_meta->get_is_signer()){
                 // Actually a keypair.
-                signers.push_back(account_meta->get_pubkey());
+                merge_signer(account_meta->get_pubkey());
             }
 
             merge_account_meta(*account_meta);
@@ -167,7 +179,7 @@ PackedByteArray Message::serialize(){
     return result;
 }
 
-TypedArray<Keypair> &Message::get_signers(){
+Array &Message::get_signers(){
     return signers;
 }
 

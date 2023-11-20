@@ -188,8 +188,10 @@ PackedByteArray PhantomController::get_connected_key(){
   return connected_key;
 }
 
-void PhantomController::sign_message(const PackedByteArray &serialized_message){
+void PhantomController::sign_message(const PackedByteArray &serialized_message, const uint32_t index){
   #ifdef WEB_ENABLED
+
+  active_signer_index = index;
 
   phantom_state = State::SIGNING;
   store_encoded_message(serialized_message);
@@ -197,6 +199,10 @@ void PhantomController::sign_message(const PackedByteArray &serialized_message){
   JavaScriptBridge::get_singleton()->eval(String(sign_and_send_script.c_str()));
 
   #endif
+}
+
+uint32_t PhantomController::get_active_signer_index(){
+  return active_signer_index;
 }
 
 PhantomController::~PhantomController(){

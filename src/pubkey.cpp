@@ -122,7 +122,9 @@ void Pubkey::set_value(const String& p_value){
         internal::gdextension_interface_print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", __LINE__, false);
     }
     else if (decoded_value.size() != 32){
-        internal::gdextension_interface_print_warning("Pubkey must be 32 bytes", "_set", "pubkey.cpp", __LINE__, false);
+        Array params;
+        params.push_back(decoded_value.size());
+        internal::gdextension_interface_print_warning(String("Pubkey must be 32 bytes. It is {0}").format(params).utf8(), "_set", "pubkey.cpp", __LINE__, false);
     }
 }
 
