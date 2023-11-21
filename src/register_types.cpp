@@ -14,6 +14,7 @@
 #include "solana_client.hpp"
 #include "compute_budget.hpp"
 #include "system_program.hpp"
+#include "tweetnacl.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -28,6 +29,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     }
 
     ClassDB::register_class<SolanaSDK>();
+    ClassDB::register_class<TweetNacl>();
     ClassDB::register_class<SolanaClient>();
     ClassDB::register_class<Pubkey>();
     ClassDB::register_class<CompiledInstruction>();

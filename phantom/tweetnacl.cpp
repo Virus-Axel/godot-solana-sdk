@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/random_number_generator.hpp>
+#include <godot_cpp/core/math.hpp>
 
 namespace godot{
 
@@ -124,9 +125,9 @@ PackedByteArray TweetNacl::sigma(){
     return res;
 }
 
-PackedInt32Array TweetNacl::minusp(){
+PackedInt64Array TweetNacl::minusp(){
     const uint32_t values[] = {5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 252};
-    PackedInt32Array res;
+    PackedInt64Array res;
     res.resize(17);
     for(unsigned int i = 0; i < 17; i++){
         res[i] = values[i];
@@ -136,66 +137,86 @@ PackedInt32Array TweetNacl::minusp(){
 }
 
 void TweetNacl::_bind_methods(){
-
+    ClassDB::bind_static_method("TweetNacl", D_METHOD("box", "message", "nounce", "public_key", "secret_key"), &TweetNacl::box);
+    ClassDB::bind_static_method("TweetNacl", D_METHOD("box_open", "message", "nounce", "public_key", "secret_key"), &TweetNacl::box_open);
+    ClassDB::bind_static_method("TweetNacl", D_METHOD("box_keypair"), &TweetNacl::box_keypair);
 }
 
-func pack25519(o, n):
-	var b;
-	var m = gf([])
-	var t = gf([]);
+void TweetNacl::pack25519(PackedByteArray &o, const PackedInt64Array &n){
+	int64_t b;
+	PackedInt64Array m = gf(PackedInt64Array());
+	PackedInt64Array t = gf(PackedInt64Array());
 	
-	for i in range(16):
+	for(unsigned int i = 0; i < 16; i++){
 		t[i] = n[i];
+    }
+
 	car25519(t);
 	car25519(t);
 	car25519(t);
 	
-	for j in range(2):
+	for(unsigned int j = 0; j < 2; j++){
 		m[0] = t[0] - 0xffed;
-		for i in range(1, 15):
+		for(unsigned int i = 1; i < 15; i++){
 			m[i] = t[i] - 0xffff - ((signed_shift_right(m[i-1], 16)) & 1);
 			m[i-1] &= 0xffff;
+        }
 
 		m[15] = t[15] - 0x7fff - ((signed_shift_right(m[14], 16)) & 1);
 		b = (signed_shift_right(m[15], 16)) & 1;
 		m[14] &= 0xffff;
 		sel25519(t, m, 1-b);
-	for i in range(16):
+    }
+	for(unsigned int i = 0; i < 16; i++){
 		o[2*i] = t[i] & 0xff;
-		o[2*i+1] = t[i]>>8;
+		o[2*i+1] = t[i] >> 8;
+    }
+}
 
 
-func car25519(o):
-	var c;
-	for i in range(16):
+void TweetNacl::car25519(PackedInt64Array &o){
+	int64_t c;
+	for(unsigned int i = 0; i < 16; i++){
 		o[i] += 65536;
 		c = floor(o[i] / 65536);
-		var un1 = 0
-		var un2 = 0
-		if i < 15:
-			un1 = 1
-		else:
-			un1 = 0
-		if i == 15:
-			un2 = 1
-		else:
-			un2 = 0
+		int64_t un1 = 0;
+		int64_t un2 = 0;
+		if(i < 15){
+			un1 = 1;
+        }
+		else{
+			un1 = 0;
+        }
+		if(i == 15){
+			un2 = 1;
+        }
+		else{
+			un2 = 0;
+        }
+
 		o[(i+1)*un1] += c - 1 + 37 * (c-1) * un2;
 		o[i] -= (c * 65536);
+    }
+}
 
-func inv25519(o, i):
-	var c = gf([]);
-	for a in range(16):
+void TweetNacl::inv25519(PackedInt64Array &o, const PackedInt64Array &i){
+	PackedInt64Array c = gf(PackedInt64Array());
+	for(unsigned int a = 0; a < 16; a++){
 		c[a] = i[a];
-	for a in range(253, -1, -1):
-		S(c, c)
-		if(a != 2 && a != 4):
-			M(c, c, i)
-	for a in range(16):
+    }
+	for(int a = 253; a > -1; a--){
+		S(c, c);
+		if(a != 2 && a != 4){
+		    M(c, c, i);
+        }
+    }
+	for(unsigned int a = 0; a < 16; a++){
 		o[a] = c[a];
+    }
+}
 
 
-PackedInt64Array gf(const PackedInt64Array &list){
+PackedInt64Array TweetNacl::gf(const PackedInt64Array &list){
 	PackedInt64Array ret = PackedInt64Array(list);
 	ret.resize(16);
 	return ret;
@@ -213,155 +234,200 @@ void Z(PackedInt64Array &o, const PackedInt64Array &a, const PackedInt64Array &b
     }
 }
 		
-func S(o, a):
+void TweetNacl::S(PackedInt64Array &o, const PackedInt64Array &a){
 	M(o, a, a);
+}
 
-func M(o, a, b):
-	var t = PackedInt64Array()
-	t.resize(31)
-	for i in range(31):
-		t[i] = 0
-	for i in range(16):
-		for j in range(16):
-			t[i + j] += a[i] * b[j]
+void TweetNacl::M(PackedInt64Array &o, const PackedInt64Array &a, const PackedInt64Array &b){
+	PackedInt64Array t;
+	t.resize(31);
+	for(unsigned int i = 0; i < 31; i++){
+		t[i] = 0;
+    }
+	for(unsigned int i = 0; i < 16; i++){
+		for(unsigned int j = 0; j < 16; j++){
+			t[i + j] += a[i] * b[j];
+        }
+    }
 
-	for i in range(15):
+	for(unsigned int i = 0; i < 15; i++){
 		t[i] += 38 * t[i + 16];
-	for i in range(16):
+    }
+	for(unsigned int i = 0; i < 16; i++){
 		o[i] = t[i];
+    }
 	car25519(o);
 	car25519(o);
+}
 
-func unpack25519(o, n):
-	for i in range(16):
-		o[i] = n[2*i] + (n[2*i+1] << 8)
+void unpack25519(PackedInt64Array &o, const PackedByteArray &n){
+	for(unsigned int i = 0; i < 16; i++){
+		o[i] = n[2*i] + (n[2*i+1] << 8);
+    }
 	o[15] = o[15] & 0x7fff;
+}
 
-func signed_shift_right(num, bits):
-	if num < 0:
-		var ret = (abs(num) - 1) >> bits
-		return ~ret
-	else:
-		return num >> bits
+int64_t TweetNacl::signed_shift_right(const int64_t num, const int64_t bits){
+	if(num < 0){
+		int64_t ret = (abs(num) - 1) >> bits;
+		return ~ret;
+    }
+	else{
+		return num >> bits;
+    }
+}
 
-func signed_shift_left(num, bits):
-	if num < 0:
-		var ret = (abs(num) - 1) << bits
-		return ~ret
-	else:
-		return num << bits
+int64_t TweetNacl::signed_shift_left(const int64_t num, const int32_t bits){
+	if(num < 0){
+		int64_t ret = (abs(num) - 1) << bits;
+		return ~ret;
+    }
+	else{
+		return num << bits;
+    }
+}
 
-func zero_shift_right(num, bits):
-	if num < 0:
-		var ret = ((1 << 63) + num) >> bits
-		ret += (1 << 62) >> (bits - 1)
-		return ret
-	else:
-		return num >> bits
+int64_t zero_shift_right(int64_t num, int64_t bits){
+	if(num < 0){
+		int64_t ret = (((int64_t)1 << 63) + num) >> bits;
+		ret += ((int64_t)1 << 62) >> (bits - 1);
+		return ret;
+    }
+	else{
+		return num >> bits;
+    }
+}
 
-func sel25519(p, q, b):
-	var t
-	var c = ~(b-1);
-	for i in range(16):
-		t = c & (p[i] ^ q[i]);
+void TweetNacl::sel25519(PackedInt64Array &p, PackedInt64Array &q, int64_t b){
+	int64_t c = ~(b-1);
+	for(unsigned int i = 0; i < 16; i++){
+		int64_t t = c & (p[i] ^ q[i]);
 		p[i] ^= t;
 		q[i] ^= t;
+    }
+}
 	
 
-func ld32(x, i):
-	var u = x[i + 3] & 0xff;
+int64_t ld32(const PackedByteArray &x, int64_t i){
+	int64_t u = x[i + 3] & 0xff;
 	u = (u << 8) | (x[i + 2] & 0xff);
 	u = (u << 8) | (x[i + 1] & 0xff);
-	return (u << 8) | (x[i + 0] & 0xff)
+	return (u << 8) | (x[i + 0] & 0xff);
+}
 
-func L32(x, c, is_32 = false):
-	if is_32:
-		return signed_shift_left(x, c) % (1 << 32) | (zero_shift_right(x % (1 << 32), (32 - c)));
-	else:
+int64_t TweetNacl::L32(const int64_t x, const int64_t c, const bool is_32){
+	if(is_32){
+		return signed_shift_left(x, c) % ((uint64_t)1 << 32) | (zero_shift_right(x % ((uint64_t)1 << 32), (32 - c)));
+    }
+	else{
 		return signed_shift_left(x, c) | (zero_shift_right(x, (32 - c)));
+    }
+}
 
-func st32(x, j, u):
-	for i in range(4):
-		x[j+i] = u & 255
-		u = zero_shift_right(u, 8)
+void TweetNacl::st32(PackedByteArray &x, const int64_t j, int64_t u){
+	for(unsigned int i = 0; i < 4; i++){
+		x[j+i] = u & 255;
+		u = zero_shift_right(u, 8);
+    }
+}
 
-func add1305(h, c):
-	var u = 0;
-	for j in range(17):
+void add1305(PackedInt64Array &h, const PackedInt64Array &c){
+	int64_t u = 0;
+	for(unsigned int j = 0; j < 17; j++){
 		u = (u + ((h[j] + c[j]) | 0)) | 0;
 		h[j] = u & 255;
-		u = zero_shift_right(u, 8)
+		u = zero_shift_right(u, 8);
+    }
+}
 
-func check_array_types():
-	# Use to chect that arguments are PackedByteArray
-	pass
+bool check_array_types(){
+    return true;
+}
 
-func checkBoxLengths(pk, sk):
-	if (pk.size() != crypto_box_PUBLICKEYBYTES):
-		return false
-	if (sk.size() != crypto_box_SECRETKEYBYTES):
-		return false
-	return true
+bool TweetNacl::checkBoxLengths(const PackedByteArray &pk, const PackedByteArray &sk){
+	if (pk.size() != crypto_box_PUBLICKEYBYTES){
+		return false;
+    }
+	if (sk.size() != crypto_box_SECRETKEYBYTES){
+		return false;
+    }
+	return true;
+}
 
-func crypto_stream_salsa20_xor(c,cpos,m,mpos,b,n,k):
-	var z = PackedByteArray()
-	z.resize(16)
-	var x = PackedByteArray()
-	x.resize(64)
+void TweetNacl::crypto_stream_salsa20_xor(PackedByteArray &c, int64_t cpos, const PackedByteArray &m, int64_t mpos, int64_t b, const PackedByteArray &n, const PackedByteArray &k){
+	PackedByteArray x;
+    PackedByteArray z;
+	z.resize(16);
+	x.resize(64);
 
-	var u
-	if !b:
-		return 0
-	for i in range(16):
-		z[i] = 0
-	for i in range(8):
-		z[i] = n[i]
+	if(!b){
+		return;
+    }
+	for(unsigned int i = 0; i < 16; i++){
+		z[i] = 0;
+    }
+	for(unsigned int i = 0; i < 8; i++){
+		z[i] = n[i];
+    }
 
-	while b >= 64:
-		crypto_core_salsa20(x,z,k,sigma);
-		for i in range(64):
-			if m:
-				c[cpos + i] = m[mpos+i] ^ x[i]
-			else:
-				c[cpos + i] = 0 ^ x[i]
-		u = 1
-		for i in range(8, 16):
+	while(b >= 64){
+		crypto_core_salsa20(x, z, k, sigma());
+		for(unsigned int i = 0; i < 64; i++){
+			if(!m.is_empty()){
+				c[cpos + i] = m[mpos+i] ^ x[i];
+            }
+			else{
+				c[cpos + i] = 0 ^ x[i];
+            }
+        }
+		int32_t u = 1;
+		for(unsigned int i = 8; i < 16; i++){
 			u = u + (z[i] & 0xff) | 0;
 			z[i] = u & 0xff;
 			u = zero_shift_right(u, 8);
+        }
 		
-
 		b -= 64;
 		cpos += 64;
-		if m:
+		if(!m.is_empty()){
 			mpos += 64;
-	if (b > 0):
-		crypto_core_salsa20(x,z,k,sigma);
-		for i in range(b):
-			if m:
-				c[cpos+i] = m[mpos+i] ^ x[i]
-			else:
-				c[cpos+i] = 0 ^ x[i]
-	return 0;
+        }
+    }
+	if(b > 0){
+		crypto_core_salsa20(x ,z ,k , sigma());
+		for(unsigned int i = 0; i < b; i++){
+			if(!m.is_empty()){
+				c[cpos+i] = m[mpos+i] ^ x[i];
+            }
+			else{
+				c[cpos+i] = 0 ^ x[i];
+            }
+        }
+    }
+}
 
-func crypto_onetimeauth(out, outpos, m, mpos, n, k):
-	var s
-	var u
-	var x = PackedInt64Array()
-	x.resize(17)
-	var r = PackedInt64Array()
-	r.resize(17)
-	var h = PackedInt64Array()
-	h.resize(17)
-	var c = PackedInt64Array()
-	c.resize(17)
-	var g = PackedInt64Array()
-	g.resize(17)
-	for j in range(17):
-		r[j] = 0
-		h[j] = 0
-	for j in range(16):
-		r[j] = k[j]
+void TweetNacl::crypto_onetimeauth(PackedByteArray &out, int64_t outpos, const PackedByteArray &m, int64_t mpos, int64_t n, const PackedByteArray &k){
+	int64_t s;
+	int64_t u;
+	PackedInt64Array x;
+    PackedInt64Array r;
+    PackedInt64Array h;
+    PackedInt64Array c;
+    PackedInt64Array g;
+	x.resize(17);
+	r.resize(17);
+	h.resize(17);
+	c.resize(17);
+	g.resize(17);
+	for(unsigned int j = 0; j < 17; j++){
+		r[j] = 0;
+		h[j] = 0;
+    }
+
+	for(unsigned int j = 0; j < 16; j++){
+		r[j] = k[j];
+    }
+
 	r[3] &= 15;
 	r[4] &= 252;
 	r[7] &= 15;
@@ -370,218 +436,282 @@ func crypto_onetimeauth(out, outpos, m, mpos, n, k):
 	r[12] &= 252;
 	r[15] &= 15;
 
-	while n > 0:
-		for j in range(17):
-			c[j] = 0
-		for j in range(n):
-			if j >= 16:
-				break
-			c[j] = m[mpos + j]
-		c[min(16, n)] = 1
-		mpos += min(16, n)
-		n -= min(16, n)
-		add1305(h,c)
-		for i in range(17):
+	while(n > 0){
+		for(unsigned int j = 0; j < 17; j++){
+			c[j] = 0;
+        }
+		for(unsigned int j = 0; j < n; j++){
+			if(j >= 16){
+				break;
+            }
+			c[j] = m[mpos + j];
+        }
+		c[Math::min((int64_t)16, n)] = 1;
+		mpos += Math::min((int64_t)16, n);
+		n -= Math::min((int64_t)16, n);
+		add1305(h, c);
+		for(unsigned int i = 0; i < 17; i++){
 			x[i] = 0;
-			for j in range(17):
-				if (j <= i):
+			for(unsigned int j = 0; j < 17; j++){
+				if (j <= i){
 					x[i] = (x[i] + (h[j] * (r[i - j])) | 0) | 0;
-				else:
+                }
+				else{
 					x[i] = (x[i] + (h[j] * ((320 * r[i + 17 - j])|0)) | 0) | 0;
-		for i in range(17):
-			h[i] = x[i]
+                }
+            }
+        }
+		for(unsigned int i = 0; i < 17; i++){
+			h[i] = x[i];
+        }
 		u = 0;
-		for j in range(16):
+		for(unsigned int j = 0; j < 16; j++){
 			u = (u + h[j]) | 0;
 			h[j] = u & 255;
-			u = zero_shift_right(u % (1 << 32), 8);
+			u = zero_shift_right(u % ((uint64_t)1 << 32), 8);
+        }
 
 		u = (u + h[16]) | 0; h[16] = u & 3;
-		u = (5 * zero_shift_right(u % (1 << 32), 2)) | 0;
-		for j in range(16):
+		u = (5 * zero_shift_right(u % ((uint64_t)1 << 32), 2)) | 0;
+		for(unsigned int j = 0; j < 16; j++){
 			u = (u + h[j]) | 0;
 			h[j] = u & 255;
-			u = zero_shift_right(u % (1 << 32), 8);
+			u = zero_shift_right(u % ((uint64_t)1 << 32), 8);
+        }
 
 		u = (u + h[16]) | 0; h[16] = u;
+    }
 
-	for j in range(17):
+	for(unsigned int j = 0; j < 17; j++){
 		g[j] = h[j];
-	add1305(h, minusp);
-	s = (-zero_shift_right(h[16] % (1 << 32), 7) | 0);
-	for j in range(17):
-		h[j] ^= s & (g[j] ^ h[j]);
+    }
 
-	for j in range(16):
+	add1305(h, minusp());
+	s = (-zero_shift_right(h[16] % ((uint64_t)1 << 32), 7) | 0);
+	for(unsigned int j = 0; j < 17; j++){
+		h[j] ^= s & (g[j] ^ h[j]);
+    }
+
+	for(unsigned int j = 0; j < 16; j++){
 		c[j] = k[j + 16];
+    }
 	c[16] = 0;
 	add1305(h,c);
-	for j in range(16):
+
+	for(unsigned int j = 0; j < 16; j++){
 		out[outpos+j] = h[j];
-	return 0;
+    }
+}
 
-func core(out, inp, k, c, h):
-	var w = PackedInt64Array()
-	w.resize(16)
-	var x = PackedInt64Array()
-	x.resize(16)
-	var y = PackedInt64Array()
-	y.resize(16)
-	var t = PackedInt64Array()
-	t.resize(4)
+void TweetNacl::core(PackedByteArray &out, const PackedByteArray inp, const PackedByteArray &k, const PackedByteArray &c, const bool h){
+	PackedInt64Array w;
+    PackedInt64Array x;
+    PackedInt64Array y;
+    PackedInt64Array t;
 
-	for i in range(4):
-		x[5 * i] = ld32(c, 4 * i) % (1 << 32);
-		x[1 + i] = ld32(k, 4 * i) % (1 << 32);
-		x[6 + i] = ld32(inp, 4 * i) % (1 << 32);
-		x[11 + i] = ld32(k, 16 + 4 * i) % (1 << 32);
+	w.resize(16);
+	x.resize(16);
+	y.resize(16);
+	t.resize(4);
 
-	for i in range(16):
-		y[i] = x[i]
+	for(unsigned int i = 0; i < 4; i++){
+		x[5 * i] = ld32(c, 4 * i) % ((uint64_t)1 << 32);
+		x[1 + i] = ld32(k, 4 * i) % ((uint64_t)1 << 32);
+		x[6 + i] = ld32(inp, 4 * i) % ((uint64_t)1 << 32);
+		x[11 + i] = ld32(k, 16 + 4 * i) % ((uint64_t)1 << 32);
+    }
 
-	for i in range(20):
-		for j in range(4):
-			for m in range(4):
-				t[m] = x[(5 * j + 4 * m) % 16]
-			t[1] = t[1] ^ (L32((t[0] + t[3]), 7, true) % (1 << 32))
-			t[2] = t[2] ^ (L32((t[1] + t[0]), 9, true) % (1 << 32))
-			t[3] = t[3] ^ (L32((t[2] + t[1]), 13, true) % (1 << 32))
-			t[0] = t[0] ^ (L32((t[3] + t[2]), 18, true) % (1 << 32))
-			for m in range(4):
-				w[4 * j + (j + m) % 4] = t[m]
-		for m in range(16):
+	for(unsigned int i = 0; i < 16; i++){
+		y[i] = x[i];
+    }
+
+	for(unsigned int i = 0; i < 20; i++){
+		for(unsigned int j = 0; j < 4; j++){
+			for(unsigned int m = 0; m < 4; m++){
+				t[m] = x[(5 * j + 4 * m) % 16];
+            }
+			t[1] = t[1] ^ (L32((t[0] + t[3]), 7, true) % ((uint64_t)1 << 32));
+			t[2] = t[2] ^ (L32((t[1] + t[0]), 9, true) % ((uint64_t)1 << 32));
+			t[3] = t[3] ^ (L32((t[2] + t[1]), 13, true) % ((uint64_t)1 << 32));
+			t[0] = t[0] ^ (L32((t[3] + t[2]), 18, true) % ((uint64_t)1 << 32));
+			for(unsigned int m = 0; m < 4; m++){
+				w[4 * j + (j + m) % 4] = t[m];
+            }
+        }
+		for(unsigned int m = 0; m < 16; m++){
 			x[m] = w[m];
-	if h:
-		for i in range(16):
-			x[i] = (x[i] + y[i]) | 0
-		for i in range(4):
+        }
+    }
+	if(h){
+		for(unsigned int i = 0; i < 16; i++){
+			x[i] = (x[i] + y[i]) | 0;
+        }
+		for(unsigned int i = 0; i < 4; i++){
 			x[5 * i] = (x[5 * i] - ld32(c, 4 * i)) | 0;
 			x[6 + i] = (x[6 + i] - ld32(inp, 4 * i)) | 0;
-		for i in range(4):
+        }
+		for(unsigned int i = 0; i < 4; i++){
 			st32(out,4*i,x[5*i]);
 			st32(out,16+4*i,x[6+i]);
-	else:
-		for i in range(16):
+        }
+    }
+	else{
+		for(unsigned int i = 0; i < 16; i++){
 			st32(out, 4 * i, (x[i] + y[i]) | 0);
+        }
+    }
+}
 
-func crypto_core_salsa20(out, inp, k, c):
-	core(out, inp, k, c, false)
-	return 0
+void TweetNacl::crypto_core_salsa20(PackedByteArray &out, const PackedByteArray &inp, const PackedByteArray &k, const PackedByteArray &c){
+	core(out, inp, k, c, false);
+}
 
-func crypto_core_hsalsa20(out,inp,k,c):
-	core(out,inp,k,c,true)
-	return 0
+void TweetNacl::crypto_core_hsalsa20(PackedByteArray &out, const PackedByteArray &inp, const PackedByteArray &k, const PackedByteArray &c){
+	core(out,inp,k,c,true);
+}
 
-func crypto_stream_xor(c,cpos,m,mpos,d,n,k):
-	var s = PackedByteArray()
-	s.resize(32)
-	crypto_core_hsalsa20(s,n,k,sigma);
-	return crypto_stream_salsa20_xor(c,cpos,m,mpos,d,n.slice(16),s);
+void TweetNacl::crypto_stream_xor(PackedByteArray &c, const int64_t cpos, const PackedByteArray &m, const int64_t mpos, const int64_t d, const PackedByteArray &n, const PackedByteArray &k){
+	PackedByteArray s;
+	s.resize(32);
+	crypto_core_hsalsa20(s, n, k, sigma());
+	crypto_stream_salsa20_xor(c, cpos, m, mpos, d, n.slice(16), s);
+}
 
-func crypto_box_beforenm(k, y, x):
-	var s = PackedByteArray();
-	s.resize(32)
+void TweetNacl::crypto_box_beforenm(PackedByteArray &k, const PackedByteArray &y, const PackedByteArray &x){
+	PackedByteArray s;
+	s.resize(32);
 	crypto_scalarmult(s, x, y);
-	print("s is: ", s)
-	return crypto_core_hsalsa20(k, _0, s, sigma);
 
-func crypto_secretbox(c, m, d, n, k):
-	if (d < 32):
-		return -1;
+	return crypto_core_hsalsa20(k, _0(), s, sigma());
+}
+
+bool TweetNacl::crypto_secretbox(PackedByteArray &c, const PackedByteArray &m, int64_t d, const PackedByteArray &n, const PackedByteArray &k){
+	if (d < 32){
+		return false;
+    }
 	crypto_stream_xor(c, 0, m, 0, d, n, k);
 	crypto_onetimeauth(c, 16, c, 32, d - 32, c);
-	for i in range(16):
-		c[i] = 0
-	return 0;
+	for(unsigned int i = 0; i < 16; i++){
+		c[i] = 0;
+    }
+	return true;
+}
 
-func box_before(publicKey, secretKey):
-	#checkArrayTypes(publicKey, secretKey);
-	checkBoxLengths(publicKey, secretKey);
-	var k = PackedByteArray()
-	k.resize(crypto_box_BEFORENMBYTES)
+PackedByteArray TweetNacl::box_before(const PackedByteArray &publicKey, const PackedByteArray &secretKey){
+	//checkArrayTypes(publicKey, secretKey);
+	//checkBoxLengths(publicKey, secretKey);
+	PackedByteArray k;
+	k.resize(crypto_box_BEFORENMBYTES);
 	crypto_box_beforenm(k, publicKey, secretKey);
 	return k;
+}
 	
-func checkLengths(k, n):
-	if (k.size() != crypto_secretbox_KEYBYTES):
-		return false
-	if (n.size() != crypto_secretbox_NONCEBYTES):
-		return false
+bool TweetNacl::checkLengths(const PackedByteArray &k, const PackedByteArray &n){
+	if (k.size() != crypto_secretbox_KEYBYTES){
+		return false;
+    }
+	if (n.size() != crypto_secretbox_NONCEBYTES){
+		return false;
+    }
 
-func secretbox(msg, nonce, key):
-	#checkArrayTypes(msg, nonce, key);
-	#
-	checkLengths(key, nonce);
-	var m = PackedByteArray();
-	m.resize(crypto_secretbox_ZEROBYTES + msg.size())
-	var c = PackedByteArray();
-	c.resize(m.size())
-	for i in range(msg.size()):
+    return true;
+}
+
+PackedByteArray TweetNacl::secretbox(const PackedByteArray &msg, const PackedByteArray &nonce, const PackedByteArray &key){
+	//checkArrayTypes(msg, nonce, key);
+	//checkLengths(key, nonce);
+	PackedByteArray m;
+    PackedByteArray c;
+	m.resize(crypto_secretbox_ZEROBYTES + msg.size());
+	c.resize(m.size());
+	for(unsigned int i = 0; i < msg.size(); i++){
 		m[i + crypto_secretbox_ZEROBYTES] = msg[i];
+    }
 	crypto_secretbox(c, m, m.size(), nonce, key);
 	return c.slice(crypto_secretbox_BOXZEROBYTES);
+}
 
-func crypto_stream_salsa20(c,cpos,d,n,k):
-	return crypto_stream_salsa20_xor(c,cpos,null,0,d,n,k);
+void TweetNacl::crypto_stream_salsa20(PackedByteArray &c, const int64_t cpos, const int64_t d,const PackedByteArray &n, const PackedByteArray &k){
+	return crypto_stream_salsa20_xor(c, cpos, PackedByteArray(), 0, d, n, k);
+}
 
-func crypto_stream(c,cpos,d,n,k):
-	var s = PackedByteArray()
-	s.resize(32)
-	crypto_core_hsalsa20(s,n,k,sigma);
+void TweetNacl::crypto_stream(PackedByteArray &c, const int64_t cpos, const int64_t d, const PackedByteArray &n, const PackedByteArray &k){
+	PackedByteArray s;
+	s.resize(32);
+	crypto_core_hsalsa20(s, n, k, sigma());
 	return crypto_stream_salsa20(c,cpos,d,n.slice(16),s);
+}
 
-func vn(x, xi, y, yi, n):
-	var d = 0;
-	for i in range(n):
+int64_t vn(const PackedByteArray &x, int64_t xi, const PackedByteArray &y, const int64_t yi, const int64_t n){
+	int64_t d = 0;
+	for(unsigned int i = 0; i < n; i++){
 		d |= x[xi+i]^y[yi+i];
+    }
 	return (1 & zero_shift_right((d - 1), 8)) - 1;
+}
 
-func crypto_verify_16(x, xi, y, yi):
+int64_t crypto_verify_16(const PackedByteArray &x, int64_t xi, const PackedByteArray &y, const int64_t yi){
 	return vn(x,xi,y,yi,16);
+}
 
-func crypto_onetimeauth_verify(h, hpos, m, mpos, n, k):
-	var x = PackedByteArray()
-	x.resize(16)
-	crypto_onetimeauth(x,0,m,mpos,n,k);
-	return crypto_verify_16(h,hpos,x,0);
+int64_t TweetNacl::crypto_onetimeauth_verify(const PackedByteArray &h, const int64_t hpos, const PackedByteArray &m, const int64_t mpos, const int64_t n, const PackedByteArray &k){
+	PackedByteArray x;
+	x.resize(16);
+	crypto_onetimeauth(x, 0, m, mpos, n, k);
+	return crypto_verify_16(h, hpos, x, 0);
+}
 
-func crypto_secretbox_open(m,c,d,n,k):
-	var x = PackedByteArray()
-	x.resize(32)
-	if (d < 32):
-		return -1;
-	crypto_stream(x,0,32,n,k);
-	if (crypto_onetimeauth_verify(c, 16,c, 32,d - 32,x) != 0):
-		return -1;
-	crypto_stream_xor(m,0,c,0,d,n,k);
-	for i in range(32):
+bool TweetNacl::crypto_secretbox_open(PackedByteArray &m, const PackedByteArray &c, int64_t d, const PackedByteArray &n, const PackedByteArray &k){
+	PackedByteArray x;
+	x.resize(32);
+	if (d < 32){
+		return false;
+    }
+	crypto_stream(x, 0, 32, n, k);
+	if (crypto_onetimeauth_verify(c, 16, c, 32, d - 32, x) != 0){
+		return false;
+    }
+	crypto_stream_xor(m, 0, c, 0, d, n, k);
+	for(unsigned int i = 0; i < 32; i++){
 		m[i] = 0;
-	return 0;
+    }
 
-func secretbox_open(box, nonce, key):
+	return true;
+}
+
+PackedByteArray TweetNacl::secretbox_open(const PackedByteArray &box, const PackedByteArray &nonce, const PackedByteArray &key){
 	checkLengths(key, nonce);
-	var c = PackedByteArray()
-	c.resize(crypto_secretbox_BOXZEROBYTES + box.size())
-	var m = PackedByteArray()
-	m.resize(c.size())
-	for i in range(box.size()):
+	PackedByteArray c;
+	c.resize(crypto_secretbox_BOXZEROBYTES + box.size());
+	PackedByteArray m;
+	m.resize(c.size());
+	for(unsigned int i = 0; i < box.size(); i++){
 		c[i+crypto_secretbox_BOXZEROBYTES] = box[i];
-	if (c.size() < 32):
-		return null;
-	if (crypto_secretbox_open(m, c, c.size(), nonce, key) != 0):
-		return null;
+    }
+	if(c.size() < 32){
+        std::cout << "hell" << std::endl;
+		return PackedByteArray();
+    }
+	if(!crypto_secretbox_open(m, c, c.size(), nonce, key)){
+        std::cout << "hellin hell" << std::endl;
+		return PackedByteArray();
+    }
 	return m.slice(crypto_secretbox_ZEROBYTES);
+}
 
-func box(msg, nonce, publicKey, secretKey):
-	var k = box_before(publicKey, secretKey);
+PackedByteArray TweetNacl::box(const PackedByteArray &msg, const PackedByteArray &nonce, const PackedByteArray &publicKey, const PackedByteArray &secretKey){
+	PackedByteArray k = box_before(publicKey, secretKey);
 	return secretbox(msg, nonce, k);
+}
 
-func box_open(msg, nonce, publicKey, secretKey):
-	var k = box_before(publicKey, secretKey);
+PackedByteArray TweetNacl::box_open(const PackedByteArray &msg, const PackedByteArray &nonce, const PackedByteArray &publicKey, const PackedByteArray &secretKey){
+	PackedByteArray k = box_before(publicKey, secretKey);
 	return secretbox_open(msg, nonce, k);
+}
 
 void TweetNacl::crypto_scalarmult(PackedByteArray &q, const PackedByteArray &n, const PackedByteArray &p){
-	PackedByteArray z;
+	std::cout << "AAAAAAAAAAAAaSTART" << std::endl;
+    PackedByteArray z;
 	z.resize(32);
 	PackedInt64Array x;
 	x.resize(80);
@@ -592,13 +722,18 @@ void TweetNacl::crypto_scalarmult(PackedByteArray &q, const PackedByteArray &n, 
 	PackedInt64Array d = gf0();
 	PackedInt64Array e = gf0();
 	PackedInt64Array f = gf0();
+    std::cout << "AAAAAAAAAAAAa" << std::endl;
 	for(unsigned int i = 0; i < 31; i++){
+        std::cout << "LOOP " << i << std::endl;
 		z[i] = n[i];
     }
-	
+	std::cout << "BBBBBBBBBBBBBBBBB" << std::endl;
 	z[31] = (n[31] & 127) | 64;
+    std::cout << "BBBBBBBBBBBBBBBBB" << std::endl;
 	z[0] &= 248;
+    std::cout << "BBBBBBBBBBBBBBBBB" << std::endl;
 	unpack25519(x,p);
+    std::cout << "AAAAAAAAAAAAa" << std::endl;
 	for(unsigned int i = 0; i < 16; i++){
 		b[i] = x[i];
 		d[i] = 0;
@@ -608,6 +743,7 @@ void TweetNacl::crypto_scalarmult(PackedByteArray &q, const PackedByteArray &n, 
 
 	a[0] = 1;
 	d[0] = 1;
+    std::cout << "AAAAAAAAAAAAa" << std::endl;
 	for(int i = 254; i > -1; i--){
 		r = (zero_shift_right(z[zero_shift_right(i, 3)], (i & 7))) & 1;
 		sel25519(a,b,r);
@@ -624,7 +760,7 @@ void TweetNacl::crypto_scalarmult(PackedByteArray &q, const PackedByteArray &n, 
 		Z(a,a,c);
 		S(b,a);
 		Z(c,d,f);
-		M(a,c,_121665);
+		M(a,c,_121665());
 		A(a,a,d);
 		M(c,c,a);
 		M(a,d,f);
@@ -634,6 +770,7 @@ void TweetNacl::crypto_scalarmult(PackedByteArray &q, const PackedByteArray &n, 
 		sel25519(c,d,r);
     }
 
+    std::cout << "AAAAAAAAAAAAa" << std::endl;
 	for(unsigned int i = 0; i < 16; i++){
 		x[i+16] = a[i];
 		x[i+32] = c[i];
@@ -646,6 +783,7 @@ void TweetNacl::crypto_scalarmult(PackedByteArray &q, const PackedByteArray &n, 
 	inv25519(x32, x32);
 	M(x16, x16, x32);
 	pack25519(q, x16);
+    std::cout << "AAAAAAAAAAAAaSTOPP" << std::endl;
 }
 
 void randombytes(PackedByteArray &x, unsigned int size){
@@ -667,16 +805,18 @@ void TweetNacl::crypto_scalarmult_base(PackedByteArray &q, const PackedByteArray
 	return crypto_scalarmult(q, n, _9());
 }
 
-TypedArray<PackedByteArray> TweetNacl::box_keypair(){
+Array TweetNacl::box_keypair(){
 	PackedByteArray *pk = memnew(PackedByteArray);
 	pk->resize(crypto_box_PUBLICKEYBYTES);
 	PackedByteArray *sk = memnew(PackedByteArray);
 	sk->resize(crypto_box_SECRETKEYBYTES);
 	crypto_box_keypair(*pk, *sk);
 
-    TypedArray<PackedByteArray> result;
-    result.append(sk);
-    result.append(pk);
+    Array result;
+    result.append(*sk);
+    result.append(*pk);
 
 	return result;
+}
+
 }
