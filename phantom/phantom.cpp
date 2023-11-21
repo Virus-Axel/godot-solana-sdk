@@ -3,6 +3,9 @@
 #include <godot_cpp/classes/java_script_bridge.hpp>
 #include <solana_sdk.hpp>
 #include <godot_cpp/classes/thread.hpp>
+#include <godot_cpp/classes/os.hpp>
+
+#include "tweetnacl.hpp"
 
 #ifdef WEB_ENABLED
 #include <emscripten.h>
@@ -124,6 +127,11 @@ void PhantomController::poll_connection(){
 }
 
 
+void PhantomController::_deeplink_return_callback(int result, int response_code, PackedStringArray headers, PackedByteArray body){
+    remove_child(connect_child);
+    std::cout << "oh wow" << std::endl;
+}
+
 void PhantomController::poll_message_signing(){
   #ifdef WEB_ENABLED
   int phantom_signing_status = emscripten_run_script_int("Module.phantom_status");
@@ -166,15 +174,36 @@ void PhantomController::_bind_methods(){
   ClassDB::add_signal("PhantomController", MethodInfo("message_signed", PropertyInfo(Variant::PACKED_BYTE_ARRAY, "signature")));
   ClassDB::add_signal("PhantomController", MethodInfo("signing_error"));
   ClassDB::bind_method(D_METHOD("connect_phantom"), &PhantomController::connect_phantom);
+  ClassDB::bind_method(D_METHOD("deeplink_connect", "app_name", "scheme"), &PhantomController::deeplink_connect);
   ClassDB::bind_method(D_METHOD("sign_message", "serialized_message"), &PhantomController::sign_message);
   ClassDB::bind_method(D_METHOD("get_connected_key"), &PhantomController::get_connected_key);
+  ClassDB::bind_method(D_METHOD("_deeplink_return_callback", "result", "response_code", "headers", "body"), &PhantomController::_deeplink_return_callback);
 }
 
 PhantomController::PhantomController(){
 }
 
-void PhantomController::deeplink_connect(){
-  
+void PhantomController::deeplink_connect(const String &app_name, const String& scheme){
+    HTTPRequest request;
+    //add_child(&request);
+    connect_child = &request;
+    //request.connect("request_completed", Callable(this, "_deeplink_return_callback"));
+
+    Array format_strings;
+    Array keypair = TweetNacl::box_keypair();
+
+    format_strings.append(app_name);
+    format_strings.append(scheme);
+    format_strings.append(SolanaSDK::bs58_encode(keypair[1]));
+    format_strings.append("testnet");
+
+    const String PHANTOM_STRING = String("https://phantom.app/ul/v1/connect?app_url=https%3A%2F%2F{0}%2F&dapp_encryption_public_key={2}&redirect_link={1}%3A%2F%2F{0}%2F&cluster={3}").format(
+        format_strings
+    );
+
+    std::cout << PHANTOM_STRING.utf8() << std::endl;
+
+    OS::get_singleton()->shell_open(PHANTOM_STRING);
 }
 
 void PhantomController::connect_phantom(){

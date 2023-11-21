@@ -689,11 +689,9 @@ PackedByteArray TweetNacl::secretbox_open(const PackedByteArray &box, const Pack
 		c[i+crypto_secretbox_BOXZEROBYTES] = box[i];
     }
 	if(c.size() < 32){
-        std::cout << "hell" << std::endl;
 		return PackedByteArray();
     }
 	if(!crypto_secretbox_open(m, c, c.size(), nonce, key)){
-        std::cout << "hellin hell" << std::endl;
 		return PackedByteArray();
     }
 	return m.slice(crypto_secretbox_ZEROBYTES);
@@ -710,7 +708,6 @@ PackedByteArray TweetNacl::box_open(const PackedByteArray &msg, const PackedByte
 }
 
 void TweetNacl::crypto_scalarmult(PackedByteArray &q, const PackedByteArray &n, const PackedByteArray &p){
-	std::cout << "AAAAAAAAAAAAaSTART" << std::endl;
     PackedByteArray z;
 	z.resize(32);
 	PackedInt64Array x;
@@ -722,18 +719,12 @@ void TweetNacl::crypto_scalarmult(PackedByteArray &q, const PackedByteArray &n, 
 	PackedInt64Array d = gf0();
 	PackedInt64Array e = gf0();
 	PackedInt64Array f = gf0();
-    std::cout << "AAAAAAAAAAAAa" << std::endl;
 	for(unsigned int i = 0; i < 31; i++){
-        std::cout << "LOOP " << i << std::endl;
 		z[i] = n[i];
     }
-	std::cout << "BBBBBBBBBBBBBBBBB" << std::endl;
 	z[31] = (n[31] & 127) | 64;
-    std::cout << "BBBBBBBBBBBBBBBBB" << std::endl;
 	z[0] &= 248;
-    std::cout << "BBBBBBBBBBBBBBBBB" << std::endl;
 	unpack25519(x,p);
-    std::cout << "AAAAAAAAAAAAa" << std::endl;
 	for(unsigned int i = 0; i < 16; i++){
 		b[i] = x[i];
 		d[i] = 0;
@@ -743,7 +734,6 @@ void TweetNacl::crypto_scalarmult(PackedByteArray &q, const PackedByteArray &n, 
 
 	a[0] = 1;
 	d[0] = 1;
-    std::cout << "AAAAAAAAAAAAa" << std::endl;
 	for(int i = 254; i > -1; i--){
 		r = (zero_shift_right(z[zero_shift_right(i, 3)], (i & 7))) & 1;
 		sel25519(a,b,r);
@@ -770,7 +760,6 @@ void TweetNacl::crypto_scalarmult(PackedByteArray &q, const PackedByteArray &n, 
 		sel25519(c,d,r);
     }
 
-    std::cout << "AAAAAAAAAAAAa" << std::endl;
 	for(unsigned int i = 0; i < 16; i++){
 		x[i+16] = a[i];
 		x[i+32] = c[i];
@@ -783,7 +772,6 @@ void TweetNacl::crypto_scalarmult(PackedByteArray &q, const PackedByteArray &n, 
 	inv25519(x32, x32);
 	M(x16, x16, x32);
 	pack25519(q, x16);
-    std::cout << "AAAAAAAAAAAAaSTOPP" << std::endl;
 }
 
 void randombytes(PackedByteArray &x, unsigned int size){

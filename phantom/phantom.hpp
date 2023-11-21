@@ -3,6 +3,7 @@
 
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/wrapped.hpp>
+#include <godot_cpp/classes/http_request.hpp>
 
 namespace godot{
 class PhantomController : public Node{
@@ -18,16 +19,19 @@ private:
 
     PackedByteArray connected_key;
     State phantom_state = State::IDLE;
+    HTTPRequest *connect_child = nullptr;
 
     void clear_state();
     void store_encoded_message(const PackedByteArray &store_serialized_message);
+
+    void _deeplink_return_callback(int result, int response_code, PackedStringArray headers, PackedByteArray body);
 
 protected:
     static void _bind_methods();
 public:
     void _process(double delta) override;
     PhantomController();
-    void deeplink_connect();
+    void deeplink_connect(const String& app_name, const String& scheme);
     void connect_phantom();
     bool is_connected();
     bool is_idle();
