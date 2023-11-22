@@ -4,7 +4,8 @@ A GDExtention with bindings to the solana-sdk. This plugin provides the possibil
 # Version history
 | SDK         | Godot     | Platforms |
 |--------------|-----------|------------|
-| Unstable | 4.1      | Windows, Linux, Web, Android, IOS, MacOS        |
+| Unstable | 4.1.2      | Windows, Linux, Web, Android, IOS, MacOS        |
+| v0.3.0 | 4.1      | Windows, Linux, Web, Android, IOS, MacOS        |
 | v0.2      | 4.0  | Windows, Linux, Web, Android, IOS, MacOS       |
 | v0.1      | 4.0  | Windows, Linux, Web, Android, IOS, MacOS       |
 
