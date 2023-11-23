@@ -13,12 +13,18 @@ const std::string sign_and_send_script = "\
   async function foo() {\
     \
     const { solana } = window;\
+    try{\
     Module.message_signature = (await solana.request({\
       method: 'signTransaction',\
       params: {\
         message: Module.encoded_message,\
       }\
     })).signatures[0];\
+    }\
+    catch (err){\
+      Module.phantom_status = -1;\
+      return;\
+    }\
     Module.phantom_status = 1;\
   }\
   \

@@ -30,6 +30,7 @@ private:
 
     void _get_property_list(List<PropertyInfo> *p_list) const;
     void _signer_signed(PackedByteArray signature);
+    void _signer_failed();
 
     bool is_phantom_payer() const;
     void create_message();

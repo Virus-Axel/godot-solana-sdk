@@ -23,6 +23,7 @@ using internal::gdextension_interface_print_warning;
 
 void Transaction::_bind_methods() {
     ClassDB::add_signal("Transaction", MethodInfo("fully_signed"));
+    ClassDB::add_signal("Transaction", MethodInfo("sign_error", PropertyInfo(Variant::INT, "signer_index")));
     ClassDB::add_signal("Transaction", MethodInfo("transaction_response", PropertyInfo(Variant::DICTIONARY, "result")));
 
     ClassDB::bind_method(D_METHOD("get_instructions"), &Transaction::get_instructions);
@@ -33,6 +34,7 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_signers", "p_value"), &Transaction::set_signers);
 
     ClassDB::bind_method(D_METHOD("_signer_signed", "signature"), &Transaction::_signer_signed);
+    ClassDB::bind_method(D_METHOD("_signer_failed"), &Transaction::_signer_failed);
 
     ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
     ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
@@ -51,6 +53,7 @@ void Transaction::_bind_methods() {
 void Transaction::_signer_signed(PackedByteArray signature){
     PhantomController *controller = Object::cast_to<PhantomController>(payer);
     controller->disconnect("message_signed", Callable(this, "_signer_signed"));
+    controller->disconnect("signing_error", Callable(this, "_signer_failed"));
 
     const uint32_t index = controller->get_active_signer_index();
 
@@ -58,6 +61,14 @@ void Transaction::_signer_signed(PackedByteArray signature){
     ready_signature_amount++;
 
     check_fully_signed();
+}
+
+void Transaction::_signer_failed(){
+    PhantomController *controller = Object::cast_to<PhantomController>(payer);
+    controller->disconnect("message_signed", Callable(this, "_signer_signed"));
+    controller->disconnect("signing_error", Callable(this, "_signer_failed"));
+
+    emit_signal("sign_error", controller->get_active_signer_index());
 }
 
 bool Transaction::is_phantom_payer() const{
@@ -113,6 +124,7 @@ void Transaction::sign_at_index(const uint32_t index){
         PhantomController* controller = Object::cast_to<PhantomController>(signers[index]);
 
         controller->connect("message_signed", Callable(this, "_signer_signed"));
+        controller->connect("signing_error", Callable(this, "_signer_failed"));
         controller->sign_message(serialize(), index);
     }
 }
