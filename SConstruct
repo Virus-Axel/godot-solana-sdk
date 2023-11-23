@@ -8,6 +8,11 @@ LIBRARY_NAME = "godot-solana-sdk"
 IPHONE_SDK_VERSION = 17.0
 IOS_OSXCROSS_TRIPPLE = 23
 
+def set_tmp_dir(platform, target):
+    dir_name = f".godot/build_files/{platform}/{target}/"
+    Execute(Mkdir(dir_name))
+    CacheDir(dir_name)
+
 def image_id_from_repo_name(repository_name):
     return os.popen('podman images --format {{.ID}} --filter=reference=' + repository_name).read()
 
@@ -146,6 +151,7 @@ if env.GetOption('container_build'):
     exit(0)
 
 else:
+    set_tmp_dir(env["platform"], env["target"])
     if env["platform"] == "ios":
 
         # Add linker settings for ios build.
