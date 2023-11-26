@@ -20,6 +20,8 @@ bool Pubkey::are_bytes_curve_point() const{
 }
 
 void Pubkey::_bind_methods() {
+    ClassDB::bind_static_method("Pubkey", D_METHOD("create_with_seed", "basePubkey", "seed", "owner_pubkey"), &Pubkey::create_with_seed);
+
     ClassDB::bind_method(D_METHOD("get_value"), &Pubkey::get_value);
     ClassDB::bind_method(D_METHOD("set_value", "p_value"), &Pubkey::set_value);
     ClassDB::bind_method(D_METHOD("get_bytes"), &Pubkey::get_bytes);
@@ -40,7 +42,6 @@ void Pubkey::_bind_methods() {
     
     ClassDB::bind_method(D_METHOD("create_from_string", "from"), &Pubkey::create_from_string);
     ClassDB::bind_method(D_METHOD("create_program_address", "seeds", "program_id"), &Pubkey::create_program_address);
-    ClassDB::bind_method(D_METHOD("create_with_seed", "basePubkey", "seed", "owner_pubkey"), &Pubkey::create_with_seed);
     ClassDB::bind_method(D_METHOD("get_associated_token_address", "wallet_pubkey", "token_mint_pubkey"), &Pubkey::get_associated_token_address);
 
 }
@@ -210,27 +211,29 @@ void Pubkey::create_from_array(const unsigned char* data){
     }
 }
 
-void Pubkey::create_with_seed(Variant basePubkey, String seed, Variant owner_pubkey){
-
-    Object *base_pubkey_cast = basePubkey;
-    Pubkey *base_pubkey_type = Object::cast_to<Pubkey>(base_pubkey_cast);
-
-    Object *owner_pubkey_cast = basePubkey;
-    Pubkey *owner_pubkey_type = Object::cast_to<Pubkey>(owner_pubkey_cast);
+Variant Pubkey::create_with_seed(Variant basePubkey, String seed, Variant owner_pubkey){
+    Pubkey *res = memnew(Pubkey);
  
     SHA256 hasher;
 
-    hasher.update(base_pubkey_type->get_bytes().ptr(), base_pubkey_type->get_bytes().size());
+    const Pubkey base = Pubkey(basePubkey);
+    const Pubkey owner = Pubkey(owner_pubkey);
+
+    hasher.update(base.get_bytes().ptr(), base.get_bytes().size());
     hasher.update(seed.to_utf8_buffer().ptr(), seed.length());
-    hasher.update(owner_pubkey_type->get_bytes().ptr(), owner_pubkey_type->get_bytes().size());
+    hasher.update(owner.get_bytes().ptr(), owner.get_bytes().size());
 
     uint8_t *sha256_hash = hasher.digest();
 
-    bytes.resize(PUBKEY_BYTES);
+    res->bytes.resize(PUBKEY_BYTES);
     for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
-        bytes[i] = sha256_hash[i];
+        res->bytes[i] = sha256_hash[i];
     }
+    res->set_bytes(res->get_bytes());
+
     delete[] sha256_hash;
+
+    return res;
 }
 
 bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant &program_id){

@@ -31,6 +31,8 @@ public:
     void set_pubkey(const Variant &p_value);
     Variant get_pubkey() const;
 
+    Variant get_signer() const;
+
     void set_is_signer(const bool p_value);
     bool get_is_signer() const;
 

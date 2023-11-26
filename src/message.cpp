@@ -131,7 +131,7 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
             
             if(account_meta->get_is_signer()){
                 // Actually a keypair.
-                merge_signer(account_meta->get_pubkey());
+                merge_signer(account_meta->get_signer());
             }
 
             merge_account_meta(*account_meta);

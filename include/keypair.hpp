@@ -43,7 +43,7 @@ public:
     String get_public_value();
 
     void set_public_bytes(const PackedByteArray& p_value);
-    PackedByteArray get_public_bytes();
+    PackedByteArray get_public_bytes() const;
 
     void set_private_value(const String& p_value);
     String get_private_value();

@@ -187,7 +187,7 @@ void Keypair::set_public_bytes(const PackedByteArray& p_value){
         internal::gdextension_interface_print_warning("Public key must be 32 bytes", "_set", "pubkey.cpp", 147, false);
     }
 }
-PackedByteArray Keypair::get_public_bytes(){
+PackedByteArray Keypair::get_public_bytes() const{
     return public_bytes;
 }
 

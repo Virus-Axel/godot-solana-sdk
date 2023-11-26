@@ -10,7 +10,7 @@ class Pubkey : public Resource {
 
 private:
     // Number of bytes in a pubkey
-    const unsigned int PUBKEY_BYTES = 32;
+    static const unsigned int PUBKEY_BYTES = 32;
     // maximum length of derived `Pubkey` seed
     const unsigned int MAX_SEED_LEN = 32;
     // Maximum number of seeds
@@ -70,7 +70,7 @@ public:
 
     void create_from_string(const String& from);
     void create_from_array(const unsigned char* data);
-    void create_with_seed(Variant basePubkey, String seed, Variant owner_pubkey);
+    static Variant create_with_seed(Variant basePubkey, String seed, Variant owner_pubkey);
     bool create_program_address(const PackedStringArray seeds, const Variant &program_id);
     bool get_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address);
 

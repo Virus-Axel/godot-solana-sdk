@@ -58,7 +58,21 @@ void AccountMeta::set_pubkey(const Variant &p_value) {
 }
 
 Variant AccountMeta::get_pubkey() const {
-	return key;
+    //return key.duplicate(true);
+	return Variant(memnew(Pubkey(key)));
+}
+
+Variant AccountMeta::get_signer() const{
+    return key.duplicate(true);
+    if(key.has_method("get_public_bytes")){
+        Keypair *res = memnew(Keypair());
+        res->set_public_bytes(Object::cast_to<Keypair>(key)->get_public_bytes());
+
+        return res;
+    }
+    else{
+        return key;
+    }
 }
 
 void AccountMeta::set_is_signer(const bool p_value) {
@@ -81,8 +95,8 @@ AccountMeta::AccountMeta() : Resource(){
 }
 
 AccountMeta::AccountMeta(const Variant& pid, bool signer, bool writeable){
-    const Pubkey *temp = memnew(Pubkey(pid));
-    this->key = temp;
+    //const Pubkey *temp = memnew(Pubkey(pid));
+    this->key = pid;
     this->is_signer = signer;
     this->writeable = writeable;
 }
