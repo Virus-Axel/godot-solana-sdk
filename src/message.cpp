@@ -128,7 +128,7 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
 
         for(unsigned int j = 0; j < account_metas.size(); j++){
             AccountMeta *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
-            
+
             if(account_meta->get_is_signer()){
                 // Actually a keypair.
                 merge_signer(account_meta->get_signer());

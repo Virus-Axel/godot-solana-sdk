@@ -82,12 +82,17 @@ void Transaction::create_message(){
         signatures.clear();
         return;
     }
-
+    for(unsigned int i = 0; i < instructions.size(); i++){
+        if(instructions[i].get_type() != Variant::OBJECT){
+            signatures.clear();
+            return;
+        }
+    }
     message = memnew(Message(instructions, payer));
     Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
 
     const int amount_of_signers = Object::cast_to<Message>(message)->get_amount_signers();
-    
+
     if(signers.size() == amount_of_signers){
         return;
     }
