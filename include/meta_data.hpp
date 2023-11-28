@@ -24,6 +24,8 @@ public:
 
     void set_share(const uint32_t p_value);
     uint32_t get_share();
+
+    PackedByteArray serialize() const;
 };
 
 class MetaDataCollection: public Resource{
@@ -42,6 +44,8 @@ public:
 
     void set_verified(const bool p_value);
     bool get_verified();
+
+    PackedByteArray serialize() const;
 };
 
 class MetaDataUses: public Resource{
@@ -69,6 +73,8 @@ public:
 
     void set_remaining(const uint64_t p_value);
     uint64_t get_remaining();
+
+    PackedByteArray serialize() const;
 };
 
 MAKE_TYPED_ARRAY(MetaDataCreator, Variant::OBJECT)
@@ -97,6 +103,8 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
     void _get_property_list(List<PropertyInfo> *p_list) const;
 public:
+
+    PackedByteArray serialize(const bool is_mutable) const;
 };
 
 }

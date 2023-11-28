@@ -136,3 +136,7 @@ Variant TokenProgram::freeze_account(const Variant& account_pubkey, const Varian
 
     return result;
 }
+
+Variant TokenProgram::get_pid(){
+    return memnew(Pubkey(String(ID.c_str())));
+}

@@ -1,6 +1,7 @@
 #include "meta_data.hpp"
 
 #include "utils.hpp"
+#include "pubkey.hpp"
 
 namespace godot{
 
@@ -38,6 +39,15 @@ uint32_t MetaDataCreator::get_share(){
     return share;
 }
 
+PackedByteArray MetaDataCreator::serialize() const{
+    PackedByteArray res;
+    res.append_array(Pubkey(address).get_bytes());
+    res.append(verified);
+    res.append(share);
+
+    return res;
+}
+
 void MetaDataCollection::_bind_methods(){
     ClassDB::bind_method(D_METHOD("get_key"), &MetaDataCollection::get_key);
     ClassDB::bind_method(D_METHOD("set_key", "p_value"), &MetaDataCollection::set_key);
@@ -60,6 +70,14 @@ void MetaDataCollection::set_verified(const bool p_value){
 }
 bool MetaDataCollection::get_verified(){
     return verified;
+}
+
+PackedByteArray MetaDataCollection::serialize() const{
+    PackedByteArray res;
+    res.append(verified);
+    res.append_array(Pubkey(key).get_bytes());
+
+    return res;
 }
 
 void MetaDataUses::_bind_methods(){
@@ -94,6 +112,16 @@ void MetaDataUses::set_remaining(const uint64_t p_value){
 }
 uint64_t MetaDataUses::get_remaining(){
     return remaining;
+}
+
+PackedByteArray MetaDataUses::serialize() const{
+    PackedByteArray res;
+    res.resize(17);
+    res[0] = use_method;
+    res.encode_u64(1, remaining);
+    res.encode_u64(9, total);
+
+    return res;
 }
 
 void MetaData::_bind_methods(){
@@ -211,6 +239,68 @@ void MetaData::_get_property_list(List<PropertyInfo> *p_list) const{
         p_list->push_back(PropertyInfo(Variant::INT, "collection_size", PROPERTY_HINT_NONE));
     }
     
+}
+
+PackedByteArray MetaData::serialize(const bool is_mutable) const{
+    PackedByteArray res;
+    const uint32_t DATA_LENGTH = 12 + name.length() + symbol.length() + uri.length();
+    res.resize(DATA_LENGTH);
+
+    res.encode_u32(0, name.length());
+    res.encode_u32(4 + name.length(), symbol.length());
+    res.encode_u32(8 + name.length() + symbol.length(), uri.length());
+    for(unsigned int i = 0; i < name.length(); i++){
+        res[4 + i] = name.to_ascii_buffer()[i];
+    }
+    for(unsigned int i = 0; i < symbol.length(); i++){
+        res[8 + name.length() + i] = symbol.to_ascii_buffer()[i];
+    }
+    for(unsigned int i = 0; i < uri.length(); i++){
+        res[12 + name.length() + symbol.length() + i] = uri.to_ascii_buffer()[i];
+    }
+
+    uint32_t data_location = 12 + name.length() + symbol.length() + uri.length();
+
+    res.encode_u16(data_location, seller_fee_basis_points);
+
+    res.append((int) (enable_creators && !creators.is_empty()));
+    if(enable_collection && !creators.is_empty()){
+        PackedByteArray serialized_creators;
+        serialized_creators.resize(4);
+        serialized_creators.encode_u32(0, creators.size());
+        for(unsigned int i = 0; i < creators.size(); i++){
+            const MetaDataCreator *creators_ptr = Object::cast_to<MetaDataCreator>(creators[i]);
+            const PackedByteArray serialized_collection = creators_ptr->serialize();
+        }
+        res.append_array(serialized_creators);
+    }
+
+    res.append((int) enable_collection);
+    if(enable_collection){
+        const MetaDataCollection *collection_ptr = Object::cast_to<MetaDataCollection>(collection);
+        const PackedByteArray serialized_collection = collection_ptr->serialize();
+        res.append_array(serialized_collection);
+    }
+
+    res.append((int) enable_uses);
+    if(enable_uses){
+        const MetaDataUses *uses_ptr = Object::cast_to<MetaDataUses>(uses);
+        const PackedByteArray serialized_collection = uses_ptr->serialize();
+        res.append_array(serialized_collection);
+    }
+
+    res.append((int) is_mutable);
+
+    res.append((int) enable_collection_details);
+    if(enable_collection_details){
+        res.append(0);
+        PackedByteArray collection_size_data;
+        collection_size_data.resize(8);
+        collection_size_data.encode_u64(0, collection_size);
+        res.append_array(collection_size_data);
+    }
+
+    return res;
 }
 
 }
