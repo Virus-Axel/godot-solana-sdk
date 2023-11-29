@@ -7,6 +7,8 @@
 namespace godot{
 
 void Keypair::_bind_methods() {
+    ClassDB::bind_static_method("Keypair", D_METHOD("new_from_seed", "seed"), (Variant(*)(const PackedByteArray&))&Keypair::new_from_seed);
+
     ClassDB::bind_method(D_METHOD("get_public_value"), &Keypair::get_public_value);
     ClassDB::bind_method(D_METHOD("set_public_value", "p_value"), &Keypair::set_public_value);
     ClassDB::bind_method(D_METHOD("get_public_bytes"), &Keypair::get_public_bytes);
@@ -142,6 +144,18 @@ Keypair::Keypair(const PackedByteArray &seed){
 
     private_value = SolanaSDK::bs58_encode(private_bytes);
     public_value = SolanaSDK::bs58_encode(public_bytes);
+}
+
+Variant Keypair::new_from_seed(const String &seed){
+    Keypair *res = memnew(Keypair);
+    res->set_seed(seed.to_ascii_buffer());
+    return res;
+}
+
+Variant Keypair::new_from_seed(const PackedByteArray &seed){
+    Keypair *res = memnew(Keypair);
+    res->set_seed(seed);
+    return res;
 }
 
 void Keypair::set_public_value(const String& p_value){

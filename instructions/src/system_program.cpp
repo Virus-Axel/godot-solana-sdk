@@ -60,7 +60,7 @@ Variant SystemProgram::create_account_with_seed(const Variant &from_keypair, con
         data[4 + i] = base_bytes[i];
     }
 
-    Variant created_account_key = Pubkey::create_with_seed(base_keypair, seed, owner);
+    Variant created_account_key = Pubkey::new_from_seed(base_keypair, seed, owner);
 
     const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
     result->set_program_id(new_pid);
