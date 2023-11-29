@@ -87,6 +87,10 @@ void Transaction::create_message(){
             signatures.clear();
             return;
         }
+        if(!Object::cast_to<Instruction>(instructions[i])->is_serializable()){
+            signatures.clear();
+            return;
+        }
     }
     message = memnew(Message(instructions, payer));
     Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);

@@ -15,6 +15,18 @@ namespace godot{
 
 using internal::gdextension_interface_print_warning;
 
+bool Instruction::is_serializable(){
+    if(program_id.get_type() != Variant::OBJECT){
+        return false;
+    }
+    for(unsigned int i = 0; i < accounts.size(); i++){
+        if(accounts[i].get_type() != Variant::OBJECT){
+            return false;
+        }
+    }
+    return true;
+}
+
 void Instruction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_program_id"), &Instruction::get_program_id);
     ClassDB::bind_method(D_METHOD("set_program_id", "p_value"), &Instruction::set_program_id);

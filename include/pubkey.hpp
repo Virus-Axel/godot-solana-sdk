@@ -70,7 +70,13 @@ public:
 
     void create_from_string(const String& from);
     void create_from_array(const unsigned char* data);
-    static Variant create_with_seed(Variant basePubkey, String seed, Variant owner_pubkey);
+
+    static Variant new_from_seed(Variant basePubkey, String seed, Variant owner_pubkey);
+    static Variant new_from_string(const String& from);
+    static Variant new_program_address(const PackedStringArray seeds, const Variant &program_id);
+    static Variant new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address);
+
+
     bool create_program_address(const PackedStringArray seeds, const Variant &program_id);
     bool get_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address);
 

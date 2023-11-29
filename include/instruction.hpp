@@ -43,6 +43,7 @@ public:
     void append_meta(const AccountMeta& meta);
 
     PackedByteArray serialize();
+    bool is_serializable();
     
     ~Instruction();
 };

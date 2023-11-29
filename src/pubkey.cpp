@@ -20,7 +20,10 @@ bool Pubkey::are_bytes_curve_point() const{
 }
 
 void Pubkey::_bind_methods() {
-    ClassDB::bind_static_method("Pubkey", D_METHOD("create_with_seed", "basePubkey", "seed", "owner_pubkey"), &Pubkey::create_with_seed);
+    ClassDB::bind_static_method("Pubkey", D_METHOD("new_from_seed", "basePubkey", "seed", "owner_pubkey"), &Pubkey::new_from_seed);
+    ClassDB::bind_static_method("Pubkey", D_METHOD("new_from_string", "from"), &Pubkey::new_from_string);
+    ClassDB::bind_static_method("Pubkey", D_METHOD("new_program_address", "seeds", "program_id"), &Pubkey::new_program_address);
+    ClassDB::bind_static_method("Pubkey", D_METHOD("new_associated_token_address", "wallet_address", "token_mint_address"), &Pubkey::new_associated_token_address);
 
     ClassDB::bind_method(D_METHOD("get_value"), &Pubkey::get_value);
     ClassDB::bind_method(D_METHOD("set_value", "p_value"), &Pubkey::set_value);
@@ -43,7 +46,6 @@ void Pubkey::_bind_methods() {
     ClassDB::bind_method(D_METHOD("create_from_string", "from"), &Pubkey::create_from_string);
     ClassDB::bind_method(D_METHOD("create_program_address", "seeds", "program_id"), &Pubkey::create_program_address);
     ClassDB::bind_method(D_METHOD("get_associated_token_address", "wallet_pubkey", "token_mint_pubkey"), &Pubkey::get_associated_token_address);
-
 }
 
 
@@ -211,7 +213,7 @@ void Pubkey::create_from_array(const unsigned char* data){
     }
 }
 
-Variant Pubkey::create_with_seed(Variant basePubkey, String seed, Variant owner_pubkey){
+Variant Pubkey::new_from_seed(Variant basePubkey, String seed, Variant owner_pubkey){
     Pubkey *res = memnew(Pubkey);
  
     SHA256 hasher;
@@ -234,6 +236,29 @@ Variant Pubkey::create_with_seed(Variant basePubkey, String seed, Variant owner_
     delete[] sha256_hash;
 
     return res;
+}
+
+Variant Pubkey::new_from_string(const String& from){
+    Pubkey *res = memnew(Pubkey);
+    res->set_value(from);
+    return res;
+}
+
+Variant Pubkey::new_program_address(const PackedStringArray seeds, const Variant &program_id){
+    Pubkey *res = memnew(Pubkey);
+    res->create_program_address(seeds, program_id);
+    return res;
+}
+
+Variant Pubkey::new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address){    
+    PackedStringArray arr;
+    arr.append(wallet_address);
+    arr.append(token_mint_address);
+    arr.append(String(SolanaSDK::SPL_TOKEN_ADDRESS.c_str()));
+
+    String pid = String(SolanaSDK::SPL_ASSOCIATED_TOKEN_ADDRESS.c_str());
+
+    return new_program_address(arr, (Variant*) &pid);
 }
 
 bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant &program_id){
