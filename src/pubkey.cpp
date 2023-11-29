@@ -3,7 +3,6 @@
 
 #include <solana_sdk.hpp>
 #include <godot_cpp/core/class_db.hpp>
-#include "blake3.h"
 #include "sha256.hpp"
 
 #include "curve25519.hpp"
