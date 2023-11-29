@@ -15,6 +15,8 @@
 #include "compute_budget.hpp"
 #include "system_program.hpp"
 #include "spl_token.hpp"
+#include "meta_data.hpp"
+#include "mpl_token_metadata.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -43,6 +45,11 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<ComputeBudget>();
     ClassDB::register_class<SystemProgram>();
     ClassDB::register_class<TokenProgram>();
+    ClassDB::register_class<MplTokenMetadata>();
+    ClassDB::register_class<MetaDataCreator>();
+    ClassDB::register_class<MetaDataCollection>();
+    ClassDB::register_class<MetaDataUses>();
+    ClassDB::register_class<MetaData>();
 
     SolanaClient::set_commitment("finalized");
 }

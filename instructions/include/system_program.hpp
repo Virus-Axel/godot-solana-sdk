@@ -30,6 +30,8 @@ public:
     static Variant create_account(const Variant &from_keypair, const Variant& to_keypair, const uint64_t lamports, const uint64_t space, const Variant& owner);
     static Variant create_account_with_seed(const Variant &from_keypair, const Variant& base_keypair, const String& seed, const uint64_t lamports, const uint64_t space, const Variant& owner);
     static Variant transfer(const Variant &sender, const Variant& reciever, const uint64_t lamports);
+
+    static Variant get_pid();
 };
 
 }

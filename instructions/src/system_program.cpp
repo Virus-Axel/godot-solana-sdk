@@ -91,4 +91,8 @@ Variant SystemProgram::transfer(const Variant &sender, const Variant& reciever, 
     return result;
 }
 
+Variant SystemProgram::get_pid(){
+    return memnew(Pubkey(String(ID.c_str())));
+}
+
 }
