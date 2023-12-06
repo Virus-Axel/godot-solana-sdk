@@ -462,6 +462,7 @@ Dictionary SolanaClient::get_signature_for_address(const String& address, const 
 Dictionary SolanaClient::get_signature_statuses(const PackedStringArray signatures, bool search_transaction_history){
     Array params;
 
+    params.append(signatures);
     add_to_param_dict(params, "searchTransactionHistory", search_transaction_history);
 
     return quick_http_request(JSON::stringify(make_rpc_dict("getSignatureStatuses", params)));
