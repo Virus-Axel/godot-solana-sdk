@@ -24,6 +24,8 @@ private:
     TypedArray<PackedByteArray> signatures;
 
     String latest_blockhash_string = "";
+    String result_signature = "";
+    String latest_commitment = "";
 
     bool has_cumpute_budget_instructions = false;
     bool use_phantom_payer = false;
@@ -72,6 +74,9 @@ public:
     Error partially_sign(const Variant& latest_blockhash);
 
     void create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash);
+    
+    bool is_confirmed();
+    bool is_finalized();
 
     ~Transaction();
 };

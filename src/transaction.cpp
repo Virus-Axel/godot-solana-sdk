@@ -48,6 +48,9 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("send"), &Transaction::send);
     ClassDB::bind_method(D_METHOD("send_and_disconnect"), &Transaction::send_and_disconnect);
     ClassDB::bind_method(D_METHOD("partially_sign", "latest_blockhash"), &Transaction::partially_sign);
+
+    ClassDB::bind_method(D_METHOD("is_confirmed"), &Transaction::is_confirmed);
+    ClassDB::bind_method(D_METHOD("is_finalized"), &Transaction::is_finalized);
 }
 
 void Transaction::_signer_signed(PackedByteArray signature){
@@ -198,6 +201,48 @@ Transaction::Transaction() {
 void Transaction::create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash){
 }
 
+bool Transaction::is_confirmed(){
+    if(latest_commitment == "confirmed" || latest_commitment == "finalized"){
+        return true;
+    }
+
+    PackedStringArray arr;
+    arr.append(result_signature);
+    Dictionary rpc_result = SolanaClient::get_signature_statuses(arr);
+
+    Dictionary transaction_info = rpc_result.get("result", nullptr);
+    Array transaction_value = transaction_info.get("value", nullptr);
+
+    if(transaction_value[0].get_type() != Variant::DICTIONARY){
+        return false;
+    }
+
+    String status = transaction_value[0].get("confirmationStatus", nullptr);
+    latest_commitment = status;
+    return (latest_commitment == "confirmed" || latest_commitment == "finalized");
+}
+
+bool Transaction::is_finalized(){
+    if(latest_commitment == "finalized"){
+        return true;
+    }
+
+    PackedStringArray arr;
+    arr.append(result_signature);
+    Dictionary rpc_result = SolanaClient::get_signature_statuses(arr);
+
+    Dictionary transaction_info = rpc_result.get("result", nullptr);
+    Array transaction_value = transaction_info.get("value", nullptr);
+
+    if(transaction_value[0].get_type() != Variant::DICTIONARY){
+        return false;
+    }
+    
+    String status = transaction_value[0].get("confirmationStatus");
+    latest_commitment = status;
+    return (latest_commitment == "finalized");
+}
+
 void Transaction::set_instructions(const Array& p_value){
     instructions = p_value;
     create_message();
@@ -284,7 +329,11 @@ Variant Transaction::sign_and_send(){
 
 Dictionary Transaction::send(){
     PackedByteArray serialized_bytes = serialize();
-    return SolanaClient::send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
+
+    Dictionary rpc_result = SolanaClient::send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
+    result_signature = rpc_result["result"];
+
+    return rpc_result;
 }
 
 void Transaction::send_and_disconnect(){
