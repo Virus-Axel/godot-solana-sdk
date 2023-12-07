@@ -130,7 +130,7 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
 	// Set headers
 	PackedStringArray http_headers;
 	http_headers.append("Content-Type: application/json");
-	http_headers.append("Accept-Encoding: json");
+	http_headers.append("Accept-Encoding: application/json");
 	
 	// Connect to RPC API URL.
 	HTTPClient handler;
@@ -181,7 +181,7 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
         var request = new XMLHttpRequest();\
         request.open('POST', '{0}', false);\
         request.setRequestHeader('Content-Type', 'application/json');\
-        request.setRequestHeader('Accept-Encoding', 'json');\
+        request.setRequestHeader('Accept-Encoding', 'application/json');\
         request.send('{1}');\
         \
         Module.solanaClientResponse = request.response;\
@@ -698,6 +698,7 @@ Dictionary SolanaClient::simulate_transaction(const String& encoded_transaction,
 
 void SolanaClient::_bind_methods(){
     ClassDB::bind_static_method("SolanaClient", D_METHOD("set_url", "url"), &SolanaClient::set_url);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_url"), &SolanaClient::get_url);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("set_encoding", "encoding"), &SolanaClient::set_encoding);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("set_commitment", "commitment"), &SolanaClient::set_commitment);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("set_transaction_detail", "transaction_detail"), &SolanaClient::set_transaction_detail);
@@ -776,6 +777,10 @@ SolanaClient::SolanaClient(){
 
 void SolanaClient::set_url(const String& url){
 	SolanaClient::url = url.ascii();
+}
+
+String SolanaClient::get_url(){
+    return String(SolanaClient::url.c_str());
 }
 
 void SolanaClient::set_commitment(const String& commitment){

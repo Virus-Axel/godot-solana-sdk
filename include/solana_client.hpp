@@ -54,6 +54,8 @@ public:
     SolanaClient();
 
     static void set_url(const String& url);
+    static String get_url();
+    
     static void set_commitment(const String& commitment);
     static void set_encoding(const String& encoding);
     static void set_transaction_detail(const String& transaction_detail);

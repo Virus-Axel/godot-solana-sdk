@@ -41,6 +41,7 @@ public:
     
     static Variant new_from_seed(const String &seed);
     static Variant new_from_seed(const PackedByteArray &seed);
+    static Variant new_random();
 
     void set_public_value(const String& p_value);
     String get_public_value();
