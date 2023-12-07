@@ -9,6 +9,7 @@
 #include "keypair.hpp"
 #include "account_meta.hpp"
 #include "phantom.hpp"
+#include "spl_token.hpp"
 
 using internal::gdextension_interface_print_warning;
 
@@ -250,23 +251,42 @@ Variant Pubkey::new_program_address(const PackedStringArray seeds, const Variant
 }
 
 Variant Pubkey::new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address){    
-    PackedStringArray arr;
-    arr.append(wallet_address);
-    arr.append(token_mint_address);
-    arr.append(String(SolanaSDK::SPL_TOKEN_ADDRESS.c_str()));
+    TypedArray<PackedByteArray> arr;
+
+    arr.append(Pubkey(wallet_address).get_bytes());
+    arr.append(Object::cast_to<Pubkey>(TokenProgram::get_pid())->get_bytes());
+    arr.append(Pubkey(token_mint_address).get_bytes());
+
+    arr.append(PackedByteArray());
 
     String pid = String(SolanaSDK::SPL_ASSOCIATED_TOKEN_ADDRESS.c_str());
 
-    return new_program_address(arr, (Variant*) &pid);
+    Variant pid_key = Pubkey::new_from_string(pid);
+    
+    Pubkey *res = memnew(Pubkey);
+    for(uint8_t i = 254; i > 0; i--){
+        PackedByteArray bump_seed;
+        bump_seed.push_back(i);
+        arr[3] = bump_seed;
+        if(res->create_program_address_bytes(arr, pid_key)){
+            return res;
+        }
+    }
+    
+    internal::gdextension_interface_print_warning("y points were not valid", "new_associated_token_address", __FILE__, __LINE__, false);
+    return nullptr;
 }
 
-bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant &program_id){
+
+bool Pubkey::create_program_address_bytes(const Array seeds, const Variant &program_id){
     // Perform seeds checks.
     if(seeds.size() > MAX_SEEDS){
+        internal::gdextension_interface_print_warning("Too many seeds", "create_program_address", __FILE__, __LINE__, false);
         return false;
     }
     for(unsigned int i = 0; i < seeds.size(); i++){
-        if(seeds[i].length() > MAX_SEED_LEN){
+        if(((PackedByteArray)seeds[i]).size() > MAX_SEED_LEN){
+            internal::gdextension_interface_print_warning("Seed is too long", "create_program_address", __FILE__, __LINE__, false);
             return false;
         }
     }
@@ -274,14 +294,11 @@ bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant
     SHA256 hasher;
  
     for(unsigned int i = 0; i < seeds.size(); i++){
-        hasher.update(seeds[i].to_utf8_buffer().ptr(), seeds[i].length());
+        hasher.update(((PackedByteArray)seeds[i]).ptr(), ((PackedByteArray)seeds[i]).size());
     }
 
     // Include program ID and PDA marker in hash.
-    Object *program_id_cast = program_id;
-    Pubkey *program_id_type = Object::cast_to<Pubkey>(program_id_cast);
-    
-    hasher.update((*program_id_type).get_bytes().ptr(), (*program_id_type).get_bytes().size());
+    hasher.update(Pubkey(program_id).get_bytes().ptr(), Pubkey(program_id).get_bytes().size());
     hasher.update(PDA_MARKER, 21);
 
     uint8_t hash[PUBKEY_BYTES];
@@ -298,10 +315,61 @@ bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant
         return false;
     }
 
-    bytes.resize(PUBKEY_BYTES);
+    PackedByteArray new_bytes;
+    new_bytes.resize(PUBKEY_BYTES);
     for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
-        bytes[i] = hash[i];
+        new_bytes[i] = hash[i];
     }
+    set_bytes(new_bytes);
+
+    return true;
+}
+
+bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant &program_id){
+    // Perform seeds checks.
+    if(seeds.size() > MAX_SEEDS){
+        internal::gdextension_interface_print_warning("Too many seeds", "create_program_address", __FILE__, __LINE__, false);
+        return false;
+    }
+    for(unsigned int i = 0; i < seeds.size(); i++){
+        if(seeds[i].length() > MAX_SEED_LEN){
+            internal::gdextension_interface_print_warning("Seed is too long", "create_program_address", __FILE__, __LINE__, false);
+            return false;
+        }
+    }
+
+    SHA256 hasher;
+ 
+    for(unsigned int i = 0; i < seeds.size(); i++){
+        hasher.update(seeds[i].to_utf8_buffer().ptr(), seeds[i].length());
+    }
+
+    // Include program ID and PDA marker in hash.
+    hasher.update(Pubkey(program_id).get_bytes().ptr(), Pubkey(program_id).get_bytes().size());
+    hasher.update(PDA_MARKER, 21);
+
+    uint8_t hash[PUBKEY_BYTES];
+    uint8_t *hash_ptr;
+    hash_ptr = hasher.digest();
+    for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
+        hash[i] = hash_ptr[i];
+    }
+
+    // Remove this memory ASAP.
+    delete[] hash_ptr;
+    
+    if(is_y_point_valid(hash)){
+        internal::gdextension_interface_print_warning("y point is not valid", "create_program_address", __FILE__, __LINE__, false);
+        return false;
+    }
+
+    PackedByteArray new_bytes;
+    new_bytes.resize(PUBKEY_BYTES);
+    for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
+        new_bytes[i] = hash[i];
+    }
+    set_bytes(new_bytes);
+
     return true;
 }
 
