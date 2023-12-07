@@ -1,6 +1,6 @@
 #include "spl_token.hpp"
 
-const std::string TokenProgram::ID;
+const std::string TokenProgram::ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
 void TokenProgram::_bind_methods(){
     ClassDB::bind_static_method("TokenProgram", D_METHOD("initialize_mint", "mint_pubkey", "mint_authority", "freeze_authority=null", "decimals=9"), &TokenProgram::initialize_mint);
@@ -138,5 +138,5 @@ Variant TokenProgram::freeze_account(const Variant& account_pubkey, const Varian
 }
 
 Variant TokenProgram::get_pid(){
-    return memnew(Pubkey(String(ID.c_str())));
+    return Pubkey::new_from_string(ID.c_str());
 }
