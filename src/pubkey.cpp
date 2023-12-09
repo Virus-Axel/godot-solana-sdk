@@ -254,17 +254,27 @@ Variant Pubkey::new_associated_token_address(const Variant &wallet_address, cons
     TypedArray<PackedByteArray> arr;
 
     arr.append(Pubkey(wallet_address).get_bytes());
-    arr.append(Pubkey(token_mint_address).get_bytes());
     arr.append(Object::cast_to<Pubkey>(TokenProgram::get_pid())->get_bytes());
+    arr.append(Pubkey(token_mint_address).get_bytes());
+
+    arr.append(PackedByteArray());
 
     String pid = String(SolanaSDK::SPL_ASSOCIATED_TOKEN_ADDRESS.c_str());
 
     Variant pid_key = Pubkey::new_from_string(pid);
     
     Pubkey *res = memnew(Pubkey);
-    res->create_program_address_bytes(arr, pid_key);
-
-    return res;
+    for(uint8_t i = 255; i > 0; i--){
+        PackedByteArray bump_seed;
+        bump_seed.push_back(i);
+        arr[3] = bump_seed;
+        if(res->create_program_address_bytes(arr, pid_key)){
+            return res;
+        }
+    }
+    
+    internal::gdextension_interface_print_warning("y points were not valid", "new_associated_token_address", __FILE__, __LINE__, false);
+    return nullptr;
 }
 
 
@@ -302,7 +312,6 @@ bool Pubkey::create_program_address_bytes(const Array seeds, const Variant &prog
     delete[] hash_ptr;
     
     if(is_y_point_valid(hash)){
-        internal::gdextension_interface_print_warning("y point is not valid", "create_program_address", __FILE__, __LINE__, false);
         return false;
     }
 

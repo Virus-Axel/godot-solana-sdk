@@ -7,9 +7,10 @@ class FieldElement{
 private:
     uint64_t nums[5];
 
-    FieldElement pow2k(uint32_t m);
+    
     FieldElement& reduce();
     static uint64_t load8(const uint8_t *data);
+    FieldElement pow2k(uint32_t m);
 public:
     static const FieldElement ONE;
     static const FieldElement EDWARDS_D;
@@ -17,6 +18,7 @@ public:
     FieldElement();
     FieldElement(const uint64_t from[5]);
     FieldElement(const uint8_t *bytes);
+    FieldElement(const FieldElement& other);
     void conditional_assign(const FieldElement& other, bool condition);
     void conditional_negate(bool condition);
     void pow22501(FieldElement &t3, FieldElement &t19) const;
