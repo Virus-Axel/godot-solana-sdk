@@ -8,7 +8,7 @@ namespace godot{
 
 void Keypair::_bind_methods() {
     ClassDB::bind_static_method("Keypair", D_METHOD("new_from_seed", "seed"), (Variant(*)(const PackedByteArray&))&Keypair::new_from_seed);
-    ClassDB::bind_static_method("Keypair", D_METHOD("new_random"), (Variant(*)(const PackedByteArray&))&Keypair::new_random);
+    ClassDB::bind_static_method("Keypair", D_METHOD("new_random"), &Keypair::new_random);
 
     ClassDB::bind_method(D_METHOD("get_public_value"), &Keypair::get_public_value);
     ClassDB::bind_method(D_METHOD("set_public_value", "p_value"), &Keypair::set_public_value);

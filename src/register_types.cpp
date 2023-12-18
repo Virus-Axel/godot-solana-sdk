@@ -17,6 +17,7 @@
 #include "spl_token.hpp"
 #include "meta_data.hpp"
 #include "mpl_token_metadata.hpp"
+#include "associated_token_account.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -50,6 +51,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<MetaDataCollection>();
     ClassDB::register_class<MetaDataUses>();
     ClassDB::register_class<MetaData>();
+    ClassDB::register_class<AssociatedTokenAccountProgram>();
 
     SolanaClient::set_commitment("finalized");
 }

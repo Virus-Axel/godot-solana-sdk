@@ -131,6 +131,7 @@ void Transaction::sign_at_index(const uint32_t index){
         PackedByteArray signature = kp->sign_message(serialize_message());
         signatures[index] = signature;
         ready_signature_amount++;
+        check_fully_signed();
     }
     else if(signers[index].has_method("sign_message")){
         PhantomController* controller = Object::cast_to<PhantomController>(signers[index]);
@@ -331,7 +332,10 @@ Dictionary Transaction::send(){
     PackedByteArray serialized_bytes = serialize();
 
     Dictionary rpc_result = SolanaClient::send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
-    result_signature = rpc_result["result"];
+    
+    if(rpc_result.has("result")){
+        result_signature = rpc_result["result"];
+    }
 
     return rpc_result;
 }

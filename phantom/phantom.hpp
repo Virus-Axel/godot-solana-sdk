@@ -36,6 +36,7 @@ public:
     PackedByteArray get_connected_key();
     PackedByteArray get_message_signature();
     void sign_message(const PackedByteArray &serialized_message, const uint32_t index);
+    void sign_text_message(const String& message);
 
     uint32_t get_active_signer_index();
     ~PhantomController();

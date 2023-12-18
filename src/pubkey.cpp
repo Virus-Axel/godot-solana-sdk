@@ -24,6 +24,7 @@ void Pubkey::_bind_methods() {
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_from_string", "from"), &Pubkey::new_from_string);
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_program_address", "seeds", "program_id"), &Pubkey::new_program_address);
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_associated_token_address", "wallet_address", "token_mint_address"), &Pubkey::new_associated_token_address);
+    ClassDB::bind_static_method("Pubkey", D_METHOD("new_pda", "seeds", "program_id"), &Pubkey::new_pda);
 
     ClassDB::bind_method(D_METHOD("get_value"), &Pubkey::get_value);
     ClassDB::bind_method(D_METHOD("set_value", "p_value"), &Pubkey::set_value);
@@ -249,6 +250,30 @@ Variant Pubkey::new_program_address(const PackedStringArray seeds, const Variant
     res->create_program_address(seeds, program_id);
     return res;
 }
+
+Variant Pubkey::new_pda(const PackedStringArray seeds, const Variant &program_id){    
+    TypedArray<PackedByteArray> arr;
+
+    for(unsigned int i = 0; i < seeds.size(); i++){
+        arr.append(seeds[i].to_ascii_buffer());
+    }
+
+    arr.append(PackedByteArray());
+    
+    Pubkey *res = memnew(Pubkey);
+    for(uint8_t i = 255; i > 0; i--){
+        PackedByteArray bump_seed;
+        bump_seed.push_back(i);
+        arr[arr.size() - 1] = bump_seed;
+        if(res->create_program_address_bytes(arr, program_id)){
+            return res;
+        }
+    }
+    
+    internal::gdextension_interface_print_warning("y points were not valid", "new_associated_token_address", __FILE__, __LINE__, false);
+    return nullptr;
+}
+
 
 Variant Pubkey::new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address){    
     TypedArray<PackedByteArray> arr;

@@ -12,7 +12,12 @@ namespace godot{
 
 using internal::gdextension_interface_print_warning;
 
+const int DEFAULT_PORT = 443;
+
 std::string SolanaClient::url;
+int SolanaClient::port = DEFAULT_PORT;
+bool SolanaClient::use_tls = false;
+
 std::string SolanaClient::commitment;
 std::string SolanaClient::encoding;
 std::string SolanaClient::transaction_detail;
@@ -130,12 +135,18 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
 	// Set headers
 	PackedStringArray http_headers;
 	http_headers.append("Content-Type: application/json");
-	http_headers.append("Accept-Encoding: application/json");
+	http_headers.append("Accept-Encoding: json");
 	
 	// Connect to RPC API URL.
 	HTTPClient handler;
+    Error err;
 
-	Error err = handler.connect_to_host(String(url.c_str()), 443, TLSOptions::client_unsafe());
+    if(use_tls){
+        err = handler.connect_to_host(String(url.c_str()), port, TLSOptions::client_unsafe());
+    }
+    else{
+	    err = handler.connect_to_host(String(url.c_str()), port);
+    }
 
 	// Wait until a connection is established.
 	godot::HTTPClient::Status status = handler.get_status();
@@ -179,16 +190,20 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
 #else
     String web_script = "\
         var request = new XMLHttpRequest();\
+        console.log('{0}');\
         request.open('POST', '{0}', false);\
         request.setRequestHeader('Content-Type', 'application/json');\
-        request.setRequestHeader('Accept-Encoding', 'application/json');\
+        console.log('{1}');\
         request.send('{1}');\
         \
         Module.solanaClientResponse = request.response;\
+        console.log(Module.solanaClientResponse);\
         request.response";
 
     Array params;
-    params.append(String(url.c_str()));
+    String connect_string = String(url.c_str()) + ":" + String::num_int64(port);
+
+    params.append(connect_string);
     params.append(request_body);
 
     Variant result = JavaScriptBridge::get_singleton()->eval(web_script.format(params));
@@ -776,7 +791,26 @@ SolanaClient::SolanaClient(){
 }
 
 void SolanaClient::set_url(const String& url){
-	SolanaClient::url = url.ascii();
+   // SolanaClient::url = url.ascii();
+    //return ;
+    PackedStringArray strings = url.split(":");
+    if(strings[0] == "https"){
+        use_tls = true;
+    }
+    else if(strings[0] == "http"){
+        use_tls = false;
+    }
+    if(strings.size() > 2){
+        SolanaClient::port = strings[strings.size() - 1].to_int();
+        String result_url = strings[0] + ':';
+        for(unsigned int i = 1; i < strings.size() - 1; i++){
+            result_url += strings[i];
+        }
+        SolanaClient::url = result_url.ascii();
+    }
+    else{
+	    SolanaClient::url = url.ascii();
+    }
 }
 
 String SolanaClient::get_url(){
