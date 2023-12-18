@@ -28,6 +28,8 @@ public:
     AccountMeta(const Variant& pid, bool signer, bool writeable);
     AccountMeta(const Variant& other);
 
+    static Variant new_from_fields(const Variant& pid, bool signer, bool writeable);
+
     void set_pubkey(const Variant &p_value);
     Variant get_pubkey() const;
 

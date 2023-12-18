@@ -44,6 +44,7 @@ TypedArray<AccountMeta> sort_metas(TypedArray<AccountMeta> input){
 }
 
 Message::Message(){
+    latest_blockhash = "";
 }
 
 void Message::_bind_methods(){
@@ -92,10 +93,9 @@ void Message::merge_account_meta(const AccountMeta &account_meta){
         meta_1->set_writeable(meta_1->get_writeable() || account_meta.get_writeable());
     }
     else{
-        const AccountMeta *new_element = memnew(AccountMeta(account_meta));
+        Variant new_element = AccountMeta::new_from_fields(account_meta.get_pubkey(), account_meta.get_is_signer(), account_meta.get_writeable());
         merged_metas.append(new_element);
-    }
-}
+    }}
 
 void Message::merge_signer(const Variant& signer){
     for(unsigned int i = 0; i < signers.size(); i++){
@@ -107,7 +107,7 @@ void Message::merge_signer(const Variant& signer){
     signers.append(signer);
 }
 
-Message::Message(TypedArray<Instruction> instructions, Variant &payer){
+Message::Message(TypedArray<Instruction> instructions, const Variant &payer){
     // Payer is signer.
     signers.append(payer);
 
@@ -119,7 +119,6 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
     // Prepend ComputeBudget instructions.
     instructions.insert(0, ComputeBudget::set_compute_unit_limit(200000));
     instructions.insert(1, ComputeBudget::set_compute_unit_price(8000));
-
     for(unsigned int i = 0; i < instructions.size(); i++){
         Instruction *element = Object::cast_to<Instruction>(instructions[i]);
         const TypedArray<AccountMeta> &account_metas = element->get_accounts();
@@ -181,6 +180,20 @@ PackedByteArray Message::serialize(){
 
 Array &Message::get_signers(){
     return signers;
+}
+
+Message& Message::operator=(const Message& other){
+    payer_index = other.payer_index;
+    num_required_signatures = other.num_required_signatures;
+    num_readonly_signed_accounts = other.num_readonly_signed_accounts;
+    num_readonly_unsigned_accounts = other.num_readonly_unsigned_accounts;
+    account_keys = other.account_keys;
+    latest_blockhash = other.latest_blockhash;
+    compiled_instructions = other.compiled_instructions;
+    signers = other.signers;
+
+    merged_metas = other.merged_metas;
+    return *this;
 }
 
 int Message::locate_account_meta(const TypedArray<AccountMeta>& arr, const AccountMeta &input){

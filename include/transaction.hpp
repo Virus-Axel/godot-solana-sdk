@@ -5,6 +5,7 @@
 #include "pubkey.hpp"
 #include "account.hpp"
 #include "instruction.hpp"
+#include "message.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 
@@ -16,7 +17,7 @@ class Transaction : public Node {
 private:
     uint32_t ready_signature_amount = 0;
 
-    Variant message;
+    Message message;
 
     Array instructions;
     Variant payer;

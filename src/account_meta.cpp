@@ -8,6 +8,8 @@ namespace godot{
 using internal::gdextension_interface_print_warning;
 
 void AccountMeta::_bind_methods() {
+    ClassDB::bind_static_method("AccountMeta", D_METHOD("new_from_fields", "key", "is_signer", "writable"), &AccountMeta::new_from_fields);
+
     ClassDB::bind_method(D_METHOD("get_is_signer"), &AccountMeta::get_is_signer);
     ClassDB::bind_method(D_METHOD("set_is_signer", "p_value"), &AccountMeta::set_is_signer);
     ClassDB::bind_method(D_METHOD("get_writeable"), &AccountMeta::get_writeable);
@@ -51,6 +53,16 @@ bool AccountMeta::_get(const StringName &p_name, Variant &r_ret) const{
 	    return false;
     }
     return true;
+}
+
+Variant AccountMeta::new_from_fields(const Variant& pid, bool signer, bool writeable){
+    AccountMeta *res = memnew(AccountMeta);
+
+    res->key = pid;
+    res->is_signer = signer;
+    res->writeable = writeable;
+
+    return res;
 }
 
 void AccountMeta::set_pubkey(const Variant &p_value) {

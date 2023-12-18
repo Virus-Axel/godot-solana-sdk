@@ -80,11 +80,11 @@ bool Transaction::is_phantom_payer() const{
 
 void Transaction::create_message(){
     // Free existing memory.
-    message.clear();
     if(instructions.is_empty() || (payer.get_type() == Variant::NIL)){
         signatures.clear();
         return;
     }
+
     for(unsigned int i = 0; i < instructions.size(); i++){
         if(instructions[i].get_type() != Variant::OBJECT){
             signatures.clear();
@@ -95,10 +95,11 @@ void Transaction::create_message(){
             return;
         }
     }
-    message = memnew(Message(instructions, payer));
-    Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
 
-    const int amount_of_signers = Object::cast_to<Message>(message)->get_amount_signers();
+    message = Message(instructions, payer);
+    message.set_latest_blockhash(latest_blockhash_string);
+
+    const int amount_of_signers = message.get_amount_signers();
 
     if(signers.size() == amount_of_signers){
         return;
@@ -115,6 +116,7 @@ void Transaction::create_message(){
 
 void Transaction::check_fully_signed(){
     if(ready_signature_amount == signers.size()){
+        std::cout << "WOAH" << std::endl;
         emit_signal("fully_signed");
     }
 }
@@ -139,6 +141,9 @@ void Transaction::sign_at_index(const uint32_t index){
         controller->connect("message_signed", Callable(this, "_signer_signed"));
         controller->connect("signing_error", Callable(this, "_signer_failed"));
         controller->sign_message(serialize(), index);
+    }
+    else{
+        gdextension_interface_print_warning("Unknown signer type.", "sign_at_index", __FILE__, __LINE__, false);
     }
 }
 
@@ -277,11 +282,11 @@ void Transaction::update_latest_blockhash(const String &custom_hash){
         const Dictionary blockhash_result = latest_blockhash["result"];
         const Dictionary blockhash_value = blockhash_result["value"];
         latest_blockhash_string = blockhash_value["blockhash"];
-        Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
+        message.set_latest_blockhash(latest_blockhash_string);
     }
     else{
         latest_blockhash_string = custom_hash;
-        Object::cast_to<Message>(message)->set_latest_blockhash(custom_hash);
+        message.set_latest_blockhash(custom_hash);
     }
 }
 
@@ -308,7 +313,7 @@ PackedByteArray Transaction::serialize(){
 }
 
 PackedByteArray Transaction::serialize_message(){
-    return Object::cast_to<Message>(message)->serialize();
+    return message.serialize();
 }
 
 PackedByteArray Transaction::serialize_signers(){
@@ -323,9 +328,7 @@ PackedByteArray Transaction::serialize_signers(){
 Variant Transaction::sign_and_send(){
     connect("fully_signed", Callable(this, "send_and_disconnect"));
 
-    sign();
-
-    return OK;
+    return sign();
 }
 
 Dictionary Transaction::send(){
@@ -349,7 +352,7 @@ void Transaction::send_and_disconnect(){
 Error Transaction::sign(){
     PackedByteArray msg = serialize();
 
-    signers = Object::cast_to<Message>(message)->get_signers();
+    signers = message.get_signers();
 
     for (unsigned int i = 0; i < signers.size(); i++){
         sign_at_index(i);

@@ -11,8 +11,7 @@ namespace godot{
 MAKE_TYPED_ARRAY(CompiledInstruction, Variant::OBJECT)
 MAKE_TYPED_ARRAY(Instruction, Variant::OBJECT)
 
-class Message: public Resource{ // Message
-    GDCLASS(Message, Resource)
+class Message{ // Message
 private:
     uint8_t payer_index = 0;
     uint8_t num_required_signatures = 0;
@@ -37,12 +36,15 @@ protected:
 
 public:
     Message();
-    Message(TypedArray<Instruction> instructions, Variant &payer);
+    Message(TypedArray<Instruction> instructions, const Variant &payer);
+
     void set_latest_blockhash(const String& blockhash);
     PackedByteArray serialize();
     PackedByteArray serialize_blockhash();
     int get_amount_signers();
     Array &get_signers();
+
+    Message& operator=(const Message& other);
     ~Message();
 };
 }
