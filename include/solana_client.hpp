@@ -10,6 +10,9 @@ class SolanaClient : public Node {
 
 private:
     static std::string url;
+    static int port;
+    static bool use_tls;
+
     static std::string commitment;
     static std::string encoding;
     static std::string transaction_detail;

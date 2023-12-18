@@ -53,6 +53,8 @@ const std::string SolanaSDK::SPL_ASSOCIATED_TOKEN_ADDRESS = "ATokenGPvbdGVxr1b2h
 void SolanaSDK::_bind_methods() {
     ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs58_encode", "input"), &SolanaSDK::bs58_encode);
     ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs58_decode", "input"), &SolanaSDK::bs58_decode);
+    ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs64_encode", "input"), &SolanaSDK::bs64_encode);
+    ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs64_decode", "input"), &SolanaSDK::bs64_decode);
 }
 
 SolanaSDK::SolanaSDK() {

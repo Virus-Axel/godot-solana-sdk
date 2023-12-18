@@ -28,7 +28,6 @@ Variant AssociatedTokenAccountProgram::create_associated_token_account(const Var
     result->append_meta(AccountMeta(ata, false, true));
     result->append_meta(AccountMeta(wallet_address, false, false));
     result->append_meta(AccountMeta(mint_address, false, false));
-    result->append_meta(AccountMeta(payer, true, true));
     result->append_meta(AccountMeta(SystemProgram::get_pid(), false, false));
     result->append_meta(AccountMeta(TokenProgram::get_pid(), false, false));
 

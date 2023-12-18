@@ -7,6 +7,25 @@
 #ifdef WEB_ENABLED
 #include <emscripten.h>
 
+const std::string sign_text_message_script = "\
+  Module.phantom_status = 0;\
+  async function foo() {\
+    const { solana } = window;\
+    try{\
+    buffer_message = new TextEncoder().encode('{0}');\
+    Module.message_signature = (await solana.signMessage(buffer_message, 'utf8')).signature;\
+    console.log(Module.message_signature);\
+    }\
+    catch (err){\
+    console.log(err);\
+      Module.phantom_status = -1;\
+      return;\
+    }\
+    Module.phantom_status = 1;\
+  }\
+  \
+  foo();\
+";
 
 const std::string sign_and_send_script = "\
   Module.phantom_status = 0;\
@@ -172,7 +191,8 @@ void PhantomController::_bind_methods(){
   ClassDB::add_signal("PhantomController", MethodInfo("message_signed", PropertyInfo(Variant::PACKED_BYTE_ARRAY, "signature")));
   ClassDB::add_signal("PhantomController", MethodInfo("signing_error"));
   ClassDB::bind_method(D_METHOD("connect_phantom"), &PhantomController::connect_phantom);
-  ClassDB::bind_method(D_METHOD("sign_message", "serialized_message"), &PhantomController::sign_message);
+  ClassDB::bind_method(D_METHOD("sign_message", "serialized_message", "signer_index"), &PhantomController::sign_message);
+  ClassDB::bind_method(D_METHOD("sign_text_message", "text_message"), &PhantomController::sign_text_message);
   ClassDB::bind_method(D_METHOD("get_connected_key"), &PhantomController::get_connected_key);
 }
 
@@ -203,6 +223,19 @@ void PhantomController::sign_message(const PackedByteArray &serialized_message, 
   store_encoded_message(serialized_message);
 
   JavaScriptBridge::get_singleton()->eval(String(sign_and_send_script.c_str()));
+
+  #endif
+}
+
+void PhantomController::sign_text_message(const String& message){
+  #ifdef WEB_ENABLED
+
+  active_signer_index = 0;
+
+  phantom_state = State::SIGNING;
+  Array params;
+  params.append(message);
+  JavaScriptBridge::get_singleton()->eval(String(sign_text_message_script.c_str()).format(params));
 
   #endif
 }
