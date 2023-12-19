@@ -139,6 +139,9 @@ bool MetaData::_set(const StringName &p_name, const Variant &p_value){
     else if(property_name == "uri"){
         uri = p_value;
     }
+    else if(property_name == "seller_fee_basis_points"){
+        seller_fee_basis_points = (uint32_t(p_value));
+    }
     else if(property_name == "enable_creators"){
         enable_creators = p_value;
         notify_property_list_changed();
@@ -184,6 +187,9 @@ bool MetaData::_get(const StringName &p_name, Variant &r_ret) const{
     else if(property_name == "uri"){
         r_ret = uri;
     }
+    else if(property_name == "seller_fee_basis_points"){
+        r_ret = seller_fee_basis_points;
+    }
     else if(property_name == "enable_creators"){
         r_ret = enable_creators;
     }
@@ -219,6 +225,8 @@ void MetaData::_get_property_list(List<PropertyInfo> *p_list) const{
     p_list->push_back(PropertyInfo(Variant::STRING, "symbol"));
     p_list->push_back(PropertyInfo(Variant::STRING, "uri"));
 
+    p_list->push_back(PropertyInfo(Variant::INT, "seller_fee_basis_points"));
+
     p_list->push_back(PropertyInfo(Variant::BOOL, "enable_creators"));
     if(enable_creators){
 	    p_list->push_back(PropertyInfo(Variant::ARRAY, "creators", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("MetaDataCreator")));
@@ -243,7 +251,7 @@ void MetaData::_get_property_list(List<PropertyInfo> *p_list) const{
 
 PackedByteArray MetaData::serialize(const bool is_mutable) const{
     PackedByteArray res;
-    const uint32_t DATA_LENGTH = 12 + name.length() + symbol.length() + uri.length();
+    const uint32_t DATA_LENGTH = 14 + name.length() + symbol.length() + uri.length();
     res.resize(DATA_LENGTH);
 
     res.encode_u32(0, name.length());

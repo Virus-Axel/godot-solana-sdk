@@ -91,7 +91,7 @@ private:
     String name;
     String symbol;
     String uri;
-    uint16_t seller_fee_basis_points;
+    uint16_t seller_fee_basis_points = 0;
     Array creators;
     Variant collection;
     Variant uses;

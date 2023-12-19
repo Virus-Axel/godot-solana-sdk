@@ -2,14 +2,67 @@
 
 #include "system_program.hpp"
 #include "spl_token.hpp"
+#include "pubkey.hpp"
 
 namespace godot{
 
 const std::string MplTokenMetadata::ID = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s";
 
 void MplTokenMetadata::_bind_methods(){
+    ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("new_associated_metadata_pubkey", "mint"), &MplTokenMetadata::new_associated_metadata_pubkey);
+    ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("new_associated_metadata_pubkey_master_edition", "mint"), &MplTokenMetadata::new_associated_metadata_pubkey_master_edition);
+
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("create_metadata_account", "account_pubkey", "mint", "mint_authority", "payer", "update_authority", "meta_data", "is_mutable", "collection_size"), &MplTokenMetadata::create_metadata_account);
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("create_master_edition", "edition", "mint", "update_authority", "mint_authority", "metadata_account", "payer", "max_supply"), &MplTokenMetadata::create_master_edition);
+
+    ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("get_pid", "mint"), &MplTokenMetadata::get_pid);
+}
+
+Variant MplTokenMetadata::new_associated_metadata_pubkey(const Variant& mint){
+    TypedArray<PackedByteArray> arr;
+
+    arr.append(String("metadata").to_ascii_buffer());
+    arr.append(Pubkey(get_pid()).get_bytes());
+    arr.append(Pubkey(mint).get_bytes());
+
+    arr.append(PackedByteArray());
+    
+    Pubkey *res = memnew(Pubkey);
+    for(uint8_t i = 255; i > 0; i--){
+        PackedByteArray bump_seed;
+        bump_seed.push_back(i);
+        arr[arr.size() - 1] = bump_seed;
+        if(res->create_program_address_bytes(arr, get_pid())){
+            return res;
+        }
+    }
+    
+    internal::gdextension_interface_print_warning("y points were not valid", "new_associated_token_address", __FILE__, __LINE__, false);
+    return nullptr;
+}
+
+Variant MplTokenMetadata::new_associated_metadata_pubkey_master_edition(const Variant& mint){
+    TypedArray<PackedByteArray> arr;
+
+    arr.append(String("metadata").to_ascii_buffer());
+    arr.append(Pubkey(get_pid()).get_bytes());
+    arr.append(Pubkey(mint).get_bytes());
+    arr.append(String("edition").to_ascii_buffer());
+
+    arr.append(PackedByteArray());
+    
+    Pubkey *res = memnew(Pubkey);
+    for(uint8_t i = 255; i > 0; i--){
+        PackedByteArray bump_seed;
+        bump_seed.push_back(i);
+        arr[arr.size() - 1] = bump_seed;
+        if(res->create_program_address_bytes(arr, get_pid())){
+            return res;
+        }
+    }
+    
+    internal::gdextension_interface_print_warning("y points were not valid", "new_associated_token_address", __FILE__, __LINE__, false);
+    return nullptr;
 }
 
 Variant MplTokenMetadata::create_metadata_account(const Variant& account_pubkey, const Variant& mint, const Variant& mint_authority, const Variant& payer, const Variant& update_authority, const Variant &meta_data, bool is_mutable, uint64_t collection_size){
@@ -76,6 +129,10 @@ Variant MplTokenMetadata::create_master_edition(const Variant& edition, const Va
     result->append_meta(AccountMeta(rent, false, false));
 
     return result;
+}
+
+Variant MplTokenMetadata::get_pid(){
+    return Pubkey::new_from_string(ID.c_str());
 }
 
 }

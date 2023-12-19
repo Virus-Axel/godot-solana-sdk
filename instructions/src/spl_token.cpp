@@ -8,6 +8,8 @@ void TokenProgram::_bind_methods(){
     ClassDB::bind_static_method("TokenProgram", D_METHOD("mint_to", "mint_pubkey", "account_pubkey", "owner_pubkey", "mint_authority", "amount"), &TokenProgram::mint_to);
     ClassDB::bind_static_method("TokenProgram", D_METHOD("transfer_checked", "source_pubkey", "mint_pubkey", "destination_pubkey", "source_authority", "amount", "decimals"), &TokenProgram::transfer_checked);
     ClassDB::bind_static_method("TokenProgram", D_METHOD("freeze_account", "account_pubkey", "mint_pubkey", "owner_pubkey", "freeze_authority"), &TokenProgram::freeze_account);
+
+    ClassDB::bind_static_method("TokenProgram", D_METHOD("get_pid"), &TokenProgram::get_pid);
 }
 
 // TODO(Virax): Data is unexplained. Fix this
