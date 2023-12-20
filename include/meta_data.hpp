@@ -103,6 +103,14 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
     void _get_property_list(List<PropertyInfo> *p_list) const;
 public:
+    void set_token_name(const String& token_name);
+    String get_token_name();
+    void set_symbol(const String& symbol);
+    String get_symbol();
+    void set_uri(const String& uri);
+    String get_uri();
+    void set_seller_fee_basis_points(const uint16_t seller_fee_basis_points);
+    uint16_t get_seller_fee_basis_points();
 
     PackedByteArray serialize(const bool is_mutable) const;
 };

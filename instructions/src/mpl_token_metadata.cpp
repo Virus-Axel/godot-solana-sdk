@@ -3,6 +3,8 @@
 #include "system_program.hpp"
 #include "spl_token.hpp"
 #include "pubkey.hpp"
+#include "solana_client.hpp"
+#include "solana_sdk.hpp"
 
 namespace godot{
 
@@ -12,10 +14,12 @@ void MplTokenMetadata::_bind_methods(){
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("new_associated_metadata_pubkey", "mint"), &MplTokenMetadata::new_associated_metadata_pubkey);
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("new_associated_metadata_pubkey_master_edition", "mint"), &MplTokenMetadata::new_associated_metadata_pubkey_master_edition);
 
+    ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("get_mint_metadata", "mint"), &MplTokenMetadata::get_mint_metadata);
+
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("create_metadata_account", "account_pubkey", "mint", "mint_authority", "payer", "update_authority", "meta_data", "is_mutable", "collection_size"), &MplTokenMetadata::create_metadata_account);
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("create_master_edition", "edition", "mint", "update_authority", "mint_authority", "metadata_account", "payer", "max_supply"), &MplTokenMetadata::create_master_edition);
 
-    ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("get_pid", "mint"), &MplTokenMetadata::get_pid);
+    ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("get_pid"), &MplTokenMetadata::get_pid);
 }
 
 Variant MplTokenMetadata::new_associated_metadata_pubkey(const Variant& mint){
@@ -63,6 +67,68 @@ Variant MplTokenMetadata::new_associated_metadata_pubkey_master_edition(const Va
     
     internal::gdextension_interface_print_warning("y points were not valid", "new_associated_token_address", __FILE__, __LINE__, false);
     return nullptr;
+}
+
+Variant MplTokenMetadata::get_mint_metadata(const Variant& mint){
+    Variant metadata_account = new_associated_metadata_pubkey(mint);
+
+    Dictionary rpc_result = SolanaClient::get_account_info(Pubkey(metadata_account).get_value());
+    if(!rpc_result.has("result")){
+        return nullptr;
+    }
+
+    Variant value = ((Dictionary)rpc_result["result"])["value"];
+    if(value.get_type() != Variant::DICTIONARY){
+        return nullptr;
+    }
+
+    Dictionary account = value;
+
+    Array account_data_tuple = account["data"];
+    String encoded_data = account_data_tuple[0];
+
+    PackedByteArray account_data = SolanaSDK::bs64_decode(encoded_data);
+
+    const int NAME_LOCATION = 65;
+    const int SYMBOL_LOCATION = 101;
+    const int URI_LOCATION = 115;
+    const int SELLER_FEE_BASIS_POINT_LOCATION = 319;
+
+    MetaData *result = memnew(MetaData);
+
+    const uint32_t name_length = account_data.decode_u32(NAME_LOCATION);
+    const PackedByteArray parsed_name =  account_data.slice(NAME_LOCATION + 4, NAME_LOCATION + 4 + name_length);
+    const uint32_t real_name_length = parsed_name.find(0);
+    if(real_name_length > 0){
+        result->set_token_name(parsed_name.slice(0, real_name_length).get_string_from_ascii());
+    }
+    else{
+        result->set_token_name(parsed_name.get_string_from_ascii());
+    }
+    
+    const uint32_t symbol_length = account_data.decode_u32(SYMBOL_LOCATION);
+    const PackedByteArray parsed_symbol =  account_data.slice(SYMBOL_LOCATION + 4, SYMBOL_LOCATION + 4 + symbol_length);
+    const uint32_t real_symbol_length = parsed_symbol.find(0);
+    if(real_symbol_length > 0){
+        result->set_symbol(parsed_symbol.slice(0, real_symbol_length).get_string_from_ascii());
+    }
+    else{
+        result->set_symbol(parsed_symbol.get_string_from_ascii());
+    }
+    
+    const uint32_t uri_length = account_data.decode_u32(URI_LOCATION);
+    const PackedByteArray parsed_uri =  account_data.slice(URI_LOCATION + 4, URI_LOCATION + 4 + uri_length);
+    const uint32_t real_uri_length = parsed_uri.find(0);
+    if(real_uri_length > 0){
+        result->set_uri(parsed_uri.slice(0, real_uri_length).get_string_from_ascii());
+    }
+    else{
+        result->set_uri(parsed_uri.get_string_from_ascii());
+    }
+
+    result->set_seller_fee_basis_points(account_data.decode_u16(SELLER_FEE_BASIS_POINT_LOCATION));
+
+    return result;
 }
 
 Variant MplTokenMetadata::create_metadata_account(const Variant& account_pubkey, const Variant& mint, const Variant& mint_authority, const Variant& payer, const Variant& update_authority, const Variant &meta_data, bool is_mutable, uint64_t collection_size){

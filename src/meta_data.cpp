@@ -125,7 +125,12 @@ PackedByteArray MetaDataUses::serialize() const{
 }
 
 void MetaData::_bind_methods(){
-
+    ClassDB::bind_method(D_METHOD("get_token_name"), &MetaData::get_token_name);
+    ClassDB::bind_method(D_METHOD("set_token_name", "token_name"), &MetaData::set_token_name);
+    ClassDB::bind_method(D_METHOD("get_symbol"), &MetaData::get_symbol);
+    ClassDB::bind_method(D_METHOD("set_symbol", "symbol"), &MetaData::set_symbol);
+    ClassDB::bind_method(D_METHOD("get_uri"), &MetaData::get_uri);
+    ClassDB::bind_method(D_METHOD("set_uri", "uri"), &MetaData::set_uri);
 }
 
 bool MetaData::_set(const StringName &p_name, const Variant &p_value){
@@ -247,6 +252,31 @@ void MetaData::_get_property_list(List<PropertyInfo> *p_list) const{
         p_list->push_back(PropertyInfo(Variant::INT, "collection_size", PROPERTY_HINT_NONE));
     }
     
+}
+
+void MetaData::set_token_name(const String& token_name){
+    name = token_name;
+}
+String MetaData::get_token_name(){
+    return name;
+}
+void MetaData::set_symbol(const String& symbol){
+    this->symbol = symbol;
+}
+String MetaData::get_symbol(){
+    return symbol;
+}
+void MetaData::set_uri(const String& uri){
+    this->uri = uri;
+}
+String MetaData::get_uri(){
+    return uri;
+}
+void MetaData::set_seller_fee_basis_points(const uint16_t seller_fee_basis_points){
+    this->seller_fee_basis_points = seller_fee_basis_points;
+}
+uint16_t MetaData::get_seller_fee_basis_points(){
+    return seller_fee_basis_points;
 }
 
 PackedByteArray MetaData::serialize(const bool is_mutable) const{
