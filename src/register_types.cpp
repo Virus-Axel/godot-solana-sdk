@@ -53,7 +53,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<MetaData>();
     ClassDB::register_class<AssociatedTokenAccountProgram>();
 
-    SolanaClient::set_commitment("finalized");
+    SolanaClient::set_commitment("confirmed");
     SolanaClient::set_encoding("base64");
 }
 

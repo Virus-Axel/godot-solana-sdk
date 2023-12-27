@@ -22,6 +22,7 @@ bool Pubkey::are_bytes_curve_point() const{
 void Pubkey::_bind_methods() {
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_from_seed", "basePubkey", "seed", "owner_pubkey"), &Pubkey::new_from_seed);
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_from_string", "from"), &Pubkey::new_from_string);
+    ClassDB::bind_static_method("Pubkey", D_METHOD("new_from_bytes", "from"), &Pubkey::new_from_bytes);
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_program_address", "seeds", "program_id"), &Pubkey::new_program_address);
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_associated_token_address", "wallet_address", "token_mint_address"), &Pubkey::new_associated_token_address);
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_pda", "seeds", "program_id"), &Pubkey::new_pda);
@@ -242,6 +243,12 @@ Variant Pubkey::new_from_seed(Variant basePubkey, String seed, Variant owner_pub
 Variant Pubkey::new_from_string(const String& from){
     Pubkey *res = memnew(Pubkey);
     res->set_value(from);
+    return res;
+}
+
+Variant Pubkey::new_from_bytes(const PackedByteArray& from){
+    Pubkey *res = memnew(Pubkey);
+    res->set_bytes(from);
     return res;
 }
 

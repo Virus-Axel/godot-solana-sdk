@@ -73,6 +73,7 @@ public:
 
     static Variant new_from_seed(Variant basePubkey, String seed, Variant owner_pubkey);
     static Variant new_from_string(const String& from);
+    static Variant new_from_bytes(const PackedByteArray& from);
     static Variant new_program_address(const PackedStringArray seeds, const Variant &program_id);
     static Variant new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address);
     static Variant new_pda(const PackedStringArray seeds, const Variant &program_id);

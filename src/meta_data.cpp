@@ -279,6 +279,14 @@ uint16_t MetaData::get_seller_fee_basis_points(){
     return seller_fee_basis_points;
 }
 
+void MetaData::add_creator(const Variant& creator){
+    creators.append(creator);
+}
+
+void MetaData::set_collection(const Variant& collection){
+    this->collection = collection;
+}
+
 PackedByteArray MetaData::serialize(const bool is_mutable) const{
     PackedByteArray res;
     const uint32_t DATA_LENGTH = 14 + name.length() + symbol.length() + uri.length();
