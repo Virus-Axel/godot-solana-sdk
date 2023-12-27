@@ -48,6 +48,8 @@ private:
     static Dictionary make_rpc_param(const Variant& key, const Dictionary& value);
     static Dictionary make_data_slice(uint64_t offset, uint64_t length);
     static Dictionary quick_http_request(const String& request_body);
+    static Dictionary parse_url(const String& url);
+    static String assemble_url(const Dictionary& url_components);
 
 protected:
     static void _bind_methods();

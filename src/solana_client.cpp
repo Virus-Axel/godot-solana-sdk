@@ -142,11 +142,16 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
 	HTTPClient handler;
     Error err;
 
+    // Godot does not want the port in the url
+    Dictionary parsed_url = parse_url(get_url());
+    parsed_url.erase("port");
+    String connect_url = assemble_url(parsed_url);
+
     if(use_tls){
-        err = handler.connect_to_host(String(url.c_str()), port, TLSOptions::client_unsafe());
+        err = handler.connect_to_host(connect_url, port, TLSOptions::client_unsafe());
     }
     else{
-	    err = handler.connect_to_host(String(url.c_str()), port);
+	    err = handler.connect_to_host(connect_url, port);
     }
 
 	// Wait until a connection is established.
@@ -202,9 +207,8 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
         request.response";
 
     Array params;
-    String connect_string = String(url.c_str()) + ":" + String::num_int64(port);
 
-    params.append(connect_string);
+    params.append(get_url());
     params.append(request_body);
 
     Variant result = JavaScriptBridge::get_singleton()->eval(web_script.format(params));
@@ -713,6 +717,9 @@ Dictionary SolanaClient::simulate_transaction(const String& encoded_transaction,
 }
 
 void SolanaClient::_bind_methods(){
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("parse_url", "url"), &SolanaClient::parse_url);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
+
     ClassDB::bind_static_method("SolanaClient", D_METHOD("set_url", "url"), &SolanaClient::set_url);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_url"), &SolanaClient::get_url);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("set_encoding", "encoding"), &SolanaClient::set_encoding);
@@ -730,7 +737,6 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_identity"), &SolanaClient::disable_identity);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_slot_range", "first", "last"), &SolanaClient::enable_slot_range);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_slot_range"), &SolanaClient::disable_slot_range);
-
 
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_latest_blockhash"), &SolanaClient::get_latest_blockhash);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_balance", "account"), &SolanaClient::get_balance);
@@ -771,8 +777,8 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_stake_minimum_delegation"), &SolanaClient::get_stake_minimum_delegation);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_supply", "exclude_non_circulating"), &SolanaClient::get_supply);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_token_account_balance", "token_account"), &SolanaClient::get_token_account_balance);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_token_accounts_by_delegate", "account_delegate", "mint", "program_id"), &SolanaClient::get_token_accounts_by_delegate);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_token_accounts_by_owner", "owner", "mint", "program_id"), &SolanaClient::get_token_accounts_by_owner);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_token_accounts_by_delegate", "account_delegate", "mint=\"\"", "program_id=\"\""), &SolanaClient::get_token_accounts_by_delegate);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_token_accounts_by_owner", "owner", "mint=\"\"", "program_id=\"\""), &SolanaClient::get_token_accounts_by_owner);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_token_largest_account", "token_mint"), &SolanaClient::get_token_largest_account);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_token_supply", "token_mint"), &SolanaClient::get_token_supply);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_transaction", "signature"), &SolanaClient::get_transaction);
@@ -791,27 +797,106 @@ SolanaClient::SolanaClient(){
     commitment = "finalized";
 }
 
-void SolanaClient::set_url(const String& url){
-   // SolanaClient::url = url.ascii();
-    //return ;
-    PackedStringArray strings = url.split(":");
-    if(strings[0] == "https"){
-        use_tls = true;
+Dictionary SolanaClient::parse_url(const String& url){
+    Dictionary result;
+    String sliced_url = url;
+
+    // Strip away optional query and fragment strings.
+    PackedStringArray strings = sliced_url.split("#");
+    if(strings.size() > 1){
+        sliced_url = strings[0];
+        result["fragment"] = strings[1];
     }
-    else if(strings[0] == "http"){
-        use_tls = false;
+    strings = sliced_url.split("?");
+    if(strings.size() > 1){
+        sliced_url = strings[0];
+        result["query"] = strings[1];
     }
-    if(strings.size() > 2){
-        SolanaClient::port = strings[strings.size() - 1].to_int();
-        String result_url = strings[0] + ':';
-        for(unsigned int i = 1; i < strings.size() - 1; i++){
-            result_url += strings[i];
+
+    // Find optional scheme
+    strings = sliced_url.split("://");
+    if(strings.size() > 1){
+        sliced_url = strings[1];
+        result["scheme"] = strings[0];
+    }
+
+    // Get path and host.
+    const int path_location = sliced_url.find("/");
+    if(path_location > 0){
+        const String path = sliced_url.substr(path_location);
+        if(path.length() > 1){
+            result["path"] = path;
         }
-        SolanaClient::url = result_url.ascii();
+        sliced_url = sliced_url.substr(0, path_location);
     }
-    else{
-	    SolanaClient::url = url.ascii();
+    
+    strings = sliced_url.split(":");
+    if(strings.size() > 1){
+        result["port"] = strings[1].to_int();
+        sliced_url = strings[0];
     }
+
+    strings = sliced_url.split("@");
+    if(strings.size() > 1){
+        result["userinfo"] = strings[0];
+        sliced_url = strings[1];
+    }
+
+    result["host"] = sliced_url;
+
+    return result;
+}
+
+String SolanaClient::assemble_url(const Dictionary& url_components){
+    String result = "";
+
+    if(url_components.has("scheme")){
+        result += (String) url_components["scheme"] + "://";
+    }
+    if(url_components.has("userinfo")){
+        result += (String) url_components["userinfo"] + "@";
+    }
+    if(url_components.has("host")){
+        result += (String) url_components["host"];
+    }
+    if(url_components.has("port")){
+        result += ":" + String::num_uint64(url_components["port"]);
+    }
+    if(url_components.has("path")){
+        result += (String) url_components["path"];
+    }
+    if(url_components.has("query")){
+        result += "?" + (String) url_components["query"];
+    }
+    if(url_components.has("fragment")){
+        result += "#" + (String) url_components["fragment"];
+    }
+
+    return result;
+}
+
+void SolanaClient::set_url(const String& url){
+    Dictionary parsed_url = parse_url(url);
+
+    // See if tls should be used.
+    use_tls = true;
+    port = DEFAULT_PORT;
+    if(!parsed_url.has("scheme")){
+        gdextension_interface_print_warning("No scheme specified, enabling tls by default.", "set_url", __FILE__, __LINE__, false);
+    }
+    else if(parsed_url["scheme"] == "http"){
+        use_tls = false;
+        port = 80;
+    }
+    else if(parsed_url["scheme"] != "https"){
+        gdextension_interface_print_warning("Unknown scheme, enabling tls by default.", "set_url", __FILE__, __LINE__, false);
+    }
+
+    if(parsed_url.has("port")){
+        port = parsed_url["port"];
+    }
+
+	SolanaClient::url = url.ascii();
 }
 
 String SolanaClient::get_url(){
