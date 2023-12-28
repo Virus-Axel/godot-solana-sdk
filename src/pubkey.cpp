@@ -8,7 +8,7 @@
 #include "curve25519.hpp"
 #include "keypair.hpp"
 #include "account_meta.hpp"
-#include "phantom.hpp"
+#include "wallet_adapter.hpp"
 #include "spl_token.hpp"
 
 using internal::gdextension_interface_print_warning;
@@ -474,8 +474,8 @@ void Pubkey::operator=(const Variant& other){
         this->value = key_ptr->get_value();
         this->type = key_ptr->get_type();
     }
-    else if(other.has_method("connect_phantom")){
-        PhantomController *phantom_controller = Object::cast_to<PhantomController>(other);
+    else if(other.has_method("connect_wallet")){
+        WalletAdapter *phantom_controller = Object::cast_to<WalletAdapter>(other);
         if(phantom_controller->is_connected()){
             this->set_bytes(phantom_controller->get_connected_key());
         }

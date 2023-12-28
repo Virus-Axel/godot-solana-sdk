@@ -119,16 +119,16 @@ env.Append(CPPPATH=["src/"])
 env.Append(CPPPATH=["include/"])
 env.Append(CPPPATH=["sha256/"])
 env.Append(CPPPATH=["ed25519/src/"])
-env.Append(CPPPATH=["phantom/"])
 env.Append(CPPPATH=["instructions/include"])
 env.Append(CPPPATH=["instructions/src"])
+env.Append(CPPPATH=["wallet_adapter/"])
 
 sources = Glob("src/*.cpp")
 
 sha256_sources = Glob("sha256/sha256.cpp")
 ed25519_sources = Glob("ed25519/src/*.c")
 
-phantom_sources = Glob("phantom/*.cpp")
+wallet_sources = Glob("wallet_adapter/*.cpp")
 instruction_sources = Glob("instructions/src/*.cpp")
 
 # Handle the container build
@@ -166,12 +166,12 @@ else:
             ) + LIBRARY_NAME + ".{}.{}".format(
                 env["platform"], env["target"]
             ),
-            source=sources + sha256_sources + ed25519_sources + phantom_sources + instruction_sources,
+            source=sources + sha256_sources + ed25519_sources + wallet_sources + instruction_sources,
         )
     else:
         library = env.SharedLibrary(
             "bin/lib" + LIBRARY_NAME + "{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-            source=sources + sha256_sources + ed25519_sources + phantom_sources + instruction_sources,
+            source=sources + sha256_sources + ed25519_sources + wallet_sources + instruction_sources,
         )
 
     Default(library)
