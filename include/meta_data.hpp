@@ -113,7 +113,9 @@ public:
     uint16_t get_seller_fee_basis_points();
 
     void add_creator(const Variant& creator);
+    Array get_creators();
     void set_collection(const Variant& collection);
+    Array get_collection();
 
     PackedByteArray serialize(const bool is_mutable) const;
 };
