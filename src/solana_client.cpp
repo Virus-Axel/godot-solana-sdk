@@ -145,7 +145,17 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
     // Godot does not want the port in the url
     Dictionary parsed_url = parse_url(get_url());
     parsed_url.erase("port");
-    String connect_url = assemble_url(parsed_url);
+
+    String connect_url = "https";
+    if(parsed_url.has("scheme")){
+        connect_url = parsed_url["scheme"];
+    }
+    connect_url += "://" + (String) parsed_url["host"];
+
+    String path = "/";
+    if(parsed_url.has("path")){
+        path = parsed_url["path"];
+    }
 
     if(use_tls){
         err = handler.connect_to_host(connect_url, port, TLSOptions::client_unsafe());
@@ -163,7 +173,7 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
 	}
 
 	// Make a POST request
-	err = handler.request(godot::HTTPClient::METHOD_POST, "/", http_headers, request_body);
+	err = handler.request(godot::HTTPClient::METHOD_POST, path, http_headers, request_body);
 
 	if(err != Error::OK){
 		gdextension_interface_print_warning("Error sending request.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
