@@ -90,15 +90,15 @@ Variant MplTokenMetadata::get_mint_metadata(const Variant& mint){
     PackedByteArray account_data = SolanaSDK::bs64_decode(encoded_data);
 
     const int NAME_LOCATION = 65;
-    const int SYMBOL_LOCATION = 101;
-    const int URI_LOCATION = 115;
-    const int SELLER_FEE_BASIS_POINT_LOCATION = 319;
 
     MetaData *result = memnew(MetaData);
 
     const uint32_t name_length = account_data.decode_u32(NAME_LOCATION);
     const PackedByteArray parsed_name =  account_data.slice(NAME_LOCATION + 4, NAME_LOCATION + 4 + name_length);
     const uint32_t real_name_length = parsed_name.find(0);
+
+    const int SYMBOL_LOCATION = NAME_LOCATION + name_length + 4;
+
     if(real_name_length > 0){
         result->set_token_name(parsed_name.slice(0, real_name_length).get_string_from_ascii());
     }
@@ -116,6 +116,8 @@ Variant MplTokenMetadata::get_mint_metadata(const Variant& mint){
         result->set_symbol(parsed_symbol.get_string_from_ascii());
     }
     
+    const int URI_LOCATION = SYMBOL_LOCATION + symbol_length + 4;
+
     const uint32_t uri_length = account_data.decode_u32(URI_LOCATION);
     const PackedByteArray parsed_uri =  account_data.slice(URI_LOCATION + 4, URI_LOCATION + 4 + uri_length);
     const uint32_t real_uri_length = parsed_uri.find(0);
@@ -126,7 +128,49 @@ Variant MplTokenMetadata::get_mint_metadata(const Variant& mint){
         result->set_uri(parsed_uri.get_string_from_ascii());
     }
 
+    const int SELLER_FEE_BASIS_POINT_LOCATION = URI_LOCATION + uri_length + 4;
+
     result->set_seller_fee_basis_points(account_data.decode_u16(SELLER_FEE_BASIS_POINT_LOCATION));
+
+    const uint32_t CREATOR_LOCATION = SELLER_FEE_BASIS_POINT_LOCATION + 2;
+
+    uint32_t collection_location = CREATOR_LOCATION + 1;
+
+    // Check for creators.
+    if(account_data[CREATOR_LOCATION] == 1){
+        uint32_t creator_amount = account_data.decode_u32(CREATOR_LOCATION + 1);
+        for(int i = 0; i < creator_amount; i++){
+            MetaDataCreator * creator = memnew(MetaDataCreator);
+
+            Variant creator_address = Pubkey::new_from_bytes(account_data.slice(CREATOR_LOCATION + 5 + 34 * i, CREATOR_LOCATION + 37 + 34 * i));
+            creator->set_address(creator_address);
+            creator->set_verified(account_data[CREATOR_LOCATION + 37 + 34 * i] == 1);
+            creator->set_share(account_data[CREATOR_LOCATION + 38 + 34 * i]);
+
+            result->add_creator(creator);
+        }
+        collection_location += creator_amount * 34 + 4;
+    }
+
+    collection_location += 6;
+    // Unknown 0
+    // primary sale happened
+    // is mutable
+    // edition nonce
+    // token standard two bytes?
+
+    // Check collection data.
+    if(account_data[collection_location] == 1){
+        MetaDataCollection * collection = memnew(MetaDataCollection);
+
+        Variant collection_address = Pubkey::new_from_bytes(account_data.slice(collection_location + 2, collection_location + 34));
+        collection->set_key(collection_address);
+        collection->set_verified(account_data[collection_location + 1] == 1);
+
+        result->set_collection(collection);
+    }
+
+    // TODO(Virax): Parse uses data.
 
     return result;
 }

@@ -131,6 +131,9 @@ void MetaData::_bind_methods(){
     ClassDB::bind_method(D_METHOD("set_symbol", "symbol"), &MetaData::set_symbol);
     ClassDB::bind_method(D_METHOD("get_uri"), &MetaData::get_uri);
     ClassDB::bind_method(D_METHOD("set_uri", "uri"), &MetaData::set_uri);
+
+    ClassDB::bind_method(D_METHOD("get_creators"), &MetaData::get_creators);
+    ClassDB::bind_method(D_METHOD("get_collection"), &MetaData::get_collection);
 }
 
 bool MetaData::_set(const StringName &p_name, const Variant &p_value){
@@ -277,6 +280,22 @@ void MetaData::set_seller_fee_basis_points(const uint16_t seller_fee_basis_point
 }
 uint16_t MetaData::get_seller_fee_basis_points(){
     return seller_fee_basis_points;
+}
+
+void MetaData::add_creator(const Variant& creator){
+    creators.append(creator);
+}
+
+Array MetaData::get_creators(){
+    return creators;
+}
+
+Variant MetaData::get_collection(){
+    return collection;
+}
+
+void MetaData::set_collection(const Variant& collection){
+    this->collection = collection;
 }
 
 PackedByteArray MetaData::serialize(const bool is_mutable) const{
