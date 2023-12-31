@@ -290,7 +290,7 @@ Array MetaData::get_creators(){
     return creators;
 }
 
-Array MetaData::get_collection(){
+Variant MetaData::get_collection(){
     return collection;
 }
 
