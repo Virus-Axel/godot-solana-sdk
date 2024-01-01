@@ -7,8 +7,6 @@
 #include <vector>
 #include <algorithm>
 
-#include <phantom.hpp>
-
 #include <godot_cpp/core/class_db.hpp>
 
 namespace godot{

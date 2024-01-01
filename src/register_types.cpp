@@ -9,7 +9,7 @@
 #include "transaction.hpp"
 #include "hash.hpp"
 #include "utils.hpp"
-#include "phantom.hpp"
+#include "wallet_adapter.hpp"
 #include "message.hpp"
 #include "solana_client.hpp"
 #include "compute_budget.hpp"
@@ -42,7 +42,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<Instruction>();
     ClassDB::register_class<Transaction>();
     ClassDB::register_class<Keypair>();
-    ClassDB::register_class<PhantomController>();
+    ClassDB::register_class<WalletAdapter>();
     ClassDB::register_class<ComputeBudget>();
     ClassDB::register_class<SystemProgram>();
     ClassDB::register_class<TokenProgram>();

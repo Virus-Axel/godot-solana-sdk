@@ -11,7 +11,7 @@
 #include <godot_cpp/classes/http_request.hpp>
 #include <solana_client.hpp>
 #include <solana_sdk.hpp>
-#include <phantom.hpp>
+#include <wallet_adapter.hpp>
 #include <message.hpp>
 
 //#include <emscripten.h>
@@ -54,7 +54,7 @@ void Transaction::_bind_methods() {
 }
 
 void Transaction::_signer_signed(PackedByteArray signature){
-    PhantomController *controller = Object::cast_to<PhantomController>(payer);
+    WalletAdapter *controller = Object::cast_to<WalletAdapter>(payer);
     controller->disconnect("message_signed", Callable(this, "_signer_signed"));
     controller->disconnect("signing_error", Callable(this, "_signer_failed"));
 
@@ -67,7 +67,7 @@ void Transaction::_signer_signed(PackedByteArray signature){
 }
 
 void Transaction::_signer_failed(){
-    PhantomController *controller = Object::cast_to<PhantomController>(payer);
+    WalletAdapter *controller = Object::cast_to<WalletAdapter>(payer);
     controller->disconnect("message_signed", Callable(this, "_signer_signed"));
     controller->disconnect("signing_error", Callable(this, "_signer_failed"));
 
@@ -134,7 +134,7 @@ void Transaction::sign_at_index(const uint32_t index){
         check_fully_signed();
     }
     else if(signers[index].has_method("sign_message")){
-        PhantomController* controller = Object::cast_to<PhantomController>(signers[index]);
+        WalletAdapter* controller = Object::cast_to<WalletAdapter>(signers[index]);
 
         controller->connect("message_signed", Callable(this, "_signer_signed"));
         controller->connect("signing_error", Callable(this, "_signer_failed"));
