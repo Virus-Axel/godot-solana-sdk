@@ -18,6 +18,7 @@
 #include "meta_data.hpp"
 #include "mpl_token_metadata.hpp"
 #include "associated_token_account.hpp"
+#include "mpl_candy_machine.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -52,6 +53,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<MetaDataUses>();
     ClassDB::register_class<MetaData>();
     ClassDB::register_class<AssociatedTokenAccountProgram>();
+    ClassDB::register_class<MplCandyMachine>();
 
     SolanaClient::set_commitment("confirmed");
     SolanaClient::set_encoding("base64");
