@@ -1,4 +1,5 @@
 #include "spl_token.hpp"
+#include "mpl_token_metadata.hpp"
 
 const std::string TokenProgram::ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
@@ -9,10 +10,37 @@ void TokenProgram::_bind_methods(){
     ClassDB::bind_static_method("TokenProgram", D_METHOD("transfer_checked", "source_pubkey", "mint_pubkey", "destination_pubkey", "source_authority", "amount", "decimals"), &TokenProgram::transfer_checked);
     ClassDB::bind_static_method("TokenProgram", D_METHOD("freeze_account", "account_pubkey", "mint_pubkey", "owner_pubkey", "freeze_authority"), &TokenProgram::freeze_account);
 
+    ClassDB::bind_static_method("TokenProgram", D_METHOD("new_token_record_address", "omner", "mint"), &TokenProgram::new_token_record_address);
     ClassDB::bind_static_method("TokenProgram", D_METHOD("get_pid"), &TokenProgram::get_pid);
 }
 
 // TODO(Virax): Data is unexplained. Fix this
+
+Variant TokenProgram::new_token_record_address(const Variant &token, const Variant &mint){
+    Array seeds;
+
+    seeds.append(String("metadata").to_ascii_buffer());
+    seeds.append(Pubkey(MplTokenMetadata::get_pid()).get_bytes());
+    seeds.append(Pubkey(mint).get_bytes());
+    seeds.append(String("token_record").to_ascii_buffer());
+    seeds.append(Pubkey(token).get_bytes());
+
+    return Pubkey::new_pda_bytes(seeds, MplTokenMetadata::get_pid());
+}
+
+Variant TokenProgram::new_delegate_record_address(const Variant& update_authority, const Variant &mint, const Variant& delegate_address, const MetaDataDelegateRole role){
+    Array seeds;
+    seeds.append(String("metadata").to_ascii_buffer());
+    seeds.append(Pubkey(MplTokenMetadata::get_pid()).get_bytes());
+    seeds.append(Pubkey(mint).get_bytes());
+
+    // TODO(Virax): Change based on delegate role.
+    seeds.append(String("collection_delegate").to_ascii_buffer());
+    seeds.append(Pubkey(update_authority).get_bytes());
+    seeds.append(Pubkey(delegate_address).get_bytes());
+
+    return Pubkey::new_pda_bytes(seeds, MplTokenMetadata::get_pid());
+}
 
 Variant TokenProgram::initialize_mint(const Variant& mint_pubkey, const Variant& mint_authority, const Variant& freeze_authority, const uint32_t decimals){
     Instruction *result = memnew(Instruction);

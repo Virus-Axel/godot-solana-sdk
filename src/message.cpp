@@ -116,7 +116,7 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
     latest_blockhash = "";
 
     // Prepend ComputeBudget instructions.
-    instructions.insert(0, ComputeBudget::set_compute_unit_limit(200000));
+    instructions.insert(0, ComputeBudget::set_compute_unit_limit(800000));
     instructions.insert(1, ComputeBudget::set_compute_unit_price(8000));
 
     for(unsigned int i = 0; i < instructions.size(); i++){
