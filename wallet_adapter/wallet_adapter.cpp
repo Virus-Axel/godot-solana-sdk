@@ -45,7 +45,7 @@ void WalletAdapter::store_encoded_message(const PackedByteArray &serialized_mess
 }
 
 String WalletAdapter::wallet_name_from_type(WalletType wallet_type){
-    if(wallet_type < WalletType::MAX_TYPES){
+    if(wallet_type >= WalletType::MAX_TYPES){
         return "";
     }
 
@@ -59,7 +59,7 @@ String WalletAdapter::wallet_name_from_type(WalletType wallet_type){
 }
 
 String WalletAdapter::wallet_check_name_from_type(WalletType wallet_type){
-    if(wallet_type < WalletType::MAX_TYPES){
+    if(wallet_type >= WalletType::MAX_TYPES){
         return "";
     }
 
@@ -186,13 +186,17 @@ Array WalletAdapter::get_available_wallets(){
         params.append(wallet_check_name_from_type((WalletType)i));
 
         const String CHECK_SCRIPT = "\
-        const {0} in window;\
+        const {{0}} = window;\
         if({0}){\
-            if({0}.{1}()){\
+            if({0}.{1}){\
                 1\
+            }else{\
+              0\
             }\
         }\
-        0";
+        else{\
+          0\
+        }";
 
         if((int)JavaScriptBridge::get_singleton()->eval(CHECK_SCRIPT.format(params)) == 1){
             available_wallets.append(i);

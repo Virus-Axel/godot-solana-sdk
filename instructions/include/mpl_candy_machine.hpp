@@ -18,12 +18,13 @@ public:
 class MplCandyMachine : public Node{
     GDCLASS(MplCandyMachine, Node)
 private:
-    PackedByteArray mint_discriminator();
 
 protected:
     static void _bind_methods();
 
 public:
+    static PackedByteArray mint_discriminator();
+
     static const std::string ID;
 
     Variant initialize(
@@ -56,7 +57,40 @@ public:
         const Variant &collection_update_authority,
         const Variant &authorization_rules);
 
+    static Variant new_candy_machine_authority_pda(const Variant& candy_machine_key);
     static Variant get_pid();
+};
+
+class MplCandyGuard : public Node{
+    GDCLASS(MplCandyGuard, Node)
+private:
+
+protected:
+    static void _bind_methods();
+
+public:
+    static const std::string ID;
+
+    Variant mint(
+        const Variant &candy_machine,
+        const Variant &payer,
+        const Variant &minter,
+        const Variant &nft_mint,
+        const Variant &nft_mint_authority,
+        const Variant &nft_metadata,
+        const Variant &nft_master_edition,
+        const Variant &token,
+        const Variant &token_record,
+        const Variant &collection_delegate_record,
+        const Variant &collection_mint,
+        const Variant &collection_metadata,
+        const Variant &collection_master_edition,
+        const Variant &collection_update_authority,
+        const Variant &authorization_rules,
+        const String &label = "");
+
+    static Variant get_pid();
+    static Variant new_associated_candy_guard_key(const Variant &candy_machine_key);
 };
 
 }

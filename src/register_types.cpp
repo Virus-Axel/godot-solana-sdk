@@ -54,6 +54,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<MetaData>();
     ClassDB::register_class<AssociatedTokenAccountProgram>();
     ClassDB::register_class<MplCandyMachine>();
+    ClassDB::register_class<MplCandyGuard>();
 
     SolanaClient::set_commitment("confirmed");
     SolanaClient::set_encoding("base64");
