@@ -14,6 +14,7 @@ using internal::gdextension_interface_print_warning;
 
 const int DEFAULT_PORT = 443;
 const std::string DEFAULT_URL = "https://api.devnet.solana.com";
+//const std::string DEFAULT_URL = "http://localhost";
 
 std::string SolanaClient::url = DEFAULT_URL;
 int SolanaClient::port = DEFAULT_PORT;
