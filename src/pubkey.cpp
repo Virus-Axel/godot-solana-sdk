@@ -281,6 +281,28 @@ Variant Pubkey::new_pda(const PackedStringArray seeds, const Variant &program_id
     return nullptr;
 }
 
+Variant Pubkey::new_pda_bytes(const Array seeds, const Variant &program_id){
+    TypedArray<PackedByteArray> arr;
+
+    for(unsigned int i = 0; i < seeds.size(); i++){
+        arr.append(seeds[i]);
+    }
+
+    arr.append(PackedByteArray());
+    
+    Pubkey *res = memnew(Pubkey);
+    for(uint8_t i = 255; i > 0; i--){
+        PackedByteArray bump_seed;
+        bump_seed.push_back(i);
+        arr[arr.size() - 1] = bump_seed;
+        if(res->create_program_address_bytes(arr, program_id)){
+            return res;
+        }
+    }
+    
+    internal::gdextension_interface_print_warning("y points were not valid", "new_associated_token_address", __FILE__, __LINE__, false);
+    return nullptr;
+}
 
 Variant Pubkey::new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address){    
     TypedArray<PackedByteArray> arr;

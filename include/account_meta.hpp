@@ -40,6 +40,7 @@ public:
     bool get_writeable() const;
 
     void create_new(const Variant& account_key, bool is_signer, bool writeable);
+    static Variant new_account_meta(const Variant& account_key, bool is_signer, bool writeable);
 
     bool operator==(const AccountMeta& other) const;
 

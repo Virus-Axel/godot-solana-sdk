@@ -105,6 +105,7 @@ PackedByteArray CompiledInstruction::serialize(){
         result.append(accounts[i]);
     }
 
+
     result.append(data.size());
     for(unsigned int i = 0; i < data.size(); i++){
         result.append(data[i]);
