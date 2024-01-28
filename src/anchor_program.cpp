@@ -60,6 +60,72 @@ PackedByteArray AnchorProgram::serialize_typed_primitive(const Dictionary &dict)
     return result;
 }
 
+Dictionary AnchorProgram::find_idl_type(const String &name){
+    if(!((Dictionary)idl).has("types")){
+        internal::gdextension_interface_print_warning("IDL does not contain \"types\" key", "find_idl_type", __FILE__, __LINE__, false);
+        return Dictionary();
+    }
+
+    Array types = ((Dictionary)idl)["types"];
+    for(unsigned int i = 0; i < types.size(); i++){
+        const Dictionary type = types[i];
+        if(type["name"] == name){
+            return type;
+        }
+    }
+
+    return Dictionary();
+}
+
+
+Variant AnchorProgram::deserialize_dict(const PackedByteArray& bytes, const Dictionary& type, int &consumed_bytes){
+    Dictionary result;
+    
+    if(type.has("kind")){
+        if(type["kind"] == String("struct")){
+            const Array fields = type["fields"];
+            PackedByteArray temp_bytes = bytes;
+            for(unsigned int i = 0; i < fields.size(); i++){
+                const Dictionary type_ref = fields[i];
+                int byte_offset = 0;
+                const Variant val = deserialize_variant(temp_bytes, type_ref["type"], byte_offset);
+                consumed_bytes += byte_offset;
+                temp_bytes = temp_bytes.slice(byte_offset);
+                result[type_ref["name"]] = val;
+            }
+        }
+        else{
+            internal::gdextension_interface_print_warning("Unsupported Object", "deserialize_variant", __FILE__, __LINE__, true);
+            return nullptr;
+        }
+    }
+    else if(type.has("defined")){
+        const String struct_name = type["defined"];
+        const Dictionary idl_type = find_idl_type(struct_name);
+        return deserialize_dict(bytes, idl_type["type"], consumed_bytes);
+    }
+    else if(type.has("vec")){
+        const Variant struct_type = type["vec"];
+        Array values;
+        const unsigned int array_length = bytes.decode_u32(0);
+        PackedByteArray temp_bytes = bytes;
+        for(unsigned int i = 0; i < array_length; i++){
+            int byte_offset = 0;
+            const Variant val = deserialize_variant(temp_bytes, struct_type, byte_offset);
+            values.append(val);
+            temp_bytes = temp_bytes.slice(byte_offset);
+            consumed_bytes = byte_offset;
+        }
+        return values;
+    }
+    else{
+        internal::gdextension_interface_print_warning("Unsupported Object", "deserialize_variant", __FILE__, __LINE__, true);
+        return nullptr;
+    }
+
+    return result;
+}
+
 Variant AnchorProgram::deserialize_variant(const PackedByteArray& bytes, const Variant& type, int &consumed_bytes){
     if(type == "u8"){
         consumed_bytes = 1;
@@ -101,10 +167,14 @@ Variant AnchorProgram::deserialize_variant(const PackedByteArray& bytes, const V
         consumed_bytes = 8;
         return bytes.decode_double(0);
     }
-    else if(type == "String"){
+    else if(type == "string"){
         const int data_length = bytes.decode_s32(0);
         consumed_bytes = 4 + data_length;
         return bytes.slice(4).get_string_from_ascii();
+    }
+    else if(type == "publicKey"){
+        consumed_bytes = 32;
+        return Pubkey::new_from_bytes(bytes.slice(0, 32));
     }
     else if(type == "bool"){
         consumed_bytes = 1;
@@ -113,6 +183,9 @@ Variant AnchorProgram::deserialize_variant(const PackedByteArray& bytes, const V
     else if(type == "Array"){
         const int data_length = bytes.decode_s32(0);
         return bytes.slice(4).get_string_from_ascii();
+    }
+    else if(type.get_type() == Variant::DICTIONARY){
+        return deserialize_dict(bytes, type, consumed_bytes);
     }
     else{
         internal::gdextension_interface_print_warning("Unsupported Object", "deserialize_variant", __FILE__, __LINE__, true);
@@ -652,7 +725,7 @@ Dictionary AnchorProgram::u64(uint64_t val){
 Variant AnchorProgram::build_instruction(String name, Array accounts, Variant arguments){
     Instruction *result = memnew(Instruction);
 
-    PackedByteArray data = discriminator_by_name(name);
+    PackedByteArray data = discriminator_by_name(name.to_snake_case());
 
     result->set_program_id(Pubkey::new_from_string(pid));
     data.append_array(serialize_variant(arguments));
@@ -718,6 +791,7 @@ Dictionary AnchorProgram::fetch_account(const String name, const Variant& accoun
         int data_offset = 0;
         const Variant val = deserialize_variant(account_data, ((Dictionary)fields[i])["type"], data_offset);
         result[((Dictionary)fields[i])["name"]] = val;
+        account_data = account_data.slice(data_offset);
     }
 
     return result;

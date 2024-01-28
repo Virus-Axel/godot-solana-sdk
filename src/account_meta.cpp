@@ -63,10 +63,10 @@ Variant AccountMeta::get_pubkey() const {
 }
 
 Variant AccountMeta::get_signer() const{
-    return key.duplicate(true);
     if(key.has_method("get_public_bytes")){
         Keypair *res = memnew(Keypair());
         res->set_public_bytes(Object::cast_to<Keypair>(key)->get_public_bytes());
+        res->set_private_bytes(Object::cast_to<Keypair>(key)->get_private_bytes());
 
         return res;
     }
@@ -104,7 +104,12 @@ AccountMeta::AccountMeta(const Variant& pid, bool signer, bool writeable){
 AccountMeta::AccountMeta(const Variant& other){
     if(other.has_method("get_pubkey")){
         const AccountMeta* meta_ptr = Object::cast_to<AccountMeta>(other);
-        this->key = meta_ptr->get_pubkey();
+        if(Object::cast_to<AccountMeta>(other)->get_is_signer()){
+            this->key = meta_ptr->get_signer();
+        }
+        else{
+            this->key = meta_ptr->get_pubkey();
+        }
         this->is_signer = meta_ptr->get_is_signer();
         this->writeable = meta_ptr->get_writeable();
     }

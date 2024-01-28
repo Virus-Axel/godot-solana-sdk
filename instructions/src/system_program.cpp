@@ -11,6 +11,8 @@ void SystemProgram::_bind_methods(){
     ClassDB::bind_static_method("SystemProgram", D_METHOD("transfer", "sender_pubkey", "reciever_pubkey", "lamports"), &SystemProgram::transfer);
     ClassDB::bind_static_method("SystemProgram", D_METHOD("create_account", "from_keypair", "to_keypair", "lamports", "space", "owner"), &SystemProgram::create_account);
     ClassDB::bind_static_method("SystemProgram", D_METHOD("create_account_with_seed", "from_keypair", "base_keypair", "seed", "lamports", "space", "owner"), &SystemProgram::create_account_with_seed);
+
+    ClassDB::bind_static_method("SystemProgram", D_METHOD("get_pid"), &SystemProgram::get_pid);
 }
 
 Variant SystemProgram::create_account(const Variant &from_keypair, const Variant& to_keypair, const uint64_t lamports, const uint64_t space, const Variant& owner){

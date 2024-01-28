@@ -29,7 +29,9 @@ private:
     PackedByteArray discriminator_by_name(const String &name);
     Dictionary find_idl_instruction(const String &name);
     Dictionary find_idl_account(const String &name);
+    Dictionary find_idl_type(const String &name);
 
+    Variant deserialize_dict(const PackedByteArray& bytes, const Dictionary& type, int& consumed_bytes);
     Variant deserialize_variant(const PackedByteArray& bytes, const Variant& type, int &consumed_bytes);
 
     bool _set(const StringName &p_name, const Variant &p_value);
