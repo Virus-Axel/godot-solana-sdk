@@ -79,6 +79,8 @@ public:
     static Variant new_pda(const PackedStringArray seeds, const Variant &program_id);
     static Variant new_pda_bytes(const Array seeds, const Variant &program_id);
 
+    static bool is_pubkey(const Variant &object);
+
     bool create_program_address(const PackedStringArray seeds, const Variant &program_id);
     bool create_program_address_bytes(const Array seeds, const Variant &program_id);
     bool get_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address);

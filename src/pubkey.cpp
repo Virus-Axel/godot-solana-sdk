@@ -304,6 +304,10 @@ Variant Pubkey::new_pda_bytes(const Array seeds, const Variant &program_id){
     return nullptr;
 }
 
+bool Pubkey::is_pubkey(const Variant &object){
+    return ((Object*)object)->is_class("Pubkey");
+}
+
 Variant Pubkey::new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address){    
     TypedArray<PackedByteArray> arr;
 
