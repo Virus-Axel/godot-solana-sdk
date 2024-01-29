@@ -23,6 +23,7 @@ private:
 
     bool is_int(const Variant &var);
     bool is_float(const Variant &var);
+    static bool is_option(const Variant &var);
     bool check_type(const Variant& expected_type, const Variant& value);
     bool validate_instruction_arguments(const String &instruction_name, const Array &arguments);
     void register_instruction_builders();
@@ -66,6 +67,7 @@ public:
     static Dictionary u16(unsigned int val);
     static Dictionary u32(uint32_t val);
     static Dictionary u64(uint64_t val);
+    static Dictionary option(const Variant &val);
 
     Variant build_instruction(String name, Array accounts, Variant arguments);
     Dictionary fetch_account(const String name, const Variant &account);

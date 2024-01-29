@@ -12,7 +12,7 @@
 namespace godot{
 
 bool AnchorProgram::is_typed_primitive(const Dictionary &dict){
-    return (dict.has("dataType") && dict.has("value") && dict.keys().size());
+    return (dict.has("dataType") && dict.has("value") && dict.keys().size() && dict["dataType"] != String("option"));
 }
 
 PackedByteArray AnchorProgram::serialize_typed_primitive(const Dictionary &dict){
@@ -117,6 +117,15 @@ Variant AnchorProgram::deserialize_dict(const PackedByteArray& bytes, const Dict
             consumed_bytes = byte_offset;
         }
         return values;
+    }
+    else if(type.has("option")){
+        const Variant struct_type = type["vec"];
+        if(bytes[0] == 0){
+            return nullptr;
+        }
+        else{
+            return deserialize_variant(bytes, struct_type, consumed_bytes);
+        }
     }
     else{
         internal::gdextension_interface_print_warning("Unsupported Object", "deserialize_variant", __FILE__, __LINE__, true);
@@ -228,6 +237,16 @@ PackedByteArray AnchorProgram::serialize_variant(const Variant &var){
     case Variant::DICTIONARY:
         if(is_typed_primitive(var)){
             result.append_array(serialize_typed_primitive(var));
+        }
+        else if(is_option(var)){
+            const Variant val = ((Dictionary)var)["value"];
+            if(val.get_type() == Variant::NIL){
+                result.append(0);
+            }
+            else{
+                result.append(1);
+                result.append_array(serialize_variant(val));
+            }
         }
         else{
             for(unsigned int i = 0; i < ((Dictionary)var).values().size(); i++){
@@ -420,6 +439,19 @@ bool AnchorProgram::is_float(const Variant &var){
     return false;
 }
 
+bool AnchorProgram::is_option(const Variant &var){
+    if(var.get_type() == Variant::FLOAT){
+        return true;
+    }
+    else if(var.get_type() == Variant::DICTIONARY){
+        if(((Dictionary)var).has("dataType")){
+            const String data_type = ((Dictionary)var)["dataType"];
+            return (data_type == "option");
+        }
+    }
+    return false;
+}
+
 bool AnchorProgram::check_type(const Variant& expected_type, const Variant& value){
     if(expected_type.get_type() == Variant::DICTIONARY){
         return (value.get_type() == Variant::DICTIONARY || value.get_type() == Variant::ARRAY);
@@ -486,6 +518,7 @@ void AnchorProgram::_bind_methods(){
     ClassDB::bind_static_method("AnchorProgram", D_METHOD("u16", "val"), &AnchorProgram::u16);
     ClassDB::bind_static_method("AnchorProgram", D_METHOD("u32", "val"), &AnchorProgram::u32);
     ClassDB::bind_static_method("AnchorProgram", D_METHOD("u64", "val"), &AnchorProgram::u64);
+    ClassDB::bind_static_method("AnchorProgram", D_METHOD("option", "val"), &AnchorProgram::option);
 
     //ClassDB::add_property("AnchorProgram", PropertyInfo(Variant::STRING, "pid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), "set_pid", "get_pid");
     //ClassDB::add_property("AnchorProgram", PropertyInfo(Variant::BOOL, "try_from_pid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), "set_try_from_pid", "get_try_from_pid");
@@ -717,6 +750,14 @@ Dictionary AnchorProgram::u32(uint32_t val){
 Dictionary AnchorProgram::u64(uint64_t val){
     Dictionary res;
     res["dataType"] = "u64";
+    res["value"] = val;
+
+    return res;
+}
+
+Dictionary AnchorProgram::option(const Variant &val){
+    Dictionary res;
+    res["dataType"] = "option";
     res["value"] = val;
 
     return res;
