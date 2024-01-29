@@ -26,6 +26,7 @@ void Pubkey::_bind_methods() {
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_program_address", "seeds", "program_id"), &Pubkey::new_program_address);
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_associated_token_address", "wallet_address", "token_mint_address"), &Pubkey::new_associated_token_address);
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_pda", "seeds", "program_id"), &Pubkey::new_pda);
+    ClassDB::bind_static_method("Pubkey", D_METHOD("new_pda_bytes", "seeds", "program_id"), &Pubkey::new_pda_bytes);
 
     ClassDB::bind_method(D_METHOD("get_value"), &Pubkey::get_value);
     ClassDB::bind_method(D_METHOD("set_value", "p_value"), &Pubkey::set_value);
