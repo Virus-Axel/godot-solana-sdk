@@ -17,7 +17,6 @@ Cargo.lock
 *.bc
 *.o
 
-example
 example/SolanaSDK.gd
 example/solana_sdk.tscn
 example/addons/
