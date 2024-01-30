@@ -8,17 +8,24 @@
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/classes/java_script_bridge.hpp>
 
+#include <pubkey.hpp>
+
 namespace godot{
 
 using internal::gdextension_interface_print_warning;
 
-const int DEFAULT_PORT = 443;
+const int DEFAULT_PORT = 8899;
 const std::string DEFAULT_URL = "https://api.devnet.solana.com";
-//const std::string DEFAULT_URL = "http://localhost";
+const std::string DEFAULT_WS_URL = "wss://api.devnet.solana.com";
 
 std::string SolanaClient::url = DEFAULT_URL;
+std::string SolanaClient::ws_url = DEFAULT_WS_URL;
 int SolanaClient::port = DEFAULT_PORT;
 bool SolanaClient::use_tls = false;
+std::vector<std::pair<int, Callable>> SolanaClient::callbacks;
+std::queue<String> SolanaClient::ws_request_queue;
+std::vector<String> SolanaClient::method_names;
+WebSocketPeer* SolanaClient::ws;
 
 std::string SolanaClient::commitment;
 std::string SolanaClient::encoding;
@@ -236,6 +243,59 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
 
 	return json.get_data();
 
+}
+
+void SolanaClient::process_package(const PackedByteArray& packet_data){
+    Dictionary json = JSON::parse_string(packet_data.get_string_from_ascii());
+    const Variant result = json["result"];
+
+    if(json.has("method")){
+        int subscription = ((Dictionary)((Dictionary)json)["params"])["subscription"];
+        for(unsigned int i = 0; i < callbacks.size(); i++){
+            if(callbacks[i].first == subscription){
+                Array args;
+                args.append(((Dictionary)json)["params"]);
+                callbacks[i].second.callv(args);
+            }
+        }
+
+        return;
+    }
+    else if(result.get_type() == Variant::BOOL){
+        return;
+    }
+
+    if(result.get_type() != Variant::FLOAT){
+        gdextension_interface_print_warning("Web socket failed", "process_package", __FILE__, __LINE__, false);
+        
+        int index = callbacks.size() - 1;
+        for(int i = callbacks.size() - 1; i > 0; i--){
+            if(callbacks[i - 1].first == 0){
+                index--;
+            }
+        }
+
+        if(index < callbacks.size() && index > 0){
+            callbacks.erase(callbacks.begin() + index);
+            method_names.erase(method_names.begin() + index);
+        }
+        
+        return;
+    }
+
+    int index = callbacks.size() - 1;
+    for(int i = callbacks.size() - 1; i > 0; i--){
+        if(callbacks[i - 1].first == 0){
+            index--;
+        }
+    }
+    callbacks[index].first = (int) result;
+}
+
+void SolanaClient::connect_ws(){
+    if(ws->get_ready_state() == WebSocketPeer::STATE_CLOSED){
+        ws->connect_to_url(String(ws_url.c_str()));
+    }
 }
 
 Dictionary SolanaClient::get_latest_blockhash(){
@@ -727,7 +787,80 @@ Dictionary SolanaClient::simulate_transaction(const String& encoded_transaction,
     return quick_http_request(JSON::stringify(make_rpc_dict("simulateTransaction", params)));
 }
 
+void SolanaClient::account_subscribe(const Variant &account_key, const Callable &callback){
+    connect_ws();
+    callbacks.push_back(std::make_pair(0, callback));
+    method_names.push_back("accountUnsubscribe");
+    Array params;
+    params.append(Pubkey(account_key).get_value());
+    ws_request_queue.push(JSON::stringify(make_rpc_dict("accountSubscribe", params)));
+
+    return;
+}
+
+void SolanaClient::signature_subscribe(const String &signature, const Callable &callback, const String &commitment){
+    connect_ws();
+    callbacks.push_back(std::make_pair(0, callback));
+    method_names.push_back("signatureUnsubscribe");
+    Array params;
+    params.append(signature);
+    add_to_param_dict(params, "commitment", commitment);
+    ws_request_queue.push(JSON::stringify(make_rpc_dict("signatureSubscribe", params)));
+
+    return;
+}
+
+void SolanaClient::program_subscribe(const String &program_id, const Callable &callback){
+    connect_ws();
+    callbacks.push_back(std::make_pair(0, callback));
+    method_names.push_back("programUnsubscribe");
+    Array params;
+    params.append(program_id);
+    append_commitment(params);
+    append_account_filter(params);
+    append_encoding(params);
+
+    ws_request_queue.push(JSON::stringify(make_rpc_dict("programSubscribe", params)));
+
+    return;
+}
+
+void SolanaClient::root_subscribe(const Callable &callback){
+    connect_ws();
+    callbacks.push_back(std::make_pair(0, callback));
+    method_names.push_back("rootUnsubscribe");
+
+    ws_request_queue.push(JSON::stringify(make_rpc_dict("rootSubscribe", Array())));
+
+    return;
+}
+
+void SolanaClient::slot_subscribe(const Callable &callback){
+    connect_ws();
+    callbacks.push_back(std::make_pair(0, callback));
+    method_names.push_back("slotUnsubscribe");
+
+    ws_request_queue.push(JSON::stringify(make_rpc_dict("slotSubscribe", Array())));
+
+    return;
+}
+
+void SolanaClient::unsubscribe_all(const Callable &callback){
+    for(unsigned int i = 0; i < callbacks.size(); i++){
+        if(callbacks[i].second == callback && callbacks[i].first != 0){
+            Array params;
+            params.append(callbacks[i].first);
+            ws_request_queue.push(JSON::stringify(make_rpc_dict(method_names[i], params)));
+
+            callbacks.erase(callbacks.begin() + i);
+            method_names.erase(method_names.begin() + i);
+            i--;
+        }
+    }
+}
+
 void SolanaClient::_bind_methods(){
+    ClassDB::add_signal("SolanaClient", MethodInfo("socket_response"));
     ClassDB::bind_static_method("SolanaClient", D_METHOD("parse_url", "url"), &SolanaClient::parse_url);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
 
@@ -801,6 +934,39 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_static_method("SolanaClient", D_METHOD("request_airdrop", "address", "lamports"), &SolanaClient::request_airdrop);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("send_transaction", "encoded_transaction", "max_retries", "skip_preflight"), &SolanaClient::send_transaction);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("simulate_transaction", "encoded_transaction", "sig_verify", "replace_blockhash", "account_addresses", "account_encoding"), &SolanaClient::simulate_transaction);
+
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("unsubscribe_all", "callback"), &SolanaClient::unsubscribe_all);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("account_subscribe", "account_key", "callback"), &SolanaClient::account_subscribe);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("signature_subscribe", "signature", "callback", "commitment"), &SolanaClient::signature_subscribe);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("program_subscribe", "program_id", "callback"), &SolanaClient::program_subscribe);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("root_subscribe", "callback"), &SolanaClient::root_subscribe);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("slot_subscribe", "callback"), &SolanaClient::slot_subscribe);
+}
+
+void SolanaClient::_process(double delta){
+    ws->poll();
+    WebSocketPeer::State state = ws->get_ready_state();
+    switch(state){
+        case WebSocketPeer::STATE_OPEN:
+            while(ws->get_available_packet_count()){
+                const PackedByteArray packet_data = ws->get_packet();
+                process_package(packet_data);
+            }
+            if(!ws_request_queue.empty()){
+                ws->send_text(ws_request_queue.front());
+                ws_request_queue.pop();
+            }
+        break;
+        default:
+        break;
+    }
+    return;
+    account_subscribe(Pubkey::new_from_string("11111111111111111111111111111111"), Callable());
+}
+
+void SolanaClient::_ready(){
+    ws = new WebSocketPeer();
+    connect_ws();
 }
 
 SolanaClient::SolanaClient(){
@@ -908,6 +1074,14 @@ void SolanaClient::set_url(const String& url){
     }
 
 	SolanaClient::url = url.ascii();
+    Dictionary ws_url = parsed_url;
+    if(use_tls){
+        ws_url["scheme"] = "wss://";
+    }
+    else{
+        ws_url["scheme"] = "ws://";
+    }
+    SolanaClient::ws_url = assemble_url(ws_url).ascii();
 }
 
 String SolanaClient::get_url(){

@@ -1,7 +1,9 @@
 #ifndef SOLANA_SDK_SOLANA_CLIENT_HPP
 #define SOLANA_SDK_SOLANA_CLIENT_HPP
 
+#include <queue>
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/web_socket_peer.hpp>
 
 namespace godot {
 
@@ -10,8 +12,13 @@ class SolanaClient : public Node {
 
 private:
     static std::string url;
+    static std::string ws_url;
     static int port;
     static bool use_tls;
+    static std::vector<std::pair<int, Callable>> callbacks;
+    static std::queue<String> ws_request_queue;
+    static std::vector<String> method_names;
+    static WebSocketPeer *ws;
 
     static std::string commitment;
     static std::string encoding;
@@ -51,10 +58,16 @@ private:
     static Dictionary parse_url(const String& url);
     static String assemble_url(const Dictionary& url_components);
 
+    static void process_package(const PackedByteArray& packet_data);
+    static void connect_ws();
+
 protected:
     static void _bind_methods();
 
 public:
+
+    void _process(double delta) override;
+    void _ready() override;
 
     SolanaClient();
 
@@ -136,7 +149,15 @@ public:
     static Dictionary request_airdrop(const String& address, uint64_t lamports);
     static Dictionary send_transaction(const String& encoded_transaction, uint64_t max_retries = 10, bool skip_preflight = false);
     static Dictionary simulate_transaction(const String& encoded_transaction, bool sig_verify = false, bool replace_blockhash = false, Array account_addresses = Array(), const String& account_encoding = "base64");
-    
+
+    static void account_subscribe(const Variant &account_key, const Callable &callback);
+    static void signature_subscribe(const String &signature, const Callable &callback, const String &commitment);
+    static void program_subscribe(const String &program_id, const Callable &callback);
+    static void root_subscribe(const Callable &callback);
+    static void slot_subscribe(const Callable &callback);
+
+    static void unsubscribe_all(const Callable &callback);
+
     ~SolanaClient();
 };
 }
