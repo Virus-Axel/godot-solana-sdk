@@ -109,7 +109,7 @@ Variant AnchorProgram::deserialize_dict(const PackedByteArray& bytes, const Dict
         Array values;
         const unsigned int array_length = bytes.decode_u32(0);
         consumed_bytes += 4;
-        PackedByteArray temp_bytes = bytes;
+        PackedByteArray temp_bytes = bytes.slice(4);
         for(unsigned int i = 0; i < array_length; i++){
             int byte_offset = 0;
             const Variant val = deserialize_variant(temp_bytes, struct_type, byte_offset);
