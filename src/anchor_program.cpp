@@ -108,18 +108,20 @@ Variant AnchorProgram::deserialize_dict(const PackedByteArray& bytes, const Dict
         const Variant struct_type = type["vec"];
         Array values;
         const unsigned int array_length = bytes.decode_u32(0);
+        consumed_bytes += 4;
         PackedByteArray temp_bytes = bytes;
         for(unsigned int i = 0; i < array_length; i++){
             int byte_offset = 0;
             const Variant val = deserialize_variant(temp_bytes, struct_type, byte_offset);
             values.append(val);
             temp_bytes = temp_bytes.slice(byte_offset);
-            consumed_bytes = byte_offset;
+            consumed_bytes += byte_offset;
         }
         return values;
     }
     else if(type.has("option")){
-        const Variant struct_type = type["vec"];
+        const Variant struct_type = type["option"];
+        consumed_bytes += 1;
         if(bytes[0] == 0){
             return nullptr;
         }
@@ -137,61 +139,57 @@ Variant AnchorProgram::deserialize_dict(const PackedByteArray& bytes, const Dict
 
 Variant AnchorProgram::deserialize_variant(const PackedByteArray& bytes, const Variant& type, int &consumed_bytes){
     if(type == "u8"){
-        consumed_bytes = 1;
+        consumed_bytes += 1;
         return bytes.decode_u8(0);
     }
     else if(type == "u16"){
-        consumed_bytes = 2;
+        consumed_bytes += 2;
         return bytes.decode_u16(0);
     }
     else if(type == "u32"){
-        consumed_bytes = 4;
+        consumed_bytes += 4;
         return bytes.decode_u32(0);
     }
     else if(type == "u64"){
-        consumed_bytes = 8;
+        consumed_bytes += 8;
         return bytes.decode_u64(0);
     }
     else if(type == "i8"){
-        consumed_bytes = 1;
+        consumed_bytes += 1;
         return bytes.decode_s8(0);
     }
     else if(type == "i16"){
-        consumed_bytes = 2;
+        consumed_bytes += 2;
         return bytes.decode_s16(0);
     }
     else if(type == "i32"){
-        consumed_bytes = 4;
+        consumed_bytes += 4;
         return bytes.decode_s32(0);
     }
     else if(type == "i64"){
-        consumed_bytes = 8;
+        consumed_bytes += 8;
         return bytes.decode_s64(0);
     }
     else if(type == "f32"){
-        consumed_bytes = 4;
+        consumed_bytes += 4;
         return bytes.decode_half(0);
     }
     else if(type == "f64"){
-        consumed_bytes = 8;
+        consumed_bytes += 8;
         return bytes.decode_double(0);
     }
     else if(type == "string"){
         const int data_length = bytes.decode_u32(0);
-        consumed_bytes = 4 + data_length;
+        consumed_bytes += 4 + data_length;
         return bytes.slice(4, 4 + data_length).get_string_from_ascii();
     }
-    else if(type == "publicKey"){
-        consumed_bytes = 32;
+    else if(((String)type).to_lower() == "publickey"){
+        consumed_bytes += 32;
         return Pubkey::new_from_bytes(bytes.slice(0, 32));
     }
     else if(type == "bool"){
-        consumed_bytes = 1;
+        consumed_bytes += 1;
         return bytes[0] == 1;
-    }
-    else if(type == "Array"){
-        const int data_length = bytes.decode_s32(0);
-        return bytes.slice(4).get_string_from_ascii();
     }
     else if(type.get_type() == Variant::DICTIONARY){
         return deserialize_dict(bytes, type, consumed_bytes);
