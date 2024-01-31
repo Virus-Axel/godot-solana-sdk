@@ -177,9 +177,9 @@ Variant AnchorProgram::deserialize_variant(const PackedByteArray& bytes, const V
         return bytes.decode_double(0);
     }
     else if(type == "string"){
-        const int data_length = bytes.decode_s32(0);
+        const int data_length = bytes.decode_u32(0);
         consumed_bytes = 4 + data_length;
-        return bytes.slice(4).get_string_from_ascii();
+        return bytes.slice(4, 4 + data_length).get_string_from_ascii();
     }
     else if(type == "publicKey"){
         consumed_bytes = 32;
