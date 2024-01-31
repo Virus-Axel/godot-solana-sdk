@@ -32,19 +32,19 @@ PackedByteArray AnchorProgram::serialize_typed_primitive(const Dictionary &dict)
         result.resize(8);
         result.encode_u64(0, dict["value"]);
     }
-    else if(dict["dataType"] == "s8"){
+    else if(dict["dataType"] == "i8"){
         result.resize(1);
         result.encode_s8(0, dict["value"]);
     }
-    else if(dict["dataType"] == "s16"){
+    else if(dict["dataType"] == "i16"){
         result.resize(2);
         result.encode_s16(0, dict["value"]);
     }
-    else if(dict["dataType"] == "s32"){
+    else if(dict["dataType"] == "i32"){
         result.resize(4);
         result.encode_s32(0, dict["value"]);
     }
-    else if(dict["dataType"] == "s64"){
+    else if(dict["dataType"] == "i64"){
         result.resize(8);
         result.encode_s64(0, dict["value"]);
     }
@@ -152,19 +152,19 @@ Variant AnchorProgram::deserialize_variant(const PackedByteArray& bytes, const V
         consumed_bytes = 8;
         return bytes.decode_u64(0);
     }
-    else if(type == "s8"){
+    else if(type == "i8"){
         consumed_bytes = 1;
         return bytes.decode_s8(0);
     }
-    else if(type == "s16"){
+    else if(type == "i16"){
         consumed_bytes = 2;
         return bytes.decode_s16(0);
     }
-    else if(type == "s32"){
+    else if(type == "i32"){
         consumed_bytes = 4;
         return bytes.decode_s32(0);
     }
-    else if(type == "s64"){
+    else if(type == "i64"){
         consumed_bytes = 8;
         return bytes.decode_s64(0);
     }
@@ -419,8 +419,8 @@ bool AnchorProgram::is_int(const Variant &var){
     else if(var.get_type() == Variant::DICTIONARY){
         if(((Dictionary)var).has("dataType")){
             const String data_type = ((Dictionary)var)["dataType"];
-            return (data_type == "u8" || data_type == "s8" || data_type == "u16" || data_type == "s16" ||
-                    data_type == "u32" || data_type == "s32" || data_type == "u64" || data_type == "s64");
+            return (data_type == "u8" || data_type == "i8" || data_type == "u16" || data_type == "i16" ||
+                    data_type == "u32" || data_type == "i32" || data_type == "u64" || data_type == "i64");
         }
     }
     return false;
@@ -457,8 +457,8 @@ bool AnchorProgram::check_type(const Variant& expected_type, const Variant& valu
         return (value.get_type() == Variant::DICTIONARY || value.get_type() == Variant::ARRAY);
     }
     else if(expected_type.get_type() == Variant::STRING){
-        if( expected_type == "u8" || expected_type == "s8" || expected_type == "u16" || expected_type == "s16" ||
-            expected_type == "u32" || expected_type == "s32" || expected_type == "u64" || expected_type == "s64"){
+        if( expected_type == "u8" || expected_type == "i8" || expected_type == "u16" || expected_type == "i16" ||
+            expected_type == "u32" || expected_type == "i32" || expected_type == "u64" || expected_type == "i64"){
             return is_int(value);
         }
         else if(expected_type == "f32" || expected_type == "f64"){
@@ -700,28 +700,28 @@ Dictionary AnchorProgram::f64(double val){
 }
 Dictionary AnchorProgram::s8(int val){
     Dictionary res;
-    res["dataType"] = "s8";
+    res["dataType"] = "i8";
     res["value"] = val;
 
     return res;
 }
 Dictionary AnchorProgram::s16(int val){
     Dictionary res;
-    res["dataType"] = "s16";
+    res["dataType"] = "i16";
     res["value"] = val;
 
     return res;
 }
 Dictionary AnchorProgram::s32(int32_t val){
     Dictionary res;
-    res["dataType"] = "s32";
+    res["dataType"] = "i32";
     res["value"] = val;
 
     return res;
 }
 Dictionary AnchorProgram::s64(int64_t val){
     Dictionary res;
-    res["dataType"] = "s64";
+    res["dataType"] = "i64";
     res["value"] = val;
 
     return res;
