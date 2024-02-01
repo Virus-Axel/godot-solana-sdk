@@ -14,7 +14,7 @@ namespace godot{
 
 using internal::gdextension_interface_print_warning;
 
-const int DEFAULT_PORT = 8899;
+const int DEFAULT_PORT = 443;
 const std::string DEFAULT_URL = "https://api.devnet.solana.com";
 const std::string DEFAULT_WS_URL = "wss://api.devnet.solana.com";
 
@@ -25,7 +25,7 @@ bool SolanaClient::use_tls = false;
 std::vector<std::pair<int, Callable>> SolanaClient::callbacks;
 std::queue<String> SolanaClient::ws_request_queue;
 std::vector<String> SolanaClient::method_names;
-WebSocketPeer* SolanaClient::ws;
+WebSocketPeer* SolanaClient::ws = nullptr;
 
 std::string SolanaClient::commitment;
 std::string SolanaClient::encoding;
@@ -164,13 +164,14 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
     if(parsed_url.has("path")){
         path = parsed_url["path"];
     }
+    if(parsed_url.has("query")){
+        path += String("?") + (String)parsed_url["query"];
+    }
+    if(parsed_url.has("fragment")){
+        path += String("#") + (String)parsed_url["fragment"];
+    }
 
-    if(use_tls){
-        err = handler.connect_to_host(connect_url, port, TLSOptions::client_unsafe());
-    }
-    else{
-	    err = handler.connect_to_host(connect_url, port);
-    }
+    err = handler.connect_to_host(connect_url, port);
 
 	// Wait until a connection is established.
 	godot::HTTPClient::Status status = handler.get_status();
@@ -961,12 +962,10 @@ void SolanaClient::_process(double delta){
         break;
     }
     return;
-    account_subscribe(Pubkey::new_from_string("11111111111111111111111111111111"), Callable());
 }
 
 void SolanaClient::_ready(){
     ws = new WebSocketPeer();
-    connect_ws();
 }
 
 SolanaClient::SolanaClient(){
