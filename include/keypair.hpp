@@ -41,6 +41,8 @@ public:
     
     static Variant new_from_seed(const String &seed);
     static Variant new_from_seed(const PackedByteArray &seed);
+    static Variant new_from_bytes(const PackedByteArray &bytes);
+    static Variant new_from_file(const String &filename);
     static Variant new_random();
     static bool is_keypair(const Variant& object);
 
@@ -67,6 +69,8 @@ public:
 
     void random();
     void from_seed();
+
+    void save_to_file(const String &filename);
 
     ~Keypair();
 };

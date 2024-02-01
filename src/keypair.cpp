@@ -3,12 +3,16 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/random_number_generator.hpp>
 #include <solana_sdk.hpp>
+#include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/json.hpp>
 
 namespace godot{
 
 void Keypair::_bind_methods() {
     ClassDB::bind_static_method("Keypair", D_METHOD("new_from_seed", "seed"), (Variant(*)(const PackedByteArray&))&Keypair::new_from_seed);
     ClassDB::bind_static_method("Keypair", D_METHOD("new_random"), &Keypair::new_random);
+    ClassDB::bind_static_method("Keypair", D_METHOD("new_from_bytes", "bytes"), &Keypair::new_from_bytes);
+    ClassDB::bind_static_method("Keypair", D_METHOD("new_from_file", "filename"), &Keypair::new_from_file);
 
     ClassDB::bind_method(D_METHOD("get_public_value"), &Keypair::get_public_value);
     ClassDB::bind_method(D_METHOD("set_public_value", "p_value"), &Keypair::set_public_value);
@@ -24,6 +28,7 @@ void Keypair::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_seed", "p_value"), &Keypair::set_seed);
 
     ClassDB::bind_method(D_METHOD("sign_message", "message"), &Keypair::sign_message);
+    ClassDB::bind_method(D_METHOD("save_to_file", "filename"), &Keypair::save_to_file);
     ClassDB::bind_method(D_METHOD("verify_signature", "signature", "message"), &Keypair::verify_signature);
 }
 
@@ -116,6 +121,18 @@ void Keypair::from_seed(){
     public_value = SolanaSDK::bs58_encode(public_bytes);
 }
 
+void Keypair::save_to_file(const String &filename){
+    Ref<FileAccess> file = FileAccess::open(filename, FileAccess::WRITE);
+    ERR_FAIL_COND_EDMSG(!file->is_open(), "Failed to open file " + filename);
+
+    PackedByteArray bytes;
+    bytes.append_array(get_private_bytes());
+    bytes.append_array(get_public_bytes());
+    String line = JSON::stringify(bytes);
+    file->store_line(line.replace("\"", ""));
+    file->close();
+}
+
 void Keypair::random(){
 
     RandomNumberGenerator rand;
@@ -157,6 +174,28 @@ Variant Keypair::new_from_seed(const PackedByteArray &seed){
     Keypair *res = memnew(Keypair);
     res->set_seed(seed);
     return res;
+}
+
+Variant Keypair::new_from_bytes(const PackedByteArray &bytes){
+    ERR_FAIL_COND_V_EDMSG(bytes.size() != 64, nullptr, "Expects 64 bytes input, got " + (int)bytes.size());
+
+    Keypair *res = memnew(Keypair);
+    res->set_private_bytes(bytes.slice(0, 32));
+    res->set_public_bytes(bytes.slice(32, 64));
+
+    return res;   
+}
+
+Variant Keypair::new_from_file(const String &filename){
+    Ref<FileAccess> file = FileAccess::open(filename, FileAccess::READ);
+    ERR_FAIL_COND_V_EDMSG(!file->is_open(), nullptr, "Failed to open file " + filename);
+
+    String content = file->get_as_text();
+    file->close();
+
+    Array bytes = JSON::parse_string(content);
+
+    return new_from_bytes(PackedByteArray(bytes));
 }
 
 Variant Keypair::new_random(){
