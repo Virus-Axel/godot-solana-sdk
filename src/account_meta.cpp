@@ -125,6 +125,10 @@ void AccountMeta::create_new(const Variant& account_key, bool is_signer, bool wr
     Pubkey *account_key_ptr = Object::cast_to<Pubkey>(account_key_cast);
 }
 
+bool AccountMeta::is_account_meta(const Variant &other){
+    return ((Object*)other)->is_class("AccountMeta");
+}
+
 Variant AccountMeta::new_account_meta(const Variant& account_key, bool is_signer, bool writeable){
     AccountMeta* result = memnew(AccountMeta);
 

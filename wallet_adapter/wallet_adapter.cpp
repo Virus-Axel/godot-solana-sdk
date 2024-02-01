@@ -295,6 +295,10 @@ WalletAdapter::WalletAdapter(){
     #endif
 }
 
+bool WalletAdapter::is_wallet_adapter(const Variant &other){
+    return ((Object*)other)->is_class("WalletAdapter");
+}
+
 void WalletAdapter::connect_wallet(){
     wallet_state = State::CONNECTING;
 

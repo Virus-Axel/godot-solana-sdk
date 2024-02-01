@@ -165,6 +165,10 @@ Variant Keypair::new_random(){
     return res;
 }
 
+bool Keypair::is_keypair(const Variant& object){
+    return ((Object*)object)->is_class("Keypair");
+}
+
 void Keypair::set_public_value(const String& p_value){
     public_value = p_value;
 

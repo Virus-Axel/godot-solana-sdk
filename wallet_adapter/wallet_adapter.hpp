@@ -42,6 +42,8 @@ public:
     void _process(double delta) override;
     WalletAdapter();
 
+    static bool is_wallet_adapter(const Variant &other);
+
     void connect_wallet();
     
     bool is_connected();

@@ -44,7 +44,6 @@ void Pubkey::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_wallet_address", "p_value"), &Pubkey::set_wallet_address);
     ClassDB::bind_method(D_METHOD("get_token_mint_address"), &Pubkey::get_token_mint_address);
     ClassDB::bind_method(D_METHOD("set_token_mint_address", "p_value"), &Pubkey::set_token_mint_address);
-
     
     ClassDB::bind_method(D_METHOD("create_from_string", "from"), &Pubkey::create_from_string);
     ClassDB::bind_method(D_METHOD("create_program_address", "seeds", "program_id"), &Pubkey::create_program_address);
@@ -125,12 +124,12 @@ void Pubkey::set_value(const String& p_value){
 
     // Print warnings if key length is bad.
     if(decoded_value.is_empty() && value.length() != 0){
-        internal::gdextension_interface_print_warning("Value contains non-base58 characters", "_set", "pubkey.cpp", __LINE__, false);
+        ERR_PRINT_ED("Value contains non-base58 characters");
     }
     else if (decoded_value.size() != 32){
         Array params;
         params.push_back(decoded_value.size());
-        internal::gdextension_interface_print_warning(String("Pubkey must be 32 bytes. It is {0}").format(params).utf8(), "_set", "pubkey.cpp", __LINE__, false);
+        ERR_PRINT_ED(String("Pubkey must be 32 bytes. It is {0}").format(params).utf8());
     }
 }
 
@@ -481,27 +480,35 @@ Pubkey::Pubkey(const Variant& from){
 }
 
 void Pubkey::operator=(const Variant& other){
-    if(other.get_type() != Variant::Type::OBJECT){
-        internal::gdextension_interface_print_warning("Assigning pubkey with an non-object type.", "operator=", __FILE__, __LINE__, false);
+    if(other.get_type() == Variant::STRING){
+        set_value(other);
+        return;
+    }
+    else if(other.get_type() == Variant::ARRAY){
+        set_bytes(PackedByteArray(other));
+        return;
+    }
+    else if(other.get_type() == Variant::PACKED_BYTE_ARRAY){
+        set_bytes(other);
+        return;
+    }
+    else if(other.get_type() != Variant::Type::OBJECT){
+        ERR_PRINT_ED("Assigning pubkey with an non-object type.");
         return;
     }
 
-    if(other.has_method("get_bytes")){
+    if(Pubkey::is_pubkey(other)){
         this->bytes = Object::cast_to<Pubkey>(other)->get_bytes();
         this->value = Object::cast_to<Pubkey>(other)->get_value();
         this->type = Object::cast_to<Pubkey>(other)->get_type();
     }
-    else if(other.has_method("get_public_bytes")){
+    else if(Keypair::is_keypair(other)){
         this->set_bytes(Object::cast_to<Keypair>(other)->get_public_bytes());
     }
-    else if(other.has_method("get_pubkey")){
-        const Variant meta = Object::cast_to<AccountMeta>(other)->get_pubkey();
-        const Pubkey* key_ptr = Object::cast_to<Pubkey>(meta);
-        this->bytes = key_ptr->get_bytes();
-        this->value = key_ptr->get_value();
-        this->type = key_ptr->get_type();
+    else if(AccountMeta::is_account_meta(other)){
+        *this = Object::cast_to<AccountMeta>(other)->get_pubkey();
     }
-    else if(other.has_method("connect_wallet")){
+    else if(WalletAdapter::is_wallet_adapter(other)){
         WalletAdapter *phantom_controller = Object::cast_to<WalletAdapter>(other);
         if(phantom_controller->is_connected()){
             this->set_bytes(phantom_controller->get_connected_key());
@@ -513,12 +520,20 @@ void Pubkey::operator=(const Variant& other){
     }
 
     else{
-        internal::gdextension_interface_print_warning("Assigning pubkey with an unexpected object.", "operator=", __FILE__, __LINE__, false);
+        ERR_PRINT_ED("Assigning pubkey with an unexpected object.");
     }
 }
 
 bool Pubkey::operator==(const Pubkey& other) const{
     return (bytes == other.bytes);
+}
+
+Pubkey::operator StringName() const{
+    return get_value();
+}
+
+Pubkey::operator PackedByteArray() const{
+    return get_bytes();
 }
 
 Pubkey::~Pubkey() {

@@ -88,6 +88,9 @@ public:
     void operator=(const Variant& other);
     bool operator==(const Pubkey& other) const;
 
+    operator StringName() const;
+    operator PackedByteArray() const;
+
     ~Pubkey();
 };
 }
