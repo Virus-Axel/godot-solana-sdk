@@ -18,6 +18,8 @@ void AccountMeta::_bind_methods() {
     ClassDB::add_property("AccountMeta", PropertyInfo(Variant::BOOL, "writeable"), "set_writeable", "get_writeable");
     ClassDB::add_property("AccountMeta", PropertyInfo(Variant::OBJECT, "key", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair,PhantomController", PROPERTY_USAGE_DEFAULT), "set_pubkey", "get_pubkey");
     ClassDB::bind_method(D_METHOD("create_new", "account_key", "is_signer", "writeable"), &AccountMeta::create_new);
+
+    ClassDB::bind_static_method("AccountMeta", D_METHOD("new_account_meta", "account_key", "is_signer", "writeable"), &AccountMeta::new_account_meta);
 }
 
 bool AccountMeta::_set(const StringName &p_name, const Variant &p_value){
