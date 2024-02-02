@@ -182,14 +182,17 @@ Variant Keypair::new_from_seed(const PackedByteArray &seed){
 }
 
 Variant Keypair::new_from_bytes(const PackedByteArray &bytes){
-    ERR_FAIL_COND_V_EDMSG(bytes.size() != 64, nullptr, "Expects 64 bytes input, got " + (int)bytes.size());
+    ERR_FAIL_COND_V_EDMSG(bytes.size() != 64, nullptr, "Expects 64 bytes input");
 
     return new_from_seed(bytes.slice(0, 32));
 }
 
 Variant Keypair::new_from_file(const String &filename){
     Ref<FileAccess> file = FileAccess::open(filename, FileAccess::READ);
+    ERR_FAIL_COND_V_EDMSG(!file.is_valid(), nullptr, "Failed to open file " + filename);
     ERR_FAIL_COND_V_EDMSG(!file->is_open(), nullptr, "Failed to open file " + filename);
+
+    std::cout << "is open, " << (int)file->is_open() << std::endl;
 
     String content = file->get_as_text();
     file->close();

@@ -4,6 +4,7 @@
 #include <queue>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/web_socket_peer.hpp>
+#include <godot_cpp/classes/http_client.hpp>
 
 namespace godot {
 
@@ -13,8 +14,12 @@ class SolanaClient : public Node {
 private:
     static std::string url;
     static std::string ws_url;
+    static std::string http_request_body;
     static int port;
     static bool use_tls;
+    static bool async;
+    static HTTPClient *http_handler;
+    static Callable *http_callback;
     static std::vector<std::pair<int, Callable>> callbacks;
     static std::queue<String> ws_request_queue;
     static std::vector<String> method_names;
@@ -54,9 +59,13 @@ private:
     static Dictionary make_rpc_param(const Variant& key, const Variant& value);
     static Dictionary make_rpc_param(const Variant& key, const Dictionary& value);
     static Dictionary make_data_slice(uint64_t offset, uint64_t length);
-    static Dictionary quick_http_request(const String& request_body);
+    static Dictionary synchronous_request(const String& request_body);
+    static void asynchronous_request(const String& request_body);
+    static Dictionary quick_http_request(const String& request_body, const Callable& callback = Callable());
     static Dictionary parse_url(const String& url);
     static String assemble_url(const Dictionary& url_components);
+
+    static void poll_http_request();
 
     static void process_package(const PackedByteArray& packet_data);
     static void connect_ws();
@@ -77,6 +86,7 @@ public:
     static void set_commitment(const String& commitment);
     static void set_encoding(const String& encoding);
     static void set_transaction_detail(const String& transaction_detail);
+    static void set_http_callback(const Callable& callback);
 
     static void enable_min_context_slot(int slot);
     static void disable_min_context_slot();

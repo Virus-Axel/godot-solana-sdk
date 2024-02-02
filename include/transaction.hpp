@@ -75,6 +75,8 @@ public:
 
     void create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash);
     
+    void send_callback(Dictionary params);
+
     bool is_confirmed();
     bool is_finalized();
 
