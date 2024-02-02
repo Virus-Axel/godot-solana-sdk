@@ -35,6 +35,7 @@ private:
     void _signer_failed();
 
     bool is_phantom_payer() const;
+    bool is_message_valid();
     void create_message();
     void check_fully_signed();
 

@@ -79,6 +79,10 @@ bool Transaction::is_phantom_payer() const{
     return payer.has_method("get_connected_key");
 }
 
+bool Transaction::is_message_valid(){
+    return (message.get_type() == Variant::OBJECT);
+}
+
 void Transaction::create_message(){
     // Free existing memory.
     message.clear();
@@ -273,6 +277,9 @@ bool Transaction::get_use_phantom_payer(){
 }
 
 void Transaction::update_latest_blockhash(const String &custom_hash){
+    ERR_FAIL_COND_EDMSG(instructions.size() == 0, "No instructions added to instruction.");
+    ERR_FAIL_COND_EDMSG(!is_message_valid(), "Failed to compile transaction message.");
+
     if(custom_hash.is_empty()){
         const Dictionary latest_blockhash = SolanaClient::get_latest_blockhash();
         const Dictionary blockhash_result = latest_blockhash["result"];
@@ -309,6 +316,7 @@ PackedByteArray Transaction::serialize(){
 }
 
 PackedByteArray Transaction::serialize_message(){
+    ERR_FAIL_COND_V_EDMSG(!is_message_valid(), PackedByteArray(), "Invalid message.");
     return Object::cast_to<Message>(message)->serialize();
 }
 
@@ -354,6 +362,7 @@ void Transaction::send_and_disconnect(){
 }
 
 Error Transaction::sign(){
+    ERR_FAIL_COND_V_EDMSG(!is_message_valid(), Error::ERR_INVALID_DATA, "Invalid message.");
     PackedByteArray msg = serialize();
 
     signers = Object::cast_to<Message>(message)->get_signers();
