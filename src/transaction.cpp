@@ -32,6 +32,7 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_payer", "p_value"), &Transaction::set_payer);
     ClassDB::bind_method(D_METHOD("get_signers"), &Transaction::get_signers);
     ClassDB::bind_method(D_METHOD("set_signers", "p_value"), &Transaction::set_signers);
+    ClassDB::bind_method(D_METHOD("send_callback", "params"), &Transaction::send_callback);
 
     ClassDB::bind_method(D_METHOD("_signer_signed", "signature"), &Transaction::_signer_signed);
     ClassDB::bind_method(D_METHOD("_signer_failed"), &Transaction::_signer_failed);
@@ -40,7 +41,7 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
 
     ClassDB::bind_method(D_METHOD("add_instruction", "instruction"), &Transaction::add_instruction);
-    ClassDB::bind_method(D_METHOD("update_latest_blockhash", "custom_hash"), &Transaction::update_latest_blockhash);
+    ClassDB::bind_method(D_METHOD("update_latest_blockhash", "custom_hash"), &Transaction::update_latest_blockhash, DEFVAL(""));
     
     ClassDB::bind_method(D_METHOD("sign"), &Transaction::sign);
     ClassDB::bind_method(D_METHOD("sign_and_send"), &Transaction::sign_and_send);
@@ -328,14 +329,20 @@ Variant Transaction::sign_and_send(){
     return OK;
 }
 
+void Transaction::send_callback(Dictionary params){
+    if(params.has("result")){
+        result_signature = params["result"];
+    }
+    emit_signal("transaction_response", params);
+}
+
 Dictionary Transaction::send(){
     PackedByteArray serialized_bytes = serialize();
 
+    Callable callback(this, "send_callback");
+
+    SolanaClient::set_http_callback(callback);
     Dictionary rpc_result = SolanaClient::send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
-    
-    if(rpc_result.has("result")){
-        result_signature = rpc_result["result"];
-    }
 
     return rpc_result;
 }
@@ -343,7 +350,7 @@ Dictionary Transaction::send(){
 void Transaction::send_and_disconnect(){
     disconnect("fully_signed", Callable(this, "send_and_disconnect"));
 
-    emit_signal("transaction_response", send());
+    send();
 }
 
 Error Transaction::sign(){

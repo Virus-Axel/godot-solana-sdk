@@ -122,11 +122,14 @@ void Keypair::from_seed(){
 }
 
 void Keypair::save_to_file(const String &filename){
+    ERR_FAIL_COND_EDMSG(seed.size() != 32, "Keypair seed is not known, unable to store.");
+
     Ref<FileAccess> file = FileAccess::open(filename, FileAccess::WRITE);
     ERR_FAIL_COND_EDMSG(!file->is_open(), "Failed to open file " + filename);
 
     PackedByteArray bytes;
-    bytes.append_array(get_private_bytes());
+
+    bytes.append_array(get_seed());
     bytes.append_array(get_public_bytes());
     String line = JSON::stringify(bytes);
     file->store_line(line.replace("\"", ""));
@@ -142,8 +145,10 @@ void Keypair::random(){
     public_bytes.resize(KEY_LENGTH);
 
     unsigned char random_seed[KEY_LENGTH];
+    seed.resize(KEY_LENGTH);
     for(unsigned int i = 0; i < KEY_LENGTH; i++){
         random_seed[i] = rand.randi();
+        seed[i] = random_seed[i];
     }
 
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), random_seed);
@@ -177,18 +182,17 @@ Variant Keypair::new_from_seed(const PackedByteArray &seed){
 }
 
 Variant Keypair::new_from_bytes(const PackedByteArray &bytes){
-    ERR_FAIL_COND_V_EDMSG(bytes.size() != 64, nullptr, "Expects 64 bytes input, got " + (int)bytes.size());
+    ERR_FAIL_COND_V_EDMSG(bytes.size() != 64, nullptr, "Expects 64 bytes input");
 
-    Keypair *res = memnew(Keypair);
-    res->set_private_bytes(bytes.slice(0, 32));
-    res->set_public_bytes(bytes.slice(32, 64));
-
-    return res;   
+    return new_from_seed(bytes.slice(0, 32));
 }
 
 Variant Keypair::new_from_file(const String &filename){
     Ref<FileAccess> file = FileAccess::open(filename, FileAccess::READ);
+    ERR_FAIL_COND_V_EDMSG(!file.is_valid(), nullptr, "Failed to open file " + filename);
     ERR_FAIL_COND_V_EDMSG(!file->is_open(), nullptr, "Failed to open file " + filename);
+
+    std::cout << "is open, " << (int)file->is_open() << std::endl;
 
     String content = file->get_as_text();
     file->close();

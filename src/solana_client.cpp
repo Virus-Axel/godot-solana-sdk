@@ -22,6 +22,10 @@ std::string SolanaClient::url = DEFAULT_URL;
 std::string SolanaClient::ws_url = DEFAULT_WS_URL;
 int SolanaClient::port = DEFAULT_PORT;
 bool SolanaClient::use_tls = false;
+bool SolanaClient::async = false;
+HTTPClient *SolanaClient::http_handler = nullptr;
+Callable *SolanaClient::http_callback = nullptr;
+std::string SolanaClient::http_request_body = "";
 std::vector<std::pair<int, Callable>> SolanaClient::callbacks;
 std::queue<String> SolanaClient::ws_request_queue;
 std::vector<String> SolanaClient::method_names;
@@ -137,8 +141,8 @@ Dictionary SolanaClient::make_rpc_param(const Variant& key, const Variant& value
     return result;
 }
 
-Dictionary SolanaClient::quick_http_request(const String& request_body){
-#ifndef WEB_ENABLED
+Dictionary SolanaClient::synchronous_request(const String& request_body){
+    #ifndef WEB_ENABLED
 	const int32_t POLL_DELAY_MSEC = 100;
 
 	// Set headers
@@ -189,6 +193,7 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
 		return Dictionary();
 	}
 
+
 	// Poll until we have a response.
 	status = handler.get_status();
 	while(status == HTTPClient::STATUS_REQUESTING){
@@ -215,14 +220,11 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
 #else
     String web_script = "\
         var request = new XMLHttpRequest();\
-        console.log('{0}');\
         request.open('POST', '{0}', false);\
         request.setRequestHeader('Content-Type', 'application/json');\
-        console.log('{1}');\
         request.send('{1}');\
         \
         Module.solanaClientResponse = request.response;\
-        console.log(Module.solanaClientResponse);\
         request.response";
 
     Array params;
@@ -244,6 +246,153 @@ Dictionary SolanaClient::quick_http_request(const String& request_body){
 
 	return json.get_data();
 
+}
+
+void SolanaClient::set_http_callback(const Callable& callback){
+    if(http_callback == nullptr){
+        http_callback = new Callable();
+    }
+    (*http_callback) = callback;
+    async = true;
+}
+
+void SolanaClient::asynchronous_request(const String& request_body){
+    #ifndef WEB_ENABLED
+	
+    if(http_handler == nullptr){
+        http_handler = new HTTPClient();
+    }
+    Error err;
+
+    // Godot does not want the port in the url
+    Dictionary parsed_url = parse_url(get_url());
+    parsed_url.erase("port");
+
+    String connect_url = "https";
+    if(parsed_url.has("scheme")){
+        connect_url = parsed_url["scheme"];
+    }
+    connect_url += "://" + (String) parsed_url["host"];
+
+    err = http_handler->connect_to_host(connect_url, port);
+    http_request_body = request_body.ascii();
+
+#else
+    String web_script = "\
+        var request = new XMLHttpRequest();\
+        request.open('POST', '{0}', true);\
+        request.setRequestHeader('Content-Type', 'application/json');\
+        request.send('{1}');\
+        \
+        Module.solanaClientResponse = request.response;\
+        Module.solanaClientReq = request;\
+        request.response";
+
+    Array params;
+
+    params.append(get_url());
+    params.append(request_body);
+
+    Variant result = JavaScriptBridge::get_singleton()->eval(web_script.format(params));
+
+    JSON json;
+	Error err = json.parse(result);
+
+#endif
+}
+
+void SolanaClient::poll_http_request(){
+#ifndef WEB_ENABLED
+
+    if(http_handler == nullptr){
+        return;
+    }
+
+	// Wait until a connection is established.
+    http_handler->poll();
+	godot::HTTPClient::Status status = http_handler->get_status();
+
+    Error err;
+    PackedByteArray response_data;
+	if(status == HTTPClient::STATUS_CONNECTING || status == HTTPClient::STATUS_RESOLVING){
+		return;
+	}
+    else if(status == HTTPClient::STATUS_CONNECTED){
+        // Set headers
+        PackedStringArray http_headers;
+        http_headers.append("Content-Type: application/json");
+        http_headers.append("Accept-Encoding: json");
+
+        String path = "/";
+        Dictionary parsed_url = parse_url(get_url());
+        if(parsed_url.has("path")){
+            path = parsed_url["path"];
+        }
+        if(parsed_url.has("query")){
+            path += String("?") + (String)parsed_url["query"];
+        }
+        if(parsed_url.has("fragment")){
+            path += String("#") + (String)parsed_url["fragment"];
+        }
+
+	    // Make a POST request
+	    err = http_handler->request(godot::HTTPClient::METHOD_POST, path, http_headers, String(http_request_body.c_str()));
+
+        if(err != Error::OK){
+            http_handler->close();
+            gdextension_interface_print_warning("Error sending request.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
+            return;
+        }
+    }
+	else if(status == HTTPClient::STATUS_REQUESTING){
+		return;
+	}
+    else if(status == HTTPClient::STATUS_BODY){
+        // Collect the response body.
+        while(status == HTTPClient::STATUS_BODY){
+            response_data.append_array(http_handler->read_response_body_chunk());
+            http_handler->poll();
+            status = http_handler->get_status();
+        }
+
+        http_handler->close();
+
+        // Parse the result json.
+        JSON json;
+        err = json.parse(response_data.get_string_from_utf8());
+        if(err != Error::OK){
+            gdextension_interface_print_warning("Error getting response data.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
+            return;
+        }
+        Array params;
+        params.append(json.get_data());
+        http_callback->callv(params);
+        async = false;
+    }
+    else{
+        return;
+    }
+#else
+    const String poll_script = "Module.solanaClientReq.responseText";
+    String result = JavaScriptBridge::get_singleton()->eval(poll_script);
+    if(!result.is_empty()){
+        async = false;
+        Array params;
+        params.append(JSON::parse_string(result));
+        http_callback->callv(params);
+    }
+#endif
+}
+
+Dictionary SolanaClient::quick_http_request(const String& request_body, const Callable& callback){
+    if(async){
+        //set_http_callback(callback);
+        asynchronous_request(request_body);
+        return Dictionary();
+    }
+    else{
+        return synchronous_request(request_body);
+    }
 }
 
 void SolanaClient::process_package(const PackedByteArray& packet_data){
@@ -961,6 +1110,8 @@ void SolanaClient::_process(double delta){
         default:
         break;
     }
+
+    poll_http_request();
     return;
 }
 
@@ -1160,7 +1311,9 @@ void SolanaClient::disable_slot_range(){
 }
 
 SolanaClient::~SolanaClient(){
-    
+    if(http_callback != nullptr){
+        delete http_callback;
+    }
 }
 
 }
