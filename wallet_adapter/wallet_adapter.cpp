@@ -8,6 +8,7 @@
 #include <phantom_js.hpp>
 #include <solflare_js.hpp>
 #include <backpack_js.hpp>
+#include <pubkey.hpp>
 
 #ifdef WEB_ENABLED
 #include <emscripten.h>
@@ -311,8 +312,8 @@ bool WalletAdapter::is_connected(){
   return connected;
 }
 
-PackedByteArray WalletAdapter::get_connected_key(){
-  return connected_key;
+Variant WalletAdapter::get_connected_key(){
+  return Pubkey::new_from_bytes(connected_key);
 }
 
 void WalletAdapter::set_wallet_type(int wallet_type){

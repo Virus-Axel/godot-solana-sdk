@@ -52,7 +52,7 @@ public:
 
     void poll_connection();
     void poll_message_signing();
-    PackedByteArray get_connected_key();
+    Variant get_connected_key();
     PackedByteArray get_message_signature();
 
     Array get_available_wallets();
