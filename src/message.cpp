@@ -91,7 +91,11 @@ void Message::merge_account_meta(const AccountMeta &account_meta){
         meta_1->set_writeable(meta_1->get_writeable() || account_meta.get_writeable());
     }
     else{
-        const AccountMeta *new_element = memnew(AccountMeta(account_meta));
+        const Variant new_element = AccountMeta::new_account_meta(
+            account_meta.get_signer(),
+            account_meta.get_is_signer(),
+            account_meta.get_writeable()
+        );
         merged_metas.append(new_element);
     }
 }
@@ -110,7 +114,7 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
     // Payer is signer.
     signers.append(payer);
 
-    AccountMeta *payer_meta = memnew(AccountMeta(payer, true, true));
+    Variant payer_meta = AccountMeta::new_account_meta(payer, true, true);
     merged_metas.append(payer_meta);
 
     latest_blockhash = "";
@@ -141,7 +145,7 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
     merged_metas = sort_metas(merged_metas);
 
     // Store payer index.
-    payer_index = locate_account_meta(merged_metas, *payer_meta);
+    payer_index = locate_account_meta(merged_metas, *(Object::cast_to<AccountMeta>(payer_meta)));
 
     for(unsigned int i = 0; i < instructions.size(); i++){
         compile_instruction(instructions[i]);

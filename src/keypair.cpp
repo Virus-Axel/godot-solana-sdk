@@ -158,10 +158,10 @@ void Keypair::random(){
 }
 
 Keypair::Keypair(const PackedByteArray &seed){
+    ERR_FAIL_COND_EDMSG(seed.size() != 32, "Seed must be 32 bytes");
+
     private_bytes.resize(KEY_LENGTH*2);
     public_bytes.resize(KEY_LENGTH);
-
-    // TODO: Check seed size.
 
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed.ptr());
 
@@ -192,8 +192,6 @@ Variant Keypair::new_from_file(const String &filename){
     ERR_FAIL_COND_V_EDMSG(!file.is_valid(), nullptr, "Failed to open file " + filename);
     ERR_FAIL_COND_V_EDMSG(!file->is_open(), nullptr, "Failed to open file " + filename);
 
-    std::cout << "is open, " << (int)file->is_open() << std::endl;
-
     String content = file->get_as_text();
     file->close();
 
@@ -223,12 +221,8 @@ void Keypair::set_public_value(const String& p_value){
     public_bytes = decoded_value;
 
     // Print warnings if key length is bad.
-    if(decoded_value.is_empty() && public_value.length() != 0){
-        internal::gdextension_interface_print_warning("Value contains non-base58 characters", "_set", "keypair.cpp", 119, false);
-    }
-    else if (decoded_value.size() != KEY_LENGTH){
-        internal::gdextension_interface_print_warning("Public key must be 32 bytes", "_set", "keypair.cpp", 122, false);
-    }
+    ERR_FAIL_COND_EDMSG((decoded_value.is_empty() && public_value.length() != 0), "Value contains non-base58 characters");
+    ERR_FAIL_COND_EDMSG(decoded_value.size() != KEY_LENGTH, "Public key must be 32 bytes");
 }
 
 String Keypair::get_public_value(){
@@ -251,9 +245,7 @@ void Keypair::set_public_bytes(const PackedByteArray& p_value){
     }
 
     // Print warning if key length is bad.
-    if (public_bytes.size() != KEY_LENGTH){
-        internal::gdextension_interface_print_warning("Public key must be 32 bytes", "_set", "pubkey.cpp", 147, false);
-    }
+    ERR_FAIL_COND_EDMSG(public_bytes.size() != KEY_LENGTH, "Public key must be 32 bytes.");
 }
 PackedByteArray Keypair::get_public_bytes() const{
     return public_bytes;
@@ -268,12 +260,8 @@ void Keypair::set_private_value(const String& p_value){
     private_bytes = decoded_value;
 
     // Print warnings if key length is bad.
-    if(decoded_value.is_empty() && private_value.length() != 0){
-        internal::gdextension_interface_print_warning("Value contains non-base58 characters", "_set", "keypair.cpp", 164, false);
-    }
-    else if (decoded_value.size() != KEY_LENGTH){
-        internal::gdextension_interface_print_warning("Private key must be 32 bytes", "_set", "keypair.cpp", 167, false);
-    }
+    ERR_FAIL_COND_EDMSG(decoded_value.is_empty() && private_value.length() != 0, "Value contains non-base58 characters.");
+    ERR_FAIL_COND_EDMSG(decoded_value.size() != KEY_LENGTH, "Private key must be 32 bytes.");
 }
 
 String Keypair::get_private_value(){
@@ -294,9 +282,7 @@ void Keypair::set_private_bytes(const PackedByteArray& p_value){
     }
 
     // Print warnings if key length is bad.
-    if (private_bytes.size() != KEY_LENGTH){
-        internal::gdextension_interface_print_warning("Private key must be 32 bytes", "_set", "keypair.cpp", 150, false);
-    }
+    ERR_FAIL_COND_EDMSG(private_bytes.size() != KEY_LENGTH, "Private key must be 32 bytes.");
 }
 
 PackedByteArray Keypair::get_private_bytes(){
@@ -313,10 +299,9 @@ bool Keypair::get_unique(){
 }
 
 void Keypair::set_seed(const PackedByteArray &p_value){
+    ERR_FAIL_COND_EDMSG(p_value.size() != 32, "Seed must be 32 bytes");
+
     seed = p_value;
-
-    // TODO: Check length == 32.
-
     from_seed();
 }
 
