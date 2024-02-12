@@ -9,7 +9,6 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/thread.hpp>
 #include <godot_cpp/classes/http_request.hpp>
-#include <solana_client.hpp>
 #include <solana_sdk.hpp>
 #include <wallet_adapter.hpp>
 #include <message.hpp>
@@ -204,6 +203,12 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 Transaction::Transaction() {
 }
 
+void Transaction::_ready(){
+    client = memnew(SolanaClient);
+
+    add_child(client, false, InternalMode::INTERNAL_MODE_BACK);
+}
+
 void Transaction::create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash){
 }
 
@@ -214,7 +219,7 @@ bool Transaction::is_confirmed(){
 
     PackedStringArray arr;
     arr.append(result_signature);
-    Dictionary rpc_result = SolanaClient::get_signature_statuses(arr);
+    Dictionary rpc_result = client->get_signature_statuses(arr);
 
     Dictionary transaction_info = rpc_result.get("result", nullptr);
     Array transaction_value = transaction_info.get("value", nullptr);
@@ -235,7 +240,7 @@ bool Transaction::is_finalized(){
 
     PackedStringArray arr;
     arr.append(result_signature);
-    Dictionary rpc_result = SolanaClient::get_signature_statuses(arr);
+    Dictionary rpc_result = client->get_signature_statuses(arr);
 
     Dictionary transaction_info = rpc_result.get("result", nullptr);
     Array transaction_value = transaction_info.get("value", nullptr);
@@ -281,7 +286,7 @@ void Transaction::update_latest_blockhash(const String &custom_hash){
     ERR_FAIL_COND_EDMSG(!is_message_valid(), "Failed to compile transaction message.");
 
     if(custom_hash.is_empty()){
-        const Dictionary latest_blockhash = SolanaClient::get_latest_blockhash();
+        const Dictionary latest_blockhash = client->get_latest_blockhash();
         const Dictionary blockhash_result = latest_blockhash["result"];
         const Dictionary blockhash_value = blockhash_result["value"];
         latest_blockhash_string = blockhash_value["blockhash"];
@@ -349,8 +354,8 @@ Dictionary Transaction::send(){
 
     Callable callback(this, "send_callback");
 
-    SolanaClient::set_http_callback(callback);
-    Dictionary rpc_result = SolanaClient::send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
+    client->set_http_callback(callback);
+    Dictionary rpc_result = client->send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
 
     return rpc_result;
 }

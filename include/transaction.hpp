@@ -7,6 +7,7 @@
 #include "instruction.hpp"
 
 #include <godot_cpp/classes/node.hpp>
+#include <solana_client.hpp>
 
 namespace godot{
 
@@ -27,6 +28,8 @@ private:
     String result_signature = "";
     String latest_commitment = "";
 
+    SolanaClient *client;
+
     bool has_cumpute_budget_instructions = false;
     bool use_phantom_payer = false;
 
@@ -46,6 +49,7 @@ protected:
 
 public:
     Transaction();
+    void _ready();
 
     void set_instructions(const Array& p_value);
     Array get_instructions();
