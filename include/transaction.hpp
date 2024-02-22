@@ -28,10 +28,13 @@ private:
     String result_signature = "";
     String latest_commitment = "";
 
-    SolanaClient *client;
+    SolanaClient *send_client;
+    SolanaClient *blockhash_client;
 
     bool has_cumpute_budget_instructions = false;
     bool use_phantom_payer = false;
+    bool pending_blockhash = false;
+    bool pending_send = false;
 
     void _get_property_list(List<PropertyInfo> *p_list) const;
     void _signer_signed(PackedByteArray signature);
@@ -49,7 +52,8 @@ protected:
 
 public:
     Transaction();
-    void _ready();
+    void _ready() override;
+    void _process(double delta) override;
 
     void set_instructions(const Array& p_value);
     Array get_instructions();
@@ -81,6 +85,7 @@ public:
     void create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash);
     
     void send_callback(Dictionary params);
+    void blockhash_callback(Dictionary params);
 
     bool is_confirmed();
     bool is_finalized();

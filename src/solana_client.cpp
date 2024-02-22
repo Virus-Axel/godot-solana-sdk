@@ -24,7 +24,6 @@ int SolanaClient::port = DEFAULT_PORT;
 bool SolanaClient::use_tls = false;
 bool SolanaClient::async = false;
 HTTPClient *SolanaClient::http_handler = nullptr;
-Callable *SolanaClient::http_callback = nullptr;
 std::string SolanaClient::http_request_body = "";
 std::vector<std::pair<int, Callable>> SolanaClient::callbacks;
 std::queue<String> SolanaClient::ws_request_queue;
@@ -1116,10 +1115,11 @@ void SolanaClient::_process(double delta){
 }
 
 void SolanaClient::_ready(){
-    ws = new WebSocketPeer();
 }
 
 SolanaClient::SolanaClient(){
+    ws = new WebSocketPeer();
+    http_callback = nullptr;
     transaction_detail = "full";
     commitment = "finalized";
 }

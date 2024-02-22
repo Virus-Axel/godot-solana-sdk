@@ -22,8 +22,11 @@ using internal::gdextension_interface_print_warning;
 
 void Transaction::_bind_methods() {
     ClassDB::add_signal("Transaction", MethodInfo("fully_signed"));
+    ClassDB::add_signal("Transaction", MethodInfo("send_ready"));
     ClassDB::add_signal("Transaction", MethodInfo("sign_error", PropertyInfo(Variant::INT, "signer_index")));
     ClassDB::add_signal("Transaction", MethodInfo("transaction_response", PropertyInfo(Variant::DICTIONARY, "result")));
+    ClassDB::add_signal("Transaction", MethodInfo("blockhas_updated", PropertyInfo(Variant::DICTIONARY, "result")));
+    ClassDB::add_signal("Transaction", MethodInfo("blockhash_update_failure", PropertyInfo(Variant::DICTIONARY, "result")));
 
     ClassDB::bind_method(D_METHOD("get_instructions"), &Transaction::get_instructions);
     ClassDB::bind_method(D_METHOD("set_instructions", "p_value"), &Transaction::set_instructions);
@@ -32,6 +35,7 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_signers"), &Transaction::get_signers);
     ClassDB::bind_method(D_METHOD("set_signers", "p_value"), &Transaction::set_signers);
     ClassDB::bind_method(D_METHOD("send_callback", "params"), &Transaction::send_callback);
+    ClassDB::bind_method(D_METHOD("blockhash_callback", "params"), &Transaction::blockhash_callback);
 
     ClassDB::bind_method(D_METHOD("_signer_signed", "signature"), &Transaction::_signer_signed);
     ClassDB::bind_method(D_METHOD("_signer_failed"), &Transaction::_signer_failed);
@@ -201,12 +205,21 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 Transaction::Transaction() {
+    set_editor_description("HI aaaa");
+    send_client = memnew(SolanaClient);
+    blockhash_client = memnew(SolanaClient);
 }
 
 void Transaction::_ready(){
-    client = memnew(SolanaClient);
+}
 
-    add_child(client, false, InternalMode::INTERNAL_MODE_BACK);
+void Transaction::_process(double delta){
+    if(pending_send){
+        send_client->_process(delta);
+    }
+    if(pending_blockhash){
+        blockhash_client->_process(delta);
+    }
 }
 
 void Transaction::create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash){
@@ -219,7 +232,7 @@ bool Transaction::is_confirmed(){
 
     PackedStringArray arr;
     arr.append(result_signature);
-    Dictionary rpc_result = client->get_signature_statuses(arr);
+    Dictionary rpc_result = send_client->get_signature_statuses(arr);
 
     Dictionary transaction_info = rpc_result.get("result", nullptr);
     Array transaction_value = transaction_info.get("value", nullptr);
@@ -240,7 +253,7 @@ bool Transaction::is_finalized(){
 
     PackedStringArray arr;
     arr.append(result_signature);
-    Dictionary rpc_result = client->get_signature_statuses(arr);
+    Dictionary rpc_result = send_client->get_signature_statuses(arr);
 
     Dictionary transaction_info = rpc_result.get("result", nullptr);
     Array transaction_value = transaction_info.get("value", nullptr);
@@ -286,11 +299,18 @@ void Transaction::update_latest_blockhash(const String &custom_hash){
     ERR_FAIL_COND_EDMSG(!is_message_valid(), "Failed to compile transaction message.");
 
     if(custom_hash.is_empty()){
-        const Dictionary latest_blockhash = client->get_latest_blockhash();
-        const Dictionary blockhash_result = latest_blockhash["result"];
-        const Dictionary blockhash_value = blockhash_result["value"];
-        latest_blockhash_string = blockhash_value["blockhash"];
-        Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
+        pending_blockhash = true;
+
+        if(!is_inside_tree()){
+            WARN_PRINT_ED("Using synchronous network calls. Consider adding Transaction to scene tree for asynchronous requests.");
+            const Dictionary latest_blockhash = blockhash_client->get_latest_blockhash();
+            blockhash_callback(latest_blockhash);
+        }
+        else{
+            Callable callback(this, "blockhash_callback");
+            blockhash_client->set_http_callback(callback);
+            blockhash_client->get_latest_blockhash();
+        }
     }
     else{
         latest_blockhash_string = custom_hash;
@@ -343,21 +363,50 @@ Variant Transaction::sign_and_send(){
 }
 
 void Transaction::send_callback(Dictionary params){
+    pending_send = false;
+
     if(params.has("result")){
         result_signature = params["result"];
     }
     emit_signal("transaction_response", params);
 }
 
+void Transaction::blockhash_callback(Dictionary params){
+    pending_blockhash = false;
+    if(params.has("result")){
+        const Dictionary blockhash_result = params["result"];
+        const Dictionary blockhash_value = blockhash_result["value"];
+        latest_blockhash_string = blockhash_value["blockhash"];
+        Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
+        emit_signal("blockhash_updated", params);
+        Array connected_signals = get_signal_connection_list("send_ready");
+        emit_signal("send_ready");
+    }
+    else{
+        emit_signal("blockhash_update_failure", params);
+    }
+}
+
 Dictionary Transaction::send(){
     PackedByteArray serialized_bytes = serialize();
 
-    Callable callback(this, "send_callback");
+    if(!is_inside_tree()){
+        WARN_PRINT_ED("Using synchronous network calls. Consider adding Transaction to scene tree for asynchronous requests.");
+        Dictionary rpc_result = send_client->send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
 
-    client->set_http_callback(callback);
-    Dictionary rpc_result = client->send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
+        send_callback(rpc_result);
 
-    return rpc_result;
+        return rpc_result;
+    }
+    else{
+        Callable callback(this, "send_callback");
+
+        pending_send = true;
+        send_client->set_http_callback(callback);
+        Dictionary rpc_result = send_client->send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
+
+        return Dictionary();
+    }
 }
 
 void Transaction::send_and_disconnect(){
@@ -368,6 +417,17 @@ void Transaction::send_and_disconnect(){
 
 Error Transaction::sign(){
     ERR_FAIL_COND_V_EDMSG(!is_message_valid(), Error::ERR_INVALID_DATA, "Invalid message.");
+
+    if(pending_blockhash){
+        Callable pending_blockhash_callback(this, "sign");
+        connect("send_ready", pending_blockhash_callback);
+        return ERR_UNAVAILABLE;
+    }
+    else if(get_signal_connection_list("send_ready").size() > 0){
+        Callable pending_blockhash_callback(this, "sign");
+        disconnect("send_ready", pending_blockhash_callback);
+    }
+
     PackedByteArray msg = serialize();
 
     signers = Object::cast_to<Message>(message)->get_signers();
