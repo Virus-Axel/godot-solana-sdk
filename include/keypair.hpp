@@ -5,6 +5,8 @@
 #include <godot_cpp/classes/resource.hpp>
 #include "utils.hpp"
 #include "ed25519.h"
+#include "../ed25519/src/sha512.h"
+#include "../ed25519/src/ge.h"
 
 namespace godot{
 class Keypair : public Resource {
@@ -29,6 +31,8 @@ private:
 
     PackedByteArray seed;
 
+    void from_private_bytes(const PackedByteArray &byte_array);
+
 protected:
     static void _bind_methods();
     bool _set(const StringName &p_name, const Variant &p_value);
@@ -43,6 +47,7 @@ public:
     static Variant new_from_seed(const PackedByteArray &seed);
     static Variant new_from_bytes(const PackedByteArray &bytes);
     static Variant new_from_file(const String &filename);
+    static Variant new_from_private_key(const Variant &private_key);
     static Variant new_random();
     static bool is_keypair(const Variant& object);
 

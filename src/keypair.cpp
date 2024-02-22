@@ -6,6 +6,10 @@
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/json.hpp>
 
+#include "ed25519.h"
+#include "../ed25519/src/sha512.h"
+#include "../ed25519/src/ge.h"
+
 namespace godot{
 
 void Keypair::_bind_methods() {
@@ -200,6 +204,35 @@ Variant Keypair::new_from_file(const String &filename){
     return new_from_bytes(PackedByteArray(bytes));
 }
 
+void Keypair::from_private_bytes(const PackedByteArray &byte_array){
+    ERR_FAIL_COND_EDMSG(byte_array.size() != 64, "Invalid private key length.");
+    ge_p3 A;
+
+    set_private_bytes(byte_array);
+
+    ge_scalarmult_base(&A, private_bytes.ptr());
+    public_bytes.resize(32);
+    ge_p3_tobytes((unsigned char*)public_bytes.ptrw(), &A);
+}
+
+Variant Keypair::new_from_private_key(const Variant &private_key){
+    Keypair *res = memnew(Keypair);
+
+    if(private_key.get_type() == Variant::STRING){
+        PackedByteArray decoded_key = SolanaSDK::bs58_decode(private_key);
+        res->from_private_bytes(decoded_key);
+    }
+    
+    else if(private_key.get_type() == Variant::PACKED_BYTE_ARRAY){
+        res->from_private_bytes(private_key);
+    }
+    else{
+        ERR_PRINT_ED("Private key must be string or byte array.");
+    }
+
+    return res;
+}
+
 Variant Keypair::new_random(){
     Keypair *res = memnew(Keypair);
     res->random();
@@ -282,7 +315,7 @@ void Keypair::set_private_bytes(const PackedByteArray& p_value){
     }
 
     // Print warnings if key length is bad.
-    ERR_FAIL_COND_EDMSG(private_bytes.size() != KEY_LENGTH, "Private key must be 32 bytes.");
+    ERR_FAIL_COND_EDMSG(private_bytes.size() != 64, "Private key must be 64 bytes.");
 }
 
 PackedByteArray Keypair::get_private_bytes(){
