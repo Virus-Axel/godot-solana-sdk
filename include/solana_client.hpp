@@ -12,65 +12,70 @@ class SolanaClient : public Node {
     GDCLASS(SolanaClient, Node)
 
 private:
-    static std::string url;
-    static std::string ws_url;
-    static std::string http_request_body;
-    static int port;
-    static bool use_tls;
-    static bool async;
-    static HTTPClient *http_handler;
+    const int DEFAULT_PORT = 443;
+    const std::string DEFAULT_URL = "https://api.devnet.solana.com";
+    const std::string DEFAULT_WS_URL = "wss://api.devnet.solana.com";
+
+    String url = "https://api.devnet.solana.com";
+    String ws_url = "wss://api.devnet.solana.com";
+    std::string http_request_body;
+    int port = DEFAULT_PORT;
+    bool use_tls = true;
+    bool async = true;
+    HTTPClient http_handler;
     
-    Callable *http_callback = nullptr;
+    Callable http_callback;
 
-    static std::vector<std::pair<int, Callable>> callbacks;
-    static std::queue<String> ws_request_queue;
-    static std::vector<String> method_names;
-    static WebSocketPeer *ws;
+    std::vector<std::pair<int, Callable>> callbacks;
+    std::queue<String> ws_request_queue;
+    std::vector<String> method_names;
+    WebSocketPeer *ws = nullptr;
 
-    static std::string commitment;
-    static std::string encoding;
-    static std::string transaction_detail;
-    static std::string identity;
-    static uint64_t min_context_slot;
-    static uint64_t filter_offset;
-    static uint64_t filter_length;
-    static uint64_t max_transaction_version;
-    static uint64_t first_slot;
-    static uint64_t last_slot;
-    static bool account_filter_enabled;
-    static bool min_constext_slot_enabled;
-    static bool max_transaction_version_enabled;
-    static bool rewards;
-    static bool slot_range_enabled;
+    String commitment = "confirmed";
+    String encoding = "base64";
+    std::string transaction_detail;
+    std::string identity;
+    uint64_t min_context_slot = 0;
+    uint64_t filter_offset = 0;
+    uint64_t filter_length = 0;
+    uint64_t max_transaction_version = 0;
+    uint64_t first_slot = 0;
+    uint64_t last_slot = 0;
+    bool account_filter_enabled = false;
+    bool min_constext_slot_enabled = false;
+    bool max_transaction_version_enabled = false;
+    bool rewards = false;
+    bool slot_range_enabled = false;
 
-    static void append_commitment(Array& options);
-    static void append_min_context_slot(Array& options);
-    static void append_encoding(Array& options);
-    static void append_account_filter(Array& options);
-    static void append_data_filter(Array& options);
-    static void append_transaction_detail(Array& options);
-    static void append_max_transaction_version(Array& options);
-    static void append_rewards(Array& options);
-    static void append_identity(Array& options);
-    static void append_slot_range(Array& options);
-    static void append_limit(Array& options);
+    void append_commitment(Array& options);
+    void append_min_context_slot(Array& options);
+    void append_encoding(Array& options);
+    void append_account_filter(Array& options);
+    void append_data_filter(Array& options);
+    void append_transaction_detail(Array& options);
+    void append_max_transaction_version(Array& options);
+    void append_rewards(Array& options);
+    void append_identity(Array& options);
+    void append_slot_range(Array& options);
+    void append_limit(Array& options);
 
-    static void add_to_param_dict(Array &options, const String& key, const Variant& value);
+    void add_to_param_dict(Array &options, const String& key, const Variant& value);
 
-    static Dictionary make_rpc_dict(const String& method, const Array& params);
-    static Dictionary make_rpc_param(const Variant& key, const Variant& value);
-    static Dictionary make_rpc_param(const Variant& key, const Dictionary& value);
-    static Dictionary make_data_slice(uint64_t offset, uint64_t length);
-    static Dictionary synchronous_request(const String& request_body);
-    static void asynchronous_request(const String& request_body);
-    static Dictionary quick_http_request(const String& request_body, const Callable& callback = Callable());
-    static Dictionary parse_url(const String& url);
-    static String assemble_url(const Dictionary& url_components);
+    Dictionary make_rpc_dict(const String& method, const Array& params);
+    Dictionary make_rpc_param(const Variant& key, const Variant& value);
+    Dictionary make_rpc_param(const Variant& key, const Dictionary& value);
+    Dictionary make_data_slice(uint64_t offset, uint64_t length);
+    Dictionary synchronous_request(const String& request_body);
+    void asynchronous_request(const String& request_body);
+    Dictionary quick_http_request(const String& request_body, const Callable& callback = Callable());
+    Dictionary parse_url(const String& url);
+    String assemble_url(const Dictionary& url_components);
 
     void poll_http_request();
 
-    static void process_package(const PackedByteArray& packet_data);
-    static void connect_ws();
+    void process_package(const PackedByteArray& packet_data);
+    void connect_ws();
+    void response_callback(const Dictionary &params);
 
 protected:
     static void _bind_methods();
@@ -82,93 +87,103 @@ public:
 
     SolanaClient();
 
-    static void set_url(const String& url);
-    static String get_url();
+    void set_url(const String& url);
+    String get_url();
     
-    static void set_commitment(const String& commitment);
-    static void set_encoding(const String& encoding);
-    static void set_transaction_detail(const String& transaction_detail);
+    void set_ws_url(const String& url);
+    String get_ws_url();
+
+    void set_commitment(const String& commitment);
+    String get_commitment();
+
+    void set_encoding(const String& encoding);
+    String get_encoding();
+
+    void set_transaction_detail(const String& transaction_detail);
     void set_http_callback(const Callable& callback);
 
-    static void enable_min_context_slot(int slot);
-    static void disable_min_context_slot();
+    void enable_min_context_slot(int slot);
+    void disable_min_context_slot();
 
-    static void enable_account_filter(uint64_t offset, uint64_t length);
-    static void disable_account_filter();
+    void enable_account_filter(uint64_t offset, uint64_t length);
+    void disable_account_filter();
     
-    static void enable_max_transaction_version(uint64_t version);
-    static void disable_max_transaction_version();
+    void enable_max_transaction_version(uint64_t version);
+    void disable_max_transaction_version();
 
-    static void enable_rewards();
-    static void disable_rewards();
+    void enable_rewards();
+    void disable_rewards();
 
-    static void enable_identity(const String& identity);
-    static void disable_identity();
+    void enable_identity(const String& identity);
+    void disable_identity();
 
-    static void enable_slot_range(uint64_t first, uint64_t last);
-    static void disable_slot_range();
+    void enable_slot_range(uint64_t first, uint64_t last);
+    void disable_slot_range();
 
-    static Dictionary get_account_info(const String& account);
-    static Dictionary get_balance(const String& account);
-    static Dictionary get_block(uint64_t slot, const String& detail);
-    static Dictionary get_block_height();
-    static Dictionary get_latest_blockhash();
-    static Dictionary get_block_production();
-    static Dictionary get_block_commitment(uint64_t slot_number);
-    static Dictionary get_blocks(uint64_t start_slot, const Variant& end_slot = Variant::NIL);
-    static Dictionary get_blocks_with_limit(uint64_t start_slot, uint64_t end_slot);
-    static Dictionary get_block_time(uint64_t slot);
-    static Dictionary get_cluster_nodes();
-    static Dictionary get_epoch_info();
-    static Dictionary get_epoch_schedule();
-    static Dictionary get_fee_for_message(const String& encoded_message);
-    static Dictionary get_first_available_block();
-    static Dictionary get_genesis_hash();
-    static Dictionary get_health();
-    static Dictionary get_highest_snapshot_slot();
-    static Dictionary get_identity();
-    static Dictionary get_inflation_governor();
-    static Dictionary get_inflation_rate();
-    static Dictionary get_inflation_reward(const PackedStringArray accounts, const Variant& epoch = Variant::NIL);
-    static Dictionary get_largest_accounts(const String& filter = "");
-    static Dictionary get_leader_schedule(const Variant& slot = Variant::NIL);
-    static Dictionary get_max_retransmit_slot();
-    static Dictionary get_max_shred_insert_slot();
-    static Dictionary get_minimum_balance_for_rent_extemption(uint64_t data_size);
-    static Dictionary get_multiple_accounts(const PackedStringArray accounts);
-    static Dictionary get_program_accounts(const String& program_address, bool with_context = false);
-    static Dictionary get_recent_performance_samples();
-    static Dictionary get_recent_prioritization_fees(PackedStringArray account_addresses);
-    static Dictionary get_signature_for_address(const String& address, const String& before = "", const String& until = "");
-    static Dictionary get_signature_statuses(const PackedStringArray signatures, bool search_transaction_history = false);
-    static Dictionary get_slot();
-    static Dictionary get_slot_leader();
-    static Dictionary get_slot_leaders(const Variant& start_slot = Variant(), const Variant& slot_limit = Variant());
-    static Dictionary get_stake_activation(const String& account);
-    static Dictionary get_stake_minimum_delegation();
-    static Dictionary get_supply(bool exclude_non_circulating = false);
-    static Dictionary get_token_account_balance(const String& token_account);
-    static Dictionary get_token_accounts_by_delegate(const String& account_delegate, const String &mint = "", const String& program_id = "");
-    static Dictionary get_token_accounts_by_owner(const String& owner, const String &mint = "", const String& program_id = "");
-    static Dictionary get_token_largest_account(const String& token_mint);
-    static Dictionary get_token_supply(const String& token_mint);
-    static Dictionary get_transaction(const String& signature);
-    static Dictionary get_transaction_count();
-    static Dictionary get_version();
-    static Dictionary get_vote_accounts(const String& vote_pubkey = "", bool keep_unstaked_delinquents = false);
-    static Dictionary is_blockhash_valid(const String& blockhash);
-    static Dictionary minimum_ledger_slot();
-    static Dictionary request_airdrop(const String& address, uint64_t lamports);
-    static Dictionary send_transaction(const String& encoded_transaction, uint64_t max_retries = 10, bool skip_preflight = false);
-    static Dictionary simulate_transaction(const String& encoded_transaction, bool sig_verify = false, bool replace_blockhash = false, Array account_addresses = Array(), const String& account_encoding = "base64");
+    void set_async(bool use_async);
+    bool get_async();
 
-    static void account_subscribe(const Variant &account_key, const Callable &callback);
-    static void signature_subscribe(const String &signature, const Callable &callback, const String &commitment);
-    static void program_subscribe(const String &program_id, const Callable &callback);
-    static void root_subscribe(const Callable &callback);
-    static void slot_subscribe(const Callable &callback);
+    Dictionary get_account_info(const String& account);
+    Dictionary get_balance(const String& account);
+    Dictionary get_block(uint64_t slot, const String& detail);
+    Dictionary get_block_height();
+    Dictionary get_latest_blockhash();
+    Dictionary get_block_production();
+    Dictionary get_block_commitment(uint64_t slot_number);
+    Dictionary get_blocks(uint64_t start_slot, const Variant& end_slot = Variant::NIL);
+    Dictionary get_blocks_with_limit(uint64_t start_slot, uint64_t end_slot);
+    Dictionary get_block_time(uint64_t slot);
+    Dictionary get_cluster_nodes();
+    Dictionary get_epoch_info();
+    Dictionary get_epoch_schedule();
+    Dictionary get_fee_for_message(const String& encoded_message);
+    Dictionary get_first_available_block();
+    Dictionary get_genesis_hash();
+    Dictionary get_health();
+    Dictionary get_highest_snapshot_slot();
+    Dictionary get_identity();
+    Dictionary get_inflation_governor();
+    Dictionary get_inflation_rate();
+    Dictionary get_inflation_reward(const PackedStringArray accounts, const Variant& epoch = Variant::NIL);
+    Dictionary get_largest_accounts(const String& filter = "");
+    Dictionary get_leader_schedule(const Variant& slot = Variant::NIL);
+    Dictionary get_max_retransmit_slot();
+    Dictionary get_max_shred_insert_slot();
+    Dictionary get_minimum_balance_for_rent_extemption(uint64_t data_size);
+    Dictionary get_multiple_accounts(const PackedStringArray accounts);
+    Dictionary get_program_accounts(const String& program_address, bool with_context = false);
+    Dictionary get_recent_performance_samples();
+    Dictionary get_recent_prioritization_fees(PackedStringArray account_addresses);
+    Dictionary get_signature_for_address(const String& address, const String& before = "", const String& until = "");
+    Dictionary get_signature_statuses(const PackedStringArray signatures, bool search_transaction_history = false);
+    Dictionary get_slot();
+    Dictionary get_slot_leader();
+    Dictionary get_slot_leaders(const Variant& start_slot = Variant(), const Variant& slot_limit = Variant());
+    Dictionary get_stake_activation(const String& account);
+    Dictionary get_stake_minimum_delegation();
+    Dictionary get_supply(bool exclude_non_circulating = false);
+    Dictionary get_token_account_balance(const String& token_account);
+    Dictionary get_token_accounts_by_delegate(const String& account_delegate, const String &mint = "", const String& program_id = "");
+    Dictionary get_token_accounts_by_owner(const String& owner, const String &mint = "", const String& program_id = "");
+    Dictionary get_token_largest_account(const String& token_mint);
+    Dictionary get_token_supply(const String& token_mint);
+    Dictionary get_transaction(const String& signature);
+    Dictionary get_transaction_count();
+    Dictionary get_version();
+    Dictionary get_vote_accounts(const String& vote_pubkey = "", bool keep_unstaked_delinquents = false);
+    Dictionary is_blockhash_valid(const String& blockhash);
+    Dictionary minimum_ledger_slot();
+    Dictionary request_airdrop(const String& address, uint64_t lamports);
+    Dictionary send_transaction(const String& encoded_transaction, uint64_t max_retries = 10, bool skip_preflight = false);
+    Dictionary simulate_transaction(const String& encoded_transaction, bool sig_verify = false, bool replace_blockhash = false, Array account_addresses = Array(), const String& account_encoding = "base64");
 
-    static void unsubscribe_all(const Callable &callback);
+    void account_subscribe(const Variant &account_key, const Callable &callback);
+    void signature_subscribe(const String &signature, const Callable &callback, const String &commitment);
+    void program_subscribe(const String &program_id, const Callable &callback);
+    void root_subscribe(const Callable &callback);
+    void slot_subscribe(const Callable &callback);
+
+    void unsubscribe_all(const Callable &callback);
 
     ~SolanaClient();
 };

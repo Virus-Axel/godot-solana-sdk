@@ -14,41 +14,10 @@ namespace godot{
 
 using internal::gdextension_interface_print_warning;
 
-const int DEFAULT_PORT = 443;
-const std::string DEFAULT_URL = "https://api.devnet.solana.com";
-const std::string DEFAULT_WS_URL = "wss://api.devnet.solana.com";
-
-std::string SolanaClient::url = DEFAULT_URL;
-std::string SolanaClient::ws_url = DEFAULT_WS_URL;
-int SolanaClient::port = DEFAULT_PORT;
-bool SolanaClient::use_tls = false;
-bool SolanaClient::async = false;
-HTTPClient *SolanaClient::http_handler = nullptr;
-std::string SolanaClient::http_request_body = "";
-std::vector<std::pair<int, Callable>> SolanaClient::callbacks;
-std::queue<String> SolanaClient::ws_request_queue;
-std::vector<String> SolanaClient::method_names;
-WebSocketPeer* SolanaClient::ws = nullptr;
-
-std::string SolanaClient::commitment;
-std::string SolanaClient::encoding;
-std::string SolanaClient::transaction_detail;
-std::string SolanaClient::identity;
-uint64_t SolanaClient::min_context_slot = 0;
-uint64_t SolanaClient::filter_offset = 0;
-uint64_t SolanaClient::filter_length = 0;
-uint64_t SolanaClient::max_transaction_version = 0;
-uint64_t SolanaClient::first_slot = 0;
-uint64_t SolanaClient::last_slot = 0;
-bool SolanaClient::min_constext_slot_enabled = false;
-bool SolanaClient::account_filter_enabled = false;
-bool SolanaClient::max_transaction_version_enabled = false;
-bool SolanaClient::rewards = true;
-bool SolanaClient::slot_range_enabled = false;
 
 void SolanaClient::append_commitment(Array& options){
-    if(!commitment.empty()){
-        add_to_param_dict(options, "commitment", String(SolanaClient::commitment.c_str()));
+    if(!commitment.is_empty()){
+        add_to_param_dict(options, "commitment", commitment);
     }
 }
 
@@ -59,8 +28,8 @@ void SolanaClient::append_min_context_slot(Array& options){
 }
 
 void SolanaClient::append_encoding(Array& options){
-    if(!encoding.empty()){
-        add_to_param_dict(options, "encoding", String(SolanaClient::encoding.c_str()));
+    if(!encoding.is_empty()){
+        add_to_param_dict(options, "encoding", encoding);
     }
 }
 
@@ -248,19 +217,12 @@ Dictionary SolanaClient::synchronous_request(const String& request_body){
 }
 
 void SolanaClient::set_http_callback(const Callable& callback){
-    if(http_callback == nullptr){
-        http_callback = new Callable();
-    }
-    (*http_callback) = callback;
-    async = true;
+    http_callback = callback;
 }
 
 void SolanaClient::asynchronous_request(const String& request_body){
     #ifndef WEB_ENABLED
 	
-    if(http_handler == nullptr){
-        http_handler = new HTTPClient();
-    }
     Error err;
 
     // Godot does not want the port in the url
@@ -273,7 +235,7 @@ void SolanaClient::asynchronous_request(const String& request_body){
     }
     connect_url += "://" + (String) parsed_url["host"];
 
-    err = http_handler->connect_to_host(connect_url, port);
+    err = http_handler.connect_to_host(connect_url, port);
     http_request_body = request_body.ascii();
 
 #else
@@ -303,13 +265,9 @@ void SolanaClient::asynchronous_request(const String& request_body){
 void SolanaClient::poll_http_request(){
 #ifndef WEB_ENABLED
 
-    if(http_handler == nullptr){
-        return;
-    }
-
 	// Wait until a connection is established.
-    http_handler->poll();
-	godot::HTTPClient::Status status = http_handler->get_status();
+    http_handler.poll();
+	godot::HTTPClient::Status status = http_handler.get_status();
 
     Error err;
     PackedByteArray response_data;
@@ -335,10 +293,10 @@ void SolanaClient::poll_http_request(){
         }
 
 	    // Make a POST request
-	    err = http_handler->request(godot::HTTPClient::METHOD_POST, path, http_headers, String(http_request_body.c_str()));
+	    err = http_handler.request(godot::HTTPClient::METHOD_POST, path, http_headers, String(http_request_body.c_str()));
 
         if(err != Error::OK){
-            http_handler->close();
+            http_handler.close();
             gdextension_interface_print_warning("Error sending request.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
             return;
         }
@@ -349,12 +307,12 @@ void SolanaClient::poll_http_request(){
     else if(status == HTTPClient::STATUS_BODY){
         // Collect the response body.
         while(status == HTTPClient::STATUS_BODY){
-            response_data.append_array(http_handler->read_response_body_chunk());
-            http_handler->poll();
-            status = http_handler->get_status();
+            response_data.append_array(http_handler.read_response_body_chunk());
+            http_handler.poll();
+            status = http_handler.get_status();
         }
 
-        http_handler->close();
+        http_handler.close();
 
         // Parse the result json.
         JSON json;
@@ -365,8 +323,8 @@ void SolanaClient::poll_http_request(){
         }
         Array params;
         params.append(json.get_data());
-        http_callback->callv(params);
-        async = false;
+
+        http_callback.callv(params);
     }
     else{
         return;
@@ -378,7 +336,7 @@ void SolanaClient::poll_http_request(){
         async = false;
         Array params;
         params.append(JSON::parse_string(result));
-        http_callback->callv(params);
+        http_callback.callv(params);
     }
 #endif
 }
@@ -443,8 +401,12 @@ void SolanaClient::process_package(const PackedByteArray& packet_data){
 
 void SolanaClient::connect_ws(){
     if(ws->get_ready_state() == WebSocketPeer::STATE_CLOSED){
-        ws->connect_to_url(String(ws_url.c_str()));
+        ws->connect_to_url(ws_url);
     }
+}
+
+void SolanaClient::response_callback(const Dictionary &params){
+    emit_signal("http_response", params);
 }
 
 Dictionary SolanaClient::get_latest_blockhash(){
@@ -908,7 +870,7 @@ Dictionary SolanaClient::send_transaction(const String& encoded_transaction, uin
     params.append(encoded_transaction);
     append_encoding(params);
     add_to_param_dict(params, "skipPreflight", skip_preflight);
-    add_to_param_dict(params, "preflightCommitment", String(commitment.c_str()));
+    add_to_param_dict(params, "preflightCommitment", commitment);
     add_to_param_dict(params, "maxRetries", max_retries);
     append_min_context_slot(params);
 
@@ -1010,86 +972,107 @@ void SolanaClient::unsubscribe_all(const Callable &callback){
 
 void SolanaClient::_bind_methods(){
     ClassDB::add_signal("SolanaClient", MethodInfo("socket_response"));
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("parse_url", "url"), &SolanaClient::parse_url);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
+    ClassDB::add_signal("SolanaClient", MethodInfo("http_response", PropertyInfo(Variant::DICTIONARY, "response")));
 
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("set_url", "url"), &SolanaClient::set_url);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_url"), &SolanaClient::get_url);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("set_encoding", "encoding"), &SolanaClient::set_encoding);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("set_commitment", "commitment"), &SolanaClient::set_commitment);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("set_transaction_detail", "transaction_detail"), &SolanaClient::set_transaction_detail);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_min_context_slot", "slot"), &SolanaClient::enable_min_context_slot);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_min_context_slot"), &SolanaClient::disable_min_context_slot);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_account_filter", "offset", "length"), &SolanaClient::enable_account_filter);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_account_filter"), &SolanaClient::disable_account_filter);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_max_transaction_version", "version"), &SolanaClient::enable_max_transaction_version);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_max_transaction_version"), &SolanaClient::disable_max_transaction_version);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_rewards"), &SolanaClient::enable_rewards);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_rewards"), &SolanaClient::disable_rewards);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_identity", "identity"), &SolanaClient::enable_identity);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_identity"), &SolanaClient::disable_identity);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("enable_slot_range", "first", "last"), &SolanaClient::enable_slot_range);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("disable_slot_range"), &SolanaClient::disable_slot_range);
+    ClassDB::bind_method(D_METHOD("response_callback", "params"), &SolanaClient::response_callback);
 
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_latest_blockhash"), &SolanaClient::get_latest_blockhash);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_balance", "account"), &SolanaClient::get_balance);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_account_info", "account"), &SolanaClient::get_account_info);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_block", "slot"), &SolanaClient::get_block);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_block_height"), &SolanaClient::get_block_height);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_block_commitment", "slot"), &SolanaClient::get_block_commitment);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_blocks", "start_slot", "end_slot"), &SolanaClient::get_blocks);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_blocks_with_limit", "start_slot", "end_slot"), &SolanaClient::get_blocks_with_limit);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_block_time", "slot"), &SolanaClient::get_block_time);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_cluster_nodes"), &SolanaClient::get_cluster_nodes);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_epoch_info"), &SolanaClient::get_epoch_info);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_epoch_schedule"), &SolanaClient::get_epoch_schedule);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_fee_for_message", "encoded_message"), &SolanaClient::get_fee_for_message);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_first_available_block"), &SolanaClient::get_first_available_block);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_genesis_hash"), &SolanaClient::get_genesis_hash);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_health"), &SolanaClient::get_health);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_highest_snapshot_slot"), &SolanaClient::get_highest_snapshot_slot);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_identity"), &SolanaClient::get_identity);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_inflation_governor"), &SolanaClient::get_inflation_governor);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_inflation_rate"), &SolanaClient::get_inflation_rate);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_inflation_reward", "accounts", "epoch"), &SolanaClient::get_inflation_reward);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_largest_accounts", "filter"), &SolanaClient::get_largest_accounts);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_leader_schedule", "slot"), &SolanaClient::get_leader_schedule);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_max_retransmit_slot"), &SolanaClient::get_max_retransmit_slot);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_max_shred_insert_slot"), &SolanaClient::get_max_shred_insert_slot);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_minimum_balance_for_rent_extemption", "data_size"), &SolanaClient::get_minimum_balance_for_rent_extemption);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_multiple_accounts", "accounts"), &SolanaClient::get_multiple_accounts);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_program_accounts", "program_address", "with_context"), &SolanaClient::get_program_accounts);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_recent_performance_samples"), &SolanaClient::get_recent_performance_samples);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_recent_prioritization_fees", "account_addresses"), &SolanaClient::get_recent_prioritization_fees);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_signature_for_address", "address", "before", "until"), &SolanaClient::get_signature_for_address);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_signature_statuses", "signatures", "search_transaction_history"), &SolanaClient::get_signature_statuses);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_slot"), &SolanaClient::get_slot);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_slot_leader"), &SolanaClient::get_slot_leader);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_slot_leaders", "start_slot", "slot_limit"), &SolanaClient::get_slot_leaders);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_stake_activation", "account"), &SolanaClient::get_stake_activation);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_stake_minimum_delegation"), &SolanaClient::get_stake_minimum_delegation);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_supply", "exclude_non_circulating"), &SolanaClient::get_supply);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_token_account_balance", "token_account"), &SolanaClient::get_token_account_balance);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_token_accounts_by_delegate", "account_delegate", "mint=\"\"", "program_id=\"\""), &SolanaClient::get_token_accounts_by_delegate);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_token_accounts_by_owner", "owner", "mint=\"\"", "program_id=\"\""), &SolanaClient::get_token_accounts_by_owner);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_token_largest_account", "token_mint"), &SolanaClient::get_token_largest_account);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_token_supply", "token_mint"), &SolanaClient::get_token_supply);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_transaction", "signature"), &SolanaClient::get_transaction);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_transaction_count"), &SolanaClient::get_transaction_count);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_version"), &SolanaClient::get_version);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_vote_accounts", "vote_pubkey", "keep_unstaked_delinquents"), &SolanaClient::get_vote_accounts);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("is_blockhash_valid", "blockhash"), &SolanaClient::is_blockhash_valid);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("minimum_ledger_slot"), &SolanaClient::minimum_ledger_slot);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("request_airdrop", "address", "lamports"), &SolanaClient::request_airdrop);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("send_transaction", "encoded_transaction", "max_retries", "skip_preflight"), &SolanaClient::send_transaction);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("simulate_transaction", "encoded_transaction", "sig_verify", "replace_blockhash", "account_addresses", "account_encoding"), &SolanaClient::simulate_transaction);
+    ClassDB::bind_method(D_METHOD("set_async", "use_async"), &SolanaClient::set_async);
+    ClassDB::bind_method(D_METHOD("get_async"), &SolanaClient::get_async);
 
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("unsubscribe_all", "callback"), &SolanaClient::unsubscribe_all);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("account_subscribe", "account_key", "callback"), &SolanaClient::account_subscribe);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("signature_subscribe", "signature", "callback", "commitment"), &SolanaClient::signature_subscribe);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("program_subscribe", "program_id", "callback"), &SolanaClient::program_subscribe);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("root_subscribe", "callback"), &SolanaClient::root_subscribe);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("slot_subscribe", "callback"), &SolanaClient::slot_subscribe);
+    ClassDB::bind_method(D_METHOD("parse_url", "url"), &SolanaClient::parse_url);
+    ClassDB::bind_method(D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
+
+    ClassDB::bind_method(D_METHOD("set_url", "url"), &SolanaClient::set_url);
+    ClassDB::bind_method(D_METHOD("get_url"), &SolanaClient::get_url);
+
+    ClassDB::bind_method(D_METHOD("set_ws_url", "url"), &SolanaClient::set_ws_url);
+    ClassDB::bind_method(D_METHOD("get_ws_url"), &SolanaClient::get_ws_url);
+
+    ClassDB::bind_method(D_METHOD("set_encoding", "encoding"), &SolanaClient::set_encoding);
+    ClassDB::bind_method(D_METHOD("get_encoding"), &SolanaClient::get_encoding);
+
+    ClassDB::bind_method(D_METHOD("set_commitment", "commitment"), &SolanaClient::set_commitment);
+    ClassDB::bind_method(D_METHOD("get_commitment"), &SolanaClient::get_commitment);
+
+    ClassDB::bind_method(D_METHOD("set_transaction_detail", "transaction_detail"), &SolanaClient::set_transaction_detail);
+    ClassDB::bind_method(D_METHOD("enable_min_context_slot", "slot"), &SolanaClient::enable_min_context_slot);
+    ClassDB::bind_method(D_METHOD("disable_min_context_slot"), &SolanaClient::disable_min_context_slot);
+    ClassDB::bind_method(D_METHOD("enable_account_filter", "offset", "length"), &SolanaClient::enable_account_filter);
+    ClassDB::bind_method(D_METHOD("disable_account_filter"), &SolanaClient::disable_account_filter);
+    ClassDB::bind_method(D_METHOD("enable_max_transaction_version", "version"), &SolanaClient::enable_max_transaction_version);
+    ClassDB::bind_method(D_METHOD("disable_max_transaction_version"), &SolanaClient::disable_max_transaction_version);
+    ClassDB::bind_method(D_METHOD("enable_rewards"), &SolanaClient::enable_rewards);
+    ClassDB::bind_method(D_METHOD("disable_rewards"), &SolanaClient::disable_rewards);
+    ClassDB::bind_method(D_METHOD("enable_identity", "identity"), &SolanaClient::enable_identity);
+    ClassDB::bind_method(D_METHOD("disable_identity"), &SolanaClient::disable_identity);
+    ClassDB::bind_method(D_METHOD("enable_slot_range", "first", "last"), &SolanaClient::enable_slot_range);
+    ClassDB::bind_method(D_METHOD("disable_slot_range"), &SolanaClient::disable_slot_range);
+
+    ClassDB::bind_method(D_METHOD("get_latest_blockhash"), &SolanaClient::get_latest_blockhash);
+    ClassDB::bind_method(D_METHOD("get_balance", "account"), &SolanaClient::get_balance);
+    ClassDB::bind_method(D_METHOD("get_account_info", "account"), &SolanaClient::get_account_info);
+    ClassDB::bind_method(D_METHOD("get_block", "slot"), &SolanaClient::get_block);
+    ClassDB::bind_method(D_METHOD("get_block_height"), &SolanaClient::get_block_height);
+    ClassDB::bind_method(D_METHOD("get_block_commitment", "slot"), &SolanaClient::get_block_commitment);
+    ClassDB::bind_method(D_METHOD("get_blocks", "start_slot", "end_slot"), &SolanaClient::get_blocks);
+    ClassDB::bind_method(D_METHOD("get_blocks_with_limit", "start_slot", "end_slot"), &SolanaClient::get_blocks_with_limit);
+    ClassDB::bind_method(D_METHOD("get_block_time", "slot"), &SolanaClient::get_block_time);
+    ClassDB::bind_method(D_METHOD("get_cluster_nodes"), &SolanaClient::get_cluster_nodes);
+    ClassDB::bind_method(D_METHOD("get_epoch_info"), &SolanaClient::get_epoch_info);
+    ClassDB::bind_method(D_METHOD("get_epoch_schedule"), &SolanaClient::get_epoch_schedule);
+    ClassDB::bind_method(D_METHOD("get_fee_for_message", "encoded_message"), &SolanaClient::get_fee_for_message);
+    ClassDB::bind_method(D_METHOD("get_first_available_block"), &SolanaClient::get_first_available_block);
+    ClassDB::bind_method(D_METHOD("get_genesis_hash"), &SolanaClient::get_genesis_hash);
+    ClassDB::bind_method(D_METHOD("get_health"), &SolanaClient::get_health);
+    ClassDB::bind_method(D_METHOD("get_highest_snapshot_slot"), &SolanaClient::get_highest_snapshot_slot);
+    ClassDB::bind_method(D_METHOD("get_identity"), &SolanaClient::get_identity);
+    ClassDB::bind_method(D_METHOD("get_inflation_governor"), &SolanaClient::get_inflation_governor);
+    ClassDB::bind_method(D_METHOD("get_inflation_rate"), &SolanaClient::get_inflation_rate);
+    ClassDB::bind_method(D_METHOD("get_inflation_reward", "accounts", "epoch"), &SolanaClient::get_inflation_reward);
+    ClassDB::bind_method(D_METHOD("get_largest_accounts", "filter"), &SolanaClient::get_largest_accounts);
+    ClassDB::bind_method(D_METHOD("get_leader_schedule", "slot"), &SolanaClient::get_leader_schedule);
+    ClassDB::bind_method(D_METHOD("get_max_retransmit_slot"), &SolanaClient::get_max_retransmit_slot);
+    ClassDB::bind_method(D_METHOD("get_max_shred_insert_slot"), &SolanaClient::get_max_shred_insert_slot);
+    ClassDB::bind_method(D_METHOD("get_minimum_balance_for_rent_extemption", "data_size"), &SolanaClient::get_minimum_balance_for_rent_extemption);
+    ClassDB::bind_method(D_METHOD("get_multiple_accounts", "accounts"), &SolanaClient::get_multiple_accounts);
+    ClassDB::bind_method(D_METHOD("get_program_accounts", "program_address", "with_context"), &SolanaClient::get_program_accounts);
+    ClassDB::bind_method(D_METHOD("get_recent_performance_samples"), &SolanaClient::get_recent_performance_samples);
+    ClassDB::bind_method(D_METHOD("get_recent_prioritization_fees", "account_addresses"), &SolanaClient::get_recent_prioritization_fees);
+    ClassDB::bind_method(D_METHOD("get_signature_for_address", "address", "before", "until"), &SolanaClient::get_signature_for_address);
+    ClassDB::bind_method(D_METHOD("get_signature_statuses", "signatures", "search_transaction_history"), &SolanaClient::get_signature_statuses);
+    ClassDB::bind_method(D_METHOD("get_slot"), &SolanaClient::get_slot);
+    ClassDB::bind_method(D_METHOD("get_slot_leader"), &SolanaClient::get_slot_leader);
+    ClassDB::bind_method(D_METHOD("get_slot_leaders", "start_slot", "slot_limit"), &SolanaClient::get_slot_leaders);
+    ClassDB::bind_method(D_METHOD("get_stake_activation", "account"), &SolanaClient::get_stake_activation);
+    ClassDB::bind_method(D_METHOD("get_stake_minimum_delegation"), &SolanaClient::get_stake_minimum_delegation);
+    ClassDB::bind_method(D_METHOD("get_supply", "exclude_non_circulating"), &SolanaClient::get_supply);
+    ClassDB::bind_method(D_METHOD("get_token_account_balance", "token_account"), &SolanaClient::get_token_account_balance);
+    ClassDB::bind_method(D_METHOD("get_token_accounts_by_delegate", "account_delegate", "mint=\"\"", "program_id=\"\""), &SolanaClient::get_token_accounts_by_delegate);
+    ClassDB::bind_method(D_METHOD("get_token_accounts_by_owner", "owner", "mint=\"\"", "program_id=\"\""), &SolanaClient::get_token_accounts_by_owner);
+    ClassDB::bind_method(D_METHOD("get_token_largest_account", "token_mint"), &SolanaClient::get_token_largest_account);
+    ClassDB::bind_method(D_METHOD("get_token_supply", "token_mint"), &SolanaClient::get_token_supply);
+    ClassDB::bind_method(D_METHOD("get_transaction", "signature"), &SolanaClient::get_transaction);
+    ClassDB::bind_method(D_METHOD("get_transaction_count"), &SolanaClient::get_transaction_count);
+    ClassDB::bind_method(D_METHOD("get_version"), &SolanaClient::get_version);
+    ClassDB::bind_method(D_METHOD("get_vote_accounts", "vote_pubkey", "keep_unstaked_delinquents"), &SolanaClient::get_vote_accounts);
+    ClassDB::bind_method(D_METHOD("is_blockhash_valid", "blockhash"), &SolanaClient::is_blockhash_valid);
+    ClassDB::bind_method(D_METHOD("minimum_ledger_slot"), &SolanaClient::minimum_ledger_slot);
+    ClassDB::bind_method(D_METHOD("request_airdrop", "address", "lamports"), &SolanaClient::request_airdrop);
+    ClassDB::bind_method(D_METHOD("send_transaction", "encoded_transaction", "max_retries", "skip_preflight"), &SolanaClient::send_transaction);
+    ClassDB::bind_method(D_METHOD("simulate_transaction", "encoded_transaction", "sig_verify", "replace_blockhash", "account_addresses", "account_encoding"), &SolanaClient::simulate_transaction);
+
+    ClassDB::bind_method(D_METHOD("unsubscribe_all", "callback"), &SolanaClient::unsubscribe_all);
+    ClassDB::bind_method(D_METHOD("account_subscribe", "account_key", "callback"), &SolanaClient::account_subscribe);
+    ClassDB::bind_method(D_METHOD("signature_subscribe", "signature", "callback", "commitment"), &SolanaClient::signature_subscribe);
+    ClassDB::bind_method(D_METHOD("program_subscribe", "program_id", "callback"), &SolanaClient::program_subscribe);
+    ClassDB::bind_method(D_METHOD("root_subscribe", "callback"), &SolanaClient::root_subscribe);
+    ClassDB::bind_method(D_METHOD("slot_subscribe", "callback"), &SolanaClient::slot_subscribe);
+
+    ClassDB::add_property("SolanaClient", PropertyInfo(Variant::BOOL, "async", PROPERTY_HINT_NONE), "set_async", "get_async");
+    ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "url", PROPERTY_HINT_NONE), "set_url", "get_url");
+    ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "ws_url", PROPERTY_HINT_NONE), "set_ws_url", "get_ws_url");
+    ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "commitment", PROPERTY_HINT_ENUM, "confirmed,processed,finalized"), "set_commitment", "get_commitment");
+    ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "encoding", PROPERTY_HINT_ENUM, "base64,base58"), "set_encoding", "get_encoding");
 }
 
 void SolanaClient::_process(double delta){
@@ -1119,9 +1102,9 @@ void SolanaClient::_ready(){
 
 SolanaClient::SolanaClient(){
     ws = new WebSocketPeer();
-    http_callback = nullptr;
     transaction_detail = "full";
-    commitment = "finalized";
+    Callable callback = Callable(this, "response_callback");
+    set_http_callback(callback);
 }
 
 Dictionary SolanaClient::parse_url(const String& url){
@@ -1223,7 +1206,7 @@ void SolanaClient::set_url(const String& url){
         port = parsed_url["port"];
     }
 
-	SolanaClient::url = url.ascii();
+	this->url = url;
     Dictionary ws_url = parsed_url;
     if(use_tls){
         ws_url["scheme"] = "wss://";
@@ -1231,23 +1214,41 @@ void SolanaClient::set_url(const String& url){
     else{
         ws_url["scheme"] = "ws://";
     }
-    SolanaClient::ws_url = assemble_url(ws_url).ascii();
+    this->ws_url = assemble_url(ws_url);
+}
+
+void SolanaClient::set_ws_url(const String& url){
+    Dictionary parsed_url = parse_url(url);
+
+    ws_url = assemble_url(parsed_url).ascii();
+}
+
+String SolanaClient::get_ws_url(){
+    return ws_url;
 }
 
 String SolanaClient::get_url(){
-    return String(SolanaClient::url.c_str());
+    return url;
 }
 
 void SolanaClient::set_commitment(const String& commitment){
-    SolanaClient::commitment = commitment.utf8();
+    this->commitment = commitment;
+}
+
+String SolanaClient::get_commitment(){
+    return commitment;
 }
 
 void SolanaClient::set_encoding(const String& encoding){
-    SolanaClient::encoding = encoding.utf8();
+    this->encoding = encoding;
+}
+
+String SolanaClient::get_encoding(){
+    return encoding;
 }
 
 void SolanaClient::set_transaction_detail(const String& transaction_detail){
-    SolanaClient::transaction_detail = transaction_detail.utf8();
+    this->transaction_detail = transaction_detail.utf8();
 }
 
 void SolanaClient::enable_min_context_slot(int slot){
@@ -1310,10 +1311,15 @@ void SolanaClient::disable_slot_range(){
     slot_range_enabled = false;
 }
 
+void SolanaClient::set_async(bool use_async){
+    async = use_async;
+}
+
+bool SolanaClient::get_async(){
+    return async;
+}
+
 SolanaClient::~SolanaClient(){
-    if(http_callback != nullptr){
-        delete http_callback;
-    }
 }
 
 }

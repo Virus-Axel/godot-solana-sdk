@@ -59,9 +59,6 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<CandyGuardAccessList>();
     ClassDB::register_class<CandyMachineData>();
     ClassDB::register_class<AnchorProgram>();
-
-    SolanaClient::set_commitment("confirmed");
-    SolanaClient::set_encoding("base64");
 }
 
 void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {

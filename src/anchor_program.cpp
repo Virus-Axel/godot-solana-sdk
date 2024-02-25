@@ -342,7 +342,10 @@ bool AnchorProgram::load_from_pid(const String& pid){
         return false;
     }
 
-    Dictionary rpc_result = SolanaClient::get_account_info(pid);
+    SolanaClient temp_client;
+    temp_client.set_async(false);
+
+    Dictionary rpc_result = temp_client.get_account_info(pid);
     
     if(!rpc_result.has("result")){
         return false;
@@ -357,7 +360,7 @@ bool AnchorProgram::load_from_pid(const String& pid){
     if((bool)account["executable"]){
         idl_address = Pubkey(AnchorProgram::idl_address(Pubkey::new_from_string(pid))).get_value();
 
-        rpc_result = SolanaClient::get_account_info(idl_address);
+        rpc_result = temp_client.get_account_info(idl_address);
         if(!rpc_result.has("result")){
             return false;
         }
@@ -793,7 +796,10 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
 }
 
 Dictionary AnchorProgram::fetch_account(const String name, const Variant& account){
-    Dictionary rpc_result = SolanaClient::get_account_info(Pubkey(account).get_value());
+    SolanaClient temp_client;
+    temp_client.set_async(false);
+    
+    Dictionary rpc_result = temp_client.get_account_info(Pubkey(account).get_value());
 
     if(!rpc_result.has("result")){
         return Dictionary();
