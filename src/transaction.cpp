@@ -308,7 +308,7 @@ void Transaction::update_latest_blockhash(const String &custom_hash){
         }
         else{
             Callable callback(this, "blockhash_callback");
-            blockhash_client->set_http_callback(callback);
+            blockhash_client->connect("http_response", callback);
             blockhash_client->get_latest_blockhash();
         }
     }
@@ -364,6 +364,10 @@ Variant Transaction::sign_and_send(){
 
 void Transaction::send_callback(Dictionary params){
     pending_send = false;
+    Callable callback(this, "send_callback");
+    if(send_client->is_connected("http_response", callback)){
+        send_client->disconnect("http_response", callback);
+    }
 
     if(params.has("result")){
         result_signature = params["result"];
@@ -372,6 +376,10 @@ void Transaction::send_callback(Dictionary params){
 }
 
 void Transaction::blockhash_callback(Dictionary params){
+    Callable callback(this, "blockhash_callback");
+    if(blockhash_client->is_connected("http_response", callback)){
+        blockhash_client->disconnect("http_response", callback);
+    }
     pending_blockhash = false;
     if(params.has("result")){
         const Dictionary blockhash_result = params["result"];
@@ -402,7 +410,7 @@ Dictionary Transaction::send(){
         Callable callback(this, "send_callback");
 
         pending_send = true;
-        send_client->set_http_callback(callback);
+        send_client->connect("http_response", callback);
         Dictionary rpc_result = send_client->send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
 
         return Dictionary();

@@ -1294,7 +1294,9 @@ Variant MplCandyMachine::new_candy_machine_authority_pda(const Variant& candy_ma
 Variant MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key){
     int cursor = 9;
 
-    Dictionary rpc_result = SolanaClient::get_account_info(Pubkey(candy_machine_key).get_value());
+    SolanaClient temp_client;
+    temp_client.set_async(false);
+    Dictionary rpc_result = temp_client.get_account_info(Pubkey(candy_machine_key).get_value());
 
     if(!rpc_result.has("result")){
         return nullptr;

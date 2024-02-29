@@ -72,7 +72,9 @@ Variant MplTokenMetadata::new_associated_metadata_pubkey_master_edition(const Va
 Variant MplTokenMetadata::get_mint_metadata(const Variant& mint){
     Variant metadata_account = new_associated_metadata_pubkey(mint);
 
-    Dictionary rpc_result = SolanaClient::get_account_info(Pubkey(metadata_account).get_value());
+    SolanaClient temp_client;
+    temp_client.set_async(false);
+    Dictionary rpc_result = temp_client.get_account_info(Pubkey(metadata_account).get_value());
     if(!rpc_result.has("result")){
         return nullptr;
     }
