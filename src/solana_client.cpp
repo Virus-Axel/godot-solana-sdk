@@ -330,13 +330,15 @@ void SolanaClient::poll_http_request(){
         return;
     }
 #else
-    const String poll_script = "Module.solanaClientReq.responseText";
+    const String poll_script = "try{Module.solanaClientReq.responseText}catch{''}";
     String result = JavaScriptBridge::get_singleton()->eval(poll_script);
     if(!result.is_empty()){
         async = false;
         Array params;
         params.append(JSON::parse_string(result));
         http_callback.callv(params);
+        //const String reset_script = "delete Module.solanaClientReq;";
+        //JavaScriptBridge::get_singleton()->eval(reset_script);
     }
 #endif
 }

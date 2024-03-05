@@ -1,0 +1,44 @@
+[gd_scene load_steps=2 format=3 uid="uid://f7w6n866ytk6"]
+
+[ext_resource type="Script" path="res://transaction_example.gd" id="1_5f21j"]
+
+[node name="TransactionExample" type="VBoxContainer"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -41.5
+offset_top = -38.5
+offset_right = 41.5
+offset_bottom = 38.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 32
+script = ExtResource("1_5f21j")
+
+[node name="AirdropSolanaLabel" type="Label" parent="."]
+layout_mode = 2
+text = "RequestAirdrop Signature:
+ "
+horizontal_alignment = 1
+
+[node name="TransferSolanaLabel" type="Label" parent="."]
+layout_mode = 2
+text = "Transfer Signature:
+
+"
+horizontal_alignment = 1
+
+[node name="CreateAccountLabel" type="Label" parent="."]
+layout_mode = 2
+text = "CreateAccount Signature:
+
+"
+horizontal_alignment = 1
+
+[node name="SolanaClient" type="SolanaClient" parent="."]
+url = "http://127.0.0.1:8899"
+ws_url = "ws://"
+
+[node name="Transaction" type="Transaction" parent="."]

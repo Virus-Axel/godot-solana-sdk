@@ -27,12 +27,13 @@ private:
     String latest_blockhash_string = "";
     String result_signature = "";
     String latest_commitment = "";
+    String url = "https://api.devnet.solana.com";
 
     SolanaClient *send_client;
     SolanaClient *blockhash_client;
 
     bool has_cumpute_budget_instructions = false;
-    bool use_phantom_payer = false;
+    bool external_payer = false;
     bool pending_blockhash = false;
     bool pending_send = false;
 
@@ -61,14 +62,16 @@ public:
     void set_payer(const Variant& p_value);
     Variant get_payer();
 
+    void set_url(const String& p_value);
+
     bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 
     void set_signers(const Array& p_value);
     Array get_signers();
 
-    void set_use_phantom_payer(bool p_value);
-    bool get_use_phantom_payer();
+    void set_external_payer(bool p_value);
+    bool get_external_payer();
 
     void update_latest_blockhash(const String &custom_hash = "");
     void add_instruction(const Variant &instruction);

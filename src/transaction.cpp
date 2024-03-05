@@ -25,8 +25,10 @@ void Transaction::_bind_methods() {
     ClassDB::add_signal("Transaction", MethodInfo("send_ready"));
     ClassDB::add_signal("Transaction", MethodInfo("sign_error", PropertyInfo(Variant::INT, "signer_index")));
     ClassDB::add_signal("Transaction", MethodInfo("transaction_response", PropertyInfo(Variant::DICTIONARY, "result")));
-    ClassDB::add_signal("Transaction", MethodInfo("blockhas_updated", PropertyInfo(Variant::DICTIONARY, "result")));
+    ClassDB::add_signal("Transaction", MethodInfo("blockhash_updated", PropertyInfo(Variant::DICTIONARY, "result")));
     ClassDB::add_signal("Transaction", MethodInfo("blockhash_update_failure", PropertyInfo(Variant::DICTIONARY, "result")));
+
+    ClassDB::bind_method(D_METHOD("set_url", "url"), &Transaction::set_url);
 
     ClassDB::bind_method(D_METHOD("get_instructions"), &Transaction::get_instructions);
     ClassDB::bind_method(D_METHOD("set_instructions", "p_value"), &Transaction::set_instructions);
@@ -164,8 +166,12 @@ bool Transaction::_set(const StringName &p_name, const Variant &p_value){
         set_signers(p_value);
         return true;
     }
-    else if(name == "use_phantom_payer"){
-        set_use_phantom_payer(p_value);
+    else if(name == "external_payer"){
+        set_external_payer(p_value);
+        return true;
+    }
+    else if(name == "url"){
+        set_url(p_value);
         return true;
     }
 	return false;
@@ -185,27 +191,32 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
         r_ret = signers;
         return true;
     }
-    else if(name == "use_phantom_payer"){
-        r_ret = use_phantom_payer;
+    else if(name == "external_payer"){
+        r_ret = external_payer;
+        return true;
+    }
+    else if(name == "url"){
+        r_ret = url;
         return true;
     }
 	return false;
 }
 
 void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
-    p_list->push_back(PropertyInfo(Variant::BOOL, "use_phantom_payer", PROPERTY_HINT_NONE, "false"));
-    if(!use_phantom_payer){
+    p_list->push_back(PropertyInfo(Variant::STRING, "url"));
+    p_list->push_back(PropertyInfo(Variant::BOOL, "external_payer", PROPERTY_HINT_NONE, "false"));
+    if(!external_payer){
         p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair"));
     }
     else{
         p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_NODE_TYPE, "WalletAdapter"));
     }
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "instructions", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Instruction")));
-    p_list->push_back(PropertyInfo(Variant::ARRAY, "signers", PROPERTY_HINT_NONE, MAKE_RESOURCE_TYPE_HINT("Keypair")));
+
+    //p_list->push_back(PropertyInfo(Variant::ARRAY, "signers", PROPERTY_HINT_NONE, MAKE_RESOURCE_TYPE_HINT("Keypair")));
 }
 
 Transaction::Transaction() {
-    set_editor_description("HI aaaa");
     send_client = memnew(SolanaClient);
     blockhash_client = memnew(SolanaClient);
 }
@@ -285,13 +296,19 @@ Variant Transaction::get_payer(){
     return payer;
 }
 
-void Transaction::set_use_phantom_payer(bool p_value){
-    use_phantom_payer = p_value;
+void Transaction::set_url(const String& p_value){
+    url = p_value;
+    send_client->set_url(url);
+    blockhash_client->set_url(url);
+}
+
+void Transaction::set_external_payer(bool p_value){
+    external_payer = p_value;
     notify_property_list_changed();
 }
 
-bool Transaction::get_use_phantom_payer(){
-    return use_phantom_payer;
+bool Transaction::get_external_payer(){
+    return external_payer;
 }
 
 void Transaction::update_latest_blockhash(const String &custom_hash){
@@ -407,6 +424,16 @@ Dictionary Transaction::send(){
         return rpc_result;
     }
     else{
+        Callable pending_blockhash_callback(this, "send");
+        if(pending_blockhash){
+            Callable pending_blockhash_callback(this, "send");
+            connect("fully_signed", pending_blockhash_callback);
+            return Dictionary();
+        }
+        else if(is_connected("fully_signed", pending_blockhash_callback)){
+            disconnect("fully_signed", pending_blockhash_callback);
+        }
+
         Callable callback(this, "send_callback");
 
         pending_send = true;
@@ -426,13 +453,12 @@ void Transaction::send_and_disconnect(){
 Error Transaction::sign(){
     ERR_FAIL_COND_V_EDMSG(!is_message_valid(), Error::ERR_INVALID_DATA, "Invalid message.");
 
+    Callable pending_blockhash_callback(this, "sign");
     if(pending_blockhash){
-        Callable pending_blockhash_callback(this, "sign");
         connect("send_ready", pending_blockhash_callback);
         return ERR_UNAVAILABLE;
     }
-    else if(get_signal_connection_list("send_ready").size() > 0){
-        Callable pending_blockhash_callback(this, "sign");
+    else if(is_connected("send_ready", pending_blockhash_callback)){
         disconnect("send_ready", pending_blockhash_callback);
     }
 
@@ -443,6 +469,8 @@ Error Transaction::sign(){
     for (unsigned int i = 0; i < signers.size(); i++){
         sign_at_index(i);
     }
+
+    check_fully_signed();
 
     return OK;
 }

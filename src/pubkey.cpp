@@ -3,6 +3,7 @@
 
 #include <solana_sdk.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/classes/random_number_generator.hpp>
 #include "sha256.hpp"
 
 #include "curve25519.hpp"
@@ -27,6 +28,7 @@ void Pubkey::_bind_methods() {
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_associated_token_address", "wallet_address", "token_mint_address"), &Pubkey::new_associated_token_address);
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_pda", "seeds", "program_id"), &Pubkey::new_pda);
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_pda_bytes", "seeds", "program_id"), &Pubkey::new_pda_bytes);
+    ClassDB::bind_static_method("Pubkey", D_METHOD("new_random"), &Pubkey::new_random);
 
     ClassDB::bind_method(D_METHOD("get_value"), &Pubkey::get_value);
     ClassDB::bind_method(D_METHOD("set_value", "p_value"), &Pubkey::set_value);
@@ -304,6 +306,17 @@ Variant Pubkey::new_pda_bytes(const Array seeds, const Variant &program_id){
     return nullptr;
 }
 
+Variant Pubkey::new_random(){
+    PackedByteArray random_bytes;
+    random_bytes.resize(PUBKEY_BYTES);
+    RandomNumberGenerator rand;
+    rand.randomize();
+    for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
+        random_bytes[i] = rand.randi() % 256;
+    }
+    return new_from_bytes(random_bytes);
+}
+
 bool Pubkey::is_pubkey(const Variant &object){
     return ((Object*)object)->is_class("Pubkey");
 }
@@ -511,7 +524,7 @@ void Pubkey::operator=(const Variant& other){
     else if(WalletAdapter::is_wallet_adapter(other)){
         WalletAdapter *phantom_controller = Object::cast_to<WalletAdapter>(other);
         if(phantom_controller->is_connected()){
-            this->set_bytes(phantom_controller->get_connected_key());
+            *this = phantom_controller->get_connected_key();
         }
         else{
             // Append placeholder
