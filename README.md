@@ -1,5 +1,5 @@
 # godot-solana-sdk
-A GDExtention with bindings to the solana-sdk. This plugin provides the possibility to create Solana transaction in your Godot game. This can be usefull when utilizing NFTs or other Solana smart contracts. The plugin builds for all platforms supported by Godot. The plugin builds for Godot 4.1.
+A GDExtention with bindings to the solana-sdk. This plugin provides the possibility to create Solana transaction in your Godot game. This can be usefull when utilizing NFTs or other Solana smart contracts. The plugin builds for all platforms supported by Godot. The plugin builds for Godot 4.1 and up.
 
 # Version history
 | SDK         | Godot     | Platforms |
@@ -10,7 +10,7 @@ A GDExtention with bindings to the solana-sdk. This plugin provides the possibil
 | v0.1      | 4.0  | Windows, Linux, Web, Android, IOS, MacOS       |
 
 # How to use
-Download the binaries in the release section [here](https://github.com/Virus-Axel/godot-solana-sdk/releases). place the binaries anywhere in your godot project directory under res://bin/. Reload your project and you are good to go.
+Download the binaries in the release section [here](https://github.com/Virus-Axel/godot-solana-sdk/releases). place the binaries anywhere in your godot project directory under res://bin/. Reload your project and you are good to go. Warning! This readme is a little outdated. See examples for an up to date usage example.
 
 # Nodes
 There is currently only one node provided by this plugin, that is the Transaction node.
