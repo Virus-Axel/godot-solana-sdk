@@ -12,6 +12,9 @@ class SolanaClient : public Node {
     GDCLASS(SolanaClient, Node)
 
 private:
+    static unsigned int global_rpc_id;
+    unsigned int local_rpc_id = 0;
+
     const int DEFAULT_PORT = 443;
     const std::string DEFAULT_URL = "https://api.devnet.solana.com";
     const std::string DEFAULT_WS_URL = "wss://api.devnet.solana.com";

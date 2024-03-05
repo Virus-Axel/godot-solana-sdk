@@ -12,6 +12,8 @@
 
 namespace godot{
 
+unsigned int SolanaClient::global_rpc_id = 1;
+
 using internal::gdextension_interface_print_warning;
 
 
@@ -95,7 +97,10 @@ void SolanaClient::add_to_param_dict(Array &options, const String& key, const Va
 Dictionary SolanaClient::make_rpc_dict(const String& method, const Array& params){
     Dictionary request_body;
 
-    request_body["id"] = 1;
+    local_rpc_id = global_rpc_id;
+    SolanaClient::global_rpc_id += 1;
+
+    request_body["id"] = local_rpc_id;
     request_body["jsonrpc"] = "2.0";
     request_body["method"] = method;
     request_body["params"] = params;
@@ -245,14 +250,15 @@ void SolanaClient::asynchronous_request(const String& request_body){
         request.setRequestHeader('Content-Type', 'application/json');\
         request.send('{1}');\
         \
-        Module.solanaClientResponse = request.response;\
-        Module.solanaClientReq = request;\
+        Module.solanaClientResponse{2} = request.response;\
+        Module.solanaClientReq{2} = request;\
         request.response";
 
     Array params;
 
     params.append(get_url());
     params.append(request_body);
+    params.append(local_rpc_id);
 
     Variant result = JavaScriptBridge::get_singleton()->eval(web_script.format(params));
 
@@ -312,8 +318,6 @@ void SolanaClient::poll_http_request(){
             status = http_handler.get_status();
         }
 
-        http_handler.close();
-
         // Parse the result json.
         JSON json;
         err = json.parse(response_data.get_string_from_utf8());
@@ -321,6 +325,18 @@ void SolanaClient::poll_http_request(){
             gdextension_interface_print_warning("Error getting response data.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
             return;
         }
+
+        // Return if response is not ours.
+        Dictionary json_data = json.get_data();
+        if(!json_data.has("id")){
+            return;
+        }
+        if((unsigned int)json_data["id"] != local_rpc_id){
+            return;
+        }
+
+        http_handler.close();
+
         Array params;
         params.append(json.get_data());
 
@@ -330,15 +346,19 @@ void SolanaClient::poll_http_request(){
         return;
     }
 #else
-    const String poll_script = "try{Module.solanaClientReq.responseText}catch{''}";
-    String result = JavaScriptBridge::get_singleton()->eval(poll_script);
+    const String poll_script = "try{Module.solanaClientReq{0}.responseText}catch{''}";
+    Array format_params;
+    format_params.append(local_rpc_id);
+
+    String result = JavaScriptBridge::get_singleton()->eval(poll_script.format(format_params));
     if(!result.is_empty()){
-        async = false;
         Array params;
-        params.append(JSON::parse_string(result));
+        Dictionary json_data = JSON::parse_string(result);
+
+        params.append(json_data);
         http_callback.callv(params);
-        //const String reset_script = "delete Module.solanaClientReq;";
-        //JavaScriptBridge::get_singleton()->eval(reset_script);
+        const String reset_script = "delete Module.solanaClientReq{0};";
+        JavaScriptBridge::get_singleton()->eval(reset_script.format(format_params));
     }
 #endif
 }

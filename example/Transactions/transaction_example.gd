@@ -11,7 +11,6 @@ func transaction_example_airdrop_to():
 
 	$SolanaClient.request_airdrop(payer.get_public_value(), LAMPORTS_PER_SOL)
 	var response = await $SolanaClient.http_response
-	print(response)
 
 	# Error check the RPC result
 	assert(response.has("result"))
@@ -52,7 +51,7 @@ func transaction_example_transfer():
 	var signature = response["result"]
 	assert(typeof(signature) == TYPE_STRING)
 	
-	$TransferSolanaLabel.text = signature
+	$TransferSolanaLabel.text += signature
 
 
 func create_account_example():
@@ -60,6 +59,7 @@ func create_account_example():
 	
 	var account_key: Keypair = Keypair.new_random()
 	var tx = Transaction.new()
+	tx.set_url("http://127.0.0.1:8899")
 	
 	add_child(tx)
 	tx.set_payer(payer)
@@ -80,7 +80,7 @@ func create_account_example():
 	var signature = response["result"]
 	assert(typeof(signature) == TYPE_STRING)
 	
-	$CreateAccountLabel.text = signature
+	$CreateAccountLabel.text += signature
 	tx.sign_and_send()
 
 

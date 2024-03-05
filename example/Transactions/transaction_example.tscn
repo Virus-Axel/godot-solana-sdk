@@ -26,19 +26,15 @@ horizontal_alignment = 1
 [node name="TransferSolanaLabel" type="Label" parent="."]
 layout_mode = 2
 text = "Transfer Signature:
-
 "
 horizontal_alignment = 1
 
 [node name="CreateAccountLabel" type="Label" parent="."]
 layout_mode = 2
 text = "CreateAccount Signature:
-
 "
 horizontal_alignment = 1
 
 [node name="SolanaClient" type="SolanaClient" parent="."]
 url = "http://127.0.0.1:8899"
 ws_url = "ws://"
-
-[node name="Transaction" type="Transaction" parent="."]

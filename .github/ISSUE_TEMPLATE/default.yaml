@@ -19,7 +19,7 @@ body:
     attributes:
       label: Suggested Improvements
       description: Optionally describe how you think the SDK can be improved.
-      placeholder: Your oppinion matters.
+      placeholder: How can it be fixed
     validations:
       required: false
   - type: textarea
