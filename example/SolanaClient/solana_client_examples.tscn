@@ -1,0 +1,35 @@
+[gd_scene load_steps=2 format=3 uid="uid://dsabrl5u643o8"]
+
+[ext_resource type="Script" path="res://SolanaClientExamples.gd" id="1_ldiew"]
+
+[node name="SolanaClientExamples" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ldiew")
+
+[node name="ResultTree1" type="Tree" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+hide_root = true
+
+[node name="ResultTree2" type="Tree" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+hide_root = true
+
+[node name="ResultTree3" type="Tree" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+
+[node name="Timeout" type="Timer" parent="."]
+wait_time = 10.0
+one_shot = true
+autostart = true
+
+[connection signal="timeout" from="Timeout" to="." method="_on_timeout_timeout"]

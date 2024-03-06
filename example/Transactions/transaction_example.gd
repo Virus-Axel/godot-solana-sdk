@@ -4,10 +4,14 @@ extends VBoxContainer
 @onready var payer: Keypair = Keypair.new_from_file("res://payer.json")
 const LAMPORTS_PER_SOL = 1000000000
 
-func CUSTOM_ASSERT(condition: bool):
-	assert(condition)
-	if !condition:
-		get_tree().quit(1)
+const TOTAL_CASES := 3
+var passed_test_mask := 0
+
+
+func PASS(unique_identifier: int):
+	passed_test_mask += (1 << unique_identifier)
+	print("[OK]: ", unique_identifier)
+
 
 func transaction_example_airdrop_to():
 	# Requesting airdrop is done through the SolanaClient
@@ -18,11 +22,12 @@ func transaction_example_airdrop_to():
 	var response = await $SolanaClient.http_response
 
 	# Error check the RPC result
-	CUSTOM_ASSERT(response.has("result"))
+	assert(response.has("result"))
 	var result = response["result"]
-	CUSTOM_ASSERT(typeof(result) == TYPE_STRING)
+	assert(typeof(result) == TYPE_STRING)
 	
 	$AirdropSolanaLabel.text += result
+	PASS(0)
 
 
 func transaction_example_transfer():
@@ -52,11 +57,12 @@ func transaction_example_transfer():
 	# Connect it to avoid errors in you application.
 	var response = await tx.transaction_response
 	
-	CUSTOM_ASSERT(response.has("result"))
+	assert(response.has("result"))
 	var signature = response["result"]
-	CUSTOM_ASSERT(typeof(signature) == TYPE_STRING)
+	assert(typeof(signature) == TYPE_STRING)
 	
 	$TransferSolanaLabel.text += signature
+	PASS(1)
 
 
 func create_account_example():
@@ -81,12 +87,13 @@ func create_account_example():
 	# Connect it to avoid errors in you application.
 	var response = await tx.transaction_response
 	
-	CUSTOM_ASSERT(response.has("result"))
+	assert(response.has("result"))
 	var signature = response["result"]
-	CUSTOM_ASSERT(typeof(signature) == TYPE_STRING)
+	assert(typeof(signature) == TYPE_STRING)
 	
 	$CreateAccountLabel.text += signature
 	tx.sign_and_send()
+	PASS(2)
 
 
 func _ready():
@@ -96,7 +103,13 @@ func _ready():
 	transaction_example_airdrop_to()
 	
 	# Await the airdrop, SolanaClient.get_signature_statuses() can be used.
-	#await get_tree().create_timer(5).timeout
+	await get_tree().create_timer(5).timeout
 	
 	transaction_example_transfer()
 	create_account_example()
+
+
+func _on_timeout_timeout():
+	for i in range(TOTAL_CASES):
+		if ((1 << i) & passed_test_mask) == 0:
+			print("[FAIL]: ", i)
