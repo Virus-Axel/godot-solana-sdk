@@ -35,6 +35,12 @@ jobs:
             target: template_release
             platform: windows
             arch: x86_64
+          - identifier: android-debug
+            name: Android Debug
+            runner: ubuntu-20.04
+            target: template_debug
+            platform: android
+            arch: arm64
           - identifier: android-release
             name: Android Release
             runner: ubuntu-20.04
@@ -53,6 +59,30 @@ jobs:
             target: template_release
             platform: macos
             arch: universal
+          - identifier: ios-debug
+            runner: macos-latest
+            name: 🍎 IOS Debug
+            target: template_debug
+            platform: ios
+            arch: arm64
+          - identifier: ios-release
+            runner: macos-latest
+            name: 🍎 IOS Release
+            target: template_release
+            platform: ios
+            arch: arm64
+          - identifier: web-debug
+            name: Web Debug
+            runner: ubuntu-20.04
+            target: template_debug
+            platform: web
+            arch: wasm32
+          - identifier: web-release
+            name: Web Release
+            runner: ubuntu-20.04
+            target: template_release
+            platform: web
+            arch: wasm32
     steps:
       - name: (Windows) Install mingw64
         if: ${{ startsWith(matrix.identifier, 'windows-') }}
@@ -77,6 +107,13 @@ jobs:
         shell: sh
         run: |
           "$ANDROID_SDK_ROOT"/cmdline-tools/latest/bin/sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "build-tools;30.0.3" "platforms;android-29" "cmdline-tools;latest" "cmake;3.10.2.4988404" "ndk;21.4.7075529"
+
+      - name: (Web) Install emsdk toolchain
+        if: ${{ startsWith(matrix.identifier, 'web-') }}
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          # Make sure to set a version number!
+          version: 3.1.53
 
       - name: Set up Python
         uses: actions/setup-python@v2
