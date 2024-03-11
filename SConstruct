@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import platform
 
 CONTAINER_BUILD_PATH = "build-containers"
 CONTAINER_NAME = "godot-solana-sdk-container"
@@ -139,8 +140,9 @@ if env.GetOption('container_build'):
     exit(0)
 
 else:
+
     set_tmp_dir(env["platform"], env["target"])
-    if env["platform"] == "ios":
+    if env["platform"] == "ios" and platform.system() != "Darwin":
 
         # Add linker settings for ios build.
         env.Append(LIBS = ['objc'])
