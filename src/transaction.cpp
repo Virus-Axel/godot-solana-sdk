@@ -30,6 +30,7 @@ void Transaction::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("set_url", "url"), &Transaction::set_url);
 
+    ClassDB::bind_method(D_METHOD("set_latest_commitment", "value"), &Transaction::set_latest_commitment);
     ClassDB::bind_method(D_METHOD("get_instructions"), &Transaction::get_instructions);
     ClassDB::bind_method(D_METHOD("set_instructions", "p_value"), &Transaction::set_instructions);
     ClassDB::bind_method(D_METHOD("get_payer"), &Transaction::get_payer);
@@ -91,6 +92,7 @@ bool Transaction::is_message_valid(){
 void Transaction::create_message(){
     // Free existing memory.
     message.clear();
+    is_fully_signed = false;
     if(instructions.is_empty() || (payer.get_type() == Variant::NIL)){
         signatures.clear();
         return;
@@ -125,6 +127,7 @@ void Transaction::create_message(){
 
 void Transaction::check_fully_signed(){
     if(ready_signature_amount == signers.size()){
+        is_fully_signed = true;
         emit_signal("fully_signed");
     }
 }
@@ -219,6 +222,7 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 Transaction::Transaction() {
     send_client = memnew(SolanaClient);
     blockhash_client = memnew(SolanaClient);
+    poll_client = memnew(SolanaClient);
 }
 
 void Transaction::_ready(){
@@ -240,20 +244,20 @@ bool Transaction::is_confirmed(){
     if(latest_commitment == "confirmed" || latest_commitment == "finalized"){
         return true;
     }
-
-    PackedStringArray arr;
-    arr.append(result_signature);
-    Dictionary rpc_result = send_client->get_signature_statuses(arr);
-
-    Dictionary transaction_info = rpc_result.get("result", nullptr);
-    Array transaction_value = transaction_info.get("value", nullptr);
-
-    if(transaction_value[0].get_type() != Variant::DICTIONARY){
+    if(pending_poll){
         return false;
     }
 
-    String status = transaction_value[0].get("confirmationStatus", nullptr);
-    latest_commitment = status;
+    PackedStringArray arr;
+    arr.append(result_signature);
+
+    Callable poll_callback(this, "set_latest_commitment");
+    if(!poll_client->is_connected("http_response", poll_callback)){
+        poll_client->connect("http_response", poll_callback);
+    }
+
+    Dictionary rpc_result = poll_client->get_signature_statuses(arr);
+
     return (latest_commitment == "confirmed" || latest_commitment == "finalized");
 }
 
@@ -261,21 +265,34 @@ bool Transaction::is_finalized(){
     if(latest_commitment == "finalized"){
         return true;
     }
+    if(pending_poll){
+        return false;
+    }
 
     PackedStringArray arr;
     arr.append(result_signature);
+
+    Callable poll_callback(this, "set_latest_commitment");
+    if(!poll_client->is_connected("http_response", poll_callback)){
+        poll_client->connect("http_response", poll_callback);
+    }
     Dictionary rpc_result = send_client->get_signature_statuses(arr);
 
-    Dictionary transaction_info = rpc_result.get("result", nullptr);
-    Array transaction_value = transaction_info.get("value", nullptr);
+    return (latest_commitment == "finalized");
+}
+
+void Transaction::set_latest_commitment(const Dictionary& value){
+    ERR_FAIL_COND_EDMSG(!value.has("result"), "Bad RPC response.");
+
+    Dictionary transaction_info = value["result"];
+    Array transaction_value = transaction_info["value"];
 
     if(transaction_value[0].get_type() != Variant::DICTIONARY){
-        return false;
+        return;
     }
-    
-    String status = transaction_value[0].get("confirmationStatus");
+
+    String status = transaction_value[0].get("confirmationStatus", nullptr);
     latest_commitment = status;
-    return (latest_commitment == "finalized");
 }
 
 void Transaction::set_instructions(const Array& p_value){
@@ -300,6 +317,7 @@ void Transaction::set_url(const String& p_value){
     url = p_value;
     send_client->set_url(url);
     blockhash_client->set_url(url);
+    poll_client->set_url(url);
 }
 
 void Transaction::set_external_payer(bool p_value){
@@ -425,8 +443,7 @@ Dictionary Transaction::send(){
     }
     else{
         Callable pending_blockhash_callback(this, "send");
-        if(pending_blockhash){
-            Callable pending_blockhash_callback(this, "send");
+        if(!is_fully_signed){
             connect("fully_signed", pending_blockhash_callback);
             return Dictionary();
         }

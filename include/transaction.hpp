@@ -19,6 +19,7 @@ private:
 
     Variant message;
 
+    bool is_fully_signed = false;
     Array instructions;
     Variant payer;
     Array signers;
@@ -31,11 +32,13 @@ private:
 
     SolanaClient *send_client;
     SolanaClient *blockhash_client;
+    SolanaClient *poll_client;
 
     bool has_cumpute_budget_instructions = false;
     bool external_payer = false;
     bool pending_blockhash = false;
     bool pending_send = false;
+    bool pending_poll = false;
 
     void _get_property_list(List<PropertyInfo> *p_list) const;
     void _signer_signed(PackedByteArray signature);
@@ -55,6 +58,8 @@ public:
     Transaction();
     void _ready() override;
     void _process(double delta) override;
+
+    void set_latest_commitment(const Dictionary& value);
 
     void set_instructions(const Array& p_value);
     Array get_instructions();
