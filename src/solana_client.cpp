@@ -350,6 +350,7 @@ void SolanaClient::poll_http_request(){
     String result = JavaScriptBridge::get_singleton()->eval(poll_script.format(format_params));
     if(!result.is_empty()){
         Array params;
+        std::cout << "DEBUG2" << result.ascii() << std::endl;
         Dictionary json_data = JSON::parse_string(result);
 
         params.append(json_data);
@@ -361,6 +362,7 @@ void SolanaClient::poll_http_request(){
 }
 
 Dictionary SolanaClient::quick_http_request(const String& request_body, const Callable& callback){
+    std::cout << "DEBUG: " << request_body.ascii() << std::endl;
     if(async){
         //set_http_callback(callback);
         asynchronous_request(request_body);

@@ -235,6 +235,9 @@ void Transaction::_process(double delta){
     if(pending_blockhash){
         blockhash_client->_process(delta);
     }
+    if(pending_poll){
+        poll_client->_process(delta);
+    }
 }
 
 void Transaction::create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash){
@@ -257,6 +260,7 @@ bool Transaction::is_confirmed(){
     }
 
     Dictionary rpc_result = poll_client->get_signature_statuses(arr);
+    pending_poll = true;
 
     return (latest_commitment == "confirmed" || latest_commitment == "finalized");
 }
@@ -276,12 +280,14 @@ bool Transaction::is_finalized(){
     if(!poll_client->is_connected("http_response", poll_callback)){
         poll_client->connect("http_response", poll_callback);
     }
-    Dictionary rpc_result = send_client->get_signature_statuses(arr);
+    Dictionary rpc_result = poll_client->get_signature_statuses(arr);
+    pending_poll = true;
 
     return (latest_commitment == "finalized");
 }
 
 void Transaction::set_latest_commitment(const Dictionary& value){
+    pending_poll = false;
     ERR_FAIL_COND_EDMSG(!value.has("result"), "Bad RPC response.");
 
     Dictionary transaction_info = value["result"];
