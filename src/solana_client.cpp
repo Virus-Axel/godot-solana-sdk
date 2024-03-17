@@ -226,6 +226,8 @@ void SolanaClient::set_http_callback(const Callable& callback){
 }
 
 void SolanaClient::asynchronous_request(const String& request_body){
+    pending_request = true;
+
     #ifndef WEB_ENABLED
 	
     Error err;
@@ -245,14 +247,10 @@ void SolanaClient::asynchronous_request(const String& request_body){
 
 #else
     String web_script = "\
-        var request = new XMLHttpRequest();\
-        request.open('POST', '{0}', true);\
-        request.setRequestHeader('Content-Type', 'application/json');\
-        request.send('{1}');\
-        \
-        Module.solanaClientResponse{2} = request.response;\
-        Module.solanaClientReq{2} = request;\
-        request.response";
+        Module.solanaClientReq{2} = new XMLHttpRequest();\
+        Module.solanaClientReq{2}.open('POST', '{0}', true);\
+        Module.solanaClientReq{2}.setRequestHeader('Content-Type', 'application/json');\
+        Module.solanaClientReq{2}.send('{1}');";
 
     Array params;
 
@@ -263,7 +261,6 @@ void SolanaClient::asynchronous_request(const String& request_body){
     Variant result = JavaScriptBridge::get_singleton()->eval(web_script.format(params));
 
     JSON json;
-	Error err = json.parse(result);
 
 #endif
 }
@@ -346,7 +343,7 @@ void SolanaClient::poll_http_request(){
         return;
     }
 #else
-    const String poll_script = "try{Module.solanaClientReq{0}.responseText}catch{''}";
+    const String poll_script = "try{if(Module.solanaClientReq{0}.readyState == 4){Module.solanaClientReq{0}.responseText}else{''}}catch{''}";
     Array format_params;
     format_params.append(local_rpc_id);
 
@@ -428,6 +425,7 @@ void SolanaClient::connect_ws(){
 }
 
 void SolanaClient::response_callback(const Dictionary &params){
+    pending_request = false;
     emit_signal("http_response", params);
 }
 
@@ -1001,6 +999,8 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_method(D_METHOD("set_async", "use_async"), &SolanaClient::set_async);
     ClassDB::bind_method(D_METHOD("get_async"), &SolanaClient::get_async);
 
+    ClassDB::bind_method(D_METHOD("is_ready"), &SolanaClient::is_ready);
+
     ClassDB::bind_method(D_METHOD("parse_url", "url"), &SolanaClient::parse_url);
     ClassDB::bind_method(D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
 
@@ -1339,6 +1339,10 @@ void SolanaClient::set_async(bool use_async){
 
 bool SolanaClient::get_async(){
     return async;
+}
+
+bool SolanaClient::is_ready(){
+    return !pending_request;
 }
 
 SolanaClient::~SolanaClient(){

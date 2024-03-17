@@ -25,6 +25,7 @@ private:
     int port = DEFAULT_PORT;
     bool use_tls = true;
     bool async = true;
+    bool pending_request = false;
     HTTPClient http_handler;
     
     Callable http_callback;
@@ -125,6 +126,7 @@ public:
 
     void set_async(bool use_async);
     bool get_async();
+    bool is_ready();
 
     Dictionary get_account_info(const String& account);
     Dictionary get_balance(const String& account);
