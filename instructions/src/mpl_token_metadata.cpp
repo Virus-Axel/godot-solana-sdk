@@ -10,16 +10,34 @@ namespace godot{
 
 const std::string MplTokenMetadata::ID = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s";
 
+MplTokenMetadata::MplTokenMetadata(){
+    metadata_client = memnew(SolanaClient);
+}
+
+void MplTokenMetadata::_process(double delta){
+    if(pending_fetch){
+        metadata_client->_process(delta);
+    }
+}
+
 void MplTokenMetadata::_bind_methods(){
+    ClassDB::add_signal("MplTokenMetadata", MethodInfo("metadata_fetched", PropertyInfo(Variant::OBJECT, "metadata")));
+
+    ClassDB::bind_method(D_METHOD("set_url", "url"), &MplTokenMetadata::set_url);
+    ClassDB::bind_method(D_METHOD("get_url"), &MplTokenMetadata::get_url);
+
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("new_associated_metadata_pubkey", "mint"), &MplTokenMetadata::new_associated_metadata_pubkey);
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("new_associated_metadata_pubkey_master_edition", "mint"), &MplTokenMetadata::new_associated_metadata_pubkey_master_edition);
 
-    ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("get_mint_metadata", "mint"), &MplTokenMetadata::get_mint_metadata);
+    ClassDB::bind_method(D_METHOD("get_mint_metadata", "mint"), &MplTokenMetadata::get_mint_metadata);
+    ClassDB::bind_method(D_METHOD("metadata_callback", "rpc_response"), &MplTokenMetadata::metadata_callback);
 
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("create_metadata_account", "account_pubkey", "mint", "mint_authority", "payer", "update_authority", "meta_data", "is_mutable", "collection_size"), &MplTokenMetadata::create_metadata_account);
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("create_master_edition", "edition", "mint", "update_authority", "mint_authority", "metadata_account", "payer", "max_supply"), &MplTokenMetadata::create_master_edition);
 
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("get_pid"), &MplTokenMetadata::get_pid);
+
+    ClassDB::add_property("MplTokenMetadata", PropertyInfo(Variant::STRING, "url", PROPERTY_HINT_NONE), "set_url", "get_url");
 }
 
 Variant MplTokenMetadata::new_associated_metadata_pubkey(const Variant& mint){
@@ -70,18 +88,30 @@ Variant MplTokenMetadata::new_associated_metadata_pubkey_master_edition(const Va
 }
 
 Variant MplTokenMetadata::get_mint_metadata(const Variant& mint){
+    if(pending_fetch){
+        return ERR_UNAVAILABLE;
+    }
+    pending_fetch = true;
     Variant metadata_account = new_associated_metadata_pubkey(mint);
 
-    SolanaClient temp_client;
-    temp_client.set_async(false);
-    Dictionary rpc_result = temp_client.get_account_info(Pubkey(metadata_account).get_value());
+    Callable callback(this, "metadata_callback");
+    metadata_client->connect("http_response", callback, ConnectFlags::CONNECT_ONE_SHOT);
+    Dictionary rpc_result = metadata_client->get_account_info(Pubkey(metadata_account).get_value());
+
+    return OK;
+}
+
+void MplTokenMetadata::metadata_callback(const Dictionary& rpc_result){
+    pending_fetch = false;
     if(!rpc_result.has("result")){
-        return nullptr;
+        emit_signal("metadata_fetched", nullptr);
+        return;
     }
 
     Variant value = ((Dictionary)rpc_result["result"])["value"];
     if(value.get_type() != Variant::DICTIONARY){
-        return nullptr;
+        emit_signal("metadata_fetched", nullptr);
+        return;
     }
 
     Dictionary account = value;
@@ -174,7 +204,7 @@ Variant MplTokenMetadata::get_mint_metadata(const Variant& mint){
 
     // TODO(Virax): Parse uses data.
 
-    return result;
+    emit_signal("metadata_fetched", result);
 }
 
 Variant MplTokenMetadata::create_metadata_account(const Variant& account_pubkey, const Variant& mint, const Variant& mint_authority, const Variant& payer, const Variant& update_authority, const Variant &meta_data, bool is_mutable, uint64_t collection_size){
@@ -245,6 +275,14 @@ Variant MplTokenMetadata::create_master_edition(const Variant& edition, const Va
 
 Variant MplTokenMetadata::get_pid(){
     return Pubkey::new_from_string(ID.c_str());
+}
+
+void MplTokenMetadata::set_url(const String& url){
+    metadata_client->set_url(url);
+}
+
+String MplTokenMetadata::get_url(){
+    return metadata_client->get_url();
 }
 
 }
