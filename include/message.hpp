@@ -37,7 +37,7 @@ protected:
 
 public:
     Message();
-    Message(TypedArray<Instruction> instructions, Variant &payer);
+    Message(TypedArray<Instruction> instructions, Variant &payer, uint32_t unit_limit, uint32_t unit_price);
     void set_latest_blockhash(const String& blockhash);
     PackedByteArray serialize();
     PackedByteArray serialize_blockhash();

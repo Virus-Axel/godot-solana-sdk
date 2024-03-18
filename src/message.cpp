@@ -110,7 +110,7 @@ void Message::merge_signer(const Variant& signer){
     signers.append(signer);
 }
 
-Message::Message(TypedArray<Instruction> instructions, Variant &payer){
+Message::Message(TypedArray<Instruction> instructions, Variant &payer, uint32_t unit_limit, uint32_t unit_price){
     // Payer is signer.
     signers.append(payer);
 
@@ -120,8 +120,8 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer){
     latest_blockhash = "";
 
     // Prepend ComputeBudget instructions.
-    instructions.insert(0, ComputeBudget::set_compute_unit_limit(800000));
-    instructions.insert(1, ComputeBudget::set_compute_unit_price(8000));
+    instructions.insert(0, ComputeBudget::set_compute_unit_limit(unit_limit));
+    instructions.insert(1, ComputeBudget::set_compute_unit_price(unit_price));
 
     for(unsigned int i = 0; i < instructions.size(); i++){
         Instruction *element = Object::cast_to<Instruction>(instructions[i]);

@@ -15,6 +15,8 @@ class Transaction : public Node {
     GDCLASS(Transaction, Node)
 
 private:
+    uint32_t unit_limit = 800000;
+    uint32_t unit_price = 8000;
     uint32_t ready_signature_amount = 0;
 
     Variant message;
@@ -69,6 +71,12 @@ public:
 
     void set_signers(const Array& p_value);
     Array get_signers();
+
+    void set_unit_limit(const uint32_t value);
+    uint32_t get_unit_limit();
+
+    void set_unit_price(const uint32_t value);
+    uint32_t get_unit_price();
 
     void set_external_payer(bool p_value);
     bool get_external_payer();

@@ -36,6 +36,10 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_payer", "p_value"), &Transaction::set_payer);
     ClassDB::bind_method(D_METHOD("get_signers"), &Transaction::get_signers);
     ClassDB::bind_method(D_METHOD("set_signers", "p_value"), &Transaction::set_signers);
+    ClassDB::bind_method(D_METHOD("get_unit_limit"), &Transaction::get_unit_limit);
+    ClassDB::bind_method(D_METHOD("set_unit_limit", "value"), &Transaction::set_unit_limit);
+    ClassDB::bind_method(D_METHOD("get_unit_price"), &Transaction::get_unit_price);
+    ClassDB::bind_method(D_METHOD("set_unit_price", "value"), &Transaction::set_unit_price);
     ClassDB::bind_method(D_METHOD("send_callback", "params"), &Transaction::send_callback);
     ClassDB::bind_method(D_METHOD("blockhash_callback", "params"), &Transaction::blockhash_callback);
 
@@ -105,7 +109,7 @@ void Transaction::create_message(){
             return;
         }
     }
-    message = memnew(Message(instructions, payer));
+    message = memnew(Message(instructions, payer, unit_limit, unit_price));
     Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
 
     const int amount_of_signers = Object::cast_to<Message>(message)->get_amount_signers();
@@ -174,6 +178,14 @@ bool Transaction::_set(const StringName &p_name, const Variant &p_value){
         set_url(p_value);
         return true;
     }
+    else if(name == "unit_limit"){
+        unit_limit = p_value;
+        return true;
+    }
+    else if(name == "unit_price"){
+        unit_price = p_value;
+        return true;
+    }
 	return false;
 }
 
@@ -199,6 +211,14 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
         r_ret = url;
         return true;
     }
+    else if(name == "unit_limit"){
+        r_ret = unit_limit;
+        return true;
+    }
+    else if(name == "unit_price"){
+        r_ret = unit_price;
+        return true;
+    }
 	return false;
 }
 
@@ -213,7 +233,8 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
     }
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "instructions", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Instruction")));
 
-    //p_list->push_back(PropertyInfo(Variant::ARRAY, "signers", PROPERTY_HINT_NONE, MAKE_RESOURCE_TYPE_HINT("Keypair")));
+    p_list->push_back(PropertyInfo(Variant::INT, "unit_limit"));
+    p_list->push_back(PropertyInfo(Variant::INT, "unit_price"));
 }
 
 Transaction::Transaction() {
@@ -346,6 +367,22 @@ void Transaction::set_signers(const Array& p_value){
 
 Array Transaction::get_signers(){
     return signers;
+}
+
+void Transaction::set_unit_limit(const uint32_t value){
+    unit_limit = value;
+}
+
+uint32_t Transaction::get_unit_limit(){
+    return unit_limit;
+}
+
+void Transaction::set_unit_price(const uint32_t value){
+    unit_price = value;
+}
+
+uint32_t Transaction::get_unit_price(){
+    return unit_price;
 }
 
 PackedByteArray Transaction::serialize(){
