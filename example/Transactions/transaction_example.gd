@@ -4,6 +4,11 @@ extends VBoxContainer
 @onready var payer: Keypair = Keypair.new_from_file("res://payer.json")
 const LAMPORTS_PER_SOL = 1000000000
 
+func CUSTOM_ASSERT(condition: bool):
+	assert(condition)
+	if !condition:
+		get_tree().quit(1)
+
 func transaction_example_airdrop_to():
 	# Requesting airdrop is done through the SolanaClient
 	# so building a transaction is not necessary
@@ -13,9 +18,9 @@ func transaction_example_airdrop_to():
 	var response = await $SolanaClient.http_response
 
 	# Error check the RPC result
-	assert(response.has("result"))
+	CUSTOM_ASSERT(response.has("result"))
 	var result = response["result"]
-	assert(typeof(result) == TYPE_STRING)
+	CUSTOM_ASSERT(typeof(result) == TYPE_STRING)
 	
 	$AirdropSolanaLabel.text += result
 
@@ -47,9 +52,9 @@ func transaction_example_transfer():
 	# Connect it to avoid errors in you application.
 	var response = await tx.transaction_response
 	
-	assert(response.has("result"))
+	CUSTOM_ASSERT(response.has("result"))
 	var signature = response["result"]
-	assert(typeof(signature) == TYPE_STRING)
+	CUSTOM_ASSERT(typeof(signature) == TYPE_STRING)
 	
 	$TransferSolanaLabel.text += signature
 
@@ -76,9 +81,9 @@ func create_account_example():
 	# Connect it to avoid errors in you application.
 	var response = await tx.transaction_response
 	
-	assert(response.has("result"))
+	CUSTOM_ASSERT(response.has("result"))
 	var signature = response["result"]
-	assert(typeof(signature) == TYPE_STRING)
+	CUSTOM_ASSERT(typeof(signature) == TYPE_STRING)
 	
 	$CreateAccountLabel.text += signature
 	tx.sign_and_send()

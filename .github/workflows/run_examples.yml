@@ -1,0 +1,65 @@
+name: Run Examples
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+    check_example_directories:
+        runs-on: ubuntu-latest
+        outputs:
+            dir: ${{ steps.set-dirs.outputs.dir }}
+        steps:
+        - uses: actions/checkout@v2
+        - id: set-dirs
+          run: echo "::set-output name=dir::$(ls -d example/*/ | jq -R -s -c 'split("\n")[:-1]')"
+
+    run:
+        runs-on: ubuntu-latest
+        needs: [check_example_directories]
+        strategy:
+            matrix:
+                # List matrix strategy from directories dynamically
+                dir: ${{fromJson(needs.check_example_directories.outputs.dir)}}
+        steps:
+            - name: Set up Python
+              uses: actions/setup-python@v2
+
+            - name: Set up SCons
+              shell: bash
+              run: |
+                python -c "import sys; print(sys.version)"
+                python -m pip install scons
+                scons --version
+
+            - uses: chickensoft-games/setup-godot@v1
+              name: 🤖 Setup Godot
+              with:
+                    version: 4.2.1
+                    use-dotnet: false
+
+            - name: Checkout project
+              uses: actions/checkout@v2
+              with:
+                submodules: recursive
+
+            - name: Build binary 
+              shell: bash
+              run: |
+                scons
+
+            - name: Prepare project 
+              shell: bash
+              run: |
+                cp godot-solana-sdk.gdextension bin/
+                cd ${{matrix.dir}}
+                ln -s ../../bin
+                mkdir .godot
+                echo "res://bin/godot-solana-sdk.gdextension" >> .godot/extension_list.cfg
+
+            - name: Test project 
+              shell: bash
+              run: |
+                cd ${{matrix.dir}}
+                godot --headless --quit-after 5000
+                exit $?
