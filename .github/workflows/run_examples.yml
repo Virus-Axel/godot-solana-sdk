@@ -18,6 +18,7 @@ jobs:
         runs-on: ubuntu-latest
         needs: [check_example_directories]
         strategy:
+            fail-fast: false
             matrix:
                 # List matrix strategy from directories dynamically
                 dir: ${{fromJson(needs.check_example_directories.outputs.dir)}}
@@ -57,9 +58,15 @@ jobs:
                 mkdir .godot
                 echo "res://bin/godot-solana-sdk.gdextension" >> .godot/extension_list.cfg
 
+            - name: Setup Local Validator
+              uses: switchboard-xyz/solana-local-validator@v0.1
+              with:
+                solana-version: stable
+                cluster: devnet
+
             - name: Test project 
               shell: bash
               run: |
                 cd ${{matrix.dir}}
-                godot --headless --quit-after 5000
+                godot --headless --quit-after 5000 | ( ! grep FAIL)
                 exit $?
