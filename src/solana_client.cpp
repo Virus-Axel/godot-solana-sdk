@@ -924,6 +924,7 @@ void SolanaClient::account_subscribe(const Variant &account_key, const Callable 
     method_names.push_back("accountUnsubscribe");
     Array params;
     params.append(Pubkey(account_key).get_value());
+    add_to_param_dict(params, "commitment", commitment);
     ws_request_queue.push(JSON::stringify(make_rpc_dict("accountSubscribe", params)));
 
     return;
@@ -1231,11 +1232,12 @@ void SolanaClient::set_url(const String& url){
 	this->url = url;
     Dictionary ws_url = parsed_url;
     if(use_tls){
-        ws_url["scheme"] = "wss://";
+        ws_url["scheme"] = "wss";
     }
     else{
-        ws_url["scheme"] = "ws://";
+        ws_url["scheme"] = "ws";
     }
+    ws_url["port"] = 8900;
     this->ws_url = assemble_url(ws_url);
 }
 
