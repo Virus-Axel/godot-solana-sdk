@@ -1,6 +1,8 @@
 extends VBoxContainer
 
-const TOTAL_CASES := 3
+const EXAMPLE_ACCOUNT := "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZAMdL4VZHirAn"
+
+const TOTAL_CASES := 6
 var passed_test_mask := 0
 		
 
@@ -42,7 +44,7 @@ func delete_solana_client(client: SolanaClient):
 
 func get_account_info_demo():
 	var client: SolanaClient = add_solana_client()
-	client.get_account_info("4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZAMdL4VZHirAn")
+	client.get_account_info(EXAMPLE_ACCOUNT)
 	var response: Dictionary = await client.http_response
 	assert(response.has("result"))
 	display_dict(response["result"], $ResultTree1.create_item())
@@ -68,17 +70,42 @@ func get_minimum_balance_for_rent_extemption_demo():
 	delete_solana_client(client)
 	PASS(2)
 
+
+func subscribe_account_demo():
+	var client: SolanaClient = add_solana_client()
+	client.set_commitment("finalized")
+	var account_callback := Callable(self, "_account_subscribe_callback")
+	client.account_subscribe(EXAMPLE_ACCOUNT, account_callback)
+	
+	# Make lamports of the account change to trigger the callback.
+	client.request_airdrop(EXAMPLE_ACCOUNT, 1000000)
+	var airdrop_response = await client.http_response
+	assert(airdrop_response.has("result"))
+	var airdrop_signature: String = airdrop_response["result"]
+	
+	var signature_callback := Callable(self, "_signature_subscribe_callback")
+	client.signature_subscribe(airdrop_signature, signature_callback, "finalized")
+	
+	# Keep the client node in the tree to keep it processing
+	
+	PASS(3)
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	get_account_info_demo()
 	get_latest_blockhash_demo()
 	get_minimum_balance_for_rent_extemption_demo()
-	pass
+	subscribe_account_demo()
 
+
+func _account_subscribe_callback(_params):
+	PASS(4)
+
+func _signature_subscribe_callback(_params):
+	PASS(5)
 
 func _on_timeout_timeout():
 	for i in range(TOTAL_CASES):
 		if ((1 << i) & passed_test_mask) == 0:
 			print("[FAIL]: ", i)
 
-	get_tree().quit(0)
