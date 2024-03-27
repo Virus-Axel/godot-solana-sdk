@@ -23,8 +23,8 @@ void MplTokenMetadata::_process(double delta){
 void MplTokenMetadata::_bind_methods(){
     ClassDB::add_signal("MplTokenMetadata", MethodInfo("metadata_fetched", PropertyInfo(Variant::OBJECT, "metadata")));
 
-    ClassDB::bind_method(D_METHOD("set_url", "url"), &MplTokenMetadata::set_url);
-    ClassDB::bind_method(D_METHOD("get_url"), &MplTokenMetadata::get_url);
+    ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &MplTokenMetadata::set_url_override);
+    ClassDB::bind_method(D_METHOD("get_url_override"), &MplTokenMetadata::get_url_override);
 
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("new_associated_metadata_pubkey", "mint"), &MplTokenMetadata::new_associated_metadata_pubkey);
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("new_associated_metadata_pubkey_master_edition", "mint"), &MplTokenMetadata::new_associated_metadata_pubkey_master_edition);
@@ -37,7 +37,7 @@ void MplTokenMetadata::_bind_methods(){
 
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("get_pid"), &MplTokenMetadata::get_pid);
 
-    ClassDB::add_property("MplTokenMetadata", PropertyInfo(Variant::STRING, "url", PROPERTY_HINT_NONE), "set_url", "get_url");
+    ClassDB::add_property("MplTokenMetadata", PropertyInfo(Variant::STRING, "url_override", PROPERTY_HINT_NONE), "set_url_override", "get_url_override");
 }
 
 Variant MplTokenMetadata::new_associated_metadata_pubkey(const Variant& mint){
@@ -277,12 +277,12 @@ Variant MplTokenMetadata::get_pid(){
     return Pubkey::new_from_string(ID.c_str());
 }
 
-void MplTokenMetadata::set_url(const String& url){
-    metadata_client->set_url(url);
+void MplTokenMetadata::set_url_override(const String& url_override){
+    metadata_client->set_url_override(url_override);
 }
 
-String MplTokenMetadata::get_url(){
-    return metadata_client->get_url();
+String MplTokenMetadata::get_url_override(){
+    return metadata_client->get_url_override();
 }
 
 }

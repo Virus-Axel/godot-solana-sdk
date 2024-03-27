@@ -28,7 +28,7 @@ void Transaction::_bind_methods() {
     ClassDB::add_signal("Transaction", MethodInfo("blockhash_updated", PropertyInfo(Variant::DICTIONARY, "result")));
     ClassDB::add_signal("Transaction", MethodInfo("blockhash_update_failure", PropertyInfo(Variant::DICTIONARY, "result")));
 
-    ClassDB::bind_method(D_METHOD("set_url", "url"), &Transaction::set_url);
+    ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &Transaction::set_url_override);
 
     ClassDB::bind_method(D_METHOD("get_instructions"), &Transaction::get_instructions);
     ClassDB::bind_method(D_METHOD("set_instructions", "p_value"), &Transaction::set_instructions);
@@ -174,8 +174,8 @@ bool Transaction::_set(const StringName &p_name, const Variant &p_value){
         set_external_payer(p_value);
         return true;
     }
-    else if(name == "url"){
-        set_url(p_value);
+    else if(name == "url_override"){
+        set_url_override(p_value);
         return true;
     }
     else if(name == "unit_limit"){
@@ -207,8 +207,8 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
         r_ret = external_payer;
         return true;
     }
-    else if(name == "url"){
-        r_ret = url;
+    else if(name == "url_override"){
+        r_ret = url_override;
         return true;
     }
     else if(name == "unit_limit"){
@@ -223,7 +223,7 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
 }
 
 void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
-    p_list->push_back(PropertyInfo(Variant::STRING, "url"));
+    p_list->push_back(PropertyInfo(Variant::STRING, "url_override"));
     p_list->push_back(PropertyInfo(Variant::BOOL, "external_payer", PROPERTY_HINT_NONE, "false"));
     if(!external_payer){
         p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair"));
@@ -317,10 +317,10 @@ Variant Transaction::get_payer(){
     return payer;
 }
 
-void Transaction::set_url(const String& p_value){
-    url = p_value;
-    send_client->set_url(url);
-    blockhash_client->set_url(url);
+void Transaction::set_url_override(const String& p_value){
+    url_override = p_value;
+    send_client->set_url_override(url_override);
+    blockhash_client->set_url_override(url_override);
 }
 
 void Transaction::set_external_payer(bool p_value){

@@ -36,8 +36,6 @@ text = "CreateAccount Signature:
 horizontal_alignment = 1
 
 [node name="SolanaClient" type="SolanaClient" parent="."]
-url = "http://127.0.0.1:8899"
-ws_url = "ws://"
 
 [node name="Timeout" type="Timer" parent="."]
 wait_time = 10.0

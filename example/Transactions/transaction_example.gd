@@ -36,7 +36,6 @@ func transaction_example_transfer():
 	var receiver: Pubkey = Pubkey.new_from_string("78GVwUb8ojcJVrEVkwCU5tfUKTfJuiazRrysGwgjqsif")
 	var tx = Transaction.new()
 
-	tx.set_url("http://127.0.0.1:8899")
 	add_child(tx)
 	
 	# A transaction can be sent after three steps:
@@ -70,7 +69,6 @@ func create_account_example():
 	
 	var account_key: Keypair = Keypair.new_random()
 	var tx = Transaction.new()
-	tx.set_url("http://127.0.0.1:8899")
 	
 	add_child(tx)
 	tx.set_payer(payer)
