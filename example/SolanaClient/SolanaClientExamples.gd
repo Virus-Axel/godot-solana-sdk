@@ -32,7 +32,7 @@ func add_solana_client() -> SolanaClient:
 	res.async = true
 	
 	# RPC HTTP URL goes here.
-	res.url = "http://127.0.0.1:8899"
+	#res.url = "http://127.0.0.1:8899"
 
 	# Solana Client needs to be in scene tree for async to work.
 	add_child(res)

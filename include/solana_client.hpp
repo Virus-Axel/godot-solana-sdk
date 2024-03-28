@@ -19,8 +19,8 @@ private:
     const std::string DEFAULT_URL = "https://api.devnet.solana.com";
     const std::string DEFAULT_WS_URL = "wss://api.devnet.solana.com";
 
-    String url = "https://api.devnet.solana.com";
-    String ws_url = "wss://api.devnet.solana.com";
+    String url_override = "";
+    String ws_url = "";
     std::string http_request_body;
     int port = DEFAULT_PORT;
     bool use_tls = true;
@@ -50,6 +50,10 @@ private:
     bool max_transaction_version_enabled = false;
     bool rewards = false;
     bool slot_range_enabled = false;
+
+    String ws_from_http(const String& http_url);
+    String get_real_url();
+    String get_real_ws_url();
 
     void append_commitment(Array& options);
     void append_min_context_slot(Array& options);
@@ -91,8 +95,8 @@ public:
 
     SolanaClient();
 
-    void set_url(const String& url);
-    String get_url();
+    void set_url_override(const String& url);
+    String get_url_override();
     
     void set_ws_url(const String& url);
     String get_ws_url();

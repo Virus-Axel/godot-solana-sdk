@@ -14,8 +14,13 @@ config/name="SolanaClient"
 run/main_scene="res://solana_client_examples.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 config/icon="res://icon.svg"
+config/property_name=0
 
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+
+[solana_sdk]
+
+client/default_url="http://127.0.0.1:8899"
