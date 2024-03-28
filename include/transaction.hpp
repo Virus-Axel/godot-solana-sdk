@@ -29,7 +29,7 @@ private:
     String latest_blockhash_string = "";
     String result_signature = "";
     String latest_commitment = "";
-    String url = "https://api.devnet.solana.com";
+    String url_override = "";
 
     SolanaClient *send_client;
     SolanaClient *blockhash_client;
@@ -64,7 +64,7 @@ public:
     void set_payer(const Variant& p_value);
     Variant get_payer();
 
-    void set_url(const String& p_value);
+    void set_url_override(const String& p_value);
 
     bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;

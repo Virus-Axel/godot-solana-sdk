@@ -25,8 +25,28 @@
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/godot.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 
 using namespace godot;
+
+void add_setting(const String& name, Variant::Type type, Variant default_value, PropertyHint hint = PropertyHint::PROPERTY_HINT_NONE, const String& hint_string = ""){
+    if(!ProjectSettings::get_singleton()->has_setting(name)){
+        ProjectSettings::get_singleton()->set(name, default_value);
+
+        ProjectSettings::get_singleton()->set_initial_value(name, default_value);
+        ProjectSettings::get_singleton()->set_as_basic(name, true);
+
+        Dictionary property_info;
+        property_info["name"] = name;
+        property_info["type"] = type;
+        property_info["hint"] = hint;
+        property_info["hint_string"] = hint_string;
+
+        ProjectSettings::get_singleton()->add_property_info(property_info);
+
+        ProjectSettings::get_singleton()->save();
+    }
+}
 
 void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
@@ -59,6 +79,8 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<CandyGuardAccessList>();
     ClassDB::register_class<CandyMachineData>();
     ClassDB::register_class<AnchorProgram>();
+
+    add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
 }
 
 void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {

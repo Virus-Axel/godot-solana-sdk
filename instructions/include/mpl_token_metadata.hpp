@@ -24,8 +24,8 @@ public:
     void _process(double delta) override;
     MplTokenMetadata();
 
-    void set_url(const String& url);
-    String get_url();
+    void set_url_override(const String& url_override);
+    String get_url_override();
 
     static const std::string ID;
 

@@ -7,6 +7,7 @@
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/classes/java_script_bridge.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 
 #include <pubkey.hpp>
 
@@ -16,6 +17,45 @@ unsigned int SolanaClient::global_rpc_id = 1;
 
 using internal::gdextension_interface_print_warning;
 
+String SolanaClient::ws_from_http(const String& http_url){
+    Dictionary parsed_url = parse_url(http_url);
+
+    // See if tls should be used.
+    use_tls = true;
+    if(!parsed_url.has("scheme")){
+    }
+    else if(parsed_url["scheme"] == "http"){
+        use_tls = false;
+    }
+
+    Dictionary ws_url = parsed_url;
+    if(use_tls){
+        ws_url["scheme"] = "wss";
+    }
+    else{
+        ws_url["scheme"] = "ws";
+    }
+    ws_url["port"] = 8900;
+   return assemble_url(ws_url);
+}
+
+String SolanaClient::get_real_url(){
+    if(url_override.is_empty()){
+        return ProjectSettings::get_singleton()->get_setting("solana_sdk/client/default_url");
+    }
+    else{
+        return url_override;
+    }
+}
+
+String SolanaClient::get_real_ws_url(){
+    if(ws_url.is_empty()){
+        return ws_from_http(get_real_url());
+    }
+    else{
+        return ws_url;
+    }
+}
 
 void SolanaClient::append_commitment(Array& options){
     if(!commitment.is_empty()){
@@ -128,7 +168,11 @@ Dictionary SolanaClient::synchronous_request(const String& request_body){
     Error err;
 
     // Godot does not want the port in the url
-    Dictionary parsed_url = parse_url(get_url());
+    Dictionary parsed_url = parse_url(get_real_url());
+
+    if(parsed_url.has("port")){
+        port = parsed_url["port"];
+    }
     parsed_url.erase("port");
 
     String connect_url = "https";
@@ -202,7 +246,7 @@ Dictionary SolanaClient::synchronous_request(const String& request_body){
 
     Array params;
 
-    params.append(get_url());
+    params.append(get_real_url());
     params.append(request_body);
 
     Variant result = JavaScriptBridge::get_singleton()->eval(web_script.format(params));
@@ -233,7 +277,11 @@ void SolanaClient::asynchronous_request(const String& request_body){
     Error err;
 
     // Godot does not want the port in the url
-    Dictionary parsed_url = parse_url(get_url());
+    Dictionary parsed_url = parse_url(get_real_url());
+
+    if(parsed_url.has("port")){
+        port = parsed_url["port"];
+    }
     parsed_url.erase("port");
 
     String connect_url = "https";
@@ -254,7 +302,7 @@ void SolanaClient::asynchronous_request(const String& request_body){
 
     Array params;
 
-    params.append(get_url());
+    params.append(get_real_url());
     params.append(request_body);
     params.append(local_rpc_id);
 
@@ -284,7 +332,7 @@ void SolanaClient::poll_http_request(){
         http_headers.append("Accept-Encoding: json");
 
         String path = "/";
-        Dictionary parsed_url = parse_url(get_url());
+        Dictionary parsed_url = parse_url(get_real_url());
         if(parsed_url.has("path")){
             path = parsed_url["path"];
         }
@@ -420,7 +468,7 @@ void SolanaClient::process_package(const PackedByteArray& packet_data){
 
 void SolanaClient::connect_ws(){
     if(ws->get_ready_state() == WebSocketPeer::STATE_CLOSED){
-        ws->connect_to_url(ws_url);
+        ws->connect_to_url(get_real_ws_url());
     }
 }
 
@@ -1005,8 +1053,8 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_method(D_METHOD("parse_url", "url"), &SolanaClient::parse_url);
     ClassDB::bind_method(D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
 
-    ClassDB::bind_method(D_METHOD("set_url", "url"), &SolanaClient::set_url);
-    ClassDB::bind_method(D_METHOD("get_url"), &SolanaClient::get_url);
+    ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &SolanaClient::set_url_override);
+    ClassDB::bind_method(D_METHOD("get_url_override"), &SolanaClient::get_url_override);
 
     ClassDB::bind_method(D_METHOD("set_ws_url", "url"), &SolanaClient::set_ws_url);
     ClassDB::bind_method(D_METHOD("get_ws_url"), &SolanaClient::get_ws_url);
@@ -1092,7 +1140,7 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_method(D_METHOD("slot_subscribe", "callback"), &SolanaClient::slot_subscribe);
 
     ClassDB::add_property("SolanaClient", PropertyInfo(Variant::BOOL, "async", PROPERTY_HINT_NONE), "set_async", "get_async");
-    ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "url", PROPERTY_HINT_NONE), "set_url", "get_url");
+    ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "url_override", PROPERTY_HINT_NONE), "set_url_override", "get_url_override");
     ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "ws_url", PROPERTY_HINT_NONE), "set_ws_url", "get_ws_url");
     ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "commitment", PROPERTY_HINT_ENUM, "confirmed,processed,finalized"), "set_commitment", "get_commitment");
     ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "encoding", PROPERTY_HINT_ENUM, "base64,base58"), "set_encoding", "get_encoding");
@@ -1208,8 +1256,8 @@ String SolanaClient::assemble_url(const Dictionary& url_components){
     return result;
 }
 
-void SolanaClient::set_url(const String& url){
-    Dictionary parsed_url = parse_url(url);
+void SolanaClient::set_url_override(const String& url_override){
+    Dictionary parsed_url = parse_url(url_override);
 
     // See if tls should be used.
     use_tls = true;
@@ -1229,7 +1277,7 @@ void SolanaClient::set_url(const String& url){
         port = parsed_url["port"];
     }
 
-	this->url = url;
+	this->url_override = url_override;
     Dictionary ws_url = parsed_url;
     if(use_tls){
         ws_url["scheme"] = "wss";
@@ -1251,8 +1299,8 @@ String SolanaClient::get_ws_url(){
     return ws_url;
 }
 
-String SolanaClient::get_url(){
-    return url;
+String SolanaClient::get_url_override(){
+    return url_override;
 }
 
 void SolanaClient::set_commitment(const String& commitment){
