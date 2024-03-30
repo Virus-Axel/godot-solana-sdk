@@ -268,6 +268,8 @@ Transaction::Transaction(const PackedByteArray& bytes){
     }
 
     message = memnew(Message(bytes.slice(cursor)));
+
+    check_fully_signed();
 }
 
 Variant Transaction::new_from_bytes(const PackedByteArray& bytes){
@@ -396,6 +398,7 @@ void Transaction::add_instruction(const Variant &instruction){
 }
 
 void Transaction::set_signers(const Array& p_value){
+    Object::cast_to<Message>(message)->set_signers(p_value);
     signers = p_value;
 }
 

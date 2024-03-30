@@ -43,6 +43,7 @@ public:
     PackedByteArray serialize();
     PackedByteArray serialize_blockhash();
     int get_amount_signers();
+    void set_signers(const Array& signers);
     Array &get_signers();
     ~Message();
 };

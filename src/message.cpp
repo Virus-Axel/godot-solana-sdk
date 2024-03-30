@@ -207,6 +207,10 @@ PackedByteArray Message::serialize(){
     return result;
 }
 
+void Message::set_signers(const Array& signers){
+    this->signers = signers;
+}
+
 Array &Message::get_signers(){
     return signers;
 }
