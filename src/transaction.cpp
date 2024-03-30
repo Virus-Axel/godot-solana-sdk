@@ -29,6 +29,7 @@ void Transaction::_bind_methods() {
     ClassDB::add_signal("Transaction", MethodInfo("blockhash_update_failure", PropertyInfo(Variant::DICTIONARY, "result")));
 
     ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &Transaction::set_url_override);
+    ClassDB::bind_static_method("Transaction", D_METHOD("new_from_bytes", "bytes"), &Transaction::new_from_bytes);
 
     ClassDB::bind_method(D_METHOD("get_instructions"), &Transaction::get_instructions);
     ClassDB::bind_method(D_METHOD("set_instructions", "p_value"), &Transaction::set_instructions);
@@ -222,6 +223,15 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const{
 	return false;
 }
 
+bool Transaction::are_all_bytes_zeroes(const PackedByteArray& bytes){
+    for(unsigned int i = 0; i < bytes.size(); i++){
+        if(bytes[i] != 0){
+            return false;
+        }
+    }
+    return true;
+}
+
 void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
     p_list->push_back(PropertyInfo(Variant::STRING, "url_override"));
     p_list->push_back(PropertyInfo(Variant::BOOL, "external_payer", PROPERTY_HINT_NONE, "false"));
@@ -240,6 +250,30 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 Transaction::Transaction() {
     send_client = memnew(SolanaClient);
     blockhash_client = memnew(SolanaClient);
+}
+
+Transaction::Transaction(const PackedByteArray& bytes){
+    send_client = memnew(SolanaClient);
+    blockhash_client = memnew(SolanaClient);
+
+    int cursor = 0;
+    const unsigned int signer_size = bytes[cursor++];
+    for(unsigned int i = 0; i < signer_size; i++){
+        const PackedByteArray signature_bytes = bytes.slice(cursor, cursor + 64);
+        if(! are_all_bytes_zeroes(signature_bytes)){
+            ready_signature_amount += 1;
+        }
+        signatures.append(bytes.slice(cursor, cursor + 64));
+        cursor += 64;
+    }
+
+    message = memnew(Message(bytes.slice(cursor)));
+}
+
+Variant Transaction::new_from_bytes(const PackedByteArray& bytes){
+    Transaction* result = memnew(Transaction(bytes));
+    
+    return result;
 }
 
 void Transaction::_ready(){

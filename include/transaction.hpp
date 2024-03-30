@@ -39,6 +39,8 @@ private:
     bool pending_blockhash = false;
     bool pending_send = false;
 
+    bool are_all_bytes_zeroes(const PackedByteArray& bytes);
+
     void _get_property_list(List<PropertyInfo> *p_list) const;
     void _signer_signed(PackedByteArray signature);
     void _signer_failed();
@@ -55,6 +57,10 @@ protected:
 
 public:
     Transaction();
+    Transaction(const PackedByteArray& bytes);
+
+    static Variant new_from_bytes(const PackedByteArray& bytes);
+
     void _ready() override;
     void _process(double delta) override;
 
@@ -94,7 +100,7 @@ public:
     Error partially_sign(const Variant& latest_blockhash);
 
     void create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash);
-    
+
     void send_callback(Dictionary params);
     void blockhash_callback(Dictionary params);
 

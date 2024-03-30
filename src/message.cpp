@@ -154,6 +154,31 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer, uint32_t 
     recalculate_headers();
 }
 
+Message::Message(const PackedByteArray& bytes){
+    int cursor = 0;
+    num_required_signatures = bytes[cursor++];
+    num_readonly_signed_accounts = bytes[cursor++];
+    num_readonly_unsigned_accounts = bytes[cursor++];
+
+    uint8_t account_size = bytes[cursor++];
+
+    for(unsigned int i = 0; i < account_size; i++){
+        account_keys.append(Pubkey::new_from_bytes(bytes.slice(cursor, cursor + 32)));
+        cursor += 32;
+    }
+
+    latest_blockhash = Pubkey(bytes.slice(cursor, cursor + 32)).get_value();
+    cursor += 32;
+    uint8_t compiled_instructions_size = bytes[cursor++];
+
+    for(int i = 0; i < compiled_instructions_size; i++){
+        CompiledInstruction *new_instruction = memnew(CompiledInstruction);
+        int consumed_bytes = new_instruction->create_from_bytes(bytes.slice(cursor));
+        compiled_instructions.append(new_instruction);
+        cursor += consumed_bytes;
+    }
+}
+
 void Message::set_latest_blockhash(const String& blockhash){
     latest_blockhash = blockhash;
 }

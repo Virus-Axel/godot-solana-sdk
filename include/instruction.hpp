@@ -60,9 +60,8 @@ public:
     PackedByteArray data;
 
     CompiledInstruction();
-    //CompiledInstruction(godot::Variant& other);
+    int create_from_bytes(const PackedByteArray& bytes);
 
-    //const CompiledInstruction& operator=(const CompiledInstruction& other);
     PackedByteArray serialize();
 
     ~CompiledInstruction();

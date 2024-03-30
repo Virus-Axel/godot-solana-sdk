@@ -92,6 +92,20 @@ CompiledInstruction::CompiledInstruction(){
     data = PackedByteArray();
 }
 
+int CompiledInstruction::create_from_bytes(const PackedByteArray& bytes){
+    int cursor = 0;
+    program_id_index = bytes[cursor++];
+
+    const unsigned int account_size = bytes[cursor++];
+    accounts = bytes.slice(cursor, cursor + account_size);
+    cursor += account_size;
+
+    const unsigned int data_size = bytes[cursor++];
+    data = bytes.slice(cursor, cursor + data_size);
+    
+    return cursor + data_size;
+}
+
 void CompiledInstruction::_bind_methods(){
 }
 
