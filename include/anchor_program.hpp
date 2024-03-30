@@ -3,6 +3,7 @@
 
 #include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/classes/node.hpp>
+#include <solana_client.hpp>
 
 namespace godot{
 
@@ -11,15 +12,24 @@ class AnchorProgram : public Node{
 private:
     Variant idl;
     String pid;
+    String url_override = "";
+    String pending_account_name = "";
     bool try_from_pid = false;
     Variant json_file;
     bool try_from_json_file = false;
     Array instructions;
 
+    SolanaClient *idl_client = nullptr;
+    SolanaClient *fetch_client = nullptr;
+
     static bool is_typed_primitive(const Dictionary &dict);
     static PackedByteArray serialize_typed_primitive(const Dictionary &dict);
     Variant idl_address(const Variant& pid);
     bool load_from_pid(const String& pid);
+    void idl_from_pid_callback(const Dictionary& rpc_result);
+    void fetch_account_callback(const Dictionary &rpc_result);
+    void extract_idl_from_rpc_response(const Dictionary& rpc_result);
+    void extract_idl_from_data(const Array& data_info);
 
     bool is_int(const Variant &var);
     bool is_float(const Variant &var);
@@ -43,6 +53,10 @@ protected:
     static void _bind_methods();
 
 public:
+    AnchorProgram();
+
+    void _process(double delta) override;
+
     static PackedByteArray serialize_variant(const Variant &var);
 
     void set_idl(const Dictionary& idl);
@@ -51,6 +65,8 @@ public:
     bool get_try_from_pid();
     void set_try_from_json_file(const bool try_from_json_file);
     bool get_try_from_json_file();
+
+    void set_url_override(const String& url_override);
 
     void set_pid(const String& try_from_pid);
     String get_pid();
@@ -70,7 +86,7 @@ public:
     static Dictionary option(const Variant &val);
 
     Variant build_instruction(String name, Array accounts, Variant arguments);
-    Dictionary fetch_account(const String name, const Variant &account);
+    Error fetch_account(const String name, const Variant &account);
 };
 
 }

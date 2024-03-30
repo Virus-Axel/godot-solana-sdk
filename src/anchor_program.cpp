@@ -94,6 +94,10 @@ Variant AnchorProgram::deserialize_dict(const PackedByteArray& bytes, const Dict
                 result[type_ref["name"]] = val;
             }
         }
+        else if(type["kind"] == String("enum")){
+            consumed_bytes += 1;
+            return bytes[0];
+        }
         else{
             internal::gdextension_interface_print_warning("Unsupported Object", "deserialize_variant", __FILE__, __LINE__, true);
             return nullptr;
@@ -102,6 +106,7 @@ Variant AnchorProgram::deserialize_dict(const PackedByteArray& bytes, const Dict
     else if(type.has("defined")){
         const String struct_name = type["defined"];
         const Dictionary idl_type = find_idl_type(struct_name);
+        ERR_FAIL_COND_V_EDMSG(idl_type.is_empty(), nullptr, "Could not find type " + struct_name);
         return deserialize_dict(bytes, idl_type["type"], consumed_bytes);
     }
     else if(type.has("vec")){
@@ -126,8 +131,21 @@ Variant AnchorProgram::deserialize_dict(const PackedByteArray& bytes, const Dict
             return nullptr;
         }
         else{
-            return deserialize_variant(bytes, struct_type, consumed_bytes);
+            return deserialize_variant(bytes.slice(1), struct_type, consumed_bytes);
         }
+    }
+    else if(type.has("array")){
+        String element_type = ((Array)type["array"])[0];
+        const unsigned int array_length = ((Array)type["array"])[1];
+        Array ret;
+        PackedByteArray temp_bytes = bytes;
+        for(unsigned int i = 0; i < array_length; i++){
+            int byte_offset = 0;
+            ret.append(deserialize_variant(temp_bytes, element_type, byte_offset));
+            consumed_bytes += byte_offset;
+            temp_bytes = temp_bytes.slice(byte_offset);
+        }
+        return ret;
     }
     else{
         internal::gdextension_interface_print_warning("Unsupported Object", "deserialize_variant", __FILE__, __LINE__, true);
@@ -180,6 +198,7 @@ Variant AnchorProgram::deserialize_variant(const PackedByteArray& bytes, const V
     }
     else if(type == "string"){
         const int data_length = bytes.decode_u32(0);
+        ERR_FAIL_COND_V_EDMSG(bytes.size() < data_length, nullptr, "Invalid data format.");
         consumed_bytes += 4 + data_length;
         return bytes.slice(4, 4 + data_length).get_string_from_ascii();
     }
@@ -189,6 +208,7 @@ Variant AnchorProgram::deserialize_variant(const PackedByteArray& bytes, const V
     }
     else if(type == "bool"){
         consumed_bytes += 1;
+        ERR_FAIL_COND_V_EDMSG(bytes.size() < 1, nullptr, "Invalid data format.");
         return bytes[0] == 1;
     }
     else if(type.get_type() == Variant::DICTIONARY){
@@ -198,6 +218,16 @@ Variant AnchorProgram::deserialize_variant(const PackedByteArray& bytes, const V
         internal::gdextension_interface_print_warning("Unsupported Object", "deserialize_variant", __FILE__, __LINE__, true);
         return nullptr;
     }
+}
+
+AnchorProgram::AnchorProgram(){
+    idl_client = memnew(SolanaClient);
+    fetch_client = memnew(SolanaClient);
+}
+
+void AnchorProgram::_process(double delta){
+    idl_client->_process(delta);
+    fetch_client->_process(delta);
 }
 
 PackedByteArray AnchorProgram::serialize_variant(const Variant &var){
@@ -342,16 +372,23 @@ bool AnchorProgram::load_from_pid(const String& pid){
         return false;
     }
 
-    SolanaClient temp_client;
-    temp_client.set_async(false);
+    Callable callback(this, "idl_from_pid_callback");
+    idl_client->connect("http_response", callback);
+    Dictionary rpc_result = idl_client->get_account_info(pid);
+    return false;
+}
 
-    Dictionary rpc_result = temp_client.get_account_info(pid);
-    
+void AnchorProgram::idl_from_pid_callback(const Dictionary& rpc_result){
+    Callable callback(this, "idl_from_pid_callback");
+    if(idl_client->is_connected("http_response", callback)){
+        idl_client->disconnect("http_response", callback);
+    }
+
     if(!rpc_result.has("result")){
-        return false;
+        return;
     }
     if(!((Dictionary)rpc_result["result"]).has("value")){
-        return false;
+        return;
     }
 
     Dictionary account = ((Dictionary)rpc_result["result"])["value"];
@@ -360,30 +397,30 @@ bool AnchorProgram::load_from_pid(const String& pid){
     if((bool)account["executable"]){
         idl_address = Pubkey(AnchorProgram::idl_address(Pubkey::new_from_string(pid))).get_value();
 
-        rpc_result = temp_client.get_account_info(idl_address);
-        if(!rpc_result.has("result")){
-            return false;
-        }
-        if(!((Dictionary)rpc_result["result"]).has("value")){
-            return false;
-        }
-        account = ((Dictionary)rpc_result["result"])["value"];
+        Callable callback(this, "idl_from_pid_callback");
+        idl_client->connect("http_response", callback);
+        idl_client->get_account_info(idl_address);
     }
+    else{
+        if(!account.has("data")){
+            internal::gdextension_interface_print_warning("Program does not have an associated anchor account.", "load_from_pid", __FILE__, __LINE__, true);
+            return;
+        }
 
-    if(!account.has("data")){
-        internal::gdextension_interface_print_warning("Program does not have an associated anchor account.", "load_from_pid", __FILE__, __LINE__, true);
-        return false;
+        const Array data_info = account["data"];
+
+        extract_idl_from_data(data_info);
     }
+}
 
-    const Array data_info = account["data"];
-
-    const PackedByteArray data = SolanaSDK::bs64_decode(((Array)account["data"])[0]);
+void AnchorProgram::extract_idl_from_data(const Array& data_info){
+    const PackedByteArray data = SolanaSDK::bs64_decode(data_info[0]);
 
     const int DATA_OFFSET = 44;
 
     if(data.size() <= DATA_OFFSET){
         internal::gdextension_interface_print_warning("Invalid associated Anchor account.", "load_from_pid", __FILE__, __LINE__, true);
-        return false;
+        return;
     }
 
     const int LENGTH_OFFSET = 40;
@@ -409,9 +446,12 @@ bool AnchorProgram::load_from_pid(const String& pid){
 
     Dictionary json_data = JSON::parse_string(decompressed_data.get_string_from_ascii());
     idl = json_data;
+
+    this->try_from_pid = true;
     notify_property_list_changed();
-    return true;
+    emit_signal("idl_fetched");
 }
+
 
 bool AnchorProgram::is_int(const Variant &var){
     if(var.get_type() == Variant::INT){
@@ -491,6 +531,12 @@ bool AnchorProgram::validate_instruction_arguments(const String &instruction_nam
 }
 
 void AnchorProgram::_bind_methods(){
+    ClassDB::add_signal("AnchorProgram", MethodInfo("idl_fetched"));
+    ClassDB::add_signal("AnchorProgram", MethodInfo("account_fetched"));
+
+    ClassDB::bind_method(D_METHOD("idl_from_pid_callback", "rpc_result"), &AnchorProgram::idl_from_pid_callback);
+    ClassDB::bind_method(D_METHOD("fetch_account_callback", "rpc_result"), &AnchorProgram::fetch_account_callback);
+
     ClassDB::bind_method(D_METHOD("get_idl"), &AnchorProgram::get_idl);
     ClassDB::bind_method(D_METHOD("set_idl", "idl"), &AnchorProgram::set_idl);
     ClassDB::bind_method(D_METHOD("get_try_from_pid"), &AnchorProgram::get_try_from_pid);
@@ -551,6 +597,10 @@ bool AnchorProgram::_set(const StringName &p_name, const Variant &p_value){
         set_idl(p_value);
         return true;
     }
+    else if(name == "url_override"){
+        set_url_override(p_value);
+        return true;
+    }
 	return false;
 }
 
@@ -576,10 +626,16 @@ bool AnchorProgram::_get(const StringName &p_name, Variant &r_ret) const{
         r_ret = idl;
         return true;
     }
+    else if(name == "url_override"){
+        r_ret = url_override;
+        return true;
+    }
 	return false;
 }
 
 void AnchorProgram::_get_property_list(List<PropertyInfo> *p_list) const {
+    p_list->push_back(PropertyInfo(Variant::STRING, "url_override"));
+
     if(!try_from_json_file && !try_from_pid){
         p_list->push_back(PropertyInfo(Variant::STRING, "pid", PROPERTY_HINT_NONE, ""));
     }
@@ -619,6 +675,11 @@ void AnchorProgram::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void AnchorProgram::set_idl(const Dictionary& idl){
     this->idl = idl;
+}
+
+void AnchorProgram::set_url_override(const String& url_override){
+    this->url_override = url_override;
+    idl_client->set_url_override(url_override);
 }
 
 Dictionary AnchorProgram::get_idl(){
@@ -795,24 +856,36 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
     return result;
 }
 
-Dictionary AnchorProgram::fetch_account(const String name, const Variant& account){
-    SolanaClient temp_client;
-    temp_client.set_async(false);
-    
-    Dictionary rpc_result = temp_client.get_account_info(Pubkey(account).get_value());
+Error AnchorProgram::fetch_account(const String name, const Variant& account){
+    if(!pending_account_name.is_empty()){
+        return Error::ERR_ALREADY_IN_USE;
+    }
+    pending_account_name = name;
+    Callable callback(this, "fetch_account_callback");
+    fetch_client->connect("http_response", callback, ConnectFlags::CONNECT_ONE_SHOT);
+    Dictionary rpc_result = fetch_client->get_account_info(Pubkey(account).get_value());
 
+    return Error::OK;
+}
+
+void AnchorProgram::fetch_account_callback(const Dictionary &rpc_result){
+    String name = pending_account_name;
+    pending_account_name = "";
     if(!rpc_result.has("result")){
-        return Dictionary();
+        emit_signal("account_fetched", Dictionary());
+        return;
     }
 
     Dictionary result_dict = rpc_result["result"];
     Variant value;
     if(!result_dict.has("value")){
-        return Dictionary();
+        emit_signal("account_fetched", Dictionary());
+        return;
     }
     value = result_dict["value"];
     if(value.get_type() != Variant::DICTIONARY){
-        return Dictionary();
+        emit_signal("account_fetched", Dictionary());
+        return;
     }
 
     Dictionary account_dict = value;
@@ -821,12 +894,14 @@ Dictionary AnchorProgram::fetch_account(const String name, const Variant& accoun
     String encoded_data = account_data_tuple[0];
 
     PackedByteArray account_data = SolanaSDK::bs64_decode(encoded_data);
+
     account_data = account_data.slice(8);
 
     Dictionary ref_struct = find_idl_account(name);
 
     if(ref_struct.is_empty()){
-        return Dictionary();
+        emit_signal("account_fetched", Dictionary());
+        return;
     }
 
     const Array fields = ((Dictionary)ref_struct["type"])["fields"];
@@ -839,7 +914,7 @@ Dictionary AnchorProgram::fetch_account(const String name, const Variant& accoun
         account_data = account_data.slice(data_offset);
     }
 
-    return result;
+    emit_signal("account_fetched", result);
 }
 
 }
