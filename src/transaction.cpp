@@ -268,6 +268,7 @@ Transaction::Transaction(const PackedByteArray& bytes){
     }
 
     message = memnew(Message(bytes.slice(cursor)));
+    signers.resize(signer_size);
 
     check_fully_signed();
 }
