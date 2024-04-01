@@ -58,11 +58,25 @@ jobs:
                 mkdir .godot
                 echo "res://bin/godot-solana-sdk.gdextension" >> .godot/extension_list.cfg
 
+            - name: Load Test Accounts
+              id: test_accounts
+              run: |
+                cd ${{matrix.dir}}
+                if [ -d "test_accounts" ]; then
+                for file in "test_accounts"/*; do
+                if [ -f "$file" ]; then
+                str="${str} --account `echo -n "${file##*/}" | cut -f 1 -d '.' | tr -d $'\n'` ${{matrix.dir}}${file}"
+                fi
+                done
+                fi
+                echo "VALIDATOR_ARGS=${str}" >> "$GITHUB_OUTPUT"
+
             - name: Setup Local Validator
               uses: switchboard-xyz/solana-local-validator@v0.1
               with:
                 solana-version: stable
                 cluster: devnet
+                args: "${{steps.test_accounts.outputs.VALIDATOR_ARGS}}"
 
             - name: Test project 
               shell: bash
