@@ -13,10 +13,6 @@ size_flags_vertical = 4
 alignment = 1
 script = ExtResource("1_qrfu5")
 
-[node name="Tree" type="Tree" parent="."]
-layout_mode = 2
-size_flags_vertical = 3
-
 [node name="Label" type="Label" parent="."]
 layout_mode = 2
 text = "hi"
@@ -28,5 +24,22 @@ idl = {}
 wait_time = 10.0
 one_shot = true
 autostart = true
+
+[node name="GridContainer" type="GridContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 2
+
+[node name="IdlTree" type="Tree" parent="GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 2
+
+[node name="AccountDataTree" type="Tree" parent="GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 2
 
 [connection signal="timeout" from="Timeout" to="." method="_on_timeout_timeout"]

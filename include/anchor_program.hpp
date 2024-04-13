@@ -13,18 +13,21 @@ private:
     Variant idl;
     String pid;
     String url_override = "";
+    String pending_account_name = "";
     bool try_from_pid = false;
     Variant json_file;
     bool try_from_json_file = false;
     Array instructions;
 
     SolanaClient *idl_client = nullptr;
+    SolanaClient *fetch_client = nullptr;
 
     static bool is_typed_primitive(const Dictionary &dict);
     static PackedByteArray serialize_typed_primitive(const Dictionary &dict);
     Variant idl_address(const Variant& pid);
     bool load_from_pid(const String& pid);
     void idl_from_pid_callback(const Dictionary& rpc_result);
+    void fetch_account_callback(const Dictionary &rpc_result);
     void extract_idl_from_rpc_response(const Dictionary& rpc_result);
     void extract_idl_from_data(const Array& data_info);
 
@@ -83,7 +86,7 @@ public:
     static Dictionary option(const Variant &val);
 
     Variant build_instruction(String name, Array accounts, Variant arguments);
-    Dictionary fetch_account(const String name, const Variant &account);
+    Error fetch_account(const String name, const Variant &account);
 };
 
 }

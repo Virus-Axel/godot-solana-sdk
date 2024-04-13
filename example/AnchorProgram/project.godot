@@ -22,4 +22,4 @@ renderer/rendering_method.mobile="gl_compatibility"
 
 [solana_sdk]
 
-client/default_url="http://localhost:8899"
+client/default_url="https://api.mainnet-beta.solana.com"
