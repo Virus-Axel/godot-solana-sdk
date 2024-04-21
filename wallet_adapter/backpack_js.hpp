@@ -9,14 +9,15 @@ const char* SIGN_MESSAGE_SCRIPT = "\
   async function foo() {\
     const { backpack } = window;\
     try{\
-    buffer_message = new TextEncoder().encode('{0}');\
-    Module.message_signature = (await backpack.signMessage(buffer_message, 'utf8')).signature;\
+      buffer_message = new TextEncoder().encode('{0}');\
+      Module.message_signature = (await backpack.signMessage(buffer_message)).signature;\
       if(Module.message_signature == null){\
         Module.wallet_status = -1;\
         return;\
       }\
     }\
     catch (err){\
+      console.log(err);\
       Module.wallet_status = -1;\
       return;\
     }\
@@ -32,10 +33,9 @@ const char* SIGN_TRANSACTION_SCRIPT = "\
     \
     const { backpack } = window;\
     try{\
-      console.log('signing from js');\
       var tx = Module.solanaWeb3.Transaction.from(Module.serialized_message);\
-      await backpack.signTransaction(tx);\
-      Module.message_signature = tx.signatures[{0}].signature;\
+      var new_tx = await backpack.signTransaction(tx);\
+      Module.message_signature = new_tx.signatures[{0}].signature;\
       if(Module.message_signature == null){\
         Module.wallet_status = -1;\
         return;\
@@ -53,7 +53,6 @@ const char* SIGN_TRANSACTION_SCRIPT = "\
 ";
 
 const char* CONNECT_SCRIPT = "\
-    console.log(Module.solanaWeb3);\
     Module.wallet_status = 0;\
     async function checkIfWalletIsConnected() {\
     try{\
@@ -67,10 +66,10 @@ const char* CONNECT_SCRIPT = "\
       } else {\
         Module.wallet_status = -1;\
       }\
-      }\
+      }
       catch (error){\
-      console.error(error);\
-      Module.wallet_status = -1;\
+        console.error(error);\
+        Module.wallet_status = -1;\
       }\
     }\
     checkIfWalletIsConnected()\
