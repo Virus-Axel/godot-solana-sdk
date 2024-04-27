@@ -66,7 +66,7 @@ const char* CONNECT_SCRIPT = "\
       } else {\
         Module.wallet_status = -1;\
       }\
-      }
+      }\
       catch (error){\
         console.error(error);\
         Module.wallet_status = -1;\
