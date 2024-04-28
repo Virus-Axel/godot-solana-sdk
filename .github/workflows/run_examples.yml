@@ -38,16 +38,29 @@ jobs:
               with:
                     version: 4.2.1
                     use-dotnet: false
+                    include-templates: true
 
             - name: Checkout project
               uses: actions/checkout@v2
               with:
                 submodules: recursive
 
-            - name: Build binary 
+            - name: Build binary
               shell: bash
               run: |
                 scons
+
+            - name: (Web) Install emsdk toolchain
+              if: ${{ endsWith(matrix.dir, 'Web/') }}
+              uses: mymindstorm/setup-emsdk@v14
+              with:
+                version: 3.1.53
+
+            - name: (Web) Build binary
+              if: ${{ endsWith(matrix.dir, 'Web/') }}
+              shell: bash
+              run: |
+                scons platform=web target=template_debug
 
             - name: Prepare project 
               shell: bash
@@ -77,8 +90,55 @@ jobs:
                 solana-version: stable
                 cluster: devnet
                 args: "${{steps.test_accounts.outputs.VALIDATOR_ARGS}}"
+            
+            - name: (Web) Download Puppeteer
+              if: ${{ endsWith(matrix.dir, 'Web/') }}
+              uses: actions/setup-node@v4
+              with:
+                node-version: 20
 
-            - name: Test project 
+            - name: (Web) Setup Puppeteer
+              if: ${{ endsWith(matrix.dir, 'Web/') }}
+              run: |
+                cd .github/workflows/puppeteer
+                npm init -y
+                npm install puppeteer
+
+            - name: (Web) Export project to web
+              if: ${{ endsWith(matrix.dir, 'Web/') }}
+              run: |
+                cd ${{matrix.dir}}
+                mkdir tmp
+                godot --headless --path . --export-debug Web tmp/tmp_js_export.html
+
+            - name: (Web) Download backpack
+              if: ${{ endsWith(matrix.dir, 'Web/') }}
+              uses: actions/checkout@v4
+              with:
+                repository: 'coral-xyz/backpack'
+                ref: '5a538a41d060d2c48507007f96c766483115aecc'
+                path: 'backpack'
+
+
+            - name: (Web) Install backpack
+              if: ${{ endsWith(matrix.dir, 'Web/') }}  
+              run: |
+                cd backpack
+                yarn config set enableImmutableInstalls false
+                yarn install
+                yarn build
+
+      
+            - name: (Web) Test project in browser
+              if: ${{ endsWith(matrix.dir, 'Web/') }}
+              run: |
+                python3 .github/workflows/puppeteer/serve.py --no-browser --root `pwd`/${{matrix.dir}}tmp &
+                cd .github/workflows/puppeteer
+                node puppeteer.js | ( ! grep FAIL)
+                exit $?
+
+            - name: Test project
+              if: ${{ endsWith(matrix.dir, 'Web/') == false }}
               shell: bash
               run: |
                 cd ${{matrix.dir}}
