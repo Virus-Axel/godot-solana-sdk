@@ -1,7 +1,7 @@
 #include "anchor_program.hpp"
 
 #include "solana_client.hpp"
-#include "solana_sdk.hpp"
+#include "solana_utils.hpp"
 #include "pubkey.hpp"
 #include "sha256.hpp"
 #include "instruction.hpp"
@@ -414,7 +414,7 @@ void AnchorProgram::idl_from_pid_callback(const Dictionary& rpc_result){
 }
 
 void AnchorProgram::extract_idl_from_data(const Array& data_info){
-    const PackedByteArray data = SolanaSDK::bs64_decode(data_info[0]);
+    const PackedByteArray data = SolanaUtils::bs64_decode(data_info[0]);
 
     const int DATA_OFFSET = 44;
 
@@ -893,7 +893,7 @@ void AnchorProgram::fetch_account_callback(const Dictionary &rpc_result){
     Array account_data_tuple = account_dict["data"];
     String encoded_data = account_data_tuple[0];
 
-    PackedByteArray account_data = SolanaSDK::bs64_decode(encoded_data);
+    PackedByteArray account_data = SolanaUtils::bs64_decode(encoded_data);
 
     account_data = account_data.slice(8);
 

@@ -9,7 +9,7 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/thread.hpp>
 #include <godot_cpp/classes/http_request.hpp>
-#include <solana_sdk.hpp>
+#include <solana_utils.hpp>
 #include <wallet_adapter.hpp>
 #include <message.hpp>
 
@@ -492,7 +492,7 @@ Dictionary Transaction::send(){
 
     if(!is_inside_tree()){
         WARN_PRINT_ED("Using synchronous network calls. Consider adding Transaction to scene tree for asynchronous requests.");
-        Dictionary rpc_result = send_client->send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
+        Dictionary rpc_result = send_client->send_transaction(SolanaUtils::bs64_encode(serialized_bytes));
 
         send_callback(rpc_result);
 
@@ -513,7 +513,7 @@ Dictionary Transaction::send(){
 
         pending_send = true;
         send_client->connect("http_response", callback);
-        Dictionary rpc_result = send_client->send_transaction(SolanaSDK::bs64_encode(serialized_bytes));
+        Dictionary rpc_result = send_client->send_transaction(SolanaUtils::bs64_encode(serialized_bytes));
 
         return Dictionary();
     }

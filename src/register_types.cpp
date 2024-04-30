@@ -1,6 +1,6 @@
 #include "register_types.hpp"
 
-#include "solana_sdk.hpp"
+#include "solana_utils.hpp"
 #include "pubkey.hpp"
 #include "account.hpp"
 #include "account_meta.hpp"
@@ -53,7 +53,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
         return;
     }
 
-    ClassDB::register_class<SolanaSDK>();
+    ClassDB::register_class<SolanaUtils>();
     ClassDB::register_class<SolanaClient>();
     ClassDB::register_class<Pubkey>();
     ClassDB::register_class<CompiledInstruction>();

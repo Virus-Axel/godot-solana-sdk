@@ -4,7 +4,7 @@
 #include "spl_token.hpp"
 #include "pubkey.hpp"
 #include "solana_client.hpp"
-#include "solana_sdk.hpp"
+#include "solana_utils.hpp"
 
 namespace godot{
 
@@ -119,7 +119,7 @@ void MplTokenMetadata::metadata_callback(const Dictionary& rpc_result){
     Array account_data_tuple = account["data"];
     String encoded_data = account_data_tuple[0];
 
-    PackedByteArray account_data = SolanaSDK::bs64_decode(encoded_data);
+    PackedByteArray account_data = SolanaUtils::bs64_decode(encoded_data);
 
     const int NAME_LOCATION = 65;
 

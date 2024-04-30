@@ -1,7 +1,7 @@
 #include "pubkey.hpp"
 #include "utils.hpp"
 
-#include <solana_sdk.hpp>
+#include <solana_utils.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/random_number_generator.hpp>
 #include "sha256.hpp"
@@ -121,7 +121,7 @@ void Pubkey::set_value(const String& p_value){
     value = p_value;
 
     // Update bytes accordingly.
-    PackedByteArray decoded_value = SolanaSDK::bs58_decode(value);
+    PackedByteArray decoded_value = SolanaUtils::bs58_decode(value);
     bytes = decoded_value;
 
     // Print warnings if key length is bad.
@@ -155,7 +155,7 @@ void Pubkey::set_bytes(const PackedByteArray& p_value){
         value = "";
     }
     else{
-        String encoded_value = SolanaSDK::bs58_encode(bytes);
+        String encoded_value = SolanaUtils::bs58_encode(bytes);
         value = encoded_value;
     }
 
@@ -207,7 +207,7 @@ Variant Pubkey::get_token_mint_address(){
 }
 
 void Pubkey::create_from_string(const String& from){
-    bytes = SolanaSDK::bs58_decode(from);
+    bytes = SolanaUtils::bs58_decode(from);
 }
 
 void Pubkey::create_from_array(const unsigned char* data){
@@ -330,7 +330,7 @@ Variant Pubkey::new_associated_token_address(const Variant &wallet_address, cons
 
     arr.append(PackedByteArray());
 
-    String pid = String(SolanaSDK::SPL_ASSOCIATED_TOKEN_ADDRESS.c_str());
+    String pid = String(SolanaUtils::SPL_ASSOCIATED_TOKEN_ADDRESS.c_str());
 
     Variant pid_key = Pubkey::new_from_string(pid);
     
@@ -448,9 +448,9 @@ bool Pubkey::get_associated_token_address(const Variant &wallet_address, const V
     PackedStringArray arr;
     arr.append(wallet_address);
     arr.append(token_mint_address);
-    arr.append(String(SolanaSDK::SPL_TOKEN_ADDRESS.c_str()));
+    arr.append(String(SolanaUtils::SPL_TOKEN_ADDRESS.c_str()));
 
-    String pid = String(SolanaSDK::SPL_ASSOCIATED_TOKEN_ADDRESS.c_str());
+    String pid = String(SolanaUtils::SPL_ASSOCIATED_TOKEN_ADDRESS.c_str());
 
     return create_program_address(arr, (Variant*) &pid);
 }

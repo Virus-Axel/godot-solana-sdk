@@ -2,7 +2,7 @@
 
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/java_script_bridge.hpp>
-#include <solana_sdk.hpp>
+#include <solana_utils.hpp>
 #include <godot_cpp/classes/thread.hpp>
 #include <web3_js.hpp>
 #include <phantom_js.hpp>
@@ -37,7 +37,7 @@ void WalletAdapter::store_encoded_message(const PackedByteArray &serialized_mess
   #ifdef WEB_ENABLED
 
   String script = "Module.encoded_message = '";
-  script += SolanaSDK::bs58_encode(serialized_message);
+  script += SolanaUtils::bs58_encode(serialized_message);
   script += "';";
 
   emscripten_run_script(script.utf8());
@@ -221,7 +221,7 @@ void WalletAdapter::poll_connection(){
       connected = true;
       String connected_pubkey(emscripten_run_script_string("Module.connect_key"));
 
-      PackedByteArray decoded_bytes = SolanaSDK::bs58_decode(connected_pubkey);
+      PackedByteArray decoded_bytes = SolanaUtils::bs58_decode(connected_pubkey);
       connected_key = decoded_bytes;
 
       clear_state();

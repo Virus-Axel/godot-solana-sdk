@@ -7,7 +7,7 @@
 #include "spl_token.hpp"
 #include "associated_token_account.hpp"
 #include "mpl_token_metadata.hpp"
-#include "solana_sdk.hpp"
+#include "solana_utils.hpp"
 #include "solana_client.hpp"
 #include "meta_data.hpp"
 #include "utils.hpp"
@@ -1317,7 +1317,7 @@ Variant MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key
     Array account_data_tuple = account["data"];
     String encoded_data = account_data_tuple[0];
 
-    PackedByteArray account_data = SolanaSDK::bs64_decode(encoded_data);
+    PackedByteArray account_data = SolanaUtils::bs64_decode(encoded_data);
     CandyMachineData *res = memnew(CandyMachineData);
     res->set_token_standard(account_data[cursor]);
     cursor++;

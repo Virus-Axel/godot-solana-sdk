@@ -2,7 +2,7 @@
 
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/random_number_generator.hpp>
-#include <solana_sdk.hpp>
+#include <solana_utils.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/json.hpp>
 
@@ -117,8 +117,8 @@ Keypair::Keypair() {
 void Keypair::from_seed(){
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed.ptr());
 
-    private_value = SolanaSDK::bs58_encode(private_bytes);
-    public_value = SolanaSDK::bs58_encode(public_bytes);
+    private_value = SolanaUtils::bs58_encode(private_bytes);
+    public_value = SolanaUtils::bs58_encode(public_bytes);
 }
 
 void Keypair::save_to_file(const String &filename){
@@ -153,8 +153,8 @@ void Keypair::random(){
 
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), random_seed);
 
-    private_value = SolanaSDK::bs58_encode(private_bytes);
-    public_value = SolanaSDK::bs58_encode(public_bytes);
+    private_value = SolanaUtils::bs58_encode(private_bytes);
+    public_value = SolanaUtils::bs58_encode(public_bytes);
 }
 
 Keypair::Keypair(const PackedByteArray &seed){
@@ -165,8 +165,8 @@ Keypair::Keypair(const PackedByteArray &seed){
 
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed.ptr());
 
-    private_value = SolanaSDK::bs58_encode(private_bytes);
-    public_value = SolanaSDK::bs58_encode(public_bytes);
+    private_value = SolanaUtils::bs58_encode(private_bytes);
+    public_value = SolanaUtils::bs58_encode(public_bytes);
 }
 
 Variant Keypair::new_from_seed(const String &seed){
@@ -217,7 +217,7 @@ void Keypair::set_public_value(const String& p_value){
     unique = false;
 
     // Update public bytes accordingly.
-    PackedByteArray decoded_value = SolanaSDK::bs58_decode(public_value);
+    PackedByteArray decoded_value = SolanaUtils::bs58_decode(public_value);
     public_bytes = decoded_value;
 
     // Print warnings if key length is bad.
@@ -240,7 +240,7 @@ void Keypair::set_public_bytes(const PackedByteArray& p_value){
         public_value = "";
     }
     else{
-        String encoded_value = SolanaSDK::bs58_encode(public_bytes);
+        String encoded_value = SolanaUtils::bs58_encode(public_bytes);
         public_value = encoded_value;
     }
 
@@ -256,7 +256,7 @@ void Keypair::set_private_value(const String& p_value){
     unique = false;
 
     // Update private bytes accordingly.
-    PackedByteArray decoded_value = SolanaSDK::bs58_decode(private_value);
+    PackedByteArray decoded_value = SolanaUtils::bs58_decode(private_value);
     private_bytes = decoded_value;
 
     // Print warnings if key length is bad.
@@ -277,7 +277,7 @@ void Keypair::set_private_bytes(const PackedByteArray& p_value){
         private_value = "";
     }
     else{
-        String encoded_value = SolanaSDK::bs58_encode(private_bytes);
+        String encoded_value = SolanaUtils::bs58_encode(private_bytes);
         private_value = encoded_value;
     }
 

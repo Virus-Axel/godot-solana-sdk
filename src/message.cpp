@@ -1,7 +1,7 @@
 #include <message.hpp>
 
 #include <keypair.hpp>
-#include <solana_sdk.hpp>
+#include <solana_utils.hpp>
 #include "compute_budget.hpp"
 
 TypedArray<AccountMeta> sort_metas(TypedArray<AccountMeta> input){
@@ -231,7 +231,7 @@ PackedByteArray Message::serialize_blockhash(){
         return result;
     }
 
-    return SolanaSDK::bs58_decode(latest_blockhash);
+    return SolanaUtils::bs58_decode(latest_blockhash);
 }
 
 int Message::get_amount_signers(){
