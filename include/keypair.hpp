@@ -11,20 +11,15 @@ class Keypair : public Resource {
     GDCLASS(Keypair, Resource)
 
 private:
-    //Ref<CryptoPP::ed25519::Signer> signer;
-    //Ref<CryptoPP::ed25519::Verifier> verifier;
-    //GDExtensionObjectPtr signer;
-    //GDExtensionObjectPtr verifier;
-
 
     const int KEY_LENGTH = 32;
     const int SIGNATURE_LENGTH = 64;
 
     bool unique = true;
-    String public_value = "";
+    String public_string = "";
     PackedByteArray public_bytes;
 
-    String private_value = "";
+    String private_string = "";
     PackedByteArray private_bytes;
 
     PackedByteArray seed;
@@ -46,14 +41,14 @@ public:
     static Variant new_random();
     static bool is_keypair(const Variant& object);
 
-    void set_public_value(const String& p_value);
-    String get_public_value();
+    void set_public_string(const String& p_value);
+    String get_public_string();
 
     void set_public_bytes(const PackedByteArray& p_value);
     PackedByteArray get_public_bytes() const;
 
-    void set_private_value(const String& p_value);
-    String get_private_value();
+    void set_private_string(const String& p_value);
+    String get_private_string();
 
     void set_private_bytes(const PackedByteArray& p_value);
     PackedByteArray get_private_bytes();

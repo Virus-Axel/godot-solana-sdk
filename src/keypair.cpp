@@ -14,12 +14,12 @@ void Keypair::_bind_methods() {
     ClassDB::bind_static_method("Keypair", D_METHOD("new_from_bytes", "bytes"), &Keypair::new_from_bytes);
     ClassDB::bind_static_method("Keypair", D_METHOD("new_from_file", "filename"), &Keypair::new_from_file);
 
-    ClassDB::bind_method(D_METHOD("get_public_value"), &Keypair::get_public_value);
-    ClassDB::bind_method(D_METHOD("set_public_value", "p_value"), &Keypair::set_public_value);
+    ClassDB::bind_method(D_METHOD("get_public_string"), &Keypair::get_public_string);
+    ClassDB::bind_method(D_METHOD("set_public_string", "p_value"), &Keypair::set_public_string);
     ClassDB::bind_method(D_METHOD("get_public_bytes"), &Keypair::get_public_bytes);
     ClassDB::bind_method(D_METHOD("set_public_bytes", "p_value"), &Keypair::set_public_bytes);
-    ClassDB::bind_method(D_METHOD("get_private_value"), &Keypair::get_private_value);
-    ClassDB::bind_method(D_METHOD("set_private_value", "p_value"), &Keypair::set_private_value);
+    ClassDB::bind_method(D_METHOD("get_private_string"), &Keypair::get_private_string);
+    ClassDB::bind_method(D_METHOD("set_private_string", "p_value"), &Keypair::set_private_string);
     ClassDB::bind_method(D_METHOD("get_private_bytes"), &Keypair::get_private_bytes);
     ClassDB::bind_method(D_METHOD("set_private_bytes", "p_value"), &Keypair::set_private_bytes);
     ClassDB::bind_method(D_METHOD("get_unique"), &Keypair::get_unique);
@@ -43,24 +43,24 @@ void Keypair::_get_property_list(List<PropertyInfo> *p_list) const {
         p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "seed"));
     }
     p_list->push_back(PropertyInfo(Variant::BOOL, "unique"));
-	p_list->push_back(PropertyInfo(Variant::STRING, "public_value", PROPERTY_HINT_NONE, "", visibility, ""));
+	p_list->push_back(PropertyInfo(Variant::STRING, "public_string", PROPERTY_HINT_NONE, "", visibility, ""));
     p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "public_bytes", PROPERTY_HINT_NONE, "", visibility, ""));
-    p_list->push_back(PropertyInfo(Variant::STRING, "private_value", PROPERTY_HINT_NONE, "", visibility, ""));
+    p_list->push_back(PropertyInfo(Variant::STRING, "private_string", PROPERTY_HINT_NONE, "", visibility, ""));
     p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "private_bytes", PROPERTY_HINT_NONE, "", visibility, ""));
 }
 
 bool Keypair::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
-	if (name == "public_value") {
-		set_public_value(p_value);
+	if (name == "public_string") {
+		set_public_string(p_value);
 		return true;
 	}
     else if(name == "public_bytes"){
         set_public_bytes(p_value);
 		return true;
     }
-    else if (name == "private_value") {
-		set_private_value(p_value);
+    else if (name == "private_string") {
+		set_private_string(p_value);
 		return true;
 	}
     else if(name == "private_bytes"){
@@ -80,16 +80,16 @@ bool Keypair::_set(const StringName &p_name, const Variant &p_value) {
 
 bool Keypair::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
-	if (name == "public_value") {
-		r_ret = public_value;
+	if (name == "public_string") {
+		r_ret = public_string;
 		return true;
 	}
     else if(name == "public_bytes"){
         r_ret = public_bytes;
 		return true;
     }
-    else if (name == "private_value") {
-		r_ret = private_value;
+    else if (name == "private_string") {
+		r_ret = private_string;
 		return true;
 	}
     else if(name == "private_bytes"){
@@ -117,8 +117,8 @@ Keypair::Keypair() {
 void Keypair::from_seed(){
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed.ptr());
 
-    private_value = SolanaUtils::bs58_encode(private_bytes);
-    public_value = SolanaUtils::bs58_encode(public_bytes);
+    private_string = SolanaUtils::bs58_encode(private_bytes);
+    public_string = SolanaUtils::bs58_encode(public_bytes);
 }
 
 void Keypair::save_to_file(const String &filename){
@@ -153,8 +153,8 @@ void Keypair::random(){
 
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), random_seed);
 
-    private_value = SolanaUtils::bs58_encode(private_bytes);
-    public_value = SolanaUtils::bs58_encode(public_bytes);
+    private_string = SolanaUtils::bs58_encode(private_bytes);
+    public_string = SolanaUtils::bs58_encode(public_bytes);
 }
 
 Keypair::Keypair(const PackedByteArray &seed){
@@ -165,8 +165,8 @@ Keypair::Keypair(const PackedByteArray &seed){
 
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed.ptr());
 
-    private_value = SolanaUtils::bs58_encode(private_bytes);
-    public_value = SolanaUtils::bs58_encode(public_bytes);
+    private_string = SolanaUtils::bs58_encode(private_bytes);
+    public_string = SolanaUtils::bs58_encode(public_bytes);
 }
 
 Variant Keypair::new_from_seed(const String &seed){
@@ -210,23 +210,23 @@ bool Keypair::is_keypair(const Variant& object){
     return ((Object*)object)->is_class("Keypair");
 }
 
-void Keypair::set_public_value(const String& p_value){
-    public_value = p_value;
+void Keypair::set_public_string(const String& p_value){
+    public_string = p_value;
 
     // Keypair is not unique anymore.
     unique = false;
 
     // Update public bytes accordingly.
-    PackedByteArray decoded_value = SolanaUtils::bs58_decode(public_value);
+    PackedByteArray decoded_value = SolanaUtils::bs58_decode(public_string);
     public_bytes = decoded_value;
 
     // Print warnings if key length is bad.
-    ERR_FAIL_COND_EDMSG((decoded_value.is_empty() && public_value.length() != 0), "Value contains non-base58 characters");
+    ERR_FAIL_COND_EDMSG((decoded_value.is_empty() && public_string.length() != 0), "Value contains non-base58 characters");
     ERR_FAIL_COND_EDMSG(decoded_value.size() != KEY_LENGTH, "Public key must be 32 bytes");
 }
 
-String Keypair::get_public_value(){
-    return public_value;
+String Keypair::get_public_string(){
+    return public_string;
 }
 
 void Keypair::set_public_bytes(const PackedByteArray& p_value){
@@ -237,11 +237,11 @@ void Keypair::set_public_bytes(const PackedByteArray& p_value){
 
     // Do not feed empty value to encode function.
     if (public_bytes.size() == 0){
-        public_value = "";
+        public_string = "";
     }
     else{
         String encoded_value = SolanaUtils::bs58_encode(public_bytes);
-        public_value = encoded_value;
+        public_string = encoded_value;
     }
 
     // Print warning if key length is bad.
@@ -251,21 +251,21 @@ PackedByteArray Keypair::get_public_bytes() const{
     return public_bytes;
 }
 
-void Keypair::set_private_value(const String& p_value){
-    private_value = p_value;
+void Keypair::set_private_string(const String& p_value){
+    private_string = p_value;
     unique = false;
 
     // Update private bytes accordingly.
-    PackedByteArray decoded_value = SolanaUtils::bs58_decode(private_value);
+    PackedByteArray decoded_value = SolanaUtils::bs58_decode(private_string);
     private_bytes = decoded_value;
 
     // Print warnings if key length is bad.
-    ERR_FAIL_COND_EDMSG(decoded_value.is_empty() && private_value.length() != 0, "Value contains non-base58 characters.");
+    ERR_FAIL_COND_EDMSG(decoded_value.is_empty() && private_string.length() != 0, "Value contains non-base58 characters.");
     ERR_FAIL_COND_EDMSG(decoded_value.size() != KEY_LENGTH, "Private key must be 32 bytes.");
 }
 
-String Keypair::get_private_value(){
-    return private_value;
+String Keypair::get_private_string(){
+    return private_string;
 }
 
 void Keypair::set_private_bytes(const PackedByteArray& p_value){
@@ -274,11 +274,11 @@ void Keypair::set_private_bytes(const PackedByteArray& p_value){
 
     // Do not feed 0 bytes to encode algorithm.
     if (private_bytes.size() == 0){
-        private_value = "";
+        private_string = "";
     }
     else{
         String encoded_value = SolanaUtils::bs58_encode(private_bytes);
-        private_value = encoded_value;
+        private_string = encoded_value;
     }
 
     // Print warnings if key length is bad.

@@ -18,7 +18,7 @@ func transaction_example_airdrop_to():
 	# so building a transaction is not necessary
 	
 
-	$SolanaClient.request_airdrop(payer.get_public_value(), LAMPORTS_PER_SOL)
+	$SolanaClient.request_airdrop(payer.get_public_string(), LAMPORTS_PER_SOL)
 	var response = await $SolanaClient.http_response
 
 	# Error check the RPC result
