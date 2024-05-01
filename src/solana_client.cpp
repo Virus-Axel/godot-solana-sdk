@@ -474,7 +474,7 @@ void SolanaClient::connect_ws(){
 
 void SolanaClient::response_callback(const Dictionary &params){
     pending_request = false;
-    emit_signal("http_response", params);
+    emit_signal("http_response_received", params);
 }
 
 Dictionary SolanaClient::get_latest_blockhash(){
@@ -1040,8 +1040,8 @@ void SolanaClient::unsubscribe_all(const Callable &callback){
 }
 
 void SolanaClient::_bind_methods(){
-    ClassDB::add_signal("SolanaClient", MethodInfo("socket_response"));
-    ClassDB::add_signal("SolanaClient", MethodInfo("http_response", PropertyInfo(Variant::DICTIONARY, "response")));
+    ClassDB::add_signal("SolanaClient", MethodInfo("socket_response_received"));
+    ClassDB::add_signal("SolanaClient", MethodInfo("http_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
 
     ClassDB::bind_method(D_METHOD("response_callback", "params"), &SolanaClient::response_callback);
 

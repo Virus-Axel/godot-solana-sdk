@@ -253,7 +253,7 @@ void WalletAdapter::poll_message_signing(){
     }
     default:
       clear_state();
-      emit_signal("signing_error");
+      emit_signal("signing_failed");
       break;
   }
   #endif
@@ -276,9 +276,9 @@ void WalletAdapter::_process(double delta){
 
 void WalletAdapter::_bind_methods(){
     ClassDB::add_signal("WalletAdapter", MethodInfo("connection_established"));
-    ClassDB::add_signal("WalletAdapter", MethodInfo("connection_error"));
+    ClassDB::add_signal("WalletAdapter", MethodInfo("connection_failed"));
     ClassDB::add_signal("WalletAdapter", MethodInfo("message_signed", PropertyInfo(Variant::PACKED_BYTE_ARRAY, "signature")));
-    ClassDB::add_signal("WalletAdapter", MethodInfo("signing_error"));
+    ClassDB::add_signal("WalletAdapter", MethodInfo("signing_failed"));
     ClassDB::bind_method(D_METHOD("connect_wallet"), &WalletAdapter::connect_wallet);
     ClassDB::bind_method(D_METHOD("sign_message", "serialized_message", "signer_index"), &WalletAdapter::sign_message);
     ClassDB::bind_method(D_METHOD("sign_text_message", "text_message"), &WalletAdapter::sign_text_message);

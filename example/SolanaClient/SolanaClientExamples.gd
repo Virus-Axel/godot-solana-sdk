@@ -45,7 +45,7 @@ func delete_solana_client(client: SolanaClient):
 func get_account_info_demo():
 	var client: SolanaClient = add_solana_client()
 	client.get_account_info(EXAMPLE_ACCOUNT)
-	var response: Dictionary = await client.http_response
+	var response: Dictionary = await client.http_response_received
 	assert(response.has("result"))
 	display_dict(response["result"], $ResultTree1.create_item())
 	delete_solana_client(client)
@@ -54,7 +54,7 @@ func get_account_info_demo():
 func get_latest_blockhash_demo():
 	var client: SolanaClient = add_solana_client()
 	client.get_latest_blockhash()
-	var response: Dictionary = await client.http_response
+	var response: Dictionary = await client.http_response_received
 	assert(response.has("result"))
 	display_dict(response["result"], $ResultTree2.create_item())
 	delete_solana_client(client)
@@ -64,7 +64,7 @@ func get_minimum_balance_for_rent_extemption_demo():
 	const EXAMPLE_DATA_SIZE := 100
 	var client: SolanaClient = add_solana_client()
 	client.get_minimum_balance_for_rent_extemption(EXAMPLE_DATA_SIZE)
-	var response: Dictionary = await client.http_response
+	var response: Dictionary = await client.http_response_received
 	assert(response.has("result"))
 	display_dict(response["result"], $ResultTree3.create_item())
 	delete_solana_client(client)
@@ -79,7 +79,7 @@ func subscribe_account_demo():
 	
 	# Make lamports of the account change to trigger the callback.
 	client.request_airdrop(EXAMPLE_ACCOUNT, 1000000)
-	var airdrop_response = await client.http_response
+	var airdrop_response = await client.http_response_received
 	assert(airdrop_response.has("result"))
 	var airdrop_signature: String = airdrop_response["result"]
 	

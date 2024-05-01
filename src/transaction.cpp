@@ -23,10 +23,10 @@ using internal::gdextension_interface_print_warning;
 void Transaction::_bind_methods() {
     ClassDB::add_signal("Transaction", MethodInfo("fully_signed"));
     ClassDB::add_signal("Transaction", MethodInfo("send_ready"));
-    ClassDB::add_signal("Transaction", MethodInfo("sign_error", PropertyInfo(Variant::INT, "signer_index")));
-    ClassDB::add_signal("Transaction", MethodInfo("transaction_response", PropertyInfo(Variant::DICTIONARY, "result")));
+    ClassDB::add_signal("Transaction", MethodInfo("signing_failed", PropertyInfo(Variant::INT, "signer_index")));
+    ClassDB::add_signal("Transaction", MethodInfo("transaction_response_received", PropertyInfo(Variant::DICTIONARY, "result")));
     ClassDB::add_signal("Transaction", MethodInfo("blockhash_updated", PropertyInfo(Variant::DICTIONARY, "result")));
-    ClassDB::add_signal("Transaction", MethodInfo("blockhash_update_failure", PropertyInfo(Variant::DICTIONARY, "result")));
+    ClassDB::add_signal("Transaction", MethodInfo("blockhash_update_failed", PropertyInfo(Variant::DICTIONARY, "result")));
 
     ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &Transaction::set_url_override);
     ClassDB::bind_static_method("Transaction", D_METHOD("new_from_bytes", "bytes"), &Transaction::new_from_bytes);
@@ -67,7 +67,7 @@ void Transaction::_bind_methods() {
 void Transaction::_signer_signed(PackedByteArray signature){
     WalletAdapter *controller = Object::cast_to<WalletAdapter>(payer);
     controller->disconnect("message_signed", Callable(this, "_signer_signed"));
-    controller->disconnect("signing_error", Callable(this, "_signer_failed"));
+    controller->disconnect("signing_failed", Callable(this, "_signer_failed"));
 
     const uint32_t index = controller->get_active_signer_index();
 
@@ -80,9 +80,9 @@ void Transaction::_signer_signed(PackedByteArray signature){
 void Transaction::_signer_failed(){
     WalletAdapter *controller = Object::cast_to<WalletAdapter>(payer);
     controller->disconnect("message_signed", Callable(this, "_signer_signed"));
-    controller->disconnect("signing_error", Callable(this, "_signer_failed"));
+    controller->disconnect("signing_failed", Callable(this, "_signer_failed"));
 
-    emit_signal("sign_error", controller->get_active_signer_index());
+    emit_signal("signing_failed", controller->get_active_signer_index());
 }
 
 bool Transaction::is_phantom_payer() const{
@@ -152,7 +152,7 @@ void Transaction::sign_at_index(const uint32_t index){
         WalletAdapter* controller = Object::cast_to<WalletAdapter>(signers[index]);
 
         controller->connect("message_signed", Callable(this, "_signer_signed"));
-        controller->connect("signing_error", Callable(this, "_signer_failed"));
+        controller->connect("signing_failed", Callable(this, "_signer_failed"));
         controller->sign_message(serialize(), index);
     }
 }
@@ -383,7 +383,7 @@ void Transaction::update_latest_blockhash(const String &custom_hash){
         }
         else{
             Callable callback(this, "blockhash_callback");
-            blockhash_client->connect("http_response", callback);
+            blockhash_client->connect("http_response_received", callback);
             blockhash_client->get_latest_blockhash();
         }
     }
@@ -457,20 +457,20 @@ Variant Transaction::sign_and_send(){
 void Transaction::send_callback(Dictionary params){
     pending_send = false;
     Callable callback(this, "send_callback");
-    if(send_client->is_connected("http_response", callback)){
-        send_client->disconnect("http_response", callback);
+    if(send_client->is_connected("http_response_received", callback)){
+        send_client->disconnect("http_response_received", callback);
     }
 
     if(params.has("result")){
         result_signature = params["result"];
     }
-    emit_signal("transaction_response", params);
+    emit_signal("transaction_response_received", params);
 }
 
 void Transaction::blockhash_callback(Dictionary params){
     Callable callback(this, "blockhash_callback");
-    if(blockhash_client->is_connected("http_response", callback)){
-        blockhash_client->disconnect("http_response", callback);
+    if(blockhash_client->is_connected("http_response_received", callback)){
+        blockhash_client->disconnect("http_response_received", callback);
     }
     pending_blockhash = false;
     if(params.has("result")){
@@ -483,7 +483,7 @@ void Transaction::blockhash_callback(Dictionary params){
         emit_signal("send_ready");
     }
     else{
-        emit_signal("blockhash_update_failure", params);
+        emit_signal("blockhash_update_failed", params);
     }
 }
 
@@ -512,7 +512,7 @@ Dictionary Transaction::send(){
         Callable callback(this, "send_callback");
 
         pending_send = true;
-        send_client->connect("http_response", callback);
+        send_client->connect("http_response_received", callback);
         Dictionary rpc_result = send_client->send_transaction(SolanaUtils::bs64_encode(serialized_bytes));
 
         return Dictionary();
