@@ -1,58 +1,67 @@
-# godot-solana-sdk
-A GDExtention with bindings to the solana-sdk. This plugin provides the possibility to create Solana transaction in your Godot game. This can be usefull when utilizing NFTs or other Solana smart contracts. The plugin builds for all platforms supported by Godot. The plugin builds for Godot 4.1 and up.
+# Godot Solana SDK
 
-# Version history
-| SDK         | Godot     | Platforms |
-|--------------|-----------|------------|
-| Unstable | 4.1.2      | Windows, Linux, Web, Android, IOS, MacOS        |
-| v0.3.0 | 4.1      | Windows, Linux, Web, Android, IOS, MacOS        |
-| v0.2      | 4.0  | Windows, Linux, Web, Android, IOS, MacOS       |
-| v0.1      | 4.0  | Windows, Linux, Web, Android, IOS, MacOS       |
+A GDExtention that gives Godot engine Solana support. This plugin provides the possibility to create Solana games for any platform supported by Godot. Utilize NFTs and Solana smart contracts in your game. The SDK has interface nodes for Anchor programs and instruction builders for Candy Machine and Candy Guard, System programs and SPL tokens and more.
+
+![godot_solana_sdk4](https://github.com/Virus-Axel/godot-solana-sdk/assets/14315050/1d4c4ff8-0763-4ad2-82f6-4ea3d66cde96)
 
 # How to use
-Download the binaries in the release section [here](https://github.com/Virus-Axel/godot-solana-sdk/releases). place the binaries anywhere in your godot project directory under res://bin/. Reload your project and you are good to go. Warning! This readme is a little outdated. See examples for an up to date usage example.
 
-# Nodes
-There is currently only one node provided by this plugin, that is the Transaction node.
-## Transaction
-This node is a customizable transaction that can be signed and serialized. The transaction consists of:
-- A payer Pubkey.
-- An array of instructions.
-- An array of signing keypairs.
+Download the binaries in the release section [here](https://github.com/Virus-Axel/godot-solana-sdk/releases). place the binaries anywhere in your godot project directory under res://bin/. Reload your project and you are good to go. See examples for an up to date usage example. Version 1.0 is built for 4.2 and later. Use the latest official release of godot to avoid problems.
 
-The transaction can be signed and serialized for use with phantom and the Solana RPC API.  
+When the plugin is loaded, the engine will have an additional set of nodes and resources.
+
+## Nodes
+
+These are the nodes provided by this pugin:
+
+- SolanaUtils
+- SolanaClient
+- Account
+- Transaction
+- WalletAdapter
+- ComputeBudget
+- SystemProgram
+- TokenProgram
+- MplTokenMetadata
+- AssociatedTokenAccountProgram
+- MplCandyMachine
+- MplCandyGuard
+- AnchorProgram
+
 ![Screenshot from 2023-05-20 17-41-43](https://github.com/Virus-Axel/godot-solana-sdk/assets/14315050/56464477-dafc-41c6-8c6c-cfe9cd89ca6d)
 
-# Resources
+## Resources
+These are the resources provided by this pugin:
 
-## Instruction
-The instruction resource consists of:
-- Program ID
-- Data
-- List of account metas
+- Pubkey
+- Keypair
+- CompiledInstruction
+- Message
+- Hash
+- AccountMeta
+- Instruction
+- MetaDataCreator
+- MetaDataCollection
+- MetaDataUses
+- MetaData
+- CandyGuardAccessList
+- CandyMachineData
 
-The data is sent as it is and no serialization/deserialization is supported. The list of account metas are passed to the program specified by the program ID. The instruction tells the solana program what to do.  
 ![Screenshot from 2023-05-20 17-44-00](https://github.com/Virus-Axel/godot-solana-sdk/assets/14315050/7ad0212f-f897-43a9-82e5-d0b5351772de)
 
-## AccountMeta
-The AccountMeta consists of an account key (A pubkey or a keypair) and information on weather the account is signer and if it is a writeable account.  
-![Screenshot from 2023-05-20 17-49-50](https://github.com/Virus-Axel/godot-solana-sdk/assets/14315050/ccd8b08a-a134-48ee-8623-0cc049a6b6fa)
+## Examples
 
-## Pubkey
-The pubkey is used for many things. It can be created from seeds, from associated tokens and by setting the base58 value or bytes yourself.  
-![Screenshot from 2023-05-20 17-50-58](https://github.com/Virus-Axel/godot-solana-sdk/assets/14315050/7eea01f5-f99a-4174-a27e-9a860d1de82f)
+There are example projects under the [example folder](https://github.com/Virus-Axel/godot-solana-sdk/tree/master/example). These are used to test the plugin whenever changes are made to the code. There might be some good references on how to get started. There are also a [demo project on Github](https://github.com/ZenRepublic/GodotSolanaSDKDemos) showcasing the plugin. The source can also be used for reference. The demo project is deployed on [Github pages](https://zenrepublic.github.io/GodotSolanaSDKDemos/), go check it out. Here is how it looks.
 
-## Keypair
-A keypair has a private key and a public key. They are used to sign transactions.  
-![Screenshot from 2023-05-20 17-51-45](https://github.com/Virus-Axel/godot-solana-sdk/assets/14315050/407d47f9-927b-42a2-b820-08a0607edc17)
+![Screenshot from 2024-05-01 18-13-29](https://github.com/Virus-Axel/godot-solana-sdk/assets/14315050/1f77ce05-0a42-4892-8bc5-c8059d900316)
 
-## Hash
-A simpler version of pubkey. Used to pass blockhashes when signing transactions.
 
-# Work in Progress
-I will continue to work on this plugin. Feel free to open issues or feature requests.
+# Contributing
 
-# Setting up Build Environment
+Feel free to open issues or feature requests. Contributions are very welcome. There is a [contribution guideline](https://github.com/Virus-Axel/godot-solana-sdk/blob/master/CONTRIBUTING.md) but get involved by heading to [discord](https://discord.gg/9aFDCvqPgt) or [starting a discussion](https://github.com/Virus-Axel/godot-solana-sdk/discussions).
+
+## Setting up Build Environment
+
 The plugin builds easily for your host platform with [SCons](https://www.scons.org/).
 
 ```
@@ -66,3 +75,7 @@ This repository also includes means to build all the binaries in containers. Thi
 ```
 scons --container_build
 ```
+
+# Projects using the Plugin
+
+Hurry up, create some games and list them here!
