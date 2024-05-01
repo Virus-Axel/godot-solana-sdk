@@ -1184,7 +1184,7 @@ PackedByteArray MplCandyMachine::initialize2_discriminator(){
 }
 
 void MplCandyMachine::_bind_methods(){
-    ClassDB::bind_static_method("MplCandyMachine", D_METHOD("initialize", "authority", "candy_machine_account", "collection_mint", "candy_machine_data", "pnft=false"), &MplCandyMachine::initialize);
+    ClassDB::bind_static_method("MplCandyMachine", D_METHOD("initialize", "authority", "candy_machine_account", "collection_mint", "candy_machine_data", "pnft"), &MplCandyMachine::initialize, DEFVAL(false));
     ClassDB::bind_static_method("MplCandyMachine", D_METHOD("mint", "payer", "receiver", "mint", "collection_mint", "collection_update_authority", "candy_machine_key"), &MplCandyMachine::mint);
 
     ClassDB::bind_static_method("MplCandyMachine", D_METHOD("get_pid"), &MplCandyMachine::get_pid);
