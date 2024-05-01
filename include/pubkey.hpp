@@ -44,14 +44,14 @@ public:
     Pubkey(const String& from);
     Pubkey(const Variant& from);
 
-    void set_value(const String& p_value);
-    String get_value() const;
+    void from_string(const String& p_value);
+    String to_string() const;
 
     void set_seed(const String& p_value);
     String get_seed();
 
-    void set_bytes(const PackedByteArray& p_value);
-    PackedByteArray get_bytes() const;
+    void from_bytes(const PackedByteArray& p_value);
+    PackedByteArray to_bytes() const;
 
     void set_type(const String p_value);
     String get_type() const;

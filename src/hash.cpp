@@ -1,7 +1,7 @@
 #include "hash.hpp"
 #include "utils.hpp"
 
-#include <solana_sdk.hpp>
+#include <solana_utils.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
 namespace godot{
@@ -57,7 +57,7 @@ void Hash::set_value(const String& p_value){
     unique = false;
 
     // Update byte representation accordingly.
-    PackedByteArray decoded_value = SolanaSDK::bs58_decode(value);
+    PackedByteArray decoded_value = SolanaUtils::bs58_decode(value);
     bytes = decoded_value;
 
     // Print warnings if bytes are bad.
@@ -84,7 +84,7 @@ void Hash::set_bytes(const PackedByteArray& p_value){
         value = "";
     }
     else{
-        String encoded_value = SolanaSDK::bs58_encode(bytes);
+        String encoded_value = SolanaUtils::bs58_encode(bytes);
         value = encoded_value;
     }
     

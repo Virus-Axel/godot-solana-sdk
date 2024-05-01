@@ -1,7 +1,7 @@
 #include "anchor_program.hpp"
 
 #include "solana_client.hpp"
-#include "solana_sdk.hpp"
+#include "solana_utils.hpp"
 #include "pubkey.hpp"
 #include "sha256.hpp"
 #include "instruction.hpp"
@@ -285,7 +285,7 @@ PackedByteArray AnchorProgram::serialize_variant(const Variant &var){
     
     case Variant::OBJECT:
         if(Pubkey::is_pubkey(var)){
-            result.append_array(Object::cast_to<Pubkey>(var)->get_bytes());
+            result.append_array(Object::cast_to<Pubkey>(var)->to_bytes());
         }
         else{
             internal::gdextension_interface_print_warning("Unsupported Object", "serialize_variant", __FILE__, __LINE__, true);
@@ -373,15 +373,15 @@ bool AnchorProgram::load_from_pid(const String& pid){
     }
 
     Callable callback(this, "idl_from_pid_callback");
-    idl_client->connect("http_response", callback);
+    idl_client->connect("http_response_received", callback);
     Dictionary rpc_result = idl_client->get_account_info(pid);
     return false;
 }
 
 void AnchorProgram::idl_from_pid_callback(const Dictionary& rpc_result){
     Callable callback(this, "idl_from_pid_callback");
-    if(idl_client->is_connected("http_response", callback)){
-        idl_client->disconnect("http_response", callback);
+    if(idl_client->is_connected("http_response_received", callback)){
+        idl_client->disconnect("http_response_received", callback);
     }
 
     if(!rpc_result.has("result")){
@@ -395,10 +395,10 @@ void AnchorProgram::idl_from_pid_callback(const Dictionary& rpc_result){
     String idl_address = pid;
 
     if((bool)account["executable"]){
-        idl_address = Pubkey(AnchorProgram::idl_address(Pubkey::new_from_string(pid))).get_value();
+        idl_address = Pubkey(AnchorProgram::idl_address(Pubkey::new_from_string(pid))).to_string();
 
         Callable callback(this, "idl_from_pid_callback");
-        idl_client->connect("http_response", callback);
+        idl_client->connect("http_response_received", callback);
         idl_client->get_account_info(idl_address);
     }
     else{
@@ -414,7 +414,7 @@ void AnchorProgram::idl_from_pid_callback(const Dictionary& rpc_result){
 }
 
 void AnchorProgram::extract_idl_from_data(const Array& data_info){
-    const PackedByteArray data = SolanaSDK::bs64_decode(data_info[0]);
+    const PackedByteArray data = SolanaUtils::bs64_decode(data_info[0]);
 
     const int DATA_OFFSET = 44;
 
@@ -862,8 +862,8 @@ Error AnchorProgram::fetch_account(const String name, const Variant& account){
     }
     pending_account_name = name;
     Callable callback(this, "fetch_account_callback");
-    fetch_client->connect("http_response", callback, ConnectFlags::CONNECT_ONE_SHOT);
-    Dictionary rpc_result = fetch_client->get_account_info(Pubkey(account).get_value());
+    fetch_client->connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
+    Dictionary rpc_result = fetch_client->get_account_info(Pubkey(account).to_string());
 
     return Error::OK;
 }
@@ -893,7 +893,7 @@ void AnchorProgram::fetch_account_callback(const Dictionary &rpc_result){
     Array account_data_tuple = account_dict["data"];
     String encoded_data = account_data_tuple[0];
 
-    PackedByteArray account_data = SolanaSDK::bs64_decode(encoded_data);
+    PackedByteArray account_data = SolanaUtils::bs64_decode(encoded_data);
 
     account_data = account_data.slice(8);
 

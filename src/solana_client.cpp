@@ -474,7 +474,7 @@ void SolanaClient::connect_ws(){
 
 void SolanaClient::response_callback(const Dictionary &params){
     pending_request = false;
-    emit_signal("http_response", params);
+    emit_signal("http_response_received", params);
 }
 
 Dictionary SolanaClient::get_latest_blockhash(){
@@ -971,7 +971,7 @@ void SolanaClient::account_subscribe(const Variant &account_key, const Callable 
     callbacks.push_back(std::make_pair(0, callback));
     method_names.push_back("accountUnsubscribe");
     Array params;
-    params.append(Pubkey(account_key).get_value());
+    params.append(Pubkey(account_key).to_string());
     add_to_param_dict(params, "commitment", commitment);
     ws_request_queue.push(JSON::stringify(make_rpc_dict("accountSubscribe", params)));
 
@@ -1040,8 +1040,8 @@ void SolanaClient::unsubscribe_all(const Callable &callback){
 }
 
 void SolanaClient::_bind_methods(){
-    ClassDB::add_signal("SolanaClient", MethodInfo("socket_response"));
-    ClassDB::add_signal("SolanaClient", MethodInfo("http_response", PropertyInfo(Variant::DICTIONARY, "response")));
+    ClassDB::add_signal("SolanaClient", MethodInfo("socket_response_received"));
+    ClassDB::add_signal("SolanaClient", MethodInfo("http_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
 
     ClassDB::bind_method(D_METHOD("response_callback", "params"), &SolanaClient::response_callback);
 

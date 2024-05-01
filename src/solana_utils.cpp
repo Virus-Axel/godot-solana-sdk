@@ -1,4 +1,4 @@
-#include "solana_sdk.hpp"
+#include "solana_utils.hpp"
 
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/http_request.hpp>
@@ -47,20 +47,20 @@ const std::vector<char> BASE_64_MAP = {
 
 using internal::gdextension_interface_print_warning;
 
-const std::string SolanaSDK::SPL_TOKEN_ADDRESS = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
-const std::string SolanaSDK::SPL_ASSOCIATED_TOKEN_ADDRESS = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
+const std::string SolanaUtils::SPL_TOKEN_ADDRESS = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+const std::string SolanaUtils::SPL_ASSOCIATED_TOKEN_ADDRESS = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
 
-void SolanaSDK::_bind_methods() {
-    ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs58_encode", "input"), &SolanaSDK::bs58_encode);
-    ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs58_decode", "input"), &SolanaSDK::bs58_decode);
-    ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs64_encode", "input"), &SolanaSDK::bs64_encode);
-    ClassDB::bind_static_method("SolanaSDK", D_METHOD("bs64_decode", "input"), &SolanaSDK::bs64_decode);
+void SolanaUtils::_bind_methods() {
+    ClassDB::bind_static_method("SolanaUtils", D_METHOD("bs58_encode", "input"), &SolanaUtils::bs58_encode);
+    ClassDB::bind_static_method("SolanaUtils", D_METHOD("bs58_decode", "input"), &SolanaUtils::bs58_decode);
+    ClassDB::bind_static_method("SolanaUtils", D_METHOD("bs64_encode", "input"), &SolanaUtils::bs64_encode);
+    ClassDB::bind_static_method("SolanaUtils", D_METHOD("bs64_decode", "input"), &SolanaUtils::bs64_decode);
 }
 
-SolanaSDK::SolanaSDK() {
+SolanaUtils::SolanaUtils() {
 }
 
-PackedByteArray SolanaSDK::bs58_decode(String str){
+PackedByteArray SolanaUtils::bs58_decode(String str){
 	PackedByteArray result;
 	if (str.length() == 0){
 		return result;
@@ -111,7 +111,7 @@ PackedByteArray SolanaSDK::bs58_decode(String str){
 	return result.slice(0, resultlen);
 }
 
-String SolanaSDK::bs58_encode(PackedByteArray input){
+String SolanaUtils::bs58_encode(PackedByteArray input){
 	PackedByteArray encoded;
 	
 	// Calculate the total length of the result
@@ -153,7 +153,7 @@ String SolanaSDK::bs58_encode(PackedByteArray input){
 	return result;
 }
 
-String SolanaSDK::bs64_encode(PackedByteArray bytes){
+String SolanaUtils::bs64_encode(PackedByteArray bytes){
 	String r = ""; 
 	String p = ""; 
 
@@ -178,7 +178,7 @@ String SolanaSDK::bs64_encode(PackedByteArray bytes){
 	return r.substr(0, r.length() - p.length()) + p;
 }
 
-PackedByteArray SolanaSDK::bs64_decode(String input){
+PackedByteArray SolanaUtils::bs64_decode(String input){
 	PackedByteArray result;
 	int cutoff = 0;
 
@@ -210,5 +210,5 @@ PackedByteArray SolanaSDK::bs64_decode(String input){
 	return result.slice(0, result.size() - cutoff);
 }
 
-SolanaSDK::~SolanaSDK() {
+SolanaUtils::~SolanaUtils() {
 }

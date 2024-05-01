@@ -18,8 +18,8 @@ func transaction_example_airdrop_to():
 	# so building a transaction is not necessary
 	
 
-	$SolanaClient.request_airdrop(payer.get_public_value(), LAMPORTS_PER_SOL)
-	var response = await $SolanaClient.http_response
+	$SolanaClient.request_airdrop(payer.get_public_string(), LAMPORTS_PER_SOL)
+	var response = await $SolanaClient.http_response_received
 
 	# Error check the RPC result
 	assert(response.has("result"))
@@ -54,7 +54,7 @@ func transaction_example_transfer():
 	
 	# On success transaction response signal will contain results.
 	# Connect it to avoid errors in you application.
-	var response = await tx.transaction_response
+	var response = await tx.transaction_response_received
 	
 	assert(response.has("result"))
 	var signature = response["result"]
@@ -83,7 +83,7 @@ func create_account_example():
 	
 	# On success transaction response signal will contain results.
 	# Connect it to avoid errors in you application.
-	var response = await tx.transaction_response
+	var response = await tx.transaction_response_received
 	
 	assert(response.has("result"))
 	var signature = response["result"]

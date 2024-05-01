@@ -1,13 +1,13 @@
-#ifndef GDEXAMPLE_H
-#define GDEXAMPLE_H
+#ifndef GODOT_SOLANA_SDK_SOLANA_UTILS_HPP
+#define GODOT_SOLANA_SDK_SOLANA_UTILS_HPP
 
 #include <godot_cpp/classes/node.hpp>
 #include <hash.hpp>
 
 namespace godot {
 
-class SolanaSDK : public Node {
-    GDCLASS(SolanaSDK, Node)
+class SolanaUtils : public Node {
+    GDCLASS(SolanaUtils, Node)
 
 private:
 protected:
@@ -22,13 +22,13 @@ public:
     static const std::string SPL_TOKEN_ADDRESS;
     static const std::string SPL_ASSOCIATED_TOKEN_ADDRESS;
 
-    SolanaSDK();
+    SolanaUtils();
     static PackedByteArray bs58_decode(String str);
     static String bs58_encode(PackedByteArray input);
     static String bs64_encode(PackedByteArray bytes);
     static PackedByteArray bs64_decode(String input);
 
-    ~SolanaSDK();
+    ~SolanaUtils();
 };
 }
 

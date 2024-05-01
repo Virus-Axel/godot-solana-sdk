@@ -7,7 +7,7 @@
 #include "spl_token.hpp"
 #include "associated_token_account.hpp"
 #include "mpl_token_metadata.hpp"
-#include "solana_sdk.hpp"
+#include "solana_utils.hpp"
 #include "solana_client.hpp"
 #include "meta_data.hpp"
 #include "utils.hpp"
@@ -64,7 +64,7 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         sol_payment_bytes.resize(8);
         sol_payment_bytes.encode_u64(0, sol_payment_lamports);
         result.append_array(sol_payment_bytes);
-        result.append_array(Pubkey(sol_payment_destination).get_bytes());
+        result.append_array(Pubkey(sol_payment_destination).to_bytes());
     }
     if(enable_token_payment){
         enabled_guards += 4;
@@ -72,8 +72,8 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         token_payment_bytes.resize(8);
         token_payment_bytes.encode_u64(0, token_payment_amount);
         result.append_array(token_payment_bytes);
-        result.append_array(Pubkey(token_payment_mint).get_bytes());
-        result.append_array(Pubkey(token_payment_destination).get_bytes());
+        result.append_array(Pubkey(token_payment_mint).to_bytes());
+        result.append_array(Pubkey(token_payment_destination).to_bytes());
     }
     if(enable_start_date){
         enabled_guards += 8;
@@ -84,7 +84,7 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
     }
     if(enable_third_party_signer){
         enabled_guards += 16;
-        result.append_array(Pubkey(signer_key).get_bytes());
+        result.append_array(Pubkey(signer_key).to_bytes());
     }
     if(enable_token_gate){
         enabled_guards += 32;
@@ -92,11 +92,11 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         token_gate_bytes.resize(8);
         token_gate_bytes.encode_u64(0, token_gate_amount);
         result.append_array(token_gate_bytes);
-        result.append_array(Pubkey(token_gate_mint).get_bytes());
+        result.append_array(Pubkey(token_gate_mint).to_bytes());
     }
     if(enable_gatekeeper){
         enabled_guards += 64;
-        result.append_array(Pubkey(gatekeeper_network).get_bytes());
+        result.append_array(Pubkey(gatekeeper_network).to_bytes());
         result.append((int) expire_on_use);
     }
     if(enable_end_date){
@@ -120,8 +120,8 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
     }
     if(enable_nft_payment){
         enabled_guards += 1024;
-        result.append_array(Pubkey(required_nft_payment_collection).get_bytes());
-        result.append_array(Pubkey(nft_payment_destination).get_bytes());
+        result.append_array(Pubkey(required_nft_payment_collection).to_bytes());
+        result.append_array(Pubkey(nft_payment_destination).to_bytes());
     }
     if(enable_redeem_account){
         enabled_guards += 2048;
@@ -132,15 +132,15 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
     }
     if(enable_address_gate){
         enabled_guards += 4096;
-        result.append_array(Pubkey(address_gate_reciever).get_bytes());
+        result.append_array(Pubkey(address_gate_reciever).to_bytes());
     }
     if(enable_nft_gate){
         enabled_guards += 8192;
-        result.append_array(Pubkey(required_nft_gate_collection).get_bytes());
+        result.append_array(Pubkey(required_nft_gate_collection).to_bytes());
     }
     if(enable_nft_burn){
         enabled_guards += 16384;
-        result.append_array(Pubkey(required_nft_burn_collection).get_bytes());
+        result.append_array(Pubkey(required_nft_burn_collection).to_bytes());
     }
     if(enable_token_burn){
         enabled_guards += 32768;
@@ -148,7 +148,7 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         token_burn_bytes.resize(8);
         token_burn_bytes.encode_u64(0, max_redeem_amount);
         result.append_array(token_burn_bytes);
-        result.append_array(Pubkey(token_burn_mint).get_bytes());
+        result.append_array(Pubkey(token_burn_mint).to_bytes());
     }
     if(enable_freeze_sol_payment){
         enabled_guards += 65536;
@@ -156,7 +156,7 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         freeze_sol_bytes.resize(8);
         freeze_sol_bytes.encode_u64(0, freeze_amount_lamports);
         result.append_array(freeze_sol_bytes);
-        result.append_array(Pubkey(freeze_sol_destination).get_bytes());
+        result.append_array(Pubkey(freeze_sol_destination).to_bytes());
     }
     if(enable_freeze_token_payment){
         enabled_guards += 65536;
@@ -164,8 +164,8 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         freeze_token_bytes.resize(8);
         freeze_token_bytes.encode_u64(0, amount);
         result.append_array(freeze_token_bytes);
-        result.append_array(Pubkey(mint).get_bytes());
-        result.append_array(Pubkey(freeze_token_destination_ata).get_bytes());
+        result.append_array(Pubkey(mint).to_bytes());
+        result.append_array(Pubkey(freeze_token_destination_ata).to_bytes());
     }
     if(enable_program_gate){
         enabled_guards += 131072;
@@ -174,7 +174,7 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         array_length_bytes.encode_u64(0, amount);
         result.append_array(array_length_bytes);
         for(unsigned int i = 0; i < program_gate_addresses.size(); i++){
-            result.append_array(Pubkey(program_gate_addresses[i]).get_bytes());
+            result.append_array(Pubkey(program_gate_addresses[i]).to_bytes());
         }
     }
     if(enable_allocation){
@@ -1184,7 +1184,7 @@ PackedByteArray MplCandyMachine::initialize2_discriminator(){
 }
 
 void MplCandyMachine::_bind_methods(){
-    ClassDB::bind_static_method("MplCandyMachine", D_METHOD("initialize", "authority", "candy_machine_account", "collection_mint", "candy_machine_data", "pnft=false"), &MplCandyMachine::initialize);
+    ClassDB::bind_static_method("MplCandyMachine", D_METHOD("initialize", "authority", "candy_machine_account", "collection_mint", "candy_machine_data", "pnft"), &MplCandyMachine::initialize, DEFVAL(false));
     ClassDB::bind_static_method("MplCandyMachine", D_METHOD("mint", "payer", "receiver", "mint", "collection_mint", "collection_update_authority", "candy_machine_key"), &MplCandyMachine::mint);
 
     ClassDB::bind_static_method("MplCandyMachine", D_METHOD("get_pid"), &MplCandyMachine::get_pid);
@@ -1206,7 +1206,7 @@ Variant MplCandyMachine::initialize(const Variant &authority, const Variant &can
 
     Array seeds;
     seeds.append(String("candy_machine").to_ascii_buffer());
-    seeds.append(Pubkey(candy_machine_account).get_bytes());
+    seeds.append(Pubkey(candy_machine_account).to_bytes());
 
     Variant candy_machine_creator = Pubkey::new_pda_bytes(seeds, get_pid());
 
@@ -1254,7 +1254,7 @@ Variant MplCandyMachine::mint(
 
     Array seeds;
     seeds.append(String("candy_machine").to_ascii_buffer());
-    seeds.append(Pubkey(candy_machine_key).get_bytes());
+    seeds.append(Pubkey(candy_machine_key).to_bytes());
 
     result->append_meta(AccountMeta(Pubkey::new_pda_bytes(seeds, get_pid()), false, true));
     result->append_meta(AccountMeta(payer, true, false));
@@ -1286,7 +1286,7 @@ Variant MplCandyMachine::mint(
 Variant MplCandyMachine::new_candy_machine_authority_pda(const Variant& candy_machine_key){
     Array seeds;
     seeds.append(String("candy_machine").to_ascii_buffer());
-    seeds.append(Pubkey(candy_machine_key).get_bytes());
+    seeds.append(Pubkey(candy_machine_key).to_bytes());
 
     return Pubkey::new_pda_bytes(seeds, get_pid());
 }
@@ -1296,7 +1296,7 @@ Variant MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key
 
     SolanaClient temp_client;
     temp_client.set_async(false);
-    Dictionary rpc_result = temp_client.get_account_info(Pubkey(candy_machine_key).get_value());
+    Dictionary rpc_result = temp_client.get_account_info(Pubkey(candy_machine_key).to_string());
 
     if(!rpc_result.has("result")){
         return nullptr;
@@ -1317,7 +1317,7 @@ Variant MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key
     Array account_data_tuple = account["data"];
     String encoded_data = account_data_tuple[0];
 
-    PackedByteArray account_data = SolanaSDK::bs64_decode(encoded_data);
+    PackedByteArray account_data = SolanaUtils::bs64_decode(encoded_data);
     CandyMachineData *res = memnew(CandyMachineData);
     res->set_token_standard(account_data[cursor]);
     cursor++;
@@ -1519,7 +1519,7 @@ Variant MplCandyGuard::get_pid(){
 Variant MplCandyGuard::new_associated_candy_guard_key(const Variant &candy_machine_key){
     Array seeds;
     seeds.append(String("candy_guard").to_ascii_buffer());
-    seeds.append(Pubkey(candy_machine_key).get_bytes());
+    seeds.append(Pubkey(candy_machine_key).to_bytes());
     return Pubkey::new_pda_bytes(seeds, get_pid());
 }
 

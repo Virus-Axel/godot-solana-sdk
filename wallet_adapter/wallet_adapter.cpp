@@ -2,7 +2,7 @@
 
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/java_script_bridge.hpp>
-#include <solana_sdk.hpp>
+#include <solana_utils.hpp>
 #include <godot_cpp/classes/thread.hpp>
 #include <web3_js.hpp>
 #include <phantom_js.hpp>
@@ -37,7 +37,7 @@ void WalletAdapter::store_encoded_message(const PackedByteArray &serialized_mess
   #ifdef WEB_ENABLED
 
   String script = "Module.encoded_message = '";
-  script += SolanaSDK::bs58_encode(serialized_message);
+  script += SolanaUtils::bs58_encode(serialized_message);
   script += "';";
 
   emscripten_run_script(script.utf8());
@@ -221,7 +221,7 @@ void WalletAdapter::poll_connection(){
       connected = true;
       String connected_pubkey(emscripten_run_script_string("Module.connect_key"));
 
-      PackedByteArray decoded_bytes = SolanaSDK::bs58_decode(connected_pubkey);
+      PackedByteArray decoded_bytes = SolanaUtils::bs58_decode(connected_pubkey);
       connected_key = decoded_bytes;
 
       clear_state();
@@ -253,7 +253,7 @@ void WalletAdapter::poll_message_signing(){
     }
     default:
       clear_state();
-      emit_signal("signing_error");
+      emit_signal("signing_failed");
       break;
   }
   #endif
@@ -276,9 +276,9 @@ void WalletAdapter::_process(double delta){
 
 void WalletAdapter::_bind_methods(){
     ClassDB::add_signal("WalletAdapter", MethodInfo("connection_established"));
-    ClassDB::add_signal("WalletAdapter", MethodInfo("connection_error"));
+    ClassDB::add_signal("WalletAdapter", MethodInfo("connection_failed"));
     ClassDB::add_signal("WalletAdapter", MethodInfo("message_signed", PropertyInfo(Variant::PACKED_BYTE_ARRAY, "signature")));
-    ClassDB::add_signal("WalletAdapter", MethodInfo("signing_error"));
+    ClassDB::add_signal("WalletAdapter", MethodInfo("signing_failed"));
     ClassDB::bind_method(D_METHOD("connect_wallet"), &WalletAdapter::connect_wallet);
     ClassDB::bind_method(D_METHOD("sign_message", "serialized_message", "signer_index"), &WalletAdapter::sign_message);
     ClassDB::bind_method(D_METHOD("sign_text_message", "text_message"), &WalletAdapter::sign_text_message);

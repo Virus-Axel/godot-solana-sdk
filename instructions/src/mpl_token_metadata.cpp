@@ -4,7 +4,7 @@
 #include "spl_token.hpp"
 #include "pubkey.hpp"
 #include "solana_client.hpp"
-#include "solana_sdk.hpp"
+#include "solana_utils.hpp"
 
 namespace godot{
 
@@ -44,8 +44,8 @@ Variant MplTokenMetadata::new_associated_metadata_pubkey(const Variant& mint){
     TypedArray<PackedByteArray> arr;
 
     arr.append(String("metadata").to_ascii_buffer());
-    arr.append(Pubkey(get_pid()).get_bytes());
-    arr.append(Pubkey(mint).get_bytes());
+    arr.append(Pubkey(get_pid()).to_bytes());
+    arr.append(Pubkey(mint).to_bytes());
 
     arr.append(PackedByteArray());
     
@@ -67,8 +67,8 @@ Variant MplTokenMetadata::new_associated_metadata_pubkey_master_edition(const Va
     TypedArray<PackedByteArray> arr;
 
     arr.append(String("metadata").to_ascii_buffer());
-    arr.append(Pubkey(get_pid()).get_bytes());
-    arr.append(Pubkey(mint).get_bytes());
+    arr.append(Pubkey(get_pid()).to_bytes());
+    arr.append(Pubkey(mint).to_bytes());
     arr.append(String("edition").to_ascii_buffer());
 
     arr.append(PackedByteArray());
@@ -95,8 +95,8 @@ Variant MplTokenMetadata::get_mint_metadata(const Variant& mint){
     Variant metadata_account = new_associated_metadata_pubkey(mint);
 
     Callable callback(this, "metadata_callback");
-    metadata_client->connect("http_response", callback, ConnectFlags::CONNECT_ONE_SHOT);
-    Dictionary rpc_result = metadata_client->get_account_info(Pubkey(metadata_account).get_value());
+    metadata_client->connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
+    Dictionary rpc_result = metadata_client->get_account_info(Pubkey(metadata_account).to_string());
 
     return OK;
 }
@@ -119,7 +119,7 @@ void MplTokenMetadata::metadata_callback(const Dictionary& rpc_result){
     Array account_data_tuple = account["data"];
     String encoded_data = account_data_tuple[0];
 
-    PackedByteArray account_data = SolanaSDK::bs64_decode(encoded_data);
+    PackedByteArray account_data = SolanaUtils::bs64_decode(encoded_data);
 
     const int NAME_LOCATION = 65;
 
@@ -230,7 +230,7 @@ Variant MplTokenMetadata::create_metadata_account(const Variant& account_pubkey,
     Pubkey *rent = memnew(Pubkey);
 
     // TODO(Virax): Create an easier way to get the sysvarRent.
-    rent->set_value("SysvarRent111111111111111111111111111111111");
+    rent->from_string("SysvarRent111111111111111111111111111111111");
     result->append_meta(AccountMeta(rent, false, false));
 
     return result;
@@ -267,7 +267,7 @@ Variant MplTokenMetadata::create_master_edition(const Variant& edition, const Va
     Pubkey *rent = memnew(Pubkey);
 
     // TODO(Virax): Create an easier way to get the sysvarRent.
-    rent->set_value("SysvarRent111111111111111111111111111111111");
+    rent->from_string("SysvarRent111111111111111111111111111111111");
     result->append_meta(AccountMeta(rent, false, false));
 
     return result;
