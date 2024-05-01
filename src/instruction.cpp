@@ -72,13 +72,13 @@ PackedByteArray Instruction::serialize(){
     PackedByteArray result;
 
     if(program_id.has_method("get_bytes")){
-        result.append_array(Object::cast_to<Pubkey>(program_id)->get_bytes());
+        result.append_array(Object::cast_to<Pubkey>(program_id)->to_bytes());
     }
     result.append_array(data);
     for(unsigned int i = 0; i < accounts.size(); i++){
         const Pubkey key = accounts[i];
 
-        result.append_array(key.get_bytes());
+        result.append_array(key.to_bytes());
     }
 
     return result;

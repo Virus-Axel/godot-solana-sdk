@@ -971,7 +971,7 @@ void SolanaClient::account_subscribe(const Variant &account_key, const Callable 
     callbacks.push_back(std::make_pair(0, callback));
     method_names.push_back("accountUnsubscribe");
     Array params;
-    params.append(Pubkey(account_key).get_value());
+    params.append(Pubkey(account_key).to_string());
     add_to_param_dict(params, "commitment", commitment);
     ws_request_queue.push(JSON::stringify(make_rpc_dict("accountSubscribe", params)));
 

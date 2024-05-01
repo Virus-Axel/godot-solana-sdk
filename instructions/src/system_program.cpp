@@ -25,7 +25,7 @@ Variant SystemProgram::create_account(const Variant &from_keypair, const Variant
     data.encode_u64(12, space);
 
     const Pubkey *owner_ptr = Object::cast_to<Pubkey>(owner);
-    PackedByteArray owner_bytes = owner_ptr->get_bytes();
+    PackedByteArray owner_bytes = owner_ptr->to_bytes();
     for(unsigned int i = 0; i < owner_bytes.size(); i++){
         data[20 + i] = owner_bytes[i];
     }
@@ -54,8 +54,8 @@ Variant SystemProgram::create_account_with_seed(const Variant &from_keypair, con
     data.encode_u64(44 + seed.length(), lamports);
     data.encode_u64(52 + seed.length(), space);
 
-    PackedByteArray owner_bytes = Pubkey(owner).get_bytes();
-    PackedByteArray base_bytes = Pubkey(base_keypair).get_bytes();
+    PackedByteArray owner_bytes = Pubkey(owner).to_bytes();
+    PackedByteArray base_bytes = Pubkey(base_keypair).to_bytes();
 
     for(unsigned int i = 0; i < 32; i++){
         data[60 + seed.length() + i] = owner_bytes[i];

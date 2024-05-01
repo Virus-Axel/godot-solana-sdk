@@ -167,7 +167,7 @@ Message::Message(const PackedByteArray& bytes){
         cursor += 32;
     }
 
-    latest_blockhash = Pubkey(bytes.slice(cursor, cursor + 32)).get_value();
+    latest_blockhash = Pubkey(bytes.slice(cursor, cursor + 32)).to_string();
     cursor += 32;
     uint8_t compiled_instructions_size = bytes[cursor++];
 
@@ -193,7 +193,7 @@ PackedByteArray Message::serialize(){
     result.append(account_keys.size());
     for(unsigned int i = 0; i < account_keys.size(); i++){
         Pubkey *account_key = Object::cast_to<Pubkey>(account_keys[i]);
-        result.append_array(account_key->get_bytes());
+        result.append_array(account_key->to_bytes());
     }
 
     result.append_array(serialize_blockhash());

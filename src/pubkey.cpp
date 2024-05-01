@@ -30,10 +30,10 @@ void Pubkey::_bind_methods() {
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_pda_bytes", "seeds", "program_id"), &Pubkey::new_pda_bytes);
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_random"), &Pubkey::new_random);
 
-    ClassDB::bind_method(D_METHOD("get_value"), &Pubkey::get_value);
-    ClassDB::bind_method(D_METHOD("set_value", "p_value"), &Pubkey::set_value);
-    ClassDB::bind_method(D_METHOD("get_bytes"), &Pubkey::get_bytes);
-    ClassDB::bind_method(D_METHOD("set_bytes", "p_value"), &Pubkey::set_bytes);
+    ClassDB::bind_method(D_METHOD("to_string"), &Pubkey::to_string);
+    ClassDB::bind_method(D_METHOD("set_string", "p_value"), &Pubkey::from_string);
+    ClassDB::bind_method(D_METHOD("to_bytes"), &Pubkey::to_bytes);
+    ClassDB::bind_method(D_METHOD("from_bytes", "p_value"), &Pubkey::from_bytes);
     ClassDB::bind_method(D_METHOD("get_seed"), &Pubkey::get_seed);
     ClassDB::bind_method(D_METHOD("set_seed", "p_value"), &Pubkey::set_seed);
     ClassDB::bind_method(D_METHOD("get_type"), &Pubkey::get_type);
@@ -56,10 +56,10 @@ void Pubkey::_bind_methods() {
 bool Pubkey::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 	if (name == "value") {
-		set_value(p_value);
+		from_string(p_value);
 	}
     else if(name == "bytes"){
-        set_bytes(p_value);
+        from_bytes(p_value);
     }
     else if(name == "seed"){
         set_seed(p_value);
@@ -117,7 +117,7 @@ bool Pubkey::_get(const StringName &p_name, Variant &r_ret) const {
     return true;
 }
 
-void Pubkey::set_value(const String& p_value){
+void Pubkey::from_string(const String& p_value){
     value = p_value;
 
     // Update bytes accordingly.
@@ -135,7 +135,7 @@ void Pubkey::set_value(const String& p_value){
     }
 }
 
-String Pubkey::get_value() const{
+String Pubkey::to_string() const{
     return value;
 }
 
@@ -147,7 +147,7 @@ String Pubkey::get_seed(){
     return seed;
 }
 
-void Pubkey::set_bytes(const PackedByteArray& p_value){
+void Pubkey::from_bytes(const PackedByteArray& p_value){
     bytes = p_value;
 
     // Do not feed zero bytes into encode function.
@@ -161,11 +161,11 @@ void Pubkey::set_bytes(const PackedByteArray& p_value){
 
     // Print warnings if byte length is bad.
     if (bytes.size() != 32){
-        internal::gdextension_interface_print_warning("Pubkey must be 32 bytes", "set_bytes", "pubkey.cpp", __LINE__, false);
+        internal::gdextension_interface_print_warning("Pubkey must be 32 bytes", "from_bytes", "pubkey.cpp", __LINE__, false);
     }
     
 }
-PackedByteArray Pubkey::get_bytes() const{
+PackedByteArray Pubkey::to_bytes() const{
     return bytes;
 }
 
@@ -225,9 +225,9 @@ Variant Pubkey::new_from_seed(Variant basePubkey, String seed, Variant owner_pub
     const Pubkey base = Pubkey(basePubkey);
     const Pubkey owner = Pubkey(owner_pubkey);
 
-    hasher.update(base.get_bytes().ptr(), base.get_bytes().size());
+    hasher.update(base.to_bytes().ptr(), base.to_bytes().size());
     hasher.update(seed.to_utf8_buffer().ptr(), seed.length());
-    hasher.update(owner.get_bytes().ptr(), owner.get_bytes().size());
+    hasher.update(owner.to_bytes().ptr(), owner.to_bytes().size());
 
     uint8_t *sha256_hash = hasher.digest();
 
@@ -235,7 +235,7 @@ Variant Pubkey::new_from_seed(Variant basePubkey, String seed, Variant owner_pub
     for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
         res->bytes[i] = sha256_hash[i];
     }
-    res->set_bytes(res->get_bytes());
+    res->from_bytes(res->to_bytes());
 
     delete[] sha256_hash;
 
@@ -244,13 +244,13 @@ Variant Pubkey::new_from_seed(Variant basePubkey, String seed, Variant owner_pub
 
 Variant Pubkey::new_from_string(const String& from){
     Pubkey *res = memnew(Pubkey);
-    res->set_value(from);
+    res->from_string(from);
     return res;
 }
 
 Variant Pubkey::new_from_bytes(const PackedByteArray& from){
     Pubkey *res = memnew(Pubkey);
-    res->set_bytes(from);
+    res->from_bytes(from);
     return res;
 }
 
@@ -324,9 +324,9 @@ bool Pubkey::is_pubkey(const Variant &object){
 Variant Pubkey::new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address){    
     TypedArray<PackedByteArray> arr;
 
-    arr.append(Pubkey(wallet_address).get_bytes());
-    arr.append(Object::cast_to<Pubkey>(TokenProgram::get_pid())->get_bytes());
-    arr.append(Pubkey(token_mint_address).get_bytes());
+    arr.append(Pubkey(wallet_address).to_bytes());
+    arr.append(Object::cast_to<Pubkey>(TokenProgram::get_pid())->to_bytes());
+    arr.append(Pubkey(token_mint_address).to_bytes());
 
     arr.append(PackedByteArray());
 
@@ -369,7 +369,7 @@ bool Pubkey::create_program_address_bytes(const Array seeds, const Variant &prog
     }
 
     // Include program ID and PDA marker in hash.
-    hasher.update(Pubkey(program_id).get_bytes().ptr(), Pubkey(program_id).get_bytes().size());
+    hasher.update(Pubkey(program_id).to_bytes().ptr(), Pubkey(program_id).to_bytes().size());
     hasher.update(PDA_MARKER, 21);
 
     uint8_t hash[PUBKEY_BYTES];
@@ -391,7 +391,7 @@ bool Pubkey::create_program_address_bytes(const Array seeds, const Variant &prog
     for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
         new_bytes[i] = hash[i];
     }
-    set_bytes(new_bytes);
+    from_bytes(new_bytes);
 
     return true;
 }
@@ -416,7 +416,7 @@ bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant
     }
 
     // Include program ID and PDA marker in hash.
-    hasher.update(Pubkey(program_id).get_bytes().ptr(), Pubkey(program_id).get_bytes().size());
+    hasher.update(Pubkey(program_id).to_bytes().ptr(), Pubkey(program_id).to_bytes().size());
     hasher.update(PDA_MARKER, 21);
 
     uint8_t hash[PUBKEY_BYTES];
@@ -439,7 +439,7 @@ bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant
     for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
         new_bytes[i] = hash[i];
     }
-    set_bytes(new_bytes);
+    from_bytes(new_bytes);
 
     return true;
 }
@@ -485,7 +485,7 @@ Pubkey::Pubkey() {
 }
 
 Pubkey::Pubkey(const String& from){
-    set_value(from);
+    from_string(from);
 }
 
 Pubkey::Pubkey(const Variant& from){
@@ -494,15 +494,15 @@ Pubkey::Pubkey(const Variant& from){
 
 void Pubkey::operator=(const Variant& other){
     if(other.get_type() == Variant::STRING){
-        set_value(other);
+        from_string(other);
         return;
     }
     else if(other.get_type() == Variant::ARRAY){
-        set_bytes(PackedByteArray(other));
+        from_bytes(PackedByteArray(other));
         return;
     }
     else if(other.get_type() == Variant::PACKED_BYTE_ARRAY){
-        set_bytes(other);
+        from_bytes(other);
         return;
     }
     else if(other.get_type() != Variant::Type::OBJECT){
@@ -511,12 +511,12 @@ void Pubkey::operator=(const Variant& other){
     }
 
     if(Pubkey::is_pubkey(other)){
-        this->bytes = Object::cast_to<Pubkey>(other)->get_bytes();
-        this->value = Object::cast_to<Pubkey>(other)->get_value();
+        this->bytes = Object::cast_to<Pubkey>(other)->to_bytes();
+        this->value = Object::cast_to<Pubkey>(other)->to_string();
         this->type = Object::cast_to<Pubkey>(other)->get_type();
     }
     else if(Keypair::is_keypair(other)){
-        this->set_bytes(Object::cast_to<Keypair>(other)->get_public_bytes());
+        this->from_bytes(Object::cast_to<Keypair>(other)->get_public_bytes());
     }
     else if(AccountMeta::is_account_meta(other)){
         *this = Object::cast_to<AccountMeta>(other)->get_pubkey();
@@ -542,11 +542,11 @@ bool Pubkey::operator==(const Pubkey& other) const{
 }
 
 Pubkey::operator StringName() const{
-    return get_value();
+    return to_string();
 }
 
 Pubkey::operator PackedByteArray() const{
-    return get_bytes();
+    return to_bytes();
 }
 
 Pubkey::~Pubkey() {

@@ -285,7 +285,7 @@ PackedByteArray AnchorProgram::serialize_variant(const Variant &var){
     
     case Variant::OBJECT:
         if(Pubkey::is_pubkey(var)){
-            result.append_array(Object::cast_to<Pubkey>(var)->get_bytes());
+            result.append_array(Object::cast_to<Pubkey>(var)->to_bytes());
         }
         else{
             internal::gdextension_interface_print_warning("Unsupported Object", "serialize_variant", __FILE__, __LINE__, true);
@@ -395,7 +395,7 @@ void AnchorProgram::idl_from_pid_callback(const Dictionary& rpc_result){
     String idl_address = pid;
 
     if((bool)account["executable"]){
-        idl_address = Pubkey(AnchorProgram::idl_address(Pubkey::new_from_string(pid))).get_value();
+        idl_address = Pubkey(AnchorProgram::idl_address(Pubkey::new_from_string(pid))).to_string();
 
         Callable callback(this, "idl_from_pid_callback");
         idl_client->connect("http_response", callback);
@@ -863,7 +863,7 @@ Error AnchorProgram::fetch_account(const String name, const Variant& account){
     pending_account_name = name;
     Callable callback(this, "fetch_account_callback");
     fetch_client->connect("http_response", callback, ConnectFlags::CONNECT_ONE_SHOT);
-    Dictionary rpc_result = fetch_client->get_account_info(Pubkey(account).get_value());
+    Dictionary rpc_result = fetch_client->get_account_info(Pubkey(account).to_string());
 
     return Error::OK;
 }

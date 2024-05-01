@@ -143,7 +143,7 @@ bool AccountMeta::operator==(const AccountMeta& other) const{
     Pubkey *this_key = Object::cast_to<Pubkey>(key);
     Pubkey *other_key = Object::cast_to<Pubkey>(other.key);
 
-    return this_key->get_bytes() == other_key->get_bytes();
+    return this_key == other_key;
 }
 
 AccountMeta::~AccountMeta(){
