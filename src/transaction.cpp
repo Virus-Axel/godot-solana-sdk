@@ -24,7 +24,6 @@ void Transaction::_bind_methods() {
     ClassDB::add_signal("Transaction", MethodInfo("processed"));
     ClassDB::add_signal("Transaction", MethodInfo("confirmed"));
     ClassDB::add_signal("Transaction", MethodInfo("finalized"));
-    ClassDB::add_signal("Transaction", MethodInfo("fully_signed"));
 
     ClassDB::add_signal("Transaction", MethodInfo("fully_signed"));
     ClassDB::add_signal("Transaction", MethodInfo("send_ready"));
@@ -51,6 +50,10 @@ void Transaction::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("_signer_signed", "signature"), &Transaction::_signer_signed);
     ClassDB::bind_method(D_METHOD("_signer_failed"), &Transaction::_signer_failed);
+
+    ClassDB::bind_method(D_METHOD("_emit_processed_callback", "params"), &Transaction::_emit_processed_callback);
+    ClassDB::bind_method(D_METHOD("_emit_confirmed_callback", "params"), &Transaction::_emit_confirmed_callback);
+    ClassDB::bind_method(D_METHOD("_emit_finalized_callback", "params"), &Transaction::_emit_finalized_callback);
 
     ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
     ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
@@ -162,6 +165,45 @@ void Transaction::sign_at_index(const uint32_t index){
     }
 }
 
+void Transaction::copy_connection_state(){
+    processed_connections = get_signal_connection_list("processed").size();
+    confirmed_connections = get_signal_connection_list("confirmed").size();
+    finalized_connections = get_signal_connection_list("finalized").size();
+}
+
+void Transaction::subscribe_to_signature(const String& confirmation_level){
+    Callable callback = Callable(this, String("_emit_") + confirmation_level + "_callback");
+    active_subscriptions++;
+    subscribe_client->signature_subscribe(result_signature, callback, confirmation_level);
+}
+
+void Transaction::subscribe_to_signature(){
+    if(processed_connections){
+        subscribe_to_signature("processed");
+    }
+    if(confirmed_connections){
+        subscribe_to_signature("confirmed");
+    }
+    if(finalized_connections){
+        subscribe_to_signature("finalized");
+    }
+}
+
+void Transaction::_emit_processed_callback(const Dictionary &params){
+    active_subscriptions--;
+    emit_signal("processed");
+}
+
+void Transaction::_emit_confirmed_callback(const Dictionary &params){
+    active_subscriptions--;
+    emit_signal("confirmed");
+}
+
+void Transaction::_emit_finalized_callback(const Dictionary &params){
+    active_subscriptions--;
+    emit_signal("finalized");
+}
+
 bool Transaction::_set(const StringName &p_name, const Variant &p_value){
     String name = p_name;
 	if (name == "instructions") {
@@ -255,19 +297,23 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 Transaction::Transaction() {
     send_client = memnew(SolanaClient);
     blockhash_client = memnew(SolanaClient);
+    subscribe_client = memnew(SolanaClient);
 
     // Override because we call process functions ourselves.
     send_client->set_async_override(true);
     blockhash_client->set_async_override(true);
+    subscribe_client->set_async_override(true);
 }
 
 Transaction::Transaction(const PackedByteArray& bytes){
     send_client = memnew(SolanaClient);
     blockhash_client = memnew(SolanaClient);
+    subscribe_client = memnew(SolanaClient);
 
     // Override because we call process functions ourselves.
     send_client->set_async_override(true);
     blockhash_client->set_async_override(true);
+    subscribe_client->set_async_override(true);
 
     int cursor = 0;
     const unsigned int signer_size = bytes[cursor++];
@@ -302,8 +348,28 @@ void Transaction::_process(double delta){
     if(pending_blockhash){
         blockhash_client->_process(delta);
     }
-    if(get_signal_connection_list("processed").size()){
+    if(subscribe_client){
+        blockhash_client->_process(delta);
+    }
+    if(active_subscriptions){
+        subscribe_client->_process(delta);
+    }
+        
 
+    // Detect new connections after transaction is performed.
+    if(!result_signature.is_empty()){
+        if(get_signal_connection_list("processed").size() && !processed_connections){
+            processed_connections = get_signal_connection_list("processed").size();
+            subscribe_to_signature("processed");
+        }
+        if(get_signal_connection_list("confirmed").size() && !confirmed_connections){
+            confirmed_connections = get_signal_connection_list("confirmed").size();
+            subscribe_to_signature("confirmed");
+        }
+        if(get_signal_connection_list("finalized").size() && !finalized_connections){
+            finalized_connections = get_signal_connection_list("finalized").size();
+            subscribe_to_signature("finalized");
+        }
     }
 }
 
@@ -317,7 +383,8 @@ bool Transaction::is_confirmed(){
 
     PackedStringArray arr;
     arr.append(result_signature);
-    Dictionary rpc_result = send_client->get_signature_statuses(arr);
+    SolanaClient temp_client;
+    Dictionary rpc_result = temp_client.get_signature_statuses(arr);
 
     Dictionary transaction_info = rpc_result.get("result", nullptr);
     Array transaction_value = transaction_info.get("value", nullptr);
@@ -338,7 +405,8 @@ bool Transaction::is_finalized(){
 
     PackedStringArray arr;
     arr.append(result_signature);
-    Dictionary rpc_result = send_client->get_signature_statuses(arr);
+    SolanaClient temp_client;
+    Dictionary rpc_result = temp_client.get_signature_statuses(arr);
 
     Dictionary transaction_info = rpc_result.get("result", nullptr);
     Array transaction_value = transaction_info.get("value", nullptr);
@@ -479,6 +547,8 @@ void Transaction::send_callback(Dictionary params){
 
     if(params.has("result")){
         result_signature = params["result"];
+        copy_connection_state();
+        subscribe_to_signature();
     }
     emit_signal("transaction_response_received", params);
 }
