@@ -12,6 +12,7 @@ const std::string MplTokenMetadata::ID = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt5
 
 MplTokenMetadata::MplTokenMetadata(){
     metadata_client = memnew(SolanaClient);
+    metadata_client->set_async_override(true);
 }
 
 void MplTokenMetadata::_process(double delta){

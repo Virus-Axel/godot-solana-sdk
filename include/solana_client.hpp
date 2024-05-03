@@ -24,7 +24,7 @@ private:
     std::string http_request_body;
     int port = DEFAULT_PORT;
     bool use_tls = true;
-    bool async = true;
+    bool async_override = false;
     bool pending_request = false;
     HTTPClient http_handler;
     
@@ -128,8 +128,8 @@ public:
     void enable_slot_range(uint64_t first, uint64_t last);
     void disable_slot_range();
 
-    void set_async(bool use_async);
-    bool get_async();
+    void set_async_override(bool use_async);
+    bool get_async_override();
     bool is_ready();
 
     Dictionary get_account_info(const String& account);
