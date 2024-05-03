@@ -1295,7 +1295,6 @@ Variant MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key
     int cursor = 9;
 
     SolanaClient temp_client;
-    temp_client.set_async(false);
     Dictionary rpc_result = temp_client.get_account_info(Pubkey(candy_machine_key).to_string());
 
     if(!rpc_result.has("result")){

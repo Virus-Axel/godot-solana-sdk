@@ -409,8 +409,7 @@ void SolanaClient::poll_http_request(){
 }
 
 Dictionary SolanaClient::quick_http_request(const String& request_body, const Callable& callback){
-    if(async){
-        //set_http_callback(callback);
+    if(is_inside_tree() || async_override){
         asynchronous_request(request_body);
         return Dictionary();
     }
@@ -1045,8 +1044,8 @@ void SolanaClient::_bind_methods(){
 
     ClassDB::bind_method(D_METHOD("response_callback", "params"), &SolanaClient::response_callback);
 
-    ClassDB::bind_method(D_METHOD("set_async", "use_async"), &SolanaClient::set_async);
-    ClassDB::bind_method(D_METHOD("get_async"), &SolanaClient::get_async);
+    ClassDB::bind_method(D_METHOD("set_async", "use_async"), &SolanaClient::set_async_override);
+    ClassDB::bind_method(D_METHOD("get_async"), &SolanaClient::get_async_override);
 
     ClassDB::bind_method(D_METHOD("is_ready"), &SolanaClient::is_ready);
 
@@ -1383,12 +1382,12 @@ void SolanaClient::disable_slot_range(){
     slot_range_enabled = false;
 }
 
-void SolanaClient::set_async(bool use_async){
-    async = use_async;
+void SolanaClient::set_async_override(bool use_async){
+    async_override = use_async;
 }
 
-bool SolanaClient::get_async(){
-    return async;
+bool SolanaClient::get_async_override(){
+    return async_override;
 }
 
 bool SolanaClient::is_ready(){

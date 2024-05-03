@@ -223,6 +223,8 @@ Variant AnchorProgram::deserialize_variant(const PackedByteArray& bytes, const V
 AnchorProgram::AnchorProgram(){
     idl_client = memnew(SolanaClient);
     fetch_client = memnew(SolanaClient);
+    idl_client->set_async_override(true);
+    fetch_client->set_async_override(true);
 }
 
 void AnchorProgram::_process(double delta){

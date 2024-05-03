@@ -2,7 +2,7 @@ extends VBoxContainer
 
 const EXAMPLE_ACCOUNT := "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZAMdL4VZHirAn"
 
-const TOTAL_CASES := 6
+const TOTAL_CASES := 7
 var passed_test_mask := 0
 		
 
@@ -90,12 +90,22 @@ func subscribe_account_demo():
 	
 	PASS(3)
 
-# Called when the node enters the scene tree for the first time.
+func synchronous_client_call():
+	# Same call to get account info but synchronous.
+	var client = SolanaClient.new()
+	var response = client.get_account_info(EXAMPLE_ACCOUNT)
+	assert(response.has("result"))
+	print(response)
+	display_dict(response["result"], $ResultTree4.create_item())
+	PASS(6)
+
+
 func _ready():
 	get_account_info_demo()
 	get_latest_blockhash_demo()
 	get_minimum_balance_for_rent_extemption_demo()
 	subscribe_account_demo()
+	synchronous_client_call()
 
 
 func _account_subscribe_callback(_params):

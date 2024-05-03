@@ -21,6 +21,11 @@ using internal::gdextension_interface_print_warning;
 
 
 void Transaction::_bind_methods() {
+    ClassDB::add_signal("Transaction", MethodInfo("processed"));
+    ClassDB::add_signal("Transaction", MethodInfo("confirmed"));
+    ClassDB::add_signal("Transaction", MethodInfo("finalized"));
+    ClassDB::add_signal("Transaction", MethodInfo("fully_signed"));
+
     ClassDB::add_signal("Transaction", MethodInfo("fully_signed"));
     ClassDB::add_signal("Transaction", MethodInfo("send_ready"));
     ClassDB::add_signal("Transaction", MethodInfo("signing_failed", PropertyInfo(Variant::INT, "signer_index")));
@@ -250,11 +255,19 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 Transaction::Transaction() {
     send_client = memnew(SolanaClient);
     blockhash_client = memnew(SolanaClient);
+
+    // Override because we call process functions ourselves.
+    send_client->set_async_override(true);
+    blockhash_client->set_async_override(true);
 }
 
 Transaction::Transaction(const PackedByteArray& bytes){
     send_client = memnew(SolanaClient);
     blockhash_client = memnew(SolanaClient);
+
+    // Override because we call process functions ourselves.
+    send_client->set_async_override(true);
+    blockhash_client->set_async_override(true);
 
     int cursor = 0;
     const unsigned int signer_size = bytes[cursor++];
@@ -288,6 +301,9 @@ void Transaction::_process(double delta){
     }
     if(pending_blockhash){
         blockhash_client->_process(delta);
+    }
+    if(get_signal_connection_list("processed").size()){
+
     }
 }
 
