@@ -13,12 +13,8 @@
 #include <wallet_adapter.hpp>
 #include <message.hpp>
 
-//#include <emscripten.h>
 
 namespace godot{
-
-using internal::gdextension_interface_print_warning;
-
 
 void Transaction::_bind_methods() {
     ClassDB::add_signal("Transaction", MethodInfo("processed"));

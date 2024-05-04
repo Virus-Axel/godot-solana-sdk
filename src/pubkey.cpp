@@ -12,7 +12,6 @@
 #include "wallet_adapter.hpp"
 #include "spl_token.hpp"
 
-using internal::gdextension_interface_print_warning;
 
 namespace godot{
 
@@ -125,10 +124,8 @@ void Pubkey::from_string(const String& p_value){
     bytes = decoded_value;
 
     // Print warnings if key length is bad.
-    if(decoded_value.is_empty() && value.length() != 0){
-        ERR_PRINT_ED("Value contains non-base58 characters");
-    }
-    else if (decoded_value.size() != 32){
+    ERR_FAIL_COND_EDMSG(decoded_value.is_empty() && (value.length() != 0), "Value contains non-base58 characters");
+    if (decoded_value.size() != 32){
         Array params;
         params.push_back(decoded_value.size());
         ERR_PRINT_ED(String("Pubkey must be 32 bytes. It is {0}").format(params).utf8());
@@ -160,10 +157,7 @@ void Pubkey::from_bytes(const PackedByteArray& p_value){
     }
 
     // Print warnings if byte length is bad.
-    if (bytes.size() != 32){
-        internal::gdextension_interface_print_warning("Pubkey must be 32 bytes", "from_bytes", "pubkey.cpp", __LINE__, false);
-    }
-    
+    ERR_FAIL_COND_EDMSG(bytes.size() != 32, "Pubkey must be 32 bytes");
 }
 PackedByteArray Pubkey::to_bytes() const{
     return bytes;
@@ -398,15 +392,9 @@ bool Pubkey::create_program_address_bytes(const Array seeds, const Variant &prog
 
 bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant &program_id){
     // Perform seeds checks.
-    if(seeds.size() > MAX_SEEDS){
-        internal::gdextension_interface_print_warning("Too many seeds", "create_program_address", __FILE__, __LINE__, false);
-        return false;
-    }
+    ERR_FAIL_COND_V_EDMSG(seeds.size() > MAX_SEEDS, false, "Too many seeds");
     for(unsigned int i = 0; i < seeds.size(); i++){
-        if(seeds[i].length() > MAX_SEED_LEN){
-            internal::gdextension_interface_print_warning("Seed is too long", "create_program_address", __FILE__, __LINE__, false);
-            return false;
-        }
+        ERR_FAIL_COND_V_EDMSG(seeds[i].length() > MAX_SEED_LEN, false, "Seed is too long");
     }
 
     SHA256 hasher;
@@ -429,16 +417,12 @@ bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant
     // Remove this memory ASAP.
     delete[] hash_ptr;
     
-    if(is_y_point_valid(hash)){
-        internal::gdextension_interface_print_warning("y point is not valid", "create_program_address", __FILE__, __LINE__, false);
-        return false;
-    }
+    ERR_FAIL_COND_V_EDMSG(is_y_point_valid(hash), false, "y point is not valid");
 
     PackedByteArray new_bytes;
     new_bytes.resize(PUBKEY_BYTES);
-    for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
-        new_bytes[i] = hash[i];
-    }
+    memcpy(new_bytes.ptrw(), hash, PUBKEY_BYTES);
+
     from_bytes(new_bytes);
 
     return true;
