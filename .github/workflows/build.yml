@@ -135,6 +135,7 @@ jobs:
 
         run: |
           scons target='${{ matrix.target }}' platform='${{ matrix.platform }}' arch='${{ matrix.arch }}' -j2
+          cp godot-solana-sdk.gdextension bin/
           ls -l */bin/
 
       - name: Upload artifact
