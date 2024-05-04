@@ -8,6 +8,8 @@ A GDExtention that gives Godot engine Solana support. This plugin provides the p
 
 Download the binaries in the release section [here](https://github.com/Virus-Axel/godot-solana-sdk/releases). place the binaries anywhere in your godot project directory under res://bin/. Reload your project and you are good to go. See examples for an up to date usage example. Version 1.0 is built for 4.2 and later. Use the latest official release of godot to avoid problems.
 
+**Note!** It might be dangerous to use mainnet in you applications. Crypto can be stolen. Security is not yet evaluated for the godot-solana-sdk. I can audit security if there is demand.
+
 When the plugin is loaded, the engine will have an additional set of nodes and resources.
 
 ## Nodes
