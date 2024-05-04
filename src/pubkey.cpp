@@ -315,6 +315,15 @@ bool Pubkey::is_pubkey(const Variant &object){
     return ((Object*)object)->is_class("Pubkey");
 }
 
+bool Pubkey::is_pubkey_compatible(const Variant &object){
+    return (
+        is_pubkey(object) ||
+        Keypair::is_keypair(object) ||
+        AccountMeta::is_account_meta(object) ||
+        WalletAdapter::is_wallet_adapter(object)
+    );
+}
+
 Variant Pubkey::new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address){    
     TypedArray<PackedByteArray> arr;
 
@@ -338,22 +347,18 @@ Variant Pubkey::new_associated_token_address(const Variant &wallet_address, cons
         }
     }
     
-    internal::gdextension_interface_print_warning("y points were not valid", "new_associated_token_address", __FILE__, __LINE__, false);
+    ERR_PRINT_ED("y points were not valid");
     return nullptr;
 }
 
 
 bool Pubkey::create_program_address_bytes(const Array seeds, const Variant &program_id){
+    ERR_FAIL_COND_V_EDMSG(!Pubkey::is_pubkey_compatible(program_id), false, "Program ID must be pubkey");
+
     // Perform seeds checks.
-    if(seeds.size() > MAX_SEEDS){
-        internal::gdextension_interface_print_warning("Too many seeds", "create_program_address", __FILE__, __LINE__, false);
-        return false;
-    }
+    ERR_FAIL_COND_V_EDMSG(seeds.size() > MAX_SEEDS, false, "Too many seeds");
     for(unsigned int i = 0; i < seeds.size(); i++){
-        if(((PackedByteArray)seeds[i]).size() > MAX_SEED_LEN){
-            internal::gdextension_interface_print_warning("Seed is too long", "create_program_address", __FILE__, __LINE__, false);
-            return false;
-        }
+        ERR_FAIL_COND_V_EDMSG(((PackedByteArray)seeds[i]).size() > MAX_SEED_LEN, false, "Seed is too long");
     }
 
     SHA256 hasher;
@@ -391,6 +396,8 @@ bool Pubkey::create_program_address_bytes(const Array seeds, const Variant &prog
 }
 
 bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant &program_id){
+    ERR_FAIL_COND_V_EDMSG(!Pubkey::is_pubkey_compatible(program_id), false, "Program ID must be pubkey");
+    
     // Perform seeds checks.
     ERR_FAIL_COND_V_EDMSG(seeds.size() > MAX_SEEDS, false, "Too many seeds");
     for(unsigned int i = 0; i < seeds.size(); i++){

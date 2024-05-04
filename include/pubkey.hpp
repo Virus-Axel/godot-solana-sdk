@@ -81,6 +81,7 @@ public:
     static Variant new_random();
 
     static bool is_pubkey(const Variant &object);
+    static bool is_pubkey_compatible(const Variant &object);
 
     bool create_program_address(const PackedStringArray seeds, const Variant &program_id);
     bool create_program_address_bytes(const Array seeds, const Variant &program_id);
