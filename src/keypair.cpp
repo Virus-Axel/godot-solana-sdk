@@ -122,7 +122,8 @@ void Keypair::from_seed(){
 }
 
 void Keypair::save_to_file(const String &filename){
-    ERR_FAIL_COND_EDMSG(seed.size() != 32, "Keypair seed is not known, unable to store.");
+    const int64_t SEED_LENGTH = 32;
+    ERR_FAIL_COND_EDMSG(seed.size() != SEED_LENGTH, "Keypair seed is not known, unable to store.");
 
     Ref<FileAccess> file = FileAccess::open(filename, FileAccess::WRITE);
     ERR_FAIL_COND_EDMSG(!file->is_open(), "Failed to open file " + filename);

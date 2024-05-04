@@ -463,7 +463,7 @@ void Transaction::update_latest_blockhash(const String &custom_hash){
         }
         else{
             Callable callback(this, "blockhash_callback");
-            blockhash_client->connect("http_response_received", callback);
+            blockhash_client->connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
             blockhash_client->get_latest_blockhash();
         }
     }
@@ -550,10 +550,6 @@ void Transaction::send_callback(Dictionary params){
 }
 
 void Transaction::blockhash_callback(Dictionary params){
-    Callable callback(this, "blockhash_callback");
-    if(blockhash_client->is_connected("http_response_received", callback)){
-        blockhash_client->disconnect("http_response_received", callback);
-    }
     pending_blockhash = false;
     if(params.has("result")){
         const Dictionary blockhash_result = params["result"];
@@ -561,7 +557,6 @@ void Transaction::blockhash_callback(Dictionary params){
         latest_blockhash_string = blockhash_value["blockhash"];
         Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
         emit_signal("blockhash_updated", params);
-        Array connected_signals = get_signal_connection_list("send_ready");
         emit_signal("send_ready");
     }
     else{
@@ -581,14 +576,10 @@ Dictionary Transaction::send(){
         return rpc_result;
     }
     else{
-        Callable pending_blockhash_callback(this, "send");
         if(pending_blockhash){
             Callable pending_blockhash_callback(this, "send");
-            connect("fully_signed", pending_blockhash_callback);
+            connect("fully_signed", pending_blockhash_callback, ConnectFlags::CONNECT_ONE_SHOT);
             return Dictionary();
-        }
-        else if(is_connected("fully_signed", pending_blockhash_callback)){
-            disconnect("fully_signed", pending_blockhash_callback);
         }
 
         Callable callback(this, "send_callback");
@@ -612,11 +603,8 @@ Error Transaction::sign(){
 
     Callable pending_blockhash_callback(this, "sign");
     if(pending_blockhash){
-        connect("send_ready", pending_blockhash_callback);
+        connect("send_ready", pending_blockhash_callback, ConnectFlags::CONNECT_ONE_SHOT);
         return ERR_UNAVAILABLE;
-    }
-    else if(is_connected("send_ready", pending_blockhash_callback)){
-        disconnect("send_ready", pending_blockhash_callback);
     }
 
     PackedByteArray msg = serialize();
