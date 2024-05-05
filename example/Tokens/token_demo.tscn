@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3 uid="uid://dhr4dagl1pd4t"]
+
+[ext_resource type="Script" path="res://TokenDemo.gd" id="1_ujxc3"]
+
+[node name="TokenDemo" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ujxc3")
+
+[node name="Timeout" type="Timer" parent="."]
+wait_time = 15.0
+one_shot = true
+autostart = true
+
+[connection signal="timeout" from="Timeout" to="." method="_on_timeout_timeout"]

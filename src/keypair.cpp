@@ -282,7 +282,7 @@ void Keypair::set_private_bytes(const PackedByteArray& p_value){
     }
 
     // Print warnings if key length is bad.
-    ERR_FAIL_COND_EDMSG(private_bytes.size() != KEY_LENGTH, "Private key must be 32 bytes.");
+    ERR_FAIL_COND_EDMSG(private_bytes.size() != KEY_LENGTH*2, "Private key must be 64 bytes.");
 }
 
 PackedByteArray Keypair::get_private_bytes(){

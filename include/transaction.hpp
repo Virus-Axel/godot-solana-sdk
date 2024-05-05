@@ -55,6 +55,7 @@ private:
     bool is_message_valid();
     void create_message();
     void check_fully_signed();
+    void reset_state();
 
     void sign_at_index(const uint32_t index);
     void copy_connection_state();
