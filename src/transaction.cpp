@@ -142,6 +142,13 @@ void Transaction::check_fully_signed(){
     }
 }
 
+void Transaction::reset_state(){
+    ready_signature_amount = 0;
+    signatures.clear();
+    signers.clear();
+    result_signature = "";
+}
+
 void Transaction::sign_at_index(const uint32_t index){
     if(signers[index].get_type() != Variant::Type::OBJECT){
         Array params;
@@ -422,6 +429,7 @@ bool Transaction::is_finalized(){
 
 void Transaction::set_instructions(const Array& p_value){
     instructions = p_value;
+    reset_state();
     create_message();
 }
 
@@ -431,6 +439,7 @@ Array Transaction::get_instructions(){
 
 void Transaction::set_payer(const Variant& p_value){
     payer = p_value;
+    reset_state();
     create_message();
 }
 
@@ -479,6 +488,7 @@ void Transaction::update_latest_blockhash(const String &custom_hash){
 
 void Transaction::add_instruction(const Variant &instruction){
     instructions.append(instruction);
+    reset_state();
     create_message();
 }
 

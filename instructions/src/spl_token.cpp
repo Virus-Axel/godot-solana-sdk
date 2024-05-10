@@ -113,16 +113,14 @@ Variant TokenProgram::mint_to(const Variant& mint_pubkey, const Variant& account
     data.encode_u64(1, amount);
 
     PackedByteArray owner_bytes = Pubkey(owner_pubkey).to_bytes();
-    for(unsigned int i = 0; i < 32; i++){
-        data[1 + i] = owner_bytes[i];
-    }
 
-    const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
+    const Variant new_pid = Pubkey::new_from_string(String(ID.c_str()));
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(account_pubkey, false, true));
     result->append_meta(AccountMeta(mint_pubkey, false, true));
+    result->append_meta(AccountMeta(account_pubkey, false, true));
+    result->append_meta(AccountMeta(owner_pubkey, false, true));
     result->append_meta(AccountMeta(mint_authority, true, false));
 
     return result;

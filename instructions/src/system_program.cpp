@@ -24,8 +24,7 @@ Variant SystemProgram::create_account(const Variant &from_keypair, const Variant
     data.encode_u64(4, lamports);
     data.encode_u64(12, space);
 
-    const Pubkey *owner_ptr = Object::cast_to<Pubkey>(owner);
-    PackedByteArray owner_bytes = owner_ptr->to_bytes();
+    PackedByteArray owner_bytes = Pubkey(owner).to_bytes();
     for(unsigned int i = 0; i < owner_bytes.size(); i++){
         data[20 + i] = owner_bytes[i];
     }
