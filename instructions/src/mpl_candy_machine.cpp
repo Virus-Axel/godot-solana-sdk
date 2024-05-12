@@ -895,6 +895,103 @@ void CandyGuardAccessList::_get_property_list(List<PropertyInfo> *p_list) const 
     }
 }
 
+void ConfigLineSetting::_bind_methods(){
+    ClassDB::bind_method(D_METHOD("set_prefix_name", "value"), &ConfigLineSetting::set_prefix_name);
+    ClassDB::bind_method(D_METHOD("get_prefix_name"), &ConfigLineSetting::get_prefix_name);
+
+    ClassDB::bind_method(D_METHOD("set_name_length", "value"), &ConfigLineSetting::set_name_length);
+    ClassDB::bind_method(D_METHOD("get_name_length"), &ConfigLineSetting::get_name_length);
+
+    ClassDB::bind_method(D_METHOD("set_prefix_uri", "value"), &ConfigLineSetting::set_prefix_uri);
+    ClassDB::bind_method(D_METHOD("get_prefix_uri"), &ConfigLineSetting::get_prefix_uri);
+
+    ClassDB::bind_method(D_METHOD("set_uri_length", "value"), &ConfigLineSetting::set_uri_length);
+    ClassDB::bind_method(D_METHOD("get_uri_length"), &ConfigLineSetting::get_uri_length);
+
+    ClassDB::bind_method(D_METHOD("set_is_sequential", "value"), &ConfigLineSetting::set_is_sequential);
+    ClassDB::bind_method(D_METHOD("get_is_sequential"), &ConfigLineSetting::get_is_sequential);
+
+    ClassDB::bind_method(D_METHOD("serialize"), &ConfigLineSetting::serialize);
+
+    ClassDB::add_property("ConfigLineSetting", PropertyInfo(Variant::STRING, "prefix_name"), "set_prefix_name", "get_prefix_name");
+    ClassDB::add_property("ConfigLineSetting", PropertyInfo(Variant::INT, "name_length"), "set_name_length", "get_name_length");
+    ClassDB::add_property("ConfigLineSetting", PropertyInfo(Variant::STRING, "prefix_uri"), "set_prefix_uri", "get_prefix_uri");
+    ClassDB::add_property("ConfigLineSetting", PropertyInfo(Variant::INT, "uri_length"), "set_uri_length", "get_uri_length");
+    ClassDB::add_property("ConfigLineSetting", PropertyInfo(Variant::BOOL, "is_sequential"), "set_is_sequential", "get_is_sequential");
+}
+
+ConfigLineSetting::ConfigLineSetting(){
+
+}
+
+void ConfigLineSetting::set_prefix_name(const String &value){
+    prefix_name = value;
+}
+String ConfigLineSetting::get_prefix_name(){
+    return prefix_name;
+}
+
+void ConfigLineSetting::set_name_length(const uint32_t value){
+    name_length = value;
+}
+uint32_t ConfigLineSetting::get_name_length(){
+    return name_length;
+}
+
+void ConfigLineSetting::set_prefix_uri(const String &value){
+    prefix_uri = value;
+}
+String ConfigLineSetting::get_prefix_uri(){
+    return prefix_uri;
+}
+
+void ConfigLineSetting::set_uri_length(const uint32_t value){
+    uri_length = value;
+}
+uint32_t ConfigLineSetting::get_uri_length(){
+    return uri_length;
+}
+
+void ConfigLineSetting::set_is_sequential(const bool value){
+    is_sequential = value;
+}
+bool ConfigLineSetting::get_is_sequential(){
+    return is_sequential;
+}
+
+PackedByteArray ConfigLineSetting::serialize(){
+    PackedByteArray result;
+    int cursor = 0;
+
+    result.resize((4 + prefix_name.length() + 4 + 4 + prefix_uri.length() + 4 + 1));
+
+    result.encode_u32(cursor, prefix_name.length());
+    cursor += 4;
+    for(unsigned int i = 0; i < prefix_name.length(); i++){
+        result[cursor + i] = prefix_name[i];
+    }
+    cursor += prefix_name.length();
+
+    result.encode_u32(cursor, name_length);
+    cursor += 4;
+    result.encode_u32(cursor, prefix_uri.length());
+    cursor += 4;
+    for(unsigned int i = 0; i < prefix_uri.length(); i++){
+        result[cursor + i] = prefix_uri[i];
+    }
+
+    cursor += prefix_uri.length();
+    result.encode_u32(cursor, uri_length);
+    cursor += 4;
+    result[cursor] = (int)is_sequential;
+
+    return result;
+}
+
+ConfigLineSetting::~ConfigLineSetting(){
+
+}
+
 void CandyMachineData::_bind_methods(){
     ClassDB::bind_method(D_METHOD("set_token_standard", "value"), &CandyMachineData::set_token_standard);
     ClassDB::bind_method(D_METHOD("get_token_standard"), &CandyMachineData::get_token_standard);
@@ -932,38 +1029,22 @@ void CandyMachineData::_bind_methods(){
     ClassDB::bind_method(D_METHOD("set_creators", "value"), &CandyMachineData::set_creators);
     ClassDB::bind_method(D_METHOD("get_creators"), &CandyMachineData::get_creators);
 
-    ClassDB::bind_method(D_METHOD("set_prefix_name", "value"), &CandyMachineData::set_prefix_name);
-    ClassDB::bind_method(D_METHOD("get_prefix_name"), &CandyMachineData::get_prefix_name);
+    ClassDB::bind_method(D_METHOD("set_config_line_setting", "value"), &CandyMachineData::set_config_line_setting);
+    ClassDB::bind_method(D_METHOD("get_config_line_setting"), &CandyMachineData::get_config_line_setting);
 
-    ClassDB::bind_method(D_METHOD("set_name_length", "value"), &CandyMachineData::set_name_length);
-    ClassDB::bind_method(D_METHOD("get_name_length"), &CandyMachineData::get_name_length);
-
-    ClassDB::bind_method(D_METHOD("set_prefix_uri", "value"), &CandyMachineData::set_prefix_uri);
-    ClassDB::bind_method(D_METHOD("get_prefix_uri"), &CandyMachineData::get_prefix_uri);
-
-    ClassDB::bind_method(D_METHOD("set_uri_length", "value"), &CandyMachineData::set_uri_length);
-    ClassDB::bind_method(D_METHOD("get_uri_length"), &CandyMachineData::get_uri_length);
-
-    ClassDB::bind_method(D_METHOD("set_is_sequential", "value"), &CandyMachineData::set_is_sequential);
-    ClassDB::bind_method(D_METHOD("get_is_sequential"), &CandyMachineData::get_is_sequential);
-
-    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "token_standard"), "set_token_standard", "get_token_standard");
-    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "features"), "set_features", "get_features");
-    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "authority"), "set_authority", "get_authority");
-    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "mint_authority"), "set_mint_authority", "get_mint_authority");
-    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "collection_mint"), "set_collection_mint", "get_collection_mint");
-    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "items_redeemed"), "set_items_redeemed", "get_items_redeemed");
+    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "token_standard", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY + PROPERTY_USAGE_EDITOR + PROPERTY_USAGE_STORAGE), "set_token_standard", "get_token_standard");
+    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "features", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY + PROPERTY_USAGE_EDITOR + PROPERTY_USAGE_STORAGE), "set_features", "get_features");
+    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::OBJECT, "authority", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", PROPERTY_USAGE_READ_ONLY + PROPERTY_USAGE_EDITOR + PROPERTY_USAGE_STORAGE), "set_authority", "get_authority");
+    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::OBJECT, "mint_authority", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", PROPERTY_USAGE_READ_ONLY + PROPERTY_USAGE_EDITOR + PROPERTY_USAGE_STORAGE), "set_mint_authority", "get_mint_authority");
+    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::OBJECT, "collection_mint", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey", PROPERTY_USAGE_READ_ONLY + PROPERTY_USAGE_EDITOR + PROPERTY_USAGE_STORAGE), "set_collection_mint", "get_collection_mint");
+    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "items_redeemed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY + PROPERTY_USAGE_EDITOR + PROPERTY_USAGE_STORAGE), "set_items_redeemed", "get_items_redeemed");
     ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "items_available"), "set_items_available", "get_items_available");
     ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::STRING, "symbol"), "set_symbol", "get_symbol");
     ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "seller_fee_basis_points"), "set_seller_fee_basis_points", "get_seller_fee_basis_points");
     ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "max_supply"), "set_max_supply", "get_max_supply");
     ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::BOOL, "is_mutable"), "set_is_mutable", "get_is_mutable");
-    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::ARRAY, "creators"), "set_creators", "get_creators");
-    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::STRING, "prefix_name"), "set_prefix_name", "get_prefix_name");
-    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "name_length"), "set_name_length", "get_name_length");
-    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::STRING, "prefix_uri"), "set_prefix_uri", "get_prefix_uri");
-    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "uri_length"), "set_uri_length", "get_uri_length");
-    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::BOOL, "is_sequential"), "set_is_sequential", "get_is_sequential");
+    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::ARRAY, "creators", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("MetaDataCreator")), "set_creators", "get_creators");
+    ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::OBJECT, "config_line_setting", PROPERTY_HINT_RESOURCE_TYPE, "ConfigLineSetting"), "set_config_line_setting", "get_config_line_setting");
 }
 
 void CandyMachineData::set_token_standard(const uint32_t value){
@@ -1050,43 +1131,16 @@ Array CandyMachineData::get_creators(){
     return creators;
 }
 
-void CandyMachineData::set_prefix_name(const String &value){
-    prefix_name = value;
-}
-String CandyMachineData::get_prefix_name(){
-    return prefix_name;
+void CandyMachineData::set_config_line_setting(const Variant& config_line_setting){
+    this->config_line_setting = config_line_setting;
 }
 
-void CandyMachineData::set_name_length(const uint32_t value){
-    name_length = value;
-}
-uint32_t CandyMachineData::get_name_length(){
-    return name_length;
-}
-
-void CandyMachineData::set_prefix_uri(const String &value){
-    prefix_uri = value;
-}
-String CandyMachineData::get_prefix_uri(){
-    return prefix_uri;
-}
-
-void CandyMachineData::set_uri_length(const uint32_t value){
-    uri_length = value;
-}
-uint32_t CandyMachineData::get_uri_length(){
-    return uri_length;
-}
-
-void CandyMachineData::set_is_sequential(const bool value){
-    is_sequential = value;
-}
-bool CandyMachineData::get_is_sequential(){
-    return is_sequential;
+Variant CandyMachineData::get_config_line_setting(){
+    return config_line_setting;
 }
 
 PackedByteArray CandyMachineData::serialize(){
-    const int CANDY_DATA_LENGTH = 8 + 4 + symbol.length() + 2 + 8 + 1 + 4 + 34 * creators.size() + 1 + (4 + prefix_name.length() + 4 + 4 + prefix_uri.length() + 4 + 1) * (int)(prefix_name.length() > 0) + 1;
+    const int CANDY_DATA_LENGTH = 8 + 4 + symbol.length() + 2 + 8 + 1 + 4 + 34 * creators.size(); // No config line nor hidden setting.
     PackedByteArray result;
     result.resize(CANDY_DATA_LENGTH);
 
@@ -1111,35 +1165,18 @@ PackedByteArray CandyMachineData::serialize(){
         }
         cursor += creator_bytes.size();
     }
-    if(prefix_name.is_empty()){
-        result[cursor] = 0;
-        return result;
-    }
-    result[cursor] = 1;
-    cursor++;
 
-    result.encode_u32(cursor, prefix_name.length());
-    cursor += 4;
-    for(unsigned int i = 0; i < prefix_name.length(); i++){
-        result[cursor + i] = prefix_name[i];
+    if(config_line_setting.get_type() != Variant::Type::OBJECT){
+        result.append(0);
     }
-    cursor += prefix_name.length();
-
-    result.encode_u32(cursor, name_length);
-    cursor += 4;
-    result.encode_u32(cursor, prefix_uri.length());
-    cursor += 4;
-    for(unsigned int i = 0; i < prefix_uri.length(); i++){
-        result[cursor + i] = prefix_uri[i];
+    else{
+        result.append(1);
+        ConfigLineSetting *config_line_setting_ptr = Object::cast_to<ConfigLineSetting>(config_line_setting);
+        result.append_array(config_line_setting_ptr->serialize());
     }
-    cursor += prefix_uri.length();
-    result.encode_u32(cursor, uri_length);
-    cursor += 4;
-    result[cursor] = (int)is_sequential;
-    cursor ++;
 
     // No hidden settings.
-    result[cursor] = 0;
+    result.append(0);
 
     return result;
 }
@@ -1196,32 +1233,27 @@ Variant MplCandyMachine::initialize(const Variant &authority, const Variant &can
 
     PackedByteArray data = initialize2_discriminator();
     data.append_array(Object::cast_to<CandyMachineData>(candy_machine_data)->serialize());
+    data.append(4 * (int)pnft);
 
-
-    const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
-    result->set_program_id(new_pid);
+    result->set_program_id(get_pid());
     result->set_data(data);
 
     result->append_meta(AccountMeta(candy_machine_account, false, true));
 
-    Array seeds;
-    seeds.append(String("candy_machine").to_ascii_buffer());
-    seeds.append(Pubkey(candy_machine_account).to_bytes());
+    const Variant CANDY_MACHINE_AUTHORITY = MplCandyMachine::new_candy_machine_authority_pda(candy_machine_account);
 
-    Variant candy_machine_creator = Pubkey::new_pda_bytes(seeds, get_pid());
-
-    result->append_meta(AccountMeta(candy_machine_creator, false, true));
+    result->append_meta(AccountMeta(CANDY_MACHINE_AUTHORITY, false, true));
     result->append_meta(AccountMeta(authority, false, false));
     result->append_meta(AccountMeta(authority, true, true));
 
     result->append_meta(AccountMeta(Pubkey::new_from_string("CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR"), false, false));
 
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(collection_mint), false, false));
+    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(collection_mint), false, true));
     result->append_meta(AccountMeta(collection_mint, false, false));
     result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(collection_mint), false, false));
     
     result->append_meta(AccountMeta(authority, true, true));
-    result->append_meta(AccountMeta(TokenProgram::new_delegate_record_address(authority, collection_mint, candy_machine_creator, godot::TokenProgram::MetaDataDelegateRole::COLLECTION), false, true));
+    result->append_meta(AccountMeta(TokenProgram::new_delegate_record_address(authority, collection_mint, CANDY_MACHINE_AUTHORITY, godot::TokenProgram::MetaDataDelegateRole::COLLECTION), false, true));
 
     result->append_meta(AccountMeta(MplTokenMetadata::get_pid(), false, false));
     result->append_meta(AccountMeta(SystemProgram::get_pid(), false, false));
@@ -1373,23 +1405,28 @@ Variant MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key
 
     int prefix_length = account_data.decode_u32(cursor);
     
+    Variant config_line_setting = memnew(ConfigLineSetting);
+    ConfigLineSetting* config_line_setting_ptr = Object::cast_to<ConfigLineSetting>(config_line_setting);
+
     cursor += 4;
-    res->set_prefix_name(account_data.slice(cursor, cursor + prefix_length).get_string_from_ascii());
+    config_line_setting_ptr->set_prefix_name(account_data.slice(cursor, cursor + prefix_length).get_string_from_ascii());
 
     cursor += prefix_length;
 
-    res->set_name_length(account_data.decode_u32(cursor));
+    config_line_setting_ptr->set_name_length(account_data.decode_u32(cursor));
     cursor += 4;
 
     int prefix_uri_length = account_data.decode_u32(cursor);
     cursor += 4;
-    res->set_prefix_uri(account_data.slice(cursor, cursor + prefix_uri_length).get_string_from_ascii());
+    config_line_setting_ptr->set_prefix_uri(account_data.slice(cursor, cursor + prefix_uri_length).get_string_from_ascii());
     cursor += prefix_uri_length;
 
-    res->set_uri_length(account_data.decode_u32(cursor));
+    config_line_setting_ptr->set_uri_length(account_data.decode_u32(cursor));
     cursor += 4;
 
-    res->set_is_sequential(account_data[cursor] == 1);
+    config_line_setting_ptr->set_is_sequential(account_data[cursor] == 1);
+
+    res->set_config_line_setting(config_line_setting);
 
     return res;
 }

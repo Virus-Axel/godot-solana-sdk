@@ -1,0 +1,6 @@
+[gd_resource type="MetaData" format=3 uid="uid://g4vjuu02dtw0"]
+
+[resource]
+name = "my_coin"
+symbol = "mc"
+uri = "abc"

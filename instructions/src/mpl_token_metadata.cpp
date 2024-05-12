@@ -33,8 +33,9 @@ void MplTokenMetadata::_bind_methods(){
     ClassDB::bind_method(D_METHOD("get_mint_metadata", "mint"), &MplTokenMetadata::get_mint_metadata);
     ClassDB::bind_method(D_METHOD("metadata_callback", "rpc_response"), &MplTokenMetadata::metadata_callback);
 
-    ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("create_metadata_account", "account_pubkey", "mint", "mint_authority", "payer", "update_authority", "meta_data", "is_mutable", "collection_size"), &MplTokenMetadata::create_metadata_account);
-    ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("create_master_edition", "edition", "mint", "update_authority", "mint_authority", "metadata_account", "payer", "max_supply"), &MplTokenMetadata::create_master_edition);
+    ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("create_metadata_account", "mint", "mint_authority", "update_authority", "meta_data", "is_mutable"), &MplTokenMetadata::create_metadata_account);
+    ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("update_metadata_account", "metadata_account", "update_authority"), &MplTokenMetadata::update_metadata_account);
+    ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("create_master_edition", "mint", "update_authority", "mint_authority", "payer", "max_supply"), &MplTokenMetadata::create_master_edition);
 
     ClassDB::bind_static_method("MplTokenMetadata", D_METHOD("get_pid"), &MplTokenMetadata::get_pid);
 
@@ -208,7 +209,7 @@ void MplTokenMetadata::metadata_callback(const Dictionary& rpc_result){
     emit_signal("metadata_fetched", result);
 }
 
-Variant MplTokenMetadata::create_metadata_account(const Variant& account_pubkey, const Variant& mint, const Variant& mint_authority, const Variant& payer, const Variant& update_authority, const Variant &meta_data, bool is_mutable, uint64_t collection_size){
+Variant MplTokenMetadata::create_metadata_account(const Variant& mint, const Variant& mint_authority, const Variant& update_authority, const Variant &meta_data, bool is_mutable){
     Instruction *result = memnew(Instruction);
     PackedByteArray data;
 
@@ -222,10 +223,11 @@ Variant MplTokenMetadata::create_metadata_account(const Variant& account_pubkey,
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(account_pubkey, false, true));
+    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(mint), false, true));
     result->append_meta(AccountMeta(mint, false, false));
     result->append_meta(AccountMeta(mint_authority, true, false));
-    result->append_meta(AccountMeta(update_authority, true, false));
+    result->append_meta(AccountMeta(update_authority, true, true));
+    result->append_meta(AccountMeta(update_authority, false, false));
     result->append_meta(AccountMeta(SystemProgram::get_pid(), false, false));
 
     Pubkey *rent = memnew(Pubkey);
@@ -237,7 +239,28 @@ Variant MplTokenMetadata::create_metadata_account(const Variant& account_pubkey,
     return result;
 }
 
-Variant MplTokenMetadata::create_master_edition(const Variant& edition, const Variant& mint, const Variant& update_authority, const Variant& mint_authority, const Variant& metadata_account, const Variant &payer, const Variant &max_supply){
+Variant MplTokenMetadata::update_metadata_account(const Variant& metadata_account, const Variant& update_authority){
+    Instruction *result = memnew(Instruction);
+    PackedByteArray data;
+
+    data.append(15);
+    data.append(0);
+    data.append(1);
+    data.append_array(Pubkey(update_authority).to_bytes());
+    data.append(0);
+    data.append(0);
+
+    const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
+    result->set_program_id(new_pid);
+    result->set_data(data);
+
+    result->append_meta(AccountMeta(metadata_account, false, true));
+    result->append_meta(AccountMeta(update_authority, true, false));
+
+    return result;
+}
+
+Variant MplTokenMetadata::create_master_edition(const Variant& mint, const Variant& update_authority, const Variant& mint_authority, const Variant &payer, const Variant &max_supply){
     Instruction *result = memnew(Instruction);
     PackedByteArray data;
 
@@ -257,19 +280,18 @@ Variant MplTokenMetadata::create_master_edition(const Variant& edition, const Va
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(edition, false, true));
+    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(mint), false, true));
     result->append_meta(AccountMeta(mint, false, true));
-    result->append_meta(AccountMeta(update_authority, true, false));
+
+    result->append_meta(AccountMeta(update_authority, false, false));
     result->append_meta(AccountMeta(mint_authority, true, false));
     result->append_meta(AccountMeta(payer, true, true));
+    
+    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(mint), false, true));
+
     result->append_meta(AccountMeta(TokenProgram::get_pid(), false, false));
     result->append_meta(AccountMeta(SystemProgram::get_pid(), false, false));
-
-    Pubkey *rent = memnew(Pubkey);
-
-    // TODO(Virax): Create an easier way to get the sysvarRent.
-    rent->from_string("SysvarRent111111111111111111111111111111111");
-    result->append_meta(AccountMeta(rent, false, false));
+    result->append_meta(AccountMeta(Pubkey::new_from_string("SysvarRent111111111111111111111111111111111"), false, false));
 
     return result;
 }

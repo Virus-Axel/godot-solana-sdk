@@ -13,6 +13,38 @@ class CandyGuardAccessList;
 
 MAKE_TYPED_ARRAY(CandyGuardAccessList, Variant::OBJECT)
 
+class ConfigLineSetting : public Resource{
+    GDCLASS(ConfigLineSetting, Resource)
+private:
+    String prefix_name;
+    String prefix_uri;
+    uint32_t name_length = 0;
+    uint32_t uri_length = 0;
+    bool is_sequential = false;
+protected:
+    static void _bind_methods();
+public:
+    ConfigLineSetting();
+
+    void set_prefix_name(const String &value);
+    String get_prefix_name();
+
+    void set_name_length(const uint32_t value);
+    uint32_t get_name_length();
+
+    void set_prefix_uri(const String &value);
+    String get_prefix_uri();
+
+    void set_uri_length(const uint32_t value);
+    uint32_t get_uri_length();
+
+    void set_is_sequential(const bool value);
+    bool get_is_sequential();
+
+    PackedByteArray serialize();
+    ~ConfigLineSetting();
+};
+
 class CandyMachineData : public Resource{
     GDCLASS(CandyMachineData, Resource)
 private:
@@ -30,12 +62,8 @@ private:
     bool is_mutable = false;
     Array creators;
     
-    // Config line settings
-    String prefix_name;
-    uint32_t name_length = 0;
-    String prefix_uri;
-    uint32_t uri_length = 0;
-    bool is_sequential = false;
+    Variant config_line_setting = nullptr;
+    Variant hidden_settings = nullptr;
 
 protected:
     static void _bind_methods();
@@ -77,20 +105,8 @@ public:
     void set_creators(const Array &value);
     Array get_creators();
 
-    void set_prefix_name(const String &value);
-    String get_prefix_name();
-
-    void set_name_length(const uint32_t value);
-    uint32_t get_name_length();
-
-    void set_prefix_uri(const String &value);
-    String get_prefix_uri();
-
-    void set_uri_length(const uint32_t value);
-    uint32_t get_uri_length();
-
-    void set_is_sequential(const bool value);
-    bool get_is_sequential();
+    void set_config_line_setting(const Variant& config_line_setting);
+    Variant get_config_line_setting();
 
     PackedByteArray serialize();
 };

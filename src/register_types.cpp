@@ -78,6 +78,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<MplCandyGuard>();
     ClassDB::register_class<CandyGuardAccessList>();
     ClassDB::register_class<CandyMachineData>();
+    ClassDB::register_class<ConfigLineSetting>();
     ClassDB::register_class<AnchorProgram>();
 
     add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
