@@ -34,8 +34,9 @@ public:
 
     Variant get_mint_metadata(const Variant& mint);
 
-    static Variant create_metadata_account(const Variant& account_pubkey, const Variant& mint, const Variant& mint_authority, const Variant& payer, const Variant& update_authority, const Variant &meta_data, bool is_mutable, uint64_t collection_size);
-    static Variant create_master_edition(const Variant& edition, const Variant& mint, const Variant& update_authority, const Variant& mint_authority, const Variant& metadata_account, const Variant &payer, const Variant &max_supply);
+    static Variant create_metadata_account(const Variant& mint, const Variant& mint_authority, const Variant& update_authority, const Variant &meta_data, bool is_mutable);
+    static Variant update_metadata_account(const Variant& metadata_account, const Variant& update_authority);
+    static Variant create_master_edition(const Variant& mint, const Variant& update_authority, const Variant& mint_authority, const Variant &payer, const Variant &max_supply);
     static Variant get_pid();
 };
 

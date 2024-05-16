@@ -192,8 +192,7 @@ PackedByteArray Message::serialize(){
 
     result.append(account_keys.size());
     for(unsigned int i = 0; i < account_keys.size(); i++){
-        Pubkey *account_key = Object::cast_to<Pubkey>(account_keys[i]);
-        result.append_array(account_key->to_bytes());
+        result.append_array(Pubkey(account_keys[i]).to_bytes());
     }
 
     result.append_array(serialize_blockhash());
