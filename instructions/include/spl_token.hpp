@@ -22,7 +22,7 @@ public:
     };
 
     static const std::string ID;
-    static Variant new_token_record_address(const Variant &owner_account, const Variant &mint);
+    static Variant new_token_record_address(const Variant &token, const Variant &mint);
     static Variant new_delegate_record_address(const Variant& update_authority, const Variant &mint, const Variant& delegate_address, const MetaDataDelegateRole role);
 
     static Variant initialize_mint(const Variant& mint_pubkey, const Variant& mint_authority, const Variant& freeze_authority = nullptr, const uint32_t decimals = 9);

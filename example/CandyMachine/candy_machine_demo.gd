@@ -1,10 +1,9 @@
 extends Control
 
 const MINT_SIZE := 82
-const CANDY_MACHINE_SIZE := 951
 const MINT_ACCOUNT_SIZE := 165
 
-const TOTAL_CASES := 2
+const TOTAL_CASES := 4
 var passed_test_mask := 0
 var payer: Keypair = await Keypair.new_from_file("payer.json")
 
@@ -56,7 +55,7 @@ func initialize_mint_collection_demo():
 	tx.add_instruction(ix)
 	ix = MplTokenMetadata.update_metadata_account(MplTokenMetadata.new_associated_metadata_pubkey(mint_keypair), payer)
 	tx.add_instruction(ix)
-	ix = MplTokenMetadata.create_master_edition(mint_keypair, payer, payer, payer, 1)
+	ix = MplTokenMetadata.create_master_edition(mint_keypair, payer, payer, payer, 0)
 	tx.add_instruction(ix)
 	
 	tx.set_payer(payer)
@@ -73,15 +72,16 @@ func initialize_mint_collection_demo():
 	
 
 func initialize_candy_machine_demo():
-	var candy_machine_lamports = await minumum_balance_for_rent_extemtion(CANDY_MACHINE_SIZE)
+	var candy_machine_size = load("res://candy_machine_data.tres").get_space_for_candy()
+	var candy_machine_lamports = await minumum_balance_for_rent_extemtion(candy_machine_size)
 	
-		# Create a transaction
+	# Create a transaction
 	var tx := Transaction.new()
 	add_child(tx)
 	
-	var ix: Instruction = SystemProgram.create_account(payer, candy_machine_keypair, candy_machine_lamports, CANDY_MACHINE_SIZE, MplCandyMachine.get_pid())
+	var ix: Instruction = SystemProgram.create_account(payer, candy_machine_keypair, candy_machine_lamports, candy_machine_size, MplCandyMachine.get_pid())
 	tx.add_instruction(ix)
-	ix = MplCandyMachine.initialize(payer, candy_machine_keypair, mint_keypair, load("res://candy_machine_data.tres"))
+	ix = MplCandyMachine.initialize(payer, candy_machine_keypair, mint_keypair, load("res://candy_machine_data.tres"), true)
 	tx.add_instruction(ix)
 	
 	tx.set_payer(payer)
@@ -89,7 +89,6 @@ func initialize_candy_machine_demo():
 
 	tx.sign_and_send()
 	var result = await tx.transaction_response_received
-
 	assert(result.has("result"))
 
 	await tx.confirmed
@@ -97,10 +96,70 @@ func initialize_candy_machine_demo():
 	PASS(1)
 
 
+func add_config_line_demo():
+	# Create a transaction
+	var tx := Transaction.new()
+	add_child(tx)
+	
+	var config_lines = [
+		load("res://config_lines/1.tres"),
+	]
+	
+	var ix: Instruction = MplCandyMachine.add_config_lines(candy_machine_keypair, payer, config_lines, 0)
+	tx.add_instruction(ix)
+	
+	tx.set_payer(payer)
+	tx.update_latest_blockhash()
+
+	tx.sign_and_send()
+	var result = await tx.transaction_response_received
+	assert(result.has("result"))
+
+	await tx.confirmed
+
+	PASS(2)
+
+
+func mint_demo():
+	var nft_keypair: Keypair = Keypair.new_random()
+	var random_receiver: Pubkey = Pubkey.new_associated_token_address(payer, nft_keypair)
+
+	# Create a transaction
+	var tx := Transaction.new()
+	add_child(tx)
+
+	var ix: Instruction = MplCandyMachine.mint(payer, payer, nft_keypair, mint_keypair, payer, candy_machine_keypair)
+	tx.add_instruction(ix)
+	
+	tx.set_payer(payer)
+	tx.update_latest_blockhash()
+
+	tx.sign_and_send()
+	var result = await tx.transaction_response_received
+	assert(result.has("result"))
+
+	await tx.confirmed
+
+	PASS(3)
+
+
+func fetch_candy_machine_account_demo():
+	$MplCandyMachine.get_candy_machine_info(candy_machine_keypair);
+	var candy_machine_data: CandyMachineData = await $MplCandyMachine.account_fetched
+	assert(candy_machine_data.token_standard == 4) # Make sure token standard is pnft.
+	assert(candy_machine_data.symbol == "GSS")
+	assert(candy_machine_data.seller_fee_basis_points == 800)
+	PASS(4)
+
+
 func _ready():
 	# Use created mint in upcoming transactions, so await it.
 	await initialize_mint_collection_demo()
-	initialize_candy_machine_demo()
+	await initialize_candy_machine_demo()
+	await add_config_line_demo()
+	await mint_demo()
+	fetch_candy_machine_account_demo()
+	
 
 
 func _on_timeout_timeout():

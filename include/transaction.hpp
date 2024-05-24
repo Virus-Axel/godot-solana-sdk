@@ -45,6 +45,8 @@ private:
     bool pending_blockhash = false;
     bool pending_send = false;
 
+    bool skip_preflight = true;
+
     bool are_all_bytes_zeroes(const PackedByteArray& bytes);
 
     void _get_property_list(List<PropertyInfo> *p_list) const;
