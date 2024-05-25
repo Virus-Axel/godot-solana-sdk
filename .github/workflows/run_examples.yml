@@ -133,7 +133,6 @@ jobs:
               run: |
                 cd backpack
                 yarn config set enableImmutableInstalls false
-                yarn install
                 yarn build
 
       
