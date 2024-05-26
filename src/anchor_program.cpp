@@ -230,8 +230,6 @@ AnchorProgram::AnchorProgram(){
 void AnchorProgram::_process(double delta){
     idl_client->_process(delta);
     fetch_client->_process(delta);
-    idl_client->set_async_override(true);
-    fetch_client->set_async_override(true);
 }
 
 PackedByteArray AnchorProgram::serialize_variant(const Variant &var){

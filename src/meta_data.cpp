@@ -321,13 +321,14 @@ PackedByteArray MetaData::serialize(const bool is_mutable) const{
     res.encode_u16(data_location, seller_fee_basis_points);
 
     res.append((int) (enable_creators && !creators.is_empty()));
-    if(enable_collection && !creators.is_empty()){
+    if(enable_creators && !creators.is_empty()){
         PackedByteArray serialized_creators;
         serialized_creators.resize(4);
         serialized_creators.encode_u32(0, creators.size());
         for(unsigned int i = 0; i < creators.size(); i++){
             const MetaDataCreator *creators_ptr = Object::cast_to<MetaDataCreator>(creators[i]);
             const PackedByteArray serialized_collection = creators_ptr->serialize();
+            serialized_creators.append_array(serialized_collection);
         }
         res.append_array(serialized_creators);
     }

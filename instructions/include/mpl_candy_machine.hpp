@@ -6,12 +6,34 @@
 #include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <account_meta.hpp>
+#include <solana_client.hpp>
 
 namespace godot{
 
 class CandyGuardAccessList;
 
 MAKE_TYPED_ARRAY(CandyGuardAccessList, Variant::OBJECT)
+
+class ConfigLine: public Resource{
+    GDCLASS(ConfigLine, Resource)
+private:
+    String name;
+    String uri;
+protected:
+    static void _bind_methods();
+public:
+    ConfigLine();
+
+    void set_name(const String &value);
+    String get_name();
+
+    void set_uri(const String &value);
+    String get_uri();
+
+    PackedByteArray serialize();
+    ~ConfigLine();
+};
+
 
 class ConfigLineSetting : public Resource{
     GDCLASS(ConfigLineSetting, Resource)
@@ -65,6 +87,8 @@ private:
     Variant config_line_setting = nullptr;
     Variant hidden_settings = nullptr;
 
+    unsigned int get_config_line_size();
+
 protected:
     static void _bind_methods();
 public:
@@ -109,6 +133,7 @@ public:
     Variant get_config_line_setting();
 
     PackedByteArray serialize();
+    unsigned int get_space_for_candy(); 
 };
 
 class CandyGuardAccessList: public Resource{
@@ -213,15 +238,21 @@ public:
 class MplCandyMachine : public Node{
     GDCLASS(MplCandyMachine, Node)
 private:
+    SolanaClient* fetch_client;
 
 protected:
     static void _bind_methods();
 
 public:
+    MplCandyMachine();
+
+    void _process(float delta);
+
     static PackedByteArray mint_discriminator();
     static PackedByteArray mint2_discriminator();
     static PackedByteArray initialize_discriminator();
     static PackedByteArray initialize2_discriminator();
+    static PackedByteArray add_config_lines_discriminator();
 
     static const std::string ID;
 
@@ -240,8 +271,16 @@ public:
         const Variant &collection_update_authority,
         const Variant &candy_machine_key);
 
+    static Variant add_config_lines(
+        const Variant &candy_machine_key,
+        const Variant &authority,
+        const Array &config_lines,
+        const unsigned int index
+    );
+
     static Variant new_candy_machine_authority_pda(const Variant& candy_machine_key);
-    static Variant get_candy_machine_info(const Variant& candy_machine_key);
+    Variant get_candy_machine_info(const Variant& candy_machine_key);
+    void fetch_account_callback(const Dictionary& params);
     static Variant get_pid();
 };
 

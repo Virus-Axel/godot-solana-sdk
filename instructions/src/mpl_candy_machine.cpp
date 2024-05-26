@@ -895,6 +895,53 @@ void CandyGuardAccessList::_get_property_list(List<PropertyInfo> *p_list) const 
     }
 }
 
+void ConfigLine::_bind_methods(){
+    ClassDB::bind_method(D_METHOD("set_name", "value"), &ConfigLine::set_name);
+    ClassDB::bind_method(D_METHOD("get_name"), &ConfigLine::get_name);
+
+    ClassDB::bind_method(D_METHOD("set_uri", "value"), &ConfigLine::set_uri);
+    ClassDB::bind_method(D_METHOD("get_uri"), &ConfigLine::get_uri);
+
+    ClassDB::bind_method(D_METHOD("serialize"), &ConfigLine::serialize);
+
+    ClassDB::add_property("ConfigLine", PropertyInfo(Variant::STRING, "name"), "set_name", "get_name");
+    ClassDB::add_property("ConfigLine", PropertyInfo(Variant::STRING, "uri"), "set_uri", "get_uri");
+}
+
+ConfigLine::ConfigLine(){
+}
+
+void ConfigLine::set_name(const String &value){
+    this->name = value;
+}
+String ConfigLine::get_name(){
+    return name;
+}
+
+void ConfigLine::set_uri(const String &value){
+    this->uri = value;
+}
+String ConfigLine::get_uri(){
+    return uri;
+}
+
+PackedByteArray ConfigLine::serialize(){
+    PackedByteArray result;
+    result.resize(4);
+    result.encode_u32(0, name.length());
+    result.append_array(name.to_ascii_buffer());
+    PackedByteArray temp_array;
+    temp_array.resize(4);
+    temp_array.encode_u32(0, uri.length());
+    result.append_array(temp_array);
+    result.append_array(uri.to_ascii_buffer());
+
+    return result;
+}
+ConfigLine::~ConfigLine(){
+
+}
+
 void ConfigLineSetting::_bind_methods(){
     ClassDB::bind_method(D_METHOD("set_prefix_name", "value"), &ConfigLineSetting::set_prefix_name);
     ClassDB::bind_method(D_METHOD("get_prefix_name"), &ConfigLineSetting::get_prefix_name);
@@ -1031,6 +1078,8 @@ void CandyMachineData::_bind_methods(){
 
     ClassDB::bind_method(D_METHOD("set_config_line_setting", "value"), &CandyMachineData::set_config_line_setting);
     ClassDB::bind_method(D_METHOD("get_config_line_setting"), &CandyMachineData::get_config_line_setting);
+
+     ClassDB::bind_method(D_METHOD("get_space_for_candy"), &CandyMachineData::get_space_for_candy);
 
     ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "token_standard", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY + PROPERTY_USAGE_EDITOR + PROPERTY_USAGE_STORAGE), "set_token_standard", "get_token_standard");
     ClassDB::add_property("CandyMachineData", PropertyInfo(Variant::INT, "features", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY + PROPERTY_USAGE_EDITOR + PROPERTY_USAGE_STORAGE), "set_features", "get_features");
@@ -1181,8 +1230,40 @@ PackedByteArray CandyMachineData::serialize(){
     return result;
 }
 
+unsigned int CandyMachineData::get_config_line_size(){
+    if(config_line_setting.get_type() == Variant::OBJECT){
+        ERR_FAIL_COND_V_EDMSG(!((Object*)config_line_setting)->is_class("ConfigLineSetting"), 0, "Parameter is not a ConfigLine");
+        return Object::cast_to<ConfigLineSetting>(config_line_setting)->get_name_length() +
+        Object::cast_to<ConfigLineSetting>(config_line_setting)->get_uri_length();
+    }
+    else{
+        return 0;
+    }
+}
+
+unsigned int CandyMachineData::get_space_for_candy(){
+    // TODO(Virax): Change when hidden settings is supported.
+    const unsigned int HIDDEN_SECTION = 8+8+32+32+32+8+8+4+10+2+8+1+4+5*34+1+4+32+4+4+200+4+1+1+4+32+4+200+32;
+    return 
+    HIDDEN_SECTION +
+    4 +
+    items_available * get_config_line_size() +
+    items_available / 8 +
+    1 +
+    items_available * 4;
+}
+
 const std::string MplCandyMachine::ID = "CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR";
 const std::string MplCandyGuard::ID = "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g";
+
+MplCandyMachine::MplCandyMachine(){
+    fetch_client = memnew(SolanaClient);
+    fetch_client->set_async_override(true);
+}
+
+void MplCandyMachine::_process(float delta){
+    fetch_client->_process(delta);
+}
 
 PackedByteArray MplCandyMachine::mint_discriminator(){
     const unsigned char DISCRIMINATOR_ARRAY[] = {51, 57, 225, 47, 182, 146, 137, 166};
@@ -1220,12 +1301,25 @@ PackedByteArray MplCandyMachine::initialize2_discriminator(){
     return result;
 }
 
+PackedByteArray MplCandyMachine::add_config_lines_discriminator(){
+    const unsigned char DISCRIMINATOR_ARRAY[] = {0xdf, 0x32, 0xe0, 0xe3, 0x97, 0x08, 0x73, 0x6a};
+    PackedByteArray result;
+    for (unsigned int i = 0; i < 8; i++){
+        result.append(DISCRIMINATOR_ARRAY[i]);
+    }
+    return result;
+}
+
 void MplCandyMachine::_bind_methods(){
+    ClassDB::add_signal("MplCandyMachine", MethodInfo("account_fetched"));
+
     ClassDB::bind_static_method("MplCandyMachine", D_METHOD("initialize", "authority", "candy_machine_account", "collection_mint", "candy_machine_data", "pnft"), &MplCandyMachine::initialize, DEFVAL(false));
+    ClassDB::bind_static_method("MplCandyMachine", D_METHOD("add_config_lines", "candy_machine_key", "authority", "config_lines", "index"), &MplCandyMachine::add_config_lines);
     ClassDB::bind_static_method("MplCandyMachine", D_METHOD("mint", "payer", "receiver", "mint", "collection_mint", "collection_update_authority", "candy_machine_key"), &MplCandyMachine::mint);
 
     ClassDB::bind_static_method("MplCandyMachine", D_METHOD("get_pid"), &MplCandyMachine::get_pid);
-    ClassDB::bind_static_method("MplCandyMachine", D_METHOD("get_candy_machine_info", "candy_machine_key"), &MplCandyMachine::get_candy_machine_info);
+    ClassDB::bind_method(D_METHOD("fetch_account_callback", "params"), &MplCandyMachine::fetch_account_callback);
+    ClassDB::bind_method(D_METHOD("get_candy_machine_info", "candy_machine_key"), &MplCandyMachine::get_candy_machine_info);
 }
 
 Variant MplCandyMachine::initialize(const Variant &authority, const Variant &candy_machine_account, const Variant &collection_mint, const Variant &candy_machine_data, bool pnft){
@@ -1292,13 +1386,17 @@ Variant MplCandyMachine::mint(
     result->append_meta(AccountMeta(payer, true, false));
     result->append_meta(AccountMeta(payer, true, true));
     result->append_meta(AccountMeta(receiver, false, false));
-    result->append_meta(AccountMeta(mint, false, true));
+    result->append_meta(AccountMeta(mint, true, true));
     result->append_meta(AccountMeta(payer, true, false));
+    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(mint), false, true));
+    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(mint), false, true));
+    
     result->append_meta(AccountMeta(Pubkey::new_associated_token_address(receiver, mint), false, true));
-    result->append_meta(AccountMeta(TokenProgram::new_token_record_address(payer, mint), false, true));
 
-    result->append_meta(AccountMeta(TokenProgram::new_delegate_record_address(collection_update_authority, mint, candy_machine_creator, TokenProgram::MetaDataDelegateRole::COLLECTION), false, false));
+    const Variant associated_token_account = Pubkey::new_associated_token_address(receiver, mint);
+    result->append_meta(AccountMeta(TokenProgram::new_token_record_address(associated_token_account, mint), false, true));
 
+    result->append_meta(AccountMeta(TokenProgram::new_delegate_record_address(collection_update_authority, collection_mint, candy_machine_creator, TokenProgram::MetaDataDelegateRole::COLLECTION), false, false));
 
     result->append_meta(AccountMeta(collection_mint, false, false));
     result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(collection_mint), false, true));
@@ -1312,6 +1410,44 @@ Variant MplCandyMachine::mint(
     result->append_meta(AccountMeta(Pubkey::new_from_string("Sysvar1nstructions1111111111111111111111111"), false, false));
     result->append_meta(AccountMeta(Pubkey::new_from_string("SysvarS1otHashes111111111111111111111111111"), false, false));
 
+    result->append_meta(AccountMeta(get_pid(), false, false));
+    result->append_meta(AccountMeta(get_pid(), false, false));
+
+    return result;
+}
+
+Variant MplCandyMachine::add_config_lines(
+    const Variant &candy_machine_key,
+    const Variant &authority,
+    const Array &config_lines,
+    const unsigned int index
+){
+    Instruction *result = memnew(Instruction);
+
+    PackedByteArray data = add_config_lines_discriminator();
+    PackedByteArray temp_array;
+    temp_array.resize(4);
+    temp_array.encode_u32(0, index);
+    data.append_array(temp_array);
+    temp_array.encode_u32(0, config_lines.size());
+    data.append_array(temp_array);
+    for(unsigned int i = 0; i < config_lines.size(); i++){
+        ERR_FAIL_COND_V_EDMSG(config_lines[i].get_type() != Variant::OBJECT, nullptr, "Element is not ConfigLine");
+        Object *obj = config_lines[i];
+        ERR_FAIL_COND_V_EDMSG(obj->get_class() != "ConfigLine", nullptr, "Element is not ConfigLine");
+
+        data.append_array(Object::cast_to<ConfigLine>(config_lines[i])->serialize());
+    }
+
+    const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
+    result->set_program_id(new_pid);
+    result->set_data(data);
+
+    Variant candy_machine_creator = new_candy_machine_authority_pda(candy_machine_key);
+
+    result->append_meta(AccountMeta(candy_machine_key, false, true));
+    result->append_meta(AccountMeta(authority, true, false));
+
     return result;
 }
 
@@ -1324,23 +1460,25 @@ Variant MplCandyMachine::new_candy_machine_authority_pda(const Variant& candy_ma
 }
 
 Variant MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key){
-    int cursor = 9;
+    Callable callback(this, "fetch_account_callback");
+    fetch_client->connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
+    return fetch_client->get_account_info(Pubkey(candy_machine_key).to_string());
+}
 
-    SolanaClient temp_client;
-    Dictionary rpc_result = temp_client.get_account_info(Pubkey(candy_machine_key).to_string());
+void MplCandyMachine::fetch_account_callback(const Dictionary& params){
 
-    if(!rpc_result.has("result")){
-        return nullptr;
+    if(!params.has("result")){
+        return;
     }
 
-    Dictionary result_dict = rpc_result["result"];
+    Dictionary result_dict = params["result"];
     Variant value;
     if(!result_dict.has("value")){
-        return nullptr;
+        return;
     }
     value = result_dict["value"];
     if(value.get_type() != Variant::DICTIONARY){
-        return nullptr;
+        return;
     }
 
     Dictionary account = value;
@@ -1350,6 +1488,7 @@ Variant MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key
 
     PackedByteArray account_data = SolanaUtils::bs64_decode(encoded_data);
     CandyMachineData *res = memnew(CandyMachineData);
+    int cursor = 9;
     res->set_token_standard(account_data[cursor]);
     cursor++;
     PackedByteArray features;
@@ -1399,36 +1538,38 @@ Variant MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key
     res->set_creators(read_creators);
 
     if(account_data[cursor] != 1){
-        return res;
+        emit_signal("account_fetched", res);
     }
-    cursor++;
+    else{
+        cursor++;
 
-    int prefix_length = account_data.decode_u32(cursor);
-    
-    Variant config_line_setting = memnew(ConfigLineSetting);
-    ConfigLineSetting* config_line_setting_ptr = Object::cast_to<ConfigLineSetting>(config_line_setting);
+        int prefix_length = account_data.decode_u32(cursor);
+        
+        Variant config_line_setting = memnew(ConfigLineSetting);
+        ConfigLineSetting* config_line_setting_ptr = Object::cast_to<ConfigLineSetting>(config_line_setting);
 
-    cursor += 4;
-    config_line_setting_ptr->set_prefix_name(account_data.slice(cursor, cursor + prefix_length).get_string_from_ascii());
+        cursor += 4;
+        config_line_setting_ptr->set_prefix_name(account_data.slice(cursor, cursor + prefix_length).get_string_from_ascii());
 
-    cursor += prefix_length;
+        cursor += prefix_length;
 
-    config_line_setting_ptr->set_name_length(account_data.decode_u32(cursor));
-    cursor += 4;
+        config_line_setting_ptr->set_name_length(account_data.decode_u32(cursor));
+        cursor += 4;
 
-    int prefix_uri_length = account_data.decode_u32(cursor);
-    cursor += 4;
-    config_line_setting_ptr->set_prefix_uri(account_data.slice(cursor, cursor + prefix_uri_length).get_string_from_ascii());
-    cursor += prefix_uri_length;
+        int prefix_uri_length = account_data.decode_u32(cursor);
+        cursor += 4;
+        config_line_setting_ptr->set_prefix_uri(account_data.slice(cursor, cursor + prefix_uri_length).get_string_from_ascii());
+        cursor += prefix_uri_length;
 
-    config_line_setting_ptr->set_uri_length(account_data.decode_u32(cursor));
-    cursor += 4;
+        config_line_setting_ptr->set_uri_length(account_data.decode_u32(cursor));
+        cursor += 4;
 
-    config_line_setting_ptr->set_is_sequential(account_data[cursor] == 1);
+        config_line_setting_ptr->set_is_sequential(account_data[cursor] == 1);
 
-    res->set_config_line_setting(config_line_setting);
+        res->set_config_line_setting(config_line_setting);
 
-    return res;
+        emit_signal("account_fetched", res);
+    }
 }
 
 Variant MplCandyMachine::get_pid(){
