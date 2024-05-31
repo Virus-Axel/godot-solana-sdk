@@ -36,6 +36,11 @@ func _ready():
 
 
 func _on_timeout_timeout():
+	var all_tests_passed = true
 	for i in range(TOTAL_CASES):
 		if ((1 << i) & passed_test_mask) == 0:
+			all_tests_passed = false
 			print("[FAIL]: ", i)
+			
+	if all_tests_passed:
+		print("[ALL TESTS PASSED]")

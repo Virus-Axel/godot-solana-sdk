@@ -119,30 +119,19 @@ jobs:
                 mkdir tmp
                 godot --headless --path . --export-debug Web tmp/tmp_js_export.html
 
-            - name: (Web) Download backpack
+            - name: (Web) Download wallet mock
               if: ${{ endsWith(matrix.dir, 'Web/') }}
               uses: actions/checkout@v4
               with:
-                repository: 'coral-xyz/backpack'
-                ref: '5a538a41d060d2c48507007f96c766483115aecc'
-                path: 'backpack'
+                repository: 'Virus-Axel/solana-wallet-mock'
+                path: 'solana-wallet-mock'
 
-
-            - name: (Web) Install backpack
-              if: ${{ endsWith(matrix.dir, 'Web/') }}  
-              run: |
-                cd backpack
-                yarn config set enableImmutableInstalls false
-                yarn install
-                yarn build
-
-      
             - name: (Web) Test project in browser
               if: ${{ endsWith(matrix.dir, 'Web/') }}
               run: |
                 python3 .github/workflows/puppeteer/serve.py --no-browser --root `pwd`/${{matrix.dir}}tmp &
                 cd .github/workflows/puppeteer
-                node puppeteer.js | ( ! grep FAIL)
+                node puppeteer.js | (grep 'ALL TESTS PASSED')
                 exit $?
 
             - name: Test project
