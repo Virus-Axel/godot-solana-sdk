@@ -108,9 +108,9 @@ bool Keypair::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 Keypair::Keypair() {
-    seed.resize(KEY_LENGTH);
-    private_bytes.resize(KEY_LENGTH*2);
-    public_bytes.resize(KEY_LENGTH);
+    seed.resize(SEED_LENGTH);
+    private_bytes.resize(PRIVATE_KEY_LENGTH);
+    public_bytes.resize(PUBLIC_KEY_LENGTH);
     from_seed();
 }
 
@@ -141,12 +141,12 @@ void Keypair::random(){
     RandomNumberGenerator rand;
     rand.randomize();
 
-    private_bytes.resize(KEY_LENGTH*2);
-    public_bytes.resize(KEY_LENGTH);
+    private_bytes.resize(PRIVATE_KEY_LENGTH);
+    public_bytes.resize(PUBLIC_KEY_LENGTH);
 
-    unsigned char random_seed[KEY_LENGTH];
-    seed.resize(KEY_LENGTH);
-    for(unsigned int i = 0; i < KEY_LENGTH; i++){
+    unsigned char random_seed[SEED_LENGTH];
+    seed.resize(SEED_LENGTH);
+    for(unsigned int i = 0; i < SEED_LENGTH; i++){
         random_seed[i] = rand.randi();
         seed[i] = random_seed[i];
     }
@@ -158,10 +158,10 @@ void Keypair::random(){
 }
 
 Keypair::Keypair(const PackedByteArray &seed){
-    ERR_FAIL_COND_EDMSG(seed.size() != 32, "Seed must be 32 bytes");
+    ERR_FAIL_COND_EDMSG(seed.size() != SEED_LENGTH, "Seed must be 32 bytes");
 
-    private_bytes.resize(KEY_LENGTH*2);
-    public_bytes.resize(KEY_LENGTH);
+    private_bytes.resize(PRIVATE_KEY_LENGTH);
+    public_bytes.resize(PUBLIC_KEY_LENGTH);
 
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed.ptr());
 
@@ -181,10 +181,25 @@ Variant Keypair::new_from_seed(const PackedByteArray &seed){
     return res;
 }
 
-Variant Keypair::new_from_bytes(const PackedByteArray &bytes){
-    ERR_FAIL_COND_V_EDMSG(bytes.size() != 64, nullptr, "Expects 64 bytes input");
+Variant Keypair::new_from_bytes(const Variant &bytes){
+    PackedByteArray byte_array;
+    switch(bytes.get_type()){
+        case Variant::Type::STRING:
+        byte_array = SolanaUtils::bs58_decode(bytes);
+        break;
 
-    return new_from_seed(bytes.slice(0, 32));
+        case Variant::Type::PACKED_BYTE_ARRAY:
+        byte_array = bytes;
+        break;
+
+        default:
+        ERR_FAIL_V_EDMSG(nullptr, "Expected a string or a byte array.");
+        break;
+    }
+
+    ERR_FAIL_COND_V_EDMSG(byte_array.size() != 64, nullptr, "Expects 64 bytes input");
+
+    return new_from_seed(byte_array.slice(0, 32));
 }
 
 Variant Keypair::new_from_file(const String &filename){
@@ -222,7 +237,7 @@ void Keypair::set_public_string(const String& p_value){
 
     // Print warnings if key length is bad.
     ERR_FAIL_COND_EDMSG((decoded_value.is_empty() && public_string.length() != 0), "Value contains non-base58 characters");
-    ERR_FAIL_COND_EDMSG(decoded_value.size() != KEY_LENGTH, "Public key must be 32 bytes");
+    ERR_FAIL_COND_EDMSG(decoded_value.size() != PUBLIC_KEY_LENGTH, "Public key must be 32 bytes");
 }
 
 String Keypair::get_public_string(){
@@ -245,7 +260,7 @@ void Keypair::set_public_bytes(const PackedByteArray& p_value){
     }
 
     // Print warning if key length is bad.
-    ERR_FAIL_COND_EDMSG(public_bytes.size() != KEY_LENGTH, "Public key must be 32 bytes.");
+    ERR_FAIL_COND_EDMSG(public_bytes.size() != PUBLIC_KEY_LENGTH, "Public key must be 32 bytes.");
 }
 PackedByteArray Keypair::get_public_bytes() const{
     return public_bytes;
@@ -261,7 +276,7 @@ void Keypair::set_private_string(const String& p_value){
 
     // Print warnings if key length is bad.
     ERR_FAIL_COND_EDMSG(decoded_value.is_empty() && private_string.length() != 0, "Value contains non-base58 characters.");
-    ERR_FAIL_COND_EDMSG(decoded_value.size() != KEY_LENGTH, "Private key must be 32 bytes.");
+    ERR_FAIL_COND_EDMSG(decoded_value.size() != PRIVATE_KEY_LENGTH, "Private key must be 64 bytes.");
 }
 
 String Keypair::get_private_string(){
@@ -282,7 +297,7 @@ void Keypair::set_private_bytes(const PackedByteArray& p_value){
     }
 
     // Print warnings if key length is bad.
-    ERR_FAIL_COND_EDMSG(private_bytes.size() != KEY_LENGTH*2, "Private key must be 64 bytes.");
+    ERR_FAIL_COND_EDMSG(private_bytes.size() != PRIVATE_KEY_LENGTH, "Private key must be 64 bytes.");
 }
 
 PackedByteArray Keypair::get_private_bytes(){

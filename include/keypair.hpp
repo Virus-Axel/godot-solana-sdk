@@ -6,13 +6,17 @@
 #include "utils.hpp"
 #include "ed25519.h"
 
+
 namespace godot{
 class Keypair : public Resource {
     GDCLASS(Keypair, Resource)
 
 private:
 
-    const int KEY_LENGTH = 32;
+    const int PUBLIC_KEY_LENGTH = 32;
+    const int PRIVATE_KEY_LENGTH = 64;
+    const int SEED_LENGTH = 32;
+
     const int SIGNATURE_LENGTH = 64;
 
     bool unique = true;
@@ -36,7 +40,7 @@ public:
     
     static Variant new_from_seed(const String &seed);
     static Variant new_from_seed(const PackedByteArray &seed);
-    static Variant new_from_bytes(const PackedByteArray &bytes);
+    static Variant new_from_bytes(const Variant &bytes);
     static Variant new_from_file(const String &filename);
     static Variant new_random();
     static bool is_keypair(const Variant& object);
