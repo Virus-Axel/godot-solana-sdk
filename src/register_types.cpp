@@ -15,6 +15,7 @@
 #include "compute_budget.hpp"
 #include "system_program.hpp"
 #include "spl_token.hpp"
+#include "spl_token_2022.hpp"
 #include "meta_data.hpp"
 #include "mpl_token_metadata.hpp"
 #include "associated_token_account.hpp"
@@ -68,6 +69,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<ComputeBudget>();
     ClassDB::register_class<SystemProgram>();
     ClassDB::register_class<TokenProgram>();
+    ClassDB::register_class<TokenProgram2022>();
     ClassDB::register_class<MplTokenMetadata>();
     ClassDB::register_class<MetaDataCreator>();
     ClassDB::register_class<MetaDataCollection>();

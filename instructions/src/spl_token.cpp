@@ -3,6 +3,131 @@
 
 const std::string TokenProgram::ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
+
+Variant TokenProgram::_initialize_mint(const Variant& token_program_pid, const Variant& mint_pubkey, const Variant& mint_authority, const Variant& freeze_authority, const uint32_t decimals){
+    Instruction *result = memnew(Instruction);
+    PackedByteArray data;
+    if(freeze_authority.get_type() == Variant::OBJECT){
+        data.resize(67);
+
+        data[34] = 1;
+        PackedByteArray mint_authority_bytes = Pubkey(mint_authority).to_bytes();
+
+        for(unsigned int i = 0; i < 32; i++){
+            data[35 + i] = mint_authority_bytes[i];
+        }
+    }
+    else{
+        data.resize(35);
+        data[34] = 0;
+    }
+
+    const unsigned int DISCRIMINATOR = 20;
+    data[0] = DISCRIMINATOR;
+    data[1] = decimals;
+
+    PackedByteArray mint_authority_bytes = Pubkey(mint_authority).to_bytes();
+
+    for(unsigned int i = 0; i < 32; i++){
+        data[2 + i] = mint_authority_bytes[i];
+    }
+
+    result->set_program_id(token_program_pid);
+    result->set_data(data);
+
+    result->append_meta(AccountMeta(mint_pubkey, false, true));
+
+    Pubkey *rent = memnew(Pubkey);
+    rent->from_string("SysvarRent111111111111111111111111111111111");
+    result->append_meta(AccountMeta(rent, false, false));
+
+    return result;
+}
+
+Variant TokenProgram::_initialize_account(const Variant& token_program_pid, const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey){
+    Instruction *result = memnew(Instruction);
+    PackedByteArray data;
+    
+    data.resize(33);
+
+    const unsigned int DISCRIMINATOR = 18;
+    data[0] = DISCRIMINATOR;
+
+    PackedByteArray owner_bytes = Pubkey(owner_pubkey).to_bytes();
+    for(unsigned int i = 0; i < 32; i++){
+        data[1 + i] = owner_bytes[i];
+    }
+
+    result->set_program_id(token_program_pid);
+    result->set_data(data);
+
+    result->append_meta(AccountMeta(account_pubkey, false, true));
+    result->append_meta(AccountMeta(mint_pubkey, false, false));
+
+    return result;
+}
+
+Variant TokenProgram::_mint_to(const Variant& token_program_pid, const Variant& mint_pubkey, const Variant& account_pubkey, const Variant& owner_pubkey, const Variant& mint_authority, uint64_t amount){
+    Instruction *result = memnew(Instruction);
+    PackedByteArray data;
+    
+    data.resize(9);
+    const unsigned int DISCRIMINATOR = 7;
+    data[0] = DISCRIMINATOR;
+    data.encode_u64(1, amount);
+
+    PackedByteArray owner_bytes = Pubkey(owner_pubkey).to_bytes();
+
+    result->set_program_id(token_program_pid);
+    result->set_data(data);
+
+    result->append_meta(AccountMeta(mint_pubkey, false, true));
+    result->append_meta(AccountMeta(account_pubkey, false, true));
+    result->append_meta(AccountMeta(owner_pubkey, false, true));
+    result->append_meta(AccountMeta(mint_authority, true, false));
+
+    return result;
+}
+
+Variant TokenProgram::_transfer_checked(const Variant& token_program_pid, const Variant& source_pubkey, const Variant& mint_pubkey, const Variant& destination_pubkey, const Variant& source_authority, uint64_t amount, uint32_t decimals){
+    Instruction *result = memnew(Instruction);
+    PackedByteArray data;
+    
+    data.resize(10);
+    const unsigned int DISCRIMINATOR = 12;
+    data[0] = DISCRIMINATOR;
+    data.encode_u64(1, amount);
+    data[9] = decimals;
+
+    result->set_program_id(token_program_pid);
+    result->set_data(data);
+
+    result->append_meta(AccountMeta(source_pubkey, false, true));
+    result->append_meta(AccountMeta(mint_pubkey, false, false));
+    result->append_meta(AccountMeta(destination_pubkey, false, true));
+    result->append_meta(AccountMeta(source_authority, true, false));
+
+    return result;
+}
+
+Variant TokenProgram::_freeze_account(const Variant& token_program_pid, const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey, const Variant& freeze_authority){
+    Instruction *result = memnew(Instruction);
+    PackedByteArray data;
+    
+    data.resize(1);
+    const unsigned int DISCRIMINATOR = 10;
+    data[0] = DISCRIMINATOR;
+
+    result->set_program_id(token_program_pid);
+    result->set_data(data);
+
+    result->append_meta(AccountMeta(account_pubkey, false, true));
+    result->append_meta(AccountMeta(mint_pubkey, false, false));
+    result->append_meta(AccountMeta(freeze_authority, true, false));
+
+    return result;
+}
+
 void TokenProgram::_bind_methods(){
     ClassDB::bind_static_method("TokenProgram", D_METHOD("initialize_mint", "mint_pubkey", "mint_authority", "freeze_authority=null", "decimals=9"), &TokenProgram::initialize_mint);
     ClassDB::bind_static_method("TokenProgram", D_METHOD("initialize_account", "account_pubkey", "mint_pubkey", "owner_pubkey"), &TokenProgram::initialize_account);
@@ -43,126 +168,28 @@ Variant TokenProgram::new_delegate_record_address(const Variant& update_authorit
 }
 
 Variant TokenProgram::initialize_mint(const Variant& mint_pubkey, const Variant& mint_authority, const Variant& freeze_authority, const uint32_t decimals){
-    Instruction *result = memnew(Instruction);
-    PackedByteArray data;
-    if(freeze_authority.get_type() == Variant::OBJECT){
-        data.resize(67);
-
-        data[34] = 1;
-        PackedByteArray mint_authority_bytes = Pubkey(mint_authority).to_bytes();
-
-        for(unsigned int i = 0; i < 32; i++){
-            data[35 + i] = mint_authority_bytes[i];
-        }
-    }
-    else{
-        data.resize(35);
-        data[34] = 0;
-    }
-
-    data[0] = 20;
-    data[1] = decimals;
-
-    PackedByteArray mint_authority_bytes = Pubkey(mint_authority).to_bytes();
-
-    for(unsigned int i = 0; i < 32; i++){
-        data[2 + i] = mint_authority_bytes[i];
-    }
-
     const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
-    result->set_program_id(new_pid);
-    result->set_data(data);
-
-    result->append_meta(AccountMeta(mint_pubkey, false, true));
-
-    Pubkey *rent = memnew(Pubkey);
-    rent->from_string("SysvarRent111111111111111111111111111111111");
-    result->append_meta(AccountMeta(rent, false, false));
-
-    return result;
+    return _initialize_mint(new_pid, mint_pubkey, mint_authority, freeze_authority, decimals);
 }
 
 Variant TokenProgram::initialize_account(const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey){
-    Instruction *result = memnew(Instruction);
-    PackedByteArray data;
-    
-    data.resize(33);
-    data[0] = 18;
-
-    PackedByteArray owner_bytes = Pubkey(owner_pubkey).to_bytes();
-    for(unsigned int i = 0; i < 32; i++){
-        data[1 + i] = owner_bytes[i];
-    }
-
     const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
-    result->set_program_id(new_pid);
-    result->set_data(data);
-
-    result->append_meta(AccountMeta(account_pubkey, false, true));
-    result->append_meta(AccountMeta(mint_pubkey, false, false));
-
-    return result;
+    return _initialize_account(new_pid, account_pubkey, mint_pubkey, owner_pubkey);
 }
 
 Variant TokenProgram::mint_to(const Variant& mint_pubkey, const Variant& account_pubkey, const Variant& owner_pubkey, const Variant& mint_authority, uint64_t amount){
-    Instruction *result = memnew(Instruction);
-    PackedByteArray data;
-    
-    data.resize(9);
-    data[0] = 7;
-    data.encode_u64(1, amount);
-
-    PackedByteArray owner_bytes = Pubkey(owner_pubkey).to_bytes();
-
     const Variant new_pid = Pubkey::new_from_string(String(ID.c_str()));
-    result->set_program_id(new_pid);
-    result->set_data(data);
-
-    result->append_meta(AccountMeta(mint_pubkey, false, true));
-    result->append_meta(AccountMeta(account_pubkey, false, true));
-    result->append_meta(AccountMeta(owner_pubkey, false, true));
-    result->append_meta(AccountMeta(mint_authority, true, false));
-
-    return result;
+    return _mint_to(new_pid, mint_pubkey, account_pubkey, owner_pubkey, mint_authority, amount);
 }
 
 Variant TokenProgram::transfer_checked(const Variant& source_pubkey, const Variant& mint_pubkey, const Variant& destination_pubkey, const Variant& source_authority, uint64_t amount, uint32_t decimals){
-    Instruction *result = memnew(Instruction);
-    PackedByteArray data;
-    
-    data.resize(10);
-    data[0] = 12;
-    data.encode_u64(1, amount);
-    data[9] = decimals;
-
     const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
-    result->set_program_id(new_pid);
-    result->set_data(data);
-
-    result->append_meta(AccountMeta(source_pubkey, false, true));
-    result->append_meta(AccountMeta(mint_pubkey, false, false));
-    result->append_meta(AccountMeta(destination_pubkey, false, true));
-    result->append_meta(AccountMeta(source_authority, true, false));
-
-    return result;
+    return _transfer_checked(new_pid, source_pubkey, mint_pubkey, destination_pubkey, source_authority, amount, decimals);
 }
 
 Variant TokenProgram::freeze_account(const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey, const Variant& freeze_authority){
-    Instruction *result = memnew(Instruction);
-    PackedByteArray data;
-    
-    data.resize(1);
-    data[0] = 10;
-
     const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
-    result->set_program_id(new_pid);
-    result->set_data(data);
-
-    result->append_meta(AccountMeta(account_pubkey, false, true));
-    result->append_meta(AccountMeta(mint_pubkey, false, false));
-    result->append_meta(AccountMeta(freeze_authority, true, false));
-
-    return result;
+    return _freeze_account(new_pid, account_pubkey, mint_pubkey, owner_pubkey, freeze_authority);
 }
 
 Variant TokenProgram::get_pid(){
