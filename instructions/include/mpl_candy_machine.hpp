@@ -235,18 +235,15 @@ public:
     TypedArray<AccountMeta> get_mint_arg_accounts(const Variant& payer);
 };
 
-class MplCandyMachine : public Node{
-    GDCLASS(MplCandyMachine, Node)
+class MplCandyMachine : public SolanaClient{
+    GDCLASS(MplCandyMachine, SolanaClient)
 private:
-    SolanaClient* fetch_client;
 
 protected:
     static void _bind_methods();
 
 public:
     MplCandyMachine();
-
-    void _process(float delta);
 
     static PackedByteArray mint_discriminator();
     static PackedByteArray mint2_discriminator();

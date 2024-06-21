@@ -28,11 +28,8 @@ func display_dict(data: Variant, parent: TreeItem):
 func add_solana_client() -> SolanaClient:
 	var res = SolanaClient.new()
 	
-	# Async is true by default
-	res.async = true
-	
-	# RPC HTTP URL goes here.
-	#res.url = "http://127.0.0.1:8899"
+	# RPC HTTP URL is set in project settings.
+	# You can override it by setting url_override property.
 
 	# Solana Client needs to be in scene tree for async to work.
 	add_child(res)
@@ -95,7 +92,6 @@ func synchronous_client_call():
 	var client = SolanaClient.new()
 	var response = client.get_account_info(EXAMPLE_ACCOUNT)
 	assert(response.has("result"))
-	print(response)
 	display_dict(response["result"], $ResultTree4.create_item())
 	PASS(6)
 

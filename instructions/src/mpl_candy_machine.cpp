@@ -1257,12 +1257,6 @@ const std::string MplCandyMachine::ID = "CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnj
 const std::string MplCandyGuard::ID = "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g";
 
 MplCandyMachine::MplCandyMachine(){
-    fetch_client = memnew(SolanaClient);
-    fetch_client->set_async_override(true);
-}
-
-void MplCandyMachine::_process(float delta){
-    fetch_client->_process(delta);
 }
 
 PackedByteArray MplCandyMachine::mint_discriminator(){
@@ -1461,8 +1455,8 @@ Variant MplCandyMachine::new_candy_machine_authority_pda(const Variant& candy_ma
 
 Variant MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key){
     Callable callback(this, "fetch_account_callback");
-    fetch_client->connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
-    return fetch_client->get_account_info(Pubkey(candy_machine_key).to_string());
+    connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
+    return get_account_info(Pubkey(candy_machine_key).to_string());
 }
 
 void MplCandyMachine::fetch_account_callback(const Dictionary& params){
