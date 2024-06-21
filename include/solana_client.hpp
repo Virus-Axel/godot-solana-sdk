@@ -13,7 +13,11 @@ class SolanaClient : public Node {
 
 private:
     static unsigned int global_rpc_id;
+
     unsigned int local_rpc_id = 0;
+    
+    float timeout = 10.0;
+    float elapsed_time = 0;
 
     const int DEFAULT_PORT = 443;
     const std::string DEFAULT_URL = "https://api.devnet.solana.com";
@@ -71,15 +75,13 @@ private:
 
     Dictionary make_rpc_dict(const String& method, const Array& params);
     Dictionary make_rpc_param(const Variant& key, const Variant& value);
-    Dictionary make_rpc_param(const Variant& key, const Dictionary& value);
-    Dictionary make_data_slice(uint64_t offset, uint64_t length);
     Dictionary synchronous_request(const String& request_body);
     void asynchronous_request(const String& request_body);
     Dictionary quick_http_request(const String& request_body, const Callable& callback = Callable());
     Dictionary parse_url(const String& url);
     String assemble_url(const Dictionary& url_components);
 
-    void poll_http_request();
+    void poll_http_request(const float delta);
 
     void process_package(const PackedByteArray& packet_data);
     void connect_ws();
@@ -97,6 +99,9 @@ public:
 
     void set_url_override(const String& url);
     String get_url_override();
+
+    void set_timeout(float timeout);
+    float get_timeout();
     
     void set_ws_url(const String& url);
     String get_ws_url();

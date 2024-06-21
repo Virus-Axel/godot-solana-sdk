@@ -157,6 +157,7 @@ Dictionary SolanaClient::make_rpc_param(const Variant& key, const Variant& value
 Dictionary SolanaClient::synchronous_request(const String& request_body){
     #ifndef WEB_ENABLED
 	const int32_t POLL_DELAY_MSEC = 100;
+    elapsed_time = 0.0F;
 
 	// Set headers
 	PackedStringArray http_headers;
@@ -199,7 +200,12 @@ Dictionary SolanaClient::synchronous_request(const String& request_body){
 	while(status == HTTPClient::STATUS_CONNECTING || status == HTTPClient::STATUS_RESOLVING){
 		handler.poll();
 		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
+        elapsed_time += float(POLL_DELAY_MSEC) / 1000;
 		status = handler.get_status();
+        if(elapsed_time > timeout){
+            handler.close();
+            ERR_FAIL_V_EDMSG(Dictionary(), "Request timed out.");
+        }
 	}
 
 	// Make a POST request
@@ -216,7 +222,12 @@ Dictionary SolanaClient::synchronous_request(const String& request_body){
 	while(status == HTTPClient::STATUS_REQUESTING){
 		handler.poll();
 		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
+        elapsed_time += float(POLL_DELAY_MSEC) / 1000;
 		status = handler.get_status();
+        if(elapsed_time > timeout){
+            handler.close();
+            ERR_FAIL_V_EDMSG(Dictionary(), "Request timed out.");
+        }
 	}
 
 	// Collect the response body.
@@ -225,7 +236,12 @@ Dictionary SolanaClient::synchronous_request(const String& request_body){
 		response_data.append_array(handler.read_response_body_chunk());
 		handler.poll();
 		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
+        elapsed_time += float(POLL_DELAY_MSEC) / 1000;
 		status = handler.get_status();
+        if(elapsed_time > timeout){
+            handler.close();
+            ERR_FAIL_V_EDMSG(Dictionary(), "Request timed out.");
+        }
 	}
 
 	handler.close();
@@ -237,15 +253,17 @@ Dictionary SolanaClient::synchronous_request(const String& request_body){
 #else
     String web_script = "\
         var request = new XMLHttpRequest();\
-        request.open('POST', '{0}', false);\
+        request.timeout = {0};\
+        request.open('POST', '{1}', false);\
         request.setRequestHeader('Content-Type', 'application/json');\
-        request.send('{1}');\
+        request.send('{2}');\
         \
         Module.solanaClientResponse = request.response;\
         request.response";
 
     Array params;
 
+    params.append(timeout * 1000);
     params.append(get_real_url());
     params.append(request_body);
 
@@ -275,6 +293,7 @@ void SolanaClient::asynchronous_request(const String& request_body){
     #ifndef WEB_ENABLED
 	
     Error err;
+    elapsed_time = 0.0F;
 
     // Godot does not want the port in the url
     Dictionary parsed_url = parse_url(get_real_url());
@@ -295,13 +314,15 @@ void SolanaClient::asynchronous_request(const String& request_body){
 
 #else
     String web_script = "\
-        Module.solanaClientReq{2} = new XMLHttpRequest();\
-        Module.solanaClientReq{2}.open('POST', '{0}', true);\
-        Module.solanaClientReq{2}.setRequestHeader('Content-Type', 'application/json');\
-        Module.solanaClientReq{2}.send('{1}');";
+        Module.solanaClientReq{3} = new XMLHttpRequest();\
+        Module.solanaClientReq{3}.timeout = {0};\
+        Module.solanaClientReq{3}.open('POST', '{1}', true);\
+        Module.solanaClientReq{3}.setRequestHeader('Content-Type', 'application/json');\
+        Module.solanaClientReq{3}.send('{2}');";
 
     Array params;
 
+    params.append(timeout * 1000);
     params.append(get_real_url());
     params.append(request_body);
     params.append(local_rpc_id);
@@ -313,8 +334,18 @@ void SolanaClient::asynchronous_request(const String& request_body){
 #endif
 }
 
-void SolanaClient::poll_http_request(){
+void SolanaClient::poll_http_request(const float delta){
 #ifndef WEB_ENABLED
+    if(!pending_request){
+        return;
+    }
+
+    elapsed_time += delta;
+    if(elapsed_time > timeout){
+        http_handler.close();
+        pending_request = false;
+        ERR_FAIL_EDMSG("Request timed out.");
+    }
 
 	// Wait until a connection is established.
     http_handler.poll();
@@ -348,8 +379,8 @@ void SolanaClient::poll_http_request(){
 
         if(err != Error::OK){
             http_handler.close();
-            gdextension_interface_print_warning("Error sending request.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
-            return;
+            pending_request = false;
+            ERR_FAIL_EDMSG("Error sending request.");
         }
     }
 	else if(status == HTTPClient::STATUS_REQUESTING){
@@ -367,8 +398,9 @@ void SolanaClient::poll_http_request(){
         JSON json;
         err = json.parse(response_data.get_string_from_utf8());
         if(err != Error::OK){
-            gdextension_interface_print_warning("Error getting response data.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
-            return;
+            http_handler.close();
+            pending_request = false;
+            ERR_FAIL_EDMSG("Error getting response data.");
         }
 
         // Return if response is not ours.
@@ -381,6 +413,7 @@ void SolanaClient::poll_http_request(){
         }
 
         http_handler.close();
+        pending_request = false;
 
         Array params;
         params.append(json.get_data());
@@ -1043,20 +1076,18 @@ void SolanaClient::_bind_methods(){
     ClassDB::add_signal("SolanaClient", MethodInfo("http_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
 
     ClassDB::bind_method(D_METHOD("response_callback", "params"), &SolanaClient::response_callback);
-
-    ClassDB::bind_method(D_METHOD("set_async", "use_async"), &SolanaClient::set_async_override);
-    ClassDB::bind_method(D_METHOD("get_async"), &SolanaClient::get_async_override);
-
+    ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &SolanaClient::set_url_override);
+    ClassDB::bind_method(D_METHOD("get_url_override"), &SolanaClient::get_url_override);
     ClassDB::bind_method(D_METHOD("is_ready"), &SolanaClient::is_ready);
 
     ClassDB::bind_method(D_METHOD("parse_url", "url"), &SolanaClient::parse_url);
     ClassDB::bind_method(D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
 
-    ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &SolanaClient::set_url_override);
-    ClassDB::bind_method(D_METHOD("get_url_override"), &SolanaClient::get_url_override);
-
     ClassDB::bind_method(D_METHOD("set_ws_url", "url"), &SolanaClient::set_ws_url);
     ClassDB::bind_method(D_METHOD("get_ws_url"), &SolanaClient::get_ws_url);
+    
+    ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &SolanaClient::set_timeout);
+    ClassDB::bind_method(D_METHOD("get_timeout"), &SolanaClient::get_timeout);
 
     ClassDB::bind_method(D_METHOD("set_encoding", "encoding"), &SolanaClient::set_encoding);
     ClassDB::bind_method(D_METHOD("get_encoding"), &SolanaClient::get_encoding);
@@ -1138,11 +1169,11 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_method(D_METHOD("root_subscribe", "callback"), &SolanaClient::root_subscribe);
     ClassDB::bind_method(D_METHOD("slot_subscribe", "callback"), &SolanaClient::slot_subscribe);
 
-    ClassDB::add_property("SolanaClient", PropertyInfo(Variant::BOOL, "async", PROPERTY_HINT_NONE), "set_async", "get_async");
     ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "url_override", PROPERTY_HINT_NONE), "set_url_override", "get_url_override");
     ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "ws_url", PROPERTY_HINT_NONE), "set_ws_url", "get_ws_url");
     ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "commitment", PROPERTY_HINT_ENUM, "confirmed,processed,finalized"), "set_commitment", "get_commitment");
     ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "encoding", PROPERTY_HINT_ENUM, "base64,base58"), "set_encoding", "get_encoding");
+    ClassDB::add_property("SolanaClient", PropertyInfo(Variant::FLOAT, "timeout"), "set_timeout", "get_timeout");
 }
 
 void SolanaClient::_process(double delta){
@@ -1163,8 +1194,7 @@ void SolanaClient::_process(double delta){
         break;
     }
 
-    poll_http_request();
-    return;
+    poll_http_request(delta);
 }
 
 void SolanaClient::_ready(){
@@ -1388,6 +1418,14 @@ void SolanaClient::set_async_override(bool use_async){
 
 bool SolanaClient::get_async_override(){
     return async_override;
+}
+
+void SolanaClient::set_timeout(float timeout){
+    this->timeout = timeout;
+}
+
+float SolanaClient::get_timeout(){
+    return timeout;
 }
 
 bool SolanaClient::is_ready(){

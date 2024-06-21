@@ -9,11 +9,10 @@
 
 namespace godot{
 
-class MplTokenMetadata : public Node{
-    GDCLASS(MplTokenMetadata, Node)
+class MplTokenMetadata : public SolanaClient{
+    GDCLASS(MplTokenMetadata, SolanaClient)
 private:
     bool pending_fetch = false;
-    SolanaClient *metadata_client = nullptr;
 
     void metadata_callback(const Dictionary& rpc_result);
 
@@ -21,11 +20,7 @@ protected:
     static void _bind_methods();
 
 public:
-    void _process(double delta) override;
     MplTokenMetadata();
-
-    void set_url_override(const String& url_override);
-    String get_url_override();
 
     static const std::string ID;
 
