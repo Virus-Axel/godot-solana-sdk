@@ -872,22 +872,32 @@ Error AnchorProgram::fetch_account(const String name, const Variant& account){
 
 void AnchorProgram::fetch_account_callback(const Dictionary &rpc_result){
     String name = pending_account_name;
+    
+    Dictionary ref_struct = find_idl_account(name);
+
+    if(ref_struct.is_empty()){
+        emit_signal("account_fetched", Dictionary());
+        ERR_FAIL_EDMSG("Account name was not found in IDL.");
+    }
+
     pending_account_name = "";
     if(!rpc_result.has("result")){
         emit_signal("account_fetched", Dictionary());
-        return;
+        ERR_FAIL_COND_EDMSG(rpc_result.has("error"), String(rpc_result["result"]));
+        ERR_FAIL_EDMSG("Unexpected RPC responce, no result.");
     }
 
     Dictionary result_dict = rpc_result["result"];
     Variant value;
     if(!result_dict.has("value")){
         emit_signal("account_fetched", Dictionary());
-        return;
+        ERR_FAIL_EDMSG("Unexpected RPC responce, no value.");
     }
     value = result_dict["value"];
     if(value.get_type() != Variant::DICTIONARY){
         emit_signal("account_fetched", Dictionary());
-        return;
+        ERR_FAIL_COND_EDMSG(value.get_type() == Variant::NIL, "Account does not exist");
+        ERR_FAIL_EDMSG("Unexpected RPC responce, unknown value type.");
     }
 
     Dictionary account_dict = value;
@@ -898,13 +908,6 @@ void AnchorProgram::fetch_account_callback(const Dictionary &rpc_result){
     PackedByteArray account_data = SolanaUtils::bs64_decode(encoded_data);
 
     account_data = account_data.slice(8);
-
-    Dictionary ref_struct = find_idl_account(name);
-
-    if(ref_struct.is_empty()){
-        emit_signal("account_fetched", Dictionary());
-        return;
-    }
 
     const Array fields = ((Dictionary)ref_struct["type"])["fields"];
 
