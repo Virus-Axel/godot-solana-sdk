@@ -19,7 +19,6 @@ using internal::gdextension_interface_print_warning;
 
 String SolanaClient::ws_from_http(const String& http_url){
     Dictionary parsed_url = parse_url(http_url);
-
     // See if tls should be used.
     use_tls = true;
     if(!parsed_url.has("scheme")){
@@ -56,6 +55,20 @@ String SolanaClient::get_real_ws_url(){
         return ws_url;
     }
 }
+
+HttpRpcCall *SolanaClient::create_http_call(){
+    HttpRpcCall* new_http_call = memnew(HttpRpcCall);
+    Callable callback = Callable(this, "response_callback");
+    new_http_call->set_http_callback(callback);
+    rpc_calls.append(Variant(new_http_call));
+    return new_http_call;
+}
+
+ WsRpcCall *SolanaClient::create_ws_call(){
+    WsRpcCall* new_ws_call = memnew(WsRpcCall);
+    rpc_calls.push_back(new_ws_call);
+    return new_ws_call;
+ }
 
 void SolanaClient::append_commitment(Array& options){
     if(!commitment.is_empty()){
@@ -153,7 +166,7 @@ Dictionary SolanaClient::make_rpc_param(const Variant& key, const Variant& value
     return result;
 }
 
-Error RpcCall::make_request(const String& request_body){
+Error HttpRpcCall::make_request(const String& request_body){
     // Set headers
     PackedStringArray http_headers;
     http_headers.append("Content-Type: application/json");
@@ -163,7 +176,7 @@ Error RpcCall::make_request(const String& request_body){
     return request(godot::HTTPClient::METHOD_POST, path, http_headers, request_body);
 }
 
-Error RpcCall::connect_to(Dictionary url){
+Error HttpRpcCall::connect_to(Dictionary url){
     int32_t port = url["port"];
     url.erase("port");
 
@@ -187,7 +200,7 @@ Error RpcCall::connect_to(Dictionary url){
     return connect_to_host(connect_url, port);
 }
 
-Dictionary RpcCall::synchronous_request(const Dictionary& request_body, const Dictionary& parsed_url){
+Dictionary HttpRpcCall::synchronous_request(const Dictionary& request_body, const Dictionary& parsed_url){
     #ifndef WEB_ENABLED
 	const int32_t POLL_DELAY_MSEC = 100;
     elapsed_time = 0.0F;
@@ -281,11 +294,11 @@ Dictionary RpcCall::synchronous_request(const Dictionary& request_body, const Di
 
 }
 
-void RpcCall::set_http_callback(const Callable& callback){
+void HttpRpcCall::set_http_callback(const Callable& callback){
     http_callback = callback;
 }
 
-void RpcCall::asynchronous_request(const Dictionary& request_body, Dictionary parsed_url){
+void HttpRpcCall::asynchronous_request(const Dictionary& request_body, Dictionary parsed_url){
     local_rpc_id = request_body["id"];
 
     #ifndef WEB_ENABLED
@@ -323,14 +336,23 @@ void RpcCall::asynchronous_request(const Dictionary& request_body, Dictionary pa
 #endif
 }
 
-void RpcCall::enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const String& url){
+void WsRpcCall::enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const String& url){
     connect_ws(url);
     callbacks.push_back(std::make_pair(0, callback));
     method_names.push_back(request_body["method"]);
     ws_request_queue.push(JSON::stringify(request_body));
+    pending_request = true;
 }
 
-void RpcCall::poll_http_request(const float delta){
+void HttpRpcCall::_bind_methods(){
+    
+}
+
+bool HttpRpcCall::is_pending(){
+    return pending_request;
+}
+
+void HttpRpcCall::poll_http_request(const float delta){
 #ifndef WEB_ENABLED
     if(!pending_request){
         return;
@@ -338,13 +360,13 @@ void RpcCall::poll_http_request(const float delta){
 
     elapsed_time += delta;
     if(elapsed_time > timeout){
-        HTTPClient::close();
+        close();
         pending_request = false;
         ERR_FAIL_EDMSG("Request timed out.");
     }
 
 	// Wait until a connection is established.
-    HTTPClient::poll();
+    poll();
 	godot::HTTPClient::Status status = get_status();
 
     Error err;
@@ -419,7 +441,15 @@ void RpcCall::poll_http_request(const float delta){
 #endif
 }
 
-void RpcCall::poll_ws_request(){
+void WsRpcCall::_bind_methods(){
+
+}
+
+bool WsRpcCall::is_pending(){
+    return pending_request;
+}
+
+void WsRpcCall::poll_ws_request(){
     WebSocketPeer::poll();
     WebSocketPeer::State state = get_ready_state();
     switch(state){
@@ -429,7 +459,6 @@ void RpcCall::poll_ws_request(){
                 process_package(packet_data);
             }
             if(!ws_request_queue.empty()){
-                //std::cout << "sending: " << ws_request_queue.front().ascii() << std::endl;
                 send_text(ws_request_queue.front());
                 ws_request_queue.pop();
             }
@@ -441,15 +470,15 @@ void RpcCall::poll_ws_request(){
 
 Dictionary SolanaClient::quick_http_request(const Dictionary& request_body, const Callable& callback){
     if(is_inside_tree() || async_override){
-        rpc_call->asynchronous_request(request_body, parse_url(get_real_url()));
+        create_http_call()->asynchronous_request(request_body, parse_url(get_real_url()));
         return Dictionary();
     }
     else{
-        return rpc_call->synchronous_request(request_body, parse_url(get_real_url()));
+        return create_http_call()->synchronous_request(request_body, parse_url(get_real_url()));
     }
 }
 
-void RpcCall::process_package(const PackedByteArray& packet_data){
+void WsRpcCall::process_package(const PackedByteArray& packet_data){
     Dictionary json = JSON::parse_string(packet_data.get_string_from_ascii());
     const Variant result = json["result"];
 
@@ -459,6 +488,7 @@ void RpcCall::process_package(const PackedByteArray& packet_data){
             if(callbacks[i].first == subscription){
                 Array args;
                 args.append(((Dictionary)json)["params"]);
+                pending_request = false;
                 callbacks[i].second.callv(args);
             }
         }
@@ -497,7 +527,7 @@ void RpcCall::process_package(const PackedByteArray& packet_data){
     callbacks[index].first = (int) result;
 }
 
-void RpcCall::unsubscribe_all(const Callable &callback){
+void WsRpcCall::unsubscribe_all(const Callable &callback){
     for(unsigned int i = 0; i < callbacks.size(); i++){
         if(callbacks[i].second == callback && callbacks[i].first != 0){
             Array params;
@@ -511,18 +541,10 @@ void RpcCall::unsubscribe_all(const Callable &callback){
     }
 }
 
-void RpcCall::connect_ws(const String& url){
+void WsRpcCall::connect_ws(const String& url){
     if(get_ready_state() == WebSocketPeer::STATE_CLOSED){
         connect_to_url(url);
     }
-}
-
-RpcCall::RpcCall(){
-
-}
-
-RpcCall::~RpcCall(){
-
 }
 
 void SolanaClient::response_callback(const Dictionary &params){
@@ -1024,14 +1046,14 @@ void SolanaClient::account_subscribe(const Variant &account_key, const Callable 
     params.append(Pubkey(account_key).to_string());
     add_to_param_dict(params, "commitment", commitment);
 
-    rpc_call->enqueue_ws_request(make_rpc_dict("accountSubscribe", params), callback, get_real_ws_url());
+    create_ws_call()->enqueue_ws_request(make_rpc_dict("accountSubscribe", params), callback, get_real_ws_url());
 }
 
 void SolanaClient::signature_subscribe(const String &signature, const Callable &callback, const String &commitment){
     Array params;
     params.append(signature);
     add_to_param_dict(params, "commitment", commitment);
-    rpc_call->enqueue_ws_request(make_rpc_dict("signatureSubscribe", params), callback, get_real_ws_url());
+    create_ws_call()->enqueue_ws_request(make_rpc_dict("signatureSubscribe", params), callback, get_real_ws_url());
 }
 
 void SolanaClient::program_subscribe(const String &program_id, const Callable &callback){
@@ -1041,24 +1063,32 @@ void SolanaClient::program_subscribe(const String &program_id, const Callable &c
     append_account_filter(params);
     append_encoding(params);
 
-    rpc_call->enqueue_ws_request(make_rpc_dict("programSubscribe", params), callback, get_real_ws_url());
+    create_ws_call()->enqueue_ws_request(make_rpc_dict("programSubscribe", params), callback, get_real_ws_url());
 }
 
 void SolanaClient::root_subscribe(const Callable &callback){
-    rpc_call->enqueue_ws_request(make_rpc_dict("rootSubscribe", Array()), callback, get_real_ws_url());
+    create_ws_call()->enqueue_ws_request(make_rpc_dict("rootSubscribe", Array()), callback, get_real_ws_url());
 }
 
 void SolanaClient::slot_subscribe(const Callable &callback){
-    rpc_call->enqueue_ws_request(make_rpc_dict("slotSubscribe", Array()), callback, get_real_ws_url());
+    create_ws_call()->enqueue_ws_request(make_rpc_dict("slotSubscribe", Array()), callback, get_real_ws_url());
 }
 
 void SolanaClient::unsubscribe_all(const Callable &callback){
-    rpc_call->unsubscribe_all(callback);
+    for(unsigned int i = 0; i < rpc_calls.size(); i++){
+        // TODO: Remove RpcCall's ability to do multiple ws requests.
+        if(((Object*)rpc_calls[i])->get_class() == "WsRpcCall"){
+            Object::cast_to<WsRpcCall>(rpc_calls[i])->unsubscribe_all(callback);
+        }
+    }
 }
 
 void SolanaClient::_bind_methods(){
     ClassDB::add_signal("SolanaClient", MethodInfo("socket_response_received"));
     ClassDB::add_signal("SolanaClient", MethodInfo("http_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
+
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("get_next_request_identifier"), &SolanaClient::get_next_request_identifier);
 
     ClassDB::bind_method(D_METHOD("response_callback", "params"), &SolanaClient::response_callback);
     ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &SolanaClient::set_url_override);
@@ -1066,7 +1096,6 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_method(D_METHOD("is_ready"), &SolanaClient::is_ready);
 
     ClassDB::bind_method(D_METHOD("parse_url", "url"), &SolanaClient::parse_url);
-    ClassDB::bind_static_method("SolanaClient", D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
 
     ClassDB::bind_method(D_METHOD("set_ws_url", "url"), &SolanaClient::set_ws_url);
     ClassDB::bind_method(D_METHOD("get_ws_url"), &SolanaClient::get_ws_url);
@@ -1162,8 +1191,25 @@ void SolanaClient::_bind_methods(){
 }
 
 void SolanaClient::_process(double delta){
-    rpc_call->poll_ws_request();
-    rpc_call->poll_http_request(delta);
+    for(unsigned int i = 0; i < rpc_calls.size(); i++){
+        if(((Object*)rpc_calls[i])->get_class() == "HttpRpcCall"){
+            HttpRpcCall *http_call = Object::cast_to<HttpRpcCall>(rpc_calls[i]);
+            http_call->poll_http_request(delta);
+            if(!http_call->is_pending()){
+                rpc_calls.erase(i);
+            }
+        }
+        else if(((Object*)rpc_calls[i])->get_class() == "WsRpcCall"){
+            WsRpcCall *ws_call = Object::cast_to<WsRpcCall>(rpc_calls[i]);
+            ws_call->poll_ws_request();
+            if(!ws_call->is_pending()){
+                rpc_calls.erase(i);
+            }
+        }
+        else{
+            ERR_FAIL_MSG("Internal bug, Please report");
+        } 
+    }
 }
 
 void SolanaClient::_ready(){
@@ -1171,9 +1217,6 @@ void SolanaClient::_ready(){
 
 SolanaClient::SolanaClient(){
     transaction_detail = "full";
-    Callable callback = Callable(this, "response_callback");
-    rpc_call = new RpcCall;
-    rpc_call->set_http_callback(callback);
 }
 
 Dictionary SolanaClient::parse_url(const String& url){
@@ -1252,6 +1295,10 @@ String SolanaClient::assemble_url(const Dictionary& url_components){
     }
 
     return result;
+}
+
+unsigned int SolanaClient::get_next_request_identifier(){
+    return SolanaClient::global_rpc_id;
 }
 
 void SolanaClient::set_url_override(const String& url_override){
@@ -1402,7 +1449,6 @@ bool SolanaClient::is_ready(){
 }
 
 SolanaClient::~SolanaClient(){
-    delete rpc_call;
 }
 
 }

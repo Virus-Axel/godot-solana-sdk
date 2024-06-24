@@ -8,53 +8,65 @@
 
 namespace godot {
 
-class RpcCall : public HTTPClient, public WebSocketPeer{
-private:
-    bool pending_request = false;
 
-    float timeout = 10.0;
+class HttpRpcCall : public HTTPClient{
+    GDCLASS(HttpRpcCall, HTTPClient)
+private:
+    String path = "";
+
     float elapsed_time = 0;
+    float timeout = 20.0;
+    Callable http_callback;
 
     unsigned int local_rpc_id = 0;
 
     Dictionary  http_request_body;
-    String path = "";
-
-    Callable http_callback;
-
-    std::queue<String> ws_request_queue;
-    std::vector<std::pair<int, Callable>> callbacks;
-    std::vector<String> method_names;
 
     Error connect_to(Dictionary url);
     Error make_request(const String& request_body);
 
-    void process_package(const PackedByteArray& packet_data);
-    void connect_ws(const String& url);
+protected:
+    bool pending_request = false;
+
+    static void _bind_methods();
 public:
-    RpcCall();
+    bool is_pending();
+    void poll_http_request(const float delta);
 
     void set_http_callback(const Callable& callback);
     Dictionary synchronous_request(const Dictionary& request_body, const Dictionary& parsed_url);
     void asynchronous_request(const Dictionary& request_body, Dictionary parsed_url);
+};
 
-    void enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const String& url);
+class WsRpcCall : public WebSocketPeer{
+    GDCLASS(WsRpcCall, WebSocketPeer)
+private:
+    std::queue<String> ws_request_queue;
+    std::vector<std::pair<int, Callable>> callbacks;
+    std::vector<String> method_names;
 
-    void poll_http_request(const float delta);
+    void process_package(const PackedByteArray& packet_data);
+    void connect_ws(const String& url);
+    
+protected:
+    bool pending_request = false;
+
+    static void _bind_methods();
+public:
+    bool is_pending();
+
     void poll_ws_request();
-
+    void enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const String& url);
     void unsubscribe_all(const Callable &callback);
-
-    ~RpcCall();
 };
 
 class SolanaClient : public Node {
     GDCLASS(SolanaClient, Node)
 
 private:
-    RpcCall* rpc_call;
+    Array rpc_calls;
 
-    float timeout = 10.0;
+    float timeout = 20.0;
 
     static unsigned int global_rpc_id;
 
@@ -90,6 +102,9 @@ private:
     String get_real_url();
     String get_real_ws_url();
 
+    HttpRpcCall *create_http_call();
+    WsRpcCall *create_ws_call();
+
     void append_commitment(Array& options);
     void append_min_context_slot(Array& options);
     void append_encoding(Array& options);
@@ -115,6 +130,7 @@ protected:
 
 public:
     static String assemble_url(const Dictionary& url_components);
+    static unsigned int get_next_request_identifier();
 
     void _process(double delta) override;
     void _ready() override;
