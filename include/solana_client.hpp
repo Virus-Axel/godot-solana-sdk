@@ -8,16 +8,55 @@
 
 namespace godot {
 
+class RpcCall : public HTTPClient, public WebSocketPeer{
+private:
+    bool pending_request = false;
+
+    float timeout = 10.0;
+    float elapsed_time = 0;
+
+    unsigned int local_rpc_id = 0;
+
+    Dictionary  http_request_body;
+    String path = "";
+
+    Callable http_callback;
+
+    std::queue<String> ws_request_queue;
+    std::vector<std::pair<int, Callable>> callbacks;
+    std::vector<String> method_names;
+
+    Error connect_to(Dictionary url);
+    Error make_request(const String& request_body);
+
+    void process_package(const PackedByteArray& packet_data);
+    void connect_ws(const String& url);
+public:
+    RpcCall();
+
+    void set_http_callback(const Callable& callback);
+    Dictionary synchronous_request(const Dictionary& request_body, const Dictionary& parsed_url);
+    void asynchronous_request(const Dictionary& request_body, Dictionary parsed_url);
+
+    void enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const String& url);
+
+    void poll_http_request(const float delta);
+    void poll_ws_request();
+
+    void unsubscribe_all(const Callable &callback);
+
+    ~RpcCall();
+};
+
 class SolanaClient : public Node {
     GDCLASS(SolanaClient, Node)
 
 private:
-    static unsigned int global_rpc_id;
+    RpcCall* rpc_call;
 
-    unsigned int local_rpc_id = 0;
-    
     float timeout = 10.0;
-    float elapsed_time = 0;
+
+    static unsigned int global_rpc_id;
 
     const int DEFAULT_PORT = 443;
     const std::string DEFAULT_URL = "https://api.devnet.solana.com";
@@ -25,19 +64,11 @@ private:
 
     String url_override = "";
     String ws_url = "";
-    std::string http_request_body;
+    
     int port = DEFAULT_PORT;
     bool use_tls = true;
     bool async_override = false;
     bool pending_request = false;
-    HTTPClient http_handler;
-    
-    Callable http_callback;
-
-    std::vector<std::pair<int, Callable>> callbacks;
-    std::queue<String> ws_request_queue;
-    std::vector<String> method_names;
-    WebSocketPeer *ws = nullptr;
 
     String commitment = "confirmed";
     String encoding = "base64";
@@ -73,27 +104,22 @@ private:
 
     void add_to_param_dict(Array &options, const String& key, const Variant& value);
 
-    Dictionary make_rpc_dict(const String& method, const Array& params);
     Dictionary make_rpc_param(const Variant& key, const Variant& value);
-    Dictionary synchronous_request(const String& request_body);
-    void asynchronous_request(const String& request_body);
-    Dictionary quick_http_request(const String& request_body, const Callable& callback = Callable());
+    Dictionary quick_http_request(const Dictionary& request_body, const Callable& callback = Callable());
     Dictionary parse_url(const String& url);
-    String assemble_url(const Dictionary& url_components);
 
-    void poll_http_request(const float delta);
-
-    void process_package(const PackedByteArray& packet_data);
-    void connect_ws();
     void response_callback(const Dictionary &params);
 
 protected:
     static void _bind_methods();
 
 public:
+    static String assemble_url(const Dictionary& url_components);
 
     void _process(double delta) override;
     void _ready() override;
+
+    static Dictionary make_rpc_dict(const String& method, const Array& params);
 
     SolanaClient();
 
@@ -113,7 +139,6 @@ public:
     String get_encoding();
 
     void set_transaction_detail(const String& transaction_detail);
-    void set_http_callback(const Callable& callback);
 
     void enable_min_context_slot(int slot);
     void disable_min_context_slot();

@@ -137,10 +137,9 @@ void SolanaClient::add_to_param_dict(Array &options, const String& key, const Va
 Dictionary SolanaClient::make_rpc_dict(const String& method, const Array& params){
     Dictionary request_body;
 
-    local_rpc_id = global_rpc_id;
+    request_body["id"] = global_rpc_id;
     SolanaClient::global_rpc_id += 1;
 
-    request_body["id"] = local_rpc_id;
     request_body["jsonrpc"] = "2.0";
     request_body["method"] = method;
     request_body["params"] = params;
@@ -154,78 +153,77 @@ Dictionary SolanaClient::make_rpc_param(const Variant& key, const Variant& value
     return result;
 }
 
-Dictionary SolanaClient::synchronous_request(const String& request_body){
+Error RpcCall::make_request(const String& request_body){
+    // Set headers
+    PackedStringArray http_headers;
+    http_headers.append("Content-Type: application/json");
+    http_headers.append("Accept-Encoding: json");
+
+    // Make a POST request
+    return request(godot::HTTPClient::METHOD_POST, path, http_headers, request_body);
+}
+
+Error RpcCall::connect_to(Dictionary url){
+    int32_t port = url["port"];
+    url.erase("port");
+
+    String connect_url = "https";
+    if(url.has("scheme")){
+        connect_url = url["scheme"];
+    }
+    connect_url += "://" + (String) url["host"];
+
+    path = "/";
+    if(url.has("path")){
+        path = url["path"];
+    }
+    if(url.has("query")){
+        path += String("?") + (String)url["query"];
+    }
+    if(url.has("fragment")){
+        path += String("#") + (String)url["fragment"];
+    }
+
+    return connect_to_host(connect_url, port);
+}
+
+Dictionary RpcCall::synchronous_request(const Dictionary& request_body, const Dictionary& parsed_url){
     #ifndef WEB_ENABLED
 	const int32_t POLL_DELAY_MSEC = 100;
     elapsed_time = 0.0F;
 
-	// Set headers
-	PackedStringArray http_headers;
-	http_headers.append("Content-Type: application/json");
-	http_headers.append("Accept-Encoding: json");
-	
-	// Connect to RPC API URL.
-	HTTPClient handler;
-    Error err;
-
     // Godot does not want the port in the url
-    Dictionary parsed_url = parse_url(get_real_url());
-
-    if(parsed_url.has("port")){
-        port = parsed_url["port"];
-    }
-    parsed_url.erase("port");
-
-    String connect_url = "https";
-    if(parsed_url.has("scheme")){
-        connect_url = parsed_url["scheme"];
-    }
-    connect_url += "://" + (String) parsed_url["host"];
-
-    String path = "/";
-    if(parsed_url.has("path")){
-        path = parsed_url["path"];
-    }
-    if(parsed_url.has("query")){
-        path += String("?") + (String)parsed_url["query"];
-    }
-    if(parsed_url.has("fragment")){
-        path += String("#") + (String)parsed_url["fragment"];
-    }
-
-    err = handler.connect_to_host(connect_url, port);
+    ERR_FAIL_COND_V_EDMSG(!parsed_url.has("port"), Dictionary(), "Internal Error, No port specified. Please report this issue!");  
+    Error err = connect_to(parsed_url);
+    ERR_FAIL_COND_V_EDMSG(err != Error::OK, Dictionary(), "Failed to connect to server.");
 
 	// Wait until a connection is established.
-	godot::HTTPClient::Status status = handler.get_status();
+	godot::HTTPClient::Status status = get_status();
 	while(status == HTTPClient::STATUS_CONNECTING || status == HTTPClient::STATUS_RESOLVING){
-		handler.poll();
+		HTTPClient::poll();
 		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
         elapsed_time += float(POLL_DELAY_MSEC) / 1000;
-		status = handler.get_status();
+		status = get_status();
         if(elapsed_time > timeout){
-            handler.close();
+            HTTPClient::close();
             ERR_FAIL_V_EDMSG(Dictionary(), "Request timed out.");
         }
 	}
 
 	// Make a POST request
-	err = handler.request(godot::HTTPClient::METHOD_POST, path, http_headers, request_body);
+	err = make_request(JSON::stringify(request_body));
 
-	if(err != Error::OK){
-		gdextension_interface_print_warning("Error sending request.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
-		return Dictionary();
-	}
-
+	ERR_FAIL_COND_V_EDMSG(err != Error::OK, Dictionary(), "Error sending request.");
 
 	// Poll until we have a response.
-	status = handler.get_status();
+	status = get_status();
 	while(status == HTTPClient::STATUS_REQUESTING){
-		handler.poll();
+		HTTPClient::poll();
 		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
         elapsed_time += float(POLL_DELAY_MSEC) / 1000;
-		status = handler.get_status();
+		status = get_status();
         if(elapsed_time > timeout){
-            handler.close();
+            HTTPClient::close();
             ERR_FAIL_V_EDMSG(Dictionary(), "Request timed out.");
         }
 	}
@@ -233,18 +231,18 @@ Dictionary SolanaClient::synchronous_request(const String& request_body){
 	// Collect the response body.
 	PackedByteArray response_data;
 	while(status == HTTPClient::STATUS_BODY){
-		response_data.append_array(handler.read_response_body_chunk());
-		handler.poll();
+		response_data.append_array(read_response_body_chunk());
+		HTTPClient::poll();
 		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
         elapsed_time += float(POLL_DELAY_MSEC) / 1000;
-		status = handler.get_status();
+		status = get_status();
         if(elapsed_time > timeout){
-            handler.close();
+            HTTPClient::close();
             ERR_FAIL_V_EDMSG(Dictionary(), "Request timed out.");
         }
 	}
 
-	handler.close();
+	HTTPClient::close();
 
 	// Parse the result json.
 	JSON json;
@@ -264,7 +262,7 @@ Dictionary SolanaClient::synchronous_request(const String& request_body){
     Array params;
 
     params.append(timeout * 1000);
-    params.append(get_real_url());
+    params.append(SolanaClient::assemble_url(parsed_url));
     params.append(request_body);
 
     Variant result = JavaScriptBridge::get_singleton()->eval(web_script.format(params));
@@ -283,34 +281,25 @@ Dictionary SolanaClient::synchronous_request(const String& request_body){
 
 }
 
-void SolanaClient::set_http_callback(const Callable& callback){
+void RpcCall::set_http_callback(const Callable& callback){
     http_callback = callback;
 }
 
-void SolanaClient::asynchronous_request(const String& request_body){
-    pending_request = true;
+void RpcCall::asynchronous_request(const Dictionary& request_body, Dictionary parsed_url){
+    local_rpc_id = request_body["id"];
 
     #ifndef WEB_ENABLED
 	
-    Error err;
     elapsed_time = 0.0F;
 
     // Godot does not want the port in the url
-    Dictionary parsed_url = parse_url(get_real_url());
+    ERR_FAIL_COND_EDMSG(!parsed_url.has("port"), "Internal Error, No port specified. Please report this issue!");  
+    Error err = connect_to(parsed_url);
+    ERR_FAIL_COND_EDMSG(err != Error::OK, "Failed to connect to server.");
 
-    if(parsed_url.has("port")){
-        port = parsed_url["port"];
-    }
-    parsed_url.erase("port");
+    pending_request = true;
 
-    String connect_url = "https";
-    if(parsed_url.has("scheme")){
-        connect_url = parsed_url["scheme"];
-    }
-    connect_url += "://" + (String) parsed_url["host"];
-
-    err = http_handler.connect_to_host(connect_url, port);
-    http_request_body = request_body.ascii();
+    http_request_body = request_body;
 
 #else
     String web_script = "\
@@ -323,7 +312,7 @@ void SolanaClient::asynchronous_request(const String& request_body){
     Array params;
 
     params.append(timeout * 1000);
-    params.append(get_real_url());
+    params.append(SolanaClient::assemble_url(parsed_url));
     params.append(request_body);
     params.append(local_rpc_id);
 
@@ -334,7 +323,14 @@ void SolanaClient::asynchronous_request(const String& request_body){
 #endif
 }
 
-void SolanaClient::poll_http_request(const float delta){
+void RpcCall::enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const String& url){
+    connect_ws(url);
+    callbacks.push_back(std::make_pair(0, callback));
+    method_names.push_back(request_body["method"]);
+    ws_request_queue.push(JSON::stringify(request_body));
+}
+
+void RpcCall::poll_http_request(const float delta){
 #ifndef WEB_ENABLED
     if(!pending_request){
         return;
@@ -342,14 +338,14 @@ void SolanaClient::poll_http_request(const float delta){
 
     elapsed_time += delta;
     if(elapsed_time > timeout){
-        http_handler.close();
+        HTTPClient::close();
         pending_request = false;
         ERR_FAIL_EDMSG("Request timed out.");
     }
 
 	// Wait until a connection is established.
-    http_handler.poll();
-	godot::HTTPClient::Status status = http_handler.get_status();
+    HTTPClient::poll();
+	godot::HTTPClient::Status status = get_status();
 
     Error err;
     PackedByteArray response_data;
@@ -357,28 +353,10 @@ void SolanaClient::poll_http_request(const float delta){
 		return;
 	}
     else if(status == HTTPClient::STATUS_CONNECTED){
-        // Set headers
-        PackedStringArray http_headers;
-        http_headers.append("Content-Type: application/json");
-        http_headers.append("Accept-Encoding: json");
-
-        String path = "/";
-        Dictionary parsed_url = parse_url(get_real_url());
-        if(parsed_url.has("path")){
-            path = parsed_url["path"];
-        }
-        if(parsed_url.has("query")){
-            path += String("?") + (String)parsed_url["query"];
-        }
-        if(parsed_url.has("fragment")){
-            path += String("#") + (String)parsed_url["fragment"];
-        }
-
-	    // Make a POST request
-	    err = http_handler.request(godot::HTTPClient::METHOD_POST, path, http_headers, String(http_request_body.c_str()));
+	    err = make_request(JSON::stringify(http_request_body));
 
         if(err != Error::OK){
-            http_handler.close();
+            HTTPClient::close();
             pending_request = false;
             ERR_FAIL_EDMSG("Error sending request.");
         }
@@ -389,16 +367,16 @@ void SolanaClient::poll_http_request(const float delta){
     else if(status == HTTPClient::STATUS_BODY){
         // Collect the response body.
         while(status == HTTPClient::STATUS_BODY){
-            response_data.append_array(http_handler.read_response_body_chunk());
-            http_handler.poll();
-            status = http_handler.get_status();
+            response_data.append_array(read_response_body_chunk());
+            HTTPClient::poll();
+            status = get_status();
         }
 
         // Parse the result json.
         JSON json;
         err = json.parse(response_data.get_string_from_utf8());
         if(err != Error::OK){
-            http_handler.close();
+            HTTPClient::close();
             pending_request = false;
             ERR_FAIL_EDMSG("Error getting response data.");
         }
@@ -412,7 +390,7 @@ void SolanaClient::poll_http_request(const float delta){
             return;
         }
 
-        http_handler.close();
+        HTTPClient::close();
         pending_request = false;
 
         Array params;
@@ -441,17 +419,37 @@ void SolanaClient::poll_http_request(const float delta){
 #endif
 }
 
-Dictionary SolanaClient::quick_http_request(const String& request_body, const Callable& callback){
-    if(is_inside_tree() || async_override){
-        asynchronous_request(request_body);
-        return Dictionary();
-    }
-    else{
-        return synchronous_request(request_body);
+void RpcCall::poll_ws_request(){
+    WebSocketPeer::poll();
+    WebSocketPeer::State state = get_ready_state();
+    switch(state){
+        case WebSocketPeer::STATE_OPEN:
+            while(get_available_packet_count()){
+                const PackedByteArray packet_data = get_packet();
+                process_package(packet_data);
+            }
+            if(!ws_request_queue.empty()){
+                //std::cout << "sending: " << ws_request_queue.front().ascii() << std::endl;
+                send_text(ws_request_queue.front());
+                ws_request_queue.pop();
+            }
+        break;
+        default:
+        break;
     }
 }
 
-void SolanaClient::process_package(const PackedByteArray& packet_data){
+Dictionary SolanaClient::quick_http_request(const Dictionary& request_body, const Callable& callback){
+    if(is_inside_tree() || async_override){
+        rpc_call->asynchronous_request(request_body, parse_url(get_real_url()));
+        return Dictionary();
+    }
+    else{
+        return rpc_call->synchronous_request(request_body, parse_url(get_real_url()));
+    }
+}
+
+void RpcCall::process_package(const PackedByteArray& packet_data){
     Dictionary json = JSON::parse_string(packet_data.get_string_from_ascii());
     const Variant result = json["result"];
 
@@ -489,6 +487,7 @@ void SolanaClient::process_package(const PackedByteArray& packet_data){
         return;
     }
 
+    // Find lowest uninitialized callback.
     int index = callbacks.size() - 1;
     for(int i = callbacks.size() - 1; i > 0; i--){
         if(callbacks[i - 1].first == 0){
@@ -498,10 +497,32 @@ void SolanaClient::process_package(const PackedByteArray& packet_data){
     callbacks[index].first = (int) result;
 }
 
-void SolanaClient::connect_ws(){
-    if(ws->get_ready_state() == WebSocketPeer::STATE_CLOSED){
-        ws->connect_to_url(get_real_ws_url());
+void RpcCall::unsubscribe_all(const Callable &callback){
+    for(unsigned int i = 0; i < callbacks.size(); i++){
+        if(callbacks[i].second == callback && callbacks[i].first != 0){
+            Array params;
+            params.append(callbacks[i].first);
+            ws_request_queue.push(JSON::stringify(SolanaClient::make_rpc_dict(method_names[i], params)));
+
+            callbacks.erase(callbacks.begin() + i);
+            method_names.erase(method_names.begin() + i);
+            i--;
+        }
     }
+}
+
+void RpcCall::connect_ws(const String& url){
+    if(get_ready_state() == WebSocketPeer::STATE_CLOSED){
+        connect_to_url(url);
+    }
+}
+
+RpcCall::RpcCall(){
+
+}
+
+RpcCall::~RpcCall(){
+
 }
 
 void SolanaClient::response_callback(const Dictionary &params){
@@ -513,7 +534,7 @@ Dictionary SolanaClient::get_latest_blockhash(){
     Array params;
     append_commitment(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getLatestBlockhash", params)));
+    return quick_http_request(make_rpc_dict("getLatestBlockhash", params));
 }
 
 Dictionary SolanaClient::get_block_production(){
@@ -522,7 +543,7 @@ Dictionary SolanaClient::get_block_production(){
     append_identity(params);
     append_slot_range(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getBlockProduction", params)));
+    return quick_http_request(make_rpc_dict("getBlockProduction", params));
 }
 
 Dictionary SolanaClient::get_account_info(const String& account){
@@ -533,7 +554,7 @@ Dictionary SolanaClient::get_account_info(const String& account){
     append_min_context_slot(params);
     append_account_filter(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getAccountInfo", params)));
+    return quick_http_request(make_rpc_dict("getAccountInfo", params));
 }
 
 
@@ -545,7 +566,7 @@ Dictionary SolanaClient::get_balance(const String& account){
     append_min_context_slot(params);
     append_account_filter(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getBalance", params)));
+    return quick_http_request(make_rpc_dict("getBalance", params));
 }
 
 Dictionary SolanaClient::get_block(uint64_t slot, const String& detail){
@@ -557,7 +578,7 @@ Dictionary SolanaClient::get_block(uint64_t slot, const String& detail){
     append_max_transaction_version(params);
     append_rewards(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getBlock", params)));
+    return quick_http_request(make_rpc_dict("getBlock", params));
 }
 
 Dictionary SolanaClient::get_block_height(){
@@ -565,14 +586,14 @@ Dictionary SolanaClient::get_block_height(){
     append_commitment(params);
     append_min_context_slot(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getBlockHeight", params)));
+    return quick_http_request(make_rpc_dict("getBlockHeight", params));
 }
 
 Dictionary SolanaClient::get_block_commitment(uint64_t slot_number){
     Array params;
     params.append(slot_number);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getBlockCommitment", params)));
+    return quick_http_request(make_rpc_dict("getBlockCommitment", params));
 }
 
 Dictionary SolanaClient::get_blocks(uint64_t start_slot, const Variant& end_slot){
@@ -583,7 +604,7 @@ Dictionary SolanaClient::get_blocks(uint64_t start_slot, const Variant& end_slot
     }
     append_commitment(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getBlocks", params)));
+    return quick_http_request(make_rpc_dict("getBlocks", params));
 }
 
 Dictionary SolanaClient::get_blocks_with_limit(uint64_t start_slot, uint64_t end_slot){
@@ -592,18 +613,18 @@ Dictionary SolanaClient::get_blocks_with_limit(uint64_t start_slot, uint64_t end
     params.append(end_slot);
     append_commitment(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getBlocksWithLimit", params)));
+    return quick_http_request(make_rpc_dict("getBlocksWithLimit", params));
 }
 
 Dictionary SolanaClient::get_block_time(uint64_t slot){
     Array params;
     params.append(slot);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getBlockTime", params)));
+    return quick_http_request(make_rpc_dict("getBlockTime", params));
 }
 
 Dictionary SolanaClient::get_cluster_nodes(){
-    return quick_http_request(JSON::stringify(make_rpc_dict("getClusterNodes", Array())));
+    return quick_http_request(make_rpc_dict("getClusterNodes", Array()));
 }
 
 Dictionary SolanaClient::get_epoch_info(){
@@ -611,11 +632,11 @@ Dictionary SolanaClient::get_epoch_info(){
     append_commitment(params);
     append_min_context_slot(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getEpochInfo", params)));
+    return quick_http_request(make_rpc_dict("getEpochInfo", params));
 }
 
 Dictionary SolanaClient::get_epoch_schedule(){
-    return quick_http_request(JSON::stringify(make_rpc_dict("getEpochSchedule", Array())));
+    return quick_http_request(make_rpc_dict("getEpochSchedule", Array()));
 }
 
 Dictionary SolanaClient::get_fee_for_message(const String& encoded_message){
@@ -624,38 +645,38 @@ Dictionary SolanaClient::get_fee_for_message(const String& encoded_message){
     append_commitment(params);
     append_min_context_slot(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getFeeForMessage", params)));
+    return quick_http_request(make_rpc_dict("getFeeForMessage", params));
 }
 
 Dictionary SolanaClient::get_first_available_block(){
-    return quick_http_request(JSON::stringify(make_rpc_dict("getFirstAvailableBlock", Array())));
+    return quick_http_request(make_rpc_dict("getFirstAvailableBlock", Array()));
 }
 
 Dictionary SolanaClient::get_genesis_hash(){
-    return quick_http_request(JSON::stringify(make_rpc_dict("getGenesisHash", Array())));
+    return quick_http_request(make_rpc_dict("getGenesisHash", Array()));
 }
 
 Dictionary SolanaClient::get_health(){
-    return quick_http_request(JSON::stringify(make_rpc_dict("getHealth", Array())));
+    return quick_http_request(make_rpc_dict("getHealth", Array()));
 }
 
 Dictionary SolanaClient::get_highest_snapshot_slot(){
-    return quick_http_request(JSON::stringify(make_rpc_dict("getHighestSnapshotSlot", Array())));
+    return quick_http_request(make_rpc_dict("getHighestSnapshotSlot", Array()));
 }
 
 Dictionary SolanaClient::get_identity(){
-    return quick_http_request(JSON::stringify(make_rpc_dict("getIdentity", Array())));
+    return quick_http_request(make_rpc_dict("getIdentity", Array()));
 }
 
 Dictionary SolanaClient::get_inflation_governor(){
     Array params;
     append_commitment(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getInflationGovernor", params)));
+    return quick_http_request(make_rpc_dict("getInflationGovernor", params));
 }
 
 Dictionary SolanaClient::get_inflation_rate(){
-    return quick_http_request(JSON::stringify(make_rpc_dict("getInflationRate", Array())));
+    return quick_http_request(make_rpc_dict("getInflationRate", Array()));
 }
 
 Dictionary SolanaClient::get_inflation_reward(const PackedStringArray accounts, const Variant& epoch){
@@ -667,7 +688,7 @@ Dictionary SolanaClient::get_inflation_reward(const PackedStringArray accounts, 
     }
     append_min_context_slot(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getInflationReward", params)));
+    return quick_http_request(make_rpc_dict("getInflationReward", params));
 }
 
 Dictionary SolanaClient::get_largest_accounts(const String& filter){
@@ -677,7 +698,7 @@ Dictionary SolanaClient::get_largest_accounts(const String& filter){
         add_to_param_dict(params, "filter", filter);
     }
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getLargestAccounts", params)));
+    return quick_http_request(make_rpc_dict("getLargestAccounts", params));
 }
 
 Dictionary SolanaClient::get_leader_schedule(const Variant& slot){
@@ -686,15 +707,15 @@ Dictionary SolanaClient::get_leader_schedule(const Variant& slot){
     append_commitment(params);
     append_identity(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getLeaderSchedule", params)));
+    return quick_http_request(make_rpc_dict("getLeaderSchedule", params));
 }
 
 Dictionary SolanaClient::get_max_retransmit_slot(){
-    return quick_http_request(JSON::stringify(make_rpc_dict("getMaxRetransmitSlot", Array())));
+    return quick_http_request(make_rpc_dict("getMaxRetransmitSlot", Array()));
 }
 
 Dictionary SolanaClient::get_max_shred_insert_slot(){
-    return quick_http_request(JSON::stringify(make_rpc_dict("getMaxShredInsertSlot", Array())));
+    return quick_http_request(make_rpc_dict("getMaxShredInsertSlot", Array()));
 }
 
 Dictionary SolanaClient::get_minimum_balance_for_rent_extemption(uint64_t data_size){
@@ -702,7 +723,7 @@ Dictionary SolanaClient::get_minimum_balance_for_rent_extemption(uint64_t data_s
     params.append(data_size);
     append_commitment(params);
     
-    return quick_http_request(JSON::stringify(make_rpc_dict("getMinimumBalanceForRentExemption", params)));
+    return quick_http_request(make_rpc_dict("getMinimumBalanceForRentExemption", params));
 }
 
 Dictionary SolanaClient::get_multiple_accounts(const PackedStringArray accounts){
@@ -713,7 +734,7 @@ Dictionary SolanaClient::get_multiple_accounts(const PackedStringArray accounts)
     append_account_filter(params);
     append_encoding(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getMultipleAccounts", params)));
+    return quick_http_request(make_rpc_dict("getMultipleAccounts", params));
 }
 
 Dictionary SolanaClient::get_program_accounts(const String& program_address, bool with_context){
@@ -726,14 +747,14 @@ Dictionary SolanaClient::get_program_accounts(const String& program_address, boo
     append_account_filter(params);
     append_data_filter(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getProgramAccounts", params)));
+    return quick_http_request(make_rpc_dict("getProgramAccounts", params));
 }
 
 Dictionary SolanaClient::get_recent_performance_samples(){
     Array params;
     append_limit(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getRecentPerformanceSamples", params)));
+    return quick_http_request(make_rpc_dict("getRecentPerformanceSamples", params));
 }
 
 Dictionary SolanaClient::get_recent_prioritization_fees(PackedStringArray account_addresses){
@@ -742,7 +763,7 @@ Dictionary SolanaClient::get_recent_prioritization_fees(PackedStringArray accoun
         params.append(account_addresses);
     }
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getRecentPrioritizationFees", params)));
+    return quick_http_request(make_rpc_dict("getRecentPrioritizationFees", params));
 }
 
 Dictionary SolanaClient::get_signature_for_address(const String& address, const String& before, const String& until){
@@ -758,7 +779,7 @@ Dictionary SolanaClient::get_signature_for_address(const String& address, const 
         add_to_param_dict(params, "until", until);
     }
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getSignaturesForAddress", params)));
+    return quick_http_request(make_rpc_dict("getSignaturesForAddress", params));
 }
 
 Dictionary SolanaClient::get_signature_statuses(const PackedStringArray signatures, bool search_transaction_history){
@@ -767,7 +788,7 @@ Dictionary SolanaClient::get_signature_statuses(const PackedStringArray signatur
     params.append(signatures);
     add_to_param_dict(params, "searchTransactionHistory", search_transaction_history);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getSignatureStatuses", params)));
+    return quick_http_request(make_rpc_dict("getSignatureStatuses", params));
 }
 
 Dictionary SolanaClient::get_slot(){
@@ -776,7 +797,7 @@ Dictionary SolanaClient::get_slot(){
     append_commitment(params);
     append_min_context_slot(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getSlot", params)));
+    return quick_http_request(make_rpc_dict("getSlot", params));
 }
 
 Dictionary SolanaClient::get_slot_leader(){
@@ -785,7 +806,7 @@ Dictionary SolanaClient::get_slot_leader(){
     append_commitment(params);
     append_min_context_slot(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getSlotLeader", params)));
+    return quick_http_request(make_rpc_dict("getSlotLeader", params));
 }
 
 Dictionary SolanaClient::get_slot_leaders(const Variant& start_slot, const Variant& slot_limit){
@@ -798,7 +819,7 @@ Dictionary SolanaClient::get_slot_leaders(const Variant& start_slot, const Varia
         params.append(slot_limit);
     }
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getSlotLeaders", params)));
+    return quick_http_request(make_rpc_dict("getSlotLeaders", params));
 }
 
 Dictionary SolanaClient::get_stake_activation(const String& account){
@@ -808,7 +829,7 @@ Dictionary SolanaClient::get_stake_activation(const String& account){
     append_commitment(params);
     append_min_context_slot(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getStakeActivation", params)));
+    return quick_http_request(make_rpc_dict("getStakeActivation", params));
 }
 
 Dictionary SolanaClient::get_stake_minimum_delegation(){
@@ -816,7 +837,7 @@ Dictionary SolanaClient::get_stake_minimum_delegation(){
 
     append_commitment(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getStakeMinimumDelegation", params)));
+    return quick_http_request(make_rpc_dict("getStakeMinimumDelegation", params));
 }
 
 Dictionary SolanaClient::get_supply(bool exclude_non_circulating){
@@ -825,7 +846,7 @@ Dictionary SolanaClient::get_supply(bool exclude_non_circulating){
     append_commitment(params);
     add_to_param_dict(params, "excludeNonCirculatingAccountsList", exclude_non_circulating);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getSupply", params)));
+    return quick_http_request(make_rpc_dict("getSupply", params));
 }
 
 Dictionary SolanaClient::get_token_account_balance(const String& token_account){
@@ -834,7 +855,7 @@ Dictionary SolanaClient::get_token_account_balance(const String& token_account){
     params.append(token_account);
     append_commitment(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getTokenAccountBalance", params)));
+    return quick_http_request(make_rpc_dict("getTokenAccountBalance", params));
 }
 
 Dictionary SolanaClient::get_token_accounts_by_delegate(const String& account_delegate, const String& mint, const String& program_id){
@@ -858,7 +879,7 @@ Dictionary SolanaClient::get_token_accounts_by_delegate(const String& account_de
         params.insert(0, dict_argument);
     }
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getTokenAccountsByDelegate", params)));
+    return quick_http_request(make_rpc_dict("getTokenAccountsByDelegate", params));
 }
 
 Dictionary SolanaClient::get_token_accounts_by_owner(const String& owner, const String &mint, const String& program_id){
@@ -883,7 +904,7 @@ Dictionary SolanaClient::get_token_accounts_by_owner(const String& owner, const 
         params.insert(1, dict_argument);
     }
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getTokenAccountsByOwner", params)));
+    return quick_http_request(make_rpc_dict("getTokenAccountsByOwner", params));
 }
 
 Dictionary SolanaClient::get_token_largest_account(const String& token_mint){
@@ -892,7 +913,7 @@ Dictionary SolanaClient::get_token_largest_account(const String& token_mint){
     params.append(token_mint);
     append_commitment(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getTokenLargestAccounts", params)));
+    return quick_http_request(make_rpc_dict("getTokenLargestAccounts", params));
 }
 
 Dictionary SolanaClient::get_token_supply(const String& token_mint){
@@ -901,7 +922,7 @@ Dictionary SolanaClient::get_token_supply(const String& token_mint){
     params.append(token_mint);
     append_commitment(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getTokenSupply", params)));
+    return quick_http_request(make_rpc_dict("getTokenSupply", params));
 }
 
 Dictionary SolanaClient::get_transaction(const String& signature){
@@ -912,7 +933,7 @@ Dictionary SolanaClient::get_transaction(const String& signature){
     append_max_transaction_version(params);
     append_encoding(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getTransaction", params)));
+    return quick_http_request(make_rpc_dict("getTransaction", params));
 }
 
 Dictionary SolanaClient::get_transaction_count(){
@@ -921,11 +942,11 @@ Dictionary SolanaClient::get_transaction_count(){
     append_commitment(params);
     append_min_context_slot(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getTransactionCount", params)));
+    return quick_http_request(make_rpc_dict("getTransactionCount", params));
 }
 
 Dictionary SolanaClient::get_version(){
-    return quick_http_request(JSON::stringify(make_rpc_dict("getVersion", Array())));
+    return quick_http_request(make_rpc_dict("getVersion", Array()));
 }
 
 Dictionary SolanaClient::get_vote_accounts(const String& vote_pubkey, bool keep_unstaked_delinquents){
@@ -937,7 +958,7 @@ Dictionary SolanaClient::get_vote_accounts(const String& vote_pubkey, bool keep_
     }
     add_to_param_dict(params, "keepUnstakedDelinquents", keep_unstaked_delinquents);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("getVoteAccounts", params)));
+    return quick_http_request(make_rpc_dict("getVoteAccounts", params));
 }
 
 Dictionary SolanaClient::is_blockhash_valid(const String &blockhash){
@@ -947,11 +968,11 @@ Dictionary SolanaClient::is_blockhash_valid(const String &blockhash){
     append_commitment(params);
     append_min_context_slot(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("isBlockhashValid", params)));
+    return quick_http_request(make_rpc_dict("isBlockhashValid", params));
 }
 
 Dictionary SolanaClient::minimum_ledger_slot(){
-    return quick_http_request(JSON::stringify(make_rpc_dict("minimumLedgerSlot", Array())));
+    return quick_http_request(make_rpc_dict("minimumLedgerSlot", Array()));
 }
 
 Dictionary SolanaClient::request_airdrop(const String& address, uint64_t lamports){
@@ -961,7 +982,7 @@ Dictionary SolanaClient::request_airdrop(const String& address, uint64_t lamport
     params.append(lamports);
     append_commitment(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("requestAirdrop", params)));
+    return quick_http_request(make_rpc_dict("requestAirdrop", params));
 }
 
 Dictionary SolanaClient::send_transaction(const String& encoded_transaction, uint64_t max_retries, bool skip_preflight){
@@ -974,7 +995,7 @@ Dictionary SolanaClient::send_transaction(const String& encoded_transaction, uin
     add_to_param_dict(params, "maxRetries", max_retries);
     append_min_context_slot(params);
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("sendTransaction", params)));
+    return quick_http_request(make_rpc_dict("sendTransaction", params));
 }
 
 Dictionary SolanaClient::simulate_transaction(const String& encoded_transaction, bool sig_verify, bool replace_blockhash, Array account_addresses, const String& account_encoding){
@@ -995,80 +1016,44 @@ Dictionary SolanaClient::simulate_transaction(const String& encoded_transaction,
         add_to_param_dict(params, "accounts", accounts);
     }
 
-    return quick_http_request(JSON::stringify(make_rpc_dict("simulateTransaction", params)));
+    return quick_http_request(make_rpc_dict("simulateTransaction", params));
 }
 
 void SolanaClient::account_subscribe(const Variant &account_key, const Callable &callback){
-    connect_ws();
-    callbacks.push_back(std::make_pair(0, callback));
-    method_names.push_back("accountUnsubscribe");
     Array params;
     params.append(Pubkey(account_key).to_string());
     add_to_param_dict(params, "commitment", commitment);
-    ws_request_queue.push(JSON::stringify(make_rpc_dict("accountSubscribe", params)));
 
-    return;
+    rpc_call->enqueue_ws_request(make_rpc_dict("accountSubscribe", params), callback, get_real_ws_url());
 }
 
 void SolanaClient::signature_subscribe(const String &signature, const Callable &callback, const String &commitment){
-    connect_ws();
-    callbacks.push_back(std::make_pair(0, callback));
-    method_names.push_back("signatureUnsubscribe");
     Array params;
     params.append(signature);
     add_to_param_dict(params, "commitment", commitment);
-    ws_request_queue.push(JSON::stringify(make_rpc_dict("signatureSubscribe", params)));
-
-    return;
+    rpc_call->enqueue_ws_request(make_rpc_dict("signatureSubscribe", params), callback, get_real_ws_url());
 }
 
 void SolanaClient::program_subscribe(const String &program_id, const Callable &callback){
-    connect_ws();
-    callbacks.push_back(std::make_pair(0, callback));
-    method_names.push_back("programUnsubscribe");
     Array params;
     params.append(program_id);
     append_commitment(params);
     append_account_filter(params);
     append_encoding(params);
 
-    ws_request_queue.push(JSON::stringify(make_rpc_dict("programSubscribe", params)));
-
-    return;
+    rpc_call->enqueue_ws_request(make_rpc_dict("programSubscribe", params), callback, get_real_ws_url());
 }
 
 void SolanaClient::root_subscribe(const Callable &callback){
-    connect_ws();
-    callbacks.push_back(std::make_pair(0, callback));
-    method_names.push_back("rootUnsubscribe");
-
-    ws_request_queue.push(JSON::stringify(make_rpc_dict("rootSubscribe", Array())));
-
-    return;
+    rpc_call->enqueue_ws_request(make_rpc_dict("rootSubscribe", Array()), callback, get_real_ws_url());
 }
 
 void SolanaClient::slot_subscribe(const Callable &callback){
-    connect_ws();
-    callbacks.push_back(std::make_pair(0, callback));
-    method_names.push_back("slotUnsubscribe");
-
-    ws_request_queue.push(JSON::stringify(make_rpc_dict("slotSubscribe", Array())));
-
-    return;
+    rpc_call->enqueue_ws_request(make_rpc_dict("slotSubscribe", Array()), callback, get_real_ws_url());
 }
 
 void SolanaClient::unsubscribe_all(const Callable &callback){
-    for(unsigned int i = 0; i < callbacks.size(); i++){
-        if(callbacks[i].second == callback && callbacks[i].first != 0){
-            Array params;
-            params.append(callbacks[i].first);
-            ws_request_queue.push(JSON::stringify(make_rpc_dict(method_names[i], params)));
-
-            callbacks.erase(callbacks.begin() + i);
-            method_names.erase(method_names.begin() + i);
-            i--;
-        }
-    }
+    rpc_call->unsubscribe_all(callback);
 }
 
 void SolanaClient::_bind_methods(){
@@ -1081,7 +1066,7 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_method(D_METHOD("is_ready"), &SolanaClient::is_ready);
 
     ClassDB::bind_method(D_METHOD("parse_url", "url"), &SolanaClient::parse_url);
-    ClassDB::bind_method(D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
 
     ClassDB::bind_method(D_METHOD("set_ws_url", "url"), &SolanaClient::set_ws_url);
     ClassDB::bind_method(D_METHOD("get_ws_url"), &SolanaClient::get_ws_url);
@@ -1177,34 +1162,18 @@ void SolanaClient::_bind_methods(){
 }
 
 void SolanaClient::_process(double delta){
-    ws->poll();
-    WebSocketPeer::State state = ws->get_ready_state();
-    switch(state){
-        case WebSocketPeer::STATE_OPEN:
-            while(ws->get_available_packet_count()){
-                const PackedByteArray packet_data = ws->get_packet();
-                process_package(packet_data);
-            }
-            if(!ws_request_queue.empty()){
-                ws->send_text(ws_request_queue.front());
-                ws_request_queue.pop();
-            }
-        break;
-        default:
-        break;
-    }
-
-    poll_http_request(delta);
+    rpc_call->poll_ws_request();
+    rpc_call->poll_http_request(delta);
 }
 
 void SolanaClient::_ready(){
 }
 
 SolanaClient::SolanaClient(){
-    ws = new WebSocketPeer();
     transaction_detail = "full";
     Callable callback = Callable(this, "response_callback");
-    set_http_callback(callback);
+    rpc_call = new RpcCall;
+    rpc_call->set_http_callback(callback);
 }
 
 Dictionary SolanaClient::parse_url(const String& url){
@@ -1433,6 +1402,7 @@ bool SolanaClient::is_ready(){
 }
 
 SolanaClient::~SolanaClient(){
+    delete rpc_call;
 }
 
 }
