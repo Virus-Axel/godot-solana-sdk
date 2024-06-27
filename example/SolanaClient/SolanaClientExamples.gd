@@ -84,6 +84,7 @@ func subscribe_account_demo():
 	client.signature_subscribe(airdrop_signature, signature_callback, "finalized")
 	
 	# Keep the client node in the tree to keep it processing
+	# You should call unsubscribe_all() when you are done.
 	
 	PASS(3)
 

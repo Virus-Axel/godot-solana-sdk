@@ -55,6 +55,8 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     }
 
     ClassDB::register_class<SolanaUtils>();
+    ClassDB::register_class<HttpRpcCall>();
+    ClassDB::register_class<WsRpcCall>();
     ClassDB::register_class<SolanaClient>();
     ClassDB::register_class<Pubkey>();
     ClassDB::register_class<CompiledInstruction>();
