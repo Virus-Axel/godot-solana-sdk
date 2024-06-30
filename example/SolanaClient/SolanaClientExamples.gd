@@ -2,7 +2,7 @@ extends VBoxContainer
 
 const EXAMPLE_ACCOUNT := "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZAMdL4VZHirAn"
 
-const TOTAL_CASES := 9
+const TOTAL_CASES := 8
 var passed_test_mask := 0
 		
 
