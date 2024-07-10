@@ -83,12 +83,12 @@ def build_all(env, container_path, keep_images):
     # Build missing containers
     env.Execute('cd {} && {}'.format(container_path, CONTAINER_BUILD_COMMAND))
 
-    build_in_container('linux', ['x86_64'], keep_images=keep_images)
-    build_in_container('windows', ['x86_64'], keep_images=keep_images)
+    #build_in_container('linux', ['x86_64'], keep_images=keep_images)
+    #build_in_container('windows', ['x86_64'], keep_images=keep_images)
     build_in_container('web', ['wasm32'], keep_images=keep_images)
-    build_in_container('android', ['aarch64', 'x86_64'], keep_images=keep_images)
-    build_in_container('ios', ['arm64'], keep_images=keep_images)
-    build_in_container('macos', ['aarch64'], keep_images=keep_images)
+    #build_in_container('android', ['aarch64', 'x86_64'], keep_images=keep_images)
+    #build_in_container('ios', ['arm64'], keep_images=keep_images)
+    #build_in_container('macos', ['aarch64'], keep_images=keep_images)
 
     if not keep_images:
         # Remove existing images

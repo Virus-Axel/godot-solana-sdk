@@ -8,8 +8,7 @@
 
 namespace godot{
 
-MAKE_TYPED_ARRAY(CompiledInstruction, Variant::OBJECT)
-MAKE_TYPED_ARRAY(Instruction, Variant::OBJECT)
+
 
 class Message: public Resource{ // Message
     GDCLASS(Message, Resource)

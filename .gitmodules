@@ -1,7 +1,7 @@
 [submodule "godot-cpp"]
 	path = godot-cpp
 	url = https://github.com/godotengine/godot-cpp
-	branch = 4.1
+	branch = master
 [submodule "ed25519"]
 	path = ed25519
 	url = git@github.com:orlp/ed25519.git

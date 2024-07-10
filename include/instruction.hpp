@@ -8,12 +8,10 @@
 #include <vector>
 
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/variant/variant.hpp>
+#include <godot_cpp/variant/typed_array.hpp>
 
 namespace godot{
-
-MAKE_TYPED_ARRAY(Pubkey, Variant::OBJECT)
-MAKE_TYPED_ARRAY(AccountMeta, Variant::OBJECT)
-MAKE_TYPED_ARRAY(Resource, Variant::OBJECT)
 
 class CompiledInstruction;
 
