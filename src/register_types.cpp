@@ -44,8 +44,6 @@ void add_setting(const String& name, Variant::Type type, Variant default_value, 
         property_info["hint_string"] = hint_string;
 
         ProjectSettings::get_singleton()->add_property_info(property_info);
-
-        ProjectSettings::get_singleton()->save();
     }
 }
 
@@ -87,6 +85,8 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<AnchorProgram>();
 
     add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
+    add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, 443);
+    add_setting("solana_sdk/client/default_ws_port", Variant::Type::INT, 443);
 }
 
 void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {

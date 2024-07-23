@@ -47,6 +47,24 @@ String SolanaClient::get_real_url(){
     }
 }
 
+uint32_t SolanaClient::get_real_http_port(){
+    if(http_port_override == 0){
+        return ProjectSettings::get_singleton()->get_setting("solana_sdk/client/default_http_port");
+    }
+    else{
+        return http_port_override;
+    }
+}
+
+uint32_t SolanaClient::get_real_ws_port(){
+    if(ws_port_override == 0){
+        return ProjectSettings::get_singleton()->get_setting("solana_sdk/client/default_ws_port");
+    }
+    else{
+        return ws_port_override;
+    }
+}
+
 String SolanaClient::get_real_ws_url(){
     if(ws_url.is_empty()){
         return ws_from_http(get_real_url());
@@ -469,12 +487,25 @@ void WsRpcCall::poll_ws_request(){
 }
 
 Dictionary SolanaClient::quick_http_request(const Dictionary& request_body, const Callable& callback){
+    Dictionary parsed_url = parse_url(get_real_url());
+    const uint32_t real_port = get_real_http_port();
+
+    // Check if port is set in URL.
+    if(parsed_url.has("port")){
+        if(real_port != (uint32_t)parsed_url["port"]){
+            WARN_PRINT_ONCE_ED("Port is specified in URL and is not the same as port setting, ignoring port setting.");
+        }
+    }
+    else{
+        parsed_url["port"] = real_port;
+    }
+
     if(is_inside_tree() || async_override){
-        create_http_call()->asynchronous_request(request_body, parse_url(get_real_url()));
+        create_http_call()->asynchronous_request(request_body, parsed_url);
         return Dictionary();
     }
     else{
-        return create_http_call()->synchronous_request(request_body, parse_url(get_real_url()));
+        return create_http_call()->synchronous_request(request_body, parsed_url);
     }
 }
 
@@ -1306,20 +1337,18 @@ void SolanaClient::set_url_override(const String& url_override){
 
     // See if tls should be used.
     use_tls = true;
-    port = DEFAULT_PORT;
     if(!parsed_url.has("scheme")){
         gdextension_interface_print_warning("No scheme specified, enabling tls by default.", "set_url", __FILE__, __LINE__, false);
     }
     else if(parsed_url["scheme"] == "http"){
         use_tls = false;
-        port = 80;
     }
     else if(parsed_url["scheme"] != "https"){
         gdextension_interface_print_warning("Unknown scheme, enabling tls by default.", "set_url", __FILE__, __LINE__, false);
     }
 
     if(parsed_url.has("port")){
-        port = parsed_url["port"];
+        http_port_override = parsed_url["port"];
     }
 
 	this->url_override = url_override;
@@ -1330,7 +1359,7 @@ void SolanaClient::set_url_override(const String& url_override){
     else{
         ws_url["scheme"] = "ws";
     }
-    ws_url["port"] = 8900;
+    ws_url["port"] = get_real_ws_port();
     this->ws_url = assemble_url(ws_url);
 }
 

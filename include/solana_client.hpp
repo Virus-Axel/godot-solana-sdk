@@ -69,15 +69,15 @@ private:
     float timeout = 20.0;
 
     static unsigned int global_rpc_id;
+    uint32_t http_port_override = 0;
+    uint32_t ws_port_override = 0;
 
-    const int DEFAULT_PORT = 443;
     const std::string DEFAULT_URL = "https://api.devnet.solana.com";
     const std::string DEFAULT_WS_URL = "wss://api.devnet.solana.com";
 
     String url_override = "";
     String ws_url = "";
     
-    int port = DEFAULT_PORT;
     bool use_tls = true;
     bool async_override = false;
     bool pending_request = false;
@@ -100,6 +100,8 @@ private:
 
     String ws_from_http(const String& http_url);
     String get_real_url();
+    uint32_t get_real_http_port();
+    uint32_t get_real_ws_port();
     String get_real_ws_url();
 
     HttpRpcCall *create_http_call();
