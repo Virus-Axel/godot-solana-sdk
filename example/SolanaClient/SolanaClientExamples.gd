@@ -2,7 +2,7 @@ extends VBoxContainer
 
 const EXAMPLE_ACCOUNT := "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZAMdL4VZHirAn"
 
-const TOTAL_CASES := 7
+const TOTAL_CASES := 8
 var passed_test_mask := 0
 		
 
@@ -97,12 +97,47 @@ func synchronous_client_call():
 	PASS(6)
 
 
+func test_project_settings():
+	const CORRECT_URL = "http://localhost"
+	const INCORRECT_URL = "nonsense url"
+	const CORRECT_PORT = "8899"
+	const INCORRECT_PORT = "8898"
+	
+	var client = SolanaClient.new()
+	
+	var response = client.get_account_info(EXAMPLE_ACCOUNT)
+	assert(response.has("result"))
+	ProjectSettings.set_setting("solana_sdk/client/default_url", INCORRECT_URL)
+	response = client.get_account_info(EXAMPLE_ACCOUNT)
+	assert(!response.has("result"))
+	ProjectSettings.set_setting("solana_sdk/client/default_url", CORRECT_URL)
+	ProjectSettings.set_setting("solana_sdk/client/default_http_port", CORRECT_PORT)
+	response = client.get_account_info(EXAMPLE_ACCOUNT)
+	assert(response.has("result"))
+	ProjectSettings.set_setting("solana_sdk/client/default_http_port", INCORRECT_PORT)
+	response = client.get_account_info(EXAMPLE_ACCOUNT)
+	assert(!response.has("result"))
+	
+	# Port in URL overrides port setting and triggers a warning.
+	ProjectSettings.set_setting("solana_sdk/client/default_url", CORRECT_URL + ":" + CORRECT_PORT)
+	ProjectSettings.set_setting("solana_sdk/client/default_http_port", INCORRECT_PORT)
+	response = client.get_account_info(EXAMPLE_ACCOUNT)
+	assert(response.has("result"))
+	
+	# Restore correct settings
+	ProjectSettings.set_setting("solana_sdk/client/default_url", CORRECT_URL)
+	ProjectSettings.set_setting("solana_sdk/client/default_http_port", CORRECT_PORT)
+	
+	PASS(7)
+
+
 func _ready():
 	get_account_info_demo()
 	get_latest_blockhash_demo()
 	get_minimum_balance_for_rent_extemption_demo()
 	subscribe_account_demo()
 	synchronous_client_call()
+	test_project_settings()
 
 
 func _account_subscribe_callback(_params):
