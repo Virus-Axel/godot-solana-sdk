@@ -510,7 +510,9 @@ Dictionary SolanaClient::quick_http_request(const Dictionary& request_body, cons
 }
 
 void WsRpcCall::process_package(const PackedByteArray& packet_data){
+    std::cout << "Procc" << std::endl;
     Dictionary json = JSON::parse_string(packet_data.get_string_from_ascii());
+    std::cout << packet_data.get_string_from_ascii().ascii() << std::endl;
     const Variant result = json["result"];
 
     if(json.has("method")){
@@ -1075,6 +1077,7 @@ Dictionary SolanaClient::simulate_transaction(const String& encoded_transaction,
 void SolanaClient::account_subscribe(const Variant &account_key, const Callable &callback){
     Array params;
     params.append(Pubkey(account_key).to_string());
+    add_to_param_dict(params, "encoding", encoding);
     add_to_param_dict(params, "commitment", commitment);
 
     create_ws_call()->enqueue_ws_request(make_rpc_dict("accountSubscribe", params), callback, get_real_ws_url());

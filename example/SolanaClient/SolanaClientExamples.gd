@@ -2,13 +2,14 @@ extends VBoxContainer
 
 const EXAMPLE_ACCOUNT := "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZAMdL4VZHirAn"
 
-const TOTAL_CASES := 8
+const TOTAL_CASES := 9
 var passed_test_mask := 0
 		
 
 func PASS(unique_identifier: int):
 	passed_test_mask += (1 << unique_identifier)
 	print("[OK]: ", unique_identifier)
+
 
 func display_dict(data: Variant, parent: TreeItem):
 	if(typeof(data) == TYPE_STRING):
@@ -24,6 +25,7 @@ func display_dict(data: Variant, parent: TreeItem):
 			subchild.set_editable(1, true)
 			subchild.set_text(0, keys[i])
 			display_dict(values[i], subchild)
+
 
 func add_solana_client() -> SolanaClient:
 	var res = SolanaClient.new()
@@ -47,6 +49,7 @@ func get_account_info_demo():
 	display_dict(response["result"], $ResultTree1.create_item())
 	delete_solana_client(client)
 	PASS(0)
+
 
 func get_latest_blockhash_demo():
 	var client: SolanaClient = add_solana_client()
@@ -131,7 +134,22 @@ func test_project_settings():
 	PASS(7)
 
 
+func test_account_encoding():
+	var client = add_solana_client()
+	client.set_encoding("base64")
+
+	var account_callback := Callable(self, "_acconunt_encoding_test_callback")
+	client.account_subscribe("2kJKEGhqGXJJtoWPfxnKq1Y2bN4eF9GQ39SAcGu8TDZn", account_callback)
+	await get_tree().create_timer(0.5).timeout
+	
+	client.request_airdrop("2kJKEGhqGXJJtoWPfxnKq1Y2bN4eF9GQ39SAcGu8TDZn", 1000000)
+	var airdrop_response = await client.http_response_received
+	assert(airdrop_response.has("result"))
+
+
 func _ready():
+	test_account_encoding()
+	return
 	get_account_info_demo()
 	get_latest_blockhash_demo()
 	get_minimum_balance_for_rent_extemption_demo()
@@ -145,6 +163,10 @@ func _account_subscribe_callback(_params):
 
 func _signature_subscribe_callback(_params):
 	PASS(5)
+
+func _acconunt_encoding_test_callback(_params):
+	print(_params)
+	PASS(8)
 
 func _on_timeout_timeout():
 	for i in range(TOTAL_CASES):
