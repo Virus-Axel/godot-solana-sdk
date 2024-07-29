@@ -1,7 +1,7 @@
 extends VBoxContainer
 
 
-const TOTAL_CASES := 2
+const TOTAL_CASES := 4
 var passed_test_mask := 0
 		
 
@@ -41,8 +41,23 @@ func fetch_idl_from_pid_demo():
 	display_dict($AnchorProgram.idl, $GridContainer/IdlTree.create_item())
 	
 	PASS(0)
+
+
+func read_idl_from_json():
+	# This should not be done from gdscript.
+	# Use the editor properties instead.
+	# This function is only for testing purposes.
 	
+	$AnchorProgram2.set_pid("CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR")
+	$AnchorProgram2.json_file = load("res://test_idl.json")
+	$AnchorProgram2.set_try_from_json_file(true)
+
+	assert(not $AnchorProgram2.idl.is_empty())
+	display_dict($AnchorProgram2.idl, $GridContainer/IdlTree2.create_item())
 	
+	PASS(1)
+
+
 func fetch_idl_account_demo():
 	var res = $AnchorProgram.fetch_account("CandyMachine", "2kJKEGhqGXJJtoWPfxnKq1Y2bN4eF9GQ39SAcGu8TDZn")
 	assert(res == OK)
@@ -50,13 +65,24 @@ func fetch_idl_account_demo():
 	assert(not account_data.is_empty())
 	display_dict(account_data, $GridContainer/AccountDataTree.create_item())
 
-	PASS(1)
+	PASS(2)
+
+
+func build_instruction_demo():
+	# Params according to IDL.
+	var ix: Instruction = $AnchorProgram2.build_instruction("test_instruction", [Pubkey.new_random(), Keypair.new_random()], {"name" : "test_name", "url": "test_url"})
+	assert(ix != null)
+	
+	PASS(3)
 
 
 func _ready():
 	# Next test case is depending on IDL so await it.
+	await read_idl_from_json()
 	await fetch_idl_from_pid_demo()
+	
 	fetch_idl_account_demo()
+	build_instruction_demo()
 	
 
 func _on_timeout_timeout():

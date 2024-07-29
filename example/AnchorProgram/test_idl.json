@@ -1,0 +1,53 @@
+{
+  "version": "0.0.1",
+  "name": "test_program",
+  "instructions": [
+	{
+	  "name": "test_instruction",
+	  "accounts": [
+		{
+		  "name": "mut_nonsigner",
+		  "isMut": true,
+		  "isSigner": false,
+		},
+		{
+		  "name": "imut_signer",
+		  "isMut": false,
+		  "isSigner": true,
+		}
+	  ],
+	  "args": [
+		{
+		  "name": "index",
+		  "type": "u32"
+		},
+		{
+		  "name": "test_type",
+		  "type": {
+			"vec": {
+			  "defined": "test_type"
+			}
+		  }
+		}
+	  ]
+	}
+  ],
+  "types": [
+	{
+	  "name": "test_type",
+	  "type": {
+		"kind": "struct",
+		"fields": [
+		  {
+			"name": "name",
+			"type": "string"
+		  },
+		  {
+			"name": "uri",
+			"type": "string"
+		  }
+		]
+	  }
+	},
+  ],
+}
