@@ -140,7 +140,6 @@ func test_account_encoding():
 
 	var account_callback := Callable(self, "_acconunt_encoding_test_callback")
 	client.account_subscribe("2kJKEGhqGXJJtoWPfxnKq1Y2bN4eF9GQ39SAcGu8TDZn", account_callback)
-	await get_tree().create_timer(0.5).timeout
 	
 	client.request_airdrop("2kJKEGhqGXJJtoWPfxnKq1Y2bN4eF9GQ39SAcGu8TDZn", 1000000)
 	var airdrop_response = await client.http_response_received
@@ -149,7 +148,6 @@ func test_account_encoding():
 
 func _ready():
 	test_account_encoding()
-	return
 	get_account_info_demo()
 	get_latest_blockhash_demo()
 	get_minimum_balance_for_rent_extemption_demo()
@@ -165,7 +163,6 @@ func _signature_subscribe_callback(_params):
 	PASS(5)
 
 func _acconunt_encoding_test_callback(_params):
-	print(_params)
 	PASS(8)
 
 func _on_timeout_timeout():

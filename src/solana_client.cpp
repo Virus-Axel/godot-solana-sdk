@@ -510,9 +510,8 @@ Dictionary SolanaClient::quick_http_request(const Dictionary& request_body, cons
 }
 
 void WsRpcCall::process_package(const PackedByteArray& packet_data){
-    std::cout << "Procc" << std::endl;
     Dictionary json = JSON::parse_string(packet_data.get_string_from_ascii());
-    std::cout << packet_data.get_string_from_ascii().ascii() << std::endl;
+
     const Variant result = json["result"];
 
     if(json.has("method")){
