@@ -550,7 +550,7 @@ void AnchorProgram::_bind_methods(){
     ClassDB::bind_method(D_METHOD("set_pid", "pid"), &AnchorProgram::set_pid);
     ClassDB::bind_method(D_METHOD("get_json_file"), &AnchorProgram::get_json_file);
 
-    ClassDB::bind_method(D_METHOD("build_instruction", "accounts", "arguments"), &AnchorProgram::build_instruction);
+    ClassDB::bind_method(D_METHOD("build_instruction", "instruction_name", "accounts", "arguments"), &AnchorProgram::build_instruction);
     ClassDB::bind_method(D_METHOD("fetch_account", "name", "account_address"), &AnchorProgram::fetch_account);
 
     ClassDB::bind_method(D_METHOD("set_json_file", "json_file"), &AnchorProgram::set_json_file);
@@ -637,16 +637,7 @@ bool AnchorProgram::_get(const StringName &p_name, Variant &r_ret) const{
 
 void AnchorProgram::_get_property_list(List<PropertyInfo> *p_list) const {
     p_list->push_back(PropertyInfo(Variant::STRING, "url_override"));
-
-    if(!try_from_json_file && !try_from_pid){
-        p_list->push_back(PropertyInfo(Variant::STRING, "pid", PROPERTY_HINT_NONE, ""));
-    }
-    else if(try_from_pid){
-        p_list->push_back(PropertyInfo(Variant::STRING, "pid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE + PROPERTY_USAGE_EDITOR + PROPERTY_USAGE_READ_ONLY));
-    }
-    else{
-        p_list->push_back(PropertyInfo(Variant::STRING, "pid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-    }
+    p_list->push_back(PropertyInfo(Variant::STRING, "pid", PROPERTY_HINT_NONE, ""));
 
     if(!try_from_json_file){
         p_list->push_back(PropertyInfo(Variant::BOOL, "try_from_pid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
