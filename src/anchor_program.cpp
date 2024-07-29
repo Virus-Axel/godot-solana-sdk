@@ -550,7 +550,7 @@ void AnchorProgram::_bind_methods(){
     ClassDB::bind_method(D_METHOD("set_pid", "pid"), &AnchorProgram::set_pid);
     ClassDB::bind_method(D_METHOD("get_json_file"), &AnchorProgram::get_json_file);
 
-    ClassDB::bind_method(D_METHOD("build_instruction", "accounts", "arguments"), &AnchorProgram::build_instruction);
+    ClassDB::bind_method(D_METHOD("build_instruction", "instruction_name", "accounts", "arguments"), &AnchorProgram::build_instruction);
     ClassDB::bind_method(D_METHOD("fetch_account", "name", "account_address"), &AnchorProgram::fetch_account);
 
     ClassDB::bind_method(D_METHOD("set_json_file", "json_file"), &AnchorProgram::set_json_file);
