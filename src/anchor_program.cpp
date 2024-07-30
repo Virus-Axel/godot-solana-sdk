@@ -11,6 +11,30 @@
 
 namespace godot{
 
+bool AnchorProgram::detect_writable(const Dictionary& account){
+    if(account.has("isMut")){
+        return account["isMut"];
+    }
+    else if(account.has("writable")){
+        return account["writable"];
+    }
+    else{
+        return false;
+    }
+}
+
+bool AnchorProgram::detect_is_signer(const Dictionary& account){
+    if(account.has("isSigner")){
+        return account["isSigner"];
+    }
+    else if(account.has("signer")){
+        return account["signer"];
+    }
+    else{
+        return false;
+    }
+}
+
 bool AnchorProgram::is_typed_primitive(const Dictionary &dict){
     return (dict.has("dataType") && dict.has("value") && dict.keys().size() && dict["dataType"] != String("option"));
 }
@@ -841,8 +865,8 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
     Array ref_accounts = instruction_info["accounts"];
 
     for(unsigned int i = 0; i < ref_accounts.size(); i++){
-        const bool writable = ((Dictionary)ref_accounts[i])["isMut"];
-        const bool is_signer = ((Dictionary)ref_accounts[i])["isSigner"];
+        const bool writable = detect_writable(ref_accounts[i]);
+        const bool is_signer = detect_is_signer(ref_accounts[i]);
         result->append_meta(AccountMeta::new_account_meta(accounts[i], is_signer, writable));
     }
 
