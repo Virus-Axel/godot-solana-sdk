@@ -10,7 +10,7 @@ namespace godot{
 class AnchorProgram : public Node{
     GDCLASS(AnchorProgram, Node)
 private:
-    Variant idl;
+    Dictionary idl;
     String pid;
     String url_override = "";
     String pending_account_name = "";
