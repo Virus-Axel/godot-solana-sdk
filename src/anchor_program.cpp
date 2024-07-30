@@ -843,6 +843,7 @@ Dictionary AnchorProgram::option(const Variant &val){
 }
 
 Variant AnchorProgram::build_instruction(String name, Array accounts, Variant arguments){
+    ERR_FAIL_COND_V_EDMSG(idl.is_empty(), nullptr, "IDL is empty, try loading from PID or JSON file.");
     Instruction *result = memnew(Instruction);
 
     PackedByteArray data = discriminator_by_name(name.to_snake_case());
@@ -852,15 +853,9 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
     result->set_data(data);
 
     const Dictionary instruction_info = find_idl_instruction(name);
-    if(instruction_info.is_empty()){
-        internal::gdextension_interface_print_warning((String("IDL does not contain an instruction named ") + name + ".").ascii(), "build_instruction", __FILE__, __LINE__, true);
-        return nullptr;
-    }
 
-    if(((Array)instruction_info["accounts"]).size() != accounts.size()){
-        internal::gdextension_interface_print_warning("Unexpected amount or accounts", "build_instruction", __FILE__, __LINE__, true);
-        return nullptr;
-    }
+    ERR_FAIL_COND_V_EDMSG(instruction_info.is_empty(), nullptr, (String("IDL does not contain an instruction named ") + name + ".").ascii());
+    ERR_FAIL_COND_V_EDMSG(((Array)instruction_info["accounts"]).size() != accounts.size(), nullptr, "Unexpected amount or accounts");
 
     Array ref_accounts = instruction_info["accounts"];
 
