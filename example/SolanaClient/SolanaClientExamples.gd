@@ -147,7 +147,8 @@ func test_account_encoding():
 
 
 func _ready():
-	test_account_encoding()
+	# Disbled since RPC client does not respond with base64 encoding.
+	# test_account_encoding()
 	get_account_info_demo()
 	get_latest_blockhash_demo()
 	get_minimum_balance_for_rent_extemption_demo()
