@@ -276,8 +276,7 @@ Dictionary HttpRpcCall::synchronous_request(const Dictionary& request_body, cons
 	HTTPClient::close();
 
 	// Parse the result json.
-	JSON json;
-	err = json.parse(response_data.get_string_from_utf8());
+	Dictionary ret = JSON::parse_string(response_data.get_string_from_utf8());
 
 #else
     String web_script = "\
@@ -298,17 +297,17 @@ Dictionary HttpRpcCall::synchronous_request(const Dictionary& request_body, cons
 
     Variant result = JavaScriptBridge::get_singleton()->eval(web_script.format(params));
 
-    JSON json;
-	Error err = json.parse(result);
+    // Parse the result json.
+	Dictionary ret = JSON::parse_string(result);
 
 #endif
 
-    if(err != Error::OK){
+    if(ret.is_empty()){
 		gdextension_interface_print_warning("Error getting response data.", "quick_http_request", "solana_sdk.cpp", __LINE__, false);
 		return Dictionary();
 	}
 
-	return json.get_data();
+	return ret;
 
 }
 
@@ -348,8 +347,6 @@ void HttpRpcCall::asynchronous_request(const Dictionary& request_body, Dictionar
     params.append(local_rpc_id);
 
     Variant result = JavaScriptBridge::get_singleton()->eval(web_script.format(params));
-
-    JSON json;
 
 #endif
 }
@@ -413,16 +410,14 @@ void HttpRpcCall::poll_http_request(const float delta){
         }
 
         // Parse the result json.
-        JSON json;
-        err = json.parse(response_data.get_string_from_utf8());
-        if(err != Error::OK){
+        Dictionary json_data = JSON::parse_string(response_data.get_string_from_utf8());
+        if(json_data.is_empty()){
             HTTPClient::close();
             pending_request = false;
             ERR_FAIL_EDMSG("Error getting response data.");
         }
 
         // Return if response is not ours.
-        Dictionary json_data = json.get_data();
         if(!json_data.has("id")){
             return;
         }
@@ -434,7 +429,7 @@ void HttpRpcCall::poll_http_request(const float delta){
         pending_request = false;
 
         Array params;
-        params.append(json.get_data());
+        params.append(json_data);
 
         http_callback.callv(params);
     }
@@ -1075,7 +1070,7 @@ Dictionary SolanaClient::simulate_transaction(const String& encoded_transaction,
 
 void SolanaClient::account_subscribe(const Variant &account_key, const Callable &callback){
     Array params;
-    params.append(Pubkey(account_key).to_string());
+    params.append(Pubkey::string_from_variant(account_key));
     add_to_param_dict(params, "encoding", encoding);
     add_to_param_dict(params, "commitment", commitment);
 

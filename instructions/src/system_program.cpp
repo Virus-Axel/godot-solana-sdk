@@ -24,7 +24,7 @@ Variant SystemProgram::create_account(const Variant &from_keypair, const Variant
     data.encode_u64(4, lamports);
     data.encode_u64(12, space);
 
-    PackedByteArray owner_bytes = Pubkey(owner).to_bytes();
+    PackedByteArray owner_bytes = Pubkey::bytes_from_variant(owner);
     for(unsigned int i = 0; i < owner_bytes.size(); i++){
         data[20 + i] = owner_bytes[i];
     }
@@ -33,8 +33,8 @@ Variant SystemProgram::create_account(const Variant &from_keypair, const Variant
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(from_keypair, true, true));
-    result->append_meta(AccountMeta(to_keypair, true, true));
+    result->append_meta(*memnew(AccountMeta(from_keypair, true, true)));
+    result->append_meta(*memnew(AccountMeta(to_keypair, true, true)));
 
     return result;
 }
@@ -53,8 +53,8 @@ Variant SystemProgram::create_account_with_seed(const Variant &from_keypair, con
     data.encode_u64(44 + seed.length(), lamports);
     data.encode_u64(52 + seed.length(), space);
 
-    PackedByteArray owner_bytes = Pubkey(owner).to_bytes();
-    PackedByteArray base_bytes = Pubkey(base_keypair).to_bytes();
+    PackedByteArray owner_bytes = Pubkey::bytes_from_variant(owner);
+    PackedByteArray base_bytes = Pubkey::bytes_from_variant(base_keypair);
 
     for(unsigned int i = 0; i < 32; i++){
         data[60 + seed.length() + i] = owner_bytes[i];
@@ -67,9 +67,9 @@ Variant SystemProgram::create_account_with_seed(const Variant &from_keypair, con
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(from_keypair, true, true));
-    result->append_meta(AccountMeta(created_account_key, false, true));
-    result->append_meta(AccountMeta(base_keypair, true, false));
+    result->append_meta(*memnew(AccountMeta(from_keypair, true, true)));
+    result->append_meta(*memnew(AccountMeta(created_account_key, false, true)));
+    result->append_meta(*memnew(AccountMeta(base_keypair, true, false)));
 
     return result;
 }
@@ -86,8 +86,8 @@ Variant SystemProgram::transfer(const Variant &sender, const Variant& reciever, 
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(sender, true, true));
-    result->append_meta(AccountMeta(reciever, false, true));
+    result->append_meta(*memnew(AccountMeta(sender, true, true)));
+    result->append_meta(*memnew(AccountMeta(reciever, false, true)));
 
     return result;
 }

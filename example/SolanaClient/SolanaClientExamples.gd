@@ -73,10 +73,11 @@ func get_minimum_balance_for_rent_extemption_demo():
 
 func subscribe_account_demo():
 	var client: SolanaClient = add_solana_client()
+
 	client.set_commitment("finalized")
 	var account_callback := Callable(self, "_account_subscribe_callback")
 	client.account_subscribe(EXAMPLE_ACCOUNT, account_callback)
-	
+
 	# Make lamports of the account change to trigger the callback.
 	client.request_airdrop(EXAMPLE_ACCOUNT, 1000000)
 	var airdrop_response = await client.http_response_received
@@ -170,4 +171,3 @@ func _on_timeout_timeout():
 	for i in range(TOTAL_CASES):
 		if ((1 << i) & passed_test_mask) == 0:
 			print("[FAIL]: ", i)
-

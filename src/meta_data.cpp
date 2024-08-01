@@ -41,7 +41,7 @@ uint32_t MetaDataCreator::get_share(){
 
 PackedByteArray MetaDataCreator::serialize() const{
     PackedByteArray res;
-    res.append_array(Pubkey(address).to_bytes());
+    res.append_array(Pubkey::bytes_from_variant(address));
     res.append(verified);
     res.append(share);
 
@@ -75,7 +75,7 @@ bool MetaDataCollection::get_verified(){
 PackedByteArray MetaDataCollection::serialize() const{
     PackedByteArray res;
     res.append(verified);
-    res.append_array(Pubkey(key).to_bytes());
+    res.append_array(Pubkey::bytes_from_variant(key));
 
     return res;
 }

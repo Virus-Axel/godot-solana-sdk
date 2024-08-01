@@ -55,8 +55,9 @@ void Message::compile_instruction(Variant instruction){
     CompiledInstruction *compiled_instruction = memnew(CompiledInstruction);
 
     compiled_instruction->data = element->get_data();
-    AccountMeta pid_meta(element->get_program_id(), false, false);
-    compiled_instruction->program_id_index = locate_account_meta(merged_metas, pid_meta);
+    AccountMeta *pid_meta = memnew(AccountMeta(element->get_program_id(), false, false));
+    compiled_instruction->program_id_index = locate_account_meta(merged_metas, *pid_meta);
+    memfree(pid_meta);
 
     //compiled_instruction->accounts.push_back(payer_index);
     for(unsigned int j = 0; j < account_metas.size(); j++){
@@ -102,7 +103,7 @@ void Message::merge_account_meta(const AccountMeta &account_meta){
 
 void Message::merge_signer(const Variant& signer){
     for(unsigned int i = 0; i < signers.size(); i++){
-        if(Pubkey(signers[i]) == Pubkey(signer)){
+        if(Pubkey::bytes_from_variant(signers[i]) == Pubkey::bytes_from_variant(signer)){
             return;
         }
     }
@@ -127,7 +128,7 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer, uint32_t 
         Instruction *element = Object::cast_to<Instruction>(instructions[i]);
         const TypedArray<AccountMeta> &account_metas = element->get_accounts();
 
-        merge_account_meta(AccountMeta(element->get_program_id(), false, false));
+        merge_account_meta(*memnew(AccountMeta(element->get_program_id(), false, false)));
 
         for(unsigned int j = 0; j < account_metas.size(); j++){
             AccountMeta *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
@@ -167,7 +168,7 @@ Message::Message(const PackedByteArray& bytes){
         cursor += 32;
     }
 
-    latest_blockhash = Pubkey(bytes.slice(cursor, cursor + 32)).to_string();
+    latest_blockhash = Pubkey::string_from_variant(bytes.slice(cursor, cursor + 32));
     cursor += 32;
     uint8_t compiled_instructions_size = bytes[cursor++];
 
@@ -192,7 +193,7 @@ PackedByteArray Message::serialize(){
 
     result.append(account_keys.size());
     for(unsigned int i = 0; i < account_keys.size(); i++){
-        result.append_array(Pubkey(account_keys[i]).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(account_keys[i]));
     }
 
     result.append_array(serialize_blockhash());
@@ -216,7 +217,7 @@ Array &Message::get_signers(){
 
 int Message::locate_account_meta(const TypedArray<AccountMeta>& arr, const AccountMeta &input){
     for(unsigned int i = 0; i < arr.size(); i++){
-        if (Pubkey(merged_metas[i]) == input.get_pubkey()){
+        if (Pubkey::bytes_from_variant(merged_metas[i]) == Pubkey::bytes_from_variant(input.get_pubkey())){
             return i;
         }
     }

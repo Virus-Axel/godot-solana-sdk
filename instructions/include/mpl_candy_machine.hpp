@@ -12,8 +12,6 @@ namespace godot{
 
 class CandyGuardAccessList;
 
-MAKE_TYPED_ARRAY(CandyGuardAccessList, Variant::OBJECT)
-
 class ConfigLine: public Resource{
     GDCLASS(ConfigLine, Resource)
 private:

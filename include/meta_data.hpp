@@ -77,8 +77,6 @@ public:
     PackedByteArray serialize() const;
 };
 
-MAKE_TYPED_ARRAY(MetaDataCreator, Variant::OBJECT)
-
 class MetaData: public Resource{
     GDCLASS(MetaData, Resource)
 

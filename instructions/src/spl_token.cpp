@@ -11,7 +11,7 @@ Variant TokenProgram::_initialize_mint(const Variant& token_program_pid, const V
         data.resize(67);
 
         data[34] = 1;
-        PackedByteArray mint_authority_bytes = Pubkey(mint_authority).to_bytes();
+        PackedByteArray mint_authority_bytes = Pubkey::bytes_from_variant(mint_authority);
 
         for(unsigned int i = 0; i < 32; i++){
             data[35 + i] = mint_authority_bytes[i];
@@ -26,7 +26,7 @@ Variant TokenProgram::_initialize_mint(const Variant& token_program_pid, const V
     data[0] = DISCRIMINATOR;
     data[1] = decimals;
 
-    PackedByteArray mint_authority_bytes = Pubkey(mint_authority).to_bytes();
+    PackedByteArray mint_authority_bytes = Pubkey::bytes_from_variant(mint_authority);
 
     for(unsigned int i = 0; i < 32; i++){
         data[2 + i] = mint_authority_bytes[i];
@@ -35,11 +35,11 @@ Variant TokenProgram::_initialize_mint(const Variant& token_program_pid, const V
     result->set_program_id(token_program_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(mint_pubkey, false, true));
+    result->append_meta(*memnew(AccountMeta(mint_pubkey, false, true)));
 
     Pubkey *rent = memnew(Pubkey);
     rent->from_string("SysvarRent111111111111111111111111111111111");
-    result->append_meta(AccountMeta(rent, false, false));
+    result->append_meta(*memnew(AccountMeta(rent, false, false)));
 
     return result;
 }
@@ -53,7 +53,7 @@ Variant TokenProgram::_initialize_account(const Variant& token_program_pid, cons
     const unsigned int DISCRIMINATOR = 18;
     data[0] = DISCRIMINATOR;
 
-    PackedByteArray owner_bytes = Pubkey(owner_pubkey).to_bytes();
+    PackedByteArray owner_bytes = Pubkey::bytes_from_variant(owner_pubkey);
     for(unsigned int i = 0; i < 32; i++){
         data[1 + i] = owner_bytes[i];
     }
@@ -61,8 +61,8 @@ Variant TokenProgram::_initialize_account(const Variant& token_program_pid, cons
     result->set_program_id(token_program_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(account_pubkey, false, true));
-    result->append_meta(AccountMeta(mint_pubkey, false, false));
+    result->append_meta(*memnew(AccountMeta(account_pubkey, false, true)));
+    result->append_meta(*memnew(AccountMeta(mint_pubkey, false, false)));
 
     return result;
 }
@@ -76,15 +76,15 @@ Variant TokenProgram::_mint_to(const Variant& token_program_pid, const Variant& 
     data[0] = DISCRIMINATOR;
     data.encode_u64(1, amount);
 
-    PackedByteArray owner_bytes = Pubkey(owner_pubkey).to_bytes();
+    PackedByteArray owner_bytes = Pubkey::bytes_from_variant(owner_pubkey);
 
     result->set_program_id(token_program_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(mint_pubkey, false, true));
-    result->append_meta(AccountMeta(account_pubkey, false, true));
-    result->append_meta(AccountMeta(owner_pubkey, false, true));
-    result->append_meta(AccountMeta(mint_authority, true, false));
+    result->append_meta(*memnew(AccountMeta(mint_pubkey, false, true)));
+    result->append_meta(*memnew(AccountMeta(account_pubkey, false, true)));
+    result->append_meta(*memnew(AccountMeta(owner_pubkey, false, true)));
+    result->append_meta(*memnew(AccountMeta(mint_authority, true, false)));
 
     return result;
 }
@@ -102,10 +102,10 @@ Variant TokenProgram::_transfer_checked(const Variant& token_program_pid, const 
     result->set_program_id(token_program_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(source_pubkey, false, true));
-    result->append_meta(AccountMeta(mint_pubkey, false, false));
-    result->append_meta(AccountMeta(destination_pubkey, false, true));
-    result->append_meta(AccountMeta(source_authority, true, false));
+    result->append_meta(*memnew(AccountMeta(source_pubkey, false, true)));
+    result->append_meta(*memnew(AccountMeta(mint_pubkey, false, false)));
+    result->append_meta(*memnew(AccountMeta(destination_pubkey, false, true)));
+    result->append_meta(*memnew(AccountMeta(source_authority, true, false)));
 
     return result;
 }
@@ -121,9 +121,9 @@ Variant TokenProgram::_freeze_account(const Variant& token_program_pid, const Va
     result->set_program_id(token_program_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(account_pubkey, false, true));
-    result->append_meta(AccountMeta(mint_pubkey, false, false));
-    result->append_meta(AccountMeta(freeze_authority, true, false));
+    result->append_meta(*memnew(AccountMeta(account_pubkey, false, true)));
+    result->append_meta(*memnew(AccountMeta(mint_pubkey, false, false)));
+    result->append_meta(*memnew(AccountMeta(freeze_authority, true, false)));
 
     return result;
 }
@@ -145,10 +145,10 @@ Variant TokenProgram::new_token_record_address(const Variant &token, const Varia
     Array seeds;
 
     seeds.append(String("metadata").to_ascii_buffer());
-    seeds.append(Pubkey(MplTokenMetadata::get_pid()).to_bytes());
-    seeds.append(Pubkey(mint).to_bytes());
+    seeds.append(Pubkey::bytes_from_variant(MplTokenMetadata::get_pid()));
+    seeds.append(Pubkey::bytes_from_variant(mint));
     seeds.append(String("token_record").to_ascii_buffer());
-    seeds.append(Pubkey(token).to_bytes());
+    seeds.append(Pubkey::bytes_from_variant(token));
 
     return Pubkey::new_pda_bytes(seeds, MplTokenMetadata::get_pid());
 }
@@ -156,13 +156,13 @@ Variant TokenProgram::new_token_record_address(const Variant &token, const Varia
 Variant TokenProgram::new_delegate_record_address(const Variant& update_authority, const Variant &mint, const Variant& delegate_address, const MetaDataDelegateRole role){
     Array seeds;
     seeds.append(String("metadata").to_ascii_buffer());
-    seeds.append(Pubkey(MplTokenMetadata::get_pid()).to_bytes());
-    seeds.append(Pubkey(mint).to_bytes());
+    seeds.append(Pubkey::bytes_from_variant(MplTokenMetadata::get_pid()));
+    seeds.append(Pubkey::bytes_from_variant(mint));
 
     // TODO(Virax): Change based on delegate role.
     seeds.append(String("collection_delegate").to_ascii_buffer());
-    seeds.append(Pubkey(update_authority).to_bytes());
-    seeds.append(Pubkey(delegate_address).to_bytes());
+    seeds.append(Pubkey::bytes_from_variant(update_authority));
+    seeds.append(Pubkey::bytes_from_variant(delegate_address));
 
     return Pubkey::new_pda_bytes(seeds, MplTokenMetadata::get_pid());
 }
