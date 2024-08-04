@@ -34,7 +34,7 @@ String SolanaClient::ws_from_http(const String& http_url){
     else{
         ws_url["scheme"] = "ws";
     }
-    ws_url["port"] = 8900;
+    ws_url["port"] = get_real_ws_port();
    return assemble_url(ws_url);
 }
 
@@ -551,9 +551,9 @@ void WsRpcCall::process_package(const PackedByteArray& packet_data){
 
     // Find lowest uninitialized callback.
     int index = callbacks.size() - 1;
-    for(int i = callbacks.size() - 1; i > 0; i--){
-        if(callbacks[i - 1].first == 0){
-            index--;
+    for(int i = callbacks.size() - 1; i >= 0; i--){
+        if(callbacks[i].first == 0){
+            index = i;
         }
     }
     callbacks[index].first = (int) result;
