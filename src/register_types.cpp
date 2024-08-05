@@ -21,6 +21,8 @@
 #include "associated_token_account.hpp"
 #include "mpl_candy_machine.hpp"
 #include "anchor_program.hpp"
+//#include "rpc_single_http_request_client.hpp"
+//#include "rpc_multi_http_request_client.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -84,6 +86,8 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<ConfigLineSetting>();
     ClassDB::register_class<ConfigLine>();
     ClassDB::register_class<AnchorProgram>();
+    //ClassDB::register_class<RpcSingleHttpRequestClient>();
+    //ClassDB::register_class<RpcMultiHttpRequestClient>();
 
     add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
     add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, 443);

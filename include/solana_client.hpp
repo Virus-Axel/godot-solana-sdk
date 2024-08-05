@@ -6,8 +6,9 @@
 #include <godot_cpp/classes/web_socket_peer.hpp>
 #include <godot_cpp/classes/http_client.hpp>
 
-namespace godot {
+//#include "rpc_single_http_request_client.hpp"
 
+namespace godot {
 
 class HttpRpcCall : public HTTPClient{
     GDCLASS(HttpRpcCall, HTTPClient)
@@ -104,6 +105,8 @@ private:
     uint32_t get_real_http_port();
     uint32_t get_real_ws_port();
     String get_real_ws_url();
+
+    //RpcSingleHttpRequestClient *cc;
 
     HttpRpcCall *create_http_call();
     WsRpcCall *create_ws_call();
