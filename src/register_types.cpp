@@ -27,6 +27,7 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/engine.hpp>
 
 using namespace godot;
 
@@ -87,6 +88,11 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
     add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, 443);
     add_setting("solana_sdk/client/default_ws_port", Variant::Type::INT, 443);
+
+    Engine::get_singleton()->register_singleton("http_client", memnew(HttpRpcCall));
+    Engine::get_singleton()->register_singleton("ws_client", memnew(WsRpcCall));
+    Object* ptr = Engine::get_singleton()->get_singleton("http_client");
+    std::cout << (int)Object::cast_to<HttpRpcCall>(ptr)->is_pending() << std::endl;
 }
 
 void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {

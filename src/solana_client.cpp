@@ -78,13 +78,11 @@ HttpRpcCall *SolanaClient::create_http_call(){
     HttpRpcCall* new_http_call = memnew(HttpRpcCall);
     Callable callback = Callable(this, "response_callback");
     new_http_call->set_http_callback(callback);
-    rpc_calls.append(Variant(new_http_call));
     return new_http_call;
 }
 
  WsRpcCall *SolanaClient::create_ws_call(){
     WsRpcCall* new_ws_call = memnew(WsRpcCall);
-    rpc_calls.push_back(new_ws_call);
     return new_ws_call;
  }
 
@@ -473,6 +471,7 @@ void WsRpcCall::poll_ws_request(){
     switch(state){
         case WebSocketPeer::STATE_OPEN:
             while(get_available_packet_count()){
+                std::cout << "AHHHH" << std::endl;
                 const PackedByteArray packet_data = get_packet();
                 process_package(packet_data);
             }
@@ -501,11 +500,11 @@ Dictionary SolanaClient::quick_http_request(const Dictionary& request_body, cons
     }
 
     if(is_inside_tree() || async_override){
-        create_http_call()->asynchronous_request(request_body, parsed_url);
+        http_client->asynchronous_request(request_body, parsed_url);
         return Dictionary();
     }
     else{
-        return create_http_call()->synchronous_request(request_body, parsed_url);
+        return http_client->synchronous_request(request_body, parsed_url);
     }
 }
 
@@ -1079,14 +1078,14 @@ void SolanaClient::account_subscribe(const Variant &account_key, const Callable 
     add_to_param_dict(params, "encoding", encoding);
     add_to_param_dict(params, "commitment", commitment);
 
-    create_ws_call()->enqueue_ws_request(make_rpc_dict("accountSubscribe", params), callback, get_real_ws_url());
+    ws_client->enqueue_ws_request(make_rpc_dict("accountSubscribe", params), callback, get_real_ws_url());
 }
 
 void SolanaClient::signature_subscribe(const String &signature, const Callable &callback, const String &commitment){
     Array params;
     params.append(signature);
     add_to_param_dict(params, "commitment", commitment);
-    create_ws_call()->enqueue_ws_request(make_rpc_dict("signatureSubscribe", params), callback, get_real_ws_url());
+    ws_client->enqueue_ws_request(make_rpc_dict("signatureSubscribe", params), callback, get_real_ws_url());
 }
 
 void SolanaClient::program_subscribe(const String &program_id, const Callable &callback){
@@ -1096,24 +1095,19 @@ void SolanaClient::program_subscribe(const String &program_id, const Callable &c
     append_account_filter(params);
     append_encoding(params);
 
-    create_ws_call()->enqueue_ws_request(make_rpc_dict("programSubscribe", params), callback, get_real_ws_url());
+    ws_client->enqueue_ws_request(make_rpc_dict("programSubscribe", params), callback, get_real_ws_url());
 }
 
 void SolanaClient::root_subscribe(const Callable &callback){
-    create_ws_call()->enqueue_ws_request(make_rpc_dict("rootSubscribe", Array()), callback, get_real_ws_url());
+    ws_client->enqueue_ws_request(make_rpc_dict("rootSubscribe", Array()), callback, get_real_ws_url());
 }
 
 void SolanaClient::slot_subscribe(const Callable &callback){
-    create_ws_call()->enqueue_ws_request(make_rpc_dict("slotSubscribe", Array()), callback, get_real_ws_url());
+    ws_client->enqueue_ws_request(make_rpc_dict("slotSubscribe", Array()), callback, get_real_ws_url());
 }
 
 void SolanaClient::unsubscribe_all(const Callable &callback){
-    for(unsigned int i = 0; i < rpc_calls.size(); i++){
-        // TODO: Remove RpcCall's ability to do multiple ws requests.
-        if(((Object*)rpc_calls[i])->get_class() == "WsRpcCall"){
-            Object::cast_to<WsRpcCall>(rpc_calls[i])->unsubscribe_all(callback);
-        }
-    }
+    ws_client->unsubscribe_all(callback);
 }
 
 void SolanaClient::_bind_methods(){
@@ -1224,25 +1218,8 @@ void SolanaClient::_bind_methods(){
 }
 
 void SolanaClient::_process(double delta){
-    for(unsigned int i = 0; i < rpc_calls.size(); i++){
-        if(((Object*)rpc_calls[i])->get_class() == "HttpRpcCall"){
-            HttpRpcCall *http_call = Object::cast_to<HttpRpcCall>(rpc_calls[i]);
-            http_call->poll_http_request(delta);
-            if(!http_call->is_pending()){
-                rpc_calls.erase(i);
-            }
-        }
-        else if(((Object*)rpc_calls[i])->get_class() == "WsRpcCall"){
-            WsRpcCall *ws_call = Object::cast_to<WsRpcCall>(rpc_calls[i]);
-            ws_call->poll_ws_request();
-            if(!ws_call->is_pending()){
-                rpc_calls.erase(i);
-            }
-        }
-        else{
-            ERR_FAIL_MSG("Internal bug, Please report");
-        } 
-    }
+    http_client->poll_http_request(delta);
+    ws_client->poll_ws_request();
 }
 
 void SolanaClient::_ready(){
@@ -1250,6 +1227,8 @@ void SolanaClient::_ready(){
 
 SolanaClient::SolanaClient(){
     transaction_detail = "full";
+    ws_client = create_ws_call();
+    http_client = create_http_call();
 }
 
 Dictionary SolanaClient::parse_url(const String& url){

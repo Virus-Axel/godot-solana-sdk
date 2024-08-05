@@ -64,7 +64,8 @@ class SolanaClient : public Node {
     GDCLASS(SolanaClient, Node)
 
 private:
-    Array rpc_calls;
+    WsRpcCall *ws_client;
+    HttpRpcCall *http_client;
 
     float timeout = 20.0;
 
