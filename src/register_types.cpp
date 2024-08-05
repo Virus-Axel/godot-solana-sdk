@@ -91,8 +91,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 
     Engine::get_singleton()->register_singleton("http_client", memnew(HttpRpcCall));
     Engine::get_singleton()->register_singleton("ws_client", memnew(WsRpcCall));
-    Object* ptr = Engine::get_singleton()->get_singleton("http_client");
-    std::cout << (int)Object::cast_to<HttpRpcCall>(ptr)->is_pending() << std::endl;
+    Engine::get_singleton()->register_singleton("solana_client", memnew(SolanaClient));
 }
 
 void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {

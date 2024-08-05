@@ -10,6 +10,7 @@
 #include <godot_cpp/classes/project_settings.hpp>
 
 #include <pubkey.hpp>
+#include <godot_cpp/classes/engine.hpp>
 
 namespace godot{
 
@@ -75,7 +76,7 @@ String SolanaClient::get_real_ws_url(){
 }
 
 HttpRpcCall *SolanaClient::create_http_call(){
-    HttpRpcCall* new_http_call = memnew(HttpRpcCall);
+    HttpRpcCall* new_http_call = http_client();
     Callable callback = Callable(this, "response_callback");
     new_http_call->set_http_callback(callback);
     return new_http_call;
@@ -85,6 +86,16 @@ HttpRpcCall *SolanaClient::create_http_call(){
     WsRpcCall* new_ws_call = memnew(WsRpcCall);
     return new_ws_call;
  }
+
+WsRpcCall *SolanaClient::ws_client(){
+    Object* ptr = Engine::get_singleton()->get_singleton("ws_client");
+    return Object::cast_to<WsRpcCall>(ptr);
+}
+
+HttpRpcCall *SolanaClient::http_client(){
+    Object* ptr = Engine::get_singleton()->get_singleton("http_client");
+    return Object::cast_to<HttpRpcCall>(ptr);
+}
 
 void SolanaClient::append_commitment(Array& options){
     if(!commitment.is_empty()){
@@ -193,6 +204,11 @@ Error HttpRpcCall::make_request(const String& request_body){
 }
 
 Error HttpRpcCall::connect_to(Dictionary url){
+    // Do nothing if already connected.
+    if(get_status() != Status::STATUS_DISCONNECTED){
+        return OK;
+    }
+    
     int32_t port = url["port"];
     url.erase("port");
 
@@ -314,7 +330,7 @@ void HttpRpcCall::set_http_callback(const Callable& callback){
     http_callback = callback;
 }
 
-void HttpRpcCall::asynchronous_request(const Dictionary& request_body, Dictionary parsed_url){
+void HttpRpcCall::asynchronous_request(const Dictionary& request_body, Dictionary parsed_url, const Callable &callback){
     local_rpc_id = request_body["id"];
 
     #ifndef WEB_ENABLED
@@ -328,7 +344,7 @@ void HttpRpcCall::asynchronous_request(const Dictionary& request_body, Dictionar
 
     pending_request = true;
 
-    http_request_body = request_body;
+    request_queue.push(JSON::stringify(request_body));
 
 #else
     String web_script = "\
@@ -500,11 +516,11 @@ Dictionary SolanaClient::quick_http_request(const Dictionary& request_body, cons
     }
 
     if(is_inside_tree() || async_override){
-        http_client->asynchronous_request(request_body, parsed_url);
+        http_client()->asynchronous_request(request_body, parsed_url);
         return Dictionary();
     }
     else{
-        return http_client->synchronous_request(request_body, parsed_url);
+        return http_client()->synchronous_request(request_body, parsed_url);
     }
 }
 
@@ -1078,14 +1094,14 @@ void SolanaClient::account_subscribe(const Variant &account_key, const Callable 
     add_to_param_dict(params, "encoding", encoding);
     add_to_param_dict(params, "commitment", commitment);
 
-    ws_client->enqueue_ws_request(make_rpc_dict("accountSubscribe", params), callback, get_real_ws_url());
+    ws_client()->enqueue_ws_request(make_rpc_dict("accountSubscribe", params), callback, get_real_ws_url());
 }
 
 void SolanaClient::signature_subscribe(const String &signature, const Callable &callback, const String &commitment){
     Array params;
     params.append(signature);
     add_to_param_dict(params, "commitment", commitment);
-    ws_client->enqueue_ws_request(make_rpc_dict("signatureSubscribe", params), callback, get_real_ws_url());
+    ws_client()->enqueue_ws_request(make_rpc_dict("signatureSubscribe", params), callback, get_real_ws_url());
 }
 
 void SolanaClient::program_subscribe(const String &program_id, const Callable &callback){
@@ -1095,19 +1111,19 @@ void SolanaClient::program_subscribe(const String &program_id, const Callable &c
     append_account_filter(params);
     append_encoding(params);
 
-    ws_client->enqueue_ws_request(make_rpc_dict("programSubscribe", params), callback, get_real_ws_url());
+    ws_client()->enqueue_ws_request(make_rpc_dict("programSubscribe", params), callback, get_real_ws_url());
 }
 
 void SolanaClient::root_subscribe(const Callable &callback){
-    ws_client->enqueue_ws_request(make_rpc_dict("rootSubscribe", Array()), callback, get_real_ws_url());
+    ws_client()->enqueue_ws_request(make_rpc_dict("rootSubscribe", Array()), callback, get_real_ws_url());
 }
 
 void SolanaClient::slot_subscribe(const Callable &callback){
-    ws_client->enqueue_ws_request(make_rpc_dict("slotSubscribe", Array()), callback, get_real_ws_url());
+    ws_client()->enqueue_ws_request(make_rpc_dict("slotSubscribe", Array()), callback, get_real_ws_url());
 }
 
 void SolanaClient::unsubscribe_all(const Callable &callback){
-    ws_client->unsubscribe_all(callback);
+    ws_client()->unsubscribe_all(callback);
 }
 
 void SolanaClient::_bind_methods(){
@@ -1218,8 +1234,8 @@ void SolanaClient::_bind_methods(){
 }
 
 void SolanaClient::_process(double delta){
-    http_client->poll_http_request(delta);
-    ws_client->poll_ws_request();
+    http_client()->poll_http_request(delta);
+    ws_client()->poll_ws_request();
 }
 
 void SolanaClient::_ready(){
@@ -1227,8 +1243,8 @@ void SolanaClient::_ready(){
 
 SolanaClient::SolanaClient(){
     transaction_detail = "full";
-    ws_client = create_ws_call();
-    http_client = create_http_call();
+    //create_ws_call();
+    create_http_call();
 }
 
 Dictionary SolanaClient::parse_url(const String& url){

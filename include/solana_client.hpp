@@ -12,6 +12,9 @@ namespace godot {
 class HttpRpcCall : public HTTPClient{
     GDCLASS(HttpRpcCall, HTTPClient)
 private:
+    std::queue<String> request_queue;
+    std::vector<std::pair<int, Callable>> callbacks;
+    
     String path = "";
 
     float elapsed_time = 0;
@@ -35,7 +38,7 @@ public:
 
     void set_http_callback(const Callable& callback);
     Dictionary synchronous_request(const Dictionary& request_body, const Dictionary& parsed_url);
-    void asynchronous_request(const Dictionary& request_body, Dictionary parsed_url);
+    void asynchronous_request(const Dictionary& request_body, Dictionary parsed_url, const Callable &callback);
 };
 
 class WsRpcCall : public WebSocketPeer{
@@ -64,9 +67,6 @@ class SolanaClient : public Node {
     GDCLASS(SolanaClient, Node)
 
 private:
-    WsRpcCall *ws_client;
-    HttpRpcCall *http_client;
-
     float timeout = 20.0;
 
     static unsigned int global_rpc_id;
@@ -107,6 +107,9 @@ private:
 
     HttpRpcCall *create_http_call();
     WsRpcCall *create_ws_call();
+
+    WsRpcCall *ws_client();
+    HttpRpcCall *http_client();
 
     void append_commitment(Array& options);
     void append_min_context_slot(Array& options);
