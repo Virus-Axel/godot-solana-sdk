@@ -1,0 +1,52 @@
+#ifndef SOLANA_SDK_RPC_SINGLE_WS_REQUEST_CLIENT_HPP
+#define SOLANA_SDK_RPC_SINGLE_WS_REQUEST_CLIENT_HPP
+
+#include <queue>
+#include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/web_socket_peer.hpp>
+#include <godot_cpp/classes/http_client.hpp>
+
+#include "rpc_single_http_request_client.hpp"
+
+namespace godot{
+
+typedef struct {
+    unsigned int identifier;
+    String method_name;
+    Dictionary url;
+    Callable callback;
+} SubscriptionData;
+
+class WsRpcCall : public WebSocketPeer{
+    GDCLASS(WsRpcCall, WebSocketPeer)
+private:
+    std::deque<RequestData> request_queue;
+    std::vector<SubscriptionData> subscriptions;
+    std::vector<String> method_names;
+
+    void process_package(const PackedByteArray& packet_data);
+    void connect_ws(const String& url);
+    void add_subscription(unsigned int id, unsigned int sub_id);
+    void remove_subscription(unsigned int id);
+    void call_subscription_callback(unsigned int id, const Dictionary& params);
+    void finalize_request(unsigned int id);
+    void close_if_done();
+    void remove_request_with_id(unsigned int id);
+    unsigned int request_index_from_id(unsigned int id);
+    
+protected:
+    bool pending_request = false;
+
+    static void _bind_methods();
+public:
+    bool is_pending();
+
+    void process(float delta);
+    void enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const Dictionary& url, float timeout = 20.0F);
+    void unsubscribe_all(const Callable &callback, const Dictionary& url, float timeout = 20.0F);
+};
+
+};
+
+
+#endif

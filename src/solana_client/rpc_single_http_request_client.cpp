@@ -12,9 +12,9 @@ void RpcSingleHttpRequestClient::update_timeouts(const float delta){
 
     // Remove timed out requests.
     if(request_queue.front().timeout < 0.0){
+        close();
         request_queue.pop();
         ERR_FAIL_EDMSG("Request timed out.");
-        close();
     }
 }
 
@@ -35,13 +35,15 @@ bool RpcSingleHttpRequestClient::is_response_valid(const Dictionary& response) c
     if(!response.has("id")){
         return false;
     }
-    if((unsigned int)response["id"] != local_rpc_id){
+    if((unsigned int)response["id"] != request_queue.front().request_identifier){
+        std::cout << request_queue.front().request_identifier << std::endl;
         return false;
     }
     return true;
 }
 
 Error RpcSingleHttpRequestClient::connect_to(){
+    std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
     // Do nothing if already connected.
     if(get_status() != Status::STATUS_DISCONNECTED){
         return OK;
@@ -59,6 +61,7 @@ Error RpcSingleHttpRequestClient::connect_to(){
         connect_url = url["scheme"];
     }
     connect_url += "://" + (String) url["host"];
+    std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA000000" << std::endl;
 
     return connect_to_host(connect_url, port);
 }
@@ -84,16 +87,21 @@ Error RpcSingleHttpRequestClient::send_next_request(){
 
     // Make a POST request.
     const String request_body = JSON::stringify(request_queue.front().request);
+    std::cout << "sending: "<<request_body.ascii() << std::endl;
     return request(godot::HTTPClient::METHOD_POST, path, http_headers, request_body);
 }
 
 void RpcSingleHttpRequestClient::finalize_request(const Dictionary& response){
+    std::cout << "HERE" << std::endl;
     HTTPClient::close();
 
-    Array params;
-    params.append(response);
+    if(request_queue.front().callback.is_valid()){
+        Array params;
+        params.append(response);
+        request_queue.front().callback.callv(params);
+    }
 
-    request_queue.front().callback.callv(params);
+    request_queue.pop();
 }
 
 void RpcSingleHttpRequestClient::process(const float delta){
@@ -121,6 +129,7 @@ void RpcSingleHttpRequestClient::process(const float delta){
 		return;
 	}
     else if(status == HTTPClient::STATUS_CONNECTED){
+        std::cout << "CONNECTED" << std::endl;
 	    Error err = send_next_request();
 
         if(err != Error::OK){
@@ -132,6 +141,7 @@ void RpcSingleHttpRequestClient::process(const float delta){
 		return;
 	}
     else if(status == HTTPClient::STATUS_BODY){
+        std::cout << "RESPONSE" << std::endl;
         // Collect the response body.
         while(status == HTTPClient::STATUS_BODY){
             response_data.append_array(read_response_body_chunk());
@@ -142,6 +152,7 @@ void RpcSingleHttpRequestClient::process(const float delta){
         // Parse the result json.
         JSON json;
         Error err = json.parse(response_data.get_string_from_utf8());
+        std::cout << response_data.get_string_from_utf8().ascii() << std::endl;
         if(err != Error::OK){
             HTTPClient::close();
             ERR_FAIL_EDMSG("Error getting response data.");
@@ -150,6 +161,7 @@ void RpcSingleHttpRequestClient::process(const float delta){
         Dictionary json_data = json.get_data();
         
         if(!is_response_valid(json_data)){
+            std::cout << "invalid" << std::endl;
             return;
         }
 
@@ -177,10 +189,13 @@ void RpcSingleHttpRequestClient::process(const float delta){
 }
 
 
-Dictionary RpcSingleHttpRequestClient::synchronous_request(const Dictionary& request_body, const Dictionary& parsed_url){
+Dictionary RpcSingleHttpRequestClient::synchronous_request(const Dictionary& request_body, const Dictionary& parsed_url, float timeout){
     #ifndef WEB_ENABLED
 	const int32_t POLL_DELAY_MSEC = 100;
     float elapsed_time = 0.0F;
+
+    RequestData data = {request_body, parsed_url, timeout, 0, Callable()};
+    request_queue.push(data);
 
     Error err = connect_to();
     ERR_FAIL_COND_V_EDMSG(err != Error::OK, Dictionary(), "Failed to connect to server.");
@@ -193,13 +208,16 @@ Dictionary RpcSingleHttpRequestClient::synchronous_request(const Dictionary& req
         elapsed_time += float(POLL_DELAY_MSEC) / 1000;
 		status = get_status();
         if(elapsed_time > request_queue.front().timeout){
-            HTTPClient::close();
+            finalize_request(Dictionary());
             ERR_FAIL_V_EDMSG(Dictionary(), "Request timed out.");
         }
 	}
 
 	err = send_next_request();
-	ERR_FAIL_COND_V_EDMSG(err != Error::OK, Dictionary(), "Error sending request.");
+    if(err != OK){
+        finalize_request(Dictionary());
+        ERR_FAIL_V_EDMSG(Dictionary(), "Error sending request.");
+    }
 
 	// Poll until we have a response.
 	status = get_status();
@@ -209,7 +227,7 @@ Dictionary RpcSingleHttpRequestClient::synchronous_request(const Dictionary& req
         elapsed_time += float(POLL_DELAY_MSEC) / 1000;
 		status = get_status();
         if(elapsed_time > request_queue.front().timeout){
-            HTTPClient::close();
+            finalize_request(Dictionary());
             ERR_FAIL_V_EDMSG(Dictionary(), "Request timed out.");
         }
 	}
@@ -223,12 +241,13 @@ Dictionary RpcSingleHttpRequestClient::synchronous_request(const Dictionary& req
         elapsed_time += float(POLL_DELAY_MSEC) / 1000;
 		status = get_status();
         if(elapsed_time > request_queue.front().timeout){
-            HTTPClient::close();
+            finalize_request(Dictionary());
             ERR_FAIL_V_EDMSG(Dictionary(), "Request timed out.");
         }
 	}
 
-	HTTPClient::close();
+	finalize_request(Dictionary());
+
 
 	// Parse the result json.
 	JSON json;
@@ -265,11 +284,10 @@ Dictionary RpcSingleHttpRequestClient::synchronous_request(const Dictionary& req
 }
 
 void RpcSingleHttpRequestClient::_bind_methods(){
-
 }
 
 void RpcSingleHttpRequestClient::asynchronous_request(const Dictionary& request_body, Dictionary parsed_url, const Callable &callback, float timeout){
-    RequestData data = {JSON::stringify(request_body), parsed_url, timeout, 0, callback};
+    RequestData data = {request_body, parsed_url, timeout, request_body["id"], callback};
     request_queue.push(data);
 }
 

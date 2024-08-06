@@ -9,7 +9,7 @@
 namespace godot {
 
 typedef struct{
-    String request;
+    Dictionary request;
     Dictionary parsed_url;
     float timeout;
     int request_identifier;
@@ -38,7 +38,7 @@ protected:
 public:
     void process(const float delta);
 
-    Dictionary synchronous_request(const Dictionary& request_body, const Dictionary& parsed_url);
+    Dictionary synchronous_request(const Dictionary& request_body, const Dictionary& parsed_url, float timeout = 20.0F);
     void asynchronous_request(const Dictionary& request_body, Dictionary parsed_url, const Callable &callback, float timeout = 20.0F);
 };
 
