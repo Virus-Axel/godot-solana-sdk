@@ -76,10 +76,10 @@ String SolanaClient::get_real_ws_url(){
 }
 
 HttpRpcCall *SolanaClient::create_http_call(){
-    //HttpRpcCall* new_http_call = http_client();
-    //Callable callback = Callable(this, "response_callback");
-    //new_http_call->set_http_callback(callback);
-    //return new_http_call;
+    HttpRpcCall* new_http_call = http_client();
+    Callable callback = Callable(this, "response_callback");
+    new_http_call->set_http_callback(callback);
+    return new_http_call;
 }
 
  WsRpcCall *SolanaClient::create_ws_call(){
