@@ -46,6 +46,8 @@ private:
     bool rewards = false;
     bool slot_range_enabled = false;
 
+    Callable ws_callback;
+
     String ws_from_http(const String& http_url);
     String get_real_url();
     uint32_t get_real_http_port();
@@ -74,6 +76,7 @@ private:
     Dictionary parse_url(const String& url);
 
     void response_callback(const Dictionary &params);
+    void ws_response_callback(const Dictionary &params);
 
 protected:
     static void _bind_methods();

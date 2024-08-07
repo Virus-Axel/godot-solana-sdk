@@ -5,8 +5,8 @@
 
 namespace godot{
 
-void WsRpcCall::enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const Dictionary& url, float timeout){
-    request_queue.push_back(RequestData{request_body, url, timeout, request_body["id"], callback});
+void WsRpcCall::enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const Callable& confirmation_callback, const Dictionary& url, float timeout){
+    request_queue.push_back(WsRequestData{request_body, url, timeout, request_body["id"], callback, confirmation_callback});
 }
 
 void WsRpcCall::_bind_methods(){}
@@ -74,20 +74,25 @@ void WsRpcCall::process_package(const PackedByteArray& packet_data){
         unsigned int subscription_id = result;
 
         add_subscription(rpc_id, subscription_id);
-        finalize_request(rpc_id);
+        finalize_request(rpc_id, json);
     }
     else{
+        finalize_request(json["id"], Dictionary());
         ERR_FAIL_EDMSG("Web socket failed");
     }
 }
 
 void WsRpcCall::unsubscribe_all(const Callable &callback, const Dictionary& url, float timeout){
+    
     for(unsigned int i = 0; i < subscriptions.size(); i++){
+        std::cout <<"GOOOO" << std::endl;
         if(subscriptions[i].callback == callback){
+            std::cout << "HIT " << i << std::endl;
             Array params;
             params.append(subscriptions[i].identifier);
-            Dictionary request_body = SolanaClient::make_rpc_dict(subscriptions[i].method_name, params);
-            request_queue.push_back(RequestData{request_body, url, timeout, request_body["id"], Callable()});
+            String unsubscribe_method_name = subscriptions[i].method_name.replace("Subscribe", "Unsubscribe");
+            Dictionary request_body = SolanaClient::make_rpc_dict(unsubscribe_method_name, params);
+            request_queue.push_back(WsRequestData{request_body, url, timeout, request_body["id"], Callable(), Callable()});
 
             remove_subscription(i);
             i--;
@@ -99,7 +104,7 @@ void WsRpcCall::connect_ws(const String& url){
     if(get_ready_state() == WebSocketPeer::STATE_CLOSED && !connecting){
         Error err = connect_to_url(url);
         if(err != OK){
-            request_queue.pop_front();
+            finalize_request(0, Dictionary());
             ERR_FAIL_EDMSG("Ws failed to connect");
         }
         connecting = true;
@@ -129,7 +134,22 @@ void WsRpcCall::call_subscription_callback(unsigned int id, const Dictionary& pa
     }
 }
 
-void WsRpcCall::finalize_request(unsigned int id){
+void WsRpcCall::call_confirmation_callback(unsigned int id, const Dictionary &params){
+    std::cout << "trying Callback " << request_queue.size() << std::endl;
+    for(unsigned int i = 0; i < request_queue.size(); i++){
+        if(request_queue[i].request_identifier == id){
+            Array args;
+            args.push_back(params);
+            if(request_queue[i].confirmation_callback.is_valid()){
+                std::cout << "Callback" << std::endl;
+                request_queue[i].confirmation_callback.callv(args);
+            }
+        }
+    }
+}
+
+void WsRpcCall::finalize_request(unsigned int id, const Dictionary& result){
+    call_confirmation_callback(id, result);
     remove_request_with_id(id);
     pending_request = false;
     close_if_done();
@@ -153,8 +173,8 @@ void WsRpcCall::process_timeouts(float delta){
     for(unsigned int i = 0; i < request_queue.size(); i++){
         request_queue[i].timeout -= delta;
         if(request_queue[i].timeout < 0.0F){
-            request_queue.erase(request_queue.begin() + i);
             connecting = false;
+            finalize_request(request_queue[i].request_identifier, Dictionary());
             ERR_FAIL_EDMSG("Ws request timed out.");
         }
     }

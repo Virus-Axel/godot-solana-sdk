@@ -2,7 +2,7 @@ extends VBoxContainer
 
 const EXAMPLE_ACCOUNT := "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZAMdL4VZHirAn"
 
-const TOTAL_CASES := 9
+const TOTAL_CASES := 8
 var passed_test_mask := 0
 		
 
@@ -124,10 +124,12 @@ func test_project_settings():
 	assert(response.is_empty())
 	
 	ProjectSettings.set_setting("solana_sdk/client/default_ws_port", INCORRECT_WS_PORT)
-	ws_client.account_subscribe(EXAMPLE_ACCOUNT, Callable(self, "_pass_if_failed"))
+	ws_client.account_subscribe(EXAMPLE_ACCOUNT, Callable(self, "_dummy_callback"))
+	await ws_client.socket_response_received
 	
 	ProjectSettings.set_setting("solana_sdk/client/default_ws_port", CORRECT_WS_PORT)
-	ws_client.account_subscribe(EXAMPLE_ACCOUNT, Callable(self, "_pass_if_succeded"))
+	ws_client.account_subscribe(EXAMPLE_ACCOUNT, Callable(self, "_dummy_callback"))
+	await ws_client.socket_response_received
 	
 	# Port in URL overrides port setting and triggers a warning.
 	ProjectSettings.set_setting("solana_sdk/client/default_url", CORRECT_URL + ":" + CORRECT_HTTP_PORT)
@@ -142,6 +144,27 @@ func test_project_settings():
 	ProjectSettings.set_setting("solana_sdk/client/default_ws_port", CORRECT_WS_PORT)
 	
 	PASS(6)
+
+
+func unsubscribe_account_test():
+	var client: SolanaClient = add_solana_client()
+	var account_callback := Callable(self, "_should_not_be_called")
+	
+	var random_account = Pubkey.new_random()
+	client.account_subscribe(random_account, account_callback)
+	await client.socket_response_received
+	client.unsubscribe_all(account_callback)
+	
+	# Make lamports of the account change to trigger the callback.
+	client.request_airdrop(random_account.to_string(), 1000000)
+	var airdrop_response = await client.http_response_received
+	assert(airdrop_response.has("result"))
+	var airdrop_signature: String = airdrop_response["result"]
+	
+	# Keep the client node in the tree to keep it processing
+	# You should call unsubscribe_all() when you are done.
+	
+	PASS(7)
 
 
 func test_account_encoding():
@@ -159,11 +182,13 @@ func test_account_encoding():
 func _ready():
 	# Disbled since RPC client does not respond with base64 encoding.
 	# test_account_encoding()
+	
 	get_account_info_demo()
 	get_latest_blockhash_demo()
 	get_minimum_balance_for_rent_extemption_demo()
+	
 	subscribe_account_demo()
-
+	await unsubscribe_account_test()
 	test_project_settings()
 
 
@@ -176,14 +201,12 @@ func _signature_subscribe_callback(_params):
 func _acconunt_encoding_test_callback(_params):
 	PASS(7)
 
-func _pass_if_failed(params):
-	#assert(not params.has("result"))
-	PASS(7)
+func _should_not_be_called(params):
+	assert(false)
 
-func _pass_if_succeded(params):
-	#assert(params.has("result"))
-	PASS(8)
-
+func _dummy_callback(_params):
+	pass
+	
 
 func _on_timeout_timeout():
 	for i in range(TOTAL_CASES):

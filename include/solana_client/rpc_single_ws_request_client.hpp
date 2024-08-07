@@ -6,9 +6,17 @@
 #include <godot_cpp/classes/web_socket_peer.hpp>
 #include <godot_cpp/classes/http_client.hpp>
 
-#include "rpc_single_http_request_client.hpp"
-
 namespace godot{
+
+
+typedef struct{
+    Dictionary request;
+    Dictionary parsed_url;
+    float timeout;
+    int request_identifier;
+    Callable callback;
+    Callable confirmation_callback;
+} WsRequestData;
 
 typedef struct {
     unsigned int identifier;
@@ -22,7 +30,7 @@ class WsRpcCall : public WebSocketPeer{
 private:
     bool connecting = false;
 
-    std::deque<RequestData> request_queue;
+    std::deque<WsRequestData> request_queue;
     std::vector<SubscriptionData> subscriptions;
 
     void process_package(const PackedByteArray& packet_data);
@@ -30,7 +38,8 @@ private:
     void add_subscription(unsigned int id, unsigned int sub_id);
     void remove_subscription(unsigned int index);
     void call_subscription_callback(unsigned int id, const Dictionary& params);
-    void finalize_request(unsigned int id);
+    void call_confirmation_callback(unsigned int id, const Dictionary &params);
+    void finalize_request(unsigned int id, const Dictionary& result);
     void close_if_done();
     void remove_request_with_id(unsigned int id);
     void process_timeouts(float delta);
@@ -44,7 +53,7 @@ public:
     bool is_pending();
 
     void process(float delta);
-    void enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const Dictionary& url, float timeout = 20.0F);
+    void enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const Callable& confirmation_callback, const Dictionary& url, float timeout = 20.0F);
     void unsubscribe_all(const Callable &callback, const Dictionary& url, float timeout = 20.0F);
 };
 

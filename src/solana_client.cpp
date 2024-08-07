@@ -210,6 +210,10 @@ void SolanaClient::response_callback(const Dictionary &params){
     emit_signal("http_response_received", params);
 }
 
+void SolanaClient::ws_response_callback(const Dictionary &params){
+    emit_signal("socket_response_received", params);
+}
+
 void SolanaClient::get_latest_blockhash(){
     Array params;
     append_commitment(params);
@@ -705,14 +709,15 @@ void SolanaClient::account_subscribe(const Variant &account_key, const Callable 
     add_to_param_dict(params, "encoding", encoding);
     add_to_param_dict(params, "commitment", commitment);
 
-    ws_client()->enqueue_ws_request(make_rpc_dict("accountSubscribe", params), callback, parse_url(get_real_ws_url()));
+    ws_client()->enqueue_ws_request(make_rpc_dict("accountSubscribe", params), callback, ws_callback, parse_url(get_real_ws_url()));
 }
 
 void SolanaClient::signature_subscribe(const String &signature, const Callable &callback, const String &commitment){
     Array params;
     params.append(signature);
     add_to_param_dict(params, "commitment", commitment);
-    ws_client()->enqueue_ws_request(make_rpc_dict("signatureSubscribe", params), callback, parse_url(get_real_ws_url()));
+
+    ws_client()->enqueue_ws_request(make_rpc_dict("signatureSubscribe", params), callback, ws_callback, parse_url(get_real_ws_url()));
 }
 
 void SolanaClient::program_subscribe(const String &program_id, const Callable &callback){
@@ -722,15 +727,15 @@ void SolanaClient::program_subscribe(const String &program_id, const Callable &c
     append_account_filter(params);
     append_encoding(params);
 
-    ws_client()->enqueue_ws_request(make_rpc_dict("programSubscribe", params), callback, parse_url(get_real_ws_url()));
+    ws_client()->enqueue_ws_request(make_rpc_dict("programSubscribe", params), callback, ws_callback, parse_url(get_real_ws_url()));
 }
 
 void SolanaClient::root_subscribe(const Callable &callback){
-    ws_client()->enqueue_ws_request(make_rpc_dict("rootSubscribe", Array()), callback, parse_url(get_real_ws_url()));
+    ws_client()->enqueue_ws_request(make_rpc_dict("rootSubscribe", Array()), callback, ws_callback, parse_url(get_real_ws_url()));
 }
 
 void SolanaClient::slot_subscribe(const Callable &callback){
-    ws_client()->enqueue_ws_request(make_rpc_dict("slotSubscribe", Array()), callback, parse_url(get_real_ws_url()));
+    ws_client()->enqueue_ws_request(make_rpc_dict("slotSubscribe", Array()), callback, ws_callback, parse_url(get_real_ws_url()));
 }
 
 void SolanaClient::unsubscribe_all(const Callable &callback){
@@ -745,6 +750,7 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_next_request_identifier"), &SolanaClient::get_next_request_identifier);
 
     ClassDB::bind_method(D_METHOD("response_callback", "params"), &SolanaClient::response_callback);
+    ClassDB::bind_method(D_METHOD("ws_response_callback", "params"), &SolanaClient::ws_response_callback);
     ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &SolanaClient::set_url_override);
     ClassDB::bind_method(D_METHOD("get_url_override"), &SolanaClient::get_url_override);
     ClassDB::bind_method(D_METHOD("is_ready"), &SolanaClient::is_ready);
@@ -854,6 +860,7 @@ void SolanaClient::_ready(){
 
 SolanaClient::SolanaClient(){
     transaction_detail = "full";
+    ws_callback = Callable(this, "ws_response_callback");
     //create_ws_call();
     //create_http_call();
 }
