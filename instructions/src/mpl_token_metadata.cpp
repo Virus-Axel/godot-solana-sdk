@@ -85,7 +85,7 @@ Variant MplTokenMetadata::get_mint_metadata(const Variant& mint){
 
     Callable callback(this, "metadata_callback");
     connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
-    Dictionary rpc_result = get_account_info(Pubkey(metadata_account).to_string());
+    get_account_info(Pubkey(metadata_account).to_string());
 
     return OK;
 }

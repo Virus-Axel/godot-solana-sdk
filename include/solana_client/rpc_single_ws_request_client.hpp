@@ -20,18 +20,20 @@ typedef struct {
 class WsRpcCall : public WebSocketPeer{
     GDCLASS(WsRpcCall, WebSocketPeer)
 private:
+    bool connecting = false;
+
     std::deque<RequestData> request_queue;
     std::vector<SubscriptionData> subscriptions;
-    std::vector<String> method_names;
 
     void process_package(const PackedByteArray& packet_data);
     void connect_ws(const String& url);
     void add_subscription(unsigned int id, unsigned int sub_id);
-    void remove_subscription(unsigned int id);
+    void remove_subscription(unsigned int index);
     void call_subscription_callback(unsigned int id, const Dictionary& params);
     void finalize_request(unsigned int id);
     void close_if_done();
     void remove_request_with_id(unsigned int id);
+    void process_timeouts(float delta);
     unsigned int request_index_from_id(unsigned int id);
     
 protected:

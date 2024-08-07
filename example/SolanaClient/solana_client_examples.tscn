@@ -27,11 +27,6 @@ layout_mode = 2
 size_flags_vertical = 3
 columns = 2
 
-[node name="ResultTree4" type="Tree" parent="."]
-layout_mode = 2
-size_flags_vertical = 3
-columns = 2
-
 [node name="Timeout" type="Timer" parent="."]
 wait_time = 20.0
 one_shot = true

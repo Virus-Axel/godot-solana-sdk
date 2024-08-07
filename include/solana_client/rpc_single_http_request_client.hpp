@@ -30,6 +30,7 @@ private:
 
     Error connect_to();
     Error send_next_request();
+    void finalize_faulty();
     void finalize_request(const Dictionary& response);
 
 protected:
@@ -38,7 +39,6 @@ protected:
 public:
     void process(const float delta);
 
-    Dictionary synchronous_request(const Dictionary& request_body, const Dictionary& parsed_url, float timeout = 20.0F);
     void asynchronous_request(const Dictionary& request_body, Dictionary parsed_url, const Callable &callback, float timeout = 20.0F);
 };
 

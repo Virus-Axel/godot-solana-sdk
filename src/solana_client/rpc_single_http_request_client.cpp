@@ -7,13 +7,14 @@
 
 namespace godot {
 
+const int32_t POLL_DELAY_MSEC = 100;
+
 void RpcSingleHttpRequestClient::update_timeouts(const float delta){
     request_queue.front().timeout -= delta;
 
     // Remove timed out requests.
     if(request_queue.front().timeout < 0.0){
-        close();
-        request_queue.pop();
+        finalize_faulty();
         ERR_FAIL_EDMSG("Request timed out.");
     }
 }
@@ -91,6 +92,19 @@ Error RpcSingleHttpRequestClient::send_next_request(){
     return request(godot::HTTPClient::METHOD_POST, path, http_headers, request_body);
 }
 
+void RpcSingleHttpRequestClient::finalize_faulty(){
+    std::cout << request_queue.size() << std::endl;
+    HTTPClient::close();
+
+    if(request_queue.front().callback.is_valid()){
+        Array params;
+        params.append(Dictionary());
+        request_queue.front().callback.callv(params);
+    }
+
+    request_queue.pop();
+}
+
 void RpcSingleHttpRequestClient::finalize_request(const Dictionary& response){
     std::cout << "HERE" << std::endl;
     HTTPClient::close();
@@ -114,7 +128,10 @@ void RpcSingleHttpRequestClient::process(const float delta){
     // Make new connection if queue is not empty
     if(!is_pending()){
         Error err = connect_to();
-        ERR_FAIL_COND_EDMSG(err != Error::OK, "Failed to connect to RPC node.");
+        if(err != Error::OK){
+            finalize_faulty();
+            ERR_FAIL_EDMSG("Failed to connect to RPC node.");
+        }
     }
     else{
         update_timeouts(delta);
@@ -133,7 +150,7 @@ void RpcSingleHttpRequestClient::process(const float delta){
 	    Error err = send_next_request();
 
         if(err != Error::OK){
-            HTTPClient::close();
+            finalize_faulty();
             ERR_FAIL_EDMSG("Error sending request.");
         }
     }
@@ -154,7 +171,7 @@ void RpcSingleHttpRequestClient::process(const float delta){
         Error err = json.parse(response_data.get_string_from_utf8());
         std::cout << response_data.get_string_from_utf8().ascii() << std::endl;
         if(err != Error::OK){
-            HTTPClient::close();
+            finalize_faulty();
             ERR_FAIL_EDMSG("Error getting response data.");
         }
 
@@ -168,6 +185,8 @@ void RpcSingleHttpRequestClient::process(const float delta){
         finalize_request(json_data);
     }
     else{
+        finalize_faulty();
+        ERR_PRINT_ONCE_ED("Cannot connect");
         return;
     }
 #else
@@ -186,101 +205,6 @@ void RpcSingleHttpRequestClient::process(const float delta){
         JavaScriptBridge::get_singleton()->eval(reset_script.format(format_params));
     }
 #endif
-}
-
-
-Dictionary RpcSingleHttpRequestClient::synchronous_request(const Dictionary& request_body, const Dictionary& parsed_url, float timeout){
-    #ifndef WEB_ENABLED
-	const int32_t POLL_DELAY_MSEC = 100;
-    float elapsed_time = 0.0F;
-
-    RequestData data = {request_body, parsed_url, timeout, 0, Callable()};
-    request_queue.push(data);
-
-    Error err = connect_to();
-    ERR_FAIL_COND_V_EDMSG(err != Error::OK, Dictionary(), "Failed to connect to server.");
-
-	// Wait until a connection is established.
-	godot::HTTPClient::Status status = get_status();
-	while(status == HTTPClient::STATUS_CONNECTING || status == HTTPClient::STATUS_RESOLVING){
-		HTTPClient::poll();
-		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
-        elapsed_time += float(POLL_DELAY_MSEC) / 1000;
-		status = get_status();
-        if(elapsed_time > request_queue.front().timeout){
-            finalize_request(Dictionary());
-            ERR_FAIL_V_EDMSG(Dictionary(), "Request timed out.");
-        }
-	}
-
-	err = send_next_request();
-    if(err != OK){
-        finalize_request(Dictionary());
-        ERR_FAIL_V_EDMSG(Dictionary(), "Error sending request.");
-    }
-
-	// Poll until we have a response.
-	status = get_status();
-	while(status == HTTPClient::STATUS_REQUESTING){
-		HTTPClient::poll();
-		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
-        elapsed_time += float(POLL_DELAY_MSEC) / 1000;
-		status = get_status();
-        if(elapsed_time > request_queue.front().timeout){
-            finalize_request(Dictionary());
-            ERR_FAIL_V_EDMSG(Dictionary(), "Request timed out.");
-        }
-	}
-
-	// Collect the response body.
-	PackedByteArray response_data;
-	while(status == HTTPClient::STATUS_BODY){
-		response_data.append_array(read_response_body_chunk());
-		HTTPClient::poll();
-		OS::get_singleton()->delay_msec(POLL_DELAY_MSEC);
-        elapsed_time += float(POLL_DELAY_MSEC) / 1000;
-		status = get_status();
-        if(elapsed_time > request_queue.front().timeout){
-            finalize_request(Dictionary());
-            ERR_FAIL_V_EDMSG(Dictionary(), "Request timed out.");
-        }
-	}
-
-	finalize_request(Dictionary());
-
-
-	// Parse the result json.
-	JSON json;
-	err = json.parse(response_data.get_string_from_utf8());
-
-#else
-    String web_script = "\
-        var request = new XMLHttpRequest();\
-        request.timeout = {0};\
-        request.open('POST', '{1}', false);\
-        request.setRequestHeader('Content-Type', 'application/json');\
-        request.send('{2}');\
-        \
-        Module.solanaClientResponse = request.response;\
-        request.response";
-
-    Array params;
-
-    params.append(request_queue.front().timeout * 1000);
-    params.append(SolanaClient::assemble_url(parsed_url));
-    params.append(request_body);
-
-    Variant result = JavaScriptBridge::get_singleton()->eval(web_script.format(params));
-
-    JSON json;
-	Error err = json.parse(result);
-
-#endif
-
-    ERR_FAIL_COND_V_EDMSG(err != Error::OK, Dictionary(), "Error getting response data.");
-
-	return json.get_data();
-
 }
 
 void RpcSingleHttpRequestClient::_bind_methods(){

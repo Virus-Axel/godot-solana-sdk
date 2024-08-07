@@ -2,7 +2,7 @@ extends VBoxContainer
 
 const EXAMPLE_ACCOUNT := "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZAMdL4VZHirAn"
 
-const TOTAL_CASES := 10
+const TOTAL_CASES := 9
 var passed_test_mask := 0
 		
 
@@ -91,14 +91,6 @@ func subscribe_account_demo():
 	
 	PASS(3)
 
-func synchronous_client_call():
-	# Same call to get account info but synchronous.
-	var client = SolanaClient.new()
-	var response = client.get_account_info(EXAMPLE_ACCOUNT)
-	assert(response.has("result"))
-	display_dict(response["result"], $ResultTree4.create_item())
-	PASS(6)
-
 
 func test_project_settings():
 	const CORRECT_URL = "http://localhost"
@@ -108,21 +100,28 @@ func test_project_settings():
 	const CORRECT_WS_PORT = "8900"
 	const INCORRECT_WS_PORT = "8901"
 	
-	var client = SolanaClient.new()
+	var client = add_solana_client()
 	var ws_client = add_solana_client()
 	
-	var response = client.get_account_info(EXAMPLE_ACCOUNT)
+	client.get_account_info(EXAMPLE_ACCOUNT)
+	var response = await client.http_response_received
 	assert(response.has("result"))
+	
 	ProjectSettings.set_setting("solana_sdk/client/default_url", INCORRECT_URL)
-	response = client.get_account_info(EXAMPLE_ACCOUNT)
-	assert(!response.has("result"))
+	client.get_account_info(EXAMPLE_ACCOUNT)
+	response = await client.http_response_received
+	assert(response.is_empty())
+	
 	ProjectSettings.set_setting("solana_sdk/client/default_url", CORRECT_URL)
 	ProjectSettings.set_setting("solana_sdk/client/default_http_port", CORRECT_HTTP_PORT)
-	response = client.get_account_info(EXAMPLE_ACCOUNT)
+	client.get_account_info(EXAMPLE_ACCOUNT)
+	response = await client.http_response_received
 	assert(response.has("result"))
+	
 	ProjectSettings.set_setting("solana_sdk/client/default_http_port", INCORRECT_HTTP_PORT)
-	response = client.get_account_info(EXAMPLE_ACCOUNT)
-	assert(!response.has("result"))
+	client.get_account_info(EXAMPLE_ACCOUNT)
+	response = await client.http_response_received
+	assert(response.is_empty())
 	
 	ProjectSettings.set_setting("solana_sdk/client/default_ws_port", INCORRECT_WS_PORT)
 	ws_client.account_subscribe(EXAMPLE_ACCOUNT, Callable(self, "_pass_if_failed"))
@@ -133,7 +132,8 @@ func test_project_settings():
 	# Port in URL overrides port setting and triggers a warning.
 	ProjectSettings.set_setting("solana_sdk/client/default_url", CORRECT_URL + ":" + CORRECT_HTTP_PORT)
 	ProjectSettings.set_setting("solana_sdk/client/default_http_port", INCORRECT_HTTP_PORT)
-	response = client.get_account_info(EXAMPLE_ACCOUNT)
+	client.get_account_info(EXAMPLE_ACCOUNT)
+	response = await client.http_response_received
 	assert(response.has("result"))
 	
 	# Restore correct settings
@@ -141,7 +141,7 @@ func test_project_settings():
 	ProjectSettings.set_setting("solana_sdk/client/default_http_port", CORRECT_HTTP_PORT)
 	ProjectSettings.set_setting("solana_sdk/client/default_ws_port", CORRECT_WS_PORT)
 	
-	PASS(7)
+	PASS(6)
 
 
 func test_account_encoding():
@@ -159,12 +159,12 @@ func test_account_encoding():
 func _ready():
 	# Disbled since RPC client does not respond with base64 encoding.
 	# test_account_encoding()
-	#get_account_info_demo()
-	#get_latest_blockhash_demo()
-	#get_minimum_balance_for_rent_extemption_demo()
+	get_account_info_demo()
+	get_latest_blockhash_demo()
+	get_minimum_balance_for_rent_extemption_demo()
 	subscribe_account_demo()
-	#synchronous_client_call()
-	#test_project_settings()
+
+	test_project_settings()
 
 
 func _account_subscribe_callback(_params):
@@ -174,15 +174,15 @@ func _signature_subscribe_callback(_params):
 	PASS(5)
 
 func _acconunt_encoding_test_callback(_params):
-	PASS(8)
+	PASS(7)
 
 func _pass_if_failed(params):
 	#assert(not params.has("result"))
-	PASS(8)
+	PASS(7)
 
 func _pass_if_succeded(params):
 	#assert(params.has("result"))
-	PASS(9)
+	PASS(8)
 
 
 func _on_timeout_timeout():
