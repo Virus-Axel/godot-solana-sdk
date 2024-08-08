@@ -14,7 +14,7 @@ When the plugin is loaded, the engine will have an additional set of nodes and r
 
 ## Nodes
 
-These are the nodes provided by this pugin:
+These are the nodes provided by this plugin:
 
 - SolanaUtils
 - SolanaClient
@@ -33,7 +33,7 @@ These are the nodes provided by this pugin:
 ![Screenshot from 2023-05-20 17-41-43](https://github.com/Virus-Axel/godot-solana-sdk/assets/14315050/56464477-dafc-41c6-8c6c-cfe9cd89ca6d)
 
 ## Resources
-These are the resources provided by this pugin:
+These are the resources provided by this plugin:
 
 - Pubkey
 - Keypair
