@@ -425,7 +425,7 @@ void Transaction::update_latest_blockhash(const String &custom_hash){
 
 
         Callable callback(this, "blockhash_callback");
-        blockhash_client->connect("http_response_received", callback);
+        blockhash_client->connect("http_response_received", callback, CONNECT_ONE_SHOT);
         blockhash_client->get_latest_blockhash();
     }
     else{
@@ -498,10 +498,6 @@ Variant Transaction::sign_and_send(){
 
 void Transaction::send_callback(Dictionary params){
     pending_send = false;
-    Callable callback(this, "send_callback");
-    if(send_client->is_connected("http_response_received", callback)){
-        send_client->disconnect("http_response_received", callback);
-    }
 
     if(params.has("result")){
         result_signature = params["result"];
@@ -512,10 +508,6 @@ void Transaction::send_callback(Dictionary params){
 }
 
 void Transaction::blockhash_callback(Dictionary params){
-    Callable callback(this, "blockhash_callback");
-    if(blockhash_client->is_connected("http_response_received", callback)){
-        blockhash_client->disconnect("http_response_received", callback);
-    }
     pending_blockhash = false;
     if(params.has("result")){
         const Dictionary blockhash_result = params["result"];
@@ -538,17 +530,14 @@ void Transaction::send(){
     Callable pending_blockhash_callback(this, "send");
     if(pending_blockhash){
         Callable pending_blockhash_callback(this, "send");
-        connect("fully_signed", pending_blockhash_callback);
+        connect("fully_signed", pending_blockhash_callback, CONNECT_ONE_SHOT);
         return;
-    }
-    else if(is_connected("fully_signed", pending_blockhash_callback)){
-        disconnect("fully_signed", pending_blockhash_callback);
     }
 
     Callable callback(this, "send_callback");
 
     pending_send = true;
-    send_client->connect("http_response_received", callback);
+    send_client->connect("http_response_received", callback, CONNECT_ONE_SHOT);
     send_client->send_transaction(SolanaUtils::bs64_encode(serialized_bytes), skip_preflight);
 }
 
@@ -563,11 +552,8 @@ Error Transaction::sign(){
 
     Callable pending_blockhash_callback(this, "sign");
     if(pending_blockhash){
-        connect("send_ready", pending_blockhash_callback);
+        connect("send_ready", pending_blockhash_callback, CONNECT_ONE_SHOT);
         return ERR_UNAVAILABLE;
-    }
-    else if(is_connected("send_ready", pending_blockhash_callback)){
-        disconnect("send_ready", pending_blockhash_callback);
     }
 
     PackedByteArray msg = serialize();

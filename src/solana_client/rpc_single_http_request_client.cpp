@@ -119,7 +119,7 @@ void RpcSingleHttpRequestClient::finalize_request(const Dictionary& response){
 }
 
 void RpcSingleHttpRequestClient::process(const float delta){
-#ifndef WEB_ENABLED
+#ifndef WEB_ENABLEDa
 
     if(completed()){
         return;
@@ -139,7 +139,6 @@ void RpcSingleHttpRequestClient::process(const float delta){
 
     poll();
 	godot::HTTPClient::Status status = get_status();
-    PackedByteArray response_data;
     
     // Wait until a connection is established.
 	if(status == HTTPClient::STATUS_CONNECTING || status == HTTPClient::STATUS_RESOLVING){
@@ -147,6 +146,7 @@ void RpcSingleHttpRequestClient::process(const float delta){
 	}
     else if(status == HTTPClient::STATUS_CONNECTED){
         std::cout << "CONNECTED" << std::endl;
+        response_data = PackedByteArray();
 	    Error err = send_next_request();
 
         if(err != Error::OK){
@@ -160,10 +160,12 @@ void RpcSingleHttpRequestClient::process(const float delta){
     else if(status == HTTPClient::STATUS_BODY){
         std::cout << "RESPONSE" << std::endl;
         // Collect the response body.
-        while(status == HTTPClient::STATUS_BODY){
+        if(status == HTTPClient::STATUS_BODY){
             response_data.append_array(read_response_body_chunk());
-            HTTPClient::poll();
             status = get_status();
+            if(status == HTTPClient::STATUS_BODY){
+                return;
+            }
         }
 
         // Parse the result json.
