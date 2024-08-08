@@ -27,7 +27,7 @@ bool RpcSingleHttpRequestClient::has_request() const{
     return request_queue.size();
 }
 
-bool RpcSingleHttpRequestClient::completed() const{
+bool RpcSingleHttpRequestClient::is_completed() const{
     return !is_pending() && !has_request();
 }
 
@@ -121,7 +121,7 @@ void RpcSingleHttpRequestClient::finalize_request(const Dictionary& response){
 void RpcSingleHttpRequestClient::process(const float delta){
 #ifndef WEB_ENABLEDa
 
-    if(completed()){
+    if(is_completed()){
         return;
     }
 

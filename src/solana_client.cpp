@@ -80,9 +80,9 @@ WsRpcCall *SolanaClient::ws_client(){
     return Object::cast_to<WsRpcCall>(ptr);
 }
 
-RpcSingleHttpRequestClient *SolanaClient::http_client(){
+RpcMultiHttpRequestClient *SolanaClient::http_client(){
     Object* ptr = Engine::get_singleton()->get_singleton("http_client");
-    return Object::cast_to<RpcSingleHttpRequestClient>(ptr);
+    return Object::cast_to<RpcMultiHttpRequestClient>(ptr);
 }
 
 void SolanaClient::append_commitment(Array& options){

@@ -6,7 +6,7 @@
 #include <godot_cpp/classes/web_socket_peer.hpp>
 #include <godot_cpp/classes/http_client.hpp>
 
-#include "rpc_single_http_request_client.hpp"
+#include "rpc_multi_http_request_client.hpp"
 #include "rpc_single_ws_request_client.hpp"
 
 namespace godot {
@@ -55,7 +55,7 @@ private:
     String get_real_ws_url();
 
     WsRpcCall *ws_client();
-    RpcSingleHttpRequestClient *http_client();
+    RpcMultiHttpRequestClient *http_client();
 
     void append_commitment(Array& options);
     void append_min_context_slot(Array& options);

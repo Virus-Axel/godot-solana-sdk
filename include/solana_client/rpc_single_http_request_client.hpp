@@ -26,7 +26,6 @@ private:
     void update_timeouts(const float delta);
     bool is_pending() const;
     bool has_request() const;
-    bool completed() const;
     bool is_response_valid(const Dictionary& response) const;
 
     Error connect_to();
@@ -38,8 +37,9 @@ protected:
 
     static void _bind_methods();
 public:
-    void process(const float delta);
+    bool is_completed() const;
 
+    void process(const float delta);
     void asynchronous_request(const Dictionary& request_body, Dictionary parsed_url, const Callable &callback, float timeout = 20.0F);
 };
 

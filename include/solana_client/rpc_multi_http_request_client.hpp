@@ -6,27 +6,23 @@
 #include <godot_cpp/classes/web_socket_peer.hpp>
 #include <godot_cpp/classes/http_client.hpp>
 
+#include "rpc_single_http_request_client.hpp"
+
 namespace godot {
 
 class RpcMultiHttpRequestClient : public HTTPClient{
     GDCLASS(RpcMultiHttpRequestClient, HTTPClient)
 private:
-    std::queue<String> request_queue;
-    std::vector<std::pair<int, Callable>> callbacks;
-    
-    float elapsed_time = 0;
-    float timeout = 20.0;
-    Callable http_callback;
-
-    unsigned int local_rpc_id = 0;
-
-    Dictionary  http_request_body;
+    TypedArray<RpcSingleHttpRequestClient> requests;
 
 protected:
     bool pending_request = false;
 
     static void _bind_methods();
 public:
+
+    void process(float delta);
+    void asynchronous_request(const Dictionary& request_body, Dictionary parsed_url, const Callable &callback, float timeout = 20.0F);
 
 };
 
