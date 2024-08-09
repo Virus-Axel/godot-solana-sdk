@@ -110,7 +110,7 @@ public:
     PackedByteArray serialize_message();
     PackedByteArray serialize_signers();
     Error sign();
-    Dictionary send();
+    void send();
     void send_and_disconnect();
     Variant sign_and_send();
     Error partially_sign(const Variant& latest_blockhash);
@@ -119,9 +119,6 @@ public:
 
     void send_callback(Dictionary params);
     void blockhash_callback(Dictionary params);
-
-    bool is_confirmed();
-    bool is_finalized();
 
     ~Transaction();
 };

@@ -400,7 +400,7 @@ bool AnchorProgram::load_from_pid(const String& pid){
 
     Callable callback(this, "idl_from_pid_callback");
     idl_client->connect("http_response_received", callback);
-    Dictionary rpc_result = idl_client->get_account_info(pid);
+    idl_client->get_account_info(pid);
     return false;
 }
 
@@ -875,7 +875,7 @@ Error AnchorProgram::fetch_account(const String name, const Variant& account){
     pending_account_name = name;
     Callable callback(this, "fetch_account_callback");
     fetch_client->connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
-    Dictionary rpc_result = fetch_client->get_account_info(Pubkey(account).to_string());
+    fetch_client->get_account_info(Pubkey(account).to_string());
 
     return Error::OK;
 }

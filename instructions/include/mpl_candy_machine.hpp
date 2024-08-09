@@ -276,7 +276,7 @@ public:
     );
 
     static Variant new_candy_machine_authority_pda(const Variant& candy_machine_key);
-    Variant get_candy_machine_info(const Variant& candy_machine_key);
+    void get_candy_machine_info(const Variant& candy_machine_key);
     void fetch_account_callback(const Dictionary& params);
     static Variant get_pid();
 };
