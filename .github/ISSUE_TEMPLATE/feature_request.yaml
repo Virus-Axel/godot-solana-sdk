@@ -1,0 +1,31 @@
+name: Feature Request
+description: godot-solana-sdk feature request form
+title: "[Feature Request]: "
+labels: []
+projects: []
+assignees:
+  - Virus-Axel
+body:
+  - type: textarea
+    id: improvements
+    attributes:
+      label: Feature Description
+      description: Describe how you think the SDK can be improved.
+      placeholder: Feature Description
+    validations:
+      required: true
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribute
+      description: Check this if you want to work on an implementation yourself.
+      options:
+        - label: I want to contribute with an implementation.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Extra Information
+      description: Optionally add extra information you think can be helpful.
+      placeholder: Extra information (Optional).
+    validations:
+      required: false
