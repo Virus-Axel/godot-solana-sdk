@@ -122,6 +122,8 @@ env.Append(CPPPATH=["sha256/"])
 env.Append(CPPPATH=["ed25519/src/"])
 env.Append(CPPPATH=["instructions/include"])
 env.Append(CPPPATH=["instructions/src"])
+env.Append(CPPPATH=["src/solana_client/"])
+env.Append(CPPPATH=["include/solana_client/"])
 env.Append(CPPPATH=["wallet_adapter/"])
 
 sources = Glob("src/*.cpp")
@@ -131,6 +133,7 @@ ed25519_sources = Glob("ed25519/src/*.c")
 
 wallet_sources = Glob("wallet_adapter/*.cpp")
 instruction_sources = Glob("instructions/src/*.cpp")
+other_sources = Glob("src/*/*.cpp")
 
 # Handle the container build
 if env.GetOption('container_build'):
@@ -168,12 +171,12 @@ else:
             ) + LIBRARY_NAME + ".{}.{}".format(
                 env["platform"], env["target"]
             ),
-            source=sources + sha256_sources + ed25519_sources + wallet_sources + instruction_sources,
+            source=sources + sha256_sources + ed25519_sources + wallet_sources + instruction_sources + other_sources,
         )
     else:
         library = env.SharedLibrary(
             "bin/lib" + LIBRARY_NAME + "{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-            source=sources + sha256_sources + ed25519_sources + wallet_sources + instruction_sources,
+            source=sources + sha256_sources + ed25519_sources + wallet_sources + instruction_sources + other_sources,
         )
 
     Default(library)

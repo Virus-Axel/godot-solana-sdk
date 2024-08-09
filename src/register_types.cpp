@@ -21,12 +21,15 @@
 #include "associated_token_account.hpp"
 #include "mpl_candy_machine.hpp"
 #include "anchor_program.hpp"
+#include "rpc_single_http_request_client.hpp"
+#include "rpc_multi_http_request_client.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/engine.hpp>
 
 using namespace godot;
 
@@ -53,8 +56,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     }
 
     ClassDB::register_class<SolanaUtils>();
-    ClassDB::register_class<HttpRpcCall>();
-    ClassDB::register_class<WsRpcCall>();
+    ClassDB::register_class<RpcSingleWsRequestClient>();
     ClassDB::register_class<SolanaClient>();
     ClassDB::register_class<Pubkey>();
     ClassDB::register_class<CompiledInstruction>();
@@ -83,10 +85,15 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<ConfigLineSetting>();
     ClassDB::register_class<ConfigLine>();
     ClassDB::register_class<AnchorProgram>();
+    ClassDB::register_class<RpcSingleHttpRequestClient>();
+    ClassDB::register_class<RpcMultiHttpRequestClient>();
 
     add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
     add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, 443);
     add_setting("solana_sdk/client/default_ws_port", Variant::Type::INT, 443);
+
+    Engine::get_singleton()->register_singleton("http_client", memnew(RpcMultiHttpRequestClient));
+    Engine::get_singleton()->register_singleton("ws_client", memnew(RpcSingleWsRequestClient));
 }
 
 void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {

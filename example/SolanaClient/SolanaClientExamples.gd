@@ -91,45 +91,78 @@ func subscribe_account_demo():
 	
 	PASS(3)
 
-func synchronous_client_call():
-	# Same call to get account info but synchronous.
-	var client = SolanaClient.new()
-	var response = client.get_account_info(EXAMPLE_ACCOUNT)
-	assert(response.has("result"))
-	display_dict(response["result"], $ResultTree4.create_item())
-	PASS(6)
-
 
 func test_project_settings():
 	const CORRECT_URL = "http://localhost"
 	const INCORRECT_URL = "nonsense url"
-	const CORRECT_PORT = "8899"
-	const INCORRECT_PORT = "8898"
+	const CORRECT_HTTP_PORT = "8899"
+	const INCORRECT_HTTP_PORT = "8898"
+	const CORRECT_WS_PORT = "8900"
+	const INCORRECT_WS_PORT = "8901"
 	
-	var client = SolanaClient.new()
+	var client = add_solana_client()
+	var ws_client = add_solana_client()
 	
-	var response = client.get_account_info(EXAMPLE_ACCOUNT)
+	client.get_account_info(EXAMPLE_ACCOUNT)
+	var response = await client.http_response_received
 	assert(response.has("result"))
+	
 	ProjectSettings.set_setting("solana_sdk/client/default_url", INCORRECT_URL)
-	response = client.get_account_info(EXAMPLE_ACCOUNT)
-	assert(!response.has("result"))
+	client.get_account_info(EXAMPLE_ACCOUNT)
+	response = await client.http_response_received
+	assert(response.is_empty())
+	
 	ProjectSettings.set_setting("solana_sdk/client/default_url", CORRECT_URL)
-	ProjectSettings.set_setting("solana_sdk/client/default_http_port", CORRECT_PORT)
-	response = client.get_account_info(EXAMPLE_ACCOUNT)
+	ProjectSettings.set_setting("solana_sdk/client/default_http_port", CORRECT_HTTP_PORT)
+	client.get_account_info(EXAMPLE_ACCOUNT)
+	response = await client.http_response_received
 	assert(response.has("result"))
-	ProjectSettings.set_setting("solana_sdk/client/default_http_port", INCORRECT_PORT)
-	response = client.get_account_info(EXAMPLE_ACCOUNT)
-	assert(!response.has("result"))
+	
+	ProjectSettings.set_setting("solana_sdk/client/default_http_port", INCORRECT_HTTP_PORT)
+	client.get_account_info(EXAMPLE_ACCOUNT)
+	response = await client.http_response_received
+	assert(response.is_empty())
+	
+	ProjectSettings.set_setting("solana_sdk/client/default_ws_port", INCORRECT_WS_PORT)
+	ws_client.account_subscribe(EXAMPLE_ACCOUNT, Callable(self, "_dummy_callback"))
+	await ws_client.socket_response_received
+	
+	ProjectSettings.set_setting("solana_sdk/client/default_ws_port", CORRECT_WS_PORT)
+	ws_client.account_subscribe(EXAMPLE_ACCOUNT, Callable(self, "_dummy_callback"))
+	await ws_client.socket_response_received
 	
 	# Port in URL overrides port setting and triggers a warning.
-	ProjectSettings.set_setting("solana_sdk/client/default_url", CORRECT_URL + ":" + CORRECT_PORT)
-	ProjectSettings.set_setting("solana_sdk/client/default_http_port", INCORRECT_PORT)
-	response = client.get_account_info(EXAMPLE_ACCOUNT)
+	ProjectSettings.set_setting("solana_sdk/client/default_url", CORRECT_URL + ":" + CORRECT_HTTP_PORT)
+	ProjectSettings.set_setting("solana_sdk/client/default_http_port", INCORRECT_HTTP_PORT)
+	client.get_account_info(EXAMPLE_ACCOUNT)
+	response = await client.http_response_received
 	assert(response.has("result"))
 	
 	# Restore correct settings
 	ProjectSettings.set_setting("solana_sdk/client/default_url", CORRECT_URL)
-	ProjectSettings.set_setting("solana_sdk/client/default_http_port", CORRECT_PORT)
+	ProjectSettings.set_setting("solana_sdk/client/default_http_port", CORRECT_HTTP_PORT)
+	ProjectSettings.set_setting("solana_sdk/client/default_ws_port", CORRECT_WS_PORT)
+	
+	PASS(6)
+
+
+func unsubscribe_account_test():
+	var client: SolanaClient = add_solana_client()
+	var account_callback := Callable(self, "_should_not_be_called")
+	
+	var random_account = Pubkey.new_random()
+	client.account_subscribe(random_account, account_callback)
+	await client.socket_response_received
+	client.unsubscribe_all(account_callback)
+	
+	# Make lamports of the account change to trigger the callback.
+	client.request_airdrop(random_account.to_string(), 1000000)
+	var airdrop_response = await client.http_response_received
+	assert(airdrop_response.has("result"))
+	var airdrop_signature: String = airdrop_response["result"]
+	
+	# Keep the client node in the tree to keep it processing
+	# You should call unsubscribe_all() when you are done.
 	
 	PASS(7)
 
@@ -149,11 +182,13 @@ func test_account_encoding():
 func _ready():
 	# Disbled since RPC client does not respond with base64 encoding.
 	# test_account_encoding()
+	
 	get_account_info_demo()
 	get_latest_blockhash_demo()
 	get_minimum_balance_for_rent_extemption_demo()
+	
 	subscribe_account_demo()
-	synchronous_client_call()
+	await unsubscribe_account_test()
 	test_project_settings()
 
 
@@ -164,10 +199,16 @@ func _signature_subscribe_callback(_params):
 	PASS(5)
 
 func _acconunt_encoding_test_callback(_params):
-	PASS(8)
+	PASS(7)
+
+func _should_not_be_called(params):
+	assert(false)
+
+func _dummy_callback(_params):
+	pass
+	
 
 func _on_timeout_timeout():
 	for i in range(TOTAL_CASES):
 		if ((1 << i) & passed_test_mask) == 0:
 			print("[FAIL]: ", i)
-

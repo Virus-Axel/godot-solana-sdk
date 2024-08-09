@@ -1453,7 +1453,7 @@ Variant MplCandyMachine::new_candy_machine_authority_pda(const Variant& candy_ma
     return Pubkey::new_pda_bytes(seeds, get_pid());
 }
 
-Variant MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key){
+void MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key){
     Callable callback(this, "fetch_account_callback");
     connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
     return get_account_info(Pubkey(candy_machine_key).to_string());
