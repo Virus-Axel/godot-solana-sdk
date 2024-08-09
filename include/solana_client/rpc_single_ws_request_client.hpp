@@ -41,7 +41,7 @@ private:
     void call_confirmation_callback(unsigned int id, const Dictionary &params);
     void finalize_request(unsigned int id, const Dictionary& result);
     void close_if_done();
-    void remove_request_with_id(unsigned int id);
+    void remove_request(unsigned int index);
     void process_timeouts(float delta);
     unsigned int request_index_from_id(unsigned int id);
     

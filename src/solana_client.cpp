@@ -205,7 +205,6 @@ void SolanaClient::quick_http_request(const Dictionary& request_body, const Call
 }
 
 void SolanaClient::response_callback(const Dictionary &params){
-    std::cout << "CAAAAAAAAAALLBACJ" << std::endl;
     pending_request = false;
     emit_signal("http_response_received", params);
 }

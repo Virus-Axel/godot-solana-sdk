@@ -20,7 +20,6 @@ class RpcSingleHttpRequestClient : public HTTPClient{
     GDCLASS(RpcSingleHttpRequestClient, HTTPClient)
 private:
     std::queue<RequestData> request_queue;
-    unsigned int local_rpc_id = 0;
     PackedByteArray response_data;
 
     void update_timeouts(const float delta);

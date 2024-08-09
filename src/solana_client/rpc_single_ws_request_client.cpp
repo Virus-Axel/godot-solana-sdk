@@ -57,14 +57,14 @@ void WsRpcCall::process_package(const PackedByteArray& packet_data){
 
     // Subscription trigger.
     if(json.has("method")){
-        std::cout << packet_data.get_string_from_ascii().ascii() << std::endl;
         int subscription_id = ((Dictionary)((Dictionary)json)["params"])["subscription"];
         call_subscription_callback(subscription_id, ((Dictionary)json)["params"]);
 
         return;
     }
-    else if(result.get_type() == Variant::BOOL){
 
+    // Unsubscribe confirmation.
+    else if(result.get_type() == Variant::BOOL){
         return;
     }
 
@@ -83,15 +83,14 @@ void WsRpcCall::process_package(const PackedByteArray& packet_data){
 }
 
 void WsRpcCall::unsubscribe_all(const Callable &callback, const Dictionary& url, float timeout){
-    
     for(unsigned int i = 0; i < subscriptions.size(); i++){
-        std::cout <<"GOOOO" << std::endl;
         if(subscriptions[i].callback == callback){
-            std::cout << "HIT " << i << std::endl;
+            String unsubscribe_method_name = subscriptions[i].method_name.replace("Subscribe", "Unsubscribe");
+
             Array params;
             params.append(subscriptions[i].identifier);
-            String unsubscribe_method_name = subscriptions[i].method_name.replace("Subscribe", "Unsubscribe");
             Dictionary request_body = SolanaClient::make_rpc_dict(unsubscribe_method_name, params);
+
             request_queue.push_back(WsRequestData{request_body, url, timeout, request_body["id"], Callable(), Callable()});
 
             remove_subscription(i);
@@ -134,23 +133,25 @@ void WsRpcCall::call_subscription_callback(unsigned int id, const Dictionary& pa
     }
 }
 
-void WsRpcCall::call_confirmation_callback(unsigned int id, const Dictionary &params){
-    std::cout << "trying Callback " << request_queue.size() << std::endl;
-    for(unsigned int i = 0; i < request_queue.size(); i++){
-        if(request_queue[i].request_identifier == id){
-            Array args;
-            args.push_back(params);
-            if(request_queue[i].confirmation_callback.is_valid()){
-                std::cout << "Callback" << std::endl;
-                request_queue[i].confirmation_callback.callv(args);
-            }
-        }
+void WsRpcCall::call_confirmation_callback(unsigned int index, const Dictionary &params){
+    Array args;
+    args.push_back(params);
+    if(request_queue[index].confirmation_callback.is_valid()){
+        request_queue[index].confirmation_callback.callv(args);
     }
 }
 
 void WsRpcCall::finalize_request(unsigned int id, const Dictionary& result){
-    call_confirmation_callback(id, result);
-    remove_request_with_id(id);
+    unsigned int index = request_index_from_id(id);
+
+    if(index >= request_queue.size()){
+        ERR_PRINT_ONCE_ED("Internal error, please report");
+    }
+    else{
+        call_confirmation_callback(index, result);
+        remove_request(index);
+    }
+
     pending_request = false;
     close_if_done();
 }
@@ -161,17 +162,14 @@ void WsRpcCall::close_if_done(){
     }
 }
 
-void WsRpcCall::remove_request_with_id(unsigned int id){
-    for(unsigned int i = 0; i < request_queue.size(); i++){
-        if(request_queue[i].request_identifier == id){
-            request_queue.erase(request_queue.begin() + i);
-        }
-    }
+void WsRpcCall::remove_request(unsigned int index){
+    request_queue.erase(request_queue.begin() + index);
 }
 
 void WsRpcCall::process_timeouts(float delta){
     for(unsigned int i = 0; i < request_queue.size(); i++){
         request_queue[i].timeout -= delta;
+
         if(request_queue[i].timeout < 0.0F){
             connecting = false;
             finalize_request(request_queue[i].request_identifier, Dictionary());
