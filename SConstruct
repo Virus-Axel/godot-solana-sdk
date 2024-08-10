@@ -124,6 +124,8 @@ env.Append(CPPPATH=["instructions/include"])
 env.Append(CPPPATH=["instructions/src"])
 env.Append(CPPPATH=["src/solana_client/"])
 env.Append(CPPPATH=["include/solana_client/"])
+env.Append(CPPPATH=["src/instructions"])
+env.Append(CPPPATH=["include/instructions"])
 env.Append(CPPPATH=["wallet_adapter/"])
 
 sources = Glob("src/*.cpp")

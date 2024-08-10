@@ -97,11 +97,17 @@ private:
     Variant uses;
     uint64_t collection_size = 0;
 
+    Variant edition_nonce;
+    Variant token_standard;
+    Variant collection_details;
+    Variant programmable_config;
+
 protected:
     static void _bind_methods();
     bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
     void _get_property_list(List<PropertyInfo> *p_list) const;
+
 public:
     void set_token_name(const String& token_name);
     String get_token_name();
