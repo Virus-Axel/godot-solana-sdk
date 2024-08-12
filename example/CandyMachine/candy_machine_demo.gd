@@ -51,7 +51,7 @@ func initialize_mint_collection_demo():
 	tx.add_instruction(ix)
 	ix = TokenProgram.mint_to(mint_keypair, mint_account_keypair, payer, payer, 1)
 	tx.add_instruction(ix)
-	ix = MplTokenMetadata.create_metadata_account(mint_keypair, payer, payer, load("res://meta_data.tres"), true)
+	ix = MplTokenMetadata.create_metadata_account(mint_keypair, payer, payer, load("res://create_meta_data_args.tres"), true)
 	tx.add_instruction(ix)
 	ix = MplTokenMetadata.update_metadata_account(MplTokenMetadata.new_associated_metadata_pubkey(mint_keypair), payer)
 	tx.add_instruction(ix)

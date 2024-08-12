@@ -1,0 +1,18 @@
+[gd_resource type="CreateMetaDataArgs" load_steps=3 format=3 uid="uid://boa4cpfi1t8wi"]
+
+[sub_resource type="Pubkey" id="Pubkey_pama0"]
+type = "CUSTOM"
+value = "4kMfzqiFLzq1XPirL8rM2jHPThx1oeozhy5Y1UWdR7tU"
+bytes = PackedByteArray(55, 174, 104, 238, 111, 173, 53, 19, 47, 84, 78, 140, 104, 179, 41, 51, 170, 106, 243, 37, 235, 162, 189, 119, 243, 176, 17, 216, 236, 90, 87, 97)
+
+[sub_resource type="MetaDataCreator" id="MetaDataCreator_42uyv"]
+address = SubResource("Pubkey_pama0")
+share = 100
+
+[resource]
+name = "name"
+symbol = "symbol"
+uri = "uri"
+seller_fee_basis_points = 123
+enable_creators = true
+creators = [SubResource("MetaDataCreator_42uyv")]

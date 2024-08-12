@@ -16,7 +16,11 @@
 #include "system_program.hpp"
 #include "spl_token.hpp"
 #include "spl_token_2022.hpp"
-#include "meta_data.hpp"
+#include "meta_data/meta_data.hpp"
+#include "meta_data/creator.hpp"
+#include "meta_data/collection.hpp"
+#include "meta_data/uses.hpp"
+#include "meta_data/create_metadata_args.hpp"
 #include "mpl_token_metadata.hpp"
 #include "associated_token_account.hpp"
 #include "mpl_candy_machine.hpp"
@@ -76,6 +80,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<MetaDataCreator>();
     ClassDB::register_class<MetaDataCollection>();
     ClassDB::register_class<MetaDataUses>();
+    ClassDB::register_class<CreateMetaDataArgs>();
     ClassDB::register_class<MetaData>();
     ClassDB::register_class<AssociatedTokenAccountProgram>();
     ClassDB::register_class<MplCandyMachine>();

@@ -167,6 +167,7 @@ void RpcSingleHttpRequestClient::process(const float delta){
         if(!is_response_valid(json_data)){
             // Request could be from another solana client. Keep processing request.
             response_data.clear();
+
             return;
         }
 

@@ -1,140 +1,11 @@
-#include "meta_data.hpp"
+#include "meta_data/meta_data.hpp"
 
 #include "utils.hpp"
 #include "pubkey.hpp"
+#include "meta_data/collection.hpp"
+#include "meta_data/uses.hpp"
 
 namespace godot{
-
-void MetaDataCreator::_bind_methods(){
-    ClassDB::bind_method(D_METHOD("get_address"), &MetaDataCreator::get_address);
-    ClassDB::bind_method(D_METHOD("set_address", "p_value"), &MetaDataCreator::set_address);
-    ClassDB::bind_method(D_METHOD("get_verified"), &MetaDataCreator::get_verified);
-    ClassDB::bind_method(D_METHOD("set_verified", "p_value"), &MetaDataCreator::set_verified);
-    ClassDB::bind_method(D_METHOD("get_share"), &MetaDataCreator::get_share);
-    ClassDB::bind_method(D_METHOD("set_share", "p_value"), &MetaDataCreator::set_share);
-
-    ClassDB::add_property("MetaDataCreator", PropertyInfo(Variant::OBJECT, "address", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair,PhantomController", PROPERTY_USAGE_DEFAULT), "set_address", "get_address");
-    ClassDB::add_property("MetaDataCreator", PropertyInfo(Variant::BOOL, "verified", PROPERTY_HINT_NONE), "set_verified", "get_verified");
-    ClassDB::add_property("MetaDataCreator", PropertyInfo(Variant::INT, "share", PROPERTY_HINT_NONE), "set_share", "get_share");
-}
-
-void MetaDataCreator::set_address(const Variant& p_value){
-    address = p_value;
-}
-Variant MetaDataCreator::get_address(){
-    return address;
-}
-
-void MetaDataCreator::set_verified(const bool p_value){
-    verified = p_value;
-}
-bool MetaDataCreator::get_verified(){
-    return verified;
-}
-
-void MetaDataCreator::set_share(const uint32_t p_value){
-    share = p_value;
-}
-uint32_t MetaDataCreator::get_share(){
-    return share;
-}
-
-PackedByteArray MetaDataCreator::serialize() const{
-    PackedByteArray res;
-    res.append_array(Pubkey(address).to_bytes());
-    res.append(verified);
-    res.append(share);
-
-    return res;
-}
-
-void MetaDataCollection::_bind_methods(){
-    ClassDB::bind_method(D_METHOD("get_key"), &MetaDataCollection::get_key);
-    ClassDB::bind_method(D_METHOD("set_key", "p_value"), &MetaDataCollection::set_key);
-    ClassDB::bind_method(D_METHOD("get_verified"), &MetaDataCollection::get_verified);
-    ClassDB::bind_method(D_METHOD("set_verified", "p_value"), &MetaDataCollection::set_verified);
-
-    ClassDB::add_property("MetaDataCollection", PropertyInfo(Variant::OBJECT, "key", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair,PhantomController", PROPERTY_USAGE_DEFAULT), "set_key", "get_key");
-    ClassDB::add_property("MetaDataCollection", PropertyInfo(Variant::BOOL, "verified", PROPERTY_HINT_NONE), "set_verified", "get_verified");
-}
-
-void MetaDataCollection::set_key(const Variant& p_value){
-    key = p_value;
-}
-Variant MetaDataCollection::get_key(){
-    return key;
-}
-
-void MetaDataCollection::set_verified(const bool p_value){
-    verified = p_value;
-}
-bool MetaDataCollection::get_verified(){
-    return verified;
-}
-
-PackedByteArray MetaDataCollection::serialize() const{
-    PackedByteArray res;
-    res.append(verified);
-    res.append_array(Pubkey(key).to_bytes());
-
-    return res;
-}
-
-void MetaDataUses::_bind_methods(){
-    ClassDB::bind_method(D_METHOD("get_use_method"), &MetaDataUses::get_use_method);
-    ClassDB::bind_method(D_METHOD("set_use_method", "p_value"), &MetaDataUses::set_use_method);
-    ClassDB::bind_method(D_METHOD("get_total"), &MetaDataUses::get_total);
-    ClassDB::bind_method(D_METHOD("set_total", "p_value"), &MetaDataUses::set_total);
-    ClassDB::bind_method(D_METHOD("get_remaining"), &MetaDataUses::get_remaining);
-    ClassDB::bind_method(D_METHOD("set_remaining", "p_value"), &MetaDataUses::set_remaining);
-
-    ClassDB::add_property("MetaDataUses", PropertyInfo(Variant::INT, "use_method", PROPERTY_HINT_ENUM, "Burn,Multiple,Single", PROPERTY_USAGE_DEFAULT), "set_use_method", "get_use_method");
-    ClassDB::add_property("MetaDataUses", PropertyInfo(Variant::INT, "total", PROPERTY_HINT_NONE), "set_total", "get_total");
-    ClassDB::add_property("MetaDataUses", PropertyInfo(Variant::INT, "remaining", PROPERTY_HINT_NONE), "set_remaining", "get_remaining");
-}
-
-void MetaDataUses::set_use_method(const uint32_t p_value){
-    use_method = (UseMethod)p_value;
-}
-uint32_t MetaDataUses::get_use_method(){
-    return use_method;
-}
-
-void MetaDataUses::set_total(const uint64_t p_value){
-    total = p_value;
-}
-uint64_t MetaDataUses::get_total(){
-    return total;
-}
-
-void MetaDataUses::set_remaining(const uint64_t p_value){
-    remaining = p_value;
-}
-uint64_t MetaDataUses::get_remaining(){
-    return remaining;
-}
-
-PackedByteArray MetaDataUses::serialize() const{
-    PackedByteArray res;
-    res.resize(17);
-    res[0] = use_method;
-    res.encode_u64(1, remaining);
-    res.encode_u64(9, total);
-
-    return res;
-}
-
-void MetaData::_bind_methods(){
-    ClassDB::bind_method(D_METHOD("get_token_name"), &MetaData::get_token_name);
-    ClassDB::bind_method(D_METHOD("set_token_name", "token_name"), &MetaData::set_token_name);
-    ClassDB::bind_method(D_METHOD("get_symbol"), &MetaData::get_symbol);
-    ClassDB::bind_method(D_METHOD("set_symbol", "symbol"), &MetaData::set_symbol);
-    ClassDB::bind_method(D_METHOD("get_uri"), &MetaData::get_uri);
-    ClassDB::bind_method(D_METHOD("set_uri", "uri"), &MetaData::set_uri);
-
-    ClassDB::bind_method(D_METHOD("get_creators"), &MetaData::get_creators);
-    ClassDB::bind_method(D_METHOD("get_collection"), &MetaData::get_collection);
-}
 
 bool MetaData::_set(const StringName &p_name, const Variant &p_value){
     String property_name = p_name;
@@ -228,6 +99,38 @@ bool MetaData::_get(const StringName &p_name, Variant &r_ret) const{
     return true;
 }
 
+void MetaData::_bind_methods(){
+    ClassDB::bind_method(D_METHOD("get_token_name"), &MetaData::get_token_name);
+    ClassDB::bind_method(D_METHOD("set_token_name", "token_name"), &MetaData::set_token_name);
+    ClassDB::bind_method(D_METHOD("get_symbol"), &MetaData::get_symbol);
+    ClassDB::bind_method(D_METHOD("set_symbol", "symbol"), &MetaData::set_symbol);
+    ClassDB::bind_method(D_METHOD("get_uri"), &MetaData::get_uri);
+    ClassDB::bind_method(D_METHOD("set_uri", "uri"), &MetaData::set_uri);
+
+    ClassDB::bind_method(D_METHOD("get_creators"), &MetaData::get_creators);
+    ClassDB::bind_method(D_METHOD("get_collection"), &MetaData::get_collection);
+
+    ClassDB::bind_method(D_METHOD("get_primary_sale_happened"), &MetaData::get_primary_sale_happened);
+    ClassDB::bind_method(D_METHOD("set_primary_sale_happened", "primary_sale_happened"), &MetaData::set_primary_sale_happened);
+    ClassDB::bind_method(D_METHOD("get_is_mutable"), &MetaData::get_is_mutable);
+    ClassDB::bind_method(D_METHOD("set_is_mutable", "is_mutable"), &MetaData::set_is_mutable);
+    ClassDB::bind_method(D_METHOD("get_mint"), &MetaData::get_mint);
+    ClassDB::bind_method(D_METHOD("set_mint", "mint"), &MetaData::set_mint);
+    ClassDB::bind_method(D_METHOD("get_update_authority"), &MetaData::get_update_authority);
+    ClassDB::bind_method(D_METHOD("set_update_authority", "update_authority"), &MetaData::set_update_authority);
+    ClassDB::bind_method(D_METHOD("get_seller_fee_basis_points"), &MetaData::get_seller_fee_basis_points);
+    //ClassDB::bind_method(D_METHOD("set_seller_fee_basis_points", "set_seller_fee_basis_points"), &MetaData::set_seller_fee_basis_points);
+
+    ClassDB::bind_method(D_METHOD("get_edition_nonce"), &MetaData::get_edition_nonce);
+    ClassDB::bind_method(D_METHOD("set_edition_nonce", "edition_nonce"), &MetaData::set_edition_nonce);
+    ClassDB::bind_method(D_METHOD("get_token_standard"), &MetaData::get_token_standard);
+    ClassDB::bind_method(D_METHOD("set_token_standard", "token_standard"), &MetaData::set_token_standard);
+    ClassDB::bind_method(D_METHOD("get_collection_details"), &MetaData::get_collection_details);
+    ClassDB::bind_method(D_METHOD("set_collection_details", "collection_detail"), &MetaData::set_collection_details);
+    ClassDB::bind_method(D_METHOD("get_programmable_config"), &MetaData::get_programmable_config);
+    ClassDB::bind_method(D_METHOD("set_programmable_config", "programmable_config"), &MetaData::set_programmable_config);
+}
+
 void MetaData::_get_property_list(List<PropertyInfo> *p_list) const{
     p_list->push_back(PropertyInfo(Variant::STRING, "name"));
     p_list->push_back(PropertyInfo(Variant::STRING, "symbol"));
@@ -255,6 +158,13 @@ void MetaData::_get_property_list(List<PropertyInfo> *p_list) const{
         p_list->push_back(PropertyInfo(Variant::INT, "collection_size", PROPERTY_HINT_NONE));
     }
     
+    p_list->push_back(PropertyInfo(Variant::OBJECT, "mint", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey"));
+    p_list->push_back(PropertyInfo(Variant::OBJECT, "update_authority", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey"));
+
+    p_list->push_back(PropertyInfo(Variant::INT, "edition_nonce"));
+    p_list->push_back(PropertyInfo(Variant::INT, "token_standard"));
+    p_list->push_back(PropertyInfo(Variant::INT, "collection_detail"));
+    p_list->push_back(PropertyInfo(Variant::INT, "programmable_config"));
 }
 
 void MetaData::set_token_name(const String& token_name){
@@ -281,6 +191,69 @@ void MetaData::set_seller_fee_basis_points(const uint16_t seller_fee_basis_point
 uint16_t MetaData::get_seller_fee_basis_points(){
     return seller_fee_basis_points;
 }
+
+void MetaData::set_primary_sale_happened(bool primary_sale_happened){
+    this->primary_sale_happened = primary_sale_happened;
+}
+bool MetaData::get_primary_sale_happened(){
+    return primary_sale_happened;
+}
+
+void MetaData::set_is_mutable(bool is_mutable){
+    this->is_mutable = is_mutable;
+}
+bool MetaData::get_is_mutable(){
+    return is_mutable;
+}
+
+void MetaData::set_mint(const Variant& mint){
+    this->mint = mint;
+}
+
+Variant MetaData::get_mint(){
+    return mint;
+}
+
+void MetaData::set_update_authority(const Variant& update_authority){
+    this->update_authority = update_authority;
+}
+
+Variant MetaData::get_update_authority(){
+    return update_authority;
+}
+
+void MetaData::set_edition_nonce(const Variant& edition_nounce){
+    this->edition_nonce = edition_nonce;
+}
+
+Variant MetaData::get_edition_nonce(){
+    return edition_nonce;
+}
+
+void MetaData::set_token_standard(const Variant& token_standard){
+    this->token_standard = token_standard;
+}
+
+Variant MetaData::get_token_standard(){
+    return token_standard;
+}
+
+void MetaData::set_collection_details(const Variant& collection_details){
+    this->collection_details = collection_details;
+}
+
+Variant MetaData::get_collection_details(){
+    return collection_details;
+}
+
+void MetaData::set_programmable_config(const Variant& programmable_config){
+    this->programmable_config = programmable_config;
+}
+
+Variant MetaData::get_programmable_config(){
+    return programmable_config;
+}
+
 
 void MetaData::add_creator(const Variant& creator){
     creators.append(creator);
@@ -360,5 +333,6 @@ PackedByteArray MetaData::serialize(const bool is_mutable) const{
 
     return res;
 }
+
 
 }

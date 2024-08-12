@@ -21,6 +21,7 @@ example/SolanaUtils.gd
 example/solana_sdk.tscn
 example/addons/
 /bin/
+test-ledger/
 
 .vscode/
 .godot/

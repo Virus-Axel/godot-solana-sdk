@@ -46,6 +46,7 @@ These are the resources provided by this plugin:
 - MetaDataCollection
 - MetaDataUses
 - MetaData
+- CreateMetaDataArgs
 - CandyGuardAccessList
 - CandyMachineData
 
