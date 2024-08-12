@@ -6,6 +6,8 @@
 #include "solana_client.hpp"
 #include "solana_utils.hpp"
 #include "godot_cpp/classes/os.hpp"
+#include "meta_data/collection.hpp"
+#include "meta_data/create_metadata_args.hpp"
 
 namespace godot{
 
