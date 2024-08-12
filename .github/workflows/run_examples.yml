@@ -10,10 +10,67 @@ jobs:
         outputs:
             dir: ${{ steps.set-dirs.outputs.dir }}
         steps:
-        - uses: actions/checkout@v2
-        - id: set-dirs
-          run: echo "::set-output name=dir::$(ls -d example/*/ | jq -R -s -c 'split("\n")[:-1]')"
+          - name: Set up Python
+            uses: actions/setup-python@v2
 
+          - name: Set up SCons
+            shell: bash
+            run: |
+              python -c "import sys; print(sys.version)"
+              python -m pip install scons==4.2
+              scons --version
+
+          - uses: chickensoft-games/setup-godot@v1
+            name: 🤖 Setup Godot
+            with:
+                  version: 4.2.1
+                  use-dotnet: false
+                  include-templates: true
+
+          - uses: actions/checkout@v2
+          - id: set-dirs
+            run: echo "::set-output name=dir::$(ls -d example/*/ | jq -R -s -c 'split("\n")[:-1]')"
+
+          - name: Setup Solana tools
+            uses: metadaoproject/setup-solana@v1.0
+
+          - name: Checkout project
+            uses: actions/checkout@v2
+            with:
+              submodules: recursive
+
+          - name: Build binary
+            shell: bash
+            run: |
+              scons
+
+          - name: (Web) Install emsdk toolchain
+            uses: mymindstorm/setup-emsdk@v14
+            with:
+              version: 3.1.53
+
+          - name: (Web) Build binary
+            shell: bash
+            run: |
+              scons platform=web target=template_debug
+          
+          - name: (Web) Download Puppeteer
+            uses: actions/setup-node@v4
+            with:
+              node-version: 20
+
+          - name: (Web) Setup Puppeteer
+            run: |
+              cd .github/workflows/puppeteer
+              npm init -y
+              npm install puppeteer
+              cd ../../..
+
+          - name: (Web) Download wallet mock
+            uses: actions/checkout@v4
+            with:
+              repository: 'Virus-Axel/solana-wallet-mock'
+              path: 'solana-wallet-mock'
     run:
         runs-on: ubuntu-latest
         needs: [check_example_directories]
@@ -23,56 +80,17 @@ jobs:
                 # List matrix strategy from directories dynamically
                 dir: ${{fromJson(needs.check_example_directories.outputs.dir)}}
         steps:
-            - name: Set up Python
-              uses: actions/setup-python@v2
-
-            - name: Set up SCons
-              shell: bash
-              run: |
-                python -c "import sys; print(sys.version)"
-                python -m pip install scons==4.2
-                scons --version
-
-            - uses: chickensoft-games/setup-godot@v1
-              name: 🤖 Setup Godot
-              with:
-                    version: 4.2.1
-                    use-dotnet: false
-                    include-templates: true
-
-            - name: Checkout project
-              uses: actions/checkout@v2
-              with:
-                submodules: recursive
-
-            - name: Build binary
-              shell: bash
-              run: |
-                scons
-
-            - name: (Web) Install emsdk toolchain
-              if: ${{ endsWith(matrix.dir, 'Web/') }}
-              uses: mymindstorm/setup-emsdk@v14
-              with:
-                version: 3.1.53
-
-            - name: (Web) Build binary
-              if: ${{ endsWith(matrix.dir, 'Web/') }}
-              shell: bash
-              run: |
-                scons platform=web target=template_debug
 
             - name: Prepare project 
               shell: bash
               run: |
+                scons --version
+                pwd
                 cp godot-solana-sdk.gdextension bin/
                 cd ${{matrix.dir}}
                 ln -s ../../bin
                 mkdir .godot
                 echo "res://bin/godot-solana-sdk.gdextension" >> .godot/extension_list.cfg
-
-            - name: Setup Solana tools
-              uses: metadaoproject/setup-solana@v1.0
 
             - name: Load Test Accounts
               id: test_accounts
@@ -98,19 +116,6 @@ jobs:
                 solana-version: stable
                 cluster: devnet
                 args: "${{steps.test_accounts.outputs.VALIDATOR_ARGS}}"
-            
-            - name: (Web) Download Puppeteer
-              if: ${{ endsWith(matrix.dir, 'Web/') }}
-              uses: actions/setup-node@v4
-              with:
-                node-version: 20
-
-            - name: (Web) Setup Puppeteer
-              if: ${{ endsWith(matrix.dir, 'Web/') }}
-              run: |
-                cd .github/workflows/puppeteer
-                npm init -y
-                npm install puppeteer
 
             - name: (Web) Export project to web
               if: ${{ endsWith(matrix.dir, 'Web/') }}
@@ -119,12 +124,6 @@ jobs:
                 mkdir tmp
                 godot --headless --path . --export-debug Web tmp/tmp_js_export.html
 
-            - name: (Web) Download wallet mock
-              if: ${{ endsWith(matrix.dir, 'Web/') }}
-              uses: actions/checkout@v4
-              with:
-                repository: 'Virus-Axel/solana-wallet-mock'
-                path: 'solana-wallet-mock'
 
             - name: (Web) Test project in browser
               if: ${{ endsWith(matrix.dir, 'Web/') }}
