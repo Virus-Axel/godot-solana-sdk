@@ -1,0 +1,21 @@
+[gd_resource type="MetaData" load_steps=3 format=3 uid="uid://bxmhe6atc5pp6"]
+
+[sub_resource type="Pubkey" id="Pubkey_w7n8p"]
+type = "CUSTOM"
+value = "cGfHJQGBoFd5wqPZpkQfQiuktT26RDf6A6i94LEHbQU"
+bytes = PackedByteArray(9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9)
+
+[sub_resource type="MetaDataCreator" id="MetaDataCreator_v4hjc"]
+address = SubResource("Pubkey_w7n8p")
+share = 100
+
+[resource]
+name = "name"
+symbol = "111"
+uri = "222"
+enable_creators = true
+creators = [SubResource("MetaDataCreator_v4hjc")]
+edition_nonce = null
+token_standard = null
+collection_detail = null
+programmable_config = null

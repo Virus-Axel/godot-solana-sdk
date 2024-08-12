@@ -76,6 +76,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<MetaDataCreator>();
     ClassDB::register_class<MetaDataCollection>();
     ClassDB::register_class<MetaDataUses>();
+    ClassDB::register_class<CreateMetaDataArgs>();
     ClassDB::register_class<MetaData>();
     ClassDB::register_class<AssociatedTokenAccountProgram>();
     ClassDB::register_class<MplCandyMachine>();

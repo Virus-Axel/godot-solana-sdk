@@ -5,12 +5,17 @@
 #include "pubkey.hpp"
 #include "solana_client.hpp"
 #include "solana_utils.hpp"
+#include "godot_cpp/classes/os.hpp"
 
 namespace godot{
 
 const std::string MplTokenMetadata::ID = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s";
 
 MplTokenMetadata::MplTokenMetadata(){
+    set_async_override(true);
+    Array params;
+    params.push_back("");
+    Callable(this, "emit_signal").bindv(params);
 }
 
 void MplTokenMetadata::_bind_methods(){
@@ -114,11 +119,17 @@ void MplTokenMetadata::metadata_callback(const Dictionary& rpc_result){
 
     MetaData *result = memnew(MetaData);
 
-    const uint32_t name_length = account_data.decode_u32(NAME_LOCATION);
-    const PackedByteArray parsed_name =  account_data.slice(NAME_LOCATION + 4, NAME_LOCATION + 4 + name_length);
-    const uint32_t real_name_length = parsed_name.find(0);
+    int c = 1;
+    result->set_update_authority(Pubkey::new_from_bytes(account_data.slice(c, c + 32)));
+    c += 32;
+    result->set_mint(Pubkey::new_from_bytes(account_data.slice(c, c + 32)));
+    c += 32;
 
-    const int SYMBOL_LOCATION = NAME_LOCATION + name_length + 4;
+    const uint32_t name_length = account_data.decode_u32(c);
+    c += 4;
+    const PackedByteArray parsed_name =  account_data.slice(c, c + name_length);
+    const uint32_t real_name_length = parsed_name.find(0);
+    c += name_length;
 
     if(real_name_length > 0){
         result->set_token_name(parsed_name.slice(0, real_name_length).get_string_from_ascii());
@@ -127,8 +138,9 @@ void MplTokenMetadata::metadata_callback(const Dictionary& rpc_result){
         result->set_token_name(parsed_name.get_string_from_ascii());
     }
     
-    const uint32_t symbol_length = account_data.decode_u32(SYMBOL_LOCATION);
-    const PackedByteArray parsed_symbol =  account_data.slice(SYMBOL_LOCATION + 4, SYMBOL_LOCATION + 4 + symbol_length);
+    const uint32_t symbol_length = account_data.decode_u32(c);
+    c += 4;
+    const PackedByteArray parsed_symbol =  account_data.slice(c, c + symbol_length);
     const uint32_t real_symbol_length = parsed_symbol.find(0);
     if(real_symbol_length > 0){
         result->set_symbol(parsed_symbol.slice(0, real_symbol_length).get_string_from_ascii());
@@ -137,10 +149,12 @@ void MplTokenMetadata::metadata_callback(const Dictionary& rpc_result){
         result->set_symbol(parsed_symbol.get_string_from_ascii());
     }
     
-    const int URI_LOCATION = SYMBOL_LOCATION + symbol_length + 4;
+    c += symbol_length;
 
-    const uint32_t uri_length = account_data.decode_u32(URI_LOCATION);
-    const PackedByteArray parsed_uri =  account_data.slice(URI_LOCATION + 4, URI_LOCATION + 4 + uri_length);
+    const uint32_t uri_length = account_data.decode_u32(c);
+    c += 4;
+    const PackedByteArray parsed_uri =  account_data.slice(c, c + uri_length);
+    c += uri_length;
     const uint32_t real_uri_length = parsed_uri.find(0);
     if(real_uri_length > 0){
         result->set_uri(parsed_uri.slice(0, real_uri_length).get_string_from_ascii());
@@ -149,44 +163,55 @@ void MplTokenMetadata::metadata_callback(const Dictionary& rpc_result){
         result->set_uri(parsed_uri.get_string_from_ascii());
     }
 
-    const int SELLER_FEE_BASIS_POINT_LOCATION = URI_LOCATION + uri_length + 4;
-
-    result->set_seller_fee_basis_points(account_data.decode_u16(SELLER_FEE_BASIS_POINT_LOCATION));
-
-    const uint32_t CREATOR_LOCATION = SELLER_FEE_BASIS_POINT_LOCATION + 2;
-
-    uint32_t collection_location = CREATOR_LOCATION + 1;
+    result->set_seller_fee_basis_points(account_data.decode_u16(c));
+    c += 2;
 
     // Check for creators.
-    if(account_data[CREATOR_LOCATION] == 1){
-        uint32_t creator_amount = account_data.decode_u32(CREATOR_LOCATION + 1);
+    if(account_data[c] == 1){
+        c++;
+        uint32_t creator_amount = account_data.decode_u32(c);
+        c += 4;
         for(int i = 0; i < creator_amount; i++){
             MetaDataCreator * creator = memnew(MetaDataCreator);
 
-            Variant creator_address = Pubkey::new_from_bytes(account_data.slice(CREATOR_LOCATION + 5 + 34 * i, CREATOR_LOCATION + 37 + 34 * i));
+            Variant creator_address = Pubkey::new_from_bytes(account_data.slice(c, c + 32));
             creator->set_address(creator_address);
-            creator->set_verified(account_data[CREATOR_LOCATION + 37 + 34 * i] == 1);
-            creator->set_share(account_data[CREATOR_LOCATION + 38 + 34 * i]);
+            c += 32;
+
+            creator->set_verified(account_data[c] == 1);
+            c++;
+            creator->set_share(account_data[c]);
+            c++;
 
             result->add_creator(creator);
         }
-        collection_location += creator_amount * 34 + 4;
     }
 
-    collection_location += 6;
-    // Unknown 0
-    // primary sale happened
-    // is mutable
-    // edition nonce
-    // token standard two bytes?
+    result->set_primary_sale_happened(account_data[c] == 1);
+    c++;
+    result->set_is_mutable(account_data[c] == 1);
+    c++;
+
+    if(account_data[c]){
+        c++;
+        result->set_edition_nonce(account_data[c]);
+    }
+    c++;
+    if(account_data[c]){
+        c++;
+        result->set_token_standard(account_data[c]);
+    }
+    c++;
 
     // Check collection data.
-    if(account_data[collection_location] == 1){
+    if(account_data[c] == 1){
+        c++;
         MetaDataCollection * collection = memnew(MetaDataCollection);
 
-        Variant collection_address = Pubkey::new_from_bytes(account_data.slice(collection_location + 2, collection_location + 34));
+        collection->set_verified(account_data[c] == 1);
+        c++;
+        Variant collection_address = Pubkey::new_from_bytes(account_data.slice(c, c + 32));
         collection->set_key(collection_address);
-        collection->set_verified(account_data[collection_location + 1] == 1);
 
         result->set_collection(collection);
     }
@@ -197,10 +222,13 @@ void MplTokenMetadata::metadata_callback(const Dictionary& rpc_result){
 }
 
 Variant MplTokenMetadata::create_metadata_account(const Variant& mint, const Variant& mint_authority, const Variant& update_authority, const Variant &meta_data, bool is_mutable){
+    ERR_FAIL_COND_V_EDMSG(meta_data.get_type() != Variant::OBJECT, nullptr, "metadata must be a CreateMetadataArgs type.");
+    ERR_FAIL_COND_V_EDMSG(((Object*)meta_data)->get_class() != "CreateMetaDataArgs", nullptr, "metadata must be a CreateMetadataArgs type.");
+
     Instruction *result = memnew(Instruction);
     PackedByteArray data;
 
-    const MetaData *data_ptr = Object::cast_to<MetaData>(meta_data);
+    const CreateMetaDataArgs *data_ptr = Object::cast_to<CreateMetaDataArgs>(meta_data);
     PackedByteArray serialized_meta_data = data_ptr->serialize(is_mutable);
 
     data.append(33);
