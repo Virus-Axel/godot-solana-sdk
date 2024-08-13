@@ -416,8 +416,6 @@ bool Transaction::get_external_payer(){
 }
 
 void Transaction::update_latest_blockhash(const String &custom_hash){
-    ERR_FAIL_COND_EDMSG(instructions.size() == 0, "No instructions added to instruction.");
-    ERR_FAIL_COND_EDMSG(!is_message_valid(), "Failed to compile transaction message.");
     ERR_FAIL_COND_EDMSG(!is_inside_tree(), "Transaction node must be added to scene tree.");
 
     if(custom_hash.is_empty()){
@@ -513,7 +511,9 @@ void Transaction::blockhash_callback(Dictionary params){
         const Dictionary blockhash_result = params["result"];
         const Dictionary blockhash_value = blockhash_result["value"];
         latest_blockhash_string = blockhash_value["blockhash"];
-        Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
+        if(is_message_valid()){
+            Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
+        }
         emit_signal("blockhash_updated", params);
         Array connected_signals = get_signal_connection_list("send_ready");
         emit_signal("send_ready");
