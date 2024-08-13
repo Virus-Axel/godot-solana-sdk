@@ -45,6 +45,8 @@ public:
     static Variant new_random();
     static bool is_keypair(const Variant& object);
 
+    Variant to_pubkey();
+
     void set_public_string(const String& p_value);
     String get_public_string();
 

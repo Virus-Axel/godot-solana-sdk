@@ -1,5 +1,7 @@
 #include "keypair.hpp"
 
+#include "pubkey.hpp"
+
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/random_number_generator.hpp>
 #include <solana_utils.hpp>
@@ -26,6 +28,8 @@ void Keypair::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_unique", "p_value"), &Keypair::set_unique);
     ClassDB::bind_method(D_METHOD("get_seed"), &Keypair::get_seed);
     ClassDB::bind_method(D_METHOD("set_seed", "p_value"), &Keypair::set_seed);
+
+    ClassDB::bind_method(D_METHOD("to_pubkey"), &Keypair::to_pubkey);
 
     ClassDB::bind_method(D_METHOD("sign_message", "message"), &Keypair::sign_message);
     ClassDB::bind_method(D_METHOD("save_to_file", "filename"), &Keypair::save_to_file);
@@ -223,6 +227,10 @@ Variant Keypair::new_random(){
 
 bool Keypair::is_keypair(const Variant& object){
     return ((Object*)object)->is_class("Keypair");
+}
+
+Variant Keypair::to_pubkey(){
+    return Pubkey::new_from_bytes(public_bytes);
 }
 
 void Keypair::set_public_string(const String& p_value){
