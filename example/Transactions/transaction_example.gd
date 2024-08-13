@@ -4,7 +4,7 @@ extends VBoxContainer
 @onready var payer: Keypair = Keypair.new_from_file("res://payer.json")
 const LAMPORTS_PER_SOL = 1000000000
 
-const TOTAL_CASES := 10
+const TOTAL_CASES := 11
 var passed_test_mask := 0
 
 
@@ -165,6 +165,27 @@ func transaction_with_confirmation_2():
 	PASS(9)
 
 
+func blockhash_before_instruction():
+	# Test that blockhash can be updated before adding instructions.
+	
+	var account_key: Keypair = Keypair.new_random()
+	var tx = Transaction.new()
+	
+	add_child(tx)
+	tx.set_payer(payer)
+
+	tx.update_latest_blockhash()
+
+	var ix: Instruction = SystemProgram.create_account(payer, account_key, LAMPORTS_PER_SOL / 10, 400, SystemProgram.get_pid())
+	tx.add_instruction(ix)
+
+	tx.sign_and_send()
+	var response = await tx.transaction_response_received
+	assert(response.has("result"))
+
+	PASS(10)
+
+
 func _ready():
 	# Use a local cluster for unlimited Solana airdrops.
 	# SolanaClient defaults to devnet cluster URL if not specified.
@@ -178,6 +199,7 @@ func _ready():
 	create_account_example()
 	transaction_with_confirmation_1()
 	transaction_with_confirmation_2()
+	blockhash_before_instruction()
 
 
 func _on_timeout_timeout():
