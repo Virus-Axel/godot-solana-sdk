@@ -1,6 +1,6 @@
 extends VBoxContainer
 
-const TOTAL_CASES := 5
+const TOTAL_CASES := 6
 var passed_test_mask : int = 0
 
 
@@ -70,12 +70,22 @@ func sign_and_verify_message_demo():
 	assert(kp.verify_signature(kp.sign_message(message), message))
 	PASS(4)
 
+
+func keypair_to_pubkey():
+	var kp: Keypair = Keypair.new_random()
+	var pk: Pubkey = kp.to_pubkey()
+	
+	assert(kp.get_public_bytes() == pk.to_bytes())
+	PASS(5)
+
+
 func _ready():
 	random_keypair_demo()
 	keypair_from_seed_demo()
 	keypair_from_file_demo()
 	keypair_from_bytes()
 	sign_and_verify_message_demo()
+	keypair_to_pubkey()
 
 
 func _on_timeout_timeout():
