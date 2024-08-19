@@ -43,6 +43,7 @@ func test_create_metadata():
 	tx.sign()
 	tx.send()
 	var response = await tx.transaction_response_received
+	assert(response.has("result"))
 	await tx.confirmed
 	PASS(0)
 

@@ -154,15 +154,12 @@ void RpcSingleHttpRequestClient::process(const float delta){
         }
 
         // Parse the result json.
-        JSON json;
-        Error err = json.parse(response_data.get_string_from_utf8());
+        Variant json_data = JSON::parse_string(response_data.get_string_from_utf8());
 
-        if(err != Error::OK){
+        if(json_data.get_type() != Variant::DICTIONARY){
             finalize_faulty();
             ERR_FAIL_EDMSG("Error getting response data.");
         }
-
-        Dictionary json_data = json.get_data();
         
         if(!is_response_valid(json_data)){
             // Request could be from another solana client. Keep processing request.

@@ -496,7 +496,7 @@ bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant
     }
 
     // Include program ID and PDA marker in hash.
-    hasher.update(Pubkey(program_id).to_bytes().ptr(), Pubkey(program_id).to_bytes().size());
+    hasher.update(Pubkey::bytes_from_variant(program_id).ptr(), Pubkey::bytes_from_variant(program_id).size());
     hasher.update(PDA_MARKER, 21);
 
     uint8_t hash[PUBKEY_BYTES];

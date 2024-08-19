@@ -51,11 +51,11 @@ Variant MplTokenMetadata::new_associated_metadata_pubkey(const Variant& mint){
         bump_seed.push_back(i);
         arr[arr.size() - 1] = bump_seed;
         if(res->create_program_address_bytes(arr, get_pid())){
-            memfree(res);
             return res;
         }
     }
-    
+
+    memfree(res);
     internal::gdextension_interface_print_warning("y points were not valid", "new_associated_token_address", __FILE__, __LINE__, false);
     return nullptr;
 }

@@ -32,7 +32,7 @@ bool MetaDataCollection::get_verified(){
 PackedByteArray MetaDataCollection::serialize() const{
     PackedByteArray res;
     res.append(verified);
-    res.append_array(Pubkey(key).to_bytes());
+    res.append_array(Pubkey::bytes_from_variant(key));
 
     return res;
 }

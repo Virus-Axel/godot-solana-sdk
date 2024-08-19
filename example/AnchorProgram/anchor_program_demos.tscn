@@ -17,7 +17,6 @@ script = ExtResource("1_qrfu5")
 layout_mode = 2
 
 [node name="AnchorProgram" type="AnchorProgram" parent="."]
-idl = {}
 
 [node name="AnchorProgram2" type="AnchorProgram" parent="."]
 idl = {

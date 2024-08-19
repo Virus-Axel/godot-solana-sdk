@@ -69,8 +69,8 @@ Variant TokenProgram2022::initialize_metadata_pointer(const Variant& payer, cons
     data.resize(2);
     const unsigned char DISCRIMINATOR = 39;
     data[0] = DISCRIMINATOR;
-    data.append_array(Pubkey(payer).to_bytes());
-    data.append_array(Pubkey(mint_keypair).to_bytes());
+    data.append_array(Pubkey::bytes_from_variant(payer));
+    data.append_array(Pubkey::bytes_from_variant(mint_keypair));
 
     const Variant new_pid = get_pid();
     result->set_program_id(new_pid);

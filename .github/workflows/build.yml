@@ -17,72 +17,98 @@ jobs:
             target: template_debug
             platform: linux
             arch: x86_64
+            threads: True
           - identifier: linux-release
             name: Linux Release
             runner: ubuntu-20.04
             target: template_release
             platform: linux
             arch: x86_64
+            threads: True
           - identifier: windows-debug
             name: Windows Debug
             runner: ubuntu-20.04
             target: template_debug
             platform: windows
             arch: x86_64
+            threads: True
           - identifier: windows-release
             name: Windows Release
             runner: ubuntu-20.04
             target: template_release
             platform: windows
             arch: x86_64
+            threads: True
           - identifier: android-debug
             name: Android Debug
             runner: ubuntu-20.04
             target: template_debug
             platform: android
             arch: arm64
+            threads: True
           - identifier: android-release
             name: Android Release
             runner: ubuntu-20.04
             target: template_release
             platform: android
             arch: arm64
+            threads: True
           - identifier: macos-debug
             runner: macos-latest
             name: 🍎 macOS (universal) Debug
             target: template_debug
             platform: macos
             arch: universal
+            threads: True
           - identifier: macos-release
             runner: macos-latest
             name: 🍎 macOS (universal) Release
             target: template_release
             platform: macos
             arch: universal
+            threads: True
           - identifier: ios-debug
             runner: macos-latest
             name: 🍎 IOS Debug
             target: template_debug
             platform: ios
             arch: arm64
+            threads: True
           - identifier: ios-release
             runner: macos-latest
             name: 🍎 IOS Release
             target: template_release
             platform: ios
             arch: arm64
+            threads: True
+          - identifier: web-debug-nothreads
+            name: Web Debug (Single Thread)
+            runner: ubuntu-20.04
+            target: template_debug
+            platform: web
+            arch: wasm32
+            threads: False
+          - identifier: web-release-nothreads
+            name: Web Release (Single Thread)
+            runner: ubuntu-20.04
+            target: template_release
+            platform: web
+            arch: wasm32
+            threads: False
           - identifier: web-debug
             name: Web Debug
             runner: ubuntu-20.04
             target: template_debug
             platform: web
             arch: wasm32
+            threads: True
           - identifier: web-release
             name: Web Release
             runner: ubuntu-20.04
             target: template_release
             platform: web
             arch: wasm32
+            threads: True
     steps:
       - name: (Windows) Install mingw64
         if: ${{ startsWith(matrix.identifier, 'windows-') }}
@@ -134,7 +160,7 @@ jobs:
         shell: sh
 
         run: |
-          scons target='${{ matrix.target }}' platform='${{ matrix.platform }}' arch='${{ matrix.arch }}' -j2
+          scons threads='${{ matrix.threads }}' target='${{ matrix.target }}' platform='${{ matrix.platform }}' arch='${{ matrix.arch }}' -j2
           cp godot-solana-sdk.gdextension bin/
           ls -l */bin/
 
