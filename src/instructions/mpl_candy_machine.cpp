@@ -64,7 +64,7 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         sol_payment_bytes.resize(8);
         sol_payment_bytes.encode_u64(0, sol_payment_lamports);
         result.append_array(sol_payment_bytes);
-        result.append_array(Pubkey(sol_payment_destination).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(sol_payment_destination));
     }
     if(enable_token_payment){
         enabled_guards += 4;
@@ -72,8 +72,8 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         token_payment_bytes.resize(8);
         token_payment_bytes.encode_u64(0, token_payment_amount);
         result.append_array(token_payment_bytes);
-        result.append_array(Pubkey(token_payment_mint).to_bytes());
-        result.append_array(Pubkey(token_payment_destination).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(token_payment_mint));
+        result.append_array(Pubkey::bytes_from_variant(token_payment_destination));
     }
     if(enable_start_date){
         enabled_guards += 8;
@@ -84,7 +84,7 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
     }
     if(enable_third_party_signer){
         enabled_guards += 16;
-        result.append_array(Pubkey(signer_key).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(signer_key));
     }
     if(enable_token_gate){
         enabled_guards += 32;
@@ -92,11 +92,11 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         token_gate_bytes.resize(8);
         token_gate_bytes.encode_u64(0, token_gate_amount);
         result.append_array(token_gate_bytes);
-        result.append_array(Pubkey(token_gate_mint).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(token_gate_mint));
     }
     if(enable_gatekeeper){
         enabled_guards += 64;
-        result.append_array(Pubkey(gatekeeper_network).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(gatekeeper_network));
         result.append((int) expire_on_use);
     }
     if(enable_end_date){
@@ -120,8 +120,8 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
     }
     if(enable_nft_payment){
         enabled_guards += 1024;
-        result.append_array(Pubkey(required_nft_payment_collection).to_bytes());
-        result.append_array(Pubkey(nft_payment_destination).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(required_nft_payment_collection));
+        result.append_array(Pubkey::bytes_from_variant(nft_payment_destination));
     }
     if(enable_redeem_account){
         enabled_guards += 2048;
@@ -132,15 +132,15 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
     }
     if(enable_address_gate){
         enabled_guards += 4096;
-        result.append_array(Pubkey(address_gate_reciever).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(address_gate_reciever));
     }
     if(enable_nft_gate){
         enabled_guards += 8192;
-        result.append_array(Pubkey(required_nft_gate_collection).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(required_nft_gate_collection));
     }
     if(enable_nft_burn){
         enabled_guards += 16384;
-        result.append_array(Pubkey(required_nft_burn_collection).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(required_nft_burn_collection));
     }
     if(enable_token_burn){
         enabled_guards += 32768;
@@ -148,7 +148,7 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         token_burn_bytes.resize(8);
         token_burn_bytes.encode_u64(0, max_redeem_amount);
         result.append_array(token_burn_bytes);
-        result.append_array(Pubkey(token_burn_mint).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(token_burn_mint));
     }
     if(enable_freeze_sol_payment){
         enabled_guards += 65536;
@@ -156,7 +156,7 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         freeze_sol_bytes.resize(8);
         freeze_sol_bytes.encode_u64(0, freeze_amount_lamports);
         result.append_array(freeze_sol_bytes);
-        result.append_array(Pubkey(freeze_sol_destination).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(freeze_sol_destination));
     }
     if(enable_freeze_token_payment){
         enabled_guards += 65536;
@@ -164,8 +164,8 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         freeze_token_bytes.resize(8);
         freeze_token_bytes.encode_u64(0, amount);
         result.append_array(freeze_token_bytes);
-        result.append_array(Pubkey(mint).to_bytes());
-        result.append_array(Pubkey(freeze_token_destination_ata).to_bytes());
+        result.append_array(Pubkey::bytes_from_variant(mint));
+        result.append_array(Pubkey::bytes_from_variant(freeze_token_destination_ata));
     }
     if(enable_program_gate){
         enabled_guards += 131072;
@@ -174,7 +174,7 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const{
         array_length_bytes.encode_u64(0, amount);
         result.append_array(array_length_bytes);
         for(unsigned int i = 0; i < program_gate_addresses.size(); i++){
-            result.append_array(Pubkey(program_gate_addresses[i]).to_bytes());
+            result.append_array(Pubkey::bytes_from_variant(program_gate_addresses[i]));
         }
     }
     if(enable_allocation){
@@ -1326,28 +1326,28 @@ Variant MplCandyMachine::initialize(const Variant &authority, const Variant &can
     result->set_program_id(get_pid());
     result->set_data(data);
 
-    result->append_meta(AccountMeta(candy_machine_account, false, true));
+    result->append_meta(*memnew(AccountMeta(candy_machine_account, false, true)));
 
     const Variant CANDY_MACHINE_AUTHORITY = MplCandyMachine::new_candy_machine_authority_pda(candy_machine_account);
 
-    result->append_meta(AccountMeta(CANDY_MACHINE_AUTHORITY, false, true));
-    result->append_meta(AccountMeta(authority, false, false));
-    result->append_meta(AccountMeta(authority, true, true));
+    result->append_meta(*memnew(AccountMeta(CANDY_MACHINE_AUTHORITY, false, true)));
+    result->append_meta(*memnew(AccountMeta(authority, false, false)));
+    result->append_meta(*memnew(AccountMeta(authority, true, true)));
 
-    result->append_meta(AccountMeta(Pubkey::new_from_string("CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR"), false, false));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_from_string("CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR"), false, false)));
 
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(collection_mint), false, true));
-    result->append_meta(AccountMeta(collection_mint, false, false));
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(collection_mint), false, false));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(collection_mint), false, true)));
+    result->append_meta(*memnew(AccountMeta(collection_mint, false, false)));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(collection_mint), false, false)));
     
-    result->append_meta(AccountMeta(authority, true, true));
-    result->append_meta(AccountMeta(TokenProgram::new_delegate_record_address(authority, collection_mint, CANDY_MACHINE_AUTHORITY, godot::TokenProgram::MetaDataDelegateRole::COLLECTION), false, true));
+    result->append_meta(*memnew(AccountMeta(authority, true, true)));
+    result->append_meta(*memnew(AccountMeta(TokenProgram::new_delegate_record_address(authority, collection_mint, CANDY_MACHINE_AUTHORITY, godot::TokenProgram::MetaDataDelegateRole::COLLECTION), false, true)));
 
-    result->append_meta(AccountMeta(MplTokenMetadata::get_pid(), false, false));
-    result->append_meta(AccountMeta(SystemProgram::get_pid(), false, false));
-    result->append_meta(AccountMeta(Pubkey::new_from_string("Sysvar1nstructions1111111111111111111111111"), false, false));
-    result->append_meta(AccountMeta(Pubkey::new_from_string("CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR"), false, false));
-    result->append_meta(AccountMeta(Pubkey::new_from_string("CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR"), false, false));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(SystemProgram::get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_from_string("Sysvar1nstructions1111111111111111111111111"), false, false)));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_from_string("CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR"), false, false)));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_from_string("CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR"), false, false)));
 
     return result;
 }
@@ -1370,42 +1370,42 @@ Variant MplCandyMachine::mint(
 
     Variant candy_machine_creator = new_candy_machine_authority_pda(candy_machine_key);
 
-    result->append_meta(AccountMeta(candy_machine_key, false, true));
+    result->append_meta(*memnew(AccountMeta(candy_machine_key, false, true)));
 
     Array seeds;
     seeds.append(String("candy_machine").to_ascii_buffer());
-    seeds.append(Pubkey(candy_machine_key).to_bytes());
+    seeds.append(Pubkey::bytes_from_variant(candy_machine_key));
 
-    result->append_meta(AccountMeta(Pubkey::new_pda_bytes(seeds, get_pid()), false, true));
-    result->append_meta(AccountMeta(payer, true, false));
-    result->append_meta(AccountMeta(payer, true, true));
-    result->append_meta(AccountMeta(receiver, false, false));
-    result->append_meta(AccountMeta(mint, true, true));
-    result->append_meta(AccountMeta(payer, true, false));
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(mint), false, true));
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(mint), false, true));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_pda_bytes(seeds, get_pid()), false, true)));
+    result->append_meta(*memnew(AccountMeta(payer, true, false)));
+    result->append_meta(*memnew(AccountMeta(payer, true, true)));
+    result->append_meta(*memnew(AccountMeta(receiver, false, false)));
+    result->append_meta(*memnew(AccountMeta(mint, true, true)));
+    result->append_meta(*memnew(AccountMeta(payer, true, false)));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(mint), false, true)));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(mint), false, true)));
     
-    result->append_meta(AccountMeta(Pubkey::new_associated_token_address(receiver, mint), false, true));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_associated_token_address(receiver, mint), false, true)));
 
     const Variant associated_token_account = Pubkey::new_associated_token_address(receiver, mint);
-    result->append_meta(AccountMeta(TokenProgram::new_token_record_address(associated_token_account, mint), false, true));
+    result->append_meta(*memnew(AccountMeta(TokenProgram::new_token_record_address(associated_token_account, mint), false, true)));
 
-    result->append_meta(AccountMeta(TokenProgram::new_delegate_record_address(collection_update_authority, collection_mint, candy_machine_creator, TokenProgram::MetaDataDelegateRole::COLLECTION), false, false));
+    result->append_meta(*memnew(AccountMeta(TokenProgram::new_delegate_record_address(collection_update_authority, collection_mint, candy_machine_creator, TokenProgram::MetaDataDelegateRole::COLLECTION), false, false)));
 
-    result->append_meta(AccountMeta(collection_mint, false, false));
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(collection_mint), false, true));
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(collection_mint), false, false));
-    result->append_meta(AccountMeta(collection_update_authority, true, true));
+    result->append_meta(*memnew(AccountMeta(collection_mint, false, false)));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(collection_mint), false, true)));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(collection_mint), false, false)));
+    result->append_meta(*memnew(AccountMeta(collection_update_authority, true, true)));
 
-    result->append_meta(AccountMeta(MplTokenMetadata::get_pid(), false, false));
-    result->append_meta(AccountMeta(TokenProgram::get_pid(), false, false));
-    result->append_meta(AccountMeta(AssociatedTokenAccountProgram::get_pid(), false, false));
-    result->append_meta(AccountMeta(SystemProgram::get_pid(), false, false));
-    result->append_meta(AccountMeta(Pubkey::new_from_string("Sysvar1nstructions1111111111111111111111111"), false, false));
-    result->append_meta(AccountMeta(Pubkey::new_from_string("SysvarS1otHashes111111111111111111111111111"), false, false));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(TokenProgram::get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(AssociatedTokenAccountProgram::get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(SystemProgram::get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_from_string("Sysvar1nstructions1111111111111111111111111"), false, false)));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_from_string("SysvarS1otHashes111111111111111111111111111"), false, false)));
 
-    result->append_meta(AccountMeta(get_pid(), false, false));
-    result->append_meta(AccountMeta(get_pid(), false, false));
+    result->append_meta(*memnew(AccountMeta(get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(get_pid(), false, false)));
 
     return result;
 }
@@ -1439,8 +1439,8 @@ Variant MplCandyMachine::add_config_lines(
 
     Variant candy_machine_creator = new_candy_machine_authority_pda(candy_machine_key);
 
-    result->append_meta(AccountMeta(candy_machine_key, false, true));
-    result->append_meta(AccountMeta(authority, true, false));
+    result->append_meta(*memnew(AccountMeta(candy_machine_key, false, true)));
+    result->append_meta(*memnew(AccountMeta(authority, true, false)));
 
     return result;
 }
@@ -1448,7 +1448,7 @@ Variant MplCandyMachine::add_config_lines(
 Variant MplCandyMachine::new_candy_machine_authority_pda(const Variant& candy_machine_key){
     Array seeds;
     seeds.append(String("candy_machine").to_ascii_buffer());
-    seeds.append(Pubkey(candy_machine_key).to_bytes());
+    seeds.append(Pubkey::bytes_from_variant(candy_machine_key));
 
     return Pubkey::new_pda_bytes(seeds, get_pid());
 }
@@ -1456,7 +1456,7 @@ Variant MplCandyMachine::new_candy_machine_authority_pda(const Variant& candy_ma
 void MplCandyMachine::get_candy_machine_info(const Variant& candy_machine_key){
     Callable callback(this, "fetch_account_callback");
     connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
-    return get_account_info(Pubkey(candy_machine_key).to_string());
+    return get_account_info(Pubkey::string_from_variant(candy_machine_key));
 }
 
 void MplCandyMachine::fetch_account_callback(const Dictionary& params){
@@ -1607,12 +1607,12 @@ Variant MplCandyGuard::initialize(const Variant& owner, const Variant& candy_gua
     const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
     result->set_program_id(new_pid);
     result->set_data(data);
-    result->append_meta(AccountMeta(MplCandyMachine::new_candy_machine_authority_pda(owner), false, true));
-    result->append_meta(AccountMeta(owner, true, false));
+    result->append_meta(*memnew(AccountMeta(MplCandyMachine::new_candy_machine_authority_pda(owner), false, true)));
+    result->append_meta(*memnew(AccountMeta(owner, true, false)));
 
-    result->append_meta(AccountMeta(candy_guard_authority, false, false));
-    result->append_meta(AccountMeta(payer, true, false));
-    result->append_meta(AccountMeta(SystemProgram::get_pid(), false, false));
+    result->append_meta(*memnew(AccountMeta(candy_guard_authority, false, false)));
+    result->append_meta(*memnew(AccountMeta(payer, true, false)));
+    result->append_meta(*memnew(AccountMeta(SystemProgram::get_pid(), false, false)));
 
     return result;
 }
@@ -1643,36 +1643,36 @@ Variant MplCandyGuard::mint(
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(guard_account_id, false, false));
-    result->append_meta(AccountMeta(MplCandyMachine::get_pid(), false, false));
-    result->append_meta(AccountMeta(candy_machine_id, false, true));
-    result->append_meta(AccountMeta(MplCandyMachine::new_candy_machine_authority_pda(candy_machine_id), false, true));
+    result->append_meta(*memnew(AccountMeta(guard_account_id, false, false)));
+    result->append_meta(*memnew(AccountMeta(MplCandyMachine::get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(candy_machine_id, false, true)));
+    result->append_meta(*memnew(AccountMeta(MplCandyMachine::new_candy_machine_authority_pda(candy_machine_id), false, true)));
 
-    result->append_meta(AccountMeta(payer, true, true));
-    result->append_meta(AccountMeta(receiver, true, true));
-    result->append_meta(AccountMeta(mint, true, true));
-    result->append_meta(AccountMeta(nft_mint_authority, true, false));
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(mint), false, true));
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(mint), false, true));
+    result->append_meta(*memnew(AccountMeta(payer, true, true)));
+    result->append_meta(*memnew(AccountMeta(receiver, true, true)));
+    result->append_meta(*memnew(AccountMeta(mint, true, true)));
+    result->append_meta(*memnew(AccountMeta(nft_mint_authority, true, false)));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(mint), false, true)));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(mint), false, true)));
 
-    result->append_meta(AccountMeta(Pubkey::new_associated_token_address(receiver, mint), false, true));
-    result->append_meta(AccountMeta(TokenProgram::new_token_record_address(associated_token_account, mint), false, true));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_associated_token_address(receiver, mint), false, true)));
+    result->append_meta(*memnew(AccountMeta(TokenProgram::new_token_record_address(associated_token_account, mint), false, true)));
 
-    result->append_meta(AccountMeta(TokenProgram::new_delegate_record_address(collection_update_authority, collection_mint, candy_machine_creator, TokenProgram::MetaDataDelegateRole::COLLECTION), false, false));
+    result->append_meta(*memnew(AccountMeta(TokenProgram::new_delegate_record_address(collection_update_authority, collection_mint, candy_machine_creator, TokenProgram::MetaDataDelegateRole::COLLECTION), false, false)));
 
-    result->append_meta(AccountMeta(collection_mint, false, false));
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(collection_mint), false, true));
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(collection_mint), false, false));
-    result->append_meta(AccountMeta(collection_update_authority, false, false));
+    result->append_meta(*memnew(AccountMeta(collection_mint, false, false)));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(collection_mint), false, true)));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(collection_mint), false, false)));
+    result->append_meta(*memnew(AccountMeta(collection_update_authority, false, false)));
 
-    result->append_meta(AccountMeta(MplTokenMetadata::get_pid(), false, false));
-    result->append_meta(AccountMeta(TokenProgram::get_pid(), false, false));
-    result->append_meta(AccountMeta(AssociatedTokenAccountProgram::get_pid(), false, false));
-    result->append_meta(AccountMeta(SystemProgram::get_pid(), false, false));
-    result->append_meta(AccountMeta(Pubkey::new_from_string("Sysvar1nstructions1111111111111111111111111"), false, false));
-    result->append_meta(AccountMeta(Pubkey::new_from_string("SysvarS1otHashes111111111111111111111111111"), false, false));
-    result->append_meta(AccountMeta(Pubkey::new_from_string("Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g"), false, false));
-    result->append_meta(AccountMeta(Pubkey::new_from_string("Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g"), false, false));
+    result->append_meta(*memnew(AccountMeta(MplTokenMetadata::get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(TokenProgram::get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(AssociatedTokenAccountProgram::get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(SystemProgram::get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_from_string("Sysvar1nstructions1111111111111111111111111"), false, false)));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_from_string("SysvarS1otHashes111111111111111111111111111"), false, false)));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_from_string("Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g"), false, false)));
+    result->append_meta(*memnew(AccountMeta(Pubkey::new_from_string("Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g"), false, false)));
     
     TypedArray<AccountMeta> mint_arg_accounts = Object::cast_to<CandyGuardAccessList>(candy_guard_acl)->get_group(label).get_mint_arg_accounts(receiver);
     
@@ -1690,7 +1690,7 @@ Variant MplCandyGuard::get_pid(){
 Variant MplCandyGuard::new_associated_candy_guard_key(const Variant &candy_machine_key){
     Array seeds;
     seeds.append(String("candy_guard").to_ascii_buffer());
-    seeds.append(Pubkey(candy_machine_key).to_bytes());
+    seeds.append(Pubkey::bytes_from_variant(candy_machine_key));
     return Pubkey::new_pda_bytes(seeds, get_pid());
 }
 

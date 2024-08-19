@@ -47,6 +47,7 @@ const std::vector<char> BASE_64_MAP = {
 
 using internal::gdextension_interface_print_warning;
 
+const std::string SolanaUtils::ZERO_ENCODED_32 = "11111111111111111111111111111111";
 const std::string SolanaUtils::SPL_TOKEN_ADDRESS = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 const std::string SolanaUtils::SPL_ASSOCIATED_TOKEN_ADDRESS = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL";
 
