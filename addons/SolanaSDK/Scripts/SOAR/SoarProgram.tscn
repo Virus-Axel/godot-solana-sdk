@@ -1,0 +1,1279 @@
+[gd_scene load_steps=3 format=3 uid="uid://kb5sk8ykb617"]
+
+[ext_resource type="Script" path="res://addons/SolanaSDK/Scripts/SOAR/soar_program.gd" id="1_3bck6"]
+[ext_resource type="JSON" path="res://addons/SolanaSDK/Scripts/SOAR/soar_idl.json" id="2_pup3c"]
+
+[node name="SoarProgram" type="Node"]
+script = ExtResource("1_3bck6")
+
+[node name="SOAR_PROGRAM" type="AnchorProgram" parent="."]
+pid = "SoarNNzwQHMwcfdkdLc6kvbkoMSxcHy89gTHrjhJYkk"
+json_file = ExtResource("2_pup3c")
+idl = {
+"accounts": [{
+"docs": ["Represents an achievement(with optional rewards) for this game", "that can be attained by players.", "", "PDA with seeds = `[b\"achievement\", game.key().as_ref(), &id.to_le_bytes()]`", "", "`id` is an incrementing index stored in the game account."],
+"name": "Achievement",
+"type": {
+"fields": [{
+"docs": ["Public key of the game account this achievement is derived from."],
+"name": "game",
+"type": "publicKey"
+}, {
+"docs": ["The achievement_count of the game account when this account was", "created, also used as a seed for its PDA."],
+"name": "id",
+"type": "u64"
+}, {
+"docs": ["Achievement title."],
+"name": "title",
+"type": "string"
+}, {
+"docs": ["Achievement description."],
+"name": "description",
+"type": "string"
+}, {
+"docs": ["Public key of a nft metadata account describing this achievement."],
+"name": "nftMeta",
+"type": "publicKey"
+}, {
+"docs": ["Optional: Specify a reward to players for unlocking this achievement."],
+"name": "reward",
+"type": {
+"option": "publicKey"
+}
+}],
+"kind": "struct"
+}
+}, {
+"docs": ["An account representing a single game."],
+"name": "Game",
+"type": {
+"fields": [{
+"docs": ["Game meta-information."],
+"name": "meta",
+"type": {
+"defined": "GameAttributes"
+}
+}, {
+"docs": ["Number of leaderboards this game has created. Used both", "in determining the most recent leaderboard address, and", "as a seed for the next leaderboard."],
+"name": "leaderboardCount",
+"type": "u64"
+}, {
+"docs": ["Number of achievements that exist for this game. Also", "used to determine the u64 seed for the next achievement."],
+"name": "achievementCount",
+"type": "u64"
+}, {
+"docs": ["A collection of pubkeys which each represent a valid", "authority for this game."],
+"name": "auth",
+"type": {
+"vec": "publicKey"
+}
+}],
+"kind": "struct"
+}
+}, {
+"docs": ["Represents a [Game][super::Game]'s leaderboard.", "", "Seeds: `[b\"leaderboard\", game.key().as_ref(), &id.to_le_bytes()]`"],
+"name": "LeaderBoard",
+"type": {
+"fields": [{
+"docs": ["The leaderboard's id, used in deriving its address from the game."],
+"name": "id",
+"type": "u64"
+}, {
+"docs": ["The game this leaderboard belongs to and is derived from."],
+"name": "game",
+"type": "publicKey"
+}, {
+"docs": ["Leaderboard description."],
+"name": "description",
+"type": "string"
+}, {
+"docs": ["Pubkey of an nft metadata account that describes this leaderboard."],
+"name": "nftMeta",
+"type": "publicKey"
+}, {
+"docs": ["Used to contextualize scores for this leaderboard."],
+"name": "decimals",
+"type": "u8"
+}, {
+"docs": ["Minimum possible score for this leaderboard."],
+"name": "minScore",
+"type": "u64"
+}, {
+"docs": ["Maximum possible score for this leaderboard."],
+"name": "maxScore",
+"type": "u64"
+}, {
+"docs": ["Top [entries](ScoreEntry) for a leaderboard."],
+"name": "topEntries",
+"type": {
+"option": "publicKey"
+}
+}, {
+"docs": ["Whether or not multiple scores are allowed for a single player."],
+"name": "allowMultipleScores",
+"type": "bool"
+}],
+"kind": "struct"
+}
+}, {
+"docs": ["An account that represents a single user's ownership of", "multiple [Player][super::Player] accounts."],
+"name": "Merged",
+"type": {
+"fields": [{
+"docs": ["The user that initialized this merge."],
+"name": "initiator",
+"type": "publicKey"
+}, {
+"docs": ["Details of all the player accounts to be merged with the main_user's."],
+"name": "approvals",
+"type": {
+"vec": {
+"defined": "MergeApproval"
+}
+}
+}, {
+"docs": ["Set to true when every user in `others` has registered their approval."],
+"name": "mergeComplete",
+"type": "bool"
+}],
+"kind": "struct"
+}
+}, {
+"docs": ["Represents a player's status for a particular [Achievement](super::Achievement).", "", "Seeds = `[b\"player-achievement\", player.key().as_ref(), achievement.key().as_ref()]`."],
+"name": "PlayerAchievement",
+"type": {
+"fields": [{
+"docs": ["The user's [player][super::Player] account."],
+"name": "playerAccount",
+"type": "publicKey"
+}, {
+"docs": ["The key of the achievement unlocked for this player."],
+"name": "achievement",
+"type": "publicKey"
+}, {
+"docs": ["Timestamp showing when this achievement was unlocked."],
+"name": "timestamp",
+"type": "i64"
+}, {
+"docs": ["A player's unlock status for this achievement."],
+"name": "unlocked",
+"type": "bool"
+}, {
+"docs": ["Whether or not this player has claimed their reward."],
+"name": "claimed",
+"type": "bool"
+}],
+"kind": "struct"
+}
+}, {
+"docs": ["Holds a list of a [player][super::Player]'s [scores][ScoreEntry])", "for a particular [LeaderBoard].", "", "Seeds: `[b\"player-scores-list\", player_account.key().as_ref(), leaderboard.key().as_ref()]`"],
+"name": "PlayerScoresList",
+"type": {
+"fields": [{
+"docs": ["The player[super::Player] account this entry is derived from"],
+"name": "playerAccount",
+"type": "publicKey"
+}, {
+"docs": ["The id of the specific leaderboard."],
+"name": "leaderboard",
+"type": "publicKey"
+}, {
+"docs": ["Max number of [scores][ScoreEntry] the current space allocation supports."],
+"name": "allocCount",
+"type": "u16"
+}, {
+"docs": ["Collection of [scores][ScoreEntry]."],
+"name": "scores",
+"type": {
+"vec": {
+"defined": "ScoreEntry"
+}
+}
+}],
+"kind": "struct"
+}
+}, {
+"docs": ["An account representing a player.", "", "Seeds: `[b\"player\", user.key().as_ref()]`"],
+"name": "Player",
+"type": {
+"fields": [{
+"docs": ["The wallet that owns this player-info account"],
+"name": "user",
+"type": "publicKey"
+}, {
+"docs": ["The player's username."],
+"name": "username",
+"type": "string"
+}, {
+"docs": ["Metadata to represent this player."],
+"name": "nftMeta",
+"type": "publicKey"
+}],
+"kind": "struct"
+}
+}, {
+"name": "NftClaim",
+"type": {
+"fields": [],
+"kind": "struct"
+}
+}, {
+"docs": ["An account representing a reward for a given achievement."],
+"name": "Reward",
+"type": {
+"fields": [{
+"docs": ["The achievement this reward is given for."],
+"name": "achievement",
+"type": "publicKey"
+}, {
+"docs": ["Number of available reward spots."],
+"name": "availableSpots",
+"type": "u64"
+}, {
+"docs": ["The reward kind. Current supports Nft and Ft rewards only."],
+"name": "reward",
+"type": {
+"defined": "RewardKind"
+}
+}],
+"kind": "struct"
+}
+}, {
+"docs": ["Keeps track of a sorted list of top scores for a leaderboard.", "", "Seeds = [b\"top-scores\", leaderboard.key().as_ref()]"],
+"name": "LeaderTopEntries",
+"type": {
+"fields": [{
+"docs": ["Arrangement order."],
+"name": "isAscending",
+"type": "bool"
+}, {
+"docs": ["Top scores."],
+"name": "topScores",
+"type": {
+"vec": {
+"defined": "LeaderBoardScore"
+}
+}
+}],
+"kind": "struct"
+}
+}],
+"constants": [{
+"name": "MAX_TITLE_LEN",
+"type": {
+"defined": "usize"
+},
+"value": "30"
+}, {
+"name": "MAX_DESCRIPTION_LEN",
+"type": {
+"defined": "usize"
+},
+"value": "200"
+}],
+"errors": [{
+"code": 6000.0,
+"msg": "Exceeded max length for field.",
+"name": "InvalidFieldLength"
+}, {
+"code": 6001.0,
+"msg": "Invalid authority for instruction",
+"name": "InvalidAuthority"
+}, {
+"code": 6002.0,
+"msg": "An expected signature isn't present",
+"name": "MissingSignature"
+}, {
+"code": 6003.0,
+"msg": "Reward not specified for this achievement",
+"name": "NoRewardForAchievement"
+}, {
+"code": 6004.0,
+"msg": "The merge account does not include this player account",
+"name": "AccountNotPartOfMerge"
+}, {
+"code": 6005.0,
+"msg": "Tried to input score that is below the minimum or above the maximum",
+"name": "ScoreNotWithinBounds"
+}, {
+"code": 6006.0,
+"msg": "An optional but expected account is missing",
+"name": "MissingExpectedAccount"
+}, {
+"code": 6007.0,
+"msg": "Invalid reward kind for this instruction",
+"name": "InvalidRewardKind"
+}, {
+"code": 6008.0,
+"msg": "No more rewards are being given out for this game",
+"name": "NoAvailableRewards"
+}],
+"instructions": [{
+"accounts": [{
+"isMut": true,
+"isSigner": true,
+"name": "creator"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "game"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}],
+"args": [{
+"name": "gameMeta",
+"type": {
+"defined": "GameAttributes"
+}
+}, {
+"name": "gameAuth",
+"type": {
+"vec": "publicKey"
+}
+}],
+"docs": ["Initialize a new [Game] and register its [LeaderBoard]."],
+"name": "initializeGame"
+}, {
+"accounts": [{
+"isMut": false,
+"isSigner": true,
+"name": "authority"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}],
+"args": [{
+"name": "newMeta",
+"type": {
+"option": {
+"defined": "GameAttributes"
+}
+}
+}, {
+"name": "newAuth",
+"type": {
+"option": {
+"vec": "publicKey"
+}
+}
+}],
+"docs": ["Update a [Game]'s meta-information or authority list."],
+"name": "updateGame"
+}, {
+"accounts": [{
+"isMut": false,
+"isSigner": true,
+"name": "authority"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "newAchievement"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}],
+"args": [{
+"name": "title",
+"type": "string"
+}, {
+"name": "description",
+"type": "string"
+}, {
+"name": "nftMeta",
+"type": "publicKey"
+}],
+"docs": ["Add a new [Achievement] that can be attained for a particular [Game]."],
+"name": "addAchievement"
+}, {
+"accounts": [{
+"isMut": false,
+"isSigner": true,
+"name": "authority"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "achievement"
+}],
+"args": [{
+"name": "newTitle",
+"type": {
+"option": "string"
+}
+}, {
+"name": "newDescription",
+"type": {
+"option": "string"
+}
+}, {
+"name": "nftMeta",
+"type": {
+"option": "publicKey"
+}
+}],
+"docs": ["Update an [Achievement]'s meta information."],
+"name": "updateAchievement"
+}, {
+"accounts": [{
+"isMut": false,
+"isSigner": true,
+"name": "authority"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "leaderboard"
+}, {
+"isMut": true,
+"isOptional": true,
+"isSigner": false,
+"name": "topEntries"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}],
+"args": [{
+"name": "input",
+"type": {
+"defined": "RegisterLeaderBoardInput"
+}
+}],
+"docs": ["Overwrite the active [LeaderBoard] and set a newly created one."],
+"name": "addLeaderboard"
+}, {
+"accounts": [{
+"isMut": false,
+"isSigner": true,
+"name": "authority"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "leaderboard"
+}, {
+"isMut": true,
+"isOptional": true,
+"isSigner": false,
+"name": "topEntries"
+}],
+"args": [{
+"name": "newDescription",
+"type": {
+"option": "string"
+}
+}, {
+"name": "newNftMeta",
+"type": {
+"option": "publicKey"
+}
+}, {
+"name": "newMinScore",
+"type": {
+"option": "u64"
+}
+}, {
+"name": "newMaxScore",
+"type": {
+"option": "u64"
+}
+}, {
+"name": "newIsAscending",
+"type": {
+"option": "bool"
+}
+}, {
+"name": "newAllowMultipleScores",
+"type": {
+"option": "bool"
+}
+}],
+"docs": ["Update's a leaderboard's description, nft metadata information, min/max score, or whether", "or not multiple scores are allowed for a single player."],
+"name": "updateLeaderboard"
+}, {
+"accounts": [{
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": false,
+"isSigner": true,
+"name": "user"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "playerAccount"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}],
+"args": [{
+"name": "username",
+"type": "string"
+}, {
+"name": "nftMeta",
+"type": "publicKey"
+}],
+"docs": ["Create a [Player] account for a particular user."],
+"name": "initializePlayer"
+}, {
+"accounts": [{
+"isMut": false,
+"isSigner": true,
+"name": "user"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "playerAccount"
+}],
+"args": [{
+"name": "username",
+"type": {
+"option": "string"
+}
+}, {
+"name": "nftMeta",
+"type": {
+"option": "publicKey"
+}
+}],
+"docs": ["Update the username or nft_meta for a [Player] account."],
+"name": "updatePlayer"
+}, {
+"accounts": [{
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": false,
+"isSigner": true,
+"name": "user"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "playerAccount"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "leaderboard"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "newList"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}],
+"args": [],
+"docs": ["Register a [Player] for a particular [Leaderboard], resulting in a newly-", "created [PlayerEntryList] account."],
+"name": "registerPlayer"
+}, {
+"accounts": [{
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": false,
+"isSigner": true,
+"name": "authority"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "playerAccount"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "leaderboard"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "playerScores"
+}, {
+"isMut": true,
+"isOptional": true,
+"isSigner": false,
+"name": "topEntries"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}],
+"args": [{
+"name": "score",
+"type": "u64"
+}],
+"docs": ["Submit a score for a player and have it timestamped and added to the [PlayerEntryList].", "Optionally increase the player's rank if needed.", "", "This instruction automatically resizes the [PlayerScoresList] account if needed."],
+"name": "submitScore"
+}, {
+"accounts": [{
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": false,
+"isSigner": true,
+"name": "user"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "playerAccount"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "mergeAccount"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}],
+"args": [{
+"name": "keys",
+"type": {
+"vec": "publicKey"
+}
+}],
+"docs": ["Initialize a new merge account and await approval from the verified users of all the", "specified [Player] accounts.", "", "A merge is complete when all the users of the [Player] account keys referenced in it", "have signed to set their approval to `true`."],
+"name": "initiateMerge"
+}, {
+"accounts": [{
+"isMut": false,
+"isSigner": true,
+"name": "user"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "playerAccount"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "mergeAccount"
+}],
+"args": [],
+"docs": ["Register merge confirmation for a particular [Player] account included in a [Merged]."],
+"name": "approveMerge"
+}, {
+"accounts": [{
+"isMut": false,
+"isSigner": true,
+"name": "authority"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "playerAccount"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "achievement"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "playerAchievement"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}],
+"args": [],
+"docs": ["Unlock a [PlayerAchievement] account without minting a reward.", "", "Used `ONLY` for custom rewards mechanism to setup a [PlayerAchievement] account that", "can serve as a gated verification-method for claims.", "", "Since claim instructions like [claim_ft_reward] and [claim_nft_reward] for reward types", "defined by this program try to initialize this account and will fail if it already exists,", "calling this means opting out of using these functions."],
+"name": "unlockPlayerAchievement"
+}, {
+"accounts": [{
+"isMut": false,
+"isSigner": true,
+"name": "authority"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "achievement"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "newReward"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "rewardTokenMint"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "delegateFromTokenAccount"
+}, {
+"isMut": false,
+"isSigner": true,
+"name": "tokenAccountOwner"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "tokenProgram"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}],
+"args": [{
+"name": "input",
+"type": {
+"defined": "AddNewRewardInput"
+}
+}],
+"docs": ["Add a fungible token [Reward] to an [Achievement] to mint to users on unlock.", "", "Overwrites the current reward if one exists."],
+"name": "addFtReward"
+}, {
+"accounts": [{
+"isMut": false,
+"isSigner": true,
+"name": "authority"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "achievement"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "newReward"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}, {
+"isMut": false,
+"isOptional": true,
+"isSigner": false,
+"name": "rewardCollectionMint"
+}, {
+"isMut": false,
+"isOptional": true,
+"isSigner": true,
+"name": "collectionUpdateAuth"
+}, {
+"isMut": true,
+"isOptional": true,
+"isSigner": false,
+"name": "collectionMetadata"
+}, {
+"isMut": false,
+"isOptional": true,
+"isSigner": false,
+"name": "tokenMetadataProgram"
+}],
+"args": [{
+"name": "input",
+"type": {
+"defined": "AddNewRewardInput"
+}
+}],
+"docs": ["Add a nft [Reward] to an [Achievement] to mint to users on unlock.", "", "Overwrites the current reward if one exists."],
+"name": "addNftReward"
+}, {
+"accounts": [{
+"isMut": false,
+"isSigner": false,
+"name": "user"
+}, {
+"isMut": false,
+"isSigner": true,
+"name": "authority"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "achievement"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "reward"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "playerAccount"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "playerAchievement"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "sourceTokenAccount"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "userTokenAccount"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "tokenProgram"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}],
+"args": [],
+"docs": ["Mint an NFT reward for unlocking a [PlayerAchievement] account.", "", "This will attempt to create a [PlayerAchievement] account and fail if it already exists.", "", "Relevant `ONLY` if an FT reward is specified for that achievement."],
+"name": "claimFtReward"
+}, {
+"accounts": [{
+"isMut": false,
+"isSigner": false,
+"name": "user"
+}, {
+"isMut": false,
+"isSigner": true,
+"name": "authority"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "achievement"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "reward"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "playerAccount"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "playerAchievement"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "claim"
+}, {
+"isMut": true,
+"isSigner": true,
+"name": "newMint"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "newMetadata"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "newMasterEdition"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "mintTo"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "tokenMetadataProgram"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "associatedTokenProgram"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "systemProgram"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "tokenProgram"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "rent"
+}],
+"args": [],
+"docs": ["Mint an NFT reward for unlocking a [PlayerAchievement] account.", "", "This will attempt to create a [PlayerAchievement] account and fail if it already exists.", "", "Relevant `ONLY` if an NFT reward is specified for that achievement."],
+"name": "claimNftReward"
+}, {
+"accounts": [{
+"isMut": true,
+"isSigner": true,
+"name": "payer"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "game"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "achievement"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "reward"
+}, {
+"isMut": false,
+"isSigner": true,
+"name": "user"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "playerAccount"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "claim"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "playerAchievement"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "mint"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "metadataToVerify"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "collectionMint"
+}, {
+"isMut": true,
+"isSigner": false,
+"name": "collectionMetadata"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "collectionEdition"
+}, {
+"isMut": false,
+"isSigner": false,
+"name": "tokenMetadataProgram"
+}],
+"args": [],
+"docs": ["Verify NFT reward as belonging to a particular collection.", "", "Optional: Only relevant if an NFT reward is specified and the reward's", "`collection_mint` is Some(...)"],
+"name": "verifyNftReward"
+}],
+"name": "soar",
+"types": [{
+"docs": ["A type that represents game-specific information."],
+"name": "GameAttributes",
+"type": {
+"fields": [{
+"docs": ["The title of the game, max length = 30 bytes."],
+"name": "title",
+"type": "string"
+}, {
+"docs": ["The game description, max length = 200 bytes."],
+"name": "description",
+"type": "string"
+}, {
+"docs": ["The game's [genre](super::Genre), as a u8."],
+"name": "genre",
+"type": "u8"
+}, {
+"docs": ["The game's [type](super::GameType), as a u8."],
+"name": "gameType",
+"type": "u8"
+}, {
+"docs": ["An nft metadata account describing the game."],
+"name": "nftMeta",
+"type": "publicKey"
+}],
+"kind": "struct"
+}
+}, {
+"docs": ["A single score entry for a player."],
+"name": "ScoreEntry",
+"type": {
+"fields": [{
+"docs": ["The player's score."],
+"name": "score",
+"type": "u64"
+}, {
+"docs": ["When this entry was made."],
+"name": "timestamp",
+"type": "i64"
+}],
+"kind": "struct"
+}
+}, {
+"docs": ["Represents a [Player][super::Player] account involved in a merge", "and if that account's user/authority has granted approval."],
+"name": "MergeApproval",
+"type": {
+"fields": [{
+"docs": ["The player_account pubkey."],
+"name": "key",
+"type": "publicKey"
+}, {
+"docs": ["User's approval status."],
+"name": "approved",
+"type": "bool"
+}],
+"kind": "struct"
+}
+}, {
+"docs": ["An single entry to a [LeaderTopEntries]."],
+"name": "LeaderBoardScore",
+"type": {
+"fields": [{
+"docs": ["The player"],
+"name": "player",
+"type": "publicKey"
+}, {
+"docs": ["The user's [score][super::ScoreEntry]."],
+"name": "entry",
+"type": {
+"defined": "ScoreEntry"
+}
+}],
+"kind": "struct"
+}
+}, {
+"docs": ["Parameters needed when registering a leaderboard."],
+"name": "RegisterLeaderBoardInput",
+"type": {
+"fields": [{
+"docs": ["Leaderboard description."],
+"name": "description",
+"type": "string"
+}, {
+"docs": ["Nft metadata representing the leaderboard."],
+"name": "nftMeta",
+"type": "publicKey"
+}, {
+"docs": ["Specify the decimals score values are represented in. Defaults to `0` if [None]."],
+"name": "decimals",
+"type": {
+"option": "u8"
+}
+}, {
+"docs": ["Specifies minimum allowed score. Defaults to `u64::MIN` if [None]."],
+"name": "minScore",
+"type": {
+"option": "u64"
+}
+}, {
+"docs": ["Specifies maximum allowed score. Defaults to `u64::MAX` if [None]."],
+"name": "maxScore",
+"type": {
+"option": "u64"
+}
+}, {
+"docs": ["Number of top scores to store on-chain."],
+"name": "scoresToRetain",
+"type": "u8"
+}, {
+"docs": ["Order by which scores are stored. `true` for ascending, `false` for descending."],
+"name": "isAscending",
+"type": "bool"
+}, {
+"docs": ["Whether or not multiple scores are kept in the leaderboard for a single player."],
+"name": "allowMultipleScores",
+"type": "bool"
+}],
+"kind": "struct"
+}
+}, {
+"docs": ["Input to add a new reward for an achievement."],
+"name": "AddNewRewardInput",
+"type": {
+"fields": [{
+"docs": ["Number of rewards to be given out."],
+"name": "availableSpots",
+"type": "u64"
+}, {
+"docs": ["Specific reward kind."],
+"name": "kind",
+"type": {
+"defined": "RewardKindInput"
+}
+}],
+"kind": "struct"
+}
+}, {
+"name": "GameType",
+"type": {
+"kind": "enum",
+"variants": [{
+"name": "Mobile"
+}, {
+"name": "Desktop"
+}, {
+"name": "Web"
+}, {
+"name": "Unspecified"
+}]
+}
+}, {
+"name": "Genre",
+"type": {
+"kind": "enum",
+"variants": [{
+"name": "Rpg"
+}, {
+"name": "Mmo"
+}, {
+"name": "Action"
+}, {
+"name": "Adventure"
+}, {
+"name": "Puzzle"
+}, {
+"name": "Casual"
+}, {
+"name": "Unspecified"
+}]
+}
+}, {
+"docs": ["The kind of reward to be given out."],
+"name": "RewardKind",
+"type": {
+"kind": "enum",
+"variants": [{
+"fields": [{
+"docs": ["The mint of the token to be given out."],
+"name": "mint",
+"type": "publicKey"
+}, {
+"docs": ["The token account to withdraw from."],
+"name": "account",
+"type": "publicKey"
+}, {
+"docs": ["Reward amount per user."],
+"name": "amount",
+"type": "u64"
+}],
+"name": "FungibleToken"
+}, {
+"fields": [{
+"docs": ["URI of the NFT to be minted."],
+"name": "uri",
+"type": "string"
+}, {
+"docs": ["Name of the NFT to be minted."],
+"name": "name",
+"type": "string"
+}, {
+"docs": ["Symbol of the NFT to be minted."],
+"name": "symbol",
+"type": "string"
+}, {
+"docs": ["Total NFTs minted so far."],
+"name": "minted",
+"type": "u64"
+}, {
+"docs": ["Optional field for a collection mint used for", "verifying minted rewards."],
+"name": "collection",
+"type": {
+"option": "publicKey"
+}
+}],
+"name": "NonFungibleToken"
+}]
+}
+}, {
+"docs": ["Specific variant of [AddNewRewardInput]."],
+"name": "RewardKindInput",
+"type": {
+"kind": "enum",
+"variants": [{
+"fields": [{
+"docs": ["Amount to be delegated to this program's PDA", "so it can spend for reward claims."],
+"name": "deposit",
+"type": "u64"
+}, {
+"docs": ["Amount given to a single user."],
+"name": "amount",
+"type": "u64"
+}],
+"name": "Ft"
+}, {
+"fields": [{
+"docs": ["Uri of the minted nft."],
+"name": "uri",
+"type": "string"
+}, {
+"docs": ["Name of the minted nft."],
+"name": "name",
+"type": "string"
+}, {
+"docs": ["Symbol of the minted nft."],
+"name": "symbol",
+"type": "string"
+}],
+"name": "Nft"
+}]
+}
+}],
+"version": "0.1.1"
+}

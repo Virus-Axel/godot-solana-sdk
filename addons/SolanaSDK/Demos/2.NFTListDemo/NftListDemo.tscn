@@ -1,0 +1,176 @@
+[gd_scene load_steps=17 format=3 uid="uid://bjqrptjpy2k3b"]
+
+[ext_resource type="FontFile" uid="uid://inxwmykjoa5p" path="res://addons/SolanaSDK/Fonts/Circus Of Innocents.ttf" id="2_0upel"]
+[ext_resource type="FontFile" uid="uid://djc4usmv5o2u5" path="res://addons/SolanaSDK/Fonts/PUSSS___.TTF" id="3_2qwlk"]
+[ext_resource type="Texture2D" uid="uid://et1kvxp5bprg" path="res://addons/SolanaSDK/Textures/Buttons/b_inactive.PNG" id="9_0s3rn"]
+[ext_resource type="PackedScene" uid="uid://c6ync1x06vh2q" path="res://addons/SolanaSDK/Demos/2.NFTListDemo/DisplayableNFT.tscn" id="10_1bsb3"]
+[ext_resource type="Script" path="res://addons/SolanaSDK/Demos/2.NFTListDemo/nft_display_system.gd" id="10_m65q0"]
+[ext_resource type="Texture2D" uid="uid://dnqcw4msg2uow" path="res://addons/SolanaSDK/Textures/Buttons/b_orange_pressed.PNG" id="10_xwtt3"]
+[ext_resource type="Texture2D" uid="uid://5erj253phx4s" path="res://addons/SolanaSDK/Textures/Buttons/b_orange_hover.PNG" id="11_kb74x"]
+[ext_resource type="Script" path="res://addons/SolanaSDK/Scripts/Utility/scene_change_button.gd" id="12_aui6t"]
+[ext_resource type="Script" path="res://addons/SolanaSDK/Scripts/Utility/scene_loader.gd" id="12_n62t7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7pi32"]
+bg_color = Color(0.937255, 0.682353, 0.341176, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ahibr"]
+bg_color = Color(0.152941, 0.152941, 0.152941, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0xvq3"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_avkrb"]
+texture = ExtResource("9_0s3rn")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ryjmu"]
+texture = ExtResource("11_kb74x")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_f2tob"]
+texture = ExtResource("10_xwtt3")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_bmrj2"]
+texture = ExtResource("10_xwtt3")
+
+[node name="NFtListDemo" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_7pi32")
+
+[node name="PanelContainer" type="PanelContainer" parent="." node_paths=PackedStringArray("container", "no_nft_overlay")]
+visible = false
+layout_mode = 0
+offset_left = 291.0
+offset_top = 141.0
+offset_right = 899.0
+offset_bottom = 594.0
+script = ExtResource("10_m65q0")
+displayable_nft_scn = ExtResource("10_1bsb3")
+container = NodePath("ScrollContainer/GridContainer")
+no_nft_overlay = NodePath("NoNFTsOverlay")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="PanelContainer/ScrollContainer"]
+layout_mode = 2
+columns = 3
+
+[node name="NoNFTsOverlay" type="CenterContainer" parent="PanelContainer"]
+visible = false
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="PanelContainer/NoNFTsOverlay"]
+custom_minimum_size = Vector2(607, 210)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ahibr")
+
+[node name="Label" type="Label" parent="PanelContainer/NoNFTsOverlay"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_0upel")
+theme_override_font_sizes/font_size = 31
+text = "NO NFTS FOUND IN WALLET..."
+
+[node name="ReturnButton" type="Button" parent="." node_paths=PackedStringArray("scene_loader")]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -183.0
+offset_top = 14.0
+offset_right = -14.0
+offset_bottom = 91.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("3_2qwlk")
+theme_override_font_sizes/font_size = 35
+theme_override_styles/focus = SubResource("StyleBoxEmpty_0xvq3")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_avkrb")
+theme_override_styles/hover = SubResource("StyleBoxTexture_ryjmu")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_f2tob")
+theme_override_styles/normal = SubResource("StyleBoxTexture_bmrj2")
+text = "RETURN"
+script = ExtResource("12_aui6t")
+path_to_scene = "res://addons/SolanaSDK/Demos/_DemoSelectScene/DemoSelectScene.tscn"
+scene_loader = NodePath("../SceneLoader")
+
+[node name="SceneLoader" type="Node" parent="."]
+script = ExtResource("12_n62t7")
+
+[node name="NFTContent" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="OwnedNFTslabel" type="Label" parent="NFTContent"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_0upel")
+theme_override_font_sizes/font_size = 50
+text = "OWNED NFTS:"
+horizontal_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="NFTContent"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 60
+
+[node name="PanelContainer2" type="PanelContainer" parent="NFTContent/MarginContainer" node_paths=PackedStringArray("container", "no_nft_overlay")]
+custom_minimum_size = Vector2(0, 400)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("10_m65q0")
+displayable_nft_scn = ExtResource("10_1bsb3")
+container = NodePath("MarginContainer/ScrollContainer/GridContainer")
+no_nft_overlay = NodePath("NoNFTsOverlay")
+
+[node name="MarginContainer" type="MarginContainer" parent="NFTContent/MarginContainer/PanelContainer2"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="ScrollContainer" type="ScrollContainer" parent="NFTContent/MarginContainer/PanelContainer2/MarginContainer"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="NFTContent/MarginContainer/PanelContainer2/MarginContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 5
+
+[node name="NoNFTsOverlay" type="CenterContainer" parent="NFTContent/MarginContainer/PanelContainer2"]
+visible = false
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="NFTContent/MarginContainer/PanelContainer2/NoNFTsOverlay"]
+custom_minimum_size = Vector2(607, 210)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ahibr")
+
+[node name="Label" type="Label" parent="NFTContent/MarginContainer/PanelContainer2/NoNFTsOverlay"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_0upel")
+theme_override_font_sizes/font_size = 31
+text = "NO NFTS FOUND IN WALLET..."
+
+[connection signal="pressed" from="ReturnButton" to="ReturnButton" method="_on_pressed"]

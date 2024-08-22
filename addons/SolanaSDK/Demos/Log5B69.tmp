@@ -1,0 +1,116 @@
+[gd_scene load_steps=13 format=3 uid="uid://bf3edinsgleli"]
+
+[ext_resource type="Script" path="res://Scripts/login_manager.gd" id="1_0vojp"]
+[ext_resource type="FontFile" uid="uid://inxwmykjoa5p" path="res://Fonts/Circus Of Innocents.ttf" id="3_e8qnp"]
+[ext_resource type="FontFile" uid="uid://djc4usmv5o2u5" path="res://Fonts/PUSSS___.TTF" id="4_cunvt"]
+[ext_resource type="Texture2D" uid="uid://dnqcw4msg2uow" path="res://Textures/Buttons/b_orange_pressed.PNG" id="5_o1wf6"]
+[ext_resource type="Texture2D" uid="uid://5erj253phx4s" path="res://Textures/Buttons/b_orange_hover.PNG" id="6_5mt3p"]
+[ext_resource type="Texture2D" uid="uid://et1kvxp5bprg" path="res://Textures/Buttons/b_inactive.PNG" id="7_mpo2d"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bume7"]
+bg_color = Color(0.937255, 0.682353, 0.341176, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_y3x8p"]
+texture = ExtResource("5_o1wf6")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6yw5e"]
+texture = ExtResource("6_5mt3p")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5y8r4"]
+texture = ExtResource("5_o1wf6")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tt47o"]
+texture = ExtResource("7_mpo2d")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_muk2j"]
+
+[node name="LoginScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_0vojp")
+path_to_scene = "res://Demos/DemoSelectScene.tscn"
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 1152.0
+offset_bottom = 648.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_bume7")
+
+[node name="IntroText" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -395.0
+offset_top = 111.0
+offset_right = 341.0
+offset_bottom = 258.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("3_e8qnp")
+theme_override_font_sizes/font_size = 120
+text = "Godot Solana SDK
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="About" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -50.0
+offset_top = 254.0
+offset_right = 393.0
+offset_bottom = 329.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("3_e8qnp")
+theme_override_font_sizes/font_size = 60
+text = "Demo Package
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Tag" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -398.0
+offset_top = 256.0
+offset_right = -203.0
+offset_bottom = 295.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("3_e8qnp")
+theme_override_font_sizes/font_size = 25
+text = "By Zen Republic"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LoginButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = 81.0
+offset_right = 146.0
+offset_bottom = 158.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_cunvt")
+theme_override_font_sizes/font_size = 35
+theme_override_styles/normal = SubResource("StyleBoxTexture_y3x8p")
+theme_override_styles/hover = SubResource("StyleBoxTexture_6yw5e")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_5y8r4")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_tt47o")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_muk2j")
+text = "CONNECT WALLET"
+
+[connection signal="pressed" from="LoginButton" to="." method="_on_login_button_pressed"]

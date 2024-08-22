@@ -1,0 +1,152 @@
+[gd_scene load_steps=9 format=3 uid="uid://b2dmsrk6j12y4"]
+
+[ext_resource type="Script" path="res://Scripts/solana_service.gd" id="1_hwc3u"]
+[ext_resource type="FontFile" uid="uid://inxwmykjoa5p" path="res://Fonts/Circus Of Innocents.ttf" id="2_pwb74"]
+[ext_resource type="Script" path="res://Scripts/transaction_processor.gd" id="2_v3adq"]
+[ext_resource type="Script" path="res://Scripts/Utility/screen_switcher.gd" id="4_xmhdv"]
+[ext_resource type="Script" path="res://Scripts/wallet_service.gd" id="5_f327g"]
+[ext_resource type="Script" path="res://Scripts/nft_manager.gd" id="6_b1bp1"]
+[ext_resource type="Script" path="res://Scripts/file_loader.gd" id="7_4sv1b"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qjeht"]
+bg_color = Color(0.34902, 0.360784, 0.482353, 1)
+
+[node name="SolanaService" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_hwc3u")
+mainnet_rpc = "https://api.mainnet-beta.solana.com"
+devnet_rpc = "https://white-cosmopolitan-season.solana-devnet.quiknode.pro/4f032229d21cb155cf0fd79df599ee2a79720372/"
+
+[node name="OverlayLayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="TransactionProcessor" type="Node" parent="OverlayLayer" node_paths=PackedStringArray("loading_panel", "fail_panel", "success_panel")]
+script = ExtResource("2_v3adq")
+loading_panel = NodePath("LoadingPanel")
+fail_panel = NodePath("FailPanel")
+success_panel = NodePath("SuccessPanel")
+time_to_close = 2.0
+
+[node name="LoadingPanel" type="Panel" parent="OverlayLayer/TransactionProcessor"]
+visible = false
+offset_right = 1152.0
+offset_bottom = 648.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_qjeht")
+
+[node name="SigningLabel" type="Label" parent="OverlayLayer/TransactionProcessor/LoadingPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -343.0
+offset_top = -123.0
+offset_right = 343.0
+offset_bottom = 123.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("2_pwb74")
+theme_override_font_sizes/font_size = 91
+text = "Signing Transaction..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FailPanel" type="Panel" parent="OverlayLayer/TransactionProcessor"]
+visible = false
+offset_right = 1152.0
+offset_bottom = 648.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_qjeht")
+
+[node name="SigningLabel" type="Label" parent="OverlayLayer/TransactionProcessor/FailPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -343.0
+offset_top = -123.0
+offset_right = 343.0
+offset_bottom = 123.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("2_pwb74")
+theme_override_font_sizes/font_size = 91
+text = "Transaction Failed..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SuccessPanel" type="Panel" parent="OverlayLayer/TransactionProcessor"]
+visible = false
+offset_right = 1152.0
+offset_bottom = 648.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_qjeht")
+
+[node name="SigningLabel" type="Label" parent="OverlayLayer/TransactionProcessor/SuccessPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -343.0
+offset_top = -123.0
+offset_right = 343.0
+offset_bottom = 123.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("2_pwb74")
+theme_override_font_sizes/font_size = 91
+text = "Transaction success!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScreenSwitcher" type="Node" parent="OverlayLayer/TransactionProcessor" node_paths=PackedStringArray("starting_panel")]
+script = ExtResource("4_xmhdv")
+starting_panel = NodePath("../LoadingPanel")
+
+[node name="WalletService" type="Node" parent="OverlayLayer"]
+script = ExtResource("5_f327g")
+use_generated = true
+custom_private_key = "3uLB8iWKiU27UEGNp8J2bJAcp5YDajpKxJw1UJHM6Hfv2j9o8S6s6TyDYYg5oXPKvwjQc3KGeFf8KMinFk78H6EG"
+
+[node name="PhantomController" type="PhantomController" parent="OverlayLayer/WalletService"]
+
+[node name="LoginPanel" type="Panel" parent="OverlayLayer/WalletService"]
+visible = false
+offset_right = 1152.0
+offset_bottom = 648.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_qjeht")
+
+[node name="SigningLabel" type="Label" parent="OverlayLayer/WalletService/LoginPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -389.0
+offset_top = -123.0
+offset_right = 389.0
+offset_bottom = 123.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("2_pwb74")
+theme_override_font_sizes/font_size = 91
+text = "Logging in, please wait..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NFTManager" type="Node" parent="."]
+script = ExtResource("6_b1bp1")
+load_on_start = null
+load_textures = null
+
+[node name="FileLoader" type="HTTPRequest" parent="."]
+script = ExtResource("7_4sv1b")

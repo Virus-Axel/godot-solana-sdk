@@ -1,0 +1,93 @@
+[gd_scene load_steps=5 format=3 uid="uid://blmw46he11fxs"]
+
+[ext_resource type="Script" path="res://addons/SolanaSDK/Scripts/TransactionProcessor/transaction_overlay_ui.gd" id="1_nrydi"]
+[ext_resource type="Script" path="res://addons/SolanaSDK/Scripts/Utility/screen_switcher.gd" id="2_l6gvy"]
+[ext_resource type="FontFile" uid="uid://inxwmykjoa5p" path="res://addons/SolanaSDK/Fonts/Circus Of Innocents.ttf" id="3_6mqme"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qjeht"]
+bg_color = Color(0.34902, 0.360784, 0.482353, 1)
+
+[node name="TransactionOverlayUI" type="CanvasLayer"]
+layer = 99
+script = ExtResource("1_nrydi")
+time_to_close = 2.0
+
+[node name="ScreenSwitcher" type="Node" parent="." node_paths=PackedStringArray("starting_panel", "screens")]
+script = ExtResource("2_l6gvy")
+starting_panel = NodePath("../LoadingPanel")
+screens = [NodePath("../LoadingPanel"), NodePath("../FailPanel"), NodePath("../SuccessPanel")]
+
+[node name="LoadingPanel" type="Panel" parent="."]
+visible = false
+offset_right = 1152.0
+offset_bottom = 648.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_qjeht")
+
+[node name="SigningLabel" type="Label" parent="LoadingPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -343.0
+offset_top = -123.0
+offset_right = 343.0
+offset_bottom = 123.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("3_6mqme")
+theme_override_font_sizes/font_size = 91
+text = "Signing Transaction..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FailPanel" type="Panel" parent="."]
+visible = false
+offset_right = 1152.0
+offset_bottom = 648.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_qjeht")
+
+[node name="SigningLabel" type="Label" parent="FailPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -343.0
+offset_top = -123.0
+offset_right = 343.0
+offset_bottom = 123.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("3_6mqme")
+theme_override_font_sizes/font_size = 91
+text = "Transaction Failed..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SuccessPanel" type="Panel" parent="."]
+visible = false
+offset_right = 1152.0
+offset_bottom = 648.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_qjeht")
+
+[node name="SigningLabel" type="Label" parent="SuccessPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -343.0
+offset_top = -123.0
+offset_right = 343.0
+offset_bottom = 123.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("3_6mqme")
+theme_override_font_sizes/font_size = 91
+text = "Transaction success!"
+horizontal_alignment = 1
+vertical_alignment = 1
