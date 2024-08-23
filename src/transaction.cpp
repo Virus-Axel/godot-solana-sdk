@@ -487,6 +487,7 @@ PackedByteArray Transaction::serialize_signers(){
 }
 
 Variant Transaction::sign_and_send(){
+    ERR_FAIL_COND_V_EDMSG(Object::cast_to<Message>(message)->get_signers().size() != signatures.size(), Error::ERR_UNCONFIGURED ,"Transaction does not have enough signers.");
     connect("fully_signed", Callable(this, "send_and_disconnect"));
 
     sign();
@@ -525,6 +526,9 @@ void Transaction::blockhash_callback(Dictionary params){
 
 void Transaction::send(){
     ERR_FAIL_COND_EDMSG(!is_inside_tree(), "Transaction node must be added to scene tree.");
+
+    ERR_FAIL_COND_EDMSG(Object::cast_to<Message>(message)->get_signers().size() != signatures.size(), "Transaction does not have enough signers.");
+
     PackedByteArray serialized_bytes = serialize();
 
     Callable pending_blockhash_callback(this, "send");
