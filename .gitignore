@@ -27,8 +27,8 @@ test-ledger/
 .godot/
 
 # Godot-specific ignores
-.tmp
-.import/
+*.tmp
+*.import/
 export.cfg
 export_presets.cfg
 
