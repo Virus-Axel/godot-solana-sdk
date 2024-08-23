@@ -1,0 +1,11 @@
+mainnet:
+	
+cmid: CiAnxgxAtM1pTdNoeZ8nqeTYBM5mPEdQHdwhXfqeS3Th
+guardid: 9JinvCj9dAESDfErBHLuybEBxy3gpZgEdw72sBS6VJf6
+
+
+devnet:
+	
+cmid: EPDMTLPBkidL1fXamZUXG9Yp4ZSVsg4QpWdPsKuVUx32
+guardid: HSrVZzrTDa1HGeAFgWMehR37he4iPBVEriAozUhEA6xh
+

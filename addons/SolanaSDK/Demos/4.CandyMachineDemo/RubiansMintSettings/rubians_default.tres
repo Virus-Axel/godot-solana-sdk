@@ -1,0 +1,28 @@
+[gd_resource type="CandyGuardAccessList" load_steps=5 format=3 uid="uid://bcl3w71l4bt5v"]
+
+[sub_resource type="Pubkey" id="Pubkey_uq1hp"]
+type = "CUSTOM"
+value = "rbyDXhzsM2xXtV3t9aayYR3md9rY6gyBxbQBeLThtSC"
+bytes = PackedByteArray(12, 180, 255, 222, 188, 141, 204, 151, 145, 150, 177, 82, 38, 50, 225, 82, 227, 44, 35, 231, 190, 105, 164, 74, 5, 182, 151, 79, 31, 147, 143, 225)
+
+[sub_resource type="CandyGuardAccessList" id="CandyGuardAccessList_4cnea"]
+top_level = false
+label = "open"
+enable_sol_payment = true
+sol_payment_lamports = 100000000
+sol_payment_destination = SubResource("Pubkey_uq1hp")
+
+[sub_resource type="Pubkey" id="Pubkey_44u12"]
+type = "CUSTOM"
+value = "AgGbJJeE2Zm6mPs41YJAMpt27yZiq9EmeQPfmwnMohmn"
+bytes = PackedByteArray(143, 200, 118, 140, 233, 249, 189, 134, 21, 76, 107, 137, 247, 152, 141, 67, 201, 225, 96, 120, 36, 106, 105, 108, 54, 54, 22, 180, 158, 132, 34, 213)
+
+[sub_resource type="CandyGuardAccessList" id="CandyGuardAccessList_pey3n"]
+top_level = false
+label = "token"
+enable_token_burn = true
+token_burn_amount = 1
+token_burn_mint = SubResource("Pubkey_44u12")
+
+[resource]
+groups = Array[CandyGuardAccessList]([SubResource("CandyGuardAccessList_4cnea"), SubResource("CandyGuardAccessList_pey3n")])

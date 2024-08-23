@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="NFTCollection" load_steps=2 format=3 uid="uid://pcpbspu74sfr"]
+
+[ext_resource type="Script" path="res://addons/SolanaSDK/Scripts/NFTCollection/nft_collection.gd" id="1_rli0d"]
+
+[resource]
+script = ExtResource("1_rli0d")
+mainnet_collection_id = "9pg23GZKceX1pfVCwG1cfWXG2qJknbhejWGqkuH8hYY8"
+devnet_collection_id = "EE1XTVRxVX5UtTLKRg7Y5bFQEKm2wm2nao9SGF27fypH"
+first_verified_creator_mode = false
+collection_name = "Rubians"

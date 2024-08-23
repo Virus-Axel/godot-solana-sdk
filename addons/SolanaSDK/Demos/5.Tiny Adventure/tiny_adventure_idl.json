@@ -1,0 +1,146 @@
+{
+  "version": "0.1.0",
+  "name": "tiny_adventure",
+  "instructions": [
+	{
+	  "name": "initialize",
+	  "accounts": [
+		{
+		  "name": "gameData",
+		  "isMut": true,
+		  "isSigner": false
+		},
+		{
+		  "name": "gameVault",
+		  "isMut": true,
+		  "isSigner": false
+		},
+		{
+		  "name": "signer",
+		  "isMut": true,
+		  "isSigner": true
+		},
+		{
+		  "name": "systemProgram",
+		  "isMut": false,
+		  "isSigner": false
+		}
+	  ],
+	  "args": [
+		{
+		  "name": "startPos",
+		  "type": "u8"
+		}
+	  ]
+	},
+	{
+	  "name": "restartLevel",
+	  "accounts": [
+		{
+		  "name": "gameData",
+		  "isMut": true,
+		  "isSigner": false
+		},
+		{
+		  "name": "gameVault",
+		  "isMut": true,
+		  "isSigner": false
+		},
+		{
+		  "name": "signer",
+		  "isMut": true,
+		  "isSigner": true
+		},
+		{
+		  "name": "systemProgram",
+		  "isMut": false,
+		  "isSigner": false
+		}
+	  ],
+	  "args": [
+		{
+		  "name": "chestPrice",
+		  "type": "u64"
+		}
+	  ]
+	},
+	{
+	  "name": "moveRight",
+	  "accounts": [
+		{
+		  "name": "gameData",
+		  "isMut": true,
+		  "isSigner": false
+		},
+		{
+		  "name": "gameVault",
+		  "isMut": true,
+		  "isSigner": false
+		},
+		{
+		  "name": "signer",
+		  "isMut": true,
+		  "isSigner": true
+		},
+		{
+		  "name": "systemProgram",
+		  "isMut": false,
+		  "isSigner": false
+		}
+	  ],
+	  "args": []
+	},
+	{
+	  "name": "moveLeft",
+	  "accounts": [
+		{
+		  "name": "gameData",
+		  "isMut": true,
+		  "isSigner": false
+		},
+		{
+		  "name": "gameVault",
+		  "isMut": true,
+		  "isSigner": false
+		},
+		{
+		  "name": "signer",
+		  "isMut": true,
+		  "isSigner": true
+		},
+		{
+		  "name": "systemProgram",
+		  "isMut": false,
+		  "isSigner": false
+		}
+	  ],
+	  "args": []
+	}
+  ],
+  "accounts": [
+	{
+	  "name": "GameData",
+	  "type": {
+		"kind": "struct",
+		"fields": [
+		  {
+			"name": "characterPos",
+			"type": "u8"
+		  }
+		]
+	  }
+	},
+	{
+	  "name": "GameVault",
+	  "type": {
+		"kind": "struct",
+		"fields": [
+		  {
+			"name": "chestPrize",
+			"type": "u64"
+		  }
+		]
+	  }
+	}
+  ]
+}

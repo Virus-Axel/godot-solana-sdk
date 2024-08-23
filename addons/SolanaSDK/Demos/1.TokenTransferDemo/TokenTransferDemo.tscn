@@ -1,0 +1,285 @@
+[gd_scene load_steps=26 format=3 uid="uid://dw5exsao534ov"]
+
+[ext_resource type="Script" path="res://addons/SolanaSDK/Demos/1.TokenTransferDemo/account_manager.gd" id="1_ossju"]
+[ext_resource type="Script" path="res://addons/SolanaSDK/Scripts/Utility/token_visualizer.gd" id="3_no3k2"]
+[ext_resource type="Texture2D" uid="uid://c7s56sayh028u" path="res://addons/SolanaSDK/Textures/SolanaLogo.png" id="4_ds0qu"]
+[ext_resource type="Script" path="res://addons/SolanaSDK/Demos/1.TokenTransferDemo/token_transfer_manager.gd" id="6_d4boe"]
+[ext_resource type="Script" path="res://addons/SolanaSDK/Scripts/Utility/input_field_system.gd" id="7_h3u85"]
+[ext_resource type="Script" path="res://addons/SolanaSDK/Scripts/Utility/input_field.gd" id="8_1ogk1"]
+[ext_resource type="Texture2D" uid="uid://et1kvxp5bprg" path="res://addons/SolanaSDK/Textures/Buttons/b_inactive.PNG" id="9_c2d0u"]
+[ext_resource type="Texture2D" uid="uid://d4kauar2qc15y" path="res://addons/SolanaSDK/Textures/Buttons/b_green_hover.PNG" id="10_ahpdt"]
+[ext_resource type="Texture2D" uid="uid://cye2pbirpht4u" path="res://addons/SolanaSDK/Textures/Buttons/b_green_pressed.PNG" id="11_kculu"]
+[ext_resource type="Texture2D" uid="uid://5erj253phx4s" path="res://addons/SolanaSDK/Textures/Buttons/b_orange_hover.PNG" id="12_tjkal"]
+[ext_resource type="Texture2D" uid="uid://dnqcw4msg2uow" path="res://addons/SolanaSDK/Textures/Buttons/b_orange_pressed.PNG" id="13_uo35c"]
+[ext_resource type="Script" path="res://addons/SolanaSDK/Scripts/Utility/scene_change_button.gd" id="14_5nxww"]
+[ext_resource type="PackedScene" uid="uid://blmw46he11fxs" path="res://addons/SolanaSDK/Scripts/TransactionManager/TransactionOverlayUI.tscn" id="15_6yqjf"]
+[ext_resource type="Script" path="res://addons/SolanaSDK/Scripts/Utility/scene_loader.gd" id="16_gwjyc"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7pi32"]
+bg_color = Color(0.937255, 0.682353, 0.341176, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_b04j3"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_m8hje"]
+texture = ExtResource("9_c2d0u")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_efb31"]
+texture = ExtResource("10_ahpdt")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_bio0t"]
+texture = ExtResource("11_kculu")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hadpj"]
+texture = ExtResource("11_kculu")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0xvq3"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_avkrb"]
+texture = ExtResource("9_c2d0u")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ryjmu"]
+texture = ExtResource("12_tjkal")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_f2tob"]
+texture = ExtResource("13_uo35c")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_bmrj2"]
+texture = ExtResource("13_uo35c")
+
+[node name="TokenTransferDemo" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_7pi32")
+
+[node name="AccountContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+offset_right = 512.0
+offset_bottom = 297.0
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AccountContainer"]
+layout_mode = 2
+
+[node name="AccountPanel" type="VBoxContainer" parent="AccountContainer/VBoxContainer"]
+layout_mode = 2
+script = ExtResource("1_ossju")
+
+[node name="AccountLabel" type="Label" parent="AccountContainer/VBoxContainer/AccountPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 50
+text = "Welcome back,"
+
+[node name="AccountAddress" type="Label" parent="AccountContainer/VBoxContainer/AccountPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "84pL2GAuv8XGVPyZre2xcgUNSGz9csYHBt5AW4PUcEe9"
+
+[node name="BalanceLabel" type="Label" parent="AccountContainer/VBoxContainer/AccountPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 35
+text = "SOL Balance"
+
+[node name="SolBalance" type="HBoxContainer" parent="AccountContainer/VBoxContainer/AccountPanel" node_paths=PackedStringArray("amount_label", "token_visual")]
+layout_mode = 2
+script = ExtResource("3_no3k2")
+amount_label = NodePath("Balance")
+token_visual = NodePath("Visual")
+auto_update_balance = true
+missing_icon_path = "res://addons/SolanaSDK/Textures/missingicon.png"
+
+[node name="Visual" type="TextureRect" parent="AccountContainer/VBoxContainer/AccountPanel/SolBalance"]
+layout_mode = 2
+texture = ExtResource("4_ds0qu")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Spacer" type="MarginContainer" parent="AccountContainer/VBoxContainer/AccountPanel/SolBalance"]
+layout_mode = 2
+theme_override_constants/margin_right = 20
+
+[node name="Balance" type="Label" parent="AccountContainer/VBoxContainer/AccountPanel/SolBalance"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "..."
+vertical_alignment = 1
+
+[node name="TransactionContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -248.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 100
+
+[node name="TransactionBoxes" type="HBoxContainer" parent="TransactionContainer"]
+layout_mode = 2
+theme_override_constants/separation = 60
+alignment = 1
+
+[node name="SolTransactionPanel" type="VBoxContainer" parent="TransactionContainer/TransactionBoxes" node_paths=PackedStringArray("input_field_system")]
+layout_mode = 2
+alignment = 1
+script = ExtResource("6_d4boe")
+input_field_system = NodePath("InputFieldSystem")
+
+[node name="InputFieldSystem" type="Node" parent="TransactionContainer/TransactionBoxes/SolTransactionPanel" node_paths=PackedStringArray("input_fields", "confirm_button")]
+script = ExtResource("7_h3u85")
+input_fields = [NodePath("../ReceiverInputField"), NodePath("../AmountInputField")]
+confirm_button = NodePath("../MarginContainer/SendButton")
+
+[node name="IntroText" type="Label" parent="TransactionContainer/TransactionBoxes/SolTransactionPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "Transfer SOL"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Spacer" type="MarginContainer" parent="TransactionContainer/TransactionBoxes/SolTransactionPanel"]
+layout_mode = 2
+theme_override_constants/margin_bottom = 30
+
+[node name="ReceiverInputField" type="LineEdit" parent="TransactionContainer/TransactionBoxes/SolTransactionPanel"]
+layout_mode = 2
+placeholder_text = "Receiver SOL Address..."
+alignment = 1
+script = ExtResource("8_1ogk1")
+min_length = 32
+
+[node name="AmountInputField" type="LineEdit" parent="TransactionContainer/TransactionBoxes/SolTransactionPanel"]
+layout_mode = 2
+placeholder_text = "Enter amount to send..."
+alignment = 1
+script = ExtResource("8_1ogk1")
+input_type = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="TransactionContainer/TransactionBoxes/SolTransactionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 150
+theme_override_constants/margin_right = 150
+
+[node name="SendButton" type="Button" parent="TransactionContainer/TransactionBoxes/SolTransactionPanel/MarginContainer"]
+custom_minimum_size = Vector2(200, 80)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 35
+theme_override_styles/focus = SubResource("StyleBoxEmpty_b04j3")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_m8hje")
+theme_override_styles/hover = SubResource("StyleBoxTexture_efb31")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_bio0t")
+theme_override_styles/normal = SubResource("StyleBoxTexture_hadpj")
+text = "SEND"
+
+[node name="SplTransactionPanel2" type="VBoxContainer" parent="TransactionContainer/TransactionBoxes" node_paths=PackedStringArray("input_field_system")]
+layout_mode = 2
+script = ExtResource("6_d4boe")
+input_field_system = NodePath("InputFieldSystem")
+token_type = 1
+
+[node name="InputFieldSystem" type="Node" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel2" node_paths=PackedStringArray("input_fields", "confirm_button")]
+script = ExtResource("7_h3u85")
+input_fields = [NodePath("../TokenAddressInputField"), NodePath("../ReceiverInputField"), NodePath("../AmountInputField")]
+confirm_button = NodePath("../MarginContainer/SendButton")
+
+[node name="IntroText" type="Label" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel2"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "Transfer Custom Token"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Spacer" type="MarginContainer" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel2"]
+layout_mode = 2
+theme_override_constants/margin_bottom = 30
+
+[node name="TokenAddressInputField" type="LineEdit" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel2"]
+layout_mode = 2
+text = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263"
+placeholder_text = "Enter Token Address..."
+alignment = 1
+script = ExtResource("8_1ogk1")
+
+[node name="ReceiverInputField" type="LineEdit" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel2"]
+layout_mode = 2
+placeholder_text = "Receiver SOL Address..."
+alignment = 1
+script = ExtResource("8_1ogk1")
+min_length = 32
+
+[node name="AmountInputField" type="LineEdit" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel2"]
+layout_mode = 2
+placeholder_text = "Enter amount to send..."
+alignment = 1
+script = ExtResource("8_1ogk1")
+input_type = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel2"]
+layout_mode = 2
+theme_override_constants/margin_left = 150
+theme_override_constants/margin_right = 150
+
+[node name="SendButton" type="Button" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel2/MarginContainer"]
+custom_minimum_size = Vector2(200, 80)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 35
+theme_override_styles/focus = SubResource("StyleBoxEmpty_b04j3")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_m8hje")
+theme_override_styles/hover = SubResource("StyleBoxTexture_efb31")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_bio0t")
+theme_override_styles/normal = SubResource("StyleBoxTexture_hadpj")
+text = "SEND"
+
+[node name="ReturnButton" type="Button" parent="." node_paths=PackedStringArray("scene_loader")]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -198.0
+offset_top = 18.0
+offset_right = -29.0
+offset_bottom = 95.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/focus = SubResource("StyleBoxEmpty_0xvq3")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_avkrb")
+theme_override_styles/hover = SubResource("StyleBoxTexture_ryjmu")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_f2tob")
+theme_override_styles/normal = SubResource("StyleBoxTexture_bmrj2")
+text = "RETURN"
+script = ExtResource("14_5nxww")
+path_to_scene = "res://addons/SolanaSDK/Demos/_DemoSelectScene/DemoSelectScene.tscn"
+scene_loader = NodePath("../SceneLoader")
+
+[node name="TransactionOverlayUI" parent="." instance=ExtResource("15_6yqjf")]
+
+[node name="SceneLoader" type="Node" parent="."]
+script = ExtResource("16_gwjyc")
+
+[connection signal="text_changed" from="TransactionContainer/TransactionBoxes/SolTransactionPanel/ReceiverInputField" to="TransactionContainer/TransactionBoxes/SolTransactionPanel/ReceiverInputField" method="_on_text_changed"]
+[connection signal="text_changed" from="TransactionContainer/TransactionBoxes/SolTransactionPanel/AmountInputField" to="TransactionContainer/TransactionBoxes/SolTransactionPanel/AmountInputField" method="_on_text_changed"]
+[connection signal="text_changed" from="TransactionContainer/TransactionBoxes/SplTransactionPanel2/TokenAddressInputField" to="TransactionContainer/TransactionBoxes/SplTransactionPanel2/TokenAddressInputField" method="_on_text_changed"]
+[connection signal="text_changed" from="TransactionContainer/TransactionBoxes/SplTransactionPanel2/ReceiverInputField" to="TransactionContainer/TransactionBoxes/SplTransactionPanel2/ReceiverInputField" method="_on_text_changed"]
+[connection signal="text_changed" from="TransactionContainer/TransactionBoxes/SplTransactionPanel2/AmountInputField" to="TransactionContainer/TransactionBoxes/SplTransactionPanel2/AmountInputField" method="_on_text_changed"]
+[connection signal="pressed" from="ReturnButton" to="ReturnButton" method="_on_pressed"]
