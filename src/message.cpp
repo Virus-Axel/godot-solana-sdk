@@ -102,6 +102,8 @@ void Message::merge_account_meta(const AccountMeta &account_meta){
 }
 
 void Message::merge_signer(const Variant& signer){
+    ERR_FAIL_COND_EDMSG(Pubkey::is_pubkey(signer), "Pubkey is provided as signing parameter. (Use Keypair or WalletAdapter.)");
+
     for(unsigned int i = 0; i < signers.size(); i++){
         if(Pubkey::bytes_from_variant(signers[i]) == Pubkey::bytes_from_variant(signer)){
             return;
