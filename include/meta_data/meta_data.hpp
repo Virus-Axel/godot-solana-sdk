@@ -8,8 +8,6 @@
 
 namespace godot{
 
-MAKE_TYPED_ARRAY(MetaDataCreator, Variant::OBJECT)
-
 class MetaData: public Resource{
     GDCLASS(MetaData, Resource)
 private:
@@ -60,10 +58,10 @@ public:
 
     void set_mint(const Variant& mint);
     Variant get_mint();
-    void set_update_authority(const Variant& update_uthority);
+    void set_update_authority(const Variant& update_authority);
     Variant get_update_authority();
 
-    void set_edition_nonce(const Variant& edition_nounce);
+    void set_edition_nonce(const Variant& edition_nonce);
     Variant get_edition_nonce();
     void set_token_standard(const Variant& token_standard);
     Variant get_token_standard();

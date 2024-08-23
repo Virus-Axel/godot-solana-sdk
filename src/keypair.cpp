@@ -142,8 +142,8 @@ void Keypair::save_to_file(const String &filename){
 
 void Keypair::random(){
 
-    RandomNumberGenerator rand;
-    rand.randomize();
+    RandomNumberGenerator *rand = memnew(RandomNumberGenerator);
+    rand->randomize();
 
     private_bytes.resize(PRIVATE_KEY_LENGTH);
     public_bytes.resize(PUBLIC_KEY_LENGTH);
@@ -151,9 +151,10 @@ void Keypair::random(){
     unsigned char random_seed[SEED_LENGTH];
     seed.resize(SEED_LENGTH);
     for(unsigned int i = 0; i < SEED_LENGTH; i++){
-        random_seed[i] = rand.randi();
+        random_seed[i] = rand->randi();
         seed[i] = random_seed[i];
     }
+    memfree(rand);
 
     ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), random_seed);
 

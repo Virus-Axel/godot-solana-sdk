@@ -104,7 +104,6 @@ func transaction_with_confirmation_1():
 	add_child(tx)
 	
 	tx.set_payer(payer)
-	
 	var ix: Instruction = SystemProgram.transfer(payer, receiver, LAMPORTS_PER_SOL / 10)
 	tx.add_instruction(ix)
 	
@@ -113,8 +112,8 @@ func transaction_with_confirmation_1():
 	tx.connect("processed", Callable(self, "transaction_processed"))
 	tx.connect("confirmed", Callable(self, "transaction_confirmed"))
 	tx.connect("finalized", Callable(self, "transaction_finalized"))
+
 	tx.sign_and_send()
-	
 	var response = await tx.transaction_response_received
 	
 	assert(response.has("result"))

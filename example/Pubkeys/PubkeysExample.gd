@@ -69,6 +69,7 @@ func pubkey_demo_associated_token():
 	var token_owner: Keypair = Keypair.new_random()
 	var mint = Pubkey.new_from_string("2WLPJWkNGVrM3GVJ1KeeFFBqEDStKCaA34sPPvQFz4VB");
 	var pk: Pubkey = Pubkey.new_associated_token_address(token_owner, mint)
+	
 	assert(!pk.to_string().is_empty())
 	set_item_text(13, pk.to_string())
 	PASS(6)

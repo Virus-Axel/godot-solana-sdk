@@ -69,14 +69,14 @@ Variant TokenProgram2022::initialize_metadata_pointer(const Variant& payer, cons
     data.resize(2);
     const unsigned char DISCRIMINATOR = 39;
     data[0] = DISCRIMINATOR;
-    data.append_array(Pubkey(payer).to_bytes());
-    data.append_array(Pubkey(mint_keypair).to_bytes());
+    data.append_array(Pubkey::bytes_from_variant(payer));
+    data.append_array(Pubkey::bytes_from_variant(mint_keypair));
 
     const Variant new_pid = get_pid();
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(mint_keypair, true, true));
+    result->append_meta(*memnew(AccountMeta(mint_keypair, true, true)));
 
     return result;
 }
@@ -105,10 +105,10 @@ Variant TokenProgram2022::initialize_metadata(const Variant& payer, const Varian
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(mint_keypair, false, true));
-    result->append_meta(AccountMeta(payer, true, false));
-    result->append_meta(AccountMeta(mint_keypair, false, true));
-    result->append_meta(AccountMeta(payer, true, false));
+    result->append_meta(*memnew(AccountMeta(mint_keypair, false, true)));
+    result->append_meta(*memnew(AccountMeta(payer, true, false)));
+    result->append_meta(*memnew(AccountMeta(mint_keypair, false, true)));
+    result->append_meta(*memnew(AccountMeta(payer, true, false)));
 
     return result;
 }
@@ -150,8 +150,8 @@ Variant TokenProgram2022::update_metadata(const Variant& payer, const Variant& m
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(mint_keypair, false, true));
-    result->append_meta(AccountMeta(payer, true, false));
+    result->append_meta(*memnew(AccountMeta(mint_keypair, false, true)));
+    result->append_meta(*memnew(AccountMeta(payer, true, false)));
 
     return result;
 }

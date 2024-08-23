@@ -61,7 +61,8 @@ void AccountMeta::set_pubkey(const Variant &p_value) {
 
 Variant AccountMeta::get_pubkey() const {
     //return key.duplicate(true);
-	return Variant(memnew(Pubkey(key)));
+    const PackedByteArray key_bytes = Pubkey::bytes_from_variant(key);
+	return Pubkey::new_from_bytes(key_bytes);
 }
 
 Variant AccountMeta::get_signer() const{

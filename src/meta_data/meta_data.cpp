@@ -222,7 +222,7 @@ Variant MetaData::get_update_authority(){
     return update_authority;
 }
 
-void MetaData::set_edition_nonce(const Variant& edition_nounce){
+void MetaData::set_edition_nonce(const Variant& edition_nonce){
     this->edition_nonce = edition_nonce;
 }
 

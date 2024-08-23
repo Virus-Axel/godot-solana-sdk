@@ -421,7 +421,7 @@ void AnchorProgram::idl_from_pid_callback(const Dictionary& rpc_result){
     String idl_address = pid;
 
     if((bool)account["executable"]){
-        idl_address = Pubkey(AnchorProgram::idl_address(Pubkey::new_from_string(pid))).to_string();
+        idl_address = Pubkey::string_from_variant(AnchorProgram::idl_address(Pubkey::new_from_string(pid)));
 
         Callable callback(this, "idl_from_pid_callback");
         idl_client->connect("http_response_received", callback);
@@ -454,18 +454,19 @@ void AnchorProgram::extract_idl_from_data(const Array& data_info){
 
     const PackedByteArray compressed_data = data.slice(DATA_OFFSET, DATA_OFFSET + compressed_length);
 
-    StreamPeerGZIP stream;
-    stream.start_decompression(true);
+    StreamPeerGZIP *stream = memnew(StreamPeerGZIP);
+    stream->start_decompression(true);
 
-    stream.put_data(compressed_data);
+    stream->put_data(compressed_data);
 
     // TODO(Virax): According to docs I should call finish, but code tells me I shouldn't.
     // When docs are align remove.
     //stream.finish();
 
-    const int DECOMPRESSED_LENGTH = stream.get_available_bytes();
+    const int DECOMPRESSED_LENGTH = stream->get_available_bytes();
 
-    Array result = stream.get_data(DECOMPRESSED_LENGTH);
+    Array result = stream->get_data(DECOMPRESSED_LENGTH);
+    memfree(stream);
 
     const int error_code = result[0];
     PackedByteArray decompressed_data = result[1];
@@ -862,7 +863,7 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
     for(unsigned int i = 0; i < ref_accounts.size(); i++){
         const bool writable = detect_writable(ref_accounts[i]);
         const bool is_signer = detect_is_signer(ref_accounts[i]);
-        result->append_meta(AccountMeta::new_account_meta(accounts[i], is_signer, writable));
+        result->append_meta(*memnew(AccountMeta(accounts[i], is_signer, writable)));
     }
 
     return result;
@@ -875,7 +876,7 @@ Error AnchorProgram::fetch_account(const String name, const Variant& account){
     pending_account_name = name;
     Callable callback(this, "fetch_account_callback");
     fetch_client->connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
-    fetch_client->get_account_info(Pubkey(account).to_string());
+    fetch_client->get_account_info(Pubkey::string_from_variant(account));
 
     return Error::OK;
 }

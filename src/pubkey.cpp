@@ -222,12 +222,12 @@ Variant Pubkey::new_from_seed(Variant basePubkey, String seed, Variant owner_pub
  
     SHA256 hasher;
 
-    const Pubkey base = Pubkey(basePubkey);
-    const Pubkey owner = Pubkey(owner_pubkey);
+    const PackedByteArray base = Pubkey::bytes_from_variant(basePubkey);
+    const PackedByteArray owner = Pubkey::bytes_from_variant(owner_pubkey);
 
-    hasher.update(base.to_bytes().ptr(), base.to_bytes().size());
+    hasher.update(base.ptr(), base.size());
     hasher.update(seed.to_utf8_buffer().ptr(), seed.length());
-    hasher.update(owner.to_bytes().ptr(), owner.to_bytes().size());
+    hasher.update(owner.ptr(), owner.size());
 
     uint8_t *sha256_hash = hasher.digest();
 
@@ -309,11 +309,12 @@ Variant Pubkey::new_pda_bytes(const Array seeds, const Variant &program_id){
 Variant Pubkey::new_random(){
     PackedByteArray random_bytes;
     random_bytes.resize(PUBKEY_BYTES);
-    RandomNumberGenerator rand;
-    rand.randomize();
+    RandomNumberGenerator *rand = memnew(RandomNumberGenerator);
+    rand->randomize();
     for(unsigned int i = 0; i < PUBKEY_BYTES; i++){
-        random_bytes[i] = rand.randi() % 256;
+        random_bytes[i] = rand->randi() % 256;
     }
+    memfree(rand);
     return new_from_bytes(random_bytes);
 }
 
@@ -321,13 +322,90 @@ bool Pubkey::is_pubkey(const Variant &object){
     return ((Object*)object)->is_class("Pubkey");
 }
 
+PackedByteArray Pubkey::bytes_from_variant(const Variant& other){
+    if(other.get_type() == Variant::STRING){
+        return SolanaUtils::bs58_decode(other);
+    }
+    else if(other.get_type() == Variant::ARRAY){
+        return PackedByteArray(other);
+    }
+    else if(other.get_type() == Variant::PACKED_BYTE_ARRAY){
+        return other;
+    }
+    else if(other.get_type() != Variant::Type::OBJECT){
+        ERR_FAIL_V_EDMSG(PackedByteArray(), "Bug: Unknown object. Please report.");
+    }
+
+    if(Pubkey::is_pubkey(other)){
+        return Object::cast_to<Pubkey>(other)->to_bytes();
+    }
+    else if(Keypair::is_keypair(other)){
+        return Object::cast_to<Keypair>(other)->get_public_bytes();
+    }
+    else if(AccountMeta::is_account_meta(other)){
+        return Pubkey::bytes_from_variant(Object::cast_to<AccountMeta>(other)->get_pubkey());
+    }
+    else if(WalletAdapter::is_wallet_adapter(other)){
+        WalletAdapter *phantom_controller = Object::cast_to<WalletAdapter>(other);
+        if(phantom_controller->is_connected()){
+            return Pubkey::bytes_from_variant(phantom_controller->get_connected_key());
+        }
+        else{
+            // Return placeholder
+            PackedByteArray bytes;
+            bytes.resize(32);
+            return bytes;
+        }
+    }
+    else{
+        ERR_FAIL_V_EDMSG(PackedByteArray(), "Bug: Unknown object. Please report.");
+    }
+}
+
+String Pubkey::string_from_variant(const Variant& other){
+    if(other.get_type() == Variant::STRING){
+        return other;
+    }
+    else if(other.get_type() == Variant::ARRAY){
+        return SolanaUtils::bs58_encode(PackedByteArray(other));
+    }
+    else if(other.get_type() == Variant::PACKED_BYTE_ARRAY){
+        return SolanaUtils::bs58_encode(other);
+    }
+    else if(other.get_type() != Variant::Type::OBJECT){
+        ERR_FAIL_V_EDMSG("", "Bug: Unknown object. Please report.");
+    }
+
+    if(Pubkey::is_pubkey(other)){
+        return Object::cast_to<Pubkey>(other)->to_string();
+    }
+    else if(Keypair::is_keypair(other)){
+        return Object::cast_to<Keypair>(other)->get_public_string();
+    }
+    else if(AccountMeta::is_account_meta(other)){
+        return Pubkey::string_from_variant(Object::cast_to<AccountMeta>(other)->get_pubkey());
+    }
+    else if(WalletAdapter::is_wallet_adapter(other)){
+        WalletAdapter *phantom_controller = Object::cast_to<WalletAdapter>(other);
+        if(phantom_controller->is_connected()){
+            return Pubkey::string_from_variant(phantom_controller->get_connected_key());
+        }
+        else{
+            // Return placeholder
+            return SolanaUtils::ZERO_ENCODED_32.c_str();
+        }
+    }
+    else{
+        ERR_FAIL_V_EDMSG("", "Bug: Unknown object. Please report.");
+    }
+}
+
 Variant Pubkey::new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address){    
     TypedArray<PackedByteArray> arr;
 
-    arr.append(Pubkey(wallet_address).to_bytes());
-    arr.append(Object::cast_to<Pubkey>(TokenProgram::get_pid())->to_bytes());
-    arr.append(Pubkey(token_mint_address).to_bytes());
-
+    arr.append(Pubkey::bytes_from_variant(wallet_address));
+    arr.append(Pubkey::bytes_from_variant(TokenProgram::get_pid()));
+    arr.append(Pubkey::bytes_from_variant(token_mint_address));
     arr.append(PackedByteArray());
 
     String pid = String(SolanaUtils::SPL_ASSOCIATED_TOKEN_ADDRESS.c_str());
@@ -343,8 +421,9 @@ Variant Pubkey::new_associated_token_address(const Variant &wallet_address, cons
             return res;
         }
     }
+    memfree(res);
     
-    internal::gdextension_interface_print_warning("y points were not valid", "new_associated_token_address", __FILE__, __LINE__, false);
+    WARN_PRINT_ED("y points were not valid");
     return nullptr;
 }
 
@@ -369,7 +448,8 @@ bool Pubkey::create_program_address_bytes(const Array seeds, const Variant &prog
     }
 
     // Include program ID and PDA marker in hash.
-    hasher.update(Pubkey(program_id).to_bytes().ptr(), Pubkey(program_id).to_bytes().size());
+    const PackedByteArray pid_bytes = Object::cast_to<Pubkey>(program_id)->to_bytes();
+    hasher.update(pid_bytes.ptr(), pid_bytes.size());
     hasher.update(PDA_MARKER, 21);
 
     uint8_t hash[PUBKEY_BYTES];
@@ -416,7 +496,7 @@ bool Pubkey::create_program_address(const PackedStringArray seeds, const Variant
     }
 
     // Include program ID and PDA marker in hash.
-    hasher.update(Pubkey(program_id).to_bytes().ptr(), Pubkey(program_id).to_bytes().size());
+    hasher.update(Pubkey::bytes_from_variant(program_id).ptr(), Pubkey::bytes_from_variant(program_id).size());
     hasher.update(PDA_MARKER, 21);
 
     uint8_t hash[PUBKEY_BYTES];

@@ -14,21 +14,13 @@ max_columns = 2
 same_column_width = true
 fixed_column_width = 400
 item_0/text = "Pubkey from string"
-item_1/text = ""
 item_2/text = "Pubkey from bytes"
-item_3/text = ""
 item_4/text = "Metadata Program"
-item_5/text = ""
 item_6/text = "Token Program"
-item_7/text = ""
 item_8/text = "Candy Machine Program"
-item_9/text = ""
 item_10/text = "Candy Machine key bytes"
-item_11/text = ""
 item_12/text = "Associated Token key"
-item_13/text = ""
 item_14/text = "Program derived key"
-item_15/text = ""
 script = ExtResource("1_6y4sq")
 
 [node name="Timeout" type="Timer" parent="."]

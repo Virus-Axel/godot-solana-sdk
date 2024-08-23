@@ -24,12 +24,12 @@ Variant AssociatedTokenAccountProgram::create_associated_token_account(const Var
 
     Variant ata = Pubkey::new_associated_token_address(wallet_address, mint_address);
 
-    result->append_meta(AccountMeta(payer, true, true));
-    result->append_meta(AccountMeta(ata, false, true));
-    result->append_meta(AccountMeta(wallet_address, false, false));
-    result->append_meta(AccountMeta(mint_address, false, false));
-    result->append_meta(AccountMeta(SystemProgram::get_pid(), false, false));
-    result->append_meta(AccountMeta(token_program_id, false, false));
+    result->append_meta(*memnew(AccountMeta(payer, true, true)));
+    result->append_meta(*memnew(AccountMeta(ata, false, true)));
+    result->append_meta(*memnew(AccountMeta(wallet_address, false, false)));
+    result->append_meta(*memnew(AccountMeta(mint_address, false, false)));
+    result->append_meta(*memnew(AccountMeta(SystemProgram::get_pid(), false, false)));
+    result->append_meta(*memnew(AccountMeta(token_program_id, false, false)));
 
     return result;
 }

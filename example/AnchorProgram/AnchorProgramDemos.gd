@@ -36,6 +36,7 @@ func fetch_idl_from_pid_demo():
 	
 	$AnchorProgram.set_pid("CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR")
 	$AnchorProgram.set_try_from_pid(true)
+
 	await $AnchorProgram.idl_fetched
 	assert(not $AnchorProgram.idl.is_empty())
 	display_dict($AnchorProgram.idl, $GridContainer/IdlTree.create_item())

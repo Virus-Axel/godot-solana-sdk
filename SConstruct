@@ -17,7 +17,7 @@ def set_tmp_dir(platform, target):
 def image_id_from_repo_name(repository_name):
     return os.popen('podman images --format {{.ID}} --filter=reference=' + repository_name).read()
 
-def get_build_command(platform, architecture, debug=False):
+def get_build_command(platform, architecture, debug=False, use_threads=True):
     arguments = ""
     env_options = ""
     if platform == 'ios':
@@ -39,7 +39,7 @@ def get_build_command(platform, architecture, debug=False):
     if debug:
         debug_or_release = 'debug'
 
-    return '{} scons -j 4 platform={} arch={} target=template_{} {}'.format(env_options, platform, architecture, debug_or_release, arguments)
+    return '{} scons -j 4 threads={} platform={} arch={} target=template_{} {}'.format(env_options, use_threads, platform, architecture, debug_or_release, arguments)
 
 
 def build_in_container(platform, architectures, keep_container=False, keep_images=False):
@@ -63,6 +63,13 @@ def build_in_container(platform, architectures, keep_container=False, keep_image
         build_command = get_build_command(platform, architecture)
         env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
 
+        if platform == "web":
+            build_command = get_build_command(platform, architecture, True, False)
+            env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
+
+            build_command = get_build_command(platform, architecture, False, False)
+            env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
+
     if not keep_container:
         env.Execute('podman rm -f {}'.format(CONTAINER_NAME))
 
@@ -83,12 +90,12 @@ def build_all(env, container_path, keep_images):
     # Build missing containers
     env.Execute('cd {} && {}'.format(container_path, CONTAINER_BUILD_COMMAND))
 
-    build_in_container('linux', ['x86_64'], keep_images=keep_images)
-    build_in_container('windows', ['x86_64'], keep_images=keep_images)
+    #build_in_container('linux', ['x86_64'], keep_images=keep_images)
+    #build_in_container('windows', ['x86_64'], keep_images=keep_images)
     build_in_container('web', ['wasm32'], keep_images=keep_images)
-    build_in_container('android', ['aarch64', 'x86_64'], keep_images=keep_images)
-    build_in_container('ios', ['arm64'], keep_images=keep_images)
-    build_in_container('macos', ['aarch64'], keep_images=keep_images)
+    #build_in_container('android', ['aarch64', 'x86_64'], keep_images=keep_images)
+    #build_in_container('ios', ['arm64'], keep_images=keep_images)
+    #build_in_container('macos', ['aarch64'], keep_images=keep_images)
 
     if not keep_images:
         # Remove existing images
@@ -166,6 +173,9 @@ else:
 
         env['SHLINKFLAGS'].remove("-shared")
         env.Append(LINKFLAGS=['-dylib'])
+
+    if env["platform"] == "web":
+        env.Append(LINKFLAGS=["-sWASM_BIGINT=1"])
 
     if env["platform"] == "macos":
         library = env.SharedLibrary(

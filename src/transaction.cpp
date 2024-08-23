@@ -175,7 +175,7 @@ void Transaction::copy_connection_state(){
     finalized_connections = get_signal_connection_list("finalized").size();
 }
 
-void Transaction::subscribe_to_signature(const String& confirmation_level){
+void Transaction:: subscribe_to_signature(const String& confirmation_level){
     Callable callback = Callable(this, String("_emit_") + confirmation_level + "_callback");
     active_subscriptions++;
     subscribe_client->signature_subscribe(result_signature, callback, confirmation_level);

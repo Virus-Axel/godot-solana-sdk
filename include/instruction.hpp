@@ -11,10 +11,6 @@
 
 namespace godot{
 
-MAKE_TYPED_ARRAY(Pubkey, Variant::OBJECT)
-MAKE_TYPED_ARRAY(AccountMeta, Variant::OBJECT)
-MAKE_TYPED_ARRAY(Resource, Variant::OBJECT)
-
 class CompiledInstruction;
 
 class Instruction : public Resource {

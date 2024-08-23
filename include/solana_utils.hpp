@@ -19,6 +19,8 @@ public:
     const String TESTNET_URL = "https://api.testnet.solana.com";
     const String LOCALHOST_URL = "http://127.0.0.1:8899";
 
+    static const std::string ZERO_ENCODED_32;
+
     static const std::string SPL_TOKEN_ADDRESS;
     static const std::string SPL_ASSOCIATED_TOKEN_ADDRESS;
 

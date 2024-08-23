@@ -183,6 +183,7 @@ Dictionary SolanaClient::make_rpc_param(const Variant& key, const Variant& value
 
 
 void SolanaClient::quick_http_request(const Dictionary& request_body, const Callable& callback){
+
     Dictionary parsed_url = parse_url(get_real_url());
     const uint32_t real_port = get_real_http_port();
 
@@ -704,7 +705,7 @@ void SolanaClient::simulate_transaction(const String& encoded_transaction, bool 
 
 void SolanaClient::account_subscribe(const Variant &account_key, const Callable &callback){
     Array params;
-    params.append(Pubkey(account_key).to_string());
+    params.append(Pubkey::string_from_variant(account_key));
     add_to_param_dict(params, "encoding", encoding);
     add_to_param_dict(params, "commitment", commitment);
 

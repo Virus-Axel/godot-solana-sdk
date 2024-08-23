@@ -40,8 +40,8 @@ Variant MplTokenMetadata::new_associated_metadata_pubkey(const Variant& mint){
     TypedArray<PackedByteArray> arr;
 
     arr.append(String("metadata").to_ascii_buffer());
-    arr.append(Pubkey(get_pid()).to_bytes());
-    arr.append(Pubkey(mint).to_bytes());
+    arr.append(Pubkey::bytes_from_variant(get_pid()));
+    arr.append(Pubkey::bytes_from_variant(mint));
 
     arr.append(PackedByteArray());
     
@@ -54,7 +54,8 @@ Variant MplTokenMetadata::new_associated_metadata_pubkey(const Variant& mint){
             return res;
         }
     }
-    
+
+    memfree(res);
     internal::gdextension_interface_print_warning("y points were not valid", "new_associated_token_address", __FILE__, __LINE__, false);
     return nullptr;
 }
@@ -63,8 +64,8 @@ Variant MplTokenMetadata::new_associated_metadata_pubkey_master_edition(const Va
     TypedArray<PackedByteArray> arr;
 
     arr.append(String("metadata").to_ascii_buffer());
-    arr.append(Pubkey(get_pid()).to_bytes());
-    arr.append(Pubkey(mint).to_bytes());
+    arr.append(Pubkey::bytes_from_variant(get_pid()));
+    arr.append(Pubkey::bytes_from_variant(mint));
     arr.append(String("edition").to_ascii_buffer());
 
     arr.append(PackedByteArray());
@@ -92,7 +93,7 @@ Variant MplTokenMetadata::get_mint_metadata(const Variant& mint){
 
     Callable callback(this, "metadata_callback");
     connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
-    get_account_info(Pubkey(metadata_account).to_string());
+    get_account_info(Pubkey::string_from_variant(metadata_account));
 
     return OK;
 }
@@ -240,18 +241,20 @@ Variant MplTokenMetadata::create_metadata_account(const Variant& mint, const Var
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(mint), false, true));
-    result->append_meta(AccountMeta(mint, false, false));
-    result->append_meta(AccountMeta(mint_authority, true, false));
-    result->append_meta(AccountMeta(update_authority, true, true));
-    result->append_meta(AccountMeta(update_authority, false, false));
-    result->append_meta(AccountMeta(SystemProgram::get_pid(), false, false));
+    const Variant metadata_ata = MplTokenMetadata::new_associated_metadata_pubkey(mint);
+    const Variant pid_key = SystemProgram::get_pid();
+    result->append_meta(*memnew(AccountMeta(metadata_ata, false, true)));
+    result->append_meta(*memnew(AccountMeta(mint, false, false)));
+    result->append_meta(*memnew(AccountMeta(mint_authority, true, false)));
+    result->append_meta(*memnew(AccountMeta(update_authority, true, true)));
+    result->append_meta(*memnew(AccountMeta(update_authority, false, false)));
+    result->append_meta(*memnew(AccountMeta(pid_key, false, false)));
 
     Pubkey *rent = memnew(Pubkey);
 
     // TODO(Virax): Create an easier way to get the sysvarRent.
     rent->from_string("SysvarRent111111111111111111111111111111111");
-    result->append_meta(AccountMeta(rent, false, false));
+    result->append_meta(*memnew(AccountMeta(rent, false, false)));
 
     return result;
 }
@@ -263,7 +266,7 @@ Variant MplTokenMetadata::update_metadata_account(const Variant& metadata_accoun
     data.append(15);
     data.append(0);
     data.append(1);
-    data.append_array(Pubkey(update_authority).to_bytes());
+    data.append_array(Pubkey::bytes_from_variant(update_authority));
     data.append(0);
     data.append(0);
 
@@ -271,8 +274,8 @@ Variant MplTokenMetadata::update_metadata_account(const Variant& metadata_accoun
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(metadata_account, false, true));
-    result->append_meta(AccountMeta(update_authority, true, false));
+    result->append_meta(*memnew(AccountMeta(metadata_account, false, true)));
+    result->append_meta(*memnew(AccountMeta(update_authority, true, false)));
 
     return result;
 }
@@ -297,18 +300,23 @@ Variant MplTokenMetadata::create_master_edition(const Variant& mint, const Varia
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(mint), false, true));
-    result->append_meta(AccountMeta(mint, false, true));
+    const Variant mint_master_edition = MplTokenMetadata::new_associated_metadata_pubkey_master_edition(mint);
+    const Variant mint_metadata = MplTokenMetadata::new_associated_metadata_pubkey(mint);
+    result->append_meta(*memnew(AccountMeta(mint_master_edition, false, true)));
+    result->append_meta(*memnew(AccountMeta(mint, false, true)));
 
-    result->append_meta(AccountMeta(update_authority, false, false));
-    result->append_meta(AccountMeta(mint_authority, true, false));
-    result->append_meta(AccountMeta(payer, true, true));
+    result->append_meta(*memnew(AccountMeta(update_authority, false, false)));
+    result->append_meta(*memnew(AccountMeta(mint_authority, true, false)));
+    result->append_meta(*memnew(AccountMeta(payer, true, true)));
     
-    result->append_meta(AccountMeta(MplTokenMetadata::new_associated_metadata_pubkey(mint), false, true));
+    result->append_meta(*memnew(AccountMeta(mint_metadata, false, true)));
 
-    result->append_meta(AccountMeta(TokenProgram::get_pid(), false, false));
-    result->append_meta(AccountMeta(SystemProgram::get_pid(), false, false));
-    result->append_meta(AccountMeta(Pubkey::new_from_string("SysvarRent111111111111111111111111111111111"), false, false));
+    const Variant token_pid = TokenProgram::get_pid();
+    const Variant system_pid = SystemProgram::get_pid();
+    const Variant sysvar_rent = Pubkey::new_from_string("SysvarRent111111111111111111111111111111111");
+    result->append_meta(*memnew(AccountMeta(token_pid, false, false)));
+    result->append_meta(*memnew(AccountMeta(system_pid, false, false)));
+    result->append_meta(*memnew(AccountMeta(sysvar_rent, false, false)));
 
     return result;
 }
