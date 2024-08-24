@@ -1660,6 +1660,7 @@ Variant MplCandyGuard::mint(
     Instruction *result = memnew(Instruction);
 
     PackedByteArray data = MplCandyMachine::mint2_discriminator();
+
     data.append_array(Object::cast_to<CandyGuardAccessList>(candy_guard_acl)->get_group(label).serialize_mint_settings());
     data.append_array(serialize_label(label));
     
@@ -1721,7 +1722,7 @@ Variant MplCandyGuard::mint(
     TypedArray<AccountMeta> mint_arg_accounts = Object::cast_to<CandyGuardAccessList>(candy_guard_acl)->get_group(label).get_mint_arg_accounts(receiver);
     
     for(unsigned int i = 0; i < mint_arg_accounts.size(); i++){
-        result->append_meta(mint_arg_accounts[i]);
+        result->append_meta(*memnew(AccountMeta(mint_arg_accounts[i])));
     }
 
     return result;
