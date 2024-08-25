@@ -4,7 +4,7 @@ extends VBoxContainer
 @onready var payer: Keypair = Keypair.new_from_file("res://payer.json")
 const LAMPORTS_PER_SOL = 1000000000
 
-const TOTAL_CASES := 11
+const TOTAL_CASES := 12
 var passed_test_mask := 0
 
 
@@ -185,6 +185,44 @@ func blockhash_before_instruction():
 	PASS(10)
 
 
+func transaction_from_bytes():
+	var receiver: Pubkey = Pubkey.new_from_string("78GVwUb8ojcJVrEVkwCU5tfUKTfJuiazRrysGwgjqsif")
+	var tx = Transaction.new()
+
+	add_child(tx)
+	
+	# A transaction can be sent after three steps:
+	# Set the payer.
+	# Add instruction(s).
+	# Set latest blockhash.
+	
+	tx.set_payer(payer)
+	
+	var ix: Instruction = SystemProgram.transfer(payer, receiver, LAMPORTS_PER_SOL / 10)
+	tx.add_instruction(ix)
+
+	tx.update_latest_blockhash()
+
+	tx.sign()
+	var original = tx.serialize()
+	var reconstructed = Transaction.new_from_bytes(tx.serialize()).serialize()
+	
+	assert(original == reconstructed)
+	
+	# Signers are not stored in the bytes so need to set them.
+	tx.set_signers([payer])
+	tx.send()
+	# On success transaction response signal will contain results.
+	# Connect it to avoid errors in you application.
+	var response = await tx.transaction_response_received
+	
+	assert(response.has("result"))
+	var signature = response["result"]
+	assert(typeof(signature) == TYPE_STRING)
+	
+	PASS(11)
+
+
 func _ready():
 	# Use a local cluster for unlimited Solana airdrops.
 	# SolanaClient defaults to devnet cluster URL if not specified.
@@ -199,6 +237,7 @@ func _ready():
 	transaction_with_confirmation_1()
 	transaction_with_confirmation_2()
 	blockhash_before_instruction()
+	transaction_from_bytes()
 
 
 func _on_timeout_timeout():

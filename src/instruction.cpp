@@ -93,14 +93,21 @@ CompiledInstruction::CompiledInstruction(){
 }
 
 int CompiledInstruction::create_from_bytes(const PackedByteArray& bytes){
+    const unsigned int MINIMUM_COMPILED_INSTRUCTION_SIZE = 3;
+    ERR_FAIL_COND_V_EDMSG(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE, 0, "Invalid compiled instruction.");
+    
     int cursor = 0;
     program_id_index = bytes[cursor++];
 
     const unsigned int account_size = bytes[cursor++];
+
+    ERR_FAIL_COND_V_EDMSG(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE + account_size, 0, "Invalid compiled instruction.");
     accounts = bytes.slice(cursor, cursor + account_size);
     cursor += account_size;
 
     const unsigned int data_size = bytes[cursor++];
+
+    ERR_FAIL_COND_V_EDMSG(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE + account_size + data_size, 0, "Invalid compiled instruction.");
     data = bytes.slice(cursor, cursor + data_size);
     
     return cursor + data_size;

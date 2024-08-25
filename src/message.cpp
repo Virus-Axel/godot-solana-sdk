@@ -159,11 +159,21 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer, uint32_t 
 
 Message::Message(const PackedByteArray& bytes){
     int cursor = 0;
+
+    // blockhash + number of accounts + compiled instruction size
+    unsigned int minimum_remaining_size = 32 + 1 + 1;
+    ERR_FAIL_COND_EDMSG(bytes.size() < minimum_remaining_size, "Invalid accounts size");
+
     num_required_signatures = bytes[cursor++];
+
+    ERR_FAIL_COND_EDMSG(num_required_signatures > 127, "V0 transactions are not yet supported.");
+
     num_readonly_signed_accounts = bytes[cursor++];
     num_readonly_unsigned_accounts = bytes[cursor++];
 
     uint8_t account_size = bytes[cursor++];
+
+    ERR_FAIL_COND_EDMSG(bytes.size() < minimum_remaining_size + account_size * 32, "Invalid accounts size");
 
     for(unsigned int i = 0; i < account_size; i++){
         account_keys.append(Pubkey::new_from_bytes(bytes.slice(cursor, cursor + 32)));
@@ -177,6 +187,8 @@ Message::Message(const PackedByteArray& bytes){
     for(int i = 0; i < compiled_instructions_size; i++){
         CompiledInstruction *new_instruction = memnew(CompiledInstruction);
         int consumed_bytes = new_instruction->create_from_bytes(bytes.slice(cursor));
+        ERR_FAIL_COND(consumed_bytes == 0);
+
         compiled_instructions.append(new_instruction);
         cursor += consumed_bytes;
     }

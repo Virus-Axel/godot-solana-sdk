@@ -310,6 +310,10 @@ Transaction::Transaction() {
 }
 
 Transaction::Transaction(const PackedByteArray& bytes){
+    const unsigned int MINIMUM_MESSAGE_SIZE = 32 + 4 + 1;
+    const unsigned int MINIMUM_TRANSACTION_SIZE = MINIMUM_MESSAGE_SIZE + 1;
+    ERR_FAIL_COND_EDMSG(bytes.size() < MINIMUM_TRANSACTION_SIZE, "Invalid transaction size");
+
     send_client = memnew(SolanaClient);
     blockhash_client = memnew(SolanaClient);
     subscribe_client = memnew(SolanaClient);
@@ -320,13 +324,16 @@ Transaction::Transaction(const PackedByteArray& bytes){
     subscribe_client->set_async_override(true);
 
     int cursor = 0;
+
     const unsigned int signer_size = bytes[cursor++];
+    ERR_FAIL_COND_EDMSG(bytes.size() < MINIMUM_MESSAGE_SIZE + 1 + signer_size * 64, "Invalid message size.");
     for(unsigned int i = 0; i < signer_size; i++){
         const PackedByteArray signature_bytes = bytes.slice(cursor, cursor + 64);
         if(! are_all_bytes_zeroes(signature_bytes)){
             ready_signature_amount += 1;
         }
         signatures.append(bytes.slice(cursor, cursor + 64));
+
         cursor += 64;
     }
 
