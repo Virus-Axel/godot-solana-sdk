@@ -25,3 +25,7 @@ test-ledger/
 
 .vscode/
 .godot/
+
+# Doxygen
+docs/html/
+docs/xml/
