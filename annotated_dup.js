@@ -14,7 +14,7 @@ var annotated_dup =
       [ "CreateMetaDataArgs", "classgodot_1_1_create_meta_data_args.html", null ],
       [ "Hash", "classgodot_1_1_hash.html", null ],
       [ "Instruction", "classgodot_1_1_instruction.html", null ],
-      [ "Keypair", "classgodot_1_1_keypair.html", null ],
+      [ "Keypair", "classgodot_1_1_keypair.html", "classgodot_1_1_keypair" ],
       [ "Message", "classgodot_1_1_message.html", null ],
       [ "MetaData", "classgodot_1_1_meta_data.html", null ],
       [ "MetaDataCollection", "classgodot_1_1_meta_data_collection.html", null ],

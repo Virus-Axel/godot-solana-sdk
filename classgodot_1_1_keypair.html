@@ -103,6 +103,11 @@ $(function(){initNavTree('classgodot_1_1_keypair.html',''); initResizable(); });
   <div class="headertitle"><div class="title">godot::Keypair Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>An ed25519 <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>.  
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="keypair_8hpp_source.html">keypair.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for godot::Keypair:</div>
 <div class="dyncontent">
@@ -115,80 +120,82 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a938a5268999cf93892047d32f58207a7" id="r_a938a5268999cf93892047d32f58207a7"><td class="memItemLeft" align="right" valign="top"><a id="a938a5268999cf93892047d32f58207a7" name="a938a5268999cf93892047d32f58207a7"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Keypair</b> (const PackedByteArray &amp;seed)</td></tr>
 <tr class="separator:a938a5268999cf93892047d32f58207a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6862a65cb2ce976ea81f7f74bd09ee5a" id="r_a6862a65cb2ce976ea81f7f74bd09ee5a"><td class="memItemLeft" align="right" valign="top"><a id="a6862a65cb2ce976ea81f7f74bd09ee5a" name="a6862a65cb2ce976ea81f7f74bd09ee5a"></a>
-Variant&#160;</td><td class="memItemRight" valign="bottom"><b>to_pubkey</b> ()</td></tr>
+<tr class="memitem:a6862a65cb2ce976ea81f7f74bd09ee5a" id="r_a6862a65cb2ce976ea81f7f74bd09ee5a"><td class="memItemLeft" align="right" valign="top">Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6862a65cb2ce976ea81f7f74bd09ee5a">to_pubkey</a> ()</td></tr>
+<tr class="memdesc:a6862a65cb2ce976ea81f7f74bd09ee5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> resource from the public parts of the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>.  <br /></td></tr>
 <tr class="separator:a6862a65cb2ce976ea81f7f74bd09ee5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad316985440e9d95d90855fb18040b8ee" id="r_ad316985440e9d95d90855fb18040b8ee"><td class="memItemLeft" align="right" valign="top"><a id="ad316985440e9d95d90855fb18040b8ee" name="ad316985440e9d95d90855fb18040b8ee"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_public_string</b> (const String &amp;p_value)</td></tr>
+<tr class="memitem:ad316985440e9d95d90855fb18040b8ee" id="r_ad316985440e9d95d90855fb18040b8ee"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad316985440e9d95d90855fb18040b8ee">set_public_string</a> (const String &amp;p_value)</td></tr>
+<tr class="memdesc:ad316985440e9d95d90855fb18040b8ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the base58 encoded string representing the public parts.  <br /></td></tr>
 <tr class="separator:ad316985440e9d95d90855fb18040b8ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a223b206a87576b7c6d351f73d4e0856a" id="r_a223b206a87576b7c6d351f73d4e0856a"><td class="memItemLeft" align="right" valign="top"><a id="a223b206a87576b7c6d351f73d4e0856a" name="a223b206a87576b7c6d351f73d4e0856a"></a>
-String&#160;</td><td class="memItemRight" valign="bottom"><b>get_public_string</b> ()</td></tr>
+<tr class="memitem:a223b206a87576b7c6d351f73d4e0856a" id="r_a223b206a87576b7c6d351f73d4e0856a"><td class="memItemLeft" align="right" valign="top">String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a223b206a87576b7c6d351f73d4e0856a">get_public_string</a> ()</td></tr>
+<tr class="memdesc:a223b206a87576b7c6d351f73d4e0856a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the base58 encoded string representing the public parts.  <br /></td></tr>
 <tr class="separator:a223b206a87576b7c6d351f73d4e0856a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b867559de2faee07bc667de64522c1a" id="r_a6b867559de2faee07bc667de64522c1a"><td class="memItemLeft" align="right" valign="top"><a id="a6b867559de2faee07bc667de64522c1a" name="a6b867559de2faee07bc667de64522c1a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_public_bytes</b> (const PackedByteArray &amp;p_value)</td></tr>
+<tr class="memitem:a6b867559de2faee07bc667de64522c1a" id="r_a6b867559de2faee07bc667de64522c1a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6b867559de2faee07bc667de64522c1a">set_public_bytes</a> (const PackedByteArray &amp;p_value)</td></tr>
+<tr class="memdesc:a6b867559de2faee07bc667de64522c1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the public parts from a byte array.  <br /></td></tr>
 <tr class="separator:a6b867559de2faee07bc667de64522c1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a61086b7ebb9987b290ce83550171d90a" id="r_a61086b7ebb9987b290ce83550171d90a"><td class="memItemLeft" align="right" valign="top"><a id="a61086b7ebb9987b290ce83550171d90a" name="a61086b7ebb9987b290ce83550171d90a"></a>
-PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><b>get_public_bytes</b> () const</td></tr>
+<tr class="memitem:a61086b7ebb9987b290ce83550171d90a" id="r_a61086b7ebb9987b290ce83550171d90a"><td class="memItemLeft" align="right" valign="top">PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a61086b7ebb9987b290ce83550171d90a">get_public_bytes</a> () const</td></tr>
+<tr class="memdesc:a61086b7ebb9987b290ce83550171d90a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the byte array representing the public parts.  <br /></td></tr>
 <tr class="separator:a61086b7ebb9987b290ce83550171d90a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ea9e7e808aaeb4a3c7cfb0fab0d9504" id="r_a4ea9e7e808aaeb4a3c7cfb0fab0d9504"><td class="memItemLeft" align="right" valign="top"><a id="a4ea9e7e808aaeb4a3c7cfb0fab0d9504" name="a4ea9e7e808aaeb4a3c7cfb0fab0d9504"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_private_string</b> (const String &amp;p_value)</td></tr>
+<tr class="memitem:a4ea9e7e808aaeb4a3c7cfb0fab0d9504" id="r_a4ea9e7e808aaeb4a3c7cfb0fab0d9504"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4ea9e7e808aaeb4a3c7cfb0fab0d9504">set_private_string</a> (const String &amp;p_value)</td></tr>
+<tr class="memdesc:a4ea9e7e808aaeb4a3c7cfb0fab0d9504"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the the private parts of the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> from a base58 encoded string representation.  <br /></td></tr>
 <tr class="separator:a4ea9e7e808aaeb4a3c7cfb0fab0d9504"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2256b007690a685d70aa383aa3f6ac88" id="r_a2256b007690a685d70aa383aa3f6ac88"><td class="memItemLeft" align="right" valign="top"><a id="a2256b007690a685d70aa383aa3f6ac88" name="a2256b007690a685d70aa383aa3f6ac88"></a>
-String&#160;</td><td class="memItemRight" valign="bottom"><b>get_private_string</b> ()</td></tr>
+<tr class="memitem:a2256b007690a685d70aa383aa3f6ac88" id="r_a2256b007690a685d70aa383aa3f6ac88"><td class="memItemLeft" align="right" valign="top">String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2256b007690a685d70aa383aa3f6ac88">get_private_string</a> ()</td></tr>
+<tr class="memdesc:a2256b007690a685d70aa383aa3f6ac88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the base58 encoded string representing the private parts.  <br /></td></tr>
 <tr class="separator:a2256b007690a685d70aa383aa3f6ac88"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5dbc438db0b95a561f9cc2e0f88711e5" id="r_a5dbc438db0b95a561f9cc2e0f88711e5"><td class="memItemLeft" align="right" valign="top"><a id="a5dbc438db0b95a561f9cc2e0f88711e5" name="a5dbc438db0b95a561f9cc2e0f88711e5"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_private_bytes</b> (const PackedByteArray &amp;p_value)</td></tr>
+<tr class="memitem:a5dbc438db0b95a561f9cc2e0f88711e5" id="r_a5dbc438db0b95a561f9cc2e0f88711e5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5dbc438db0b95a561f9cc2e0f88711e5">set_private_bytes</a> (const PackedByteArray &amp;p_value)</td></tr>
+<tr class="memdesc:a5dbc438db0b95a561f9cc2e0f88711e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the private parts from a byte array.  <br /></td></tr>
 <tr class="separator:a5dbc438db0b95a561f9cc2e0f88711e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63f6e5a51dfbedae6107e3c725262d35" id="r_a63f6e5a51dfbedae6107e3c725262d35"><td class="memItemLeft" align="right" valign="top"><a id="a63f6e5a51dfbedae6107e3c725262d35" name="a63f6e5a51dfbedae6107e3c725262d35"></a>
-PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><b>get_private_bytes</b> ()</td></tr>
+<tr class="memitem:a63f6e5a51dfbedae6107e3c725262d35" id="r_a63f6e5a51dfbedae6107e3c725262d35"><td class="memItemLeft" align="right" valign="top">PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a63f6e5a51dfbedae6107e3c725262d35">get_private_bytes</a> ()</td></tr>
+<tr class="memdesc:a63f6e5a51dfbedae6107e3c725262d35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the byte array representing the private parts.  <br /></td></tr>
 <tr class="separator:a63f6e5a51dfbedae6107e3c725262d35"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac327bcf081bb6fd2bb2a339b0e266910" id="r_ac327bcf081bb6fd2bb2a339b0e266910"><td class="memItemLeft" align="right" valign="top"><a id="ac327bcf081bb6fd2bb2a339b0e266910" name="ac327bcf081bb6fd2bb2a339b0e266910"></a>
-PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><b>sign_message</b> (const PackedByteArray &amp;message)</td></tr>
+<tr class="memitem:ac327bcf081bb6fd2bb2a339b0e266910" id="r_ac327bcf081bb6fd2bb2a339b0e266910"><td class="memItemLeft" align="right" valign="top">PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac327bcf081bb6fd2bb2a339b0e266910">sign_message</a> (const PackedByteArray &amp;message)</td></tr>
+<tr class="memdesc:ac327bcf081bb6fd2bb2a339b0e266910"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sign the provided message.  <br /></td></tr>
 <tr class="separator:ac327bcf081bb6fd2bb2a339b0e266910"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3b53164fe5f1641ef47a480a5e87394d" id="r_a3b53164fe5f1641ef47a480a5e87394d"><td class="memItemLeft" align="right" valign="top"><a id="a3b53164fe5f1641ef47a480a5e87394d" name="a3b53164fe5f1641ef47a480a5e87394d"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>verify_signature</b> (const PackedByteArray &amp;signature, const PackedByteArray &amp;message)</td></tr>
+<tr class="memitem:a3b53164fe5f1641ef47a480a5e87394d" id="r_a3b53164fe5f1641ef47a480a5e87394d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3b53164fe5f1641ef47a480a5e87394d">verify_signature</a> (const PackedByteArray &amp;signature, const PackedByteArray &amp;message)</td></tr>
+<tr class="memdesc:a3b53164fe5f1641ef47a480a5e87394d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if the message signature is from this <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>.  <br /></td></tr>
 <tr class="separator:a3b53164fe5f1641ef47a480a5e87394d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abd853e5439955fda9eefaac4d7c59b50" id="r_abd853e5439955fda9eefaac4d7c59b50"><td class="memItemLeft" align="right" valign="top"><a id="abd853e5439955fda9eefaac4d7c59b50" name="abd853e5439955fda9eefaac4d7c59b50"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_unique</b> (const bool p_value)</td></tr>
+<tr class="memitem:abd853e5439955fda9eefaac4d7c59b50" id="r_abd853e5439955fda9eefaac4d7c59b50"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abd853e5439955fda9eefaac4d7c59b50">set_unique</a> (const bool p_value)</td></tr>
+<tr class="memdesc:abd853e5439955fda9eefaac4d7c59b50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> unique indicator.  <br /></td></tr>
 <tr class="separator:abd853e5439955fda9eefaac4d7c59b50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab805a0de4020dc14ad974857553f8c0e" id="r_ab805a0de4020dc14ad974857553f8c0e"><td class="memItemLeft" align="right" valign="top"><a id="ab805a0de4020dc14ad974857553f8c0e" name="ab805a0de4020dc14ad974857553f8c0e"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>get_unique</b> ()</td></tr>
+<tr class="memitem:ab805a0de4020dc14ad974857553f8c0e" id="r_ab805a0de4020dc14ad974857553f8c0e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab805a0de4020dc14ad974857553f8c0e">get_unique</a> ()</td></tr>
+<tr class="memdesc:ab805a0de4020dc14ad974857553f8c0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> unique indicator.  <br /></td></tr>
 <tr class="separator:ab805a0de4020dc14ad974857553f8c0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a195d2a7bf8077629f3bedce4efab3567" id="r_a195d2a7bf8077629f3bedce4efab3567"><td class="memItemLeft" align="right" valign="top"><a id="a195d2a7bf8077629f3bedce4efab3567" name="a195d2a7bf8077629f3bedce4efab3567"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_seed</b> (const PackedByteArray &amp;p_value)</td></tr>
+<tr class="memitem:a195d2a7bf8077629f3bedce4efab3567" id="r_a195d2a7bf8077629f3bedce4efab3567"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a195d2a7bf8077629f3bedce4efab3567">set_seed</a> (const PackedByteArray &amp;p_value)</td></tr>
+<tr class="memdesc:a195d2a7bf8077629f3bedce4efab3567"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the ed25519 seed.  <br /></td></tr>
 <tr class="separator:a195d2a7bf8077629f3bedce4efab3567"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9402126738e868d1a6b4b0a450a718be" id="r_a9402126738e868d1a6b4b0a450a718be"><td class="memItemLeft" align="right" valign="top"><a id="a9402126738e868d1a6b4b0a450a718be" name="a9402126738e868d1a6b4b0a450a718be"></a>
-PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><b>get_seed</b> ()</td></tr>
+<tr class="memitem:a9402126738e868d1a6b4b0a450a718be" id="r_a9402126738e868d1a6b4b0a450a718be"><td class="memItemLeft" align="right" valign="top">PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9402126738e868d1a6b4b0a450a718be">get_seed</a> ()</td></tr>
+<tr class="memdesc:a9402126738e868d1a6b4b0a450a718be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the ed25519 seed.  <br /></td></tr>
 <tr class="separator:a9402126738e868d1a6b4b0a450a718be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a871e84d1d372c8256d0cb9696f65e4df" id="r_a871e84d1d372c8256d0cb9696f65e4df"><td class="memItemLeft" align="right" valign="top"><a id="a871e84d1d372c8256d0cb9696f65e4df" name="a871e84d1d372c8256d0cb9696f65e4df"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>random</b> ()</td></tr>
+<tr class="memdesc:a871e84d1d372c8256d0cb9696f65e4df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs this keypair randomly. <br /></td></tr>
 <tr class="separator:a871e84d1d372c8256d0cb9696f65e4df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5bae41ffd394a85b05fa40365721766f" id="r_a5bae41ffd394a85b05fa40365721766f"><td class="memItemLeft" align="right" valign="top"><a id="a5bae41ffd394a85b05fa40365721766f" name="a5bae41ffd394a85b05fa40365721766f"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>from_seed</b> ()</td></tr>
+<tr class="memdesc:a5bae41ffd394a85b05fa40365721766f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs this keypair from the internal seed property. <br /></td></tr>
 <tr class="separator:a5bae41ffd394a85b05fa40365721766f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b7ccac6a23f1b1cb284fa3a05b66c50" id="r_a7b7ccac6a23f1b1cb284fa3a05b66c50"><td class="memItemLeft" align="right" valign="top"><a id="a7b7ccac6a23f1b1cb284fa3a05b66c50" name="a7b7ccac6a23f1b1cb284fa3a05b66c50"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>save_to_file</b> (const String &amp;filename)</td></tr>
+<tr class="memitem:a7b7ccac6a23f1b1cb284fa3a05b66c50" id="r_a7b7ccac6a23f1b1cb284fa3a05b66c50"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7b7ccac6a23f1b1cb284fa3a05b66c50">save_to_file</a> (const String &amp;filename)</td></tr>
+<tr class="memdesc:a7b7ccac6a23f1b1cb284fa3a05b66c50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exports this <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> to a file.  <br /></td></tr>
 <tr class="separator:a7b7ccac6a23f1b1cb284fa3a05b66c50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a895cbd3904899aa05eac2d21e6edd600" id="r_a895cbd3904899aa05eac2d21e6edd600"><td class="memItemLeft" align="right" valign="top"><a id="a895cbd3904899aa05eac2d21e6edd600" name="a895cbd3904899aa05eac2d21e6edd600"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>new_from_seed</b> (const String &amp;seed)</td></tr>
+<tr class="memitem:a895cbd3904899aa05eac2d21e6edd600" id="r_a895cbd3904899aa05eac2d21e6edd600"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a895cbd3904899aa05eac2d21e6edd600">new_from_seed</a> (const String &amp;seed)</td></tr>
+<tr class="memdesc:a895cbd3904899aa05eac2d21e6edd600"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> from a seed string.  <br /></td></tr>
 <tr class="separator:a895cbd3904899aa05eac2d21e6edd600"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab5c1204c95342e90af0152b44206b0cc" id="r_ab5c1204c95342e90af0152b44206b0cc"><td class="memItemLeft" align="right" valign="top"><a id="ab5c1204c95342e90af0152b44206b0cc" name="ab5c1204c95342e90af0152b44206b0cc"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>new_from_seed</b> (const PackedByteArray &amp;seed)</td></tr>
+<tr class="memitem:ab5c1204c95342e90af0152b44206b0cc" id="r_ab5c1204c95342e90af0152b44206b0cc"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab5c1204c95342e90af0152b44206b0cc">new_from_seed</a> (const PackedByteArray &amp;seed)</td></tr>
+<tr class="memdesc:ab5c1204c95342e90af0152b44206b0cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> from a seed byte array.  <br /></td></tr>
 <tr class="separator:ab5c1204c95342e90af0152b44206b0cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa5b6dc4b47a1d71470e9b3974a72c461" id="r_aa5b6dc4b47a1d71470e9b3974a72c461"><td class="memItemLeft" align="right" valign="top"><a id="aa5b6dc4b47a1d71470e9b3974a72c461" name="aa5b6dc4b47a1d71470e9b3974a72c461"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>new_from_bytes</b> (const Variant &amp;bytes)</td></tr>
+<tr class="memitem:aa5b6dc4b47a1d71470e9b3974a72c461" id="r_aa5b6dc4b47a1d71470e9b3974a72c461"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa5b6dc4b47a1d71470e9b3974a72c461">new_from_bytes</a> (const Variant &amp;bytes)</td></tr>
+<tr class="memdesc:aa5b6dc4b47a1d71470e9b3974a72c461"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> from a byte array.  <br /></td></tr>
 <tr class="separator:aa5b6dc4b47a1d71470e9b3974a72c461"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7107c395e92a58810b6086e4168c5089" id="r_a7107c395e92a58810b6086e4168c5089"><td class="memItemLeft" align="right" valign="top"><a id="a7107c395e92a58810b6086e4168c5089" name="a7107c395e92a58810b6086e4168c5089"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>new_from_file</b> (const String &amp;filename)</td></tr>
+<tr class="memitem:a7107c395e92a58810b6086e4168c5089" id="r_a7107c395e92a58810b6086e4168c5089"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7107c395e92a58810b6086e4168c5089">new_from_file</a> (const String &amp;filename)</td></tr>
+<tr class="memdesc:a7107c395e92a58810b6086e4168c5089"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> resource from a file containing an exported keypair.  <br /></td></tr>
 <tr class="separator:a7107c395e92a58810b6086e4168c5089"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a311ab62b9b7187be519879d8c4cc1924" id="r_a311ab62b9b7187be519879d8c4cc1924"><td class="memItemLeft" align="right" valign="top"><a id="a311ab62b9b7187be519879d8c4cc1924" name="a311ab62b9b7187be519879d8c4cc1924"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>new_random</b> ()</td></tr>
+<tr class="memitem:a311ab62b9b7187be519879d8c4cc1924" id="r_a311ab62b9b7187be519879d8c4cc1924"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a311ab62b9b7187be519879d8c4cc1924">new_random</a> ()</td></tr>
+<tr class="memdesc:a311ab62b9b7187be519879d8c4cc1924"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new random <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>.  <br /></td></tr>
 <tr class="separator:a311ab62b9b7187be519879d8c4cc1924"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac34579b325f766f2a289c51887af4792" id="r_ac34579b325f766f2a289c51887af4792"><td class="memItemLeft" align="right" valign="top"><a id="ac34579b325f766f2a289c51887af4792" name="ac34579b325f766f2a289c51887af4792"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_keypair</b> (const Variant &amp;object)</td></tr>
+<tr class="memitem:ac34579b325f766f2a289c51887af4792" id="r_ac34579b325f766f2a289c51887af4792"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac34579b325f766f2a289c51887af4792">is_keypair</a> (const Variant &amp;object)</td></tr>
+<tr class="memdesc:ac34579b325f766f2a289c51887af4792"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if the provided Variant is a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>.  <br /></td></tr>
 <tr class="separator:ac34579b325f766f2a289c51887af4792"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
@@ -209,6 +216,605 @@ Static Protected Member Functions</h2></td></tr>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods</b> ()</td></tr>
 <tr class="separator:a6be3269bbb4a79e07b496e445ddba684"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>An ed25519 <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. </p>
+<p>The <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> is used to sign Solana transactions. They can be used to keep control of Solana accounts. The <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> is a signer, and signing a transaction gives the smart contract authority to modify the account data and balances. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a63f6e5a51dfbedae6107e3c725262d35" name="a63f6e5a51dfbedae6107e3c725262d35"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a63f6e5a51dfbedae6107e3c725262d35">&#9670;&#160;</a></span>get_private_bytes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PackedByteArray godot::Keypair::get_private_bytes </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the byte array representing the private parts. </p>
+<dl class="section return"><dt>Returns</dt><dd>PackedByteArray array representing the private parts. </dd></dl>
+
+</div>
+</div>
+<a id="a2256b007690a685d70aa383aa3f6ac88" name="a2256b007690a685d70aa383aa3f6ac88"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2256b007690a685d70aa383aa3f6ac88">&#9670;&#160;</a></span>get_private_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">String godot::Keypair::get_private_string </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the base58 encoded string representing the private parts. </p>
+<dl class="section return"><dt>Returns</dt><dd>base58 encoded string representing the private parts. </dd></dl>
+
+</div>
+</div>
+<a id="a61086b7ebb9987b290ce83550171d90a" name="a61086b7ebb9987b290ce83550171d90a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61086b7ebb9987b290ce83550171d90a">&#9670;&#160;</a></span>get_public_bytes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PackedByteArray godot::Keypair::get_public_bytes </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the byte array representing the public parts. </p>
+<dl class="section return"><dt>Returns</dt><dd>PackedByteArray array representing the public parts. </dd></dl>
+
+</div>
+</div>
+<a id="a223b206a87576b7c6d351f73d4e0856a" name="a223b206a87576b7c6d351f73d4e0856a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a223b206a87576b7c6d351f73d4e0856a">&#9670;&#160;</a></span>get_public_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">String godot::Keypair::get_public_string </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the base58 encoded string representing the public parts. </p>
+<dl class="section return"><dt>Returns</dt><dd>base58 encoded string representing the public parts. </dd></dl>
+
+</div>
+</div>
+<a id="a9402126738e868d1a6b4b0a450a718be" name="a9402126738e868d1a6b4b0a450a718be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9402126738e868d1a6b4b0a450a718be">&#9670;&#160;</a></span>get_seed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PackedByteArray godot::Keypair::get_seed </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the ed25519 seed. </p>
+<dl class="section return"><dt>Returns</dt><dd>32 byte long PackedByteArray seed. </dd></dl>
+
+</div>
+</div>
+<a id="ab805a0de4020dc14ad974857553f8c0e" name="ab805a0de4020dc14ad974857553f8c0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab805a0de4020dc14ad974857553f8c0e">&#9670;&#160;</a></span>get_unique()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool godot::Keypair::get_unique </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> unique indicator. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> is unique type, false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="ac34579b325f766f2a289c51887af4792" name="ac34579b325f766f2a289c51887af4792"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac34579b325f766f2a289c51887af4792">&#9670;&#160;</a></span>is_keypair()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool godot::Keypair::is_keypair </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>object</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Checks if the provided Variant is a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. </p>
+<p>Takes a Variant and checks if it is a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> resource.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">object</td><td>The Variant to check. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the variant is a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> resource, false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="aa5b6dc4b47a1d71470e9b3974a72c461" name="aa5b6dc4b47a1d71470e9b3974a72c461"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa5b6dc4b47a1d71470e9b3974a72c461">&#9670;&#160;</a></span>new_from_bytes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::Keypair::new_from_bytes </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>bytes</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> from a byte array. </p>
+<p><b>Godot Accessible!</b><br  />
+</p>
+<p>Takes a byte array of an ed25519 seed followed by public bytes. The function expects this format which must be 64 bytes long. This format is the common format that can be found in exported keypairs by phantom or Solana CLI.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bytes</td><td>The byte array of size 64 containing ed25519 seed and public bytes. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A new <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> resource created from seed. </dd></dl>
+
+</div>
+</div>
+<a id="a7107c395e92a58810b6086e4168c5089" name="a7107c395e92a58810b6086e4168c5089"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7107c395e92a58810b6086e4168c5089">&#9670;&#160;</a></span>new_from_file()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::Keypair::new_from_file </td>
+          <td>(</td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>filename</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates a new <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> resource from a file containing an exported keypair. </p>
+<p><b>Godot Accessible!</b><br  />
+</p>
+<p>Takes a filename and imports the contents and reads a new <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. The function expects a JSON format describing an array of 64 bytes. The first 32 bytes is the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> seed and the last 32 bytes are the public key bytes.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>The name of the JSON file to load a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> from. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A new <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> imported from the file. </dd></dl>
+
+</div>
+</div>
+<a id="ab5c1204c95342e90af0152b44206b0cc" name="ab5c1204c95342e90af0152b44206b0cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5c1204c95342e90af0152b44206b0cc">&#9670;&#160;</a></span>new_from_seed() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::Keypair::new_from_seed </td>
+          <td>(</td>
+          <td class="paramtype">const PackedByteArray &amp;</td>          <td class="paramname"><span class="paramname"><em>seed</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates a new <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> from a seed byte array. </p>
+<p><b>Godot Accessible!</b><br  />
+</p>
+<p>Takes a seed string and creates an ed25519 keypair using the ascii byte buffer as a seed during the generation. The function requires a byte array with a size of 32.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">seed</td><td>A 32 byte long byte array seed. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A new <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> resource created from seed. </dd></dl>
+
+</div>
+</div>
+<a id="a895cbd3904899aa05eac2d21e6edd600" name="a895cbd3904899aa05eac2d21e6edd600"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a895cbd3904899aa05eac2d21e6edd600">&#9670;&#160;</a></span>new_from_seed() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::Keypair::new_from_seed </td>
+          <td>(</td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>seed</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates a new <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> from a seed string. </p>
+<p><b>Godot Accessible!</b><br  />
+</p>
+<p>Takes a seed string and creates an ed25519 keypair using the ascii byte buffer as a seed during the generation. The function requires a 32 character long seed.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">seed</td><td>A 32 character long seed string. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A new <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> resource created from seed. </dd></dl>
+
+</div>
+</div>
+<a id="a311ab62b9b7187be519879d8c4cc1924" name="a311ab62b9b7187be519879d8c4cc1924"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a311ab62b9b7187be519879d8c4cc1924">&#9670;&#160;</a></span>new_random()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::Keypair::new_random </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates a new random <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. </p>
+<p><b>Godot Accessible!</b><br  />
+</p>
+<p>Generates a randomized private key and finds the corresponding public key and returns this <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>.</p>
+<dl class="section warning"><dt>Warning</dt><dd>The random number generation might be predictable.</dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The randomly generated <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a7b7ccac6a23f1b1cb284fa3a05b66c50" name="a7b7ccac6a23f1b1cb284fa3a05b66c50"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b7ccac6a23f1b1cb284fa3a05b66c50">&#9670;&#160;</a></span>save_to_file()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::Keypair::save_to_file </td>
+          <td>(</td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>filename</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Exports this <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> to a file. </p>
+<p><b>Godot Accessible!</b><br  />
+</p>
+<p>Exports this <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> to a file with the provided <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. This function will fail if the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> does not have track of the ed25519 seed.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>Filename of the exported <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a5dbc438db0b95a561f9cc2e0f88711e5" name="a5dbc438db0b95a561f9cc2e0f88711e5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5dbc438db0b95a561f9cc2e0f88711e5">&#9670;&#160;</a></span>set_private_bytes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::Keypair::set_private_bytes </td>
+          <td>(</td>
+          <td class="paramtype">const PackedByteArray &amp;</td>          <td class="paramname"><span class="paramname"><em>p_value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the private parts from a byte array. </p>
+<p>Takes a 64 byte long array and sets the private parts of the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. This method updates the private bytes and the base58 encoded representation.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_value</td><td>New value of the private parts byte array. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a4ea9e7e808aaeb4a3c7cfb0fab0d9504" name="a4ea9e7e808aaeb4a3c7cfb0fab0d9504"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ea9e7e808aaeb4a3c7cfb0fab0d9504">&#9670;&#160;</a></span>set_private_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::Keypair::set_private_string </td>
+          <td>(</td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>p_value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the the private parts of the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> from a base58 encoded string representation. </p>
+<p>Takes a base58 encoded String of a 64 byte array and sets the private parts of the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. This method updates the private bytes and the base58 encoded representation.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_value</td><td>A base58 encoded String of a 64 byte array. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a6b867559de2faee07bc667de64522c1a" name="a6b867559de2faee07bc667de64522c1a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b867559de2faee07bc667de64522c1a">&#9670;&#160;</a></span>set_public_bytes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::Keypair::set_public_bytes </td>
+          <td>(</td>
+          <td class="paramtype">const PackedByteArray &amp;</td>          <td class="paramname"><span class="paramname"><em>p_value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the public parts from a byte array. </p>
+<p>Takes a 32 byte long array and sets the public parts of the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. This method updates the public bytes and the base58 encoded representation.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_value</td><td>New value of the public parts byte array. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ad316985440e9d95d90855fb18040b8ee" name="ad316985440e9d95d90855fb18040b8ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad316985440e9d95d90855fb18040b8ee">&#9670;&#160;</a></span>set_public_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::Keypair::set_public_string </td>
+          <td>(</td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>p_value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the base58 encoded string representing the public parts. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_value</td><td>New value of base58 encoded String. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a195d2a7bf8077629f3bedce4efab3567" name="a195d2a7bf8077629f3bedce4efab3567"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a195d2a7bf8077629f3bedce4efab3567">&#9670;&#160;</a></span>set_seed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::Keypair::set_seed </td>
+          <td>(</td>
+          <td class="paramtype">const PackedByteArray &amp;</td>          <td class="paramname"><span class="paramname"><em>p_value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the ed25519 seed. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_value</td><td>32 byte seed. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="abd853e5439955fda9eefaac4d7c59b50" name="abd853e5439955fda9eefaac4d7c59b50"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd853e5439955fda9eefaac4d7c59b50">&#9670;&#160;</a></span>set_unique()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::Keypair::set_unique </td>
+          <td>(</td>
+          <td class="paramtype">const bool</td>          <td class="paramname"><span class="paramname"><em>p_value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> unique indicator. </p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated</a></b></dt><dd>The <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> types is not used anymore. Use new_random instead.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_value</td><td>Sets unique indicator. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac327bcf081bb6fd2bb2a339b0e266910" name="ac327bcf081bb6fd2bb2a339b0e266910"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac327bcf081bb6fd2bb2a339b0e266910">&#9670;&#160;</a></span>sign_message()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PackedByteArray godot::Keypair::sign_message </td>
+          <td>(</td>
+          <td class="paramtype">const PackedByteArray &amp;</td>          <td class="paramname"><span class="paramname"><em>message</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sign the provided message. </p>
+<p>Signs the provided message and returns a 64 byte signature.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">message</td><td>The message to sign. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PackedByteArray 64 byte signature. </dd></dl>
+
+</div>
+</div>
+<a id="a6862a65cb2ce976ea81f7f74bd09ee5a" name="a6862a65cb2ce976ea81f7f74bd09ee5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6862a65cb2ce976ea81f7f74bd09ee5a">&#9670;&#160;</a></span>to_pubkey()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::Keypair::to_pubkey </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Creates a new <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> resource from the public parts of the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. </p>
+<dl class="section return"><dt>Returns</dt><dd>A <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> resource from the public parts of the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a3b53164fe5f1641ef47a480a5e87394d" name="a3b53164fe5f1641ef47a480a5e87394d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b53164fe5f1641ef47a480a5e87394d">&#9670;&#160;</a></span>verify_signature()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool godot::Keypair::verify_signature </td>
+          <td>(</td>
+          <td class="paramtype">const PackedByteArray &amp;</td>          <td class="paramname"><span class="paramname"><em>signature</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const PackedByteArray &amp;</td>          <td class="paramname"><span class="paramname"><em>message</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Checks if the message signature is from this <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">signature</td><td>64 byte long byte array signature. </td></tr>
+    <tr><td class="paramname">message</td><td>PackedByteArray of the signed message. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> was used to sign the <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, false otherwise. </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>include/<a class="el" href="keypair_8hpp_source.html">keypair.hpp</a></li>
 <li>src/<b>keypair.cpp</b></li>
@@ -219,7 +825,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_keypair.html">Keypair</a></li>
-    <li class="footer">Generated on Wed Aug 28 2024 05:18:38 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
+    <li class="footer">Generated on Thu Aug 29 2024 19:11:04 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
   </ul>
 </div>
 </body>

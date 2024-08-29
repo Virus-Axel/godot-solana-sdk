@@ -347,7 +347,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <p>Returns the public bytes of a key. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">other</td><td>Either a <a class="el" href="classgodot_1_1_keypair.html">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> or a WalletAdapter to get the bytes from. </td></tr>
+    <tr><td class="paramname">other</td><td>Either a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> or a WalletAdapter to get the bytes from. </td></tr>
   </table>
   </dd>
 </dl>
@@ -547,8 +547,8 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <dl class="section note"><dt>Note</dt><dd>This function does not try to find a valid associated token address.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">wallet_address</td><td>Wallet address to associate token address from. Can be <a class="el" href="classgodot_1_1_keypair.html">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and WalletAdapter. </td></tr>
-    <tr><td class="paramname">token_mint_address</td><td>Token mint address. Can be <a class="el" href="classgodot_1_1_keypair.html">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and WalletAdapter. </td></tr>
+    <tr><td class="paramname">wallet_address</td><td>Wallet address to associate token address from. Can be <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and WalletAdapter. </td></tr>
+    <tr><td class="paramname">token_mint_address</td><td>Token mint address. Can be <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and WalletAdapter. </td></tr>
   </table>
   </dd>
 </dl>
@@ -573,7 +573,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 
 <p>Get base property of <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </p>
 <p>Gets the base used when creating Pubkeys from seeds.</p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000006">Deprecated</a></b></dt><dd>Does not really have a purpose.</dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000007">Deprecated</a></b></dt><dd>Does not really have a purpose.</dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>Base <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> property. </dd></dl>
 
 </div>
@@ -595,7 +595,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 
 <p>Gets the owner of the <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </p>
 <p>Gets the owner used when generating pubkey from seed.</p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000008">Deprecated</a></b></dt><dd>Does not have a purpose. Owner cannot be reversed anymore.</dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000009">Deprecated</a></b></dt><dd>Does not have a purpose. Owner cannot be reversed anymore.</dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>Owner of the <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </dd></dl>
 
 </div>
@@ -616,7 +616,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 </div><div class="memdoc">
 
 <p>Gets an unused seed property. </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000002">Deprecated</a></b></dt><dd>Seed is not used.</dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000003">Deprecated</a></b></dt><dd>Seed is not used.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">p_value</td><td>Value to set. </td></tr>
@@ -643,7 +643,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 
 <p>Get the token mint address object. </p>
 <p>Gets the token mint address used when generating associated token accounts.</p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000012">Deprecated</a></b></dt><dd>The token mint address is not stored internally anymore.</dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000013">Deprecated</a></b></dt><dd>The token mint address is not stored internally anymore.</dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>Variant containting the token mint <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> resource. </dd></dl>
 
 </div>
@@ -664,7 +664,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 </div><div class="memdoc">
 
 <p>Gets <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> type. </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000004">Deprecated</a></b></dt><dd>Type is not used anything.</dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000005">Deprecated</a></b></dt><dd>Type is not used anything.</dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>Type of <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </dd></dl>
 
 </div>
@@ -686,7 +686,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 
 <p>Get the wallet address object. </p>
 <p>Gets the wallet address used when derriving associated token address.</p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000010">Deprecated</a></b></dt><dd>The wallet address is not stored internally anymore. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000011">Deprecated</a></b></dt><dd>The wallet address is not stored internally anymore. </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>Wallet address used when derriving associated token address. </dd></dl>
 
 </div>
@@ -759,8 +759,8 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <p>Takes a mint address and a wallet address and returns the associated token address.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">wallet_address</td><td>Wallet address to associate token address from. Can be <a class="el" href="classgodot_1_1_keypair.html">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and WalletAdapter. </td></tr>
-    <tr><td class="paramname">token_mint_address</td><td>Token mint address. Can be <a class="el" href="classgodot_1_1_keypair.html">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and WalletAdapter. </td></tr>
+    <tr><td class="paramname">wallet_address</td><td>Wallet address to associate token address from. Can be <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and WalletAdapter. </td></tr>
+    <tr><td class="paramname">token_mint_address</td><td>Token mint address. Can be <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and WalletAdapter. </td></tr>
   </table>
   </dd>
 </dl>
@@ -843,9 +843,9 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <p>Takes a base address and derives a new <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> from a seed and an owner address.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">basePubkey</td><td>Base address of the derived <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. Accepts WalletAdapter, <a class="el" href="classgodot_1_1_keypair.html">Keypair</a> or a <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </td></tr>
+    <tr><td class="paramname">basePubkey</td><td>Base address of the derived <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. Accepts WalletAdapter, <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> or a <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </td></tr>
     <tr><td class="paramname">seed</td><td>Text seed to use when derriving the new <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </td></tr>
-    <tr><td class="paramname">owner_pubkey</td><td>Owner address of the derived <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. Accepts WalletAdapter, <a class="el" href="classgodot_1_1_keypair.html">Keypair</a> or a <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </td></tr>
+    <tr><td class="paramname">owner_pubkey</td><td>Owner address of the derived <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. Accepts WalletAdapter, <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> or a <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1063,7 +1063,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 
 <p>Set base of <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </p>
 <p>Used when creating Pubkeys from seeds.</p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000005">Deprecated</a></b></dt><dd>Use new_from_seed instead.</dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000006">Deprecated</a></b></dt><dd>Use new_from_seed instead.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">p_value</td><td>Base <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> to derive <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> from. </td></tr>
@@ -1090,7 +1090,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 
 <p>Set owner of <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </p>
 <p>Sets owner when generating the pubkey from seed.</p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000007">Deprecated</a></b></dt><dd>Use new_from_seed instead.</dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000008">Deprecated</a></b></dt><dd>Use new_from_seed instead.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">p_value</td><td>owner of the <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </td></tr>
@@ -1116,7 +1116,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 </div><div class="memdoc">
 
 <p>Sets an unused seed property. </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated</a></b></dt><dd>Try either new_from_bytes or new_from_seed instead.</dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000002">Deprecated</a></b></dt><dd>Try either new_from_bytes or new_from_seed instead.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">p_value</td><td>Value to set. </td></tr>
@@ -1143,7 +1143,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 
 <p>Set the token mint address object. </p>
 <p>Sets the token mint address used when generating associated token accounts.</p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000011">Deprecated</a></b></dt><dd>Use new_associated_token_address instead.</dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000012">Deprecated</a></b></dt><dd>Use new_associated_token_address instead.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">p_value</td><td>token mint used when generating associated token </td></tr>
@@ -1169,7 +1169,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 </div><div class="memdoc">
 
 <p>Set type of <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000003">Deprecated</a></b></dt><dd>Type is not used anything.</dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000004">Deprecated</a></b></dt><dd>Type is not used anything.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">p_value</td><td>Type of <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </td></tr>
@@ -1196,7 +1196,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 
 <p>Set the wallet address object. </p>
 <p>Sets the wallet address used when generating an associated token address.</p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000009">Deprecated</a></b></dt><dd>The owner is not stored internally anymore. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000010">Deprecated</a></b></dt><dd>The owner is not stored internally anymore. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">p_value</td><td>Wallet address to set. </td></tr>
@@ -1232,7 +1232,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <p>Same as bytes_from_variant but returns the base58 encoded string. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">other</td><td>Either a <a class="el" href="classgodot_1_1_keypair.html">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> or a WalletAdapter to get the string from. </td></tr>
+    <tr><td class="paramname">other</td><td>Either a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> or a WalletAdapter to get the string from. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1290,7 +1290,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_pubkey.html">Pubkey</a></li>
-    <li class="footer">Generated on Wed Aug 28 2024 05:18:39 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
+    <li class="footer">Generated on Thu Aug 29 2024 19:11:04 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
   </ul>
 </div>
 </body>
