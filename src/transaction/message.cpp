@@ -3,6 +3,7 @@
 #include <keypair.hpp>
 #include <solana_utils.hpp>
 #include "compute_budget.hpp"
+#include "address_lookup_table.hpp"
 
 TypedArray<AccountMeta> sort_metas(TypedArray<AccountMeta> input){
     TypedArray<AccountMeta> m1;
@@ -166,9 +167,18 @@ Message::Message(const PackedByteArray& bytes){
 
     num_required_signatures = bytes[cursor++];
 
-    ERR_FAIL_COND_EDMSG(num_required_signatures > 127, "V0 transactions are not yet supported.");
+    bool is_versioned_transaction = false;
 
-    num_readonly_signed_accounts = bytes[cursor++];
+    if(num_required_signatures > 127){
+        is_versioned_transaction = true;
+        num_required_signatures = bytes[cursor++];
+        num_readonly_signed_accounts = bytes[cursor++];
+    }
+    else{
+        num_readonly_signed_accounts = bytes[cursor++];
+    }
+    //ERR_FAIL_COND_EDMSG(num_required_signatures > 127, "V0 transactions are not yet supported.");
+
     num_readonly_unsigned_accounts = bytes[cursor++];
 
     uint8_t account_size = bytes[cursor++];
@@ -191,6 +201,17 @@ Message::Message(const PackedByteArray& bytes){
 
         compiled_instructions.append(new_instruction);
         cursor += consumed_bytes;
+    }
+
+    if(is_versioned_transaction){
+        unsigned int amount_of_lookup_tables = bytes[cursor++];
+        for(unsigned int i = 0; i < amount_of_lookup_tables; i++){
+            unsigned int consumed_bytes = 0;
+            Variant lookup_table = memnew(AddressLookupTable(bytes.slice(cursor), consumed_bytes));
+            address_lookup_tables.append(lookup_table);
+
+            cursor += consumed_bytes;
+        }
     }
 }
 
@@ -218,6 +239,15 @@ PackedByteArray Message::serialize(){
         CompiledInstruction *inst = Object::cast_to<CompiledInstruction>(compiled_instructions[i]);
         result.append_array(inst->serialize());
     }
+
+    // TODO(Virax): The lookup table is set if the transaction is imported as a V0.
+    // Support to specify lookup table from editor is to be implemented.
+    if(is_versioned()){
+        // Append Versioned flag.
+        result.insert(0, 128);
+        result.append_array(serialize_lookup_tables());
+    }
+
     return result;
 }
 
@@ -229,6 +259,14 @@ Array &Message::get_signers(){
     return signers;
 }
 
+void Message::set_address_lookup_tables(const Array &address_lookup_tables){
+    this->address_lookup_tables = address_lookup_tables;
+}
+
+Array Message::get_address_lookup_tables(){
+    return address_lookup_tables;
+}
+
 int Message::locate_account_meta(const TypedArray<AccountMeta>& arr, const AccountMeta &input){
     for(unsigned int i = 0; i < arr.size(); i++){
         if (Pubkey::bytes_from_variant(merged_metas[i]) == Pubkey::bytes_from_variant(input.get_pubkey())){
@@ -236,6 +274,24 @@ int Message::locate_account_meta(const TypedArray<AccountMeta>& arr, const Accou
         }
     }
     return -1;
+}
+
+bool Message::is_versioned(){
+    if(address_lookup_tables.is_empty()){
+        return false;
+    }
+    for(unsigned int i = 0; i < address_lookup_tables.size(); i++){
+        if(address_lookup_tables[i].get_type() != Variant::OBJECT){
+            WARN_PRINT_ED("Transaction lookup table type is unknown.");
+            return false;
+        }
+        else if(!((Object*)address_lookup_tables[i])->is_class("AddressLookupTable")){
+            WARN_PRINT_ED("Transaction lookup table type is unknown.");
+            return false;
+        }
+    }
+
+    return true;
 }
 
 PackedByteArray Message::serialize_blockhash(){
@@ -246,6 +302,17 @@ PackedByteArray Message::serialize_blockhash(){
     }
 
     return SolanaUtils::bs58_decode(latest_blockhash);
+}
+
+PackedByteArray Message::serialize_lookup_tables(){
+    PackedByteArray result;
+    result.append((unsigned char)address_lookup_tables.size());
+
+    for(unsigned int i = 0; i < address_lookup_tables.size(); i++){
+        result.append_array(Object::cast_to<AddressLookupTable>(address_lookup_tables[i])->serialize());
+    }
+
+    return result;
 }
 
 int Message::get_amount_signers(){

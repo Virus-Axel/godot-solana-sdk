@@ -20,6 +20,8 @@ private:
     TypedArray<CompiledInstruction> compiled_instructions;
     Array signers;
 
+    Array address_lookup_tables;
+
     TypedArray<AccountMeta> merged_metas;
 
     void compile_instruction(Variant instruction);
@@ -28,6 +30,8 @@ private:
     void merge_signer(const Variant& signer);
 
     int locate_account_meta(const TypedArray<AccountMeta>& arr, const AccountMeta &input);
+
+    bool is_versioned();
 
 protected:
     static void _bind_methods();
@@ -39,11 +43,15 @@ public:
     void set_latest_blockhash(const String& blockhash);
     PackedByteArray serialize();
     PackedByteArray serialize_blockhash();
+    PackedByteArray serialize_lookup_tables();
     int get_amount_signers();
     void set_signers(const Array& signers);
     Array &get_signers();
+    void set_address_lookup_tables(const Array &address_lookup_tables);
+    Array get_address_lookup_tables();
     ~Message();
 };
+
 }
 
 #endif

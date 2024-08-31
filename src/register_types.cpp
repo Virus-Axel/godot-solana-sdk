@@ -27,6 +27,7 @@
 #include "anchor_program.hpp"
 #include "rpc_single_http_request_client.hpp"
 #include "rpc_multi_http_request_client.hpp"
+#include "address_lookup_table.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -65,6 +66,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<Pubkey>();
     ClassDB::register_class<CompiledInstruction>();
     ClassDB::register_class<Message>();
+    ClassDB::register_class<AddressLookupTable>();
     ClassDB::register_class<Hash>();
     ClassDB::register_class<Account>();
     ClassDB::register_class<AccountMeta>();

@@ -26,6 +26,7 @@ private:
 
     Variant message;
 
+    Array address_lookup_tables;
     Array instructions;
     Variant payer;
     Array signers;
@@ -119,6 +120,8 @@ public:
 
     void send_callback(Dictionary params);
     void blockhash_callback(Dictionary params);
+    void set_address_lookup_tables(const Array &address_lookup_tables);
+    Array get_address_lookup_tables();
 
     ~Transaction();
 };

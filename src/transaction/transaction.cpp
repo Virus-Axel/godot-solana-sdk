@@ -117,6 +117,7 @@ void Transaction::create_message(){
     }
     message = memnew(Message(instructions, payer, unit_limit, unit_price));
     Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
+    Object::cast_to<Message>(message)->set_address_lookup_tables(address_lookup_tables);
 
     const int amount_of_signers = Object::cast_to<Message>(message)->get_amount_signers();
 
@@ -166,6 +167,9 @@ void Transaction::sign_at_index(const uint32_t index){
         controller->connect("message_signed", Callable(this, "_signer_signed"));
         controller->connect("signing_failed", Callable(this, "_signer_failed"));
         controller->sign_message(serialize(), index);
+    }
+    else{
+        ERR_PRINT_ONCE_ED("Unknown signer type.");
     }
 }
 
@@ -296,6 +300,7 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 
     p_list->push_back(PropertyInfo(Variant::INT, "unit_limit"));
     p_list->push_back(PropertyInfo(Variant::INT, "unit_price"));
+    p_list->push_back(PropertyInfo(Variant::ARRAY, "address_lookup_tables", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Instruction")));
 }
 
 Transaction::Transaction() {
@@ -338,6 +343,7 @@ Transaction::Transaction(const PackedByteArray& bytes){
     }
 
     message = memnew(Message(bytes.slice(cursor)));
+    address_lookup_tables = Object::cast_to<Message>(message)->get_address_lookup_tables();
     signers.resize(signer_size);
 
     check_fully_signed();
@@ -345,7 +351,7 @@ Transaction::Transaction(const PackedByteArray& bytes){
 
 Variant Transaction::new_from_bytes(const PackedByteArray& bytes){
     Transaction* result = memnew(Transaction(bytes));
-    
+
     return result;
 }
 
@@ -481,6 +487,7 @@ PackedByteArray Transaction::serialize(){
 
 PackedByteArray Transaction::serialize_message(){
     ERR_FAIL_COND_V_EDMSG(!is_message_valid(), PackedByteArray(), "Invalid message.");
+    Object::cast_to<Message>(message)->set_address_lookup_tables(address_lookup_tables);
     return Object::cast_to<Message>(message)->serialize();
 }
 
@@ -584,6 +591,15 @@ Error Transaction::partially_sign(const Variant& latest_blockhash){
 
     return OK;
 }
+
+void Transaction::set_address_lookup_tables(const Array &address_lookup_tables){
+    this->address_lookup_tables = address_lookup_tables;
+}
+
+Array Transaction::get_address_lookup_tables(){
+    return address_lookup_tables;
+}
+
 
 Transaction::~Transaction(){
 }
