@@ -204,18 +204,25 @@ func transaction_from_bytes():
 	tx.update_latest_blockhash()
 
 	tx.sign()
+	
+	var new_tx = Transaction.new_from_bytes(tx.serialize())
+	
 	var original = tx.serialize()
-	var reconstructed = Transaction.new_from_bytes(tx.serialize()).serialize()
+	var reconstructed = new_tx.serialize()
 	
 	assert(original == reconstructed)
 	
+	add_child(new_tx)
+	
 	# Signers are not stored in the bytes so need to set them.
-	tx.set_signers([payer])
-	tx.send()
+	new_tx.set_signers([payer])
+	new_tx.update_latest_blockhash()
+	new_tx.sign()
+	new_tx.send()
 	# On success transaction response signal will contain results.
 	# Connect it to avoid errors in you application.
-	var response = await tx.transaction_response_received
-	
+	var response = await new_tx.transaction_response_received
+
 	assert(response.has("result"))
 	var signature = response["result"]
 	assert(typeof(signature) == TYPE_STRING)

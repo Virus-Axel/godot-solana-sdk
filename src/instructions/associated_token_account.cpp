@@ -28,7 +28,8 @@ Variant AssociatedTokenAccountProgram::create_associated_token_account(const Var
     result->append_meta(*memnew(AccountMeta(ata, false, true)));
     result->append_meta(*memnew(AccountMeta(wallet_address, false, false)));
     result->append_meta(*memnew(AccountMeta(mint_address, false, false)));
-    result->append_meta(*memnew(AccountMeta(SystemProgram::get_pid(), false, false)));
+    const Variant SYSTEM_PID = SystemProgram::get_pid();
+    result->append_meta(*memnew(AccountMeta(SYSTEM_PID, false, false)));
     result->append_meta(*memnew(AccountMeta(token_program_id, false, false)));
 
     return result;
