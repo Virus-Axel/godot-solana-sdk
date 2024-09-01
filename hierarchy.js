@@ -28,6 +28,7 @@ var hierarchy =
     [ "godot::RequestData", "structgodot_1_1_request_data.html", null ],
     [ "Resource", null, [
       [ "godot::AccountMeta", "classgodot_1_1_account_meta.html", null ],
+      [ "godot::AddressLookupTable", "classgodot_1_1_address_lookup_table.html", null ],
       [ "godot::CandyGuardAccessList", "classgodot_1_1_candy_guard_access_list.html", null ],
       [ "godot::CandyMachineData", "classgodot_1_1_candy_machine_data.html", null ],
       [ "godot::ConfigLine", "classgodot_1_1_config_line.html", null ],

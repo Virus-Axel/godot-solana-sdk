@@ -3,6 +3,7 @@ var annotated_dup =
     [ "godot", null, [
       [ "Account", "classgodot_1_1_account.html", null ],
       [ "AccountMeta", "classgodot_1_1_account_meta.html", null ],
+      [ "AddressLookupTable", "classgodot_1_1_address_lookup_table.html", null ],
       [ "AnchorProgram", "classgodot_1_1_anchor_program.html", null ],
       [ "AssociatedTokenAccountProgram", "classgodot_1_1_associated_token_account_program.html", null ],
       [ "CandyGuardAccessList", "classgodot_1_1_candy_guard_access_list.html", null ],
