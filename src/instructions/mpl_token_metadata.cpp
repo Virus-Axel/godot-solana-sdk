@@ -170,8 +170,7 @@ void MplTokenMetadata::metadata_callback(const Dictionary& rpc_result){
     c += 2;
 
     // Check for creators.
-    if(account_data[c] == 1){
-        c++;
+    if(account_data[c++] == 1){
         uint32_t creator_amount = account_data.decode_u32(c);
         c += 4;
         for(int i = 0; i < creator_amount; i++){
@@ -207,8 +206,7 @@ void MplTokenMetadata::metadata_callback(const Dictionary& rpc_result){
     c++;
 
     // Check collection data.
-    if(account_data[c] == 1){
-        c++;
+    if(account_data[c++] == 1){
         MetaDataCollection * collection = memnew(MetaDataCollection);
 
         collection->set_verified(account_data[c] == 1);
