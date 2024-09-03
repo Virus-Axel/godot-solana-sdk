@@ -40,6 +40,7 @@ private:
     Variant token_mint_address;
 
     bool are_bytes_curve_point() const;
+    static bool is_variant_valid_key(const Variant& variant);
 
 protected:
     static void _bind_methods();
