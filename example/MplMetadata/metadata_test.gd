@@ -1,6 +1,6 @@
 extends Control
 
-const TOTAL_CASES := 2
+const TOTAL_CASES := 3
 var passed_test_mask := 0
 
 const MINT_SIZE := 82
@@ -73,10 +73,33 @@ func test_fetch_metadata():
 	assert(metadata.get_update_authority().to_string() == payer.get_public_string())
 	PASS(1)
 
+
+func test_fetch_usdc_metadata():
+	var usdc_address = Pubkey.new_from_string("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
+	$MplTokenMetadata.get_mint_metadata(usdc_address)
+	var metadata = await $MplTokenMetadata.metadata_fetched
+	assert(metadata.get_class() == "MetaData")
+	
+	assert(metadata.get_token_name() == "USD Coin")
+	assert(metadata.get_symbol() == "USDC")
+	assert(metadata.get_uri() == "")
+	assert(metadata.get_seller_fee_basis_points() == 0)
+	
+	assert(metadata.get_creators().size() == 0)
+	assert(metadata.get_token_standard() == null)
+	assert(metadata.get_mint().to_string() == usdc_address.to_string())
+	assert(metadata.get_update_authority().to_string() == "2wmVCSfPxGPjrnMMn7rchp4uaeoTqN39mXFC2zhPdri9")
+	assert(metadata.get_is_mutable() == true)
+	assert(metadata.get_edition_nonce() == 252)
+
+	PASS(2)
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	await test_create_metadata()
 	await test_fetch_metadata()
+	await test_fetch_usdc_metadata()
 
 
 func _on_timeout_timeout():
