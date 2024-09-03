@@ -107,6 +107,9 @@ void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
         return;
     }
+    Engine::get_singleton()->unregister_singleton("http_client");
+    Engine::get_singleton()->unregister_singleton("ws_client");
+    ClassDB::deinitialize(GDExtensionInitializationLevel::GDEXTENSION_INITIALIZATION_SCENE);
 }
 
 extern "C" {
