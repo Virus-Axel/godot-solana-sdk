@@ -20,6 +20,41 @@ bool Pubkey::are_bytes_curve_point() const{
     return is_y_point_valid(bytes.ptr());
 }
 
+bool Pubkey::is_variant_valid_key(const Variant& variant){
+    if(variant.get_type() == Variant::STRING){
+        return true;
+    }
+    else if(variant.get_type() == Variant::ARRAY){
+        return true;
+    }
+    else if(variant.get_type() == Variant::PACKED_BYTE_ARRAY){
+        return true;
+    }
+    else if(variant.get_type() != Variant::Type::OBJECT){
+        return false;
+    }
+
+    if(Pubkey::is_pubkey(variant)){
+        return true;
+    }
+    else if(Keypair::is_keypair(variant)){
+        return true;
+    }
+    else if(AccountMeta::is_account_meta(variant)){
+        return true;
+    }
+    else if(WalletAdapter::is_wallet_adapter(variant)){
+        WalletAdapter *phantom_controller = Object::cast_to<WalletAdapter>(variant);
+        if(phantom_controller->is_connected()){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    return false;
+}
+
 void Pubkey::_bind_methods() {
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_from_seed", "basePubkey", "seed", "owner_pubkey"), &Pubkey::new_from_seed);
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_from_string", "from"), &Pubkey::new_from_string);
@@ -260,7 +295,8 @@ Variant Pubkey::new_program_address(const PackedStringArray seeds, const Variant
     return res;
 }
 
-Variant Pubkey::new_pda(const PackedStringArray seeds, const Variant &program_id){    
+Variant Pubkey::new_pda(const PackedStringArray seeds, const Variant &program_id){
+    ERR_FAIL_COND_V_EDMSG(!Pubkey::is_variant_valid_key(program_id), nullptr, "program_id must be a compatible key type"); 
     TypedArray<PackedByteArray> arr;
 
     for(unsigned int i = 0; i < seeds.size(); i++){
@@ -284,6 +320,7 @@ Variant Pubkey::new_pda(const PackedStringArray seeds, const Variant &program_id
 }
 
 Variant Pubkey::new_pda_bytes(const Array seeds, const Variant &program_id){
+    ERR_FAIL_COND_V_EDMSG(!Pubkey::is_variant_valid_key(program_id), nullptr, "program_id must be a compatible key type"); 
     TypedArray<PackedByteArray> arr;
 
     for(unsigned int i = 0; i < seeds.size(); i++){
@@ -448,7 +485,7 @@ bool Pubkey::create_program_address_bytes(const Array seeds, const Variant &prog
     }
 
     // Include program ID and PDA marker in hash.
-    const PackedByteArray pid_bytes = Object::cast_to<Pubkey>(program_id)->to_bytes();
+    const PackedByteArray pid_bytes = Pubkey::bytes_from_variant(program_id);
     hasher.update(pid_bytes.ptr(), pid_bytes.size());
     hasher.update(PDA_MARKER, 21);
 
