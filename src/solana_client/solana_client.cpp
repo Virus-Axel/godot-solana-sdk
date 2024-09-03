@@ -703,6 +703,77 @@ void SolanaClient::simulate_transaction(const String& encoded_transaction, bool 
     return quick_http_request(make_rpc_dict("simulateTransaction", params));
 }
 
+void SolanaClient::get_asset(const Variant &id){
+    Array params;
+
+    params.append(Pubkey::string_from_variant(id));
+
+    return quick_http_request(make_rpc_dict("getAsset", params));
+}
+
+void SolanaClient::get_asset_proof(const Variant &id){
+    Array params;
+
+    params.append(Pubkey::string_from_variant(id));
+
+    return quick_http_request(make_rpc_dict("getAssetProof", params));
+}
+
+void SolanaClient::get_assets_by_authority(const Variant &authority, uint32_t page, uint32_t limit){
+    Array params;
+
+    Dictionary param_dict;
+    param_dict["authorityAddress"] = Pubkey::string_from_variant(authority);
+    param_dict["page"] = page;
+    param_dict["limit"] = limit;
+
+    Dictionary rpc_dict = make_rpc_dict("getAssetsByAuthority", params);
+    rpc_dict["params"] = param_dict;
+
+    return quick_http_request(rpc_dict);
+}
+
+void SolanaClient::get_assets_by_creator_address(const Variant &creator_address, bool only_verified, uint32_t page, uint32_t limit){
+    Array params;
+
+    Dictionary params_dict;
+    params_dict["creatorAddress"] = Pubkey::string_from_variant(creator_address);
+    params_dict["onlyVerified"] = only_verified;
+    params_dict["page"] = page;
+    params_dict["limit"] = limit;
+
+    Dictionary rpc_dict = make_rpc_dict("getAssetsByCreator", params);
+    rpc_dict["params"] = params_dict;
+    return quick_http_request(rpc_dict);
+}
+
+void SolanaClient::get_assets_by_group(const String group_key, const Variant &group_value, uint32_t page, uint32_t limit){
+    Array params;
+
+    Dictionary params_dict;
+    params_dict["groupKey"] = group_key;
+    params_dict["groupValue"] = Pubkey::string_from_variant(group_value);
+    params_dict["page"] = page;
+    params_dict["limit"] = limit;
+
+    Dictionary rpc_dict = make_rpc_dict("getAssetsByGroup", params);
+    rpc_dict["params"] = params_dict;
+    return quick_http_request(rpc_dict);
+}
+
+void SolanaClient::get_assets_by_owner(const Variant &owner, uint32_t page, uint32_t limit){
+    Array params;
+
+    Dictionary param_dict;
+    param_dict["ownerAddress"] = Pubkey::string_from_variant(owner);
+    param_dict["page"] = page;
+    param_dict["limit"] = limit;
+
+    Dictionary rpc_dict = make_rpc_dict("getAssetsByOwner", params);
+    rpc_dict["params"] = param_dict;
+    return quick_http_request(rpc_dict);
+}
+
 void SolanaClient::account_subscribe(const Variant &account_key, const Callable &callback){
     Array params;
     params.append(Pubkey::string_from_variant(account_key));
@@ -835,6 +906,13 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_method(D_METHOD("request_airdrop", "address", "lamports"), &SolanaClient::request_airdrop);
     ClassDB::bind_method(D_METHOD("send_transaction", "encoded_transaction", "max_retries", "skip_preflight"), &SolanaClient::send_transaction);
     ClassDB::bind_method(D_METHOD("simulate_transaction", "encoded_transaction", "sig_verify", "replace_blockhash", "account_addresses", "account_encoding"), &SolanaClient::simulate_transaction);
+
+    ClassDB::bind_method(D_METHOD("get_asset", "id"), &SolanaClient::get_asset);
+    ClassDB::bind_method(D_METHOD("get_asset_proof", "id"), &SolanaClient::get_asset_proof);
+    ClassDB::bind_method(D_METHOD("get_assets_by_authority", "authority", "page"), &SolanaClient::get_assets_by_authority, DEFVAL(10U), DEFVAL(1U));
+    ClassDB::bind_method(D_METHOD("get_assets_by_creator_address", "creator_address", "only_verified", "page", "limit"), &SolanaClient::get_assets_by_creator_address, DEFVAL(10U), DEFVAL(1U), DEFVAL(false));
+    ClassDB::bind_method(D_METHOD("get_assets_by_group", "group_key", "group_value", "page", "limit"), &SolanaClient::get_assets_by_group, DEFVAL(10U), DEFVAL(1U));
+    ClassDB::bind_method(D_METHOD("get_assets_by_owner", "owner", "page", "limit"), &SolanaClient::get_assets_by_owner, DEFVAL(10U), DEFVAL(1U));
 
     ClassDB::bind_method(D_METHOD("unsubscribe_all", "callback"), &SolanaClient::unsubscribe_all);
     ClassDB::bind_method(D_METHOD("account_subscribe", "account_key", "callback"), &SolanaClient::account_subscribe);

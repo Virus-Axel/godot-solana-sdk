@@ -187,6 +187,13 @@ public:
     void send_transaction(const String& encoded_transaction, uint64_t max_retries = 10, bool skip_preflight = false);
     void simulate_transaction(const String& encoded_transaction, bool sig_verify = false, bool replace_blockhash = false, Array account_addresses = Array(), const String& account_encoding = "base64");
 
+    void get_asset(const Variant &id);
+    void get_asset_proof(const Variant &id);
+    void get_assets_by_authority(const Variant &authority, uint32_t page=1, uint32_t limit=10);
+    void get_assets_by_creator_address(const Variant &creator_address, bool only_verified=false, uint32_t page=1, uint32_t limit=10);
+    void get_assets_by_group(const String group_key, const Variant &group_value, uint32_t page=1, uint32_t limit=10);
+    void get_assets_by_owner(const Variant &owner, uint32_t page=1, uint32_t limit=10);
+
     void account_subscribe(const Variant &account_key, const Callable &callback);
     void signature_subscribe(const String &signature, const Callable &callback, const String &commitment);
     void program_subscribe(const String &program_id, const Callable &callback);
