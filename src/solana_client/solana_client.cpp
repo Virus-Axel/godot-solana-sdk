@@ -116,7 +116,10 @@ void SolanaClient::append_account_filter(Array& options){
     }
 }
 
-void SolanaClient::append_data_filter(Array& options){
+void SolanaClient::append_data_filter(Array& options, const Array& filters){
+    if(!filters.is_empty()){
+        add_to_param_dict(options, "filters", filters);
+    }
     
 }
 
@@ -186,7 +189,6 @@ void SolanaClient::quick_http_request(const Dictionary& request_body, const Call
 
     Dictionary parsed_url = parse_url(get_real_url());
     const uint32_t real_port = get_real_http_port();
-
     // Check if port is set in URL.
     if(parsed_url.has("port")){
         if(real_port != (uint32_t)parsed_url["port"]){
@@ -421,7 +423,7 @@ void SolanaClient::get_multiple_accounts(const PackedStringArray accounts){
     return quick_http_request(make_rpc_dict("getMultipleAccounts", params));
 }
 
-void SolanaClient::get_program_accounts(const String& program_address, bool with_context){
+void SolanaClient::get_program_accounts(const String& program_address, const Array& filters, bool with_context){
     Array params;
     params.append(program_address);
     append_commitment(params);
@@ -429,8 +431,7 @@ void SolanaClient::get_program_accounts(const String& program_address, bool with
     add_to_param_dict(params, "withContext", with_context);
     append_encoding(params);
     append_account_filter(params);
-    append_data_filter(params);
-
+    append_data_filter(params, filters);
     return quick_http_request(make_rpc_dict("getProgramAccounts", params));
 }
 
@@ -810,7 +811,7 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_method(D_METHOD("get_max_shred_insert_slot"), &SolanaClient::get_max_shred_insert_slot);
     ClassDB::bind_method(D_METHOD("get_minimum_balance_for_rent_extemption", "data_size"), &SolanaClient::get_minimum_balance_for_rent_extemption);
     ClassDB::bind_method(D_METHOD("get_multiple_accounts", "accounts"), &SolanaClient::get_multiple_accounts);
-    ClassDB::bind_method(D_METHOD("get_program_accounts", "program_address", "with_context"), &SolanaClient::get_program_accounts);
+    ClassDB::bind_method(D_METHOD("get_program_accounts", "program_address", "filters", "with_context"), &SolanaClient::get_program_accounts, DEFVAL(Array()), DEFVAL(false));
     ClassDB::bind_method(D_METHOD("get_recent_performance_samples"), &SolanaClient::get_recent_performance_samples);
     ClassDB::bind_method(D_METHOD("get_recent_prioritization_fees", "account_addresses"), &SolanaClient::get_recent_prioritization_fees);
     ClassDB::bind_method(D_METHOD("get_signature_for_address", "address", "before", "until"), &SolanaClient::get_signature_for_address);

@@ -98,19 +98,19 @@ int CompiledInstruction::create_from_bytes(const PackedByteArray& bytes){
     
     int cursor = 0;
     program_id_index = bytes[cursor++];
-
-    const unsigned int account_size = bytes[cursor++];
-
-    ERR_FAIL_COND_V_EDMSG(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE + account_size, 0, "Invalid compiled instruction.");
-    accounts = bytes.slice(cursor, cursor + account_size);
-    cursor += account_size;
-
-    const unsigned int data_size = bytes[cursor++];
-
-    ERR_FAIL_COND_V_EDMSG(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE + account_size + data_size, 0, "Invalid compiled instruction.");
-    data = bytes.slice(cursor, cursor + data_size);
     
-    return cursor + data_size;
+    const unsigned int accounts_len = SolanaUtils::short_u16_decode(bytes, &cursor);
+
+    ERR_FAIL_COND_V_EDMSG(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE + accounts_len, 0, "Invalid compiled instruction.");
+    accounts = bytes.slice(cursor, cursor + accounts_len);
+    cursor += accounts_len;
+
+    const unsigned int data_len = SolanaUtils::short_u16_decode(bytes, &cursor);
+
+    ERR_FAIL_COND_V_EDMSG(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE + accounts_len + data_len, 0, "Invalid compiled instruction.");
+    data = bytes.slice(cursor, cursor + data_len);
+    
+    return cursor + data_len;
 }
 
 void CompiledInstruction::_bind_methods(){
@@ -120,14 +120,15 @@ PackedByteArray CompiledInstruction::serialize(){
     PackedByteArray result;
 
     result.append(program_id_index);
-    result.append(accounts.size());
+    result.append_array(SolanaUtils::short_u16_encode(accounts.size()));
 
     for(unsigned int i = 0; i < accounts.size(); i++){
         result.append(accounts[i]);
     }
 
 
-    result.append(data.size());
+    
+    result.append_array(SolanaUtils::short_u16_encode(data.size()));
     for(unsigned int i = 0; i < data.size(); i++){
         result.append(data[i]);
     }

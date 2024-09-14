@@ -30,6 +30,9 @@ public:
     static String bs64_encode(PackedByteArray bytes);
     static PackedByteArray bs64_decode(String input);
 
+    static PackedByteArray short_u16_encode(unsigned int value);
+    static unsigned int short_u16_decode(const PackedByteArray &bytes, int *cursor);
+
     ~SolanaUtils();
 };
 }

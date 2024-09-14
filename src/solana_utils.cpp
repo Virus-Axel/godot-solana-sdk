@@ -211,5 +211,36 @@ PackedByteArray SolanaUtils::bs64_decode(String input){
 	return result.slice(0, result.size() - cutoff);
 }
 
+PackedByteArray SolanaUtils::short_u16_encode(const unsigned int value) {
+    PackedByteArray result;
+    unsigned int remaining = value;
+    for (int i = 0; i < 3; ++i) {
+        uint8_t byte = remaining & 0x7f;
+        remaining >>= 7;
+        if (remaining == 0) {
+            result.append(byte);
+            break;
+        } else {
+            byte |= 0x80;
+            result.append(byte);
+        }
+    }
+    return result;
+}
+
+unsigned int SolanaUtils::short_u16_decode(const PackedByteArray& bytes, int* cursor) {
+    unsigned int value = 0;
+    int initial_cursor = *cursor;
+    for (int i = 0; i < 3 && (*cursor) < bytes.size(); ++i) {
+        uint8_t byte = bytes[*cursor];
+        value |= static_cast<unsigned int>(byte & 0x7f) << (7 * i);
+        (*cursor)++;
+        if ((byte & 0x80) == 0) {
+            break;
+        }
+    }
+    return value;
+}
+
 SolanaUtils::~SolanaUtils() {
 }
