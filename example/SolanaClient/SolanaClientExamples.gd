@@ -2,7 +2,7 @@ extends VBoxContainer
 
 const EXAMPLE_ACCOUNT := "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZAMdL4VZHirAn"
 
-const TOTAL_CASES := 8
+const TOTAL_CASES := 9
 var passed_test_mask := 0
 		
 
@@ -180,9 +180,65 @@ func test_account_encoding():
 	assert(airdrop_response.has("result"))
 
 
+func test_das_methods():
+	# Testing against official devnet and mainnet addresses.
+	# Test is dependent on their normal operation.
+	
+	const MAINNET_URL = "https://api.mainnet-beta.solana.com:443"
+	const DEVNET_URL = "https://api.devnet.solana.com:443"
+
+	var devnet_client = add_solana_client()
+	devnet_client.url_override = DEVNET_URL
+	var mainnet_client = add_solana_client()
+	mainnet_client.url_override = MAINNET_URL
+	
+	# Examples from https://developers.metaplex.com/das-api/methods/
+	const ASSET_ADDRESS = "8vw7tdLGE3FBjaetsJrZAarwsbc8UESsegiLyvWXxs5A"
+	const COMPRESSED_ASSET_ADDRESS = "Ez6ezCMkRaUkWS5v6WVcP7uuCWiKadr3W2dHFkoZmteW"
+	const OWNER_ADDRESS = "N4f6zftYsuu4yT7icsjLwh4i6pB1zvvKbseHj2NmSQw"
+	const AUTHORITY_ADDRESS = "mRdta4rc2RtsxEUDYuvKLamMZAdW6qHcwuq866Skxxv"
+	const CREATOR_ADDRESS = "D3XrkNZz6wx6cofot7Zohsf2KSsu2ArngNk8VqU9cTY3"
+	const GROUP_ADDRESS = "J2ZfLdQsaZ3GCmbucJef3cPnPwGcgjDW1SSYtMdq3L9p"
+	
+	
+	devnet_client.get_asset(ASSET_ADDRESS)
+	var result = await devnet_client.http_response_received
+	assert(result.has("result"))
+	result = {}
+	
+	mainnet_client.get_asset_proof(COMPRESSED_ASSET_ADDRESS)
+	result = await mainnet_client.http_response_received
+	assert(result.has("result"))
+	result = {}
+
+	mainnet_client.get_assets_by_authority(AUTHORITY_ADDRESS)
+	result = await mainnet_client.http_response_received
+	assert(result.has("result"))
+	result = {}
+
+	mainnet_client.get_assets_by_creator_address(CREATOR_ADDRESS)
+	result = await mainnet_client.http_response_received
+	assert(result.has("result"))
+	result = {}
+
+	mainnet_client.get_assets_by_owner(Pubkey.new_from_string(OWNER_ADDRESS))
+	result = await mainnet_client.http_response_received
+	assert(result.has("result"))
+
+	mainnet_client.get_assets_by_group("collection", GROUP_ADDRESS)
+	result = await mainnet_client.http_response_received
+	assert(result.has("result"))
+	result = {}
+	
+	delete_solana_client(devnet_client)
+	delete_solana_client(mainnet_client)
+	
+	PASS(8)
+
 func _ready():
 	# Disbled since RPC client does not respond with base64 encoding.
 	# test_account_encoding()
+	
 	
 	get_account_info_demo()
 	get_latest_blockhash_demo()
@@ -190,7 +246,8 @@ func _ready():
 	
 	subscribe_account_demo()
 	await unsubscribe_account_test()
-	test_project_settings()
+	await test_project_settings()
+	test_das_methods()
 
 
 func _account_subscribe_callback(_params):
@@ -207,7 +264,7 @@ func _should_not_be_called(params):
 
 func _dummy_callback(_params):
 	pass
-	
+
 
 func _on_timeout_timeout():
 	for i in range(TOTAL_CASES):
