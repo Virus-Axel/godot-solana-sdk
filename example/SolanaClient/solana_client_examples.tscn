@@ -32,6 +32,4 @@ wait_time = 20.0
 one_shot = true
 autostart = true
 
-[node name="SolanaClient" type="SolanaClient" parent="."]
-
 [connection signal="timeout" from="Timeout" to="." method="_on_timeout_timeout"]
