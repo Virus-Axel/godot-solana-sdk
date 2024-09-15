@@ -43,6 +43,7 @@ var NAVTREEINDEX0 =
 "classgodot_1_1_keypair.html#ad316985440e9d95d90855fb18040b8ee":[1,0,0,14,12],
 "classgodot_1_1_message.html":[1,0,0,15],
 "classgodot_1_1_meta_data.html":[1,0,0,16],
+"classgodot_1_1_meta_data.html#ac3c69f8e9c05038fe5cb2fa89d2f3172":[1,0,0,16,0],
 "classgodot_1_1_meta_data_collection.html":[1,0,0,17],
 "classgodot_1_1_meta_data_creator.html":[1,0,0,18],
 "classgodot_1_1_meta_data_uses.html":[1,0,0,19],
