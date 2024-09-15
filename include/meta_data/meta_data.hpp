@@ -75,6 +75,19 @@ public:
     void set_collection(const Variant& collection);
     Variant get_collection();
 
+    /**
+     * @godot
+     * @brief Copies the existing data from a dictionary returned by the DAS methods
+     * 
+     * Checks the provided dictionary for metadata fields and copies them if they exist.
+     * If they do not exist the method will proceed without warnings.
+     * This method is meant to be used with dictionary format returned from DAS SolanaClient methods.
+     * 
+     * @param other Dictionary with data to copy. Must be compliant with the format returned from the
+     * DAS SolanaClient methods.
+     */
+    void copy_from_dict(const Dictionary &other);
+
     PackedByteArray serialize(const bool is_mutable) const;
 };
 }

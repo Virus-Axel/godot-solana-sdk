@@ -121,6 +121,8 @@ void MetaData::_bind_methods(){
     ClassDB::bind_method(D_METHOD("get_seller_fee_basis_points"), &MetaData::get_seller_fee_basis_points);
     //ClassDB::bind_method(D_METHOD("set_seller_fee_basis_points", "set_seller_fee_basis_points"), &MetaData::set_seller_fee_basis_points);
 
+    ClassDB::bind_method(D_METHOD("copy_from_dict", "dictionary"), &MetaData::copy_from_dict);
+
     ClassDB::bind_method(D_METHOD("get_edition_nonce"), &MetaData::get_edition_nonce);
     ClassDB::bind_method(D_METHOD("set_edition_nonce", "edition_nonce"), &MetaData::set_edition_nonce);
     ClassDB::bind_method(D_METHOD("get_token_standard"), &MetaData::get_token_standard);
@@ -265,6 +267,100 @@ Array MetaData::get_creators(){
 
 Variant MetaData::get_collection(){
     return collection;
+}
+
+void MetaData::copy_from_dict(const Dictionary &other){
+    if(other.has("id")){
+        const Variant mint_pubkey = Pubkey::new_from_string(other["id"]);
+        set_mint(mint_pubkey);
+    }
+
+    if(other.has("royalty")){
+        Dictionary royalty = other["royalty"];
+        if(royalty.has("primary_sale_happened")){
+            set_primary_sale_happened(royalty["primary_sale_happened"]);
+        }
+        if(royalty.has("basis_points")){
+            set_seller_fee_basis_points(royalty["basis_points"]);
+        }
+    }
+    if(other.has("mutable")){
+        set_is_mutable(other["mutable"]);
+    }
+    if(other.has("creators")){
+        Array creator_array = other["creators"];
+        for(unsigned int i = 0; i < creator_array.size(); i++){
+            Dictionary creator = creator_array[i];
+            MetaDataCreator *metadata_creator = memnew(MetaDataCreator);
+
+            if(creator.has("address")){
+                metadata_creator->set_address(creator["address"]);
+            }
+            if(creator.has("address")){
+                metadata_creator->set_share(creator["share"]);
+            }
+            if(creator.has("address")){
+                metadata_creator->set_verified(creator["verified"]);
+            }
+
+            add_creator(metadata_creator);
+        }
+        enable_creators = creators.size() > 0;
+    }
+
+    if(other.has("grouping")){
+        Array groups = other["grouping"];
+        for(unsigned int i = 0; i < groups.size(); i++){
+            const Dictionary group = groups[i];
+            if(group.has("group_key")){
+                if(group["group_key"] == "collection" && group.has("group_value")){
+                    MetaDataCollection *new_collection = memnew(MetaDataCollection);
+                    const Variant collection_key = Pubkey::new_from_string(group["group_value"]);
+                    new_collection->set_key(collection_key);
+
+                    set_collection(new_collection);
+                }
+            }
+        }
+    }
+
+    if(!other.has("content")){
+        return;
+    }
+
+    const Dictionary content = other["content"];
+    if(content.has("json_uri")){
+        set_uri(content["json_uri"]);
+    }
+
+    if(content.has("metadata")){
+        Dictionary metadata = content["metadata"];
+        if(metadata.has("name")){
+            set_token_name(metadata["name"]);
+        }
+        if(metadata.has("symbol")){
+            set_symbol(metadata["symbol"]);
+        }
+        if(metadata.has("token_standard")){
+            if(metadata["token_standard"] == "NonFungible"){
+                set_token_standard(0);
+            }
+            else if(metadata["token_standard"] == "FungibleAsset"){
+                set_token_standard(1);
+            }
+            else if(metadata["token_standard"] == "Fungible"){
+                set_token_standard(2);
+            }
+            else if(metadata["token_standard"] == "NonFungibleEdition"){
+                set_token_standard(3);
+            }
+            else if(metadata["token_standard"] == "ProgrammableNonFungible"){
+                set_token_standard(4);
+            }
+        }
+    }
+
+    // TODO(Virax): Edition nonce and update authority is missing.
 }
 
 void MetaData::set_collection(const Variant& collection){
