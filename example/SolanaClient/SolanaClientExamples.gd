@@ -203,6 +203,10 @@ func test_das_methods():
 	
 	devnet_client.get_asset(ASSET_ADDRESS)
 	var result = await devnet_client.http_response_received
+	
+	var md = MetaData.new()
+	md.copy_from_dict(result["result"])
+	
 	assert(result.has("result"))
 	result = {}
 	
@@ -223,6 +227,10 @@ func test_das_methods():
 
 	mainnet_client.get_assets_by_owner(Pubkey.new_from_string(OWNER_ADDRESS))
 	result = await mainnet_client.http_response_received
+	for nft in result["result"]["items"]:
+		md = MetaData.new()
+		md.copy_from_dict(nft)
+	
 	assert(result.has("result"))
 
 	mainnet_client.get_assets_by_group("collection", GROUP_ADDRESS)
@@ -238,7 +246,8 @@ func test_das_methods():
 func _ready():
 	# Disbled since RPC client does not respond with base64 encoding.
 	# test_account_encoding()
-	
+	test_das_methods()
+	return
 	
 	get_account_info_demo()
 	get_latest_blockhash_demo()
