@@ -200,7 +200,7 @@ void SolanaClient::quick_http_request(const Dictionary& request_body, const Call
     }
 
     if(is_inside_tree() || async_override){
-        get_current_http_client()->asynchronous_request(request_body, parsed_url, Callable(this, "response_callback"));
+        get_current_http_client()->asynchronous_request(request_body, parsed_url, rpc_callback);
     }
     else{
         ERR_FAIL_EDMSG("SolanaClient must be in scene tree.");
@@ -1065,6 +1065,10 @@ void SolanaClient::set_ws_url(const String& url){
 
 String SolanaClient::get_ws_url(){
     return ws_url;
+}
+
+void SolanaClient::set_callback(Callable callback){
+    rpc_callback = callback;
 }
 
 String SolanaClient::get_url_override(){
