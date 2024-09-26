@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://b0iofagcqa64g"]
+
+[ext_resource type="Script" path="res://addons/SolanaSDK/Demos/3.3DNFTShowcase/model_nft.gd" id="1_4o77f"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qyh6n"]
+transparency = 1
+albedo_color = Color(0.4, 0.890196, 1, 0.364706)
+
+[sub_resource type="BoxMesh" id="BoxMesh_381cj"]
+material = SubResource("StandardMaterial3D_qyh6n")
+size = Vector3(3, 3, 3)
+
+[node name="ModelNFT" type="Node3D" node_paths=PackedStringArray("loading_template")]
+script = ExtResource("1_4o77f")
+loading_template = NodePath("loading_template")
+target_size = 10.0
+
+[node name="loading_template" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_381cj")

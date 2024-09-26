@@ -1,0 +1,38 @@
+[gd_scene load_steps=3 format=3 uid="uid://c6ync1x06vh2q"]
+
+[ext_resource type="Script" path="res://addons/SolanaSDK/Scripts/Utility/displayable_nft.gd" id="1_d5vc2"]
+[ext_resource type="Texture2D" uid="uid://dkyfoudbohuqq" path="res://addons/SolanaSDK/Textures/missingicon.png" id="2_7dajo"]
+
+[node name="DisplayableNFT" type="Button" node_paths=PackedStringArray("visual", "name_label", "button")]
+custom_minimum_size = Vector2(200, 250)
+disabled = true
+script = ExtResource("1_d5vc2")
+visual = NodePath("Visual")
+image_size = 256
+name_label = NodePath("Name")
+button = NodePath(".")
+
+[node name="Visual" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+offset_right = 200.0
+offset_bottom = 200.0
+texture = ExtResource("2_7dajo")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -80.0
+offset_top = -44.0
+offset_right = 80.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Zencyclopedia: Ruby #4855"
+horizontal_alignment = 1
+autowrap_mode = 3
