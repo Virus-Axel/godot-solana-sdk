@@ -13,6 +13,9 @@
 #include <system_program.hpp>
 #include <spl_token.hpp>
 #include <godot_cpp/classes/http_request.hpp>
+#include <godot_cpp/classes/file_access.hpp>
+
+#include "sha256.hpp"
 
 namespace godot{
 
@@ -84,6 +87,7 @@ void UserInfo::from_bytes(const PackedByteArray& bytes){
 }
 
 ShdwDrive::ShdwDrive(){
+    upload_file_request = memnew(HTTPRequest);
     user_info = memnew(UserInfo);
     api_request = memnew(RpcSingleHttpRequestClient);
     api_request->set_skip_id(true);
@@ -199,12 +203,15 @@ void ShdwDrive::_bind_methods(){
     ClassDB::add_signal("ShdwDrive", MethodInfo("storage_account_fetched", PropertyInfo(Variant::OBJECT, "storage_account")));
 
     ClassDB::bind_method(D_METHOD("fetch_userinfo_callback", "params"), &ShdwDrive::fetch_userinfo_callback);
+    ClassDB::bind_method(D_METHOD("upload_file_callback", "result", "response_code", "headers", "body"), &ShdwDrive::upload_file_callback);
     ClassDB::bind_method(D_METHOD("fetch_storage_account_callback", "params"), &ShdwDrive::fetch_storage_account_callback);
     ClassDB::bind_method(D_METHOD("create_storage_call_api", "params"), &ShdwDrive::create_storage_call_api);
     ClassDB::bind_method(D_METHOD("create_storage_account", "owner_keypair", "storage_name", "storage_size"), &ShdwDrive::create_storage_account);
     ClassDB::bind_method(D_METHOD("send_create_storage_tx"), &ShdwDrive::send_create_storage_tx);
     ClassDB::bind_method(D_METHOD("send_create_storage_tx_signed"), &ShdwDrive::send_create_storage_tx_signed);
     ClassDB::bind_method(D_METHOD("create_store_api_response", "response"), &ShdwDrive::create_store_api_response);
+    
+    ClassDB::bind_method(D_METHOD("upload_file_to_storage", "filename", "storage_owner_keypair", "storage_account"), &ShdwDrive::upload_file_to_storage);
 }
 
 Variant ShdwDrive::create_storage_account(const Variant& owner_keypair, const String& name, const String& size){
@@ -351,11 +358,109 @@ Variant ShdwDrive::initialize_account(const Variant& owner_keypair, const String
     return result;
 }
 
+PackedByteArray ShdwDrive::create_form_line(const String& line){
+    PackedByteArray result;
+    result.append_array(line.to_utf8_buffer());
+    result.append_array(String("\r\n").to_utf8_buffer());
+    return result;
+}
+
+PackedByteArray ShdwDrive::create_form_line(const PackedByteArray& content){
+    PackedByteArray result;
+    result.append_array(content);
+    result.append_array(String("\r\n").to_utf8_buffer());
+    return result;
+}
+
+String ShdwDrive::get_upload_message(const Variant& storage_account_key, const String& filename_hash){
+    Array arr;
+    arr.append(Pubkey::string_from_variant(storage_account_key));
+    arr.append(filename_hash);
+    return String("Shadow Drive Signed Message:\nStorage Account: {0}\nUpload files with hash: {1}").format(arr);
+}
+
+String ShdwDrive::get_filename_hash(const String& filename){
+    SHA256 hasher;
+    const PackedByteArray filename_bytes = filename.to_ascii_buffer();
+    hasher.update(filename_bytes.ptr(), filename_bytes.size());
+    uint8_t *sha256_hash = hasher.digest();
+
+    PackedByteArray res;
+    res.resize(32);
+
+    for(unsigned int i = 0; i < 32; i++){
+        res[i] = sha256_hash[i];
+    }
+
+    delete[] sha256_hash;
+
+    return res.hex_encode();
+}
+
+void ShdwDrive::upload_file_to_storage(const String& filename, const Variant& storage_owner_keypair, const Variant& storage_account){
+    const String boundary = "--GODOTSOLANASDKBOUNDARY";
+
+    PackedByteArray file_content = FileAccess::get_file_as_bytes(filename);
+
+    ERR_FAIL_COND_EDMSG(file_content.is_empty(), "Failed to read file contents.");
+
+    const String filename_hash = get_filename_hash(filename);
+    std::cout << "filename hash: " << filename_hash.ascii() << std::endl;
+    const String upload_message = get_upload_message(storage_account, filename_hash);
+
+    PackedByteArray signature = Object::cast_to<Keypair>(storage_owner_keypair)->sign_message(upload_message.to_ascii_buffer());
+
+    PackedByteArray request_body;
+	request_body.append_array(create_form_line(boundary));
+	request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"file\"; filename=\"test.txt\""));
+	request_body.append_array(create_form_line("Content-Type: text/plain"));
+	request_body.append_array(create_form_line("Content-Transfer-Encoding: binary"));
+	request_body.append_array(create_form_line(""));
+	request_body.append_array(create_form_line(file_content));
+	request_body.append_array(create_form_line(boundary));
+    request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"message\""));
+	request_body.append_array(create_form_line(""));
+	request_body.append_array(create_form_line(SolanaUtils::bs58_encode(signature)));
+	request_body.append_array(create_form_line(boundary));
+    request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"signer\""));
+	request_body.append_array(create_form_line(""));
+	request_body.append_array(create_form_line(Pubkey::string_from_variant(storage_owner_keypair)));
+	request_body.append_array(create_form_line(boundary));
+    request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"storage_account\""));
+	request_body.append_array(create_form_line(""));
+	request_body.append_array(create_form_line(Pubkey::string_from_variant(storage_account)));
+	request_body.append_array(create_form_line(boundary));
+    //request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"filenames\""));
+	//request_body.append_array(create_form_line(""));
+	//request_body.append_array(create_form_line(filename));
+	//request_body.append_array(create_form_line(boundary));
+
+    PackedStringArray headers;
+    headers.append(String("Content-Type: multipart/form-data;boundary=") + boundary.substr(2));
+
+    const String SHDW_DRIVE_ENDPOINT = "https://shadow-storage.genesysgo.net:443/upload";
+
+    add_child(upload_file_request, INTERNAL_MODE_BACK);
+
+    Callable upload_file_response = Callable(this, "upload_file_callback");
+    upload_file_request->connect("request_completed", upload_file_response, CONNECT_ONE_SHOT);
+
+    std::cout << "sending: " << request_body.get_string_from_ascii().ascii() << std::endl;
+
+	upload_file_request->request_raw(SHDW_DRIVE_ENDPOINT, headers, HTTPClient::METHOD_POST, request_body);
+}
+
+void ShdwDrive::upload_file_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body){
+    Dictionary response = JSON::parse_string(body.get_string_from_ascii());
+    std::cout << "reustl !!!: " << body.get_string_from_ascii().ascii() << std::endl;
+}
+
 Variant ShdwDrive::get_pid(){
     return Pubkey::new_from_string(ID.c_str());
 }
 
 ShdwDrive::~ShdwDrive(){
+    memfree(upload_file_request);
     memfree(api_request);
     memfree(user_info);
     memfree(create_storage_account_client);

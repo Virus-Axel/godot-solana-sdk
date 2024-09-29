@@ -61,6 +61,7 @@ private:
     UserInfo* user_info = nullptr;
     StorageAccountV2* storage_account = nullptr;
     RpcSingleHttpRequestClient *api_request = nullptr;
+    HTTPRequest *upload_file_request = nullptr;
 
     SolanaClient *create_storage_account_client = nullptr;
     SolanaClient *fetch_user_info_client = nullptr;
@@ -68,9 +69,14 @@ private:
     Transaction *create_storage_account_transaction = nullptr;
 
     static PackedByteArray initialize_accountv2_discriminator();
+    static PackedByteArray create_form_line(const String& line);
+    static PackedByteArray create_form_line(const PackedByteArray& content);
+    static String get_upload_message(const Variant& storage_account_key, const String& filename_hash);
+    static String get_filename_hash(const String& filename);
 
     void fetch_userinfo_callback(const Dictionary& params);
     void fetch_storage_account_callback(const Dictionary& params);
+    void upload_file_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body);
     void create_storage_call_api(const Variant& params);
 
     uint64_t human_size_to_bytes(const String& human_size);
@@ -98,6 +104,7 @@ public:
     static Variant new_storage_account_pubkey(const Variant& owner_key, uint64_t account_seed);
 
     Variant initialize_account(const Variant& owner_keypair, const String name, uint64_t storage);
+    void upload_file_to_storage(const String& filename, const Variant& storage_owner_keypair, const Variant& storage_account);
 
     static Variant get_pid();
 
