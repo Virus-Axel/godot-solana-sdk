@@ -166,7 +166,7 @@ $(function(){initNavTree('solana__client_8hpp_source.html',''); initResizable();
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keywordtype">void</span> append_min_context_slot(Array&amp; options);</div>
 <div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <span class="keywordtype">void</span> append_encoding(Array&amp; options);</div>
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    <span class="keywordtype">void</span> append_account_filter(Array&amp; options);</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    <span class="keywordtype">void</span> append_data_filter(Array&amp; options);</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    <span class="keywordtype">void</span> append_data_filter(Array&amp; options, <span class="keyword">const</span> Array&amp; filters);</div>
 <div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keywordtype">void</span> append_transaction_detail(Array&amp; options);</div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keywordtype">void</span> append_max_transaction_version(Array&amp; options);</div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="keywordtype">void</span> append_rewards(Array&amp; options);</div>
@@ -266,7 +266,7 @@ $(function(){initNavTree('solana__client_8hpp_source.html',''); initResizable();
 <div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>    <span class="keywordtype">void</span> get_max_shred_insert_slot();</div>
 <div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>    <span class="keywordtype">void</span> get_minimum_balance_for_rent_extemption(uint64_t data_size);</div>
 <div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>    <span class="keywordtype">void</span> get_multiple_accounts(<span class="keyword">const</span> PackedStringArray accounts);</div>
-<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>    <span class="keywordtype">void</span> get_program_accounts(<span class="keyword">const</span> String&amp; program_address, <span class="keywordtype">bool</span> with_context = <span class="keyword">false</span>);</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>    <span class="keywordtype">void</span> get_program_accounts(<span class="keyword">const</span> String&amp; program_address, <span class="keyword">const</span> Array&amp; filters = Array(), <span class="keywordtype">bool</span> with_context = <span class="keyword">false</span>);</div>
 <div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>    <span class="keywordtype">void</span> get_recent_performance_samples();</div>
 <div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>    <span class="keywordtype">void</span> get_recent_prioritization_fees(PackedStringArray account_addresses);</div>
 <div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>    <span class="keywordtype">void</span> get_signature_for_address(<span class="keyword">const</span> String&amp; address, <span class="keyword">const</span> String&amp; before = <span class="stringliteral">&quot;&quot;</span>, <span class="keyword">const</span> String&amp; until = <span class="stringliteral">&quot;&quot;</span>);</div>
@@ -322,7 +322,7 @@ $(function(){initNavTree('solana__client_8hpp_source.html',''); initResizable();
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_63409d5bccd6cae6a9473d064241435d.html">solana_client</a></li><li class="navelem"><b>solana_client.hpp</b></li>
-    <li class="footer">Generated on Sun Sep 15 2024 17:40:44 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
+    <li class="footer">Generated on Sun Sep 29 2024 15:45:22 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
   </ul>
 </div>
 </body>
