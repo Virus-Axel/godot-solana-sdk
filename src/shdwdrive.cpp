@@ -146,10 +146,8 @@ Variant ShdwDrive::get_uploader(){
 }
 
 void ShdwDrive::fetch_userinfo_callback(const Dictionary& params){
-    std::cout << "fetch user info callback entered" << std::endl;
     // TODO(Virax): Add helper for this common pattern.
     if(!params.has("result")){
-        std::cout << JSON::stringify(params).ascii() << std::endl;
         ERR_PRINT_ED("Fetching user info account failed.");
         return;
     }
@@ -169,12 +167,10 @@ void ShdwDrive::fetch_userinfo_callback(const Dictionary& params){
         new_user = true;
     }
 
-    std::cout << "emitting user_info_fetched" << std::endl;
     emit_signal("user_info_fetched");
 }
 
 void ShdwDrive::fetch_storage_account_callback(const Dictionary& params){
-    std::cout << "fetch storage account callback entered" << std::endl;
     // TODO(Virax): Add helper for this common pattern.
     if(!params.has("result")){
         ERR_PRINT_ED("Fetching storage account failed.");
@@ -189,23 +185,19 @@ void ShdwDrive::fetch_storage_account_callback(const Dictionary& params){
 
     StorageAccountV2* storage_account = memnew(StorageAccountV2);
     storage_account->from_bytes(data_info);
-    std::cout << "emitting" << std::endl;
 
     emit_signal("storage_account_fetched", storage_account);
-}
-
-void ShdwDrive::create_storage_call_api(const Variant& params){
-    std::cout << "Finish" << std::endl;
 }
 
 void ShdwDrive::_bind_methods(){
     ClassDB::add_signal("ShdwDrive", MethodInfo("user_info_fetched", PropertyInfo(Variant::OBJECT, "user_info")));
     ClassDB::add_signal("ShdwDrive", MethodInfo("storage_account_fetched", PropertyInfo(Variant::OBJECT, "storage_account")));
+    ClassDB::add_signal("ShdwDrive", MethodInfo("storage_account_response", PropertyInfo(Variant::DICTIONARY, "response")));
+    ClassDB::add_signal("ShdwDrive", MethodInfo("upload_response", PropertyInfo(Variant::DICTIONARY, "response")));
 
     ClassDB::bind_method(D_METHOD("fetch_userinfo_callback", "params"), &ShdwDrive::fetch_userinfo_callback);
     ClassDB::bind_method(D_METHOD("upload_file_callback", "result", "response_code", "headers", "body"), &ShdwDrive::upload_file_callback);
     ClassDB::bind_method(D_METHOD("fetch_storage_account_callback", "params"), &ShdwDrive::fetch_storage_account_callback);
-    ClassDB::bind_method(D_METHOD("create_storage_call_api", "params"), &ShdwDrive::create_storage_call_api);
     ClassDB::bind_method(D_METHOD("create_storage_account", "owner_keypair", "storage_name", "storage_size"), &ShdwDrive::create_storage_account);
     ClassDB::bind_method(D_METHOD("send_create_storage_tx"), &ShdwDrive::send_create_storage_tx);
     ClassDB::bind_method(D_METHOD("send_create_storage_tx_signed"), &ShdwDrive::send_create_storage_tx_signed);
@@ -231,7 +223,6 @@ Variant ShdwDrive::create_storage_account(const Variant& owner_keypair, const St
 }
 
 void ShdwDrive::send_create_storage_tx(){
-    std::cout << "send_create_storage_tx entered" << std::endl;
     ERR_FAIL_COND(user_info == nullptr && new_user == false);
     //ERR_FAIL_COND(storage_account == nullptr);
 
@@ -243,7 +234,7 @@ void ShdwDrive::send_create_storage_tx(){
 
     Array partially_signers;
     partially_signers.append(owner_keypair);
-    std::cout << "trying to sign " << std::endl;
+
     Callable callback = Callable(this, "send_create_storage_tx_signed");
     create_storage_account_transaction->connect("signer_state_changed", callback, CONNECT_ONE_SHOT);
     create_storage_account_transaction->partially_sign(partially_signers);
@@ -251,11 +242,6 @@ void ShdwDrive::send_create_storage_tx(){
 
 void ShdwDrive::send_create_storage_tx_signed(){
     PackedByteArray ser = create_storage_account_transaction->serialize();
-
-    for(unsigned int i = 0; i < ser.size(); i++){
-        std::cout << (int)ser[i] << ", ";
-    }
-    std::cout << std::endl;
 
     const String SHDW_DRIVE_ENDPOINT = "https://shadow-storage.genesysgo.net:443/storage-account";
 
@@ -274,7 +260,7 @@ void ShdwDrive::send_create_storage_tx_signed(){
 }
 
 void ShdwDrive::create_store_api_response(const Dictionary& response){
-    std::cout << JSON::stringify(response).ascii() << std::endl;
+    emit_signal("storage_account_response", response);
 }
 
 Variant ShdwDrive::new_user_info_pubkey(const Variant& base_keypair){
@@ -405,7 +391,7 @@ void ShdwDrive::upload_file_to_storage(const String& filename, const Variant& st
     ERR_FAIL_COND_EDMSG(file_content.is_empty(), "Failed to read file contents.");
 
     const String filename_hash = get_filename_hash(filename);
-    std::cout << "filename hash: " << filename_hash.ascii() << std::endl;
+
     const String upload_message = get_upload_message(storage_account, filename_hash);
 
     PackedByteArray signature = Object::cast_to<Keypair>(storage_owner_keypair)->sign_message(upload_message.to_ascii_buffer());
@@ -413,8 +399,8 @@ void ShdwDrive::upload_file_to_storage(const String& filename, const Variant& st
     PackedByteArray request_body;
 	request_body.append_array(create_form_line(boundary));
 	request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"file\"; filename=\"test.txt\""));
-	request_body.append_array(create_form_line("Content-Type: text/plain"));
-	request_body.append_array(create_form_line("Content-Transfer-Encoding: binary"));
+	//request_body.append_array(create_form_line("Content-Type: text/plain"));
+	request_body.append_array(create_form_line("Content-Type: application/octet-stream"));
 	request_body.append_array(create_form_line(""));
 	request_body.append_array(create_form_line(file_content));
 	request_body.append_array(create_form_line(boundary));
@@ -430,29 +416,30 @@ void ShdwDrive::upload_file_to_storage(const String& filename, const Variant& st
 	request_body.append_array(create_form_line(""));
 	request_body.append_array(create_form_line(Pubkey::string_from_variant(storage_account)));
 	request_body.append_array(create_form_line(boundary));
-    //request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"filenames\""));
-	//request_body.append_array(create_form_line(""));
-	//request_body.append_array(create_form_line(filename));
-	//request_body.append_array(create_form_line(boundary));
+    request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"fileNames\""));
+	request_body.append_array(create_form_line(""));
+	request_body.append_array(create_form_line(filename));
+	request_body.append_array(create_form_line(boundary + String("--")));
 
     PackedStringArray headers;
     headers.append(String("Content-Type: multipart/form-data;boundary=") + boundary.substr(2));
+    headers.append(String("accept: */*"));
+    headers.append("accept-encoding: gzip, br, deflate");
+    headers.append(String("content-length: ") + String::num_int64(request_body.size()));
 
     const String SHDW_DRIVE_ENDPOINT = "https://shadow-storage.genesysgo.net:443/upload";
+    //const String SHDW_DRIVE_ENDPOINT = "http://127.0.0.1:8000/upload";
 
     add_child(upload_file_request, INTERNAL_MODE_BACK);
 
     Callable upload_file_response = Callable(this, "upload_file_callback");
     upload_file_request->connect("request_completed", upload_file_response, CONNECT_ONE_SHOT);
 
-    std::cout << "sending: " << request_body.get_string_from_ascii().ascii() << std::endl;
-
 	upload_file_request->request_raw(SHDW_DRIVE_ENDPOINT, headers, HTTPClient::METHOD_POST, request_body);
 }
 
 void ShdwDrive::upload_file_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body){
     Dictionary response = JSON::parse_string(body.get_string_from_ascii());
-    std::cout << "reustl !!!: " << body.get_string_from_ascii().ascii() << std::endl;
 }
 
 Variant ShdwDrive::get_pid(){
@@ -460,7 +447,9 @@ Variant ShdwDrive::get_pid(){
 }
 
 ShdwDrive::~ShdwDrive(){
-    memfree(upload_file_request);
+    if(!upload_file_request->is_inside_tree()){
+        memfree(upload_file_request);
+    }
     memfree(api_request);
     memfree(user_info);
     memfree(create_storage_account_client);

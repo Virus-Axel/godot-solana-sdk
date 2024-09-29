@@ -599,12 +599,9 @@ Error Transaction::partially_sign(const Array& array){
 
     signers = Object::cast_to<Message>(message)->get_signers();
 
-    std::cout << "signer size is: " << signers.size() << std::endl;
     for(unsigned int i = 0; i < array.size(); i++){
         for(unsigned int j = 0; j < signers.size(); j++){
-            std::cout << "comparing " << Pubkey::string_from_variant(signers[j]).ascii() << " with " << Pubkey::string_from_variant(array[i]).ascii() << std::endl;
             if(Pubkey::bytes_from_variant(signers[j]) == Pubkey::bytes_from_variant(array[i])){
-                std::cout << "signing index " << j << std::endl;
                 sign_at_index(j);
                 emit_signal("signer_state_changed");
             }

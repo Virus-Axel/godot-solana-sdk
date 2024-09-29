@@ -77,7 +77,6 @@ private:
     void fetch_userinfo_callback(const Dictionary& params);
     void fetch_storage_account_callback(const Dictionary& params);
     void upload_file_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body);
-    void create_storage_call_api(const Variant& params);
 
     uint64_t human_size_to_bytes(const String& human_size);
 

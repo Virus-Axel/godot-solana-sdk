@@ -96,7 +96,6 @@ Error RpcSingleHttpRequestClient::send_next_request(){
 
     // Make a POST request.
     const String request_body = JSON::stringify(request_queue.front().request);
-    std::cout << request_body.ascii() << std::endl;
 
     return request(godot::HTTPClient::METHOD_POST, path, http_headers, request_body);
 }
