@@ -138,7 +138,18 @@ PackedByteArray ShdwDrive::initialize_accountv2_discriminator(){
 }
 
 uint64_t ShdwDrive::human_size_to_bytes(const String& human_size){
-    return 0;
+    if(human_size.ends_with("kb") || human_size.ends_with("KB")){
+        return human_size.substr(0, human_size.length() -2).to_int() * 1000;
+    }
+    else if(human_size.ends_with("mb") || human_size.ends_with("MB")){
+        return human_size.substr(0, human_size.length() -2).to_int() * 1000000;
+    }
+    else if(human_size.ends_with("gb") || human_size.ends_with("GB")){
+        return human_size.substr(0, human_size.length() -2).to_int() * 1000000000;
+    }
+    else{
+        ERR_FAIL_V_EDMSG(0, "Example input 10000, 10KB, 300mb, 1GB");
+    }
 }
 
 Variant ShdwDrive::get_uploader(){
@@ -206,10 +217,18 @@ void ShdwDrive::_bind_methods(){
     ClassDB::bind_method(D_METHOD("upload_file_to_storage", "filename", "storage_owner_keypair", "storage_account"), &ShdwDrive::upload_file_to_storage);
 }
 
-Variant ShdwDrive::create_storage_account(const Variant& owner_keypair, const String& name, const String& size){
+Variant ShdwDrive::create_storage_account(const Variant& owner_keypair, const String& name, const Variant& size){
     this->owner_keypair = owner_keypair;
     this->storage_name = name;
-    this->storage_size = human_size_to_bytes(size);
+    if(size.get_type() == Variant::INT){
+        this->storage_size = size;
+    }
+    else if(size.get_type() == Variant::STRING){
+        this->storage_size = human_size_to_bytes(size);
+    }
+    else{
+        ERR_FAIL_V_EDMSG(nullptr, "Invalid storage input size");
+    }
 
     Callable callback = Callable(this, "send_create_storage_tx");
 
@@ -226,7 +245,7 @@ void ShdwDrive::send_create_storage_tx(){
     ERR_FAIL_COND(user_info == nullptr && new_user == false);
     //ERR_FAIL_COND(storage_account == nullptr);
 
-    Variant instruction = initialize_account(owner_keypair, "axel", 100);
+    Variant instruction = initialize_account(owner_keypair, this->storage_name, this->storage_size);
 
     create_storage_account_transaction->set_payer(owner_keypair);
     create_storage_account_transaction->add_instruction(instruction);

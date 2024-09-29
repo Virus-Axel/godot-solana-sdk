@@ -90,7 +90,7 @@ public:
 
     Variant fetch_user_info(const Variant address);
     Variant fetch_storage_account(const Variant address);
-    Variant create_storage_account(const Variant& owner_keypair, const String& name, const String& size);
+    Variant create_storage_account(const Variant& owner_keypair, const String& name, const Variant& size);
 
     void send_create_storage_tx();
     void send_create_storage_tx_signed();
