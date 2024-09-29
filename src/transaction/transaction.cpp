@@ -31,6 +31,7 @@ void Transaction::_bind_methods() {
     ClassDB::add_signal("Transaction", MethodInfo("transaction_response_received", PropertyInfo(Variant::DICTIONARY, "result")));
     ClassDB::add_signal("Transaction", MethodInfo("blockhash_updated", PropertyInfo(Variant::DICTIONARY, "result")));
     ClassDB::add_signal("Transaction", MethodInfo("blockhash_update_failed", PropertyInfo(Variant::DICTIONARY, "result")));
+    ClassDB::add_signal("Transaction", MethodInfo("signer_state_changed"));
 
     ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &Transaction::set_url_override);
     ClassDB::bind_static_method("Transaction", D_METHOD("new_from_bytes", "bytes"), &Transaction::new_from_bytes);
@@ -429,7 +430,7 @@ bool Transaction::get_external_payer(){
 }
 
 void Transaction::update_latest_blockhash(const String &custom_hash){
-    ERR_FAIL_COND_EDMSG(!is_inside_tree(), "Transaction node must be added to scene tree.");
+    //ERR_FAIL_COND_EDMSG(!is_inside_tree(), "Transaction node must be added to scene tree.");
 
     if(custom_hash.is_empty()){
         pending_blockhash = true;
@@ -539,7 +540,7 @@ void Transaction::blockhash_callback(Dictionary params){
 }
 
 void Transaction::send(){
-    ERR_FAIL_COND_EDMSG(!is_inside_tree(), "Transaction node must be added to scene tree.");
+    //ERR_FAIL_COND_EDMSG(!is_inside_tree(), "Transaction node must be added to scene tree.");
 
     ERR_FAIL_COND_EDMSG(Object::cast_to<Message>(message)->get_signers().size() != signatures.size(), "Transaction does not have enough signers.");
 
@@ -587,7 +588,30 @@ Error Transaction::sign(){
     return OK;
 }
 
-Error Transaction::partially_sign(const Variant& latest_blockhash){
+Error Transaction::partially_sign(const Array& array){
+    ERR_FAIL_COND_V_EDMSG(!is_message_valid(), Error::ERR_INVALID_DATA, "Invalid message.");
+
+    Callable pending_blockhash_callback(this, "partially_sign");
+    if(pending_blockhash){
+        connect("send_ready", pending_blockhash_callback.bind(array), CONNECT_ONE_SHOT);
+        return ERR_UNAVAILABLE;
+    }
+
+    signers = Object::cast_to<Message>(message)->get_signers();
+
+    std::cout << "signer size is: " << signers.size() << std::endl;
+    for(unsigned int i = 0; i < array.size(); i++){
+        for(unsigned int j = 0; j < signers.size(); j++){
+            std::cout << "comparing " << Pubkey::string_from_variant(signers[j]).ascii() << " with " << Pubkey::string_from_variant(array[i]).ascii() << std::endl;
+            if(Pubkey::bytes_from_variant(signers[j]) == Pubkey::bytes_from_variant(array[i])){
+                std::cout << "signing index " << j << std::endl;
+                sign_at_index(j);
+                emit_signal("signer_state_changed");
+            }
+        }
+    }
+
+    check_fully_signed();
 
     return OK;
 }

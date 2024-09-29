@@ -28,6 +28,7 @@
 #include "rpc_single_http_request_client.hpp"
 #include "rpc_multi_http_request_client.hpp"
 #include "address_lookup_table.hpp"
+#include "shdwdrive.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -92,6 +93,9 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<ConfigLineSetting>();
     ClassDB::register_class<ConfigLine>();
     ClassDB::register_class<AnchorProgram>();
+    ClassDB::register_class<ShdwDrive>();
+    ClassDB::register_class<UserInfo>();
+    ClassDB::register_class<StorageAccountV2>();
     ClassDB::register_class<RpcSingleHttpRequestClient>();
     ClassDB::register_class<RpcMultiHttpRequestClient>();
 

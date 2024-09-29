@@ -1,9 +1,11 @@
-#ifndef GODOT_SOLANA_DSK_SHDW_DRIVE_HPP
-#define GODOT_SOLANA_DSK_SHDW_DRIVE_HPP
+#ifndef GODOT_SOLANA_SDK_SHDW_DRIVE_HPP
+#define GODOT_SOLANA_SDK_SHDW_DRIVE_HPP
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/resource.hpp>
+#include <godot_cpp/classes/http_request.hpp>
 #include "solana_client.hpp"
+#include "transaction.hpp"
 
 namespace godot{
 
@@ -23,6 +25,8 @@ private:
 
     static PackedByteArray discriminator();
 
+protected:
+    static void _bind_methods();
 public:
     void from_bytes(const PackedByteArray& bytes);
 };
@@ -30,42 +34,74 @@ public:
 class UserInfo: public Resource{
 GDCLASS(UserInfo, Resource)
 private:
-    unsigned int account_counter = 0;
-    unsigned int delete_counter = 0;
+    uint32_t account_counter = 0;
+    uint32_t delete_counter = 0;
     bool agreed_to_terms = false;
     bool had_bad_scam_scan = false;
 
     static PackedByteArray discriminator();
 
+protected:
+    static void _bind_methods();
+
 public:
+    uint32_t get_account_counter();
     void from_bytes(const PackedByteArray& bytes);
 };
 
 class ShdwDrive : public Node {
 GDCLASS(ShdwDrive, Node)
 private:
-    static const std::string ShdwDrive::ID;
+    static const std::string ID;
 
+    bool new_user = false;
+    Variant owner_keypair;
+    String storage_name;
+    uint64_t storage_size;
     UserInfo* user_info = nullptr;
     StorageAccountV2* storage_account = nullptr;
+    RpcSingleHttpRequestClient *api_request = nullptr;
 
-    SolanaClient *fetch_user_account_client;
+    SolanaClient *create_storage_account_client = nullptr;
+    SolanaClient *fetch_user_info_client = nullptr;
+    SolanaClient *fetch_storage_account_client = nullptr;
+    Transaction *create_storage_account_transaction = nullptr;
+
+    static PackedByteArray initialize_accountv2_discriminator();
 
     void fetch_userinfo_callback(const Dictionary& params);
     void fetch_storage_account_callback(const Dictionary& params);
+    void create_storage_call_api(const Variant& params);
+
     uint64_t human_size_to_bytes(const String& human_size);
+
+    Variant get_uploader();
+
 protected:
     static void _bind_methods();
 public:
+    ShdwDrive();
+    void _process(double delta) override;
+
     Variant fetch_user_info(const Variant address);
     Variant fetch_storage_account(const Variant address);
     Variant create_storage_account(const Variant& owner_keypair, const String& name, const String& size);
 
     void send_create_storage_tx();
+    void send_create_storage_tx_signed();
+
+    void create_store_api_response(const Dictionary& response);
 
     static Variant new_user_info_pubkey(const Variant& base_keypair);
+    static Variant new_stake_account_pubkey(const Variant& storage_account);
+    static Variant new_storage_config_pubkey();
+    static Variant new_storage_account_pubkey(const Variant& owner_key, uint64_t account_seed);
+
+    Variant initialize_account(const Variant& owner_keypair, const String name, uint64_t storage);
 
     static Variant get_pid();
+
+    ~ShdwDrive();
 };
 
 } // godot

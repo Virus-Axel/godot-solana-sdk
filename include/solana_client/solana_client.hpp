@@ -74,7 +74,6 @@ private:
 
     Dictionary make_rpc_param(const Variant& key, const Variant& value);
     void quick_http_request(const Dictionary& request_body, const Callable& callback = Callable());
-    Dictionary parse_url(const String& url);
 
     void response_callback(const Dictionary &params);
     void ws_response_callback(const Dictionary &params);
@@ -83,6 +82,7 @@ protected:
     static void _bind_methods();
 
 public:
+    static Dictionary parse_url(const String& url);
     static String assemble_url(const Dictionary& url_components);
 
     static unsigned int global_rpc_id;

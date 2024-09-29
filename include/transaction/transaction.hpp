@@ -114,7 +114,7 @@ public:
     void send();
     void send_and_disconnect();
     Variant sign_and_send();
-    Error partially_sign(const Variant& latest_blockhash);
+    Error partially_sign(const Array& array);
 
     void create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash);
 

@@ -31,7 +31,15 @@ bool RpcSingleHttpRequestClient::is_completed() const{
     return !is_pending() && !has_request();
 }
 
+void RpcSingleHttpRequestClient::set_skip_id(bool skip_id){
+    this->skip_id = skip_id;
+}
+
 bool RpcSingleHttpRequestClient::is_response_valid(const Dictionary& response) const{
+    if(skip_id){
+        return true;
+    }
+    
     // Check if response is ours.
     if(!response.has("id")){
         return false;
@@ -88,6 +96,7 @@ Error RpcSingleHttpRequestClient::send_next_request(){
 
     // Make a POST request.
     const String request_body = JSON::stringify(request_queue.front().request);
+    std::cout << request_body.ascii() << std::endl;
 
     return request(godot::HTTPClient::METHOD_POST, path, http_headers, request_body);
 }
@@ -181,7 +190,14 @@ void RpcSingleHttpRequestClient::_bind_methods(){
 }
 
 void RpcSingleHttpRequestClient::asynchronous_request(const Dictionary& request_body, Dictionary parsed_url, const Callable &callback, float timeout){
-    RequestData data = {request_body, parsed_url, timeout, request_body["id"], callback};
+    RequestData data;
+    if(skip_id){
+        data = {request_body, parsed_url, timeout, 0, callback};
+    }
+    else{
+        data = {request_body, parsed_url, timeout, request_body["id"], callback};
+    }
+
     request_queue.push(data);
 }
 
