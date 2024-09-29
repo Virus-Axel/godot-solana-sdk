@@ -264,7 +264,6 @@ PackedByteArray AnchorProgram::serialize_variant(const Variant &var){
         result.resize(8);
         result.encode_s64(0, (int64_t) var);
         break;
-
     case Variant::BOOL:
         result.append((bool)var);
         break;
@@ -333,9 +332,8 @@ PackedByteArray AnchorProgram::serialize_variant(const Variant &var){
 void AnchorProgram::register_instruction_builders(){
 }
 
-PackedByteArray AnchorProgram::discriminator_by_name(const String &name){
+PackedByteArray AnchorProgram::discriminator_by_name(const String &name, const String &namespace_string){
     SHA256 hasher;
-    const String namespace_string = "global:";
     hasher.update(namespace_string.to_ascii_buffer().ptr(), namespace_string.length());
     hasher.update(name.to_ascii_buffer().ptr(), name.length());
     
@@ -560,9 +558,11 @@ bool AnchorProgram::validate_instruction_arguments(const String &instruction_nam
 void AnchorProgram::_bind_methods(){
     ClassDB::add_signal("AnchorProgram", MethodInfo("idl_fetched"));
     ClassDB::add_signal("AnchorProgram", MethodInfo("account_fetched"));
+    ClassDB::add_signal("AnchorProgram", MethodInfo("accounts_fetched"));
 
     ClassDB::bind_method(D_METHOD("idl_from_pid_callback", "rpc_result"), &AnchorProgram::idl_from_pid_callback);
     ClassDB::bind_method(D_METHOD("fetch_account_callback", "rpc_result"), &AnchorProgram::fetch_account_callback);
+    ClassDB::bind_method(D_METHOD("fetch_all_accounts_callback", "rpc_result"), &AnchorProgram::fetch_all_accounts_callback);
 
     ClassDB::bind_method(D_METHOD("get_idl"), &AnchorProgram::get_idl);
     ClassDB::bind_method(D_METHOD("set_idl", "idl"), &AnchorProgram::set_idl);
@@ -577,6 +577,7 @@ void AnchorProgram::_bind_methods(){
 
     ClassDB::bind_method(D_METHOD("build_instruction", "instruction_name", "accounts", "arguments"), &AnchorProgram::build_instruction);
     ClassDB::bind_method(D_METHOD("fetch_account", "name", "account_address"), &AnchorProgram::fetch_account);
+    ClassDB::bind_method(D_METHOD("fetch_all_accounts", "additional_filters"), &AnchorProgram::fetch_all_accounts, DEFVAL(Array()));
 
     ClassDB::bind_method(D_METHOD("set_json_file", "json_file"), &AnchorProgram::set_json_file);
 
@@ -847,7 +848,7 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
     ERR_FAIL_COND_V_EDMSG(idl.is_empty(), nullptr, "IDL is empty, try loading from PID or JSON file.");
     Instruction *result = memnew(Instruction);
 
-    PackedByteArray data = discriminator_by_name(name.to_snake_case());
+    PackedByteArray data = discriminator_by_name(name.to_snake_case(), global_prefix);
 
     result->set_program_id(Pubkey::new_from_string(pid));
     data.append_array(serialize_variant(arguments));
@@ -883,41 +884,39 @@ Error AnchorProgram::fetch_account(const String name, const Variant& account){
 
 void AnchorProgram::fetch_account_callback(const Dictionary &rpc_result){
     String name = pending_account_name;
+    pending_account_name = "";
     
     Dictionary ref_struct = find_idl_account(name);
 
     if(ref_struct.is_empty()){
-        emit_signal("account_fetched", Dictionary());
         ERR_FAIL_EDMSG("Account name was not found in IDL.");
     }
 
-    pending_account_name = "";
     if(!rpc_result.has("result")){
         emit_signal("account_fetched", Dictionary());
-        ERR_FAIL_COND_EDMSG(rpc_result.has("error"), String(rpc_result["result"]));
-        ERR_FAIL_EDMSG("Unexpected RPC responce, no result.");
+        ERR_FAIL_COND_EDMSG(rpc_result.has("error"), String(rpc_result["error"]));
+        ERR_FAIL_EDMSG("Unexpected RPC response, no result.");
     }
-
+    
     Dictionary result_dict = rpc_result["result"];
-    Variant value;
     if(!result_dict.has("value")){
         emit_signal("account_fetched", Dictionary());
-        ERR_FAIL_EDMSG("Unexpected RPC responce, no value.");
+        ERR_FAIL_EDMSG("Unexpected RPC response, no value.");
     }
-    value = result_dict["value"];
+    Variant value = result_dict["value"];
     if(value.get_type() != Variant::DICTIONARY){
+        if(value.get_type() == Variant::NIL) {
+            emit_signal("account_fetched", Dictionary());
+            return;
+        }
         emit_signal("account_fetched", Dictionary());
-        ERR_FAIL_COND_EDMSG(value.get_type() == Variant::NIL, "Account does not exist");
-        ERR_FAIL_EDMSG("Unexpected RPC responce, unknown value type.");
+        ERR_FAIL_EDMSG("Unexpected RPC response, unknown value type.");
     }
 
     Dictionary account_dict = value;
-
     Array account_data_tuple = account_dict["data"];
     String encoded_data = account_data_tuple[0];
-
     PackedByteArray account_data = SolanaUtils::bs64_decode(encoded_data);
-
     account_data = account_data.slice(8);
 
     const Array fields = ((Dictionary)ref_struct["type"])["fields"];
@@ -931,6 +930,77 @@ void AnchorProgram::fetch_account_callback(const Dictionary &rpc_result){
     }
 
     emit_signal("account_fetched", result);
+}
+
+
+Error AnchorProgram::fetch_all_accounts(const String name, const Array& additional_filters){
+    if(!pending_accounts_name.is_empty()){
+        return Error::ERR_ALREADY_IN_USE;
+    }
+    pending_accounts_name = name;
+    Array filters = additional_filters.duplicate();
+    Dictionary memcmp_filter;
+    memcmp_filter["offset"] = 0;
+    memcmp_filter["bytes"] = SolanaUtils::bs58_encode(discriminator_by_name(name, account_prefix));
+    Dictionary type_filter;
+    type_filter["memcmp"] = memcmp_filter;
+    
+    filters.insert(0, type_filter);
+
+    Callable callback(this, "fetch_all_accounts_callback");
+    fetch_client->connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
+    fetch_client->get_program_accounts(get_pid(), filters, false);
+
+    return Error::OK;
+}
+
+void AnchorProgram::fetch_all_accounts_callback(const Dictionary &rpc_result) {
+    String name = pending_accounts_name;
+    pending_accounts_name = "";
+    
+    Dictionary ref_struct = find_idl_account(name);
+
+    if (ref_struct.is_empty()) {
+        ERR_FAIL_EDMSG("Account name was not found in IDL.");
+    }
+
+    if (!rpc_result.has("result")) {
+        emit_signal("accounts_fetched", Dictionary());
+        ERR_FAIL_COND_EDMSG(rpc_result.has("error"), String(rpc_result["error"]));
+        ERR_FAIL_EDMSG("Unexpected RPC response, no result.");
+    }
+
+    if (rpc_result["result"].get_type() != Variant::ARRAY){
+        emit_signal("accounts_fetched", Dictionary());
+        ERR_FAIL_EDMSG("Unexpected RPC response, result is not an array.");
+    }
+
+    Array accounts = rpc_result["result"];
+    Dictionary result_accounts;
+    const Array fields = ((Dictionary)ref_struct["type"])["fields"];
+    for (int i = 0; i < accounts.size(); i++) {
+        Dictionary account_entry = accounts[i];
+        String pubkey = account_entry["pubkey"];
+        Dictionary account_data = account_entry["account"];
+
+        Array data_tuple = account_data["data"];
+        String encoded_data = data_tuple[0];
+
+        PackedByteArray account_bytes = SolanaUtils::bs64_decode(encoded_data);
+        account_bytes = account_bytes.slice(8);
+
+        Dictionary parsed_account;
+        for (int j = 0; j < fields.size(); j++) {
+            int data_offset = 0;
+            const Variant val = deserialize_variant(account_bytes, ((Dictionary)fields[j])["type"], data_offset);
+            parsed_account[((Dictionary)fields[j])["name"]] = val;
+            account_bytes = account_bytes.slice(data_offset);
+        }
+
+        result_accounts[pubkey] = parsed_account;
+    }
+
+    emit_signal("accounts_fetched", result_accounts);
 }
 
 }

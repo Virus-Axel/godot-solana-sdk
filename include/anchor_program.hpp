@@ -14,6 +14,7 @@ private:
     String pid;
     String url_override = "";
     String pending_account_name = "";
+    String pending_accounts_name = "";
     bool try_from_pid = false;
     Variant json_file;
     bool try_from_json_file = false;
@@ -31,6 +32,7 @@ private:
     bool load_from_pid(const String& pid);
     void idl_from_pid_callback(const Dictionary& rpc_result);
     void fetch_account_callback(const Dictionary &rpc_result);
+    void fetch_all_accounts_callback(const Dictionary &rpc_result);
     void extract_idl_from_rpc_response(const Dictionary& rpc_result);
     void extract_idl_from_data(const Array& data_info);
 
@@ -40,7 +42,8 @@ private:
     bool check_type(const Variant& expected_type, const Variant& value);
     bool validate_instruction_arguments(const String &instruction_name, const Array &arguments);
     void register_instruction_builders();
-    PackedByteArray discriminator_by_name(const String &name);
+    PackedByteArray discriminator_by_name(const String &name, const String &namespace_string);
+
     Dictionary find_idl_instruction(const String &name);
     Dictionary find_idl_account(const String &name);
     Dictionary find_idl_type(const String &name);
@@ -88,8 +91,13 @@ public:
     static Dictionary u64(uint64_t val);
     static Dictionary option(const Variant &val);
 
+
+    const String global_prefix = "global:";
+    const String account_prefix = "account:";
+
     Variant build_instruction(String name, Array accounts, Variant arguments);
     Error fetch_account(const String name, const Variant &account);
+    Error fetch_all_accounts(const String name, const Array& additional_filters = Array());
 };
 
 }
