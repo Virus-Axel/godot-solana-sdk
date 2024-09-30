@@ -414,7 +414,14 @@ void ShdwDrive::upload_file_to_storage(const String& filename, const Variant& st
 
     ERR_FAIL_COND_EDMSG(file_content.is_empty(), "Failed to read file contents.");
 
-    const String filename_hash = get_filename_hash(filename);
+    PackedStringArray splits = filename.split("/", false);
+
+    String name_without_path = filename;
+    if(splits.size() > 1){
+        name_without_path = splits[splits.size() - 1];
+    }
+
+    const String filename_hash = get_filename_hash(name_without_path);
 
     const String upload_message = get_upload_message(storage_account, filename_hash);
 
@@ -422,7 +429,7 @@ void ShdwDrive::upload_file_to_storage(const String& filename, const Variant& st
 
     PackedByteArray request_body;
 	request_body.append_array(create_form_line(boundary));
-	request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"file\"; filename=\"test.txt\""));
+	request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"file\"; filename=\"" + name_without_path + "\""));
 	//request_body.append_array(create_form_line("Content-Type: text/plain"));
 	request_body.append_array(create_form_line("Content-Type: application/octet-stream"));
 	request_body.append_array(create_form_line(""));
@@ -442,7 +449,7 @@ void ShdwDrive::upload_file_to_storage(const String& filename, const Variant& st
 	request_body.append_array(create_form_line(boundary));
     request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"fileNames\""));
 	request_body.append_array(create_form_line(""));
-	request_body.append_array(create_form_line(filename));
+	request_body.append_array(create_form_line(name_without_path));
 	request_body.append_array(create_form_line(boundary + String("--")));
 
     PackedStringArray headers;
@@ -459,10 +466,12 @@ void ShdwDrive::upload_file_to_storage(const String& filename, const Variant& st
     Callable upload_file_response = Callable(this, "upload_file_callback");
     upload_file_request->connect("request_completed", upload_file_response, CONNECT_ONE_SHOT);
 
+    std::cout << "sending" << std::endl;
 	upload_file_request->request_raw(SHDW_DRIVE_ENDPOINT, headers, HTTPClient::METHOD_POST, request_body);
 }
 
 void ShdwDrive::upload_file_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body){
+    std::cout << "response" << std::endl;
     Dictionary response = JSON::parse_string(body.get_string_from_ascii());
     emit_signal("upload_response", response);
 }

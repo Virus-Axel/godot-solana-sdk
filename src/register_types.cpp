@@ -29,6 +29,7 @@
 #include "rpc_multi_http_request_client.hpp"
 #include "address_lookup_table.hpp"
 #include "shdwdrive.hpp"
+#include "honeycomb.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -98,6 +99,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<StorageAccountV2>();
     ClassDB::register_class<RpcSingleHttpRequestClient>();
     ClassDB::register_class<RpcMultiHttpRequestClient>();
+    ClassDB::register_class<HoneyComb>();
 
     add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
     add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, 443);

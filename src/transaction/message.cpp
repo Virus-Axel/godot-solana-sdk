@@ -191,6 +191,7 @@ Message::Message(const PackedByteArray& bytes){
     }
 
     latest_blockhash = Pubkey::string_from_variant(bytes.slice(cursor, cursor + 32));
+    std::cout << "blockhash: "<< latest_blockhash.ascii() << std::endl;
     cursor += 32;
     uint8_t compiled_instructions_size = bytes[cursor++];
 
