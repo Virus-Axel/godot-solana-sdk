@@ -464,6 +464,7 @@ void ShdwDrive::upload_file_to_storage(const String& filename, const Variant& st
 
 void ShdwDrive::upload_file_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body){
     Dictionary response = JSON::parse_string(body.get_string_from_ascii());
+    emit_signal("upload_response", response);
 }
 
 Variant ShdwDrive::get_pid(){
