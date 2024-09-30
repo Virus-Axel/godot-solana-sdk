@@ -25,6 +25,7 @@ private:
 
     bool detect_writable(const Dictionary& account);
     bool detect_is_signer(const Dictionary& account);
+    bool detect_optional(const Dictionary& account);
 
     static bool is_typed_primitive(const Dictionary &dict);
     static PackedByteArray serialize_typed_primitive(const Dictionary &dict);
