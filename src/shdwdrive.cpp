@@ -206,6 +206,11 @@ void ShdwDrive::_bind_methods(){
     ClassDB::add_signal("ShdwDrive", MethodInfo("storage_account_response", PropertyInfo(Variant::DICTIONARY, "response")));
     ClassDB::add_signal("ShdwDrive", MethodInfo("upload_response", PropertyInfo(Variant::DICTIONARY, "response")));
 
+    ClassDB::bind_static_method("ShdwDrive", D_METHOD("new_user_info_pubkey", "base_key"), &ShdwDrive::new_user_info_pubkey);
+    ClassDB::bind_static_method("ShdwDrive", D_METHOD("new_storage_config_pubkey"), &ShdwDrive::new_storage_config_pubkey);
+    ClassDB::bind_static_method("ShdwDrive", D_METHOD("new_stake_account_pubkey", "base_key"), &ShdwDrive::new_stake_account_pubkey);
+    ClassDB::bind_static_method("ShdwDrive", D_METHOD("new_storage_account_pubkey", "base_key", "account_seed"), &ShdwDrive::new_storage_account_pubkey);
+
     ClassDB::bind_method(D_METHOD("fetch_userinfo_callback", "params"), &ShdwDrive::fetch_userinfo_callback);
     ClassDB::bind_method(D_METHOD("upload_file_callback", "result", "response_code", "headers", "body"), &ShdwDrive::upload_file_callback);
     ClassDB::bind_method(D_METHOD("fetch_storage_account_callback", "params"), &ShdwDrive::fetch_storage_account_callback);
@@ -330,7 +335,6 @@ Variant ShdwDrive::initialize_account(const Variant& owner_keypair, const String
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    const Variant STAKE_ACCOUNT = new_stake_account_pubkey(owner_keypair);
     const Variant TOKEN_MINT = Pubkey::new_from_string("SHDWyBxihqiCj6YekG2GUr7wqKLeLAMK1gHZck9pL6y");
     Variant ata_account = Pubkey::new_associated_token_address(owner_keypair, TOKEN_MINT);
     const Variant STORAGE_CONFIG = new_storage_config_pubkey();
@@ -341,6 +345,7 @@ Variant ShdwDrive::initialize_account(const Variant& owner_keypair, const String
         account_seed = user_info->get_account_counter();
     }
     const Variant STORAGE_ACCOUNT = new_storage_account_pubkey(owner_keypair, account_seed);
+    const Variant STAKE_ACCOUNT = new_stake_account_pubkey(STORAGE_ACCOUNT);
     const Variant UPLOADER = get_uploader();
 
     result->append_meta(*memnew(AccountMeta(STORAGE_CONFIG, false, true)));
