@@ -187,6 +187,7 @@ Message::Message(const PackedByteArray& bytes){
 
     for(unsigned int i = 0; i < account_size; i++){
         account_keys.append(Pubkey::new_from_bytes(bytes.slice(cursor, cursor + 32)));
+        std::cout << Pubkey::string_from_variant(account_keys[account_keys.size() -1]).ascii() << std::endl;
         cursor += 32;
     }
 
@@ -233,6 +234,12 @@ PackedByteArray Message::serialize(){
     }
 
     result.append_array(serialize_blockhash());
+    PackedByteArray temp = serialize_blockhash();
+    std::cout << "BLOCKHASHHSHSHSHS" << std::endl;
+    for(unsigned int i = 0; i < 32; i++){
+        std::cout << (int)temp[i] << ", ";
+    }
+    std::cout << std::endl;
 
     result.append(compiled_instructions.size());
 

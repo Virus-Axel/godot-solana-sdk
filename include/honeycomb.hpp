@@ -19,6 +19,7 @@ private:
     Array args;
 
     Array signers;
+    String query_fields = "";
 
     String build();
     void send_query();
@@ -34,7 +35,10 @@ protected:
     ~HoneyComb();
 public:
 
-    Variant create_project_transaction(const Variant& authority, const String& name);
+    Variant create_project(const Variant& authority, const String& name);
+    void create_user(const Variant& user_wallet_keypair);
+    void create_profile(const Variant& project, const Variant& payer);
+    void create_resource(const Variant& project, const Variant& authority, const String& name, const String& uri, const String& symbol, uint32_t decimals);
 };
 
 }

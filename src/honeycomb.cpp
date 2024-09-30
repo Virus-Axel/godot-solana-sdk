@@ -11,7 +11,15 @@ void HoneyComb::query_response_callback(int result, int response_code, const Pac
     std::cout << body.get_string_from_ascii().ascii() << std::endl;
     Dictionary response = JSON::parse_string(body.get_string_from_ascii());
 
-    String encoded_transaction = ((Dictionary)((Dictionary)((Dictionary)response["data"])[method_name])["tx"])["transaction"];
+    Dictionary method_response = ((Dictionary)response["data"])[method_name];
+    String encoded_transaction = "";
+    if (method_response.has("tx")){
+        encoded_transaction = ((Dictionary)method_response["tx"])["transaction"];
+    }
+    else{
+        encoded_transaction = method_response["transaction"];
+    }
+    //String encoded_transaction = response.find_key("transaction");
 
     ERR_FAIL_COND_EDMSG(encoded_transaction.is_empty(), "transaction is empty.");
 
@@ -25,7 +33,7 @@ void HoneyComb::query_response_callback(int result, int response_code, const Pac
     add_child(result_tx, false, INTERNAL_MODE_BACK);
     std::cout << encoded_transaction.ascii() << std::endl;
     std::cout << "setting signers" << std::endl;
-    result_tx->update_latest_blockhash();
+    //result_tx->update_latest_blockhash("");
 
     result_tx->set_signers(signers);
     std::cout << "signers set" << std::endl;
@@ -34,7 +42,17 @@ void HoneyComb::query_response_callback(int result, int response_code, const Pac
     result_tx->connect("transaction_response_received", callback, CONNECT_ONE_SHOT);
 
     std::cout << "trying to sign" << std::endl;
-    result_tx->sign();
+    for(unsigned int i = 0; i < signers.size(); i++){
+        if(signers[i].get_type() == Variant::OBJECT){
+            if(((Object*)signers[i])->get_class() == "Keypair"){
+                Array signer_array;
+                signer_array.append(signers[i]);
+                result_tx->partially_sign(signer_array);
+            }
+        }
+    }
+    
+    //result_tx->sign();
     std::cout << "trying to send" << std::endl;
     result_tx->send();
 }
@@ -61,6 +79,7 @@ void HoneyComb::send_query(){
     PackedStringArray headers;
     headers.append("content-type: application/json");
     add_child(api_request);
+    std::cout << build().ascii() << std::endl;
     api_request->request(HONEYCOMB_URL, headers, HTTPClient::METHOD_POST, build());
 }
 
@@ -83,7 +102,12 @@ String HoneyComb::build(){
         format_params.clear();
         format_params.append(arg["name"]);
         format_params.append(arg["value"]);
-        args_values += String("\"{0}\": \"{1}\",").format(format_params);
+        if(String(arg["value"]).begins_with("{")){
+            args_values += String("\"{0}\": {1},").format(format_params);
+        }
+        else{
+            args_values += String("\"{0}\": \"{1}\",").format(format_params);
+        }
     }
 
     // pop last ,
@@ -96,8 +120,9 @@ String HoneyComb::build(){
     format_params.append(args_type_list);
     format_params.append(args_list);
     format_params.append(args_values);
+    format_params.append(query_fields);
 
-    const String query_template = "{ \"query\":\"query {0}({1}) { {0}({2}) { tx { transaction blockhash lastValidBlockHeight } project } }\", \"variables\":{{3}}}"; 
+    const String query_template = "{ \"query\":\"query {0}({1}) { {0}({2}) { {4} } }\", \"variables\":{{3}}}"; 
     return query_template.format(format_params);
 }
 
@@ -123,32 +148,83 @@ HoneyComb::HoneyComb(){
     result_tx = memnew(Transaction);
 }
 
-Variant HoneyComb::create_project_transaction(const Variant& authority, const String& name){
+Variant HoneyComb::create_project(const Variant& authority, const String& name){
     signers.append(authority);
     method_name = "createCreateProjectTransaction";
 
     add_arg("authority", "String", Pubkey::string_from_variant(authority));
     add_arg("name", "String", name);
 
+    query_fields = "tx { transaction blockhash lastValidBlockHeight } project";
+
     send_query();
 
     return nullptr;
 }
 
+void HoneyComb::create_user(const Variant& user_wallet_key){
+    signers.append(user_wallet_key);
+    signers.append(Pubkey::new_random());
+    method_name = "createNewUserTransaction";
+
+    add_arg("wallet", "String", Pubkey::string_from_variant(user_wallet_key));
+    String user_info = "{\"username\": \"xyz789\",\"name\": \"abc123\",\"bio\": \"abc123\",\"pfp\": \"abc123\"}";
+    add_arg("info", "UserInfoInput", user_info, true);
+
+    query_fields = "transaction blockhash lastValidBlockHeight";
+
+    send_query();
+}
+
+void HoneyComb::create_profile(const Variant& project, const Variant& payer){
+    signers.append(payer);
+    method_name = "createNewProfileTransaction";
+
+    add_arg("project", "String", Pubkey::string_from_variant(project));
+    add_arg("payer", "String", Pubkey::string_from_variant(payer));
+
+    query_fields = "transaction blockhash lastValidBlockHeight";
+
+    send_query();
+}
+
+void HoneyComb::create_resource(const Variant& project, const Variant& authority, const String& name, const String& uri, const String& symbol, uint32_t decimals){
+    signers.append(authority);
+    method_name = "createCreateNewResourceTransaction";
+
+    add_arg("project", "String", Pubkey::string_from_variant(project));
+    add_arg("authority", "String", Pubkey::string_from_variant(authority));
+    String resource_info = "{\"name\": \"{0}\",\"symbol\": \"{1}\",\"uri\": \"{2}\",\"decimals\": {3}, \"storage\": \"{4}\"}";
+    Array params;
+    params.append(name);
+    params.append(symbol);
+    params.append(uri);
+    params.append(decimals);
+    params.append("AccountState");
+    add_arg("params", "InitResourceInput", resource_info.format(params));
+
+    query_fields = "transaction blockhash lastValidBlockHeight";
+
+    send_query();
+}
+
 void HoneyComb::_bind_methods(){
-    ClassDB::bind_method(D_METHOD("create_project", "authority", "name"), &HoneyComb::create_project_transaction);
+    ClassDB::bind_method(D_METHOD("create_project", "authority", "name"), &HoneyComb::create_project);
+    ClassDB::bind_method(D_METHOD("create_user", "user_wallet_key"), &HoneyComb::create_user);
+    ClassDB::bind_method(D_METHOD("create_profile", "project", "payer"), &HoneyComb::create_profile);
+    ClassDB::bind_method(D_METHOD("create_resource", "project", "authority", "name", "uri", "symbol", "decimals"), &HoneyComb::create_resource);
 
     ClassDB::bind_method(D_METHOD("query_response_callback", "result", "response_code", "headers", "body"), &HoneyComb::query_response_callback);
     ClassDB::bind_method(D_METHOD("transaction_response_callback", "response"), &HoneyComb::transaction_response_callback);
 }
 
 HoneyComb::~HoneyComb(){
-    if(!api_request->is_inside_tree()){
+    /*if(!api_request->is_inside_tree()){
         memfree(api_request);
     }
     if(!result_tx->is_inside_tree()){
         memfree(result_tx);
-    }
+    }*/
 }
 
 }
