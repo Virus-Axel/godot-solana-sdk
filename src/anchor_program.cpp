@@ -35,6 +35,18 @@ bool AnchorProgram::detect_is_signer(const Dictionary& account){
     }
 }
 
+bool AnchorProgram::detect_optional(const Dictionary& account){
+    if(account.has("isOptional")){
+        return account["isOptional"];
+    }
+    else if(account.has("optional")){
+        return account["optional"];
+    }
+    else{
+        return false;
+    }
+}
+
 bool AnchorProgram::is_typed_primitive(const Dictionary &dict){
     return (dict.has("dataType") && dict.has("value") && dict.keys().size() && dict["dataType"] != String("option"));
 }
@@ -862,11 +874,17 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
     Array ref_accounts = instruction_info["accounts"];
 
     for(unsigned int i = 0; i < ref_accounts.size(); i++){
+        const bool is_optional = detect_optional(ref_accounts[i]);
+
         const bool writable = detect_writable(ref_accounts[i]);
         const bool is_signer = detect_is_signer(ref_accounts[i]);
+        if (is_optional) {
+            // optional accounts are passed in as pid, no signer, immutable
+            result->append_meta(*memnew(AccountMeta(Pubkey::new_from_string(pid), false, false)));
+            continue;
+        }
         result->append_meta(*memnew(AccountMeta(accounts[i], is_signer, writable)));
     }
-
     return result;
 }
 
