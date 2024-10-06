@@ -10,3 +10,6 @@
 	path = build-containers
 	url = git@github.com:godotengine/build-containers.git
 	branch = main
+[submodule "GodotSolanaSDKDemoPackage"]
+	path = GodotSolanaSDKDemoPackage
+	url = git@github.com:ZenRepublic/GodotSolanaSDKDemoPackage.git
