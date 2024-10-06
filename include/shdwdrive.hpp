@@ -29,6 +29,8 @@ protected:
     static void _bind_methods();
 public:
     void from_bytes(const PackedByteArray& bytes);
+    String get_identifier();
+    Dictionary to_dict();
 };
 
 class UserInfo: public Resource{
@@ -63,9 +65,14 @@ private:
     RpcSingleHttpRequestClient *api_request = nullptr;
     HTTPRequest *upload_file_request = nullptr;
 
+    Array storage_list;
+    PackedStringArray storage_name_list;
+    PackedStringArray storage_key_list;
+
     SolanaClient *create_storage_account_client = nullptr;
     SolanaClient *fetch_user_info_client = nullptr;
     SolanaClient *fetch_storage_account_client = nullptr;
+    SolanaClient *fetch_all_storage_accounts_client = nullptr;
     Transaction *create_storage_account_transaction = nullptr;
 
     static PackedByteArray initialize_accountv2_discriminator();
@@ -73,6 +80,9 @@ private:
     static PackedByteArray create_form_line(const PackedByteArray& content);
     static String get_upload_message(const Variant& storage_account_key, const String& filename_hash);
     static String get_filename_hash(const String& filename);
+
+    void get_all_storage_accounts(const Variant& owner_key);
+    void send_fetch_account_infos();
 
     void fetch_userinfo_callback(const Dictionary& params);
     void fetch_storage_account_callback(const Dictionary& params);
@@ -88,14 +98,20 @@ public:
     ShdwDrive();
     void _process(double delta) override;
 
+    Array get_cached_storage_accounts();
+
     Variant fetch_user_info(const Variant address);
     Variant fetch_storage_account(const Variant address);
     Variant create_storage_account(const Variant& owner_keypair, const String& name, const Variant& size);
+
+    Variant fetch_storage_key_by_name_callback(const String& storage_name);
+    Variant fetch_storage_key_by_name(const Variant& owner_keypair, const String& storage_name);
 
     void send_create_storage_tx();
     void send_create_storage_tx_signed();
 
     void create_store_api_response(const Dictionary& response);
+    void get_multiple_accounts_callback(const Dictionary& response);
 
     static Variant new_user_info_pubkey(const Variant& base_keypair);
     static Variant new_stake_account_pubkey(const Variant& storage_account);

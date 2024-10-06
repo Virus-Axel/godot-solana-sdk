@@ -16,6 +16,7 @@ private:
     TypedArray<RpcSingleHttpRequestClient> requests;
 
 protected:
+    unsigned int last_processed_frame = 0;
     bool pending_request = false;
 
     static void _bind_methods();

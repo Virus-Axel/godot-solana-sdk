@@ -167,7 +167,7 @@ Message::Message(const PackedByteArray& bytes){
 
     num_required_signatures = bytes[cursor++];
 
-    bool is_versioned_transaction = false;
+    is_versioned_transaction = false;
 
     if(num_required_signatures > 127){
         is_versioned_transaction = true;
@@ -187,12 +187,10 @@ Message::Message(const PackedByteArray& bytes){
 
     for(unsigned int i = 0; i < account_size; i++){
         account_keys.append(Pubkey::new_from_bytes(bytes.slice(cursor, cursor + 32)));
-        std::cout << Pubkey::string_from_variant(account_keys[account_keys.size() -1]).ascii() << std::endl;
         cursor += 32;
     }
 
     latest_blockhash = Pubkey::string_from_variant(bytes.slice(cursor, cursor + 32));
-    std::cout << "blockhash: "<< latest_blockhash.ascii() << std::endl;
     cursor += 32;
     uint8_t compiled_instructions_size = bytes[cursor++];
 
@@ -235,11 +233,6 @@ PackedByteArray Message::serialize(){
 
     result.append_array(serialize_blockhash());
     PackedByteArray temp = serialize_blockhash();
-    std::cout << "BLOCKHASHHSHSHSHS" << std::endl;
-    for(unsigned int i = 0; i < 32; i++){
-        std::cout << (int)temp[i] << ", ";
-    }
-    std::cout << std::endl;
 
     result.append(compiled_instructions.size());
 
@@ -285,6 +278,9 @@ int Message::locate_account_meta(const TypedArray<AccountMeta>& arr, const Accou
 }
 
 bool Message::is_versioned(){
+    if(is_versioned_transaction){
+        return true;
+    }
     if(address_lookup_tables.is_empty()){
         return false;
     }

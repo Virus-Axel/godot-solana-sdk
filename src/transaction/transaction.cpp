@@ -607,6 +607,7 @@ Error Transaction::partially_sign(const Array& array){
             }
         }
     }
+    emit_signal("signer_state_changed");
 
     check_fully_signed();
 

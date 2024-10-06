@@ -7,8 +7,45 @@
 
 namespace godot{
 
+void InitResourceInput::_bind_methods(){
+    
+}
+
+Dictionary InitResourceInput::to_dict(){
+    return Dictionary();
+}
+
+void UserInfoInput::_bind_methods(){
+    
+}
+
+Dictionary UserInfoInput::to_dict(){
+    Dictionary result;
+
+    return result;
+}
+
+void BasicTreeConfig::_bind_methods(){
+    
+}
+
+void AdvancedTreeConfig::_bind_methods(){
+    
+}
+
+Dictionary AdvancedTreeConfig::to_dict(){
+    return Dictionary();
+}
+
+void TreeSetupConfig::_bind_methods(){
+    
+}
+
+Dictionary TreeSetupConfig::to_dict(){
+    return Dictionary();
+}
+
 void HoneyComb::query_response_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body){
-    std::cout << body.get_string_from_ascii().ascii() << std::endl;
     Dictionary response = JSON::parse_string(body.get_string_from_ascii());
 
     Dictionary method_response = ((Dictionary)response["data"])[method_name];
@@ -21,7 +58,10 @@ void HoneyComb::query_response_callback(int result, int response_code, const Pac
     }
     //String encoded_transaction = response.find_key("transaction");
 
-    ERR_FAIL_COND_EDMSG(encoded_transaction.is_empty(), "transaction is empty.");
+    if(encoded_transaction.is_empty()){
+        pending = false;
+        ERR_FAIL_EDMSG("transaction is empty.");
+    }
 
     if(!result_tx->is_inside_tree()){
         memfree(result_tx);
@@ -29,19 +69,16 @@ void HoneyComb::query_response_callback(int result, int response_code, const Pac
     else{
         remove_child(result_tx);
     }
-    result_tx = (Transaction*)(Object*)Transaction::new_from_bytes(SolanaUtils::bs58_decode(encoded_transaction));
+    PackedByteArray decoded_tx = SolanaUtils::bs58_decode(encoded_transaction);
+    result_tx = (Transaction*)(Object*)Transaction::new_from_bytes(decoded_tx);
     add_child(result_tx, false, INTERNAL_MODE_BACK);
-    std::cout << encoded_transaction.ascii() << std::endl;
-    std::cout << "setting signers" << std::endl;
     //result_tx->update_latest_blockhash("");
 
     result_tx->set_signers(signers);
-    std::cout << "signers set" << std::endl;
 
     Callable callback = Callable(this, "transaction_response_callback");
     result_tx->connect("transaction_response_received", callback, CONNECT_ONE_SHOT);
 
-    std::cout << "trying to sign" << std::endl;
     for(unsigned int i = 0; i < signers.size(); i++){
         if(signers[i].get_type() == Variant::OBJECT){
             if(((Object*)signers[i])->get_class() == "Keypair"){
@@ -53,20 +90,16 @@ void HoneyComb::query_response_callback(int result, int response_code, const Pac
     }
     
     //result_tx->sign();
-    std::cout << "trying to send" << std::endl;
     result_tx->send();
 }
 
 void HoneyComb::transaction_response_callback(const Dictionary& response){
-    std::cout << "transaction response" << std::endl;
 
     PackedByteArray bt = result_tx->serialize();
 
-    for(unsigned int i = 0; i < bt.size(); i++)
-        std::cout << (int)bt[i]<< ", ";
-    std::cout << std::endl;
-
-    std::cout << JSON::stringify(response).ascii() << std::endl;
+    pending = false;
+    remove_child(child);
+    emit_signal("transaction_response_received", response);
 }
 
 
@@ -79,7 +112,8 @@ void HoneyComb::send_query(){
     PackedStringArray headers;
     headers.append("content-type: application/json");
     add_child(api_request);
-    std::cout << build().ascii() << std::endl;
+    child = api_request;
+    pending = true;
     api_request->request(HONEYCOMB_URL, headers, HTTPClient::METHOD_POST, build());
 }
 
@@ -88,7 +122,6 @@ String HoneyComb::build(){
     String args_list = "";
     String args_values = "";
     for(unsigned int i = 0; i < args.size(); i++){
-        std::cout << JSON::stringify(args[i]).ascii() << std::endl;
         Array format_params;
         Dictionary arg = args[i];
         format_params.append(arg["name"]);
@@ -130,7 +163,7 @@ void HoneyComb::bind_method_from_ref(const String ref){
 
 }
 
-void HoneyComb::add_arg(const String& name, const String& type_name, const String& value, bool optional){
+void HoneyComb::add_arg(const String& name, const String& type_name, const Variant& value, bool optional){
     Dictionary entry;
     entry["name"] = name;
     if(!optional){
@@ -168,7 +201,12 @@ void HoneyComb::create_user(const Variant& user_wallet_key){
     method_name = "createNewUserTransaction";
 
     add_arg("wallet", "String", Pubkey::string_from_variant(user_wallet_key));
-    String user_info = "{\"username\": \"xyz789\",\"name\": \"abc123\",\"bio\": \"abc123\",\"pfp\": \"abc123\"}";
+    //String user_info = "{\"username\": \"xyz789\",\"name\": \"abc123\",\"bio\": \"abc123\",\"pfp\": \"abc123\"}";
+    Dictionary user_info;
+    user_info["username"] = "axel";
+    user_info["name"] = "axel";
+    user_info["bio"] = "axel";
+    user_info["pfp"] = "axel";
     add_arg("info", "UserInfoInput", user_info, true);
 
     query_fields = "transaction blockhash lastValidBlockHeight";
@@ -209,13 +247,20 @@ void HoneyComb::create_resource(const Variant& project, const Variant& authority
 }
 
 void HoneyComb::_bind_methods(){
+    ClassDB::add_signal("HoneyComb", MethodInfo("transaction_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
+
     ClassDB::bind_method(D_METHOD("create_project", "authority", "name"), &HoneyComb::create_project);
     ClassDB::bind_method(D_METHOD("create_user", "user_wallet_key"), &HoneyComb::create_user);
     ClassDB::bind_method(D_METHOD("create_profile", "project", "payer"), &HoneyComb::create_profile);
-    ClassDB::bind_method(D_METHOD("create_resource", "project", "authority", "name", "uri", "symbol", "decimals"), &HoneyComb::create_resource);
 
     ClassDB::bind_method(D_METHOD("query_response_callback", "result", "response_code", "headers", "body"), &HoneyComb::query_response_callback);
     ClassDB::bind_method(D_METHOD("transaction_response_callback", "response"), &HoneyComb::transaction_response_callback);
+
+    ClassDB::bind_method(D_METHOD("create_new_resource", "project", "authority", "params", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+    ClassDB::bind_method(D_METHOD("create_new_resource_tree", "project", "resource", "authority", "treeConfig", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewResourceTreeTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+    ClassDB::bind_method(D_METHOD("mint_resource", "resource", "owner", "authority", "amount", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createMintResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+    ClassDB::bind_method(D_METHOD("burn_resource", "resource", "amount", "authority", "owner", "payer", "delegateAuthority", "lutAddresses", "computeUnitPrice"), &HoneyComb::createBurnResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+    ClassDB::bind_method(D_METHOD("new_user", "wallet", "info", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createNewUserTransaction, DEFVAL(Variant(nullptr)), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 }
 
 HoneyComb::~HoneyComb(){

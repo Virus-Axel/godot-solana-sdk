@@ -32,11 +32,12 @@ PackedByteArray StorageAccountV2::discriminator(){
 }
 
 void StorageAccountV2::_bind_methods(){
-
 }
 
 void StorageAccountV2::from_bytes(const PackedByteArray& bytes){
-    ERR_FAIL_COND_EDMSG(bytes.slice(0, 8) == discriminator(), "Account is not StorageAccountV2.");
+    const int64_t MINIMUM_STORAGE_ACCOUNT_SIZE = 66;
+    ERR_FAIL_COND_EDMSG(bytes.size() < 66, "Invalid Storage Account");
+    ERR_FAIL_COND_EDMSG(bytes.slice(0, 8) != discriminator(), "Account is not StorageAccountV2.");
 
     int c = 8;
     immutable = bytes[c++];
@@ -57,7 +58,30 @@ void StorageAccountV2::from_bytes(const PackedByteArray& bytes){
     c += 4;
     uint32_t identifier_size = bytes.decode_u32(c);
     c += 4;
-    identifier = bytes.slice(c, c + identifier_size).get_string_from_ascii();
+    const PackedByteArray identifier_bytes = bytes.slice(c);
+
+    ERR_FAIL_COND_EDMSG(identifier_bytes.size() < identifier_size, "Invalid Storage Account");
+    identifier = identifier_bytes.get_string_from_ascii();
+}
+
+String StorageAccountV2::get_identifier(){
+    return identifier;
+}
+
+Dictionary StorageAccountV2::to_dict(){
+    Dictionary result;
+    result["immutable"] = immutable;
+    result["to_be_deleted"] = to_be_deleted;
+    result["delete_request_epoch"] = delete_request_epoch;
+    result["storage"] = storage;
+    result["owner1"] = owner1;
+    result["account_counter_seed"] = account_counter_seed;
+    result["creation_time"] = creation_time;
+    result["creation_epoch"] = creation_epoch;
+    result["last_fee_epoch"] = last_fee_epoch;
+    result["identifier"] = identifier;
+
+    return result;
 }
 
 PackedByteArray UserInfo::discriminator(){
@@ -70,7 +94,7 @@ PackedByteArray UserInfo::discriminator(){
 }
 
 void UserInfo::_bind_methods(){
-
+    ClassDB::bind_method(D_METHOD("from_bytes", "bytes"), &UserInfo::from_bytes);
 }
 
 uint32_t UserInfo::get_account_counter(){
@@ -78,7 +102,9 @@ uint32_t UserInfo::get_account_counter(){
 }
 
 void UserInfo::from_bytes(const PackedByteArray& bytes){
-    ERR_FAIL_COND_EDMSG(bytes.slice(0, 8) == discriminator(), "Account is not UserInfo.");
+    const int64_t EXPECTED_ACCOUNT_SIZE = 18;
+    ERR_FAIL_COND_EDMSG(bytes.size() != EXPECTED_ACCOUNT_SIZE, "Invalid user account size.");
+    ERR_FAIL_COND_EDMSG(bytes.slice(0, 8) != discriminator(), "Account is not UserInfo.");
 
     account_counter = bytes.decode_u32(8);
     delete_counter = bytes.decode_u32(12);
@@ -105,6 +131,9 @@ ShdwDrive::ShdwDrive(){
     fetch_storage_account_client->set_async_override(true);
     Callable fetch_storage_account_callable = Callable(this, "fetch_storage_account_callback");
     fetch_storage_account_client->set_callback(fetch_storage_account_callable);
+
+    fetch_all_storage_accounts_client = memnew(SolanaClient);
+    fetch_all_storage_accounts_client->set_async_override(true);
 }
 
 void ShdwDrive::_process(double delta){
@@ -112,6 +141,60 @@ void ShdwDrive::_process(double delta){
     create_storage_account_transaction->_process(delta);
     fetch_storage_account_client->_process(delta);
     fetch_user_info_client->_process(delta);
+    fetch_all_storage_accounts_client->_process(delta);
+}
+
+void ShdwDrive::send_fetch_account_infos(){
+    ERR_FAIL_COND_EDMSG(user_info == nullptr, "User info is not fetched.");
+
+    uint32_t owned_accounts = user_info->get_account_counter();
+    PackedStringArray accounts;
+    
+    storage_name_list.clear();
+    storage_key_list.clear();
+    for(uint64_t i = 0; i < owned_accounts; i++){
+        Variant storage_account = new_storage_account_pubkey(owner_keypair, i);
+        accounts.append(Pubkey::string_from_variant(storage_account));
+
+        storage_key_list.append(Pubkey::string_from_variant(storage_account));
+    }
+
+    Callable callback = Callable(this, "get_multiple_accounts_callback");
+    //fetch_all_storage_accounts_client->enable_account_filter();
+    fetch_all_storage_accounts_client->connect("http_response_received", callback, CONNECT_ONE_SHOT);
+    fetch_all_storage_accounts_client->get_multiple_accounts(accounts);
+}
+
+void ShdwDrive::get_multiple_accounts_callback(const Dictionary& response){
+    ERR_FAIL_COND_EDMSG(!response.has("result"), "Fetching storage account failed.");
+    ERR_FAIL_COND_EDMSG(!((Dictionary)response["result"]).has("value"), "Getting storage accounts failed.");
+
+    Array accounts = ((Dictionary)response["result"])["value"];
+
+    storage_name_list.resize(storage_key_list.size());
+    storage_list.resize(storage_key_list.size());
+
+    for(uint32_t i = 0; i < accounts.size(); i++){
+        Dictionary account = accounts[i];
+        StorageAccountV2* storage_account = memnew(StorageAccountV2);
+        String encoded_data = ((Array)account["data"])[0];
+        storage_account->from_bytes(SolanaUtils::bs64_decode(encoded_data));
+
+        String identifier = storage_account->get_identifier();
+        storage_name_list[i] = identifier;
+        storage_list[i] = storage_account;
+    }
+    emit_signal("all_storage_accounts_fetched");
+}
+
+Array ShdwDrive::get_cached_storage_accounts(){
+    Array result;
+    for(unsigned int i = 0; i < storage_list.size(); i++){
+        Dictionary dict = Object::cast_to<StorageAccountV2>(storage_list[i])->to_dict();
+        dict["address"] = storage_key_list[i];
+        result.append(dict);
+    }
+    return result;
 }
 
 Variant ShdwDrive::fetch_user_info(const Variant address){
@@ -156,6 +239,20 @@ Variant ShdwDrive::get_uploader(){
     return Pubkey::new_from_string("972oJTFyjmVNsWM4GHEGPWUomAiJf2qrVotLtwnKmWem");
 }
 
+void ShdwDrive::get_all_storage_accounts(const Variant &owner_key){
+    const unsigned int MAX_ACCOUNTS_PER_RPC_CALL = 100;
+    owner_keypair = owner_key;
+    
+    Callable callback = Callable(this, "send_fetch_account_infos");
+
+    connect("user_info_fetched", callback, CONNECT_ONE_SHOT);
+    //connect("storage_account_fetched", callback, CONNECT_ONE_SHOT);
+
+    fetch_user_info(new_user_info_pubkey(owner_keypair));
+
+    //fetch_all_storage_accounts_client->enable_account_filter()
+}
+
 void ShdwDrive::fetch_userinfo_callback(const Dictionary& params){
     // TODO(Virax): Add helper for this common pattern.
     if(!params.has("result")){
@@ -170,7 +267,8 @@ void ShdwDrive::fetch_userinfo_callback(const Dictionary& params){
     Dictionary account = ((Dictionary)params["result"])["value"];
 
     if(account.has("data")){
-        const PackedByteArray data_info = account["data"];
+        Array encoded_data = account["data"];
+        const PackedByteArray data_info = SolanaUtils::bs64_decode(encoded_data[0]);
 
         user_info->from_bytes(data_info);
     }
@@ -192,7 +290,7 @@ void ShdwDrive::fetch_storage_account_callback(const Dictionary& params){
     }
 
     Dictionary account = ((Dictionary)params["result"])["value"];
-    const PackedByteArray data_info = account["data"];
+    const PackedByteArray data_info = SolanaUtils::bs64_decode(account["data"]);
 
     StorageAccountV2* storage_account = memnew(StorageAccountV2);
     storage_account->from_bytes(data_info);
@@ -205,20 +303,27 @@ void ShdwDrive::_bind_methods(){
     ClassDB::add_signal("ShdwDrive", MethodInfo("storage_account_fetched", PropertyInfo(Variant::OBJECT, "storage_account")));
     ClassDB::add_signal("ShdwDrive", MethodInfo("storage_account_response", PropertyInfo(Variant::DICTIONARY, "response")));
     ClassDB::add_signal("ShdwDrive", MethodInfo("upload_response", PropertyInfo(Variant::DICTIONARY, "response")));
+    ClassDB::add_signal("ShdwDrive", MethodInfo("all_storage_accounts_fetched"));
 
     ClassDB::bind_static_method("ShdwDrive", D_METHOD("new_user_info_pubkey", "base_key"), &ShdwDrive::new_user_info_pubkey);
     ClassDB::bind_static_method("ShdwDrive", D_METHOD("new_storage_config_pubkey"), &ShdwDrive::new_storage_config_pubkey);
     ClassDB::bind_static_method("ShdwDrive", D_METHOD("new_stake_account_pubkey", "base_key"), &ShdwDrive::new_stake_account_pubkey);
     ClassDB::bind_static_method("ShdwDrive", D_METHOD("new_storage_account_pubkey", "base_key", "account_seed"), &ShdwDrive::new_storage_account_pubkey);
 
+    ClassDB::bind_method(D_METHOD("send_fetch_account_infos"), &ShdwDrive::send_fetch_account_infos);
+    ClassDB::bind_method(D_METHOD("get_all_storage_accounts", "owner_key"), &ShdwDrive::get_all_storage_accounts);
     ClassDB::bind_method(D_METHOD("fetch_userinfo_callback", "params"), &ShdwDrive::fetch_userinfo_callback);
+    ClassDB::bind_method(D_METHOD("get_multiple_accounts_callback"), &ShdwDrive::get_multiple_accounts_callback);
     ClassDB::bind_method(D_METHOD("upload_file_callback", "result", "response_code", "headers", "body"), &ShdwDrive::upload_file_callback);
     ClassDB::bind_method(D_METHOD("fetch_storage_account_callback", "params"), &ShdwDrive::fetch_storage_account_callback);
     ClassDB::bind_method(D_METHOD("create_storage_account", "owner_keypair", "storage_name", "storage_size"), &ShdwDrive::create_storage_account);
     ClassDB::bind_method(D_METHOD("send_create_storage_tx"), &ShdwDrive::send_create_storage_tx);
     ClassDB::bind_method(D_METHOD("send_create_storage_tx_signed"), &ShdwDrive::send_create_storage_tx_signed);
     ClassDB::bind_method(D_METHOD("create_store_api_response", "response"), &ShdwDrive::create_store_api_response);
-    
+    ClassDB::bind_method(D_METHOD("fetch_storage_key_by_name", "storage_owner", "storage_name"), &ShdwDrive::fetch_storage_key_by_name);
+    ClassDB::bind_method(D_METHOD("fetch_storage_key_by_name_callback", "storage_name"), &ShdwDrive::fetch_storage_key_by_name_callback);
+    ClassDB::bind_method(D_METHOD("get_cached_storage_accounts"), &ShdwDrive::get_cached_storage_accounts);
+
     ClassDB::bind_method(D_METHOD("upload_file_to_storage", "filename", "storage_owner_keypair", "storage_account"), &ShdwDrive::upload_file_to_storage);
 }
 
@@ -243,6 +348,33 @@ Variant ShdwDrive::create_storage_account(const Variant& owner_keypair, const St
     fetch_user_info(new_user_info_pubkey(owner_keypair));
     //fetch_storage_account(owner_keypair);
 
+    return nullptr;
+}
+
+Variant ShdwDrive::fetch_storage_key_by_name_callback(const String& storage_name){
+    ERR_FAIL_COND_V_EDMSG(storage_key_list.size() != storage_name_list.size(), nullptr, "Internal Error when fetching storages.");
+    int64_t index = storage_name_list.find(storage_name);
+    if(index >= 0){
+        Variant storage_account_pk = Pubkey::new_from_string(storage_key_list[index]);
+        emit_signal("storage_account_fetched", storage_account_pk);
+        return storage_key_list[index];
+    }
+    emit_signal("storage_account_fetched", nullptr);
+    return nullptr;
+}
+
+Variant ShdwDrive::fetch_storage_key_by_name(const Variant& owner_keypair, const String& storage_name){
+    ERR_FAIL_COND_V_EDMSG(storage_key_list.size() != storage_name_list.size(), nullptr, "Internal Error when fetching storages.");
+    int64_t index = storage_name_list.find(storage_name);
+
+    if(index >= 0){
+        Variant storage_account_pk = Pubkey::new_from_string(storage_key_list[index]);
+        emit_signal("storage_account_fetched", storage_account_pk);
+        return storage_key_list[index];
+    }
+
+    connect("all_storage_accounts_fetched", Callable(this, "fetch_storage_key_by_name_callback").bind(storage_name));
+    get_all_storage_accounts(owner_keypair);
     return nullptr;
 }
 
@@ -466,12 +598,10 @@ void ShdwDrive::upload_file_to_storage(const String& filename, const Variant& st
     Callable upload_file_response = Callable(this, "upload_file_callback");
     upload_file_request->connect("request_completed", upload_file_response, CONNECT_ONE_SHOT);
 
-    std::cout << "sending" << std::endl;
 	upload_file_request->request_raw(SHDW_DRIVE_ENDPOINT, headers, HTTPClient::METHOD_POST, request_body);
 }
 
 void ShdwDrive::upload_file_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body){
-    std::cout << "response" << std::endl;
     Dictionary response = JSON::parse_string(body.get_string_from_ascii());
     emit_signal("upload_response", response);
 }
@@ -481,9 +611,6 @@ Variant ShdwDrive::get_pid(){
 }
 
 ShdwDrive::~ShdwDrive(){
-    if(!upload_file_request->is_inside_tree()){
-        memfree(upload_file_request);
-    }
     memfree(api_request);
     memfree(user_info);
     memfree(create_storage_account_client);
