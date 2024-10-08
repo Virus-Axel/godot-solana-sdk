@@ -24,6 +24,17 @@ private:
 protected:
     static void _bind_methods();
 public:
+    void set_resource_name(const String& resource_name);
+    String get_resource_name();
+    void set_symbol(const String& symbol);
+    String get_symbol();
+    void set_uri(const String& uri);
+    String get_uri();
+    void set_decimals(int32_t decimals);
+    int32_t get_decimals();
+    void set_storage(int32_t storage);
+    int32_t get_storage();
+
     Dictionary to_dict();
 };
 
@@ -96,6 +107,8 @@ private:
     void add_arg(const String& name, const String& type_name, const Variant& value, bool optional = false);
     void query_response_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body);
     void transaction_response_callback(const Dictionary& response);
+
+    static void bind_non_changing_methods();
 
 protected:
     HoneyComb();

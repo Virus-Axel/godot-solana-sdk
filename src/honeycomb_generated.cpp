@@ -1,10 +1,8 @@
 #include "honeycomb.hpp"
 
-
 namespace godot{
 
-Variant HoneyComb::createCreateNewResourceTransaction(const Variant& project, const Variant& authority, Variant params, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice)
-{
+Variant HoneyComb::createCreateNewResourceTransaction(const Variant& project, const Variant& authority, Variant params, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
 	if(pending){
 		return ERR_BUSY;
 	}
@@ -36,8 +34,7 @@ Variant HoneyComb::createCreateNewResourceTransaction(const Variant& project, co
 	return OK;
 }
 
-Variant HoneyComb::createCreateNewResourceTreeTransaction(const Variant& project, const Variant& resource, const Variant& authority, Variant treeConfig, const Variant& delegateAuthority, const Variant& payer, PackedStringArray lutAddresses, int32_t computeUnitPrice)
-{
+Variant HoneyComb::createCreateNewResourceTreeTransaction(const Variant& project, const Variant& resource, const Variant& authority, Variant treeConfig, const Variant& delegateAuthority, const Variant& payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
 	if(pending){
 		return ERR_BUSY;
 	}
@@ -71,8 +68,7 @@ Variant HoneyComb::createCreateNewResourceTreeTransaction(const Variant& project
 	return OK;
 }
 
-Variant HoneyComb::createMintResourceTransaction(const Variant& resource, const Variant& owner, const Variant& authority, int64_t amount, const Variant& delegateAuthority, const Variant& payer, PackedStringArray lutAddresses, int32_t computeUnitPrice)
-{
+Variant HoneyComb::createMintResourceTransaction(const Variant& resource, const Variant& owner, const Variant& authority, int64_t amount, const Variant& delegateAuthority, const Variant& payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
 	if(pending){
 		return ERR_BUSY;
 	}
@@ -107,8 +103,7 @@ Variant HoneyComb::createMintResourceTransaction(const Variant& resource, const 
 	return OK;
 }
 
-Variant HoneyComb::createBurnResourceTransaction(const Variant& resource, int64_t amount, const Variant& authority, const Variant& owner, const Variant& payer, const Variant& delegateAuthority, PackedStringArray lutAddresses, int32_t computeUnitPrice)
-{
+Variant HoneyComb::createBurnResourceTransaction(const Variant& resource, int64_t amount, const Variant& authority, const Variant& owner, const Variant& payer, const Variant& delegateAuthority, PackedStringArray lutAddresses, int32_t computeUnitPrice){
 	if(pending){
 		return ERR_BUSY;
 	}
@@ -145,8 +140,7 @@ Variant HoneyComb::createBurnResourceTransaction(const Variant& resource, int64_
 	return OK;
 }
 
-Variant HoneyComb::createNewUserTransaction(const Variant& wallet, Variant info, const Variant& payer, PackedStringArray lutAddresses, int32_t computeUnitPrice)
-{
+Variant HoneyComb::createNewUserTransaction(const Variant& wallet, Variant info, const Variant& payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
 	if(pending){
 		return ERR_BUSY;
 	}
@@ -176,4 +170,12 @@ Variant HoneyComb::createNewUserTransaction(const Variant& wallet, Variant info,
 	return OK;
 }
 
+void HoneyComb::_bind_methods(){
+	bind_non_changing_methods();
+	ClassDB::bind_method(D_METHOD("create_new_resource", "project", "authority", "params", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_new_resource_tree", "project", "resource", "authority", "treeConfig", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewResourceTreeTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("mint_resource", "resource", "owner", "authority", "amount", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createMintResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("burn_resource", "resource", "amount", "authority", "owner", "payer", "delegateAuthority", "lutAddresses", "computeUnitPrice"), &HoneyComb::createBurnResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("new_user", "wallet", "info", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createNewUserTransaction, DEFVAL(Variant(nullptr)), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+}
 } // godot

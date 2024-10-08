@@ -11,8 +11,59 @@ void InitResourceInput::_bind_methods(){
     
 }
 
+void InitResourceInput::set_resource_name(const String& resource_name){
+    this->resource_name = resource_name;
+}
+String InitResourceInput::get_resource_name(){
+    return resource_name;
+}
+
+void InitResourceInput::set_symbol(const String& symbol){
+    this->symbol = symbol;
+}
+String InitResourceInput::get_symbol(){
+    return symbol;
+}
+
+void InitResourceInput::set_uri(const String& uri){
+    this->uri = uri;
+}
+String InitResourceInput::get_uri(){
+    return uri;
+}
+
+void InitResourceInput::set_decimals(int32_t decimals){
+    this->decimals = decimals;
+}
+int32_t InitResourceInput::get_decimals(){
+    return decimals;
+}
+
+void InitResourceInput::set_storage(int32_t storage){
+    this->storage = (ResourceStorageEnum)storage;
+}
+int32_t InitResourceInput::get_storage(){
+    return storage;
+}
+
 Dictionary InitResourceInput::to_dict(){
-    return Dictionary();
+    Dictionary result;
+    String resource_name = "";
+    String symbol = "";
+    String uri = "";
+    int32_t decimals = 0;
+    ResourceStorageEnum storage = AccountState;
+    result["name"] = resource_name;
+    result["symbol"] = symbol;
+    result["uri"] = uri;
+    result["decimals"] = decimals;
+    if(storage == 0){
+        result["storage"] = "AccountState";
+    }
+    else{
+        result["storage"] = "LedgerState";
+    }
+    return result;
 }
 
 void UserInfoInput::_bind_methods(){
@@ -246,7 +297,7 @@ void HoneyComb::create_resource(const Variant& project, const Variant& authority
     send_query();
 }
 
-void HoneyComb::_bind_methods(){
+void HoneyComb::bind_non_changing_methods(){
     ClassDB::add_signal("HoneyComb", MethodInfo("transaction_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
 
     ClassDB::bind_method(D_METHOD("create_project", "authority", "name"), &HoneyComb::create_project);
@@ -255,12 +306,6 @@ void HoneyComb::_bind_methods(){
 
     ClassDB::bind_method(D_METHOD("query_response_callback", "result", "response_code", "headers", "body"), &HoneyComb::query_response_callback);
     ClassDB::bind_method(D_METHOD("transaction_response_callback", "response"), &HoneyComb::transaction_response_callback);
-
-    ClassDB::bind_method(D_METHOD("create_new_resource", "project", "authority", "params", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-    ClassDB::bind_method(D_METHOD("create_new_resource_tree", "project", "resource", "authority", "treeConfig", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewResourceTreeTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-    ClassDB::bind_method(D_METHOD("mint_resource", "resource", "owner", "authority", "amount", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createMintResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-    ClassDB::bind_method(D_METHOD("burn_resource", "resource", "amount", "authority", "owner", "payer", "delegateAuthority", "lutAddresses", "computeUnitPrice"), &HoneyComb::createBurnResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-    ClassDB::bind_method(D_METHOD("new_user", "wallet", "info", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createNewUserTransaction, DEFVAL(Variant(nullptr)), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 }
 
 HoneyComb::~HoneyComb(){

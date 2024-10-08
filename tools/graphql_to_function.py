@@ -1,4 +1,6 @@
 import re
+import argparse
+
 
 CLASS_TYPE = "HoneyComb"
 RETURN_TYPE = "Variant"
@@ -28,16 +30,6 @@ GODOT_TYPE_DEFVAL = {
   "Variant": "Variant(nullptr)",
 }
 
-QL_SPECIAL_TYPE_PARAM = {
-   "InitResourceInput": ([
-      ("name", "String"),
-      ("symbol", "String"),
-      ("uri", "String"),
-      ("decimals", "int32_t"),
-      ("storage", "ResourceStorage"),
-   ], []),
-}
-
 
 class GQLParse:
   def __init__(self):
@@ -48,22 +40,16 @@ class GQLParse:
     self.str = ""
     self.method_definitions = ""
     self.bound_methods = ""
+    self.method_implementations = ""
 
   def function_name_to_alias(self, function_name):
     alias = function_name[6:-11]
     return ''.join(['_'+c.lower() if c.isupper() else c for c in alias]).lstrip('_')
 
-  def is_special_type(self, type_name):
-    return type_name in QL_SPECIAL_TYPE_PARAM.keys()
 
   def ql_type_to_godot(self, ql_type):
     return QL_TO_VARIANT[ql_type]
 
-  def add_function_start(self, method_name):
-    self.bind_methods = f'ClassDB::bind_method(D_METHOD("{method_name}", '
-
-  def add_function_stop(self, method_name):
-    self.bind_methods = f'), {CLASS_TYPE}::{method_name});\n'
 
   def add_required_arg_to_bind(self, arg):
     self.bind_methods = ""
@@ -105,20 +91,6 @@ class GQLParse:
           self.process_arg(arg)
 
       self.function_name = function_name
-
-
-  def set_to_new_dict(self, left, dict_name, args):
-     result_string = f'Dictionary {dict_name};'
-     for arg in args:
-      (arg_name, arg_type) = arg
-      if self.is_special_type(arg_type):
-        result_string += self.set_to_new_dict(f'{dict_name}[{arg_type}]', arg_type, arg_name)
-      else:
-        result_string += f'{dict_name}[] = {arg_name}'
-
-     result_string += f'{left} = {dict_name}'
-
-     return result_string
 
 
   def print_arg(self, arg, optional=False):
@@ -192,25 +164,17 @@ class GQLParse:
       query_fields_re = re.sub(r"[\r\n]+", "", self.str)
       self.query_fields = re.sub(r'\s+', ' ', query_fields_re)
 
-      #print("Required args")
-      #print(self.required_args)
-      #print("Optional args")
-      #print(self.optional_args)
-      #print("Query")
-      #print(self.query_fields)
-
       self.method_definitions += f'\t{self.print_function_name_header()}\n'
 
-      # CPP File
-      print(self.print_function_name())
-      print("{")
-      print("\tif(pending){")
-      print("\t\treturn ERR_BUSY;")
-      print("\t}")
-      print(self.print_signer_section())
-      print(self.print_args_section())
-      print(self.print_method_name())
-      print(self.print_last_section())
+      self.method_implementations += self.print_function_name()
+      self.method_implementations += "{\n"
+      self.method_implementations += "\tif(pending){\n"
+      self.method_implementations += "\t\treturn ERR_BUSY;\n"
+      self.method_implementations += "\t}\n"
+      self.method_implementations += self.print_signer_section() + '\n'
+      self.method_implementations += self.print_args_section() + '\n'
+      self.method_implementations += self.print_method_name() + '\n'
+      self.method_implementations += self.print_last_section() + '\n'
 
       self.append_method_bind()
 
@@ -329,6 +293,7 @@ class GQLParse:
 
   def print_bind_methods(self):
     result_string = f"void {CLASS_TYPE}::_bind_methods()" + "{\n"
+    result_string += f'\tbind_non_changing_methods();\n'
     result_string += self.bound_methods
     result_string += "}"
     return result_string
@@ -342,8 +307,7 @@ class GQLParse:
     return result
 
   def print_header_file(self):
-    result = ""
-    result += self.print_header_includes()
+    result = self.print_header_includes()
     result += "\nnamespace godot{\n"
     result += f"\nClass {CLASS_TYPE} : public Node" + "{\n"
     result += f"GDCLASS({CLASS_TYPE}, Node)\n"
@@ -358,6 +322,14 @@ class GQLParse:
     return result
 
 
+  def print_cpp_file(self):
+    result = '#include "honeycomb.hpp"\n\n'
+    result += "namespace godot{\n\n"
+    result += self.method_implementations
+    result += parser.print_bind_methods() + '\n'
+    result += "} // godot"
+
+    return result
 
 
 CREATE_NEW_RESOURCE = """
@@ -502,8 +474,7 @@ query CreateNewUserTransaction(
 }
 """
 
-print('#include "honeycomb.hpp"\n\n')
-print("namespace godot{\n")
+
 parser = GQLParse()
 parser.graphql_to_function(CREATE_NEW_RESOURCE, ["authority", "."], ["project"])
 parser.graphql_to_function(CREATE_NEW_RESOURCE_TREE, ["authority", "delegateAuthority", "payer"], ["project", "resource"])
@@ -512,6 +483,27 @@ parser.graphql_to_function(CREATE_BURN_RESOURCE_TRANSACTION, ["authority", "owne
 parser.graphql_to_function(CREATE_NEW_USER_TRANSACTION, ["wallet", "payer"], [])
 
 #print(parser.print_header_file())
-#print(parser.print_bind_methods())
+#print(parser.print_cpp_file())
 
-print("} // godot")
+
+def main():
+    parser = argparse.ArgumentParser(description='Generates HoneyComb interface source code.')
+    parser.add_argument('-o', '--out_directory', metavar="PATH", type=str, default="src/HoneyComb/generated",
+                        help='Output directory of generated source files.')
+    parser.add_argument('-c', '--cpp_filename', type=str, default="honeycomb_generated.cpp",
+                        help='File name of generated cpp file.')
+    parser.add_argument('-p', '--hpp_filename', type=str, default="honeycomb_generated.hpp",
+                        help='File name of generated hpp file.')
+    parser.add_argument('--skip_hpp_file', action="store_true", default=False,
+                        help='Tells generator to skip creating a hpp file.')
+    parser.add_argument('--skip_cpp_file', action="store_true", default=False,
+                        help='Tells generator to skip creating a cpp file.')
+    parser.add_argument('--skip_resources', action="store_true", default=False,
+                        help='Tells generator to skip creating resource classes.')
+
+    args = parser.parse_args()
+    print(args.out_directory)
+
+if __name__ == "__main__":
+    main()
+
