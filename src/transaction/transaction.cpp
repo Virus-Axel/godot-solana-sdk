@@ -72,21 +72,18 @@ void Transaction::_bind_methods() {
 
 void Transaction::_signer_signed(PackedByteArray signature){
     WalletAdapter *controller = Object::cast_to<WalletAdapter>(payer);
-    controller->disconnect("message_signed", Callable(this, "_signer_signed"));
-    controller->disconnect("signing_failed", Callable(this, "_signer_failed"));
 
     const uint32_t index = controller->get_active_signer_index();
 
     signatures[index] = signature;
     ready_signature_amount++;
 
+    emit_signal("signer_state_changed");
     check_fully_signed();
 }
 
 void Transaction::_signer_failed(){
     WalletAdapter *controller = Object::cast_to<WalletAdapter>(payer);
-    controller->disconnect("message_signed", Callable(this, "_signer_signed"));
-    controller->disconnect("signing_failed", Callable(this, "_signer_failed"));
 
     emit_signal("signing_failed", controller->get_active_signer_index());
 }
@@ -160,13 +157,14 @@ void Transaction::sign_at_index(const uint32_t index){
         PackedByteArray signature = kp->sign_message(serialize_message());
         signatures[index] = signature;
         ready_signature_amount++;
+        emit_signal("signer_state_changed");
         check_fully_signed();
     }
     else if(signers[index].has_method("sign_message")){
         WalletAdapter* controller = Object::cast_to<WalletAdapter>(signers[index]);
 
-        controller->connect("message_signed", Callable(this, "_signer_signed"));
-        controller->connect("signing_failed", Callable(this, "_signer_failed"));
+        controller->connect("message_signed", Callable(this, "_signer_signed"), CONNECT_ONE_SHOT);
+        controller->connect("signing_failed", Callable(this, "_signer_failed"), CONNECT_ONE_SHOT);
         controller->sign_message(serialize(), index);
     }
     else{
@@ -603,11 +601,9 @@ Error Transaction::partially_sign(const Array& array){
         for(unsigned int j = 0; j < signers.size(); j++){
             if(Pubkey::bytes_from_variant(signers[j]) == Pubkey::bytes_from_variant(array[i])){
                 sign_at_index(j);
-                emit_signal("signer_state_changed");
             }
         }
     }
-    emit_signal("signer_state_changed");
 
     check_fully_signed();
 
