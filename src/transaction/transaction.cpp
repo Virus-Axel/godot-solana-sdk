@@ -45,15 +45,6 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_unit_limit", "value"), &Transaction::set_unit_limit);
     ClassDB::bind_method(D_METHOD("get_unit_price"), &Transaction::get_unit_price);
     ClassDB::bind_method(D_METHOD("set_unit_price", "value"), &Transaction::set_unit_price);
-    ClassDB::bind_method(D_METHOD("send_callback", "params"), &Transaction::send_callback);
-    ClassDB::bind_method(D_METHOD("blockhash_callback", "params"), &Transaction::blockhash_callback);
-
-    ClassDB::bind_method(D_METHOD("_signer_signed", "signature"), &Transaction::_signer_signed);
-    ClassDB::bind_method(D_METHOD("_signer_failed"), &Transaction::_signer_failed);
-
-    ClassDB::bind_method(D_METHOD("_emit_processed_callback", "params"), &Transaction::_emit_processed_callback);
-    ClassDB::bind_method(D_METHOD("_emit_confirmed_callback", "params"), &Transaction::_emit_confirmed_callback);
-    ClassDB::bind_method(D_METHOD("_emit_finalized_callback", "params"), &Transaction::_emit_finalized_callback);
 
     ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
     ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
@@ -65,14 +56,11 @@ void Transaction::_bind_methods() {
     ClassDB::bind_method(D_METHOD("sign_and_send"), &Transaction::sign_and_send);
     ClassDB::bind_method(D_METHOD("create_message"), &Transaction::create_message);
     ClassDB::bind_method(D_METHOD("send"), &Transaction::send);
-    ClassDB::bind_method(D_METHOD("send_and_disconnect"), &Transaction::send_and_disconnect);
     ClassDB::bind_method(D_METHOD("partially_sign", "latest_blockhash"), &Transaction::partially_sign);
 }
 
 void Transaction::_signer_signed(PackedByteArray signature){
     WalletAdapter *controller = Object::cast_to<WalletAdapter>(payer);
-    controller->disconnect("message_signed", Callable(this, "_signer_signed"));
-    controller->disconnect("signing_failed", Callable(this, "_signer_failed"));
 
     const uint32_t index = controller->get_active_signer_index();
 
@@ -84,8 +72,6 @@ void Transaction::_signer_signed(PackedByteArray signature){
 
 void Transaction::_signer_failed(){
     WalletAdapter *controller = Object::cast_to<WalletAdapter>(payer);
-    controller->disconnect("message_signed", Callable(this, "_signer_signed"));
-    controller->disconnect("signing_failed", Callable(this, "_signer_failed"));
 
     emit_signal("signing_failed", controller->get_active_signer_index());
 }
@@ -164,8 +150,8 @@ void Transaction::sign_at_index(const uint32_t index){
     else if(signers[index].has_method("sign_message")){
         WalletAdapter* controller = Object::cast_to<WalletAdapter>(signers[index]);
 
-        controller->connect("message_signed", Callable(this, "_signer_signed"));
-        controller->connect("signing_failed", Callable(this, "_signer_failed"));
+        controller->connect("message_signed", callable_mp(this, &Transaction::_signer_signed), CONNECT_ONE_SHOT);
+        controller->connect("signing_failed", callable_mp(this, &Transaction::_signer_failed), CONNECT_ONE_SHOT);
         controller->sign_message(serialize(), index);
     }
     else{
@@ -179,21 +165,37 @@ void Transaction::copy_connection_state(){
     finalized_connections = get_signal_connection_list("finalized").size();
 }
 
-void Transaction:: subscribe_to_signature(const String& confirmation_level){
-    Callable callback = Callable(this, String("_emit_") + confirmation_level + "_callback");
+void Transaction::subscribe_to_signature(ConfirmationLevel confirmation_level){
+    switch(confirmation_level){
+        case CONFIRMED:
+            subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_confirmed_callback), "confirmed");
+            break;
+
+        case PROCESSED:
+            subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_processed_callback), "processed");
+            break;
+
+        case FINALIZED:
+            subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_finalized_callback), "finalized");
+            break;
+    
+        default:
+            ERR_FAIL_EDMSG("Internal Error. Unknown confirmation level.");
+            break;
+    }
+
     active_subscriptions++;
-    subscribe_client->signature_subscribe(result_signature, callback, confirmation_level);
 }
 
 void Transaction::subscribe_to_signature(){
     if(processed_connections){
-        subscribe_to_signature("processed");
+        subscribe_to_signature(PROCESSED);
     }
     if(confirmed_connections){
-        subscribe_to_signature("confirmed");
+        subscribe_to_signature(CONFIRMED);
     }
     if(finalized_connections){
-        subscribe_to_signature("finalized");
+        subscribe_to_signature(FINALIZED);
     }
 }
 
@@ -377,15 +379,15 @@ void Transaction::_process(double delta){
     if(!result_signature.is_empty()){
         if(get_signal_connection_list("processed").size() && !processed_connections){
             processed_connections = get_signal_connection_list("processed").size();
-            subscribe_to_signature("processed");
+            subscribe_to_signature(PROCESSED);
         }
         if(get_signal_connection_list("confirmed").size() && !confirmed_connections){
             confirmed_connections = get_signal_connection_list("confirmed").size();
-            subscribe_to_signature("confirmed");
+            subscribe_to_signature(CONFIRMED);
         }
         if(get_signal_connection_list("finalized").size() && !finalized_connections){
             finalized_connections = get_signal_connection_list("finalized").size();
-            subscribe_to_signature("finalized");
+            subscribe_to_signature(FINALIZED);
         }
     }
 }
@@ -434,9 +436,7 @@ void Transaction::update_latest_blockhash(const String &custom_hash){
     if(custom_hash.is_empty()){
         pending_blockhash = true;
 
-
-        Callable callback(this, "blockhash_callback");
-        blockhash_client->connect("http_response_received", callback, CONNECT_ONE_SHOT);
+        blockhash_client->connect("http_response_received", callable_mp(this, &Transaction::blockhash_callback), CONNECT_ONE_SHOT);
         blockhash_client->get_latest_blockhash();
     }
     else{
@@ -502,7 +502,7 @@ PackedByteArray Transaction::serialize_signers(){
 
 Variant Transaction::sign_and_send(){
     ERR_FAIL_COND_V_EDMSG(Object::cast_to<Message>(message)->get_signers().size() != signatures.size(), Error::ERR_UNCONFIGURED ,"Transaction does not have enough signers.");
-    connect("fully_signed", Callable(this, "send_and_disconnect"));
+    connect("fully_signed", Callable(this, "send"), CONNECT_ONE_SHOT);
 
     sign();
 
@@ -552,17 +552,9 @@ void Transaction::send(){
         return;
     }
 
-    Callable callback(this, "send_callback");
-
     pending_send = true;
-    send_client->connect("http_response_received", callback, CONNECT_ONE_SHOT);
+    send_client->connect("http_response_received", callable_mp(this, &Transaction::send_callback), CONNECT_ONE_SHOT);
     send_client->send_transaction(SolanaUtils::bs64_encode(serialized_bytes), skip_preflight);
-}
-
-void Transaction::send_and_disconnect(){
-    disconnect("fully_signed", Callable(this, "send_and_disconnect"));
-
-    send();
 }
 
 Error Transaction::sign(){
