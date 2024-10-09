@@ -11,6 +11,12 @@
 
 namespace godot{
 
+enum ConfirmationLevel{
+    CONFIRMED,
+    PROCESSED,
+    FINALIZED,
+};
+
 class Transaction : public Node {
     GDCLASS(Transaction, Node)
 
@@ -62,7 +68,7 @@ private:
 
     void sign_at_index(const uint32_t index);
     void copy_connection_state();
-    void subscribe_to_signature(const String& confirmation_level);
+    void subscribe_to_signature(ConfirmationLevel confirmation_level);
     void subscribe_to_signature();
 
     void _emit_processed_callback(const Dictionary &params);
@@ -112,7 +118,6 @@ public:
     PackedByteArray serialize_signers();
     Error sign();
     void send();
-    void send_and_disconnect();
     Variant sign_and_send();
     Error partially_sign(const Variant& latest_blockhash);
 
