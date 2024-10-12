@@ -822,8 +822,6 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_static_method("SolanaClient", D_METHOD("parse_url", "url"), &SolanaClient::parse_url);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_next_request_identifier"), &SolanaClient::get_next_request_identifier);
 
-    ClassDB::bind_method(D_METHOD("response_callback", "params"), &SolanaClient::response_callback);
-    ClassDB::bind_method(D_METHOD("ws_response_callback", "params"), &SolanaClient::ws_response_callback);
     ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &SolanaClient::set_url_override);
     ClassDB::bind_method(D_METHOD("get_url_override"), &SolanaClient::get_url_override);
     ClassDB::bind_method(D_METHOD("is_ready"), &SolanaClient::is_ready);
@@ -938,7 +936,7 @@ void SolanaClient::_ready(){
 
 SolanaClient::SolanaClient(){
     transaction_detail = "full";
-    ws_callback = Callable(this, "ws_response_callback");
+    ws_callback = callable_mp(this, &SolanaClient::ws_response_callback);
     //create_ws_call();
     //create_http_call();
 }
