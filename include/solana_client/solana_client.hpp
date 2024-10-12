@@ -57,7 +57,6 @@ private:
     Callable ws_callback;
     Callable rpc_callback = callable_mp(this, &SolanaClient::response_callback);
 
-
     String ws_from_http(const String& http_url);
     String get_real_url();
     uint32_t get_real_http_port();
@@ -162,6 +161,7 @@ public:
      * 
      * @param url 
      */
+
     void set_url_override(const String& url);
 
     /**
