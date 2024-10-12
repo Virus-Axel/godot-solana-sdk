@@ -1,0 +1,19 @@
+name: Verify Docs
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v2
+
+      - name: Install doxygen
+        uses: ssciwr/doxygen-install@v1
+
+      - name: Verify
+        run: |
+            ( cat docs/Doxyfile ; printf "\nWARN_AS_ERROR = YES\n" ) | doxygen -

@@ -103,7 +103,7 @@ public:
      * 
      * @deprecated Seed is not used.
      * 
-     * @param p_value Value to set.
+     * @return Seed String
      */
     String get_seed();
 
