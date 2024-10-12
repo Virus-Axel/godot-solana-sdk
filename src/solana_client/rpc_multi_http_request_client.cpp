@@ -1,4 +1,5 @@
 #include "rpc_multi_http_request_client.hpp"
+#include <godot_cpp/classes/engine.hpp>
 
 namespace godot{
 
@@ -6,6 +7,12 @@ void RpcMultiHttpRequestClient::_bind_methods(){
 }
 
 void RpcMultiHttpRequestClient::process(float delta){
+    unsigned int current_frame = Engine::get_singleton()->get_process_frames();
+    if(current_frame == last_processed_frame){
+        return;
+    }
+    last_processed_frame = current_frame;
+
     for(unsigned int i = 0; i < requests.size(); i++){
         RpcSingleHttpRequestClient *single_client = Object::cast_to<RpcSingleHttpRequestClient>(requests[i]);
         single_client->process(delta);

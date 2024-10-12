@@ -47,6 +47,7 @@ private:
     bool slot_range_enabled = false;
 
     Callable ws_callback;
+    Callable rpc_callback = Callable(this, "response_callback");
 
     String ws_from_http(const String& http_url);
     String get_real_url();
@@ -73,7 +74,6 @@ private:
 
     Dictionary make_rpc_param(const Variant& key, const Variant& value);
     void quick_http_request(const Dictionary& request_body, const Callable& callback = Callable());
-    Dictionary parse_url(const String& url);
 
     void response_callback(const Dictionary &params);
     void ws_response_callback(const Dictionary &params);
@@ -82,6 +82,7 @@ protected:
     static void _bind_methods();
 
 public:
+    static Dictionary parse_url(const String& url);
     static String assemble_url(const Dictionary& url_components);
 
     static unsigned int global_rpc_id;
@@ -93,6 +94,8 @@ public:
     static Dictionary make_rpc_dict(const String& method, const Array& params);
 
     SolanaClient();
+
+    void set_callback(Callable callback);
 
     void set_url_override(const String& url);
     String get_url_override();
