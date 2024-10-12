@@ -20,6 +20,8 @@ private:
     TypedArray<CompiledInstruction> compiled_instructions;
     Array signers;
 
+    bool is_versioned_transaction = false;
+
     Array address_lookup_tables;
 
     TypedArray<AccountMeta> merged_metas;

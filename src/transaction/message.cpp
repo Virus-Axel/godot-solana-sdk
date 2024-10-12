@@ -103,7 +103,7 @@ void Message::merge_account_meta(const AccountMeta &account_meta){
 }
 
 void Message::merge_signer(const Variant& signer){
-    ERR_FAIL_COND_EDMSG(Pubkey::is_pubkey(signer), "Pubkey is provided as signing parameter. (Use Keypair or WalletAdapter.)");
+    //ERR_FAIL_COND_EDMSG(Pubkey::is_pubkey(signer), "Pubkey is provided as signing parameter. (Use Keypair or WalletAdapter.)");
 
     for(unsigned int i = 0; i < signers.size(); i++){
         if(Pubkey::bytes_from_variant(signers[i]) == Pubkey::bytes_from_variant(signer)){
@@ -167,7 +167,7 @@ Message::Message(const PackedByteArray& bytes){
 
     num_required_signatures = bytes[cursor++];
 
-    bool is_versioned_transaction = false;
+    is_versioned_transaction = false;
 
     if(num_required_signatures > 127){
         is_versioned_transaction = true;
@@ -232,6 +232,7 @@ PackedByteArray Message::serialize(){
     }
 
     result.append_array(serialize_blockhash());
+    PackedByteArray temp = serialize_blockhash();
 
     result.append(compiled_instructions.size());
 
@@ -277,6 +278,9 @@ int Message::locate_account_meta(const TypedArray<AccountMeta>& arr, const Accou
 }
 
 bool Message::is_versioned(){
+    if(is_versioned_transaction){
+        return true;
+    }
     if(address_lookup_tables.is_empty()){
         return false;
     }
