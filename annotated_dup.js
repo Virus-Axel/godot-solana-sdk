@@ -29,7 +29,7 @@ var annotated_dup =
       [ "RpcMultiHttpRequestClient", "classgodot_1_1_rpc_multi_http_request_client.html", null ],
       [ "RpcSingleHttpRequestClient", "classgodot_1_1_rpc_single_http_request_client.html", null ],
       [ "RpcSingleWsRequestClient", "classgodot_1_1_rpc_single_ws_request_client.html", null ],
-      [ "SolanaClient", "classgodot_1_1_solana_client.html", null ],
+      [ "SolanaClient", "classgodot_1_1_solana_client.html", "classgodot_1_1_solana_client" ],
       [ "SolanaUtils", "classgodot_1_1_solana_utils.html", null ],
       [ "SubscriptionData", "structgodot_1_1_subscription_data.html", null ],
       [ "SystemProgram", "classgodot_1_1_system_program.html", null ],
