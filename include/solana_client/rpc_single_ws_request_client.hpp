@@ -29,6 +29,7 @@ class RpcSingleWsRequestClient : public WebSocketPeer{
     GDCLASS(RpcSingleWsRequestClient, WebSocketPeer)
 private:
     bool connecting = false;
+    unsigned int last_processed_frame = 0;
 
     std::deque<WsRequestData> request_queue;
     std::vector<SubscriptionData> subscriptions;

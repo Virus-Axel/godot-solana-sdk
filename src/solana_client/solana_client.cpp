@@ -200,7 +200,7 @@ void SolanaClient::quick_http_request(const Dictionary& request_body, const Call
     }
 
     if(is_inside_tree() || async_override){
-        get_current_http_client()->asynchronous_request(request_body, parsed_url, Callable(this, "response_callback"));
+        get_current_http_client()->asynchronous_request(request_body, parsed_url, rpc_callback);
     }
     else{
         ERR_FAIL_EDMSG("SolanaClient must be in scene tree.");
@@ -819,6 +819,7 @@ void SolanaClient::_bind_methods(){
     ClassDB::add_signal("SolanaClient", MethodInfo("http_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
 
     ClassDB::bind_static_method("SolanaClient", D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
+    ClassDB::bind_static_method("SolanaClient", D_METHOD("parse_url", "url"), &SolanaClient::parse_url);
     ClassDB::bind_static_method("SolanaClient", D_METHOD("get_next_request_identifier"), &SolanaClient::get_next_request_identifier);
 
     ClassDB::bind_method(D_METHOD("response_callback", "params"), &SolanaClient::response_callback);
@@ -826,8 +827,6 @@ void SolanaClient::_bind_methods(){
     ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &SolanaClient::set_url_override);
     ClassDB::bind_method(D_METHOD("get_url_override"), &SolanaClient::get_url_override);
     ClassDB::bind_method(D_METHOD("is_ready"), &SolanaClient::is_ready);
-
-    ClassDB::bind_method(D_METHOD("parse_url", "url"), &SolanaClient::parse_url);
 
     ClassDB::bind_method(D_METHOD("set_ws_url", "url"), &SolanaClient::set_ws_url);
     ClassDB::bind_method(D_METHOD("get_ws_url"), &SolanaClient::get_ws_url);
@@ -1065,6 +1064,10 @@ void SolanaClient::set_ws_url(const String& url){
 
 String SolanaClient::get_ws_url(){
     return ws_url;
+}
+
+void SolanaClient::set_callback(Callable callback){
+    rpc_callback = callback;
 }
 
 String SolanaClient::get_url_override(){
