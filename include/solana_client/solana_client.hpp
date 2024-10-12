@@ -11,6 +11,14 @@
 
 namespace godot {
 
+/**
+ * @class SolanaClient
+ * @brief Manager for RPC HTTP API communication.
+ * 
+ * Interacts with an RPC node on a Solana cluster. This class
+ * takes user requests and sends them sequentially or in parallel to an
+ * RPC endpoints. The SolanaClient also manages the web socket interface.
+ */
 class SolanaClient : public Node {
     GDCLASS(SolanaClient, Node)
 
@@ -49,6 +57,7 @@ private:
     Callable ws_callback;
     Callable rpc_callback = callable_mp(this, &SolanaClient::response_callback);
 
+
     String ws_from_http(const String& http_url);
     String get_real_url();
     uint32_t get_real_http_port();
@@ -82,25 +91,102 @@ protected:
     static void _bind_methods();
 
 public:
+
+    /** Incrementing ID of the next request. */
+    static unsigned int global_rpc_id;
+
+    SolanaClient();
+
+    /**
+     * @brief Parses a URL string into its components
+     * 
+     * Parses scheme, userinfo, host, port, path, query and fragment from a URL string.
+     * If the information is missing, the field will not be present in the result dictionary.
+     * 
+     * @param url URL Sting to parse the data from.
+     * @return Dictionary with the parsed URL information.
+     */
     static Dictionary parse_url(const String& url);
+
+    /**
+     * @brief Assembles a URL string from a dictionary of components.
+     * 
+     * This is the reverse of parse_url. The method takes the a dictionary with the fields
+     * scheme, userinfo, host, port, path, query and fragment. It extracts the fields and
+     * creates a URL string.
+     * 
+     * @param url_components A dictionary with URL data.
+     * @return An assembled URL String. 
+     */
     static String assemble_url(const Dictionary& url_components);
 
-    static unsigned int global_rpc_id;
+    /**
+     * @brief Get the next request identifier.
+     * 
+     * @return The request ID of the next request.
+     */
     static unsigned int get_next_request_identifier();
 
     void _process(double delta) override;
     void _ready() override;
 
+    /**
+     * @brief Builds a dictionary representing the RPC request body.
+     * 
+     * Takes a RPC method and parameters and creates a RPC request body as a Dictionary.
+     * The request body will contain a request identifier and the identifier will be 
+     * incremented.
+     * 
+     * @param method Name of the RPC method.
+     * @param params Array of parameters.
+     * @return Dictionary representing the request body.
+     */
     static Dictionary make_rpc_dict(const String& method, const Array& params);
 
-    SolanaClient();
-
+    /**
+     * @brief Set the callback of the http requests.
+     * 
+     * This method will set a custom callback to use when getting an http response.
+     * The default method is response_callback.
+     * 
+     * @param callback The callback to run when http respponse is received.
+     */
     void set_callback(Callable callback);
 
+    /**
+     * @brief Set the url to use by this client instance.
+     * 
+     * The SolanaClient uses the URL in project settings. However, this method overrides that URL.
+     * By calling this method this instance will use the provided URL instead. Once the URL override
+     * is set it cannot be unset.
+     * 
+     * @param url 
+     */
     void set_url_override(const String& url);
+
+    /**
+     * @brief Get the url override URL.
+     * 
+     * @return Overridden URL String.
+     */
     String get_url_override();
 
+    /**
+     * @brief Set the timeout of requests
+     * 
+     * Sets timeout to use when calling RPC endpoint. When a request takes longer that the timeout,
+     * the SolanaClient will stop waiting and throw a timeout response instead. This will trigger
+     * response signal too, but with a timeout error.
+     * 
+     * @param timeout Timeout in seconds.
+     */
     void set_timeout(float timeout);
+
+    /**
+     * @brief Get the current timeout.
+     * 
+     * @return Current timeout in seconds. 
+     */
     float get_timeout();
     
     void set_ws_url(const String& url);
