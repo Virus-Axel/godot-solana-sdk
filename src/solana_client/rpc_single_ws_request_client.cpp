@@ -2,6 +2,7 @@
 
 #include <godot_cpp/classes/json.hpp>
 #include <solana_client.hpp>
+#include <godot_cpp/classes/engine.hpp>
 
 namespace godot{
 
@@ -16,6 +17,12 @@ bool RpcSingleWsRequestClient::is_pending(){
 }
 
 void RpcSingleWsRequestClient::process(float delta){
+    unsigned int current_frame = Engine::get_singleton()->get_process_frames();
+    if(current_frame == last_processed_frame){
+        return;
+    }
+    last_processed_frame = current_frame;
+
     WebSocketPeer::poll();
     WebSocketPeer::State state = get_ready_state();
     switch(state){

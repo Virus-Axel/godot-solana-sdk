@@ -19,6 +19,8 @@ typedef struct{
 class RpcSingleHttpRequestClient : public HTTPClient{
     GDCLASS(RpcSingleHttpRequestClient, HTTPClient)
 private:
+    bool skip_id = false;
+
     std::queue<RequestData> request_queue;
     PackedByteArray response_data;
 
@@ -37,6 +39,7 @@ protected:
     static void _bind_methods();
 public:
     bool is_completed() const;
+    void set_skip_id(bool skip_id);
 
     void process(const float delta);
     void asynchronous_request(const Dictionary& request_body, Dictionary parsed_url, const Callable &callback, float timeout = 20.0F);
