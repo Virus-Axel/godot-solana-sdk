@@ -66,7 +66,7 @@ void Pubkey::_bind_methods() {
     ClassDB::bind_static_method("Pubkey", D_METHOD("new_random"), &Pubkey::new_random);
 
     ClassDB::bind_method(D_METHOD("to_string"), &Pubkey::to_string);
-    ClassDB::bind_method(D_METHOD("set_string", "p_value"), &Pubkey::from_string);
+    ClassDB::bind_method(D_METHOD("from_string", "p_value"), &Pubkey::from_string);
     ClassDB::bind_method(D_METHOD("to_bytes"), &Pubkey::to_bytes);
     ClassDB::bind_method(D_METHOD("from_bytes", "p_value"), &Pubkey::from_bytes);
     ClassDB::bind_method(D_METHOD("get_seed"), &Pubkey::get_seed);

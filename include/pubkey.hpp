@@ -73,6 +73,7 @@ public:
     Pubkey(const Variant& from);
 
     /**
+     * @godot
      * @brief Configure Pubkey from base58 encoded string.
      * 
      * Decodes p_value into 32 bytes key and configures the Pubkey properties.
@@ -83,6 +84,7 @@ public:
     void from_string(const String& p_value);
 
     /**
+     * @godot
      * @brief Returns the base58 encoded key.
      * 
      * @return Base58 encoded key.
@@ -90,6 +92,7 @@ public:
     String to_string() const;
 
     /**
+     * @godot
      * @brief Sets an unused seed property.
      * 
      * @deprecated Try either new_from_bytes or new_from_seed instead.
@@ -99,6 +102,7 @@ public:
     void set_seed(const String& p_value);
 
     /**
+     * @godot
      * @brief Gets an unused seed property.
      * 
      * @deprecated Seed is not used.
@@ -108,6 +112,7 @@ public:
     String get_seed();
 
     /**
+     * @godot
      * @brief Configure Pubkey from 32 byte array.
      * 
      * Configures the Pubkey properties from a 32 byte array.
@@ -118,6 +123,7 @@ public:
     void from_bytes(const PackedByteArray& p_value);
 
     /**
+     * @godot
      * @brief Returns the 32 byte key array.
      * 
      * @return The 32 byte key array.
@@ -125,6 +131,7 @@ public:
     PackedByteArray to_bytes() const;
 
     /**
+     * @godot
      * @brief Set type of Pubkey.
      * 
      * @deprecated Type is not used anything.
@@ -134,6 +141,7 @@ public:
     void set_type(const String p_value);
 
     /**
+     * @godot
      * @brief Gets Pubkey type.
      * 
      * @deprecated Type is not used anything.
@@ -143,6 +151,7 @@ public:
     String get_type() const;
 
     /**
+     * @godot
      * @brief Set base of Pubkey.
      * 
      * Used when creating Pubkeys from seeds.
@@ -154,6 +163,7 @@ public:
     void set_base(const Variant p_value);
 
     /**
+     * @godot
      * @brief Get base property of Pubkey.
      * 
      * Gets the base used when creating Pubkeys from seeds.
@@ -165,6 +175,7 @@ public:
     Variant get_base();
 
     /**
+     * @godot
      * @brief Set owner of Pubkey.
      * 
      * Sets owner when generating the pubkey from seed.
@@ -176,6 +187,7 @@ public:
     void set_owner(const Variant p_value);
 
     /**
+     * @godot
      * @brief Gets the owner of the Pubkey.
      * 
      * Gets the owner used when generating pubkey from seed.
@@ -187,6 +199,7 @@ public:
     Variant get_owner();
 
     /**
+     * @godot
      * @brief Set the wallet address object.
      * 
      * Sets the wallet address used when generating an associated token address.
@@ -198,6 +211,7 @@ public:
     void set_wallet_address(const Variant p_value);
 
     /**
+     * @godot
      * @brief Get the wallet address object
      * 
      * Gets the wallet address used when derriving associated token address.
@@ -209,6 +223,7 @@ public:
     Variant get_wallet_address();
 
     /**
+     * @godot
      * @brief Set the token mint address object
      * 
      * Sets the token mint address used when generating associated token accounts.
@@ -220,6 +235,7 @@ public:
     void set_token_mint_address(const Variant p_value);
 
     /**
+     * @godot
      * @brief Get the token mint address object
      * 
      * Gets the token mint address used when generating associated token accounts.
@@ -231,6 +247,7 @@ public:
     Variant get_token_mint_address();
 
     /**
+     * @godot
      * @brief Constructs this Pubkey resource from string object.
      * 
      * Takes a base58 encoded string and constructs this Pubkey resource from it.
@@ -332,6 +349,7 @@ public:
      */
     static Variant new_pda_bytes(const Array seeds, const Variant &program_id);
     /**
+     * @godot
      * @brief Creates a new random Pubkey resource.
      * 
      * Creates a new random Pubkey by filling each byte randomly.
@@ -368,6 +386,7 @@ public:
     static String string_from_variant(const Variant& other);
 
     /**
+     * @godot
      * @brief Constructs a program address object
      * 
      * Constructs this Pubkey into a program derived address.
@@ -390,6 +409,7 @@ public:
      */
     bool create_program_address_bytes(const Array seeds, const Variant &program_id);
     /**
+     * @godot
      * @brief Constructs an associated token address.
      * 
      * Takes a wallet address and token mint address to get an associated token account.
