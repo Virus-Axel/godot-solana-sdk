@@ -13,6 +13,8 @@
 #include <wallet_adapter.hpp>
 #include <message.hpp>
 
+#include <godot_cpp/classes/json.hpp>
+
 //#include <emscripten.h>
 
 namespace godot{
@@ -24,6 +26,7 @@ void Transaction::_bind_methods() {
     ClassDB::add_signal("Transaction", MethodInfo("processed"));
     ClassDB::add_signal("Transaction", MethodInfo("confirmed"));
     ClassDB::add_signal("Transaction", MethodInfo("finalized"));
+    ClassDB::add_signal("Transaction", MethodInfo("confirmation_status_changed", PropertyInfo(Variant::INT, "status")));
 
     ClassDB::add_signal("Transaction", MethodInfo("fully_signed"));
     ClassDB::add_signal("Transaction", MethodInfo("send_ready"));
@@ -168,53 +171,42 @@ void Transaction::copy_connection_state(){
     finalized_connections = get_signal_connection_list("finalized").size();
 }
 
-void Transaction::subscribe_to_signature(ConfirmationLevel confirmation_level){
-    switch(confirmation_level){
-        case CONFIRMED:
-            subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_confirmed_callback), "confirmed");
-            break;
-
-        case PROCESSED:
-            subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_processed_callback), "processed");
-            break;
-
-        case FINALIZED:
-            subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_finalized_callback), "finalized");
-            break;
-    
-        default:
-            ERR_FAIL_EDMSG("Internal Error. Unknown confirmation level.");
-            break;
-    }
-
-    active_subscriptions++;
-}
-
 void Transaction::subscribe_to_signature(){
-    if(processed_connections){
-        subscribe_to_signature(PROCESSED);
+    if(signature_subscribed){
+        return;
     }
-    if(confirmed_connections){
-        subscribe_to_signature(CONFIRMED);
-    }
-    if(finalized_connections){
-        subscribe_to_signature(FINALIZED);
-    }
+    subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_confirmation_callback), "processed");
+    subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_confirmation_callback), "confirmed");
+    subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_confirmation_callback), "finalized");
+
+    signature_subscribed = true;
 }
 
-void Transaction::_emit_processed_callback(const Dictionary &params){
-    active_subscriptions--;
-    emit_signal("processed");
-}
-
-void Transaction::_emit_confirmed_callback(const Dictionary &params){
-    active_subscriptions--;
-    emit_signal("confirmed");
-}
-
-void Transaction::_emit_finalized_callback(const Dictionary &params){
-    active_subscriptions--;
-    emit_signal("finalized");
+void Transaction::_emit_confirmation_callback(const Dictionary &params){
+    std::cout << JSON::stringify(params).ascii() << std::endl;
+    if(((Dictionary)(params["value"]))["err"].get_type() != Variant::NIL){
+        emit_signal("confirmation_status_changed", ConfirmationLevel::FAILED);
+    }
+    switch (confirmation_level)
+    {
+    case ConfirmationLevel::UNKNOWN:
+        confirmation_level = ConfirmationLevel::PROCESSED;
+        emit_signal("processed");
+        break;
+    case ConfirmationLevel::PROCESSED:
+        confirmation_level = ConfirmationLevel::CONFIRMED;
+        emit_signal("confirmed");
+        break;
+    case ConfirmationLevel::CONFIRMED:
+        confirmation_level = ConfirmationLevel::FINALIZED;
+        emit_signal("finalized");
+        break;
+    
+    default:
+        break;
+    }
+    std::cout << confirmation_level << std::endl;
+    emit_signal("confirmation_status_changed", confirmation_level);
 }
 
 bool Transaction::_set(const StringName &p_name, const Variant &p_value){
@@ -373,24 +365,15 @@ void Transaction::_process(double delta){
     if(subscribe_client){
         blockhash_client->_process(delta);
     }
-    if(active_subscriptions){
+    if(signature_subscribed){
         subscribe_client->_process(delta);
     }
         
 
     // Detect new connections after transaction is performed.
     if(!result_signature.is_empty()){
-        if(get_signal_connection_list("processed").size() && !processed_connections){
-            processed_connections = get_signal_connection_list("processed").size();
-            subscribe_to_signature(PROCESSED);
-        }
-        if(get_signal_connection_list("confirmed").size() && !confirmed_connections){
-            confirmed_connections = get_signal_connection_list("confirmed").size();
-            subscribe_to_signature(CONFIRMED);
-        }
-        if(get_signal_connection_list("finalized").size() && !finalized_connections){
-            finalized_connections = get_signal_connection_list("finalized").size();
-            subscribe_to_signature(FINALIZED);
+        if(get_signal_connection_list("confirmation_status_changed").size()){
+            subscribe_to_signature();
         }
     }
 }
@@ -517,7 +500,6 @@ void Transaction::send_callback(Dictionary params){
 
     if(params.has("result")){
         result_signature = params["result"];
-        copy_connection_state();
         subscribe_to_signature();
     }
     emit_signal("transaction_response_received", params);

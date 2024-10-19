@@ -11,20 +11,25 @@
 
 namespace godot{
 
-enum ConfirmationLevel{
-    CONFIRMED,
-    PROCESSED,
-    FINALIZED,
-};
-
 class Transaction : public Node {
     GDCLASS(Transaction, Node)
 
 private:
+    enum ConfirmationLevel{
+        UNKNOWN,
+        CONFIRMED,
+        PROCESSED,
+        FINALIZED,
+        FAILED,
+    };
+
+    ConfirmationLevel confirmation_level = ConfirmationLevel::UNKNOWN;
+
     unsigned int processed_connections = 0;
     unsigned int confirmed_connections = 0;
     unsigned int finalized_connections = 0;
-    unsigned int active_subscriptions = 0;
+    
+    bool signature_subscribed = false;
 
     uint32_t unit_limit = 800000;
     uint32_t unit_price = 8000;
@@ -68,12 +73,9 @@ private:
 
     void sign_at_index(const uint32_t index);
     void copy_connection_state();
-    void subscribe_to_signature(ConfirmationLevel confirmation_level);
     void subscribe_to_signature();
 
-    void _emit_processed_callback(const Dictionary &params);
-    void _emit_confirmed_callback(const Dictionary &params);
-    void _emit_finalized_callback(const Dictionary &params);
+    void _emit_confirmation_callback(const Dictionary &params);
 
 protected:
     static void _bind_methods();

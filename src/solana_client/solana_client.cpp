@@ -787,7 +787,9 @@ void SolanaClient::account_subscribe(const Variant &account_key, const Callable 
 void SolanaClient::signature_subscribe(const String &signature, const Callable &callback, const String &commitment){
     Array params;
     params.append(signature);
-    add_to_param_dict(params, "commitment", commitment);
+    if(!commitment.is_empty()){
+        add_to_param_dict(params, "commitment", commitment);
+    }
 
     get_current_ws_client()->enqueue_ws_request(make_rpc_dict("signatureSubscribe", params), callback, ws_callback, parse_url(get_real_ws_url()));
 }
