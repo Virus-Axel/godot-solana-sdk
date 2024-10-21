@@ -677,7 +677,6 @@ void SolanaClient::send_transaction(const String& encoded_transaction, uint64_t 
     append_encoding(params);
     add_to_param_dict(params, "skipPreflight", skip_preflight);
     add_to_param_dict(params, "preflightCommitment", commitment);
-    add_to_param_dict(params, "maxRetries", max_retries);
     append_min_context_slot(params);
 
     return quick_http_request(make_rpc_dict("sendTransaction", params));
