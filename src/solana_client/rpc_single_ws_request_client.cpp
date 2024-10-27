@@ -6,8 +6,8 @@
 
 namespace godot{
 
-void RpcSingleWsRequestClient::enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const Callable& confirmation_callback, const Dictionary& url, float timeout){
-    request_queue.push_back(WsRequestData{request_body, url, timeout, request_body["id"], callback, confirmation_callback});
+void RpcSingleWsRequestClient::enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const Callable& confirmation_callback, const Dictionary& url, float timeout, const Callable& fail_callback){
+    request_queue.push_back(WsRequestData{request_body, url, timeout, request_body["id"], callback, confirmation_callback, fail_callback});
 }
 
 void RpcSingleWsRequestClient::_bind_methods(){}
@@ -72,6 +72,7 @@ void RpcSingleWsRequestClient::process_package(const PackedByteArray& packet_dat
 
     // Unsubscribe confirmation.
     else if(result.get_type() == Variant::BOOL){
+        std::cout << "Unsubscribe: " << packet_data.get_string_from_ascii().ascii() << std::endl;
         return;
     }
 
@@ -123,7 +124,7 @@ void RpcSingleWsRequestClient::add_subscription(unsigned int id, unsigned int su
         return;
     }
     const Dictionary &request_body = request_queue[request_index].request;
-    subscriptions.push_back(SubscriptionData{sub_id, request_body["method"], request_queue.front().parsed_url, request_queue.front().callback});
+    subscriptions.push_back(SubscriptionData{sub_id, request_body["method"], request_queue.front().parsed_url, request_queue.front().callback, request_queue.front().fail_callback});
 }
 
 void RpcSingleWsRequestClient::remove_subscription(unsigned int index){
@@ -179,6 +180,10 @@ void RpcSingleWsRequestClient::process_timeouts(float delta){
 
         if(request_queue[i].timeout < 0.0F){
             connecting = false;
+
+            // Call Fail callback.
+            request_queue[i].fail_callback.callv(Array());
+            
             finalize_request(request_queue[i].request_identifier, Dictionary());
             ERR_FAIL_EDMSG("Ws request timed out.");
         }

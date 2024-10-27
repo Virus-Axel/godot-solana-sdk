@@ -168,7 +168,50 @@ void Transaction::copy_connection_state(){
     finalized_connections = get_signal_connection_list("finalized").size();
 }
 
+void Transaction::evaluate_signature_callback(const Dictionary& response){
+    ERR_FAIL_COND(!response.has("result"));
+    Dictionary result = response["result"];
+    ERR_FAIL_COND(!result.has("value"));
+    Array value = result["value"];
+    ERR_FAIL_COND(value.is_empty());
+
+    String status = ((Dictionary)value[0])["confirmationStatus"];
+    
+    if(status == "processed" && !is_processed){
+        emit_signal("processed");
+        is_processed = true;
+    }
+    else if(status == "confirmed" && !is_confirmed){
+        if(!is_processed){
+            emit_signal("processed");
+        }
+        emit_signal("confirmed");
+        is_confirmed = true;
+    }
+    else if(status == "finalized" && !is_finalized){
+        if(!is_processed){
+            emit_signal("processed");
+        }
+        if(!is_confirmed){
+            emit_signal("confirmed");
+        }
+        emit_signal("finalized");
+        is_finalized = true;
+    }
+    else{
+        ERR_FAIL_EDMSG("Internal Error, unknown signature status");
+    }
+}
+
+void Transaction::enable_polling_mode(){
+    poll_client = memnew(SolanaClient);
+    poll_client->connect("http_response_received", callable_mp(this, &Transaction::evaluate_signature_callback));
+    polling_mode = true;
+}
+
 void Transaction::subscribe_to_signature(ConfirmationLevel confirmation_level){
+    Callable fail_callback = callable_mp(this, &Transaction::enable_polling_mode);
+
     switch(confirmation_level){
         case CONFIRMED:
             subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_confirmed_callback), "confirmed");
@@ -363,6 +406,17 @@ Variant Transaction::new_from_bytes(const PackedByteArray& bytes){
 void Transaction::_ready(){
 }
 
+void Transaction::poll_signature_if_needed(double delta){
+    time_until_next_poll -= delta;
+    if(time_until_next_poll < 0.0){
+        time_until_next_poll = SIGNATURE_POLL_INTERVAL;
+        PackedStringArray signatures;
+        signatures.push_back(result_signature);
+        poll_client->get_signature_statuses(signatures);
+    }
+    poll_client->_process(delta);
+}
+
 void Transaction::_process(double delta){
     if(pending_send){
         send_client->_process(delta);
@@ -370,11 +424,18 @@ void Transaction::_process(double delta){
     if(pending_blockhash){
         blockhash_client->_process(delta);
     }
-    if(subscribe_client){
-        blockhash_client->_process(delta);
+    if(active_subscriptions && !polling_mode){
+        time_until_polling -= delta;
+        if(time_until_polling < 0.0){
+            enable_polling_mode();
+        }
+        else{
+            subscribe_client->_process(delta);
+        }
     }
-    if(active_subscriptions){
-        subscribe_client->_process(delta);
+    else if(polling_mode){
+        poll_signature_if_needed(delta);
+        return;
     }
         
 

@@ -16,6 +16,7 @@ typedef struct{
     int request_identifier;
     Callable callback;
     Callable confirmation_callback;
+    Callable fail_callback;
 } WsRequestData;
 
 typedef struct {
@@ -23,6 +24,7 @@ typedef struct {
     String method_name;
     Dictionary url;
     Callable callback;
+    Callable fail_callback;
 } SubscriptionData;
 
 class RpcSingleWsRequestClient : public WebSocketPeer{
@@ -54,7 +56,7 @@ public:
     bool is_pending();
 
     void process(float delta);
-    void enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const Callable& confirmation_callback, const Dictionary& url, float timeout = 20.0F);
+    void enqueue_ws_request(const Dictionary& request_body, const Callable& callback, const Callable& confirmation_callback, const Dictionary& url, float timeout = 20.0F, const Callable& fail_callback = Callable());
     void unsubscribe_all(const Callable &callback, const Dictionary& url, float timeout = 20.0F);
 };
 

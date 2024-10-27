@@ -12,6 +12,7 @@
 namespace godot{
 
 enum ConfirmationLevel{
+    UNCONFIRMED,
     CONFIRMED,
     PROCESSED,
     FINALIZED,
@@ -21,6 +22,8 @@ class Transaction : public Node {
     GDCLASS(Transaction, Node)
 
 private:
+    const double SIGNATURE_POLL_INTERVAL = 3.0;
+
     unsigned int processed_connections = 0;
     unsigned int confirmed_connections = 0;
     unsigned int finalized_connections = 0;
@@ -29,6 +32,9 @@ private:
     uint32_t unit_limit = 800000;
     uint32_t unit_price = 8000;
     uint32_t ready_signature_amount = 0;
+
+    double time_until_polling = 17.0;
+    double time_until_next_poll = SIGNATURE_POLL_INTERVAL;
 
     Variant message;
 
@@ -46,11 +52,17 @@ private:
     SolanaClient *send_client;
     SolanaClient *blockhash_client;
     SolanaClient *subscribe_client;
+    SolanaClient *poll_client;
 
     bool has_cumpute_budget_instructions = false;
     bool external_payer = false;
     bool pending_blockhash = false;
     bool pending_send = false;
+    bool polling_mode = false;
+
+    bool is_processed = false;
+    bool is_confirmed = false;
+    bool is_finalized = false;
 
     bool skip_preflight = true;
 
@@ -70,6 +82,8 @@ private:
     void copy_connection_state();
     void subscribe_to_signature(ConfirmationLevel confirmation_level);
     void subscribe_to_signature();
+    void evaluate_signature_callback(const Dictionary& response);
+    void enable_polling_mode();
 
     void _emit_processed_callback(const Dictionary &params);
     void _emit_confirmed_callback(const Dictionary &params);
@@ -126,6 +140,9 @@ public:
     void send_callback(Dictionary params);
     void blockhash_callback(Dictionary params);
     void set_address_lookup_tables(const Array &address_lookup_tables);
+
+    void poll_signature_if_needed(double delta);
+
     Array get_address_lookup_tables();
 
     ~Transaction();
