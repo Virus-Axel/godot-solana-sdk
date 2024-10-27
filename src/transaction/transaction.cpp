@@ -205,6 +205,7 @@ void Transaction::evaluate_signature_callback(const Dictionary& response){
 
 void Transaction::enable_polling_mode(){
     poll_client = memnew(SolanaClient);
+    poll_client->set_async_override(true);
     poll_client->connect("http_response_received", callable_mp(this, &Transaction::evaluate_signature_callback));
     polling_mode = true;
 }
