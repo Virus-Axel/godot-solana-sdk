@@ -25,6 +25,13 @@ void Transaction::_bind_methods() {
     ClassDB::add_signal("Transaction", MethodInfo("confirmed"));
     ClassDB::add_signal("Transaction", MethodInfo("finalized"));
 
+    ClassDB::add_signal("Transaction", MethodInfo("confirmation_status_changed", PropertyInfo(Variant::INT, "confirmation_status")));
+    ClassDB::bind_integer_constant("Transaction", "ConfirmationLevel", "UNCONFIRMED", ConfirmationLevel::UNCONFIRMED);
+    ClassDB::bind_integer_constant("Transaction", "ConfirmationLevel", "PROCESSED", ConfirmationLevel::PROCESSED);
+    ClassDB::bind_integer_constant("Transaction", "ConfirmationLevel", "CONFIRMED", ConfirmationLevel::CONFIRMED);
+    ClassDB::bind_integer_constant("Transaction", "ConfirmationLevel", "FINALIZED", ConfirmationLevel::FINALIZED);
+    ClassDB::bind_integer_constant("Transaction", "ConfirmationLevel", "FAILED", ConfirmationLevel::FAILED);
+
     ClassDB::add_signal("Transaction", MethodInfo("fully_signed"));
     ClassDB::add_signal("Transaction", MethodInfo("send_ready"));
     ClassDB::add_signal("Transaction", MethodInfo("signing_failed", PropertyInfo(Variant::INT, "signer_index")));
@@ -163,9 +170,9 @@ void Transaction::sign_at_index(const uint32_t index){
 }
 
 void Transaction::copy_connection_state(){
-    processed_connections = get_signal_connection_list("processed").size();
-    confirmed_connections = get_signal_connection_list("confirmed").size();
-    finalized_connections = get_signal_connection_list("finalized").size();
+    processed_connections = get_signal_connection_list("processed").size() + get_signal_connection_list("confirmation_status_changed").size();
+    confirmed_connections = get_signal_connection_list("confirmed").size() + get_signal_connection_list("confirmation_status_changed").size();
+    finalized_connections = get_signal_connection_list("finalized").size() + get_signal_connection_list("confirmation_status_changed").size();
 }
 
 void Transaction::evaluate_signature_callback(const Dictionary& response){
@@ -175,27 +182,38 @@ void Transaction::evaluate_signature_callback(const Dictionary& response){
     Array value = result["value"];
     ERR_FAIL_COND(value.is_empty());
 
+    if(((Dictionary)value[0])["confirmationStatus"].get_type() != Variant::STRING){
+        emit_signal("confirmation_status_changed", ConfirmationLevel::FAILED);
+        return;
+    }
+
     String status = ((Dictionary)value[0])["confirmationStatus"];
     
     if(status == "processed" && !is_processed){
         emit_signal("processed");
+        emit_signal("confirmation_status_changed", ConfirmationLevel::PROCESSED);
         is_processed = true;
     }
     else if(status == "confirmed" && !is_confirmed){
         if(!is_processed){
             emit_signal("processed");
+            emit_signal("confirmation_status_changed", ConfirmationLevel::PROCESSED);
         }
         emit_signal("confirmed");
+        emit_signal("confirmation_status_changed", ConfirmationLevel::CONFIRMED);
         is_confirmed = true;
     }
     else if(status == "finalized" && !is_finalized){
         if(!is_processed){
             emit_signal("processed");
+            emit_signal("confirmation_status_changed", ConfirmationLevel::PROCESSED);
         }
         if(!is_confirmed){
             emit_signal("confirmed");
+            emit_signal("confirmation_status_changed", ConfirmationLevel::CONFIRMED);
         }
         emit_signal("finalized");
+        emit_signal("confirmation_status_changed", ConfirmationLevel::FINALIZED);
         is_finalized = true;
     }
     else{
@@ -248,16 +266,19 @@ void Transaction::subscribe_to_signature(){
 void Transaction::_emit_processed_callback(const Dictionary &params){
     active_subscriptions--;
     emit_signal("processed");
+    emit_signal("confirmation_status_changed", ConfirmationLevel::PROCESSED);
 }
 
 void Transaction::_emit_confirmed_callback(const Dictionary &params){
     active_subscriptions--;
     emit_signal("confirmed");
+    emit_signal("confirmation_status_changed", ConfirmationLevel::CONFIRMED);
 }
 
 void Transaction::_emit_finalized_callback(const Dictionary &params){
     active_subscriptions--;
     emit_signal("finalized");
+    emit_signal("confirmation_status_changed", ConfirmationLevel::FINALIZED);
 }
 
 bool Transaction::_set(const StringName &p_name, const Variant &p_value){
@@ -441,15 +462,15 @@ void Transaction::_process(double delta){
 
     // Detect new connections after transaction is performed.
     if(!result_signature.is_empty()){
-        if(get_signal_connection_list("processed").size() && !processed_connections){
+        if((get_signal_connection_list("confirmation_status_changed").size() + get_signal_connection_list("processed").size()) && !processed_connections){
             processed_connections = get_signal_connection_list("processed").size();
             subscribe_to_signature(PROCESSED);
         }
-        if(get_signal_connection_list("confirmed").size() && !confirmed_connections){
+        if((get_signal_connection_list("confirmation_status_changed").size() + get_signal_connection_list("confirmed").size()) && !confirmed_connections){
             confirmed_connections = get_signal_connection_list("confirmed").size();
             subscribe_to_signature(CONFIRMED);
         }
-        if(get_signal_connection_list("finalized").size() && !finalized_connections){
+        if((get_signal_connection_list("confirmation_status_changed").size() + get_signal_connection_list("finalized").size()) && !finalized_connections){
             finalized_connections = get_signal_connection_list("finalized").size();
             subscribe_to_signature(FINALIZED);
         }
@@ -580,6 +601,9 @@ void Transaction::send_callback(Dictionary params){
         result_signature = params["result"];
         copy_connection_state();
         subscribe_to_signature();
+    }
+    else{
+        emit_signal("confirmation_status_changed", ConfirmationLevel::FAILED);
     }
     emit_signal("transaction_response_received", params);
 }

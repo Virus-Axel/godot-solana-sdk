@@ -11,15 +11,16 @@
 
 namespace godot{
 
-enum ConfirmationLevel{
-    UNCONFIRMED,
-    CONFIRMED,
-    PROCESSED,
-    FINALIZED,
-};
-
 class Transaction : public Node {
     GDCLASS(Transaction, Node)
+
+    enum ConfirmationLevel{
+        UNCONFIRMED,
+        CONFIRMED,
+        PROCESSED,
+        FINALIZED,
+        FAILED,
+    };
 
 private:
     const double SIGNATURE_POLL_INTERVAL = 3.0;
