@@ -56,6 +56,10 @@ func transaction_example_transfer():
 	# Connect it to avoid errors in you application.
 	var response = await tx.transaction_response_received
 	
+	print("Awaiting")
+	await tx.confirmed
+	print("confiremed")
+	
 	assert(response.has("result"))
 	var signature = response["result"]
 	assert(typeof(signature) == TYPE_STRING)
@@ -240,11 +244,11 @@ func _ready():
 	await get_tree().create_timer(5).timeout
 	
 	transaction_example_transfer()
-	create_account_example()
-	transaction_with_confirmation_1()
-	transaction_with_confirmation_2()
-	blockhash_before_instruction()
-	transaction_from_bytes()
+	#create_account_example()
+	#transaction_with_confirmation_1()
+	#transaction_with_confirmation_2()
+	#blockhash_before_instruction()
+	#transaction_from_bytes()
 
 
 func _on_timeout_timeout():

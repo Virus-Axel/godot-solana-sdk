@@ -29,11 +29,16 @@ private:
     unsigned int finalized_connections = 0;
     unsigned int active_subscriptions = 0;
 
+    unsigned int poll_attempts = 0;
+    const unsigned int MAX_POLL_ATTEMPTS = 5;
+
     uint32_t unit_limit = 800000;
     uint32_t unit_price = 8000;
     uint32_t ready_signature_amount = 0;
 
-    double time_until_polling = 17.0;
+    bool stop_polling = false;
+
+    double time_until_polling = 11.0;
     double time_until_next_poll = SIGNATURE_POLL_INTERVAL;
 
     Variant message;

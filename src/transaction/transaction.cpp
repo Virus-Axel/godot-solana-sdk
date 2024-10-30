@@ -7,11 +7,13 @@
 
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/thread.hpp>
 #include <godot_cpp/classes/http_request.hpp>
 #include <solana_utils.hpp>
 #include <wallet_adapter.hpp>
 #include <message.hpp>
+
 
 //#include <emscripten.h>
 
@@ -197,13 +199,12 @@ void Transaction::evaluate_signature_callback(const Dictionary& response){
         }
         emit_signal("finalized");
         is_finalized = true;
-    }
-    else{
-        ERR_FAIL_EDMSG("Internal Error, unknown signature status");
+        stop_polling = true;
     }
 }
 
 void Transaction::enable_polling_mode(){
+    std::cout << "Polling mode enabled" << std::endl;
     poll_client = memnew(SolanaClient);
     poll_client->set_async_override(true);
     poll_client->connect("http_response_received", callable_mp(this, &Transaction::evaluate_signature_callback));
@@ -408,12 +409,16 @@ void Transaction::_ready(){
 }
 
 void Transaction::poll_signature_if_needed(double delta){
+    if(stop_polling || poll_attempts > MAX_POLL_ATTEMPTS){
+        return;
+    }
     time_until_next_poll -= delta;
     if(time_until_next_poll < 0.0){
         time_until_next_poll = SIGNATURE_POLL_INTERVAL;
         PackedStringArray signatures;
         signatures.push_back(result_signature);
         poll_client->get_signature_statuses(signatures);
+        poll_attempts++;
     }
     poll_client->_process(delta);
 }
@@ -438,7 +443,6 @@ void Transaction::_process(double delta){
         poll_signature_if_needed(delta);
         return;
     }
-        
 
     // Detect new connections after transaction is performed.
     if(!result_signature.is_empty()){
@@ -580,7 +584,7 @@ void Transaction::send_callback(Dictionary params){
     if(params.has("result")){
         result_signature = params["result"];
         copy_connection_state();
-        subscribe_to_signature();
+        //subscribe_to_signature();
     }
     emit_signal("transaction_response_received", params);
 }
