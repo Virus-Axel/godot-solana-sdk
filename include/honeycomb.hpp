@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/classes/http_request.hpp>
 #include "transaction.hpp"
+#include <../src/honeycomb/honeycomb_generated.hpp>
 
 namespace godot{
 
@@ -116,15 +117,29 @@ protected:
     ~HoneyComb();
 public:
 
-    Variant create_project(const Variant& authority, const String& name);
-    void create_user(const Variant& user_wallet_keypair);
-    void create_profile(const Variant& project, const Variant& payer);
-    void create_resource(const Variant& project, const Variant& authority, const String& name, const String& uri, const String& symbol, uint32_t decimals);
-    Variant createCreateNewResourceTransaction(const Variant& project, const Variant& authority, Variant params, String delegateAuthority = "", String payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    HONEYCOMB_METHOD_DEFS
+    /*Variant createCreateNewResourceTransaction(const Variant& project, const Variant& authority, Variant params, String delegateAuthority = "", String payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
     Variant createCreateNewResourceTreeTransaction(const Variant& project, const Variant& resource, const Variant& authority, Variant treeConfig, const Variant& delegateAuthority = "", const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
     Variant createMintResourceTransaction(const Variant& resource, const Variant& owner, const Variant& authority, int64_t amount, const Variant& delegateAuthority = "", const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
     Variant createBurnResourceTransaction(const Variant& resource, int64_t amount, const Variant& authority, const Variant& owner = "", const Variant& payer = "", const Variant& delegateAuthority = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
     Variant createNewUserTransaction(const Variant& wallet, Variant info = Variant(nullptr), const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createCreateUnwrapHoldingTransaction(String resource, int64_t amount, const Variant& authority, const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createCreateWrapHoldingTransaction(String resource, int64_t amount, const Variant& authority, const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createTransferResourceTransaction(String resource, const Variant& owner, String recipient, int64_t amount, const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createInitializeRecipeTransaction(String project, int64_t xp, Array ingredients, Variant meal, const Variant& authority, String delegateAuthority = "", const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createUpdateUserTransaction(const Variant& payer, Variant info = Variant(nullptr), Variant wallets = Variant(nullptr), bool populateCivic = false, PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createCreateProfilesTreeTransaction(Variant treeConfig, const Variant& project, const Variant& payer, PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createNewProfileTransaction(const Variant& project, const Variant& payer, String identity = "", Variant info = Variant(nullptr), PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createUpdateProfileTransaction(const Variant& profile, const Variant& payer, Variant info = Variant(nullptr), Variant customData = Variant(nullptr), PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createNewUserWithProfileTransaction(const Variant& project, const Variant& wallet, Variant userInfo = Variant(nullptr), String profileIdentity = "", Variant profileInfo = Variant(nullptr), const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createClaimBadgeCriteriaTransaction(Variant args, PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createUpdateBadgeCriteriaTransaction(Variant args, PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createCreateProjectTransaction(const Variant& authority, String name, const Variant& driver = "", Array associatedPrograms = Array(), Variant profileDataConfig = Variant(nullptr), bool subsidizeFees = false, const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createChangeProjectDriverTransaction(const Variant& project, const Variant& driver, const Variant& authority, const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createCreateDelegateAuthorityTransaction(const Variant& project, const Variant& delegate, Variant serviceDelegations, const Variant& authority, const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createModifyDelegationTransaction(const Variant& project, const Variant& delegate, Variant modifyDelegation, const Variant& authority, const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createCreateAssemblerConfigTransaction(Variant treeConfig, String ticker, PackedStringArray order, const Variant& project, const Variant& authority, const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
+    Variant createInitializeBadgeCriteriaTransaction(Variant args, PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);*/
 };
 
 }
