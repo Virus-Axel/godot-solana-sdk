@@ -7,7 +7,7 @@ void ParticipateOnMissionData::set_mission(const String& val){
 this->mission = val;
 }
 
-String& ParticipateOnMissionData::get_mission(){
+String ParticipateOnMissionData::get_mission(){
 return this->mission;
 }
 
@@ -15,7 +15,7 @@ void ParticipateOnMissionData::set_characterAddresses(const PackedStringArray& v
 this->characterAddresses = val;
 }
 
-PackedStringArray& ParticipateOnMissionData::get_characterAddresses(){
+PackedStringArray ParticipateOnMissionData::get_characterAddresses(){
 return this->characterAddresses;
 }
 
@@ -23,7 +23,7 @@ void ParticipateOnMissionData::set_authority(const String& val){
 this->authority = val;
 }
 
-String& ParticipateOnMissionData::get_authority(){
+String ParticipateOnMissionData::get_authority(){
 return this->authority;
 }
 
@@ -31,7 +31,7 @@ void ParticipateOnMissionData::set_payer(const String& val){
 this->payer = val;
 }
 
-String& ParticipateOnMissionData::get_payer(){
+String ParticipateOnMissionData::get_payer(){
 return this->payer;
 }
 

@@ -7,7 +7,7 @@ void MealInput::set_resourceAddress(const String& val){
 this->resourceAddress = val;
 }
 
-String& MealInput::get_resourceAddress(){
+String MealInput::get_resourceAddress(){
 return this->resourceAddress;
 }
 
@@ -15,7 +15,7 @@ void MealInput::set_amount(const int64_t& val){
 this->amount = val;
 }
 
-int64_t& MealInput::get_amount(){
+int64_t MealInput::get_amount(){
 return this->amount;
 }
 

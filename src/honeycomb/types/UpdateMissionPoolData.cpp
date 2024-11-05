@@ -7,7 +7,7 @@ void UpdateMissionPoolData::set_project(const String& val){
 this->project = val;
 }
 
-String& UpdateMissionPoolData::get_project(){
+String UpdateMissionPoolData::get_project(){
 return this->project;
 }
 
@@ -15,7 +15,7 @@ void UpdateMissionPoolData::set_missionPool(const String& val){
 this->missionPool = val;
 }
 
-String& UpdateMissionPoolData::get_missionPool(){
+String UpdateMissionPoolData::get_missionPool(){
 return this->missionPool;
 }
 
@@ -23,7 +23,7 @@ void UpdateMissionPoolData::set_characterModel(const String& val){
 this->characterModel = val;
 }
 
-String& UpdateMissionPoolData::get_characterModel(){
+String UpdateMissionPoolData::get_characterModel(){
 return this->characterModel;
 }
 
@@ -31,7 +31,7 @@ void UpdateMissionPoolData::set_authority(const String& val){
 this->authority = val;
 }
 
-String& UpdateMissionPoolData::get_authority(){
+String UpdateMissionPoolData::get_authority(){
 return this->authority;
 }
 
@@ -39,7 +39,7 @@ void UpdateMissionPoolData::set_delegateAuthority(const String& val){
 this->delegateAuthority = val;
 }
 
-String& UpdateMissionPoolData::get_delegateAuthority(){
+String UpdateMissionPoolData::get_delegateAuthority(){
 return this->delegateAuthority;
 }
 
@@ -47,7 +47,7 @@ void UpdateMissionPoolData::set_payer(const String& val){
 this->payer = val;
 }
 
-String& UpdateMissionPoolData::get_payer(){
+String UpdateMissionPoolData::get_payer(){
 return this->payer;
 }
 

@@ -7,7 +7,7 @@ void NewMissionPoolData::set_project(const String& val){
 this->project = val;
 }
 
-String& NewMissionPoolData::get_project(){
+String NewMissionPoolData::get_project(){
 return this->project;
 }
 
@@ -15,7 +15,7 @@ void NewMissionPoolData::set_authority(const String& val){
 this->authority = val;
 }
 
-String& NewMissionPoolData::get_authority(){
+String NewMissionPoolData::get_authority(){
 return this->authority;
 }
 
@@ -23,7 +23,7 @@ void NewMissionPoolData::set_delegateAuthority(const String& val){
 this->delegateAuthority = val;
 }
 
-String& NewMissionPoolData::get_delegateAuthority(){
+String NewMissionPoolData::get_delegateAuthority(){
 return this->delegateAuthority;
 }
 
@@ -31,7 +31,7 @@ void NewMissionPoolData::set_payer(const String& val){
 this->payer = val;
 }
 
-String& NewMissionPoolData::get_payer(){
+String NewMissionPoolData::get_payer(){
 return this->payer;
 }
 
@@ -39,7 +39,7 @@ void NewMissionPoolData::set_characterModel(const String& val){
 this->characterModel = val;
 }
 
-String& NewMissionPoolData::get_characterModel(){
+String NewMissionPoolData::get_characterModel(){
 return this->characterModel;
 }
 
@@ -47,7 +47,7 @@ void NewMissionPoolData::set_name(const String& val){
 this->name = val;
 }
 
-String& NewMissionPoolData::get_name(){
+String NewMissionPoolData::get_name(){
 return this->name;
 }
 

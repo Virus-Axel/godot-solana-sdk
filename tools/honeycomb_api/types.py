@@ -227,3 +227,98 @@ uri - String!
 decimals - Int!
 storage - ResourceStorageEnum!
 """
+
+MultiplierTypeInput = """
+MultiplierTypeInput
+minStakeDuration - BigInt
+minNftCount - BigInt
+creator - String
+collection - String
+"""
+
+AssemblerConfigInput = """
+AssemblerConfigInput
+assemblerConfig - String!
+name - String!
+symbol - String!
+description - String!
+creators - [NftCreatorInput!]!
+sellerFeeBasisPoints - Int!
+collectionName - String!
+"""
+
+ModifyServiceDelegationInput = """
+ModifyServiceDelegationInput
+HiveControl - ServiceDelegationHiveControl
+AssetAssembler - ServiceDelegationAssetAssembler
+AssetManager - ServiceDelegationAssetManager
+CurrencyManager - ServiceDelegationCurrencyManager
+NectarStaking - ServiceDelegationNectarStaking
+NectarMissions - ServiceDelegationNectarMissions
+BuzzGuild - ServiceDelegationBuzzGuild
+"""
+
+ServiceDelegationHiveControl = """
+ServiceDelegationHiveControl
+permission - HiveControlPermissionInput!
+"""
+
+TransactionBundlesOptions = """
+TransactionBundlesOptions
+bundleSize - Int
+firstBundleSize - Int
+lastBundleSize - Int
+"""
+
+ServiceDelegationAssetAssembler = """
+ServiceDelegationAssetAssembler
+index - Int!
+permission - AssetAssemblerPermissionInput!
+"""
+
+NewMissionCost = """
+NewMissionCost
+address - String!
+amount - BigInt!
+"""
+
+ServiceDelegationAssetManager = """
+ServiceDelegationAssetManager
+index - Int!
+permission - AssetManagerPermissionInput!
+"""
+
+ServiceDelegationCurrencyManager = """
+ServiceDelegationCurrencyManager
+permission - CurrencyManagerPermissionInput!
+"""
+
+ServiceDelegationNectarStaking = """
+ServiceDelegationNectarStaking
+index - Int!
+permission - NectarStakingPermissionInput!
+"""
+
+ServiceDelegationNectarMissions = """
+ServiceDelegationNectarMissions
+index - Int!
+permission - NectarMissionsPermissionInput!
+"""
+
+ServiceDelegationBuzzGuild = """
+ServiceDelegationBuzzGuild
+index - Int!
+permission - BuzzGuildPermissionInput!
+"""
+
+BasicTreeConfig = """
+BasicTreeConfig
+numAssets - Int!
+"""
+
+AdvancedTreeConfig = """
+AdvancedTreeConfig
+maxDepth - Int!
+maxBufferSize - Int!
+canopyDepth - Int!
+"""

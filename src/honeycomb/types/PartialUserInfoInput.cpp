@@ -7,7 +7,7 @@ void PartialUserInfoInput::set_username(const String& val){
 this->username = val;
 }
 
-String& PartialUserInfoInput::get_username(){
+String PartialUserInfoInput::get_username(){
 return this->username;
 }
 
@@ -15,7 +15,7 @@ void PartialUserInfoInput::set_name(const String& val){
 this->name = val;
 }
 
-String& PartialUserInfoInput::get_name(){
+String PartialUserInfoInput::get_name(){
 return this->name;
 }
 
@@ -23,7 +23,7 @@ void PartialUserInfoInput::set_bio(const String& val){
 this->bio = val;
 }
 
-String& PartialUserInfoInput::get_bio(){
+String PartialUserInfoInput::get_bio(){
 return this->bio;
 }
 
@@ -31,7 +31,7 @@ void PartialUserInfoInput::set_pfp(const String& val){
 this->pfp = val;
 }
 
-String& PartialUserInfoInput::get_pfp(){
+String PartialUserInfoInput::get_pfp(){
 return this->pfp;
 }
 

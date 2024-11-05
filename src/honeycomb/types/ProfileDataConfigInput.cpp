@@ -7,7 +7,7 @@ void ProfileDataConfigInput::set_achievements(const PackedStringArray& val){
 this->achievements = val;
 }
 
-PackedStringArray& ProfileDataConfigInput::get_achievements(){
+PackedStringArray ProfileDataConfigInput::get_achievements(){
 return this->achievements;
 }
 
@@ -15,7 +15,7 @@ void ProfileDataConfigInput::set_customDataFields(const PackedStringArray& val){
 this->customDataFields = val;
 }
 
-PackedStringArray& ProfileDataConfigInput::get_customDataFields(){
+PackedStringArray ProfileDataConfigInput::get_customDataFields(){
 return this->customDataFields;
 }
 

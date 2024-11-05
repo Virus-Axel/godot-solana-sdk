@@ -1,5 +1,6 @@
 #include "honeycomb/types/AddMultiplierMetadataInput.hpp"
 
+#include "honeycomb/types/MultiplierTypeInput.hpp"
 namespace godot{
 namespace honeycomb_resource{
 
@@ -7,7 +8,7 @@ void AddMultiplierMetadataInput::set_value(const int64_t& val){
 this->value = val;
 }
 
-int64_t& AddMultiplierMetadataInput::get_value(){
+int64_t AddMultiplierMetadataInput::get_value(){
 return this->value;
 }
 
@@ -15,7 +16,7 @@ void AddMultiplierMetadataInput::set_type(const Variant& val){
 this->type = val;
 }
 
-Variant& AddMultiplierMetadataInput::get_type(){
+Variant AddMultiplierMetadataInput::get_type(){
 return this->type;
 }
 
@@ -32,7 +33,7 @@ ClassDB::bind_method(D_METHOD("set_value", "value"), &AddMultiplierMetadataInput
 ClassDB::add_property("AddMultiplierMetadataInput", PropertyInfo(Variant::Type::INT, "value"), "set_value", "get_value");
 ClassDB::bind_method(D_METHOD("get_type"), &AddMultiplierMetadataInput::get_type);
 ClassDB::bind_method(D_METHOD("set_type", "value"), &AddMultiplierMetadataInput::set_type);
-ClassDB::add_property("AddMultiplierMetadataInput", PropertyInfo(Variant::Type::VARIANT, "type"), "set_type", "get_type");
+ClassDB::add_property("AddMultiplierMetadataInput", PropertyInfo(Variant::Type::OBJECT, "type"), "set_type", "get_type");
 }
 } // honeycomb_resource
 } // godot

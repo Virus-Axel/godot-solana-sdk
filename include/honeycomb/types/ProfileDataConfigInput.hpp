@@ -2,6 +2,7 @@
 #define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_PROFILEDATACONFIGINPUT
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/classes/resource.hpp"
 
 namespace godot{
 namespace honeycomb_resource{
@@ -16,9 +17,9 @@ static void _bind_methods();
 public:
 Dictionary to_dict();
 void set_achievements(const PackedStringArray& val);
-PackedStringArray& get_achievements();
+PackedStringArray get_achievements();
 void set_customDataFields(const PackedStringArray& val);
-PackedStringArray& get_customDataFields();
+PackedStringArray get_customDataFields();
 };
 } // honeycomb_resource
 } // godot

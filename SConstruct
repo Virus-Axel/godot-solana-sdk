@@ -137,6 +137,8 @@ env.Append(CPPPATH=["include/meta_data"])
 env.Append(CPPPATH=["include/transaction"])
 env.Append(CPPPATH=["src/transaction"])
 env.Append(CPPPATH=["wallet_adapter/"])
+env.Append(CPPPATH=["src/honeycomb"])
+env.Append(CPPPATH=["src/honeycomb/types"])
 
 sources = Glob("src/*.cpp")
 
@@ -146,6 +148,7 @@ ed25519_sources = Glob("ed25519/src/*.c")
 wallet_sources = Glob("wallet_adapter/*.cpp")
 instruction_sources = Glob("instructions/src/*.cpp")
 other_sources = Glob("src/*/*.cpp")
+honey_sources = Glob("src/honeycomb/types/*.cpp")
 
 # Handle the container build
 if env.GetOption('container_build'):
@@ -186,12 +189,12 @@ else:
             ) + LIBRARY_NAME + ".{}.{}".format(
                 env["platform"], env["target"]
             ),
-            source=sources + sha256_sources + ed25519_sources + wallet_sources + instruction_sources + other_sources,
+            source=sources + sha256_sources + ed25519_sources + wallet_sources + instruction_sources + other_sources + honey_sources,
         )
     else:
         library = env.SharedLibrary(
             "bin/lib" + LIBRARY_NAME + "{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-            source=sources + sha256_sources + ed25519_sources + wallet_sources + instruction_sources + other_sources,
+            source=sources + sha256_sources + ed25519_sources + wallet_sources + instruction_sources + other_sources + honey_sources,
         )
 
     Default(library)

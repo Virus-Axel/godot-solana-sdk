@@ -19,6 +19,49 @@ enum LockTypeEnum{
     Custoday = 1,
 };
 
+enum BadgesCondition{
+    Public = 0,
+};
+
+enum AssetAssemblerPermissionInput{
+    ManageAssembler,
+    UpdateBlock,
+    UpdateBlockDefinition,
+    UpdateNFT,
+    InitialArtGeneration, 
+};
+
+enum AssetManagerPermissionInput{
+    ManageAssets,
+};
+
+enum BuzzGuildPermissionInput{
+    ManageGuildKit,
+};
+
+enum HiveControlPermissionInput{
+    ManageCriterias,
+    ManageServices,
+    ManageIndexing,
+    ManageProfiles,
+};
+
+enum CurrencyManagerPermissionInput{
+    ManageCurrencies,
+    MintCurrencies,
+    ManageCurrencyStatus,
+};
+
+enum NectarMissionsPermissionInput{
+    ManageMissionPool,
+    WithdrawMissionPoolRewards,
+};
+
+enum NectarStakingPermissionInput{
+    ManageStakingPool,
+    WithdrawStakingPoolRewards,
+};
+
 class HoneyComb: public Node{
 GDCLASS(HoneyComb, Node)
 private:

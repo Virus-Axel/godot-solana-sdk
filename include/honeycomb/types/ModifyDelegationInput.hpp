@@ -2,6 +2,7 @@
 #define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_MODIFYDELEGATIONINPUT
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/classes/resource.hpp"
 
 namespace godot{
 namespace honeycomb_resource{
@@ -16,9 +17,9 @@ static void _bind_methods();
 public:
 Dictionary to_dict();
 void set_delegation(const Variant& val);
-Variant& get_delegation();
+Variant get_delegation();
 void set_index(const int32_t& val);
-int32_t& get_index();
+int32_t get_index();
 };
 } // honeycomb_resource
 } // godot

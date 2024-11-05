@@ -7,7 +7,7 @@ void InitResourceInput::set_name(const String& val){
 this->name = val;
 }
 
-String& InitResourceInput::get_name(){
+String InitResourceInput::get_name(){
 return this->name;
 }
 
@@ -15,7 +15,7 @@ void InitResourceInput::set_symbol(const String& val){
 this->symbol = val;
 }
 
-String& InitResourceInput::get_symbol(){
+String InitResourceInput::get_symbol(){
 return this->symbol;
 }
 
@@ -23,7 +23,7 @@ void InitResourceInput::set_uri(const String& val){
 this->uri = val;
 }
 
-String& InitResourceInput::get_uri(){
+String InitResourceInput::get_uri(){
 return this->uri;
 }
 
@@ -31,7 +31,7 @@ void InitResourceInput::set_decimals(const int32_t& val){
 this->decimals = val;
 }
 
-int32_t& InitResourceInput::get_decimals(){
+int32_t InitResourceInput::get_decimals(){
 return this->decimals;
 }
 
@@ -39,7 +39,7 @@ void InitResourceInput::set_storage(const int32_t& val){
 this->storage = val;
 }
 
-int32_t& InitResourceInput::get_storage(){
+int32_t InitResourceInput::get_storage(){
 return this->storage;
 }
 

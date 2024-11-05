@@ -14,7 +14,8 @@ SERVER_SIGNER = 'Pubkey::new_from_string("11111111111111111111111111111111")'
 
 resource_includes = [
   'godot_cpp/variant/variant.hpp',
-  'godot_cpp/core/class_db.hpp'
+  'godot_cpp/core/class_db.hpp',
+  'godot_cpp/classes/resource.hpp',
 ]
 
 header_includes = [
@@ -66,7 +67,6 @@ QL_TO_VARIANT = {
    "UpdateMissionInput": "Variant",
    "ParticipateOnMissionData": "Variant",
    "Pubkey": "Variant",
-   "BadgesCondition": "Variant",
    "ModifyServiceDelegationInput": "Variant",
    "[ServiceDelegationHiveControl!]": "Array",
    "[ServiceDelegationAssetAssembler!]": "Array",
@@ -83,9 +83,25 @@ QL_TO_VARIANT = {
    "MultiplierTypeInput": "Variant",
    "LockTypeEnum": "int32_t",
    "ResourceStorageEnum": "int32_t",
+   "BadgesCondition": "int32_t",
+   "AssetAssemblerPermissionInput": "int32_t",
+   "AssetManagerPermissionInput": "int32_t",
+   "BuzzGuildPermissionInput": "int32_t",
+   "HiveControlPermissionInput": "int32_t",
+   "CurrencyManagerPermissionInput": "int32_t",
+   "NectarMissionsPermissionInput": "int32_t",
+   "NectarStakingPermissionInput": "int32_t",
    "NewMissionCost": "Variant",
    "[MissionReward!]": "Array",
    "[MissionReward]": "Array",
+   "[NftCreatorInput!]": "Array",
+   "ServiceDelegationHiveControl": "Variant",
+   "ServiceDelegationAssetAssembler": "Variant",
+   "ServiceDelegationAssetManager": "Variant",
+   "ServiceDelegationCurrencyManager": "Variant",
+   "ServiceDelegationNectarStaking": "Variant",
+   "ServiceDelegationNectarMissions": "Variant",
+   "ServiceDelegationBuzzGuild": "Variant",
 }
 
 GODOT_TYPE_DEFVAL = {
@@ -106,7 +122,7 @@ GODOT_VARIANT_ENUM_TYPE = {
   "PackedByteArray": "PACKED_BYTE_ARRAY",
   "PackedInt32Array": "PACKED_INT32_ARRAY",
   "PackedStringArray": "PACKED_STRING_ARRAY",
-  "Variant": "VARIANT",
+  "Variant": "OBJECT",
   "Array": "ARRAY",
   "Dictionary": "DICTIONARY",
 }
@@ -218,6 +234,8 @@ class GQLParse:
 
     if godot_type == "String":
       result_string += f'("{arg_name}", "{arg_type}", Pubkey::string_from_variant({arg_name}), {is_optional});\n'
+    elif godot_type == "Variant" and arg_type == "Pubkey":
+       result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<{arg_type}>({arg_name})->to_string(), {is_optional});\n'
     elif godot_type == "Variant":
        result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<godot::honeycomb_resource::{arg_type}>({arg_name})->to_dict(), {is_optional});\n'
     else:
@@ -477,7 +495,7 @@ class GQLParse:
       (prop_name, prop_type) = prop
       prop_type = self.ql_type_to_godot(prop_type)
       result += f"void set_{prop_name}(const {prop_type}& val);\n"
-      result += f"{prop_type}& get_{prop_name}();\n"
+      result += f"{prop_type} get_{prop_name}();\n"
 
     result += "};\n"
     result += "} // honeycomb_resource\n} // godot\n"
@@ -490,7 +508,22 @@ class GQLParse:
     class_name = type["classname"]
     properties = type["properties"]
 
+    extra_includes = []
+
+    for prop in properties:
+      (prop_name, og_prop_type) = prop
+      prop_type = self.ql_type_to_godot(og_prop_type)
+      if prop_type == "Variant":
+        extra_includes.append(og_prop_type + ".hpp")
+
     result = f'#include "{os.path.join(outdir_hpp, class_name)}.hpp"\n\n'
+
+    for include in extra_includes:
+      if include.replace("!", "") == "Pubkey.hpp":
+        result += f'#include "pubkey.hpp"\n'
+      else:
+        result += f'#include "{os.path.join(outdir_hpp, include)}"\n'.replace("!", "")
+
     result += "namespace godot{\nnamespace honeycomb_resource{\n\n"
 
     bind_methods = f'void {class_name}::_bind_methods()'
@@ -502,7 +535,9 @@ class GQLParse:
     for prop in properties:
       (prop_name, og_prop_type) = prop
       prop_type = self.ql_type_to_godot(og_prop_type)
-      if prop_type == "Variant":
+      if prop_type == "Variant" and og_prop_type.replace("!", "") == "Pubkey":
+        to_dict += f'res["{prop_name}"] = Object::cast_to<{og_prop_type.replace("!", "")}>({prop_name})->to_string();\n'
+      elif prop_type == "Variant":
         to_dict += f'res["{prop_name}"] = Object::cast_to<godot::honeycomb_resource::{og_prop_type.replace("!", "")}>({prop_name})->to_dict();\n'
       else:
         to_dict += f'res["{prop_name}"] = {prop_name};\n'
@@ -511,7 +546,7 @@ class GQLParse:
       result += f"this->{prop_name} = val;\n"
       result += "}\n\n"
 
-      result += f"{prop_type}& {class_name}::get_{prop_name}()"
+      result += f"{prop_type} {class_name}::get_{prop_name}()"
       result += "{\n"
       result += f"return this->{prop_name};\n"
       result += "}\n\n"
@@ -529,7 +564,7 @@ class GQLParse:
   def print_cpp_file(self, outdir_hpp):
     result = f'#include "{os.path.join(outdir_hpp, "honeycomb")}.hpp"\n\n'
     for type in self.types:
-      result += f'#include "{os.path.join(outdir_hpp, "types/" + type["classname"])}.hpp"\n'
+      result += f'#include "{os.path.join(outdir_hpp, "types/" + type["classname"])}.hpp"\n'.replace("!", "")
     result += "namespace godot{\n\n"
     result += self.method_implementations
     result += self.print_bind_methods() + '\n'
@@ -586,7 +621,22 @@ def main():
     qlparser.graphql_to_type(NewMissionPoolData)
     qlparser.graphql_to_type(MealInput)
     qlparser.graphql_to_type(InitResourceInput)
-
+    qlparser.graphql_to_type(MultiplierTypeInput)
+    qlparser.graphql_to_type(AssemblerConfigInput)
+    qlparser.graphql_to_type(ModifyServiceDelegationInput)
+    qlparser.graphql_to_type(ServiceDelegationHiveControl)
+    qlparser.graphql_to_type(TransactionBundlesOptions)
+    qlparser.graphql_to_type(ServiceDelegationAssetAssembler)
+    qlparser.graphql_to_type(NewMissionCost)
+    qlparser.graphql_to_type(ServiceDelegationAssetManager)
+    qlparser.graphql_to_type(ServiceDelegationCurrencyManager)
+    qlparser.graphql_to_type(ServiceDelegationNectarStaking)
+    qlparser.graphql_to_type(ServiceDelegationNectarMissions)
+    qlparser.graphql_to_type(ServiceDelegationBuzzGuild)
+    qlparser.graphql_to_type(BasicTreeConfig)
+    qlparser.graphql_to_type(AdvancedTreeConfig)
+    
+    
 
   
     qlparser.graphql_to_function(CREATE_NEW_RESOURCE, ["authority", "."], ["project"])

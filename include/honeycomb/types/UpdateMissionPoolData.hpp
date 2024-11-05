@@ -2,6 +2,7 @@
 #define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_UPDATEMISSIONPOOLDATA
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/classes/resource.hpp"
 
 namespace godot{
 namespace honeycomb_resource{
@@ -20,17 +21,17 @@ static void _bind_methods();
 public:
 Dictionary to_dict();
 void set_project(const String& val);
-String& get_project();
+String get_project();
 void set_missionPool(const String& val);
-String& get_missionPool();
+String get_missionPool();
 void set_characterModel(const String& val);
-String& get_characterModel();
+String get_characterModel();
 void set_authority(const String& val);
-String& get_authority();
+String get_authority();
 void set_delegateAuthority(const String& val);
-String& get_delegateAuthority();
+String get_delegateAuthority();
 void set_payer(const String& val);
-String& get_payer();
+String get_payer();
 };
 } // honeycomb_resource
 } // godot

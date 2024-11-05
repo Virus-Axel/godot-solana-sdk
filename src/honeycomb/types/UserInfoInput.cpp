@@ -7,7 +7,7 @@ void UserInfoInput::set_username(const String& val){
 this->username = val;
 }
 
-String& UserInfoInput::get_username(){
+String UserInfoInput::get_username(){
 return this->username;
 }
 
@@ -15,7 +15,7 @@ void UserInfoInput::set_name(const String& val){
 this->name = val;
 }
 
-String& UserInfoInput::get_name(){
+String UserInfoInput::get_name(){
 return this->name;
 }
 
@@ -23,7 +23,7 @@ void UserInfoInput::set_bio(const String& val){
 this->bio = val;
 }
 
-String& UserInfoInput::get_bio(){
+String UserInfoInput::get_bio(){
 return this->bio;
 }
 
@@ -31,7 +31,7 @@ void UserInfoInput::set_pfp(const String& val){
 this->pfp = val;
 }
 
-String& UserInfoInput::get_pfp(){
+String UserInfoInput::get_pfp(){
 return this->pfp;
 }
 

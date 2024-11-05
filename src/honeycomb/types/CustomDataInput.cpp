@@ -7,7 +7,7 @@ void CustomDataInput::set_add(const Dictionary& val){
 this->add = val;
 }
 
-Dictionary& CustomDataInput::get_add(){
+Dictionary CustomDataInput::get_add(){
 return this->add;
 }
 
@@ -15,7 +15,7 @@ void CustomDataInput::set_remove(const PackedStringArray& val){
 this->remove = val;
 }
 
-PackedStringArray& CustomDataInput::get_remove(){
+PackedStringArray CustomDataInput::get_remove(){
 return this->remove;
 }
 

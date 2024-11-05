@@ -27,6 +27,20 @@
 #include "honeycomb/types/NewMissionPoolData.hpp"
 #include "honeycomb/types/MealInput.hpp"
 #include "honeycomb/types/InitResourceInput.hpp"
+#include "honeycomb/types/MultiplierTypeInput.hpp"
+#include "honeycomb/types/AssemblerConfigInput.hpp"
+#include "honeycomb/types/ModifyServiceDelegationInput.hpp"
+#include "honeycomb/types/ServiceDelegationHiveControl.hpp"
+#include "honeycomb/types/TransactionBundlesOptions.hpp"
+#include "honeycomb/types/ServiceDelegationAssetAssembler.hpp"
+#include "honeycomb/types/NewMissionCost.hpp"
+#include "honeycomb/types/ServiceDelegationAssetManager.hpp"
+#include "honeycomb/types/ServiceDelegationCurrencyManager.hpp"
+#include "honeycomb/types/ServiceDelegationNectarStaking.hpp"
+#include "honeycomb/types/ServiceDelegationNectarMissions.hpp"
+#include "honeycomb/types/ServiceDelegationBuzzGuild.hpp"
+#include "honeycomb/types/BasicTreeConfig.hpp"
+#include "honeycomb/types/AdvancedTreeConfig.hpp"
 namespace godot{
 
 Variant HoneyComb::createCreateNewResourceTransaction(const Variant& project, const Variant& authority, Variant params, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){

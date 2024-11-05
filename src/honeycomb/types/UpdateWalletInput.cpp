@@ -7,7 +7,7 @@ void UpdateWalletInput::set_add(const PackedStringArray& val){
 this->add = val;
 }
 
-PackedStringArray& UpdateWalletInput::get_add(){
+PackedStringArray UpdateWalletInput::get_add(){
 return this->add;
 }
 
@@ -15,7 +15,7 @@ void UpdateWalletInput::set_remove(const PackedStringArray& val){
 this->remove = val;
 }
 
-PackedStringArray& UpdateWalletInput::get_remove(){
+PackedStringArray UpdateWalletInput::get_remove(){
 return this->remove;
 }
 

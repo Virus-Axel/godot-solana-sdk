@@ -7,7 +7,7 @@ void CreateStakingPoolMetadataInput::set_name(const String& val){
 this->name = val;
 }
 
-String& CreateStakingPoolMetadataInput::get_name(){
+String CreateStakingPoolMetadataInput::get_name(){
 return this->name;
 }
 
@@ -15,7 +15,7 @@ void CreateStakingPoolMetadataInput::set_rewardsPerDuration(const int64_t& val){
 this->rewardsPerDuration = val;
 }
 
-int64_t& CreateStakingPoolMetadataInput::get_rewardsPerDuration(){
+int64_t CreateStakingPoolMetadataInput::get_rewardsPerDuration(){
 return this->rewardsPerDuration;
 }
 
@@ -23,7 +23,7 @@ void CreateStakingPoolMetadataInput::set_rewardsDuration(const int64_t& val){
 this->rewardsDuration = val;
 }
 
-int64_t& CreateStakingPoolMetadataInput::get_rewardsDuration(){
+int64_t CreateStakingPoolMetadataInput::get_rewardsDuration(){
 return this->rewardsDuration;
 }
 
@@ -31,7 +31,7 @@ void CreateStakingPoolMetadataInput::set_maxRewardsDuration(const int64_t& val){
 this->maxRewardsDuration = val;
 }
 
-int64_t& CreateStakingPoolMetadataInput::get_maxRewardsDuration(){
+int64_t CreateStakingPoolMetadataInput::get_maxRewardsDuration(){
 return this->maxRewardsDuration;
 }
 
@@ -39,7 +39,7 @@ void CreateStakingPoolMetadataInput::set_minStakeDuration(const int64_t& val){
 this->minStakeDuration = val;
 }
 
-int64_t& CreateStakingPoolMetadataInput::get_minStakeDuration(){
+int64_t CreateStakingPoolMetadataInput::get_minStakeDuration(){
 return this->minStakeDuration;
 }
 
@@ -47,7 +47,7 @@ void CreateStakingPoolMetadataInput::set_cooldownDuration(const int64_t& val){
 this->cooldownDuration = val;
 }
 
-int64_t& CreateStakingPoolMetadataInput::get_cooldownDuration(){
+int64_t CreateStakingPoolMetadataInput::get_cooldownDuration(){
 return this->cooldownDuration;
 }
 
@@ -55,7 +55,7 @@ void CreateStakingPoolMetadataInput::set_resetStakeDuration(const bool& val){
 this->resetStakeDuration = val;
 }
 
-bool& CreateStakingPoolMetadataInput::get_resetStakeDuration(){
+bool CreateStakingPoolMetadataInput::get_resetStakeDuration(){
 return this->resetStakeDuration;
 }
 
@@ -63,7 +63,7 @@ void CreateStakingPoolMetadataInput::set_startTime(const int64_t& val){
 this->startTime = val;
 }
 
-int64_t& CreateStakingPoolMetadataInput::get_startTime(){
+int64_t CreateStakingPoolMetadataInput::get_startTime(){
 return this->startTime;
 }
 
@@ -71,7 +71,7 @@ void CreateStakingPoolMetadataInput::set_lockType(const int32_t& val){
 this->lockType = val;
 }
 
-int32_t& CreateStakingPoolMetadataInput::get_lockType(){
+int32_t CreateStakingPoolMetadataInput::get_lockType(){
 return this->lockType;
 }
 
@@ -79,7 +79,7 @@ void CreateStakingPoolMetadataInput::set_endTime(const int64_t& val){
 this->endTime = val;
 }
 
-int64_t& CreateStakingPoolMetadataInput::get_endTime(){
+int64_t CreateStakingPoolMetadataInput::get_endTime(){
 return this->endTime;
 }
 

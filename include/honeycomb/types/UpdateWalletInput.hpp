@@ -2,6 +2,7 @@
 #define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_UPDATEWALLETINPUT
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/classes/resource.hpp"
 
 namespace godot{
 namespace honeycomb_resource{
@@ -16,9 +17,9 @@ static void _bind_methods();
 public:
 Dictionary to_dict();
 void set_add(const PackedStringArray& val);
-PackedStringArray& get_add();
+PackedStringArray get_add();
 void set_remove(const PackedStringArray& val);
-PackedStringArray& get_remove();
+PackedStringArray get_remove();
 };
 } // honeycomb_resource
 } // godot

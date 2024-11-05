@@ -7,7 +7,7 @@ void Transaction::set_transaction(const PackedByteArray& val){
 this->transaction = val;
 }
 
-PackedByteArray& Transaction::get_transaction(){
+PackedByteArray Transaction::get_transaction(){
 return this->transaction;
 }
 
@@ -15,7 +15,7 @@ void Transaction::set_blockhash(const String& val){
 this->blockhash = val;
 }
 
-String& Transaction::get_blockhash(){
+String Transaction::get_blockhash(){
 return this->blockhash;
 }
 
@@ -23,7 +23,7 @@ void Transaction::set_lastValidBlockHeight(const int32_t& val){
 this->lastValidBlockHeight = val;
 }
 
-int32_t& Transaction::get_lastValidBlockHeight(){
+int32_t Transaction::get_lastValidBlockHeight(){
 return this->lastValidBlockHeight;
 }
 

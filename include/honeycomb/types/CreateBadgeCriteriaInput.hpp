@@ -2,6 +2,7 @@
 #define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_CREATEBADGECRITERIAINPUT
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/classes/resource.hpp"
 
 namespace godot{
 namespace honeycomb_resource{
@@ -15,25 +16,25 @@ Variant payer;
 int32_t startTime;
 int32_t endTime;
 int32_t badgeIndex;
-Variant condition;
+int32_t condition;
 protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
 void set_projectAddress(const Variant& val);
-Variant& get_projectAddress();
+Variant get_projectAddress();
 void set_authority(const Variant& val);
-Variant& get_authority();
+Variant get_authority();
 void set_payer(const Variant& val);
-Variant& get_payer();
+Variant get_payer();
 void set_startTime(const int32_t& val);
-int32_t& get_startTime();
+int32_t get_startTime();
 void set_endTime(const int32_t& val);
-int32_t& get_endTime();
+int32_t get_endTime();
 void set_badgeIndex(const int32_t& val);
-int32_t& get_badgeIndex();
-void set_condition(const Variant& val);
-Variant& get_condition();
+int32_t get_badgeIndex();
+void set_condition(const int32_t& val);
+int32_t get_condition();
 };
 } // honeycomb_resource
 } // godot

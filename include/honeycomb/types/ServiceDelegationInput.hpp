@@ -2,6 +2,7 @@
 #define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_SERVICEDELEGATIONINPUT
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/classes/resource.hpp"
 
 namespace godot{
 namespace honeycomb_resource{
@@ -21,19 +22,19 @@ static void _bind_methods();
 public:
 Dictionary to_dict();
 void set_HiveControl(const Array& val);
-Array& get_HiveControl();
+Array get_HiveControl();
 void set_AssetAssembler(const Array& val);
-Array& get_AssetAssembler();
+Array get_AssetAssembler();
 void set_AssetManager(const Array& val);
-Array& get_AssetManager();
+Array get_AssetManager();
 void set_CurrencyManager(const Array& val);
-Array& get_CurrencyManager();
+Array get_CurrencyManager();
 void set_NectarStaking(const Array& val);
-Array& get_NectarStaking();
+Array get_NectarStaking();
 void set_NectarMissions(const Array& val);
-Array& get_NectarMissions();
+Array get_NectarMissions();
 void set_BuzzGuild(const Array& val);
-Array& get_BuzzGuild();
+Array get_BuzzGuild();
 };
 } // honeycomb_resource
 } // godot

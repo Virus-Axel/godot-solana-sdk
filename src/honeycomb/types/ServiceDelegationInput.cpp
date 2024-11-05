@@ -7,7 +7,7 @@ void ServiceDelegationInput::set_HiveControl(const Array& val){
 this->HiveControl = val;
 }
 
-Array& ServiceDelegationInput::get_HiveControl(){
+Array ServiceDelegationInput::get_HiveControl(){
 return this->HiveControl;
 }
 
@@ -15,7 +15,7 @@ void ServiceDelegationInput::set_AssetAssembler(const Array& val){
 this->AssetAssembler = val;
 }
 
-Array& ServiceDelegationInput::get_AssetAssembler(){
+Array ServiceDelegationInput::get_AssetAssembler(){
 return this->AssetAssembler;
 }
 
@@ -23,7 +23,7 @@ void ServiceDelegationInput::set_AssetManager(const Array& val){
 this->AssetManager = val;
 }
 
-Array& ServiceDelegationInput::get_AssetManager(){
+Array ServiceDelegationInput::get_AssetManager(){
 return this->AssetManager;
 }
 
@@ -31,7 +31,7 @@ void ServiceDelegationInput::set_CurrencyManager(const Array& val){
 this->CurrencyManager = val;
 }
 
-Array& ServiceDelegationInput::get_CurrencyManager(){
+Array ServiceDelegationInput::get_CurrencyManager(){
 return this->CurrencyManager;
 }
 
@@ -39,7 +39,7 @@ void ServiceDelegationInput::set_NectarStaking(const Array& val){
 this->NectarStaking = val;
 }
 
-Array& ServiceDelegationInput::get_NectarStaking(){
+Array ServiceDelegationInput::get_NectarStaking(){
 return this->NectarStaking;
 }
 
@@ -47,7 +47,7 @@ void ServiceDelegationInput::set_NectarMissions(const Array& val){
 this->NectarMissions = val;
 }
 
-Array& ServiceDelegationInput::get_NectarMissions(){
+Array ServiceDelegationInput::get_NectarMissions(){
 return this->NectarMissions;
 }
 
@@ -55,7 +55,7 @@ void ServiceDelegationInput::set_BuzzGuild(const Array& val){
 this->BuzzGuild = val;
 }
 
-Array& ServiceDelegationInput::get_BuzzGuild(){
+Array ServiceDelegationInput::get_BuzzGuild(){
 return this->BuzzGuild;
 }
 

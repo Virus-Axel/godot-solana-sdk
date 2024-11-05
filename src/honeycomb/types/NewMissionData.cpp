@@ -1,5 +1,6 @@
 #include "honeycomb/types/NewMissionData.hpp"
 
+#include "honeycomb/types/NewMissionCost.hpp"
 namespace godot{
 namespace honeycomb_resource{
 
@@ -7,7 +8,7 @@ void NewMissionData::set_project(const String& val){
 this->project = val;
 }
 
-String& NewMissionData::get_project(){
+String NewMissionData::get_project(){
 return this->project;
 }
 
@@ -15,7 +16,7 @@ void NewMissionData::set_missionPool(const String& val){
 this->missionPool = val;
 }
 
-String& NewMissionData::get_missionPool(){
+String NewMissionData::get_missionPool(){
 return this->missionPool;
 }
 
@@ -23,7 +24,7 @@ void NewMissionData::set_authority(const String& val){
 this->authority = val;
 }
 
-String& NewMissionData::get_authority(){
+String NewMissionData::get_authority(){
 return this->authority;
 }
 
@@ -31,7 +32,7 @@ void NewMissionData::set_delegateAuthority(const String& val){
 this->delegateAuthority = val;
 }
 
-String& NewMissionData::get_delegateAuthority(){
+String NewMissionData::get_delegateAuthority(){
 return this->delegateAuthority;
 }
 
@@ -39,7 +40,7 @@ void NewMissionData::set_payer(const String& val){
 this->payer = val;
 }
 
-String& NewMissionData::get_payer(){
+String NewMissionData::get_payer(){
 return this->payer;
 }
 
@@ -47,7 +48,7 @@ void NewMissionData::set_name(const String& val){
 this->name = val;
 }
 
-String& NewMissionData::get_name(){
+String NewMissionData::get_name(){
 return this->name;
 }
 
@@ -55,7 +56,7 @@ void NewMissionData::set_minXp(const int64_t& val){
 this->minXp = val;
 }
 
-int64_t& NewMissionData::get_minXp(){
+int64_t NewMissionData::get_minXp(){
 return this->minXp;
 }
 
@@ -63,7 +64,7 @@ void NewMissionData::set_cost(const Variant& val){
 this->cost = val;
 }
 
-Variant& NewMissionData::get_cost(){
+Variant NewMissionData::get_cost(){
 return this->cost;
 }
 
@@ -71,7 +72,7 @@ void NewMissionData::set_duration(const int64_t& val){
 this->duration = val;
 }
 
-int64_t& NewMissionData::get_duration(){
+int64_t NewMissionData::get_duration(){
 return this->duration;
 }
 
@@ -79,7 +80,7 @@ void NewMissionData::set_rewards(const Array& val){
 this->rewards = val;
 }
 
-Array& NewMissionData::get_rewards(){
+Array NewMissionData::get_rewards(){
 return this->rewards;
 }
 
@@ -122,7 +123,7 @@ ClassDB::bind_method(D_METHOD("set_minXp", "value"), &NewMissionData::set_minXp)
 ClassDB::add_property("NewMissionData", PropertyInfo(Variant::Type::INT, "minXp"), "set_minXp", "get_minXp");
 ClassDB::bind_method(D_METHOD("get_cost"), &NewMissionData::get_cost);
 ClassDB::bind_method(D_METHOD("set_cost", "value"), &NewMissionData::set_cost);
-ClassDB::add_property("NewMissionData", PropertyInfo(Variant::Type::VARIANT, "cost"), "set_cost", "get_cost");
+ClassDB::add_property("NewMissionData", PropertyInfo(Variant::Type::OBJECT, "cost"), "set_cost", "get_cost");
 ClassDB::bind_method(D_METHOD("get_duration"), &NewMissionData::get_duration);
 ClassDB::bind_method(D_METHOD("set_duration", "value"), &NewMissionData::set_duration);
 ClassDB::add_property("NewMissionData", PropertyInfo(Variant::Type::INT, "duration"), "set_duration", "get_duration");

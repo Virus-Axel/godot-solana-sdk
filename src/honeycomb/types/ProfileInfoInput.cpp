@@ -7,7 +7,7 @@ void ProfileInfoInput::set_name(const String& val){
 this->name = val;
 }
 
-String& ProfileInfoInput::get_name(){
+String ProfileInfoInput::get_name(){
 return this->name;
 }
 
@@ -15,7 +15,7 @@ void ProfileInfoInput::set_bio(const String& val){
 this->bio = val;
 }
 
-String& ProfileInfoInput::get_bio(){
+String ProfileInfoInput::get_bio(){
 return this->bio;
 }
 
@@ -23,7 +23,7 @@ void ProfileInfoInput::set_pfp(const String& val){
 this->pfp = val;
 }
 
-String& ProfileInfoInput::get_pfp(){
+String ProfileInfoInput::get_pfp(){
 return this->pfp;
 }
 

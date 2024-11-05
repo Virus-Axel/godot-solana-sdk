@@ -7,7 +7,7 @@ void RecallFromMissionData::set_mission(const String& val){
 this->mission = val;
 }
 
-String& RecallFromMissionData::get_mission(){
+String RecallFromMissionData::get_mission(){
 return this->mission;
 }
 
@@ -15,7 +15,7 @@ void RecallFromMissionData::set_characterAddresses(const PackedStringArray& val)
 this->characterAddresses = val;
 }
 
-PackedStringArray& RecallFromMissionData::get_characterAddresses(){
+PackedStringArray RecallFromMissionData::get_characterAddresses(){
 return this->characterAddresses;
 }
 
@@ -23,7 +23,7 @@ void RecallFromMissionData::set_authority(const String& val){
 this->authority = val;
 }
 
-String& RecallFromMissionData::get_authority(){
+String RecallFromMissionData::get_authority(){
 return this->authority;
 }
 
@@ -31,7 +31,7 @@ void RecallFromMissionData::set_payer(const String& val){
 this->payer = val;
 }
 
-String& RecallFromMissionData::get_payer(){
+String RecallFromMissionData::get_payer(){
 return this->payer;
 }
 

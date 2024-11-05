@@ -7,7 +7,7 @@ void InitStakingMultiplierMetadataInput::set_decimals(const int32_t& val){
 this->decimals = val;
 }
 
-int32_t& InitStakingMultiplierMetadataInput::get_decimals(){
+int32_t InitStakingMultiplierMetadataInput::get_decimals(){
 return this->decimals;
 }
 
@@ -15,7 +15,7 @@ void InitStakingMultiplierMetadataInput::set_multipliers(const Array& val){
 this->multipliers = val;
 }
 
-Array& InitStakingMultiplierMetadataInput::get_multipliers(){
+Array InitStakingMultiplierMetadataInput::get_multipliers(){
 return this->multipliers;
 }
 

@@ -7,7 +7,7 @@ void UpdateStakingPoolMetadataInput::set_name(const String& val){
 this->name = val;
 }
 
-String& UpdateStakingPoolMetadataInput::get_name(){
+String UpdateStakingPoolMetadataInput::get_name(){
 return this->name;
 }
 
@@ -15,7 +15,7 @@ void UpdateStakingPoolMetadataInput::set_rewardsPerDuration(const int64_t& val){
 this->rewardsPerDuration = val;
 }
 
-int64_t& UpdateStakingPoolMetadataInput::get_rewardsPerDuration(){
+int64_t UpdateStakingPoolMetadataInput::get_rewardsPerDuration(){
 return this->rewardsPerDuration;
 }
 
@@ -23,7 +23,7 @@ void UpdateStakingPoolMetadataInput::set_rewardsDuration(const int64_t& val){
 this->rewardsDuration = val;
 }
 
-int64_t& UpdateStakingPoolMetadataInput::get_rewardsDuration(){
+int64_t UpdateStakingPoolMetadataInput::get_rewardsDuration(){
 return this->rewardsDuration;
 }
 
@@ -31,7 +31,7 @@ void UpdateStakingPoolMetadataInput::set_maxRewardsDuration(const int64_t& val){
 this->maxRewardsDuration = val;
 }
 
-int64_t& UpdateStakingPoolMetadataInput::get_maxRewardsDuration(){
+int64_t UpdateStakingPoolMetadataInput::get_maxRewardsDuration(){
 return this->maxRewardsDuration;
 }
 
@@ -39,7 +39,7 @@ void UpdateStakingPoolMetadataInput::set_minStakeDuration(const int64_t& val){
 this->minStakeDuration = val;
 }
 
-int64_t& UpdateStakingPoolMetadataInput::get_minStakeDuration(){
+int64_t UpdateStakingPoolMetadataInput::get_minStakeDuration(){
 return this->minStakeDuration;
 }
 
@@ -47,7 +47,7 @@ void UpdateStakingPoolMetadataInput::set_cooldownDuration(const int64_t& val){
 this->cooldownDuration = val;
 }
 
-int64_t& UpdateStakingPoolMetadataInput::get_cooldownDuration(){
+int64_t UpdateStakingPoolMetadataInput::get_cooldownDuration(){
 return this->cooldownDuration;
 }
 
@@ -55,7 +55,7 @@ void UpdateStakingPoolMetadataInput::set_resetStakeDuration(const bool& val){
 this->resetStakeDuration = val;
 }
 
-bool& UpdateStakingPoolMetadataInput::get_resetStakeDuration(){
+bool UpdateStakingPoolMetadataInput::get_resetStakeDuration(){
 return this->resetStakeDuration;
 }
 
@@ -63,7 +63,7 @@ void UpdateStakingPoolMetadataInput::set_startTime(const int64_t& val){
 this->startTime = val;
 }
 
-int64_t& UpdateStakingPoolMetadataInput::get_startTime(){
+int64_t UpdateStakingPoolMetadataInput::get_startTime(){
 return this->startTime;
 }
 
@@ -71,7 +71,7 @@ void UpdateStakingPoolMetadataInput::set_endTime(const int64_t& val){
 this->endTime = val;
 }
 
-int64_t& UpdateStakingPoolMetadataInput::get_endTime(){
+int64_t UpdateStakingPoolMetadataInput::get_endTime(){
 return this->endTime;
 }
 

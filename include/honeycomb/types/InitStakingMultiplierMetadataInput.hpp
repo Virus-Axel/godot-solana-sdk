@@ -2,6 +2,7 @@
 #define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_INITSTAKINGMULTIPLIERMETADATAINPUT
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/classes/resource.hpp"
 
 namespace godot{
 namespace honeycomb_resource{
@@ -16,9 +17,9 @@ static void _bind_methods();
 public:
 Dictionary to_dict();
 void set_decimals(const int32_t& val);
-int32_t& get_decimals();
+int32_t get_decimals();
 void set_multipliers(const Array& val);
-Array& get_multipliers();
+Array get_multipliers();
 };
 } // honeycomb_resource
 } // godot
