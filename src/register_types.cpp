@@ -29,7 +29,7 @@
 #include "rpc_multi_http_request_client.hpp"
 #include "address_lookup_table.hpp"
 #include "shdwdrive.hpp"
-#include "honeycomb.hpp"
+#include "honeycomb/honeycomb.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>

@@ -1,4 +1,4 @@
-#include "Transaction.h"
+#include "honeycomb/types/Transaction.hpp"
 
 namespace godot{
 
@@ -26,15 +26,23 @@ int32_t& Transaction::get_lastValidBlockHeight(){
 return this->lastValidBlockHeight;
 }
 
+Dictionary Transaction::to_dict(){
+Dictionary res;
+res["transaction"] = transaction;
+res["blockhash"] = blockhash;
+res["lastValidBlockHeight"] = lastValidBlockHeight;
+return res;
+}
+
 void Transaction::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_transaction"), &Transaction::get_transaction);
 ClassDB::bind_method(D_METHOD("set_transaction", "value"), &Transaction::set_transaction);
-ClassDB::add_property("Transaction", PropertyInfo(Variant::PACKEDBYTEARRAY, "transaction"), "set_transaction", "get_transaction");
+ClassDB::add_property("Transaction", PropertyInfo(Variant::Type::PACKED_BYTE_ARRAY, "transaction"), "set_transaction", "get_transaction");
 ClassDB::bind_method(D_METHOD("get_blockhash"), &Transaction::get_blockhash);
 ClassDB::bind_method(D_METHOD("set_blockhash", "value"), &Transaction::set_blockhash);
-ClassDB::add_property("Transaction", PropertyInfo(Variant::STRING, "blockhash"), "set_blockhash", "get_blockhash");
+ClassDB::add_property("Transaction", PropertyInfo(Variant::Type::STRING, "blockhash"), "set_blockhash", "get_blockhash");
 ClassDB::bind_method(D_METHOD("get_lastValidBlockHeight"), &Transaction::get_lastValidBlockHeight);
 ClassDB::bind_method(D_METHOD("set_lastValidBlockHeight", "value"), &Transaction::set_lastValidBlockHeight);
-ClassDB::add_property("Transaction", PropertyInfo(Variant::INT, "lastValidBlockHeight"), "set_lastValidBlockHeight", "get_lastValidBlockHeight");
+ClassDB::add_property("Transaction", PropertyInfo(Variant::Type::INT, "lastValidBlockHeight"), "set_lastValidBlockHeight", "get_lastValidBlockHeight");
 }
 } // godot

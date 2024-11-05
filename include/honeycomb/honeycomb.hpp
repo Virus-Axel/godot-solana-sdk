@@ -5,7 +5,7 @@
 #include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/classes/http_request.hpp>
 #include "transaction.hpp"
-#include <../src/honeycomb/honeycomb_generated.hpp>
+#include "honeycomb/honeycomb_generated.hpp"
 
 namespace godot{
 

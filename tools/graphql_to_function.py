@@ -12,6 +12,11 @@ RETURN_TYPE = "Variant"
 SIGNER_TYPE = "const Variant&"
 SERVER_SIGNER = 'Pubkey::new_from_string("11111111111111111111111111111111")'
 
+resource_includes = [
+  'godot_cpp/variant/variant.hpp',
+  'godot_cpp/core/class_db.hpp'
+]
+
 header_includes = [
   '"pubkey.hpp"',
 ]
@@ -50,6 +55,7 @@ QL_TO_VARIANT = {
    "RecallFromMissionData": "Variant",
    "[Bytes!]": "Array",
    "Bytes": "PackedByteArray",
+   "TransactionBundlesOptions": "Variant",
    "SendTransactionBundlesOptions": "Variant",
    "[UserInfoInput!]": "Array",
    "NewMissionPoolData": "Variant",
@@ -57,6 +63,16 @@ QL_TO_VARIANT = {
    "NewMissionData": "Variant",
    "UpdateMissionInput": "Variant",
    "ParticipateOnMissionData": "Variant",
+   "Pubkey": "Variant",
+   "BadgesCondition": "Variant",
+   "ModifyServiceDelegationInput": "Variant",
+   "[ServiceDelegationHiveControl!]": "Array",
+   "[ServiceDelegationAssetAssembler!]": "Array",
+   "[ServiceDelegationAssetManager!]": "Array",
+   "[ServiceDelegationCurrencyManager!]": "Array",
+   "[ServiceDelegationNectarStaking!]": "Array",
+   "[ServiceDelegationNectarMissions!]": "Array",
+   "[ServiceDelegationBuzzGuild!]": "Array",
 }
 
 GODOT_TYPE_DEFVAL = {
@@ -70,9 +86,12 @@ GODOT_TYPE_DEFVAL = {
 }
 
 GODOT_VARIANT_ENUM_TYPE = {
+  "bool": "BOOL",
   "int32_t": "INT",
   "String": "STRING",
-  "PackedByteArray": "PACKEDBYTEARRAY"
+  "PackedByteArray": "PACKED_BYTE_ARRAY",
+  "Variant": "VARIANT",
+  "Array": "ARRAY",
 }
 
 
@@ -88,9 +107,9 @@ class GQLParse:
     self.method_implementations = ""
     self.types = []
 
-  def save_cpp_file(self, filepath):
+  def save_cpp_file(self, filepath, outdir_hpp):
     file = open(filepath, "w")
-    file.write(self.print_cpp_file())
+    file.write(self.print_cpp_file(outdir_hpp))
     file.close()
 
   def save_hpp_file(self, filepath):
@@ -107,7 +126,7 @@ class GQLParse:
       hpp_file.close()
 
       cpp_file = open(os.path.join(outdir_cpp, f"{class_name}.cpp"), "w")
-      cpp_file.write(self.print_resource_cpp_file(i))
+      cpp_file.write(self.print_resource_cpp_file(i, outdir_hpp.split("/", maxsplit=1)[-1]))
       cpp_file.close()
     pass
 
@@ -415,15 +434,26 @@ class GQLParse:
     class_name = type["classname"]
     properties = type["properties"]
 
-    result = f'#include "{class_name}.h"\n\n'
-    result += "namespace godot{\n\n"
+    result = f'#ifndef GODOT_SOLANA_SDK_HONEYCOMB_TYPE_{class_name.upper()}\n'
+    result += f'#define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_{class_name.upper()}\n'
+    for include in resource_includes:
+      result += f'#include "{include}"\n'
+    result += "\nnamespace godot{\n\n"
 
     result += f'class {class_name} : public Resource'
     result += "{\n"
     result += f"GDCLASS({class_name}, Resource)\n"
+
+    result += "private:\n"
+    for prop in properties:
+      (prop_name, prop_type) = prop
+      prop_type = self.ql_type_to_godot(prop_type)
+      result += f'{prop_type} {prop_name};\n'
+
     result += "protected:\n"
     result += f'static void _bind_methods();\n'
     result += "public:\n"
+    result += f"Dictionary to_dict();\n"
 
     for prop in properties:
       (prop_name, prop_type) = prop
@@ -432,24 +462,32 @@ class GQLParse:
       result += f"{prop_type}& get_{prop_name}();\n"
 
     result += "};\n"
-    result += "} // godot"
+    result += "} // godot\n"
+    result += "#endif"
 
     return result
 
-  def print_resource_cpp_file(self, index):
+  def print_resource_cpp_file(self, index, outdir_hpp):
     type = self.types[index]
     class_name = type["classname"]
     properties = type["properties"]
 
-    result = f'#include "{class_name}.h"\n\n'
+    result = f'#include "{os.path.join(outdir_hpp, class_name)}.hpp"\n\n'
     result += "namespace godot{\n\n"
 
     bind_methods = f'void {class_name}::_bind_methods()'
     bind_methods += '{\n'
 
+    to_dict = f"Dictionary {class_name}::to_dict()"
+    to_dict += "{\nDictionary res;\n"
+
     for prop in properties:
-      (prop_name, prop_type) = prop
-      prop_type = self.ql_type_to_godot(prop_type)
+      (prop_name, og_prop_type) = prop
+      prop_type = self.ql_type_to_godot(og_prop_type)
+      if prop_type == "Variant":
+        to_dict += f'res["{prop_name}"] = Object::cast_to<{og_prop_type.replace("!", "")}>({prop_name})->to_dict();\n'
+      else:
+        to_dict += f'res["{prop_name}"] = {prop_name};\n'
       result += f"void {class_name}::set_{prop_name}(const {prop_type}& val)"
       result += "{\n"
       result += f"this->{prop_name} = val;\n"
@@ -462,15 +500,18 @@ class GQLParse:
 
       bind_methods += f'ClassDB::bind_method(D_METHOD("get_{prop_name}"), &{class_name}::get_{prop_name});\n'
       bind_methods += f'ClassDB::bind_method(D_METHOD("set_{prop_name}", "value"), &{class_name}::set_{prop_name});\n'
-      bind_methods += f'ClassDB::add_property("{class_name}", PropertyInfo(Variant::{GODOT_VARIANT_ENUM_TYPE[prop_type]}, "{prop_name}"), "set_{prop_name}", "get_{prop_name}");\n'
+      bind_methods += f'ClassDB::add_property("{class_name}", PropertyInfo(Variant::Type::{GODOT_VARIANT_ENUM_TYPE[prop_type]}, "{prop_name}"), "set_{prop_name}", "get_{prop_name}");\n'
 
+    result += to_dict + "return res;\n}\n\n"
     result += bind_methods
     result += "}\n} // godot"
 
     return result
 
-  def print_cpp_file(self):
-    result = '#include "honeycomb.hpp"\n\n'
+  def print_cpp_file(self, outdir_hpp):
+    result = f'#include "{os.path.join(outdir_hpp, "honeycomb")}.hpp"\n\n'
+    for type in self.types:
+      result += f'#include "{os.path.join(outdir_hpp, "types/" + type["classname"])}.hpp"\n'
     result += "namespace godot{\n\n"
     result += self.method_implementations
     result += self.print_bind_methods() + '\n'
@@ -501,6 +542,10 @@ def main():
 
     qlparser = GQLParse()
     qlparser.graphql_to_type(Transaction)
+    qlparser.graphql_to_type(SendTransactionBundlesOptions)
+    qlparser.graphql_to_type(CreateBadgeCriteriaInput)
+    qlparser.graphql_to_type(ModifyDelegationInput)
+    qlparser.graphql_to_type(ServiceDelegationInput)
   
     qlparser.graphql_to_function(CREATE_NEW_RESOURCE, ["authority", "."], ["project"])
     qlparser.graphql_to_function(CREATE_NEW_RESOURCE_TREE, ["authority", "delegateAuthority", "payer"], ["project", "resource"])
@@ -562,11 +607,11 @@ def main():
     qlparser.graphql_to_function(CreateInitializeBadgeCriteriaTransaction, [], [])
 
     print(qlparser.print_header_file())
-    qlparser.print_cpp_file()
+    #qlparser.print_cpp_file()
 
-    qlparser.save_cpp_file(os.path.join(args.out_directory, args.cpp_filename))
-    qlparser.save_hpp_file(os.path.join(args.out_directory, args.hpp_filename))
-    qlparser.save_resource_files(args.out_cpp_directory, args.out_hpp_directory)
+    qlparser.save_cpp_file(os.path.join(args.out_cpp_directory, args.cpp_filename), args.out_hpp_directory.split("/", maxsplit=1)[-1])
+    qlparser.save_hpp_file(os.path.join(args.out_hpp_directory, args.hpp_filename))
+    qlparser.save_resource_files(args.out_cpp_directory + "/types", args.out_hpp_directory + "/types")
 
 if __name__ == "__main__":
     main()

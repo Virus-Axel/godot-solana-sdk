@@ -1,5 +1,10 @@
-#include "honeycomb.hpp"
+#include "honeycomb/honeycomb.hpp"
 
+#include "honeycomb/types/Transaction.hpp"
+#include "honeycomb/types/SendTransactionBundlesOptions.hpp"
+#include "honeycomb/types/CreateBadgeCriteriaInput.hpp"
+#include "honeycomb/types/ModifyDelegationInput.hpp"
+#include "honeycomb/types/ServiceDelegationInput.hpp"
 namespace godot{
 
 Variant HoneyComb::createCreateNewResourceTransaction(const Variant& project, const Variant& authority, Variant params, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
@@ -1030,7 +1035,7 @@ Variant HoneyComb::createRecallCharactersTransaction(Variant data, PackedStringA
 	return OK;
 }
 
-Variant HoneyComb::signWithShadowSignerAndSendTransactionBundles(PackedByteArray txs, String blockhash, int32_t lastValidBlockHeight, String authToken, Variant options){
+Variant HoneyComb::signWithShadowSignerAndSendTransactionBundles(Array txs, String blockhash, int32_t lastValidBlockHeight, String authToken, Variant options){
 	if(pending){
 		return ERR_BUSY;
 	}

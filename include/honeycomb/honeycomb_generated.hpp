@@ -32,7 +32,7 @@
 	Variant createWrapAssetsToCharacterTransactions(PackedStringArray mintList, const Variant& project, const Variant& characterModel, const Variant& wallet, String libreplexDeployment = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);\
 	Variant createUnwrapAssetsFromCharacterTransactions(PackedStringArray characterAddresses, const Variant& project, String characterModel, const Variant& wallet, String libreplexDeployment = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);\
 	Variant createRecallCharactersTransaction(Variant data, PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);\
-	Variant signWithShadowSignerAndSendTransactionBundles(PackedByteArray txs, String blockhash, int32_t lastValidBlockHeight, String authToken, Variant options = Variant(nullptr));\
+	Variant signWithShadowSignerAndSendTransactionBundles(Array txs, String blockhash, int32_t lastValidBlockHeight, String authToken, Variant options = Variant(nullptr));\
 	Variant createInitializeFaucetTransaction(const Variant& resource, int32_t amount, int32_t repeatInterval, const Variant& authority, const Variant& delegateAuthority = "", const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);\
 	Variant createClaimFaucetTransaction(const Variant& faucet, const Variant& owner, const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);\
 	Variant createNewUserTransaction(const Variant& wallet, Variant info = Variant(nullptr), const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);\

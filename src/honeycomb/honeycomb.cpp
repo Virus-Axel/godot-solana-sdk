@@ -1,4 +1,4 @@
-#include "honeycomb.hpp"
+#include "honeycomb/honeycomb.hpp"
 
 #include "pubkey.hpp"
 #include "transaction.hpp"
