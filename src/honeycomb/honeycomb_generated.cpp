@@ -5,6 +5,13 @@
 #include "honeycomb/types/CreateBadgeCriteriaInput.hpp"
 #include "honeycomb/types/ModifyDelegationInput.hpp"
 #include "honeycomb/types/ServiceDelegationInput.hpp"
+#include "honeycomb/types/ProfileDataConfigInput.hpp"
+#include "honeycomb/types/UpdateBadgeCriteriaInput.hpp"
+#include "honeycomb/types/ClaimBadgeCriteriaInput.hpp"
+#include "honeycomb/types/ProfileInfoInput.hpp"
+#include "honeycomb/types/CustomDataInput.hpp"
+#include "honeycomb/types/UpdateWalletInput.hpp"
+#include "honeycomb/types/PartialUserInfoInput.hpp"
 namespace godot{
 
 Variant HoneyComb::createCreateNewResourceTransaction(const Variant& project, const Variant& authority, Variant params, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
@@ -16,7 +23,7 @@ Variant HoneyComb::createCreateNewResourceTransaction(const Variant& project, co
 
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
-	add_arg("params", "InitResourceInput", Object::cast_to<InitResourceInput>(params)->to_dict(), false);
+	add_arg("params", "InitResourceInput", Object::cast_to<godot::honeycomb_resource::InitResourceInput>(params)->to_dict(), false);
 	if(delegateAuthority != ""){
 		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
 	}
@@ -50,7 +57,7 @@ Variant HoneyComb::createCreateNewResourceTreeTransaction(const Variant& project
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("resource", "String", Pubkey::string_from_variant(resource), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
-	add_arg("treeConfig", "TreeSetupConfig", Object::cast_to<TreeSetupConfig>(treeConfig)->to_dict(), false);
+	add_arg("treeConfig", "TreeSetupConfig", Object::cast_to<godot::honeycomb_resource::TreeSetupConfig>(treeConfig)->to_dict(), false);
 	if(delegateAuthority != Variant(nullptr)){
 		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
 	}
@@ -138,36 +145,6 @@ Variant HoneyComb::createBurnResourceTransaction(const Variant& resource, int64_
 
 
 	method_name = "createBurnResourceTransaction";
-
-
-	query_fields = " transaction blockhash lastValidBlockHeight ";
-	send_query();
-	return OK;
-}
-
-Variant HoneyComb::createNewUserTransaction(const Variant& wallet, Variant info, const Variant& payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
-	if(pending){
-		return ERR_BUSY;
-	}
-	signers.append(wallet);
-	signers.append(payer);
-
-	add_arg("wallet", "String", Pubkey::string_from_variant(wallet), false);
-	if(info != Variant(nullptr)){
-		add_arg("info", "UserInfoInput", Object::cast_to<UserInfoInput>(info)->to_dict(), true);
-	}
-	if(payer != Variant(nullptr)){
-		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
-	}
-	if(lutAddresses != PackedStringArray()){
-		add_arg("lutAddresses", "[String!]", lutAddresses, true);
-	}
-	if(computeUnitPrice != -1){
-		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
-	}
-
-
-	method_name = "createNewUserTransaction";
 
 
 	query_fields = " transaction blockhash lastValidBlockHeight ";
@@ -274,7 +251,7 @@ Variant HoneyComb::createInitializeRecipeTransaction(const Variant& project, int
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("xp", "BigInt", xp, false);
 	add_arg("ingredients", "[IngredientsInput!]", ingredients, false);
-	add_arg("meal", "MealInput", Object::cast_to<MealInput>(meal)->to_dict(), false);
+	add_arg("meal", "MealInput", Object::cast_to<godot::honeycomb_resource::MealInput>(meal)->to_dict(), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
 	if(delegateAuthority != Variant(nullptr)){
 		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
@@ -397,7 +374,7 @@ Variant HoneyComb::createCreateMissionPoolTransaction(Variant data, PackedString
 		return ERR_BUSY;
 	}
 
-	add_arg("data", "NewMissionPoolData", Object::cast_to<NewMissionPoolData>(data)->to_dict(), false);
+	add_arg("data", "NewMissionPoolData", Object::cast_to<godot::honeycomb_resource::NewMissionPoolData>(data)->to_dict(), false);
 	if(lutAddresses != PackedStringArray()){
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
 	}
@@ -419,7 +396,7 @@ Variant HoneyComb::createUpdateMissionPoolTransaction(Variant data, PackedString
 		return ERR_BUSY;
 	}
 
-	add_arg("data", "UpdateMissionPoolData", Object::cast_to<UpdateMissionPoolData>(data)->to_dict(), false);
+	add_arg("data", "UpdateMissionPoolData", Object::cast_to<godot::honeycomb_resource::UpdateMissionPoolData>(data)->to_dict(), false);
 	if(lutAddresses != PackedStringArray()){
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
 	}
@@ -441,7 +418,7 @@ Variant HoneyComb::createCreateMissionTransaction(Variant data, PackedStringArra
 		return ERR_BUSY;
 	}
 
-	add_arg("data", "NewMissionData", Object::cast_to<NewMissionData>(data)->to_dict(), false);
+	add_arg("data", "NewMissionData", Object::cast_to<godot::honeycomb_resource::NewMissionData>(data)->to_dict(), false);
 	if(lutAddresses != PackedStringArray()){
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
 	}
@@ -468,7 +445,7 @@ Variant HoneyComb::createUpdateMissionTransaction(const Variant& missionAddress,
 
 	add_arg("missionAddress", "String", Pubkey::string_from_variant(missionAddress), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
-	add_arg("params", "UpdateMissionInput", Object::cast_to<UpdateMissionInput>(params)->to_dict(), false);
+	add_arg("params", "UpdateMissionInput", Object::cast_to<godot::honeycomb_resource::UpdateMissionInput>(params)->to_dict(), false);
 	if(payer != Variant(nullptr)){
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
 	}
@@ -496,7 +473,7 @@ Variant HoneyComb::createSendCharactersOnMissionTransaction(Variant data, Packed
 		return ERR_BUSY;
 	}
 
-	add_arg("data", "ParticipateOnMissionData", Object::cast_to<ParticipateOnMissionData>(data)->to_dict(), false);
+	add_arg("data", "ParticipateOnMissionData", Object::cast_to<godot::honeycomb_resource::ParticipateOnMissionData>(data)->to_dict(), false);
 	if(lutAddresses != PackedStringArray()){
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
 	}
@@ -523,10 +500,10 @@ Variant HoneyComb::createCreateStakingPoolTransaction(const Variant& project, co
 
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("resource", "String", Pubkey::string_from_variant(resource), false);
-	add_arg("metadata", "CreateStakingPoolMetadataInput", Object::cast_to<CreateStakingPoolMetadataInput>(metadata)->to_dict(), false);
+	add_arg("metadata", "CreateStakingPoolMetadataInput", Object::cast_to<godot::honeycomb_resource::CreateStakingPoolMetadataInput>(metadata)->to_dict(), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
 	if(multiplier != Variant(nullptr)){
-		add_arg("multiplier", "InitStakingMultiplierMetadataInput", Object::cast_to<InitStakingMultiplierMetadataInput>(multiplier)->to_dict(), true);
+		add_arg("multiplier", "InitStakingMultiplierMetadataInput", Object::cast_to<godot::honeycomb_resource::InitStakingMultiplierMetadataInput>(multiplier)->to_dict(), true);
 	}
 	if(delegateAuthority != Variant(nullptr)){
 		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
@@ -562,7 +539,7 @@ Variant HoneyComb::createUpdateStakingPoolTransaction(const Variant& project, co
 	add_arg("stakingPool", "String", Pubkey::string_from_variant(stakingPool), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
 	if(metadata != Variant(nullptr)){
-		add_arg("metadata", "UpdateStakingPoolMetadataInput", Object::cast_to<UpdateStakingPoolMetadataInput>(metadata)->to_dict(), true);
+		add_arg("metadata", "UpdateStakingPoolMetadataInput", Object::cast_to<godot::honeycomb_resource::UpdateStakingPoolMetadataInput>(metadata)->to_dict(), true);
 	}
 	if(characterModel != Variant(nullptr)){
 		add_arg("characterModel", "String", Pubkey::string_from_variant(characterModel), true);
@@ -637,7 +614,7 @@ Variant HoneyComb::createAddMultiplierTransaction(const Variant& project, const 
 
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("multiplier", "String", Pubkey::string_from_variant(multiplier), false);
-	add_arg("metadata", "AddMultiplierMetadataInput", Object::cast_to<AddMultiplierMetadataInput>(metadata)->to_dict(), false);
+	add_arg("metadata", "AddMultiplierMetadataInput", Object::cast_to<godot::honeycomb_resource::AddMultiplierMetadataInput>(metadata)->to_dict(), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
 	if(delegateAuthority != Variant(nullptr)){
 		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
@@ -809,11 +786,11 @@ Variant HoneyComb::createCreateCharacterModelTransaction(Variant config, const V
 	signers.append(authority);
 	signers.append(payer);
 
-	add_arg("config", "CharacterConfigInput", Object::cast_to<CharacterConfigInput>(config)->to_dict(), false);
+	add_arg("config", "CharacterConfigInput", Object::cast_to<godot::honeycomb_resource::CharacterConfigInput>(config)->to_dict(), false);
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
 	if(attributes != Variant(nullptr)){
-		add_arg("attributes", "VecMapGeneric", Object::cast_to<VecMapGeneric>(attributes)->to_dict(), true);
+		add_arg("attributes", "VecMapGeneric", Object::cast_to<godot::honeycomb_resource::VecMapGeneric>(attributes)->to_dict(), true);
 	}
 	if(payer != Variant(nullptr)){
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
@@ -841,7 +818,7 @@ Variant HoneyComb::createCreateCharactersTreeTransaction(Variant treeConfig, con
 	signers.append(authority);
 	signers.append(payer);
 
-	add_arg("treeConfig", "TreeSetupConfig", Object::cast_to<TreeSetupConfig>(treeConfig)->to_dict(), false);
+	add_arg("treeConfig", "TreeSetupConfig", Object::cast_to<godot::honeycomb_resource::TreeSetupConfig>(treeConfig)->to_dict(), false);
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("characterModel", "String", Pubkey::string_from_variant(characterModel), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
@@ -870,7 +847,7 @@ Variant HoneyComb::createAssembleCharacterTransaction(Variant attributes, const 
 	}
 	signers.append(wallet);
 
-	add_arg("attributes", "VecMapGeneric", Object::cast_to<VecMapGeneric>(attributes)->to_dict(), false);
+	add_arg("attributes", "VecMapGeneric", Object::cast_to<godot::honeycomb_resource::VecMapGeneric>(attributes)->to_dict(), false);
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("assemblerConfig", "String", Pubkey::string_from_variant(assemblerConfig), false);
 	add_arg("characterModel", "String", Pubkey::string_from_variant(characterModel), false);
@@ -899,7 +876,7 @@ Variant HoneyComb::createUpdateCharacterTraitsTransaction(const Variant& charact
 	signers.append(wallet);
 
 	add_arg("characterAddress", "String", Pubkey::string_from_variant(characterAddress), false);
-	add_arg("attributes", "VecMapGeneric", Object::cast_to<VecMapGeneric>(attributes)->to_dict(), false);
+	add_arg("attributes", "VecMapGeneric", Object::cast_to<godot::honeycomb_resource::VecMapGeneric>(attributes)->to_dict(), false);
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("assemblerConfig", "String", Pubkey::string_from_variant(assemblerConfig), false);
 	add_arg("characterModel", "String", Pubkey::string_from_variant(characterModel), false);
@@ -929,7 +906,7 @@ Variant HoneyComb::createPopulateAssembleablCharacterTransaction(Variant attribu
 	signers.append(updateAuthority);
 	signers.append(payer);
 
-	add_arg("attributes", "VecMapGeneric", Object::cast_to<VecMapGeneric>(attributes)->to_dict(), false);
+	add_arg("attributes", "VecMapGeneric", Object::cast_to<godot::honeycomb_resource::VecMapGeneric>(attributes)->to_dict(), false);
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("characterModel", "String", Pubkey::string_from_variant(characterModel), false);
 	add_arg("charactersTree", "String", Pubkey::string_from_variant(charactersTree), false);
@@ -1018,7 +995,7 @@ Variant HoneyComb::createRecallCharactersTransaction(Variant data, PackedStringA
 		return ERR_BUSY;
 	}
 
-	add_arg("data", "RecallFromMissionData", Object::cast_to<RecallFromMissionData>(data)->to_dict(), false);
+	add_arg("data", "RecallFromMissionData", Object::cast_to<godot::honeycomb_resource::RecallFromMissionData>(data)->to_dict(), false);
 	if(lutAddresses != PackedStringArray()){
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
 	}
@@ -1045,7 +1022,7 @@ Variant HoneyComb::signWithShadowSignerAndSendTransactionBundles(Array txs, Stri
 	add_arg("lastValidBlockHeight", "Int", lastValidBlockHeight, false);
 	add_arg("authToken", "String", Pubkey::string_from_variant(authToken), false);
 	if(options != Variant(nullptr)){
-		add_arg("options", "SendTransactionBundlesOptions", Object::cast_to<SendTransactionBundlesOptions>(options)->to_dict(), true);
+		add_arg("options", "SendTransactionBundlesOptions", Object::cast_to<godot::honeycomb_resource::SendTransactionBundlesOptions>(options)->to_dict(), true);
 	}
 
 
@@ -1128,7 +1105,7 @@ Variant HoneyComb::createNewUserTransaction(const Variant& wallet, Variant info,
 
 	add_arg("wallet", "String", Pubkey::string_from_variant(wallet), false);
 	if(info != Variant(nullptr)){
-		add_arg("info", "UserInfoInput", Object::cast_to<UserInfoInput>(info)->to_dict(), true);
+		add_arg("info", "UserInfoInput", Object::cast_to<godot::honeycomb_resource::UserInfoInput>(info)->to_dict(), true);
 	}
 	if(payer != Variant(nullptr)){
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
@@ -1182,10 +1159,10 @@ Variant HoneyComb::createUpdateUserTransaction(const Variant& payer, Variant inf
 
 	add_arg("payer", "String", Pubkey::string_from_variant(payer), false);
 	if(info != Variant(nullptr)){
-		add_arg("info", "PartialUserInfoInput", Object::cast_to<PartialUserInfoInput>(info)->to_dict(), true);
+		add_arg("info", "PartialUserInfoInput", Object::cast_to<godot::honeycomb_resource::PartialUserInfoInput>(info)->to_dict(), true);
 	}
 	if(wallets != Variant(nullptr)){
-		add_arg("wallets", "UpdateWalletInput", Object::cast_to<UpdateWalletInput>(wallets)->to_dict(), true);
+		add_arg("wallets", "UpdateWalletInput", Object::cast_to<godot::honeycomb_resource::UpdateWalletInput>(wallets)->to_dict(), true);
 	}
 	if(populateCivic != false){
 		add_arg("populateCivic", "Boolean", populateCivic, true);
@@ -1212,7 +1189,7 @@ Variant HoneyComb::createCreateProfilesTreeTransaction(Variant treeConfig, const
 	}
 	signers.append(payer);
 
-	add_arg("treeConfig", "TreeSetupConfig", Object::cast_to<TreeSetupConfig>(treeConfig)->to_dict(), false);
+	add_arg("treeConfig", "TreeSetupConfig", Object::cast_to<godot::honeycomb_resource::TreeSetupConfig>(treeConfig)->to_dict(), false);
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("payer", "String", Pubkey::string_from_variant(payer), false);
 	if(lutAddresses != PackedStringArray()){
@@ -1243,7 +1220,7 @@ Variant HoneyComb::createNewProfileTransaction(const Variant& project, const Var
 		add_arg("identity", "String", Pubkey::string_from_variant(identity), true);
 	}
 	if(info != Variant(nullptr)){
-		add_arg("info", "ProfileInfoInput", Object::cast_to<ProfileInfoInput>(info)->to_dict(), true);
+		add_arg("info", "ProfileInfoInput", Object::cast_to<godot::honeycomb_resource::ProfileInfoInput>(info)->to_dict(), true);
 	}
 	if(lutAddresses != PackedStringArray()){
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
@@ -1271,10 +1248,10 @@ Variant HoneyComb::createUpdateProfileTransaction(const Variant& profile, const 
 	add_arg("profile", "String", Pubkey::string_from_variant(profile), false);
 	add_arg("payer", "String", Pubkey::string_from_variant(payer), false);
 	if(info != Variant(nullptr)){
-		add_arg("info", "ProfileInfoInput", Object::cast_to<ProfileInfoInput>(info)->to_dict(), true);
+		add_arg("info", "ProfileInfoInput", Object::cast_to<godot::honeycomb_resource::ProfileInfoInput>(info)->to_dict(), true);
 	}
 	if(customData != Variant(nullptr)){
-		add_arg("customData", "CustomDataInput", Object::cast_to<CustomDataInput>(customData)->to_dict(), true);
+		add_arg("customData", "CustomDataInput", Object::cast_to<godot::honeycomb_resource::CustomDataInput>(customData)->to_dict(), true);
 	}
 	if(lutAddresses != PackedStringArray()){
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
@@ -1302,13 +1279,13 @@ Variant HoneyComb::createNewUserWithProfileTransaction(const Variant& project, c
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("wallet", "String", Pubkey::string_from_variant(wallet), false);
 	if(userInfo != Variant(nullptr)){
-		add_arg("userInfo", "UserInfoInput", Object::cast_to<UserInfoInput>(userInfo)->to_dict(), true);
+		add_arg("userInfo", "UserInfoInput", Object::cast_to<godot::honeycomb_resource::UserInfoInput>(userInfo)->to_dict(), true);
 	}
 	if(profileIdentity != ""){
 		add_arg("profileIdentity", "String", Pubkey::string_from_variant(profileIdentity), true);
 	}
 	if(profileInfo != Variant(nullptr)){
-		add_arg("profileInfo", "ProfileInfoInput", Object::cast_to<ProfileInfoInput>(profileInfo)->to_dict(), true);
+		add_arg("profileInfo", "ProfileInfoInput", Object::cast_to<godot::honeycomb_resource::ProfileInfoInput>(profileInfo)->to_dict(), true);
 	}
 	if(payer != Variant(nullptr)){
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
@@ -1334,7 +1311,7 @@ Variant HoneyComb::createClaimBadgeCriteriaTransaction(Variant args, PackedStrin
 		return ERR_BUSY;
 	}
 
-	add_arg("args", "ClaimBadgeCriteriaInput", Object::cast_to<ClaimBadgeCriteriaInput>(args)->to_dict(), false);
+	add_arg("args", "ClaimBadgeCriteriaInput", Object::cast_to<godot::honeycomb_resource::ClaimBadgeCriteriaInput>(args)->to_dict(), false);
 	if(lutAddresses != PackedStringArray()){
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
 	}
@@ -1356,7 +1333,7 @@ Variant HoneyComb::createUpdateBadgeCriteriaTransaction(Variant args, PackedStri
 		return ERR_BUSY;
 	}
 
-	add_arg("args", "UpdateBadgeCriteriaInput", Object::cast_to<UpdateBadgeCriteriaInput>(args)->to_dict(), false);
+	add_arg("args", "UpdateBadgeCriteriaInput", Object::cast_to<godot::honeycomb_resource::UpdateBadgeCriteriaInput>(args)->to_dict(), false);
 	if(lutAddresses != PackedStringArray()){
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
 	}
@@ -1389,7 +1366,7 @@ Variant HoneyComb::createCreateProjectTransaction(const Variant& authority, Stri
 		add_arg("associatedPrograms", "[AssociatedProgramInput!]", associatedPrograms, true);
 	}
 	if(profileDataConfig != Variant(nullptr)){
-		add_arg("profileDataConfig", "ProfileDataConfigInput", Object::cast_to<ProfileDataConfigInput>(profileDataConfig)->to_dict(), true);
+		add_arg("profileDataConfig", "ProfileDataConfigInput", Object::cast_to<godot::honeycomb_resource::ProfileDataConfigInput>(profileDataConfig)->to_dict(), true);
 	}
 	if(subsidizeFees != false){
 		add_arg("subsidizeFees", "Boolean", subsidizeFees, true);
@@ -1451,7 +1428,7 @@ Variant HoneyComb::createCreateDelegateAuthorityTransaction(const Variant& proje
 
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("delegate", "String", Pubkey::string_from_variant(delegate), false);
-	add_arg("serviceDelegations", "ServiceDelegationInput", Object::cast_to<ServiceDelegationInput>(serviceDelegations)->to_dict(), false);
+	add_arg("serviceDelegations", "ServiceDelegationInput", Object::cast_to<godot::honeycomb_resource::ServiceDelegationInput>(serviceDelegations)->to_dict(), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
 	if(payer != Variant(nullptr)){
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
@@ -1481,7 +1458,7 @@ Variant HoneyComb::createModifyDelegationTransaction(const Variant& project, con
 
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("delegate", "String", Pubkey::string_from_variant(delegate), false);
-	add_arg("modifyDelegation", "ModifyDelegationInput", Object::cast_to<ModifyDelegationInput>(modifyDelegation)->to_dict(), false);
+	add_arg("modifyDelegation", "ModifyDelegationInput", Object::cast_to<godot::honeycomb_resource::ModifyDelegationInput>(modifyDelegation)->to_dict(), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
 	if(payer != Variant(nullptr)){
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
@@ -1509,7 +1486,7 @@ Variant HoneyComb::createCreateAssemblerConfigTransaction(Variant treeConfig, St
 	signers.append(authority);
 	signers.append(payer);
 
-	add_arg("treeConfig", "TreeSetupConfig", Object::cast_to<TreeSetupConfig>(treeConfig)->to_dict(), false);
+	add_arg("treeConfig", "TreeSetupConfig", Object::cast_to<godot::honeycomb_resource::TreeSetupConfig>(treeConfig)->to_dict(), false);
 	add_arg("ticker", "String", Pubkey::string_from_variant(ticker), false);
 	add_arg("order", "[String!]", order, false);
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
@@ -1538,7 +1515,7 @@ Variant HoneyComb::createInitializeBadgeCriteriaTransaction(Variant args, Packed
 		return ERR_BUSY;
 	}
 
-	add_arg("args", "CreateBadgeCriteriaInput", Object::cast_to<CreateBadgeCriteriaInput>(args)->to_dict(), false);
+	add_arg("args", "CreateBadgeCriteriaInput", Object::cast_to<godot::honeycomb_resource::CreateBadgeCriteriaInput>(args)->to_dict(), false);
 	if(lutAddresses != PackedStringArray()){
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
 	}
@@ -1561,7 +1538,6 @@ void HoneyComb::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("create_new_resource_tree", "project", "resource", "authority", "treeConfig", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewResourceTreeTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("mint_resource", "resource", "owner", "authority", "amount", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createMintResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("burn_resource", "resource", "amount", "authority", "owner", "payer", "delegateAuthority", "lutAddresses", "computeUnitPrice"), &HoneyComb::createBurnResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("new_user", "wallet", "info", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createNewUserTransaction, DEFVAL(Variant(nullptr)), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_unwrap_holding", "resource", "amount", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateUnwrapHoldingTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_wrap_holding", "resource", "amount", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateWrapHoldingTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("transfer_resource", "resource", "owner", "recipient", "amount", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createTransferResourceTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));

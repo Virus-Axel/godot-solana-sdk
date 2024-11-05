@@ -1,6 +1,7 @@
 #include "honeycomb/types/ModifyDelegationInput.hpp"
 
 namespace godot{
+namespace honeycomb_resource{
 
 void ModifyDelegationInput::set_delegation(const Variant& val){
 this->delegation = val;
@@ -20,7 +21,7 @@ return this->index;
 
 Dictionary ModifyDelegationInput::to_dict(){
 Dictionary res;
-res["delegation"] = Object::cast_to<ModifyServiceDelegationInput>(delegation)->to_dict();
+res["delegation"] = Object::cast_to<godot::honeycomb_resource::ModifyServiceDelegationInput>(delegation)->to_dict();
 res["index"] = index;
 return res;
 }
@@ -33,4 +34,5 @@ ClassDB::bind_method(D_METHOD("get_index"), &ModifyDelegationInput::get_index);
 ClassDB::bind_method(D_METHOD("set_index", "value"), &ModifyDelegationInput::set_index);
 ClassDB::add_property("ModifyDelegationInput", PropertyInfo(Variant::Type::INT, "index"), "set_index", "get_index");
 }
+} // honeycomb_resource
 } // godot

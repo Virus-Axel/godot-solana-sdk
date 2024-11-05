@@ -25,6 +25,7 @@ QL_TO_VARIANT = {
    "String": "String",
    "String!": "String",
    "[String!]": "PackedStringArray",
+   "[String]": "PackedStringArray",
    "BigInt": "int64_t",
    "Int": "int32_t",
    "InitResourceInput": "Variant",
@@ -73,6 +74,7 @@ QL_TO_VARIANT = {
    "[ServiceDelegationNectarStaking!]": "Array",
    "[ServiceDelegationNectarMissions!]": "Array",
    "[ServiceDelegationBuzzGuild!]": "Array",
+   "JSON": "Dictionary",
 }
 
 GODOT_TYPE_DEFVAL = {
@@ -90,8 +92,10 @@ GODOT_VARIANT_ENUM_TYPE = {
   "int32_t": "INT",
   "String": "STRING",
   "PackedByteArray": "PACKED_BYTE_ARRAY",
+  "PackedStringArray": "PACKED_STRING_ARRAY",
   "Variant": "VARIANT",
   "Array": "ARRAY",
+  "Dictionary": "DICTIONARY",
 }
 
 
@@ -202,7 +206,7 @@ class GQLParse:
     if godot_type == "String":
       result_string += f'("{arg_name}", "{arg_type}", Pubkey::string_from_variant({arg_name}), {is_optional});\n'
     elif godot_type == "Variant":
-       result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<{arg_type}>({arg_name})->to_dict(), {is_optional});\n'
+       result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<godot::honeycomb_resource::{arg_type}>({arg_name})->to_dict(), {is_optional});\n'
     else:
       result_string += f'("{arg_name}", "{arg_type}", {arg_name}, {is_optional});\n'
 
@@ -424,6 +428,7 @@ class GQLParse:
     #result += "public:\n"
     result = "#define HONEYCOMB_METHOD_DEFS "
     result += self.method_definitions.replace("\n", "\\\n")
+    result = result[:-2] + "\n\n"
     #result += "};\n"
     #result += "} // godot"
 
@@ -438,7 +443,7 @@ class GQLParse:
     result += f'#define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_{class_name.upper()}\n'
     for include in resource_includes:
       result += f'#include "{include}"\n'
-    result += "\nnamespace godot{\n\n"
+    result += "\nnamespace godot{\nnamespace honeycomb_resource{\n\n"
 
     result += f'class {class_name} : public Resource'
     result += "{\n"
@@ -462,7 +467,7 @@ class GQLParse:
       result += f"{prop_type}& get_{prop_name}();\n"
 
     result += "};\n"
-    result += "} // godot\n"
+    result += "} // honeycomb_resource\n} // godot\n"
     result += "#endif"
 
     return result
@@ -473,7 +478,7 @@ class GQLParse:
     properties = type["properties"]
 
     result = f'#include "{os.path.join(outdir_hpp, class_name)}.hpp"\n\n'
-    result += "namespace godot{\n\n"
+    result += "namespace godot{\nnamespace honeycomb_resource{\n\n"
 
     bind_methods = f'void {class_name}::_bind_methods()'
     bind_methods += '{\n'
@@ -485,7 +490,7 @@ class GQLParse:
       (prop_name, og_prop_type) = prop
       prop_type = self.ql_type_to_godot(og_prop_type)
       if prop_type == "Variant":
-        to_dict += f'res["{prop_name}"] = Object::cast_to<{og_prop_type.replace("!", "")}>({prop_name})->to_dict();\n'
+        to_dict += f'res["{prop_name}"] = Object::cast_to<godot::honeycomb_resource::{og_prop_type.replace("!", "")}>({prop_name})->to_dict();\n'
       else:
         to_dict += f'res["{prop_name}"] = {prop_name};\n'
       result += f"void {class_name}::set_{prop_name}(const {prop_type}& val)"
@@ -504,7 +509,7 @@ class GQLParse:
 
     result += to_dict + "return res;\n}\n\n"
     result += bind_methods
-    result += "}\n} // godot"
+    result += "}\n} // honeycomb_resource\n} // godot"
 
     return result
 
@@ -546,12 +551,20 @@ def main():
     qlparser.graphql_to_type(CreateBadgeCriteriaInput)
     qlparser.graphql_to_type(ModifyDelegationInput)
     qlparser.graphql_to_type(ServiceDelegationInput)
+    qlparser.graphql_to_type(ProfileDataConfigInput)
+    qlparser.graphql_to_type(UpdateBadgeCriteriaInput)
+    qlparser.graphql_to_type(ClaimBadgeCriteriaInput)
+    qlparser.graphql_to_type(ProfileInfoInput)
+    qlparser.graphql_to_type(CustomDataInput)
+    qlparser.graphql_to_type(UpdateWalletInput)
+    qlparser.graphql_to_type(PartialUserInfoInput)
+    
+    
   
     qlparser.graphql_to_function(CREATE_NEW_RESOURCE, ["authority", "."], ["project"])
     qlparser.graphql_to_function(CREATE_NEW_RESOURCE_TREE, ["authority", "delegateAuthority", "payer"], ["project", "resource"])
     qlparser.graphql_to_function(MINT_RESOURCE_TRANSACTION, ["owner", "authority", "delegateAuthority", "payer"], ["resource"])
     qlparser.graphql_to_function(CREATE_BURN_RESOURCE_TRANSACTION, ["authority", "owner", "payer", "delegateAuthority"], ["resource"])
-    qlparser.graphql_to_function(CREATE_NEW_USER_TRANSACTION, ["wallet", "payer"], [])
     qlparser.graphql_to_function(CREATE_UNWRAP_HOLDING_TRANSACTION, ["authority", "payer"], [])
     qlparser.graphql_to_function(CreateCreateWrapHoldingTransaction, ["authority", "payer"], [])
     qlparser.graphql_to_function(CreateTransferResourceTransaction, ["owner", "payer"], [])

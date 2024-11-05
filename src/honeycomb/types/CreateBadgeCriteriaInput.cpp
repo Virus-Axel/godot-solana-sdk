@@ -1,6 +1,7 @@
 #include "honeycomb/types/CreateBadgeCriteriaInput.hpp"
 
 namespace godot{
+namespace honeycomb_resource{
 
 void CreateBadgeCriteriaInput::set_projectAddress(const Variant& val){
 this->projectAddress = val;
@@ -60,13 +61,13 @@ return this->condition;
 
 Dictionary CreateBadgeCriteriaInput::to_dict(){
 Dictionary res;
-res["projectAddress"] = Object::cast_to<Pubkey>(projectAddress)->to_dict();
-res["authority"] = Object::cast_to<Pubkey>(authority)->to_dict();
-res["payer"] = Object::cast_to<Pubkey>(payer)->to_dict();
+res["projectAddress"] = Object::cast_to<godot::honeycomb_resource::Pubkey>(projectAddress)->to_dict();
+res["authority"] = Object::cast_to<godot::honeycomb_resource::Pubkey>(authority)->to_dict();
+res["payer"] = Object::cast_to<godot::honeycomb_resource::Pubkey>(payer)->to_dict();
 res["startTime"] = startTime;
 res["endTime"] = endTime;
 res["badgeIndex"] = badgeIndex;
-res["condition"] = Object::cast_to<BadgesCondition>(condition)->to_dict();
+res["condition"] = Object::cast_to<godot::honeycomb_resource::BadgesCondition>(condition)->to_dict();
 return res;
 }
 
@@ -93,4 +94,5 @@ ClassDB::bind_method(D_METHOD("get_condition"), &CreateBadgeCriteriaInput::get_c
 ClassDB::bind_method(D_METHOD("set_condition", "value"), &CreateBadgeCriteriaInput::set_condition);
 ClassDB::add_property("CreateBadgeCriteriaInput", PropertyInfo(Variant::Type::VARIANT, "condition"), "set_condition", "get_condition");
 }
+} // honeycomb_resource
 } // godot

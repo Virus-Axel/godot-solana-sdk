@@ -1,6 +1,7 @@
 #include "honeycomb/types/ServiceDelegationInput.hpp"
 
 namespace godot{
+namespace honeycomb_resource{
 
 void ServiceDelegationInput::set_HiveControl(const Array& val){
 this->HiveControl = val;
@@ -93,4 +94,5 @@ ClassDB::bind_method(D_METHOD("get_BuzzGuild"), &ServiceDelegationInput::get_Buz
 ClassDB::bind_method(D_METHOD("set_BuzzGuild", "value"), &ServiceDelegationInput::set_BuzzGuild);
 ClassDB::add_property("ServiceDelegationInput", PropertyInfo(Variant::Type::ARRAY, "BuzzGuild"), "set_BuzzGuild", "get_BuzzGuild");
 }
+} // honeycomb_resource
 } // godot

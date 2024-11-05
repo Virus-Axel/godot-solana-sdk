@@ -4,6 +4,7 @@
 #include "godot_cpp/core/class_db.hpp"
 
 namespace godot{
+namespace honeycomb_resource{
 
 class ServiceDelegationInput : public Resource{
 GDCLASS(ServiceDelegationInput, Resource)
@@ -34,5 +35,6 @@ Array& get_NectarMissions();
 void set_BuzzGuild(const Array& val);
 Array& get_BuzzGuild();
 };
+} // honeycomb_resource
 } // godot
 #endif

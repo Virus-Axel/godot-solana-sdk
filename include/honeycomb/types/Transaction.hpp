@@ -4,6 +4,7 @@
 #include "godot_cpp/core/class_db.hpp"
 
 namespace godot{
+namespace honeycomb_resource{
 
 class Transaction : public Resource{
 GDCLASS(Transaction, Resource)
@@ -22,5 +23,6 @@ String& get_blockhash();
 void set_lastValidBlockHeight(const int32_t& val);
 int32_t& get_lastValidBlockHeight();
 };
+} // honeycomb_resource
 } // godot
 #endif

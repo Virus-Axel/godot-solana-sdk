@@ -39,3 +39,56 @@ NectarStaking - [ServiceDelegationNectarStaking!]
 NectarMissions - [ServiceDelegationNectarMissions!]
 BuzzGuild - [ServiceDelegationBuzzGuild!]
 """
+
+ProfileDataConfigInput = """
+ProfileDataConfigInput
+achievements - [String!]!
+customDataFields - [String!]!
+"""
+
+UpdateBadgeCriteriaInput = """
+UpdateBadgeCriteriaInput
+projectAddress - Pubkey!
+authority - Pubkey!
+criteriaIndex - Int!
+payer - Pubkey
+startTime - Int
+endTime - Int
+condition - BadgesCondition!
+"""
+
+ClaimBadgeCriteriaInput = """
+ClaimBadgeCriteriaInput
+projectAddress - Pubkey!
+profileAddress - Pubkey!
+payer - Pubkey!
+criteriaIndex - Int!
+proof - BadgesCondition!
+"""
+
+ProfileInfoInput = """
+ProfileInfoInput
+name - String
+bio - String
+pfp - String
+"""
+
+CustomDataInput = """
+CustomDataInput
+add - JSON
+remove - [String!]
+"""
+
+UpdateWalletInput = """
+UpdateWalletInput
+add - [String]
+remove - [String]
+"""
+
+PartialUserInfoInput = """
+PartialUserInfoInput
+username - String
+name - String
+bio - String
+pfp - String
+"""

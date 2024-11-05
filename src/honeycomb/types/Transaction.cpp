@@ -1,6 +1,7 @@
 #include "honeycomb/types/Transaction.hpp"
 
 namespace godot{
+namespace honeycomb_resource{
 
 void Transaction::set_transaction(const PackedByteArray& val){
 this->transaction = val;
@@ -45,4 +46,5 @@ ClassDB::bind_method(D_METHOD("get_lastValidBlockHeight"), &Transaction::get_las
 ClassDB::bind_method(D_METHOD("set_lastValidBlockHeight", "value"), &Transaction::set_lastValidBlockHeight);
 ClassDB::add_property("Transaction", PropertyInfo(Variant::Type::INT, "lastValidBlockHeight"), "set_lastValidBlockHeight", "get_lastValidBlockHeight");
 }
+} // honeycomb_resource
 } // godot

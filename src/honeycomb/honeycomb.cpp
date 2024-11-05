@@ -231,7 +231,7 @@ HoneyComb::HoneyComb(){
     api_request = memnew(HTTPRequest);
     result_tx = memnew(Transaction);
 }
-
+/*
 Variant HoneyComb::create_project(const Variant& authority, const String& name){
     signers.append(authority);
     method_name = "createCreateProjectTransaction";
@@ -295,14 +295,14 @@ void HoneyComb::create_resource(const Variant& project, const Variant& authority
     query_fields = "transaction blockhash lastValidBlockHeight";
 
     send_query();
-}
+}*/
 
 void HoneyComb::bind_non_changing_methods(){
     ClassDB::add_signal("HoneyComb", MethodInfo("transaction_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
 
-    ClassDB::bind_method(D_METHOD("create_project", "authority", "name"), &HoneyComb::create_project);
-    ClassDB::bind_method(D_METHOD("create_user", "user_wallet_key"), &HoneyComb::create_user);
-    ClassDB::bind_method(D_METHOD("create_profile", "project", "payer"), &HoneyComb::create_profile);
+    //ClassDB::bind_method(D_METHOD("create_project", "authority", "name"), &HoneyComb::create_project);
+    //ClassDB::bind_method(D_METHOD("create_user", "user_wallet_key"), &HoneyComb::create_user);
+    //ClassDB::bind_method(D_METHOD("create_profile", "project", "payer"), &HoneyComb::create_profile);
 
     ClassDB::bind_method(D_METHOD("query_response_callback", "result", "response_code", "headers", "body"), &HoneyComb::query_response_callback);
     ClassDB::bind_method(D_METHOD("transaction_response_callback", "response"), &HoneyComb::transaction_response_callback);

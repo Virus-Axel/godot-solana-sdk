@@ -225,28 +225,6 @@ query CreateInitializeRecipeTransaction(
 }
 """
 
-CREATE_NEW_USER_TRANSACTION = """
-query CreateNewUserTransaction(
-  $info: UserInfoInput,
-  $wallet: String!,
-  $payer: String,
-  $lutAddresses: [String!],
-  $computeUnitPrice: Int
-) {
-  createNewUserTransaction(
-    info: $info,
-    wallet: $wallet,
-    payer: $payer,
-    lutAddresses: $lutAddresses,
-    computeUnitPrice: $computeUnitPrice
-  ) {
-    transaction
-    blockhash
-    lastValidBlockHeight
-  }
-}
-"""
-
 CreateInitializeRecipeTransaction = """
 query CreateInitializeRecipeTransaction(
   $project: String!,

@@ -1,6 +1,7 @@
 #include "honeycomb/types/SendTransactionBundlesOptions.hpp"
 
 namespace godot{
+namespace honeycomb_resource{
 
 void SendTransactionBundlesOptions::set_commitment(const String& val){
 this->commitment = val;
@@ -30,7 +31,7 @@ Dictionary SendTransactionBundlesOptions::to_dict(){
 Dictionary res;
 res["commitment"] = commitment;
 res["skipPreflight"] = skipPreflight;
-res["bundles"] = Object::cast_to<TransactionBundlesOptions>(bundles)->to_dict();
+res["bundles"] = Object::cast_to<godot::honeycomb_resource::TransactionBundlesOptions>(bundles)->to_dict();
 return res;
 }
 
@@ -45,4 +46,5 @@ ClassDB::bind_method(D_METHOD("get_bundles"), &SendTransactionBundlesOptions::ge
 ClassDB::bind_method(D_METHOD("set_bundles", "value"), &SendTransactionBundlesOptions::set_bundles);
 ClassDB::add_property("SendTransactionBundlesOptions", PropertyInfo(Variant::Type::VARIANT, "bundles"), "set_bundles", "get_bundles");
 }
+} // honeycomb_resource
 } // godot

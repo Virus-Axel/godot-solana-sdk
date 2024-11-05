@@ -4,6 +4,7 @@
 #include "godot_cpp/core/class_db.hpp"
 
 namespace godot{
+namespace honeycomb_resource{
 
 class ModifyDelegationInput : public Resource{
 GDCLASS(ModifyDelegationInput, Resource)
@@ -19,5 +20,6 @@ Variant& get_delegation();
 void set_index(const int32_t& val);
 int32_t& get_index();
 };
+} // honeycomb_resource
 } // godot
 #endif
