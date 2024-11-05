@@ -92,3 +92,138 @@ name - String
 bio - String
 pfp - String
 """
+
+TreeSetupConfig = """
+TreeSetupConfig
+basic - BasicTreeConfig
+advanced - AdvancedTreeConfig
+"""
+
+UserInfoInput = """
+UserInfoInput
+username - String!
+name - String!
+bio - String!
+pfp - String!
+"""
+
+RecallFromMissionData = """
+RecallFromMissionData
+mission - String!
+characterAddresses - [String!]!
+authority - String!
+payer - String
+"""
+
+CharacterConfigInput = """
+CharacterConfigInput
+kind - String!
+criterias - [NftWrapCriteriaInput!]
+assemblerConfigInput - AssemblerConfigInput
+"""
+
+AddMultiplierMetadataInput = """
+AddMultiplierMetadataInput
+value - BigInt!
+type - MultiplierTypeInput
+"""
+
+UpdateStakingPoolMetadataInput = """
+UpdateStakingPoolMetadataInput
+name - String
+rewardsPerDuration - BigInt
+rewardsDuration - BigInt
+maxRewardsDuration - BigInt
+minStakeDuration - BigInt
+cooldownDuration - BigInt
+resetStakeDuration - Boolean
+startTime - BigInt
+endTime - BigInt
+"""
+
+InitStakingMultiplierMetadataInput = """
+InitStakingMultiplierMetadataInput
+decimals - Int!
+multipliers - [AddMultiplierMetadataInput]!
+"""
+
+CreateStakingPoolMetadataInput = """
+CreateStakingPoolMetadataInput
+name - String!
+rewardsPerDuration - BigInt!
+rewardsDuration - BigInt!
+maxRewardsDuration - BigInt
+minStakeDuration - BigInt
+cooldownDuration - BigInt
+resetStakeDuration - Boolean!
+startTime - BigInt!
+lockType - LockTypeEnum
+endTime - BigInt
+"""
+
+ParticipateOnMissionData = """
+ParticipateOnMissionData
+mission - String!
+characterAddresses - [String!]!
+authority - String!
+payer - String
+"""
+
+UpdateMissionInput = """
+UpdateMissionInput
+cost - NewMissionCost
+minXp - BigInt
+duration - BigInt
+removeRewards - [Int!]
+newRewards - [MissionReward!]
+updateRewards - [MissionReward!]
+"""
+
+NewMissionData = """
+NewMissionData
+project - String!
+missionPool - String!
+authority - String!
+delegateAuthority - String
+payer - String!
+name - String!
+minXp - BigInt!
+cost - NewMissionCost!
+duration - BigInt!
+rewards - [MissionReward]!
+"""
+
+UpdateMissionPoolData = """
+UpdateMissionPoolData
+project - String!
+missionPool - String!
+characterModel - String
+authority - String!
+delegateAuthority - String
+payer - String!
+"""
+
+NewMissionPoolData = """
+NewMissionPoolData
+project - String!
+authority - String!
+delegateAuthority - String
+payer - String!
+characterModel - String!
+name - String!
+"""
+
+MealInput = """
+MealInput
+resourceAddress - String!
+amount - BigInt!
+"""
+
+InitResourceInput = """
+InitResourceInput
+name - String!
+symbol - String!
+uri - String!
+decimals - Int!
+storage - ResourceStorageEnum!
+"""

@@ -14,76 +14,9 @@ enum ResourceStorageEnum{
     LedgerState = 1,
 };
 
-class InitResourceInput: public Resource{
-GDCLASS(InitResourceInput, Resource)
-private:
-    String resource_name = "";
-    String symbol = "";
-    String uri = "";
-    int32_t decimals = 0;
-    ResourceStorageEnum storage = AccountState;
-protected:
-    static void _bind_methods();
-public:
-    void set_resource_name(const String& resource_name);
-    String get_resource_name();
-    void set_symbol(const String& symbol);
-    String get_symbol();
-    void set_uri(const String& uri);
-    String get_uri();
-    void set_decimals(int32_t decimals);
-    int32_t get_decimals();
-    void set_storage(int32_t storage);
-    int32_t get_storage();
-
-    Dictionary to_dict();
-};
-
-
-class UserInfoInput: public Resource{
-GDCLASS(UserInfoInput, Resource)
-private:
-    String username = "";
-    String real_name = "";
-    String bio = "";
-    String pfp = "";
-protected:
-    static void _bind_methods();
-public:
-    Dictionary to_dict();
-};
-
-
-class BasicTreeConfig : public Resource{
-GDCLASS(BasicTreeConfig, Resource)
-private:
-    int32_t num_assets = 0;
-protected:
-    static void _bind_methods();
-public:
-};
-
-class AdvancedTreeConfig : public Resource{
-GDCLASS(AdvancedTreeConfig, Resource)
-private:
-    int32_t max_depth = 0;
-    int32_t max_buffer_size = 0;
-    int32_t canopy_depth = 0;
-protected:
-    static void _bind_methods();
-public:
-    Dictionary to_dict();
-};
-
-class TreeSetupConfig : public Resource{
-GDCLASS(TreeSetupConfig, Resource)
-private:
-    Variant basic;
-    Variant advanced;
-protected:
-    static void _bind_methods();
-public:
-    Dictionary to_dict();
+enum LockTypeEnum{
+    Freeze = 0,
+    Custoday = 1,
 };
 
 class HoneyComb: public Node{

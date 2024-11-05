@@ -12,6 +12,21 @@
 #include "honeycomb/types/CustomDataInput.hpp"
 #include "honeycomb/types/UpdateWalletInput.hpp"
 #include "honeycomb/types/PartialUserInfoInput.hpp"
+#include "honeycomb/types/TreeSetupConfig.hpp"
+#include "honeycomb/types/UserInfoInput.hpp"
+#include "honeycomb/types/RecallFromMissionData.hpp"
+#include "honeycomb/types/CharacterConfigInput.hpp"
+#include "honeycomb/types/AddMultiplierMetadataInput.hpp"
+#include "honeycomb/types/UpdateStakingPoolMetadataInput.hpp"
+#include "honeycomb/types/InitStakingMultiplierMetadataInput.hpp"
+#include "honeycomb/types/CreateStakingPoolMetadataInput.hpp"
+#include "honeycomb/types/ParticipateOnMissionData.hpp"
+#include "honeycomb/types/UpdateMissionInput.hpp"
+#include "honeycomb/types/NewMissionData.hpp"
+#include "honeycomb/types/UpdateMissionPoolData.hpp"
+#include "honeycomb/types/NewMissionPoolData.hpp"
+#include "honeycomb/types/MealInput.hpp"
+#include "honeycomb/types/InitResourceInput.hpp"
 namespace godot{
 
 Variant HoneyComb::createCreateNewResourceTransaction(const Variant& project, const Variant& authority, Variant params, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
@@ -779,7 +794,7 @@ Variant HoneyComb::createRemoveCharacterTraitsTransactions(const Variant& assemb
 	return OK;
 }
 
-Variant HoneyComb::createCreateCharacterModelTransaction(Variant config, const Variant& project, const Variant& authority, Variant attributes, const Variant& payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateCharacterModelTransaction(Variant config, const Variant& project, const Variant& authority, Array attributes, const Variant& payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
 	if(pending){
 		return ERR_BUSY;
 	}
@@ -789,8 +804,8 @@ Variant HoneyComb::createCreateCharacterModelTransaction(Variant config, const V
 	add_arg("config", "CharacterConfigInput", Object::cast_to<godot::honeycomb_resource::CharacterConfigInput>(config)->to_dict(), false);
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
-	if(attributes != Variant(nullptr)){
-		add_arg("attributes", "VecMapGeneric", Object::cast_to<godot::honeycomb_resource::VecMapGeneric>(attributes)->to_dict(), true);
+	if(attributes != Array()){
+		add_arg("attributes", "VecMapGeneric", attributes, true);
 	}
 	if(payer != Variant(nullptr)){
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
@@ -841,13 +856,13 @@ Variant HoneyComb::createCreateCharactersTreeTransaction(Variant treeConfig, con
 	return OK;
 }
 
-Variant HoneyComb::createAssembleCharacterTransaction(Variant attributes, const Variant& project, const Variant& assemblerConfig, const Variant& characterModel, const Variant& charactersTree, const Variant& wallet, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createAssembleCharacterTransaction(Array attributes, const Variant& project, const Variant& assemblerConfig, const Variant& characterModel, const Variant& charactersTree, const Variant& wallet, PackedStringArray lutAddresses, int32_t computeUnitPrice){
 	if(pending){
 		return ERR_BUSY;
 	}
 	signers.append(wallet);
 
-	add_arg("attributes", "VecMapGeneric", Object::cast_to<godot::honeycomb_resource::VecMapGeneric>(attributes)->to_dict(), false);
+	add_arg("attributes", "VecMapGeneric", attributes, false);
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("assemblerConfig", "String", Pubkey::string_from_variant(assemblerConfig), false);
 	add_arg("characterModel", "String", Pubkey::string_from_variant(characterModel), false);
@@ -869,14 +884,14 @@ Variant HoneyComb::createAssembleCharacterTransaction(Variant attributes, const 
 	return OK;
 }
 
-Variant HoneyComb::createUpdateCharacterTraitsTransaction(const Variant& characterAddress, Variant attributes, const Variant& project, const Variant& assemblerConfig, const Variant& characterModel, const Variant& charactersTree, const Variant& wallet, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createUpdateCharacterTraitsTransaction(const Variant& characterAddress, Array attributes, const Variant& project, const Variant& assemblerConfig, const Variant& characterModel, const Variant& charactersTree, const Variant& wallet, PackedStringArray lutAddresses, int32_t computeUnitPrice){
 	if(pending){
 		return ERR_BUSY;
 	}
 	signers.append(wallet);
 
 	add_arg("characterAddress", "String", Pubkey::string_from_variant(characterAddress), false);
-	add_arg("attributes", "VecMapGeneric", Object::cast_to<godot::honeycomb_resource::VecMapGeneric>(attributes)->to_dict(), false);
+	add_arg("attributes", "VecMapGeneric", attributes, false);
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("assemblerConfig", "String", Pubkey::string_from_variant(assemblerConfig), false);
 	add_arg("characterModel", "String", Pubkey::string_from_variant(characterModel), false);
@@ -898,7 +913,7 @@ Variant HoneyComb::createUpdateCharacterTraitsTransaction(const Variant& charact
 	return OK;
 }
 
-Variant HoneyComb::createPopulateAssembleablCharacterTransaction(Variant attributes, const Variant& project, const Variant& characterModel, const Variant& charactersTree, const Variant& mint, const Variant& owner, const Variant& updateAuthority, const Variant& payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createPopulateAssembleablCharacterTransaction(Array attributes, const Variant& project, const Variant& characterModel, const Variant& charactersTree, const Variant& mint, const Variant& owner, const Variant& updateAuthority, const Variant& payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
 	if(pending){
 		return ERR_BUSY;
 	}
@@ -906,7 +921,7 @@ Variant HoneyComb::createPopulateAssembleablCharacterTransaction(Variant attribu
 	signers.append(updateAuthority);
 	signers.append(payer);
 
-	add_arg("attributes", "VecMapGeneric", Object::cast_to<godot::honeycomb_resource::VecMapGeneric>(attributes)->to_dict(), false);
+	add_arg("attributes", "VecMapGeneric", attributes, false);
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("characterModel", "String", Pubkey::string_from_variant(characterModel), false);
 	add_arg("charactersTree", "String", Pubkey::string_from_variant(charactersTree), false);
@@ -1559,7 +1574,7 @@ void HoneyComb::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("unstake_characters_t", "characterAddresses", "characterModel", "feePayer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUnstakeCharactersTransactions, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("add_character_traits_t", "assemblerConfig", "traits", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createAddCharacterTraitsTransactions, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("remove_character_traits_t", "assemblerConfig", "traitsAddresses", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createRemoveCharacterTraitsTransactions, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_character_model", "config", "project", "authority", "attributes", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateCharacterModelTransaction, DEFVAL(Variant(nullptr)), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_character_model", "config", "project", "authority", "attributes", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateCharacterModelTransaction, DEFVAL(Array()), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_characters_tree", "treeConfig", "project", "characterModel", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateCharactersTreeTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("assemble_character", "attributes", "project", "assemblerConfig", "characterModel", "charactersTree", "wallet", "lutAddresses", "computeUnitPrice"), &HoneyComb::createAssembleCharacterTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("update_character_traits", "characterAddress", "attributes", "project", "assemblerConfig", "characterModel", "charactersTree", "wallet", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUpdateCharacterTraitsTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));

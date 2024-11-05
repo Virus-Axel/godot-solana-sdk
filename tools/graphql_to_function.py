@@ -26,6 +26,7 @@ QL_TO_VARIANT = {
    "String!": "String",
    "[String!]": "PackedStringArray",
    "[String]": "PackedStringArray",
+   "[Int!]": "PackedInt32Array",
    "BigInt": "int64_t",
    "Int": "int32_t",
    "InitResourceInput": "Variant",
@@ -52,7 +53,7 @@ QL_TO_VARIANT = {
    "AddMultiplierMetadataInput": "Variant",
    "[CharacterTraitInput!]": "Array",
    "CharacterConfigInput": "Variant",
-   "VecMapGeneric": "Variant",
+   "VecMapGeneric": "Array",
    "RecallFromMissionData": "Variant",
    "[Bytes!]": "Array",
    "Bytes": "PackedByteArray",
@@ -74,7 +75,17 @@ QL_TO_VARIANT = {
    "[ServiceDelegationNectarStaking!]": "Array",
    "[ServiceDelegationNectarMissions!]": "Array",
    "[ServiceDelegationBuzzGuild!]": "Array",
+   "[NftWrapCriteriaInput!]": "Array",
    "JSON": "Dictionary",
+   "BasicTreeConfig": "Variant",
+   "AdvancedTreeConfig": "Variant",
+   "AssemblerConfigInput": "Variant",
+   "MultiplierTypeInput": "Variant",
+   "LockTypeEnum": "int32_t",
+   "ResourceStorageEnum": "int32_t",
+   "NewMissionCost": "Variant",
+   "[MissionReward!]": "Array",
+   "[MissionReward]": "Array",
 }
 
 GODOT_TYPE_DEFVAL = {
@@ -90,8 +101,10 @@ GODOT_TYPE_DEFVAL = {
 GODOT_VARIANT_ENUM_TYPE = {
   "bool": "BOOL",
   "int32_t": "INT",
+  "int64_t": "INT",
   "String": "STRING",
   "PackedByteArray": "PACKED_BYTE_ARRAY",
+  "PackedInt32Array": "PACKED_INT32_ARRAY",
   "PackedStringArray": "PACKED_STRING_ARRAY",
   "Variant": "VARIANT",
   "Array": "ARRAY",
@@ -558,8 +571,23 @@ def main():
     qlparser.graphql_to_type(CustomDataInput)
     qlparser.graphql_to_type(UpdateWalletInput)
     qlparser.graphql_to_type(PartialUserInfoInput)
-    
-    
+    qlparser.graphql_to_type(TreeSetupConfig)
+    qlparser.graphql_to_type(UserInfoInput)
+    qlparser.graphql_to_type(RecallFromMissionData)
+    qlparser.graphql_to_type(CharacterConfigInput)
+    qlparser.graphql_to_type(AddMultiplierMetadataInput)
+    qlparser.graphql_to_type(UpdateStakingPoolMetadataInput)
+    qlparser.graphql_to_type(InitStakingMultiplierMetadataInput)
+    qlparser.graphql_to_type(CreateStakingPoolMetadataInput)
+    qlparser.graphql_to_type(ParticipateOnMissionData)
+    qlparser.graphql_to_type(UpdateMissionInput)
+    qlparser.graphql_to_type(NewMissionData)
+    qlparser.graphql_to_type(UpdateMissionPoolData)
+    qlparser.graphql_to_type(NewMissionPoolData)
+    qlparser.graphql_to_type(MealInput)
+    qlparser.graphql_to_type(InitResourceInput)
+
+
   
     qlparser.graphql_to_function(CREATE_NEW_RESOURCE, ["authority", "."], ["project"])
     qlparser.graphql_to_function(CREATE_NEW_RESOURCE_TREE, ["authority", "delegateAuthority", "payer"], ["project", "resource"])
