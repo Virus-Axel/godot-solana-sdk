@@ -2,12 +2,21 @@
 
 import os
 import platform
+from docs.xml_to_header import doxy_to_header, get_classes_list
 
 CONTAINER_BUILD_PATH = "build-containers"
 CONTAINER_NAME = "godot-solana-sdk-container"
 LIBRARY_NAME = "godot-solana-sdk"
 IPHONE_SDK_VERSION = 17.0
 IOS_OSXCROSS_TRIPPLE = 23
+
+DOC_HEADER_NAME = "include/doc_data_godot-solana-sdk.gen.h"
+
+
+def build_docs(env):
+    class_list = get_classes_list("docs/xml")
+    doxy_to_header(class_list, DOC_HEADER_NAME)
+
 
 def set_tmp_dir(platform, target):
     dir_name = f".godot/build_files/{platform}/{target}/"
@@ -155,6 +164,8 @@ if env.GetOption('container_build'):
     exit(0)
 
 else:
+
+    build_docs(env)
 
     set_tmp_dir(env["platform"], env["target"])
     if env["platform"] == "ios" and platform.system() != "Darwin":

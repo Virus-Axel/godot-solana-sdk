@@ -26,6 +26,9 @@ test-ledger/
 .vscode/
 .godot/
 
+__pycache__/
+*.pyc
+
 # Doxygen
 docs/html/
 docs/xml/

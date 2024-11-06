@@ -6,6 +6,7 @@
 
 
 namespace godot{
+
 class Hash : public Resource {
     GDCLASS(Hash, Resource)
 

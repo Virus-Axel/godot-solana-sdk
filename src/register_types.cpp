@@ -38,6 +38,9 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/engine.hpp>
 
+#include "doc_data_godot-solana-sdk.gen.h"
+
+
 using namespace godot;
 
 void add_setting(const String& name, Variant::Type type, Variant default_value, PropertyHint hint = PropertyHint::PROPERTY_HINT_NONE, const String& hint_string = ""){
@@ -58,6 +61,10 @@ void add_setting(const String& name, Variant::Type type, Variant default_value, 
 }
 
 void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
+    if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen editor_help_load_xml_from_utf8_chars_and_len = (GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen)internal::gdextension_interface_get_proc_address("editor_help_load_xml_from_utf8_chars_and_len");
+        editor_help_load_xml_from_utf8_chars_and_len(_doc_data, _doc_data_size);
+	}
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
         return;
     }
@@ -118,6 +125,7 @@ void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 extern "C" {
 // Initialization.
 GDExtensionBool GDE_EXPORT solana_sdk_library_init(const GDExtensionInterfaceGetProcAddress interface, const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
+
     godot::GDExtensionBinding::InitObject init_obj(interface, p_library, r_initialization);
 
     init_obj.register_initializer(initialize_solana_sdk_module);
