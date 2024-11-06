@@ -1,5 +1,5 @@
-Transaction = """
-Transaction
+HoneycombTransaction = """
+HoneycombTransaction
 transaction - Bytes!
 blockhash - String!
 lastValidBlockHeight - Int!

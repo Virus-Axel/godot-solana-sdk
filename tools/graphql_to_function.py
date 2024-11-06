@@ -349,9 +349,12 @@ class GQLParse:
     #temp_optional_args.reverse()
 
     for optional_arg in temp_optional_args:
-      (_arg_name, arg_type) = optional_arg
+      (arg_name, arg_type) = optional_arg
       godot_type = QL_TO_VARIANT[arg_type]
-      result_string += f'DEFVAL({GODOT_TYPE_DEFVAL[godot_type]}), '
+      if arg_name in self.signers or arg_name in self.non_signers:
+        result_string += f'DEFVAL({GODOT_TYPE_DEFVAL["Variant"]}), '
+      else:
+        result_string += f'DEFVAL({GODOT_TYPE_DEFVAL[godot_type]}), '
 
     if self.optional_args:
       result_string = result_string[0:-2]
@@ -386,9 +389,12 @@ class GQLParse:
     for required_arg in self.required_args:
       result_string += f'{self.print_function_param(required_arg)}, '
     for optional_arg in self.optional_args:
-      (_arg_name, arg_type) = optional_arg
+      (arg_name, arg_type) = optional_arg
       godot_type = QL_TO_VARIANT[arg_type]
-      result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL[godot_type]}, '
+      if arg_name in self.signers or arg_name in self.non_signers:
+        result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL["Variant"]}, '
+      else:
+        result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL[godot_type]}, '
 
     if self.required_args or self.optional_args:
       result_string = result_string[0:-2]
@@ -402,7 +408,10 @@ class GQLParse:
       if signer == ".":
           result_string += f"\tsigners.append({SERVER_SIGNER});\n"
       else:
-          result_string += f"\tsigners.append({signer});\n"
+          result_string += f'\tif({signer}.get_type() != Variant::NIL)'
+          result_string += "{\n"
+          result_string += f"\t\tsigners.append({signer});\n"
+          result_string += "\t}\n"
     return result_string
 
 
@@ -601,7 +610,7 @@ def main():
     print(args.out_cpp_directory)
 
     qlparser = GQLParse()
-    qlparser.graphql_to_type(Transaction)
+    qlparser.graphql_to_type(HoneycombTransaction)
     qlparser.graphql_to_type(SendTransactionBundlesOptions)
     qlparser.graphql_to_type(CreateBadgeCriteriaInput)
     qlparser.graphql_to_type(ModifyDelegationInput)

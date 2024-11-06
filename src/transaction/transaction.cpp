@@ -548,6 +548,11 @@ void Transaction::send(){
 
     PackedByteArray serialized_bytes = serialize();
 
+    for(int i = 0; i < serialized_bytes.size(); i++){
+        std::cout << (int)serialized_bytes[i] << ", ";
+    }
+    std::cout << std::endl;
+
     Callable pending_blockhash_callback(this, "send");
     if(pending_blockhash){
         Callable pending_blockhash_callback(this, "send");

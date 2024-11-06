@@ -11,6 +11,10 @@ void HoneyComb::query_response_callback(int result, int response_code, const Pac
     Dictionary response = JSON::parse_string(body.get_string_from_ascii());
     std::cout << body.get_string_from_ascii().ascii() << std::endl;
 
+    if(response["data"].get_type() != Variant::DICTIONARY){
+        ERR_FAIL_EDMSG("Error in request, check console logs");
+    }
+
     Dictionary method_response = ((Dictionary)response["data"])[method_name];
     String encoded_transaction = "";
     if (method_response.has("tx")){
@@ -77,7 +81,7 @@ void HoneyComb::send_query(){
     add_child(api_request);
     child = api_request;
     pending = true;
-    std::cout << "hony request: " << build().ascii() << std::endl;
+    std::cout << "honey request: " << build().ascii() << std::endl;
     api_request->request(HONEYCOMB_URL, headers, HTTPClient::METHOD_POST, build());
 }
 

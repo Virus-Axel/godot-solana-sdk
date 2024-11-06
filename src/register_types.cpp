@@ -39,7 +39,7 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/engine.hpp>
 
-#include "honeycomb/types/Transaction.hpp"
+#include "honeycomb/types/HoneycombTransaction.hpp"
 #include "honeycomb/types/SendTransactionBundlesOptions.hpp"
 #include "honeycomb/types/CreateBadgeCriteriaInput.hpp"
 #include "honeycomb/types/ModifyDelegationInput.hpp"
