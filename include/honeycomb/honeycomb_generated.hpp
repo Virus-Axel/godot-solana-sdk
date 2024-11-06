@@ -50,3 +50,45 @@
 	Variant createCreateAssemblerConfigTransaction(Variant treeConfig, String ticker, PackedStringArray order, const Variant& project, const Variant& authority, const Variant& payer = "", PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);\
 	Variant createInitializeBadgeCriteriaTransaction(Variant args, PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);
 
+#define REGISTER_HONEYCOMB_TYPES ClassDB::register_class<honeycomb_resource::Transaction>(); \
+ClassDB::register_class<honeycomb_resource::SendTransactionBundlesOptions>(); \
+ClassDB::register_class<honeycomb_resource::CreateBadgeCriteriaInput>(); \
+ClassDB::register_class<honeycomb_resource::ModifyDelegationInput>(); \
+ClassDB::register_class<honeycomb_resource::ServiceDelegationInput>(); \
+ClassDB::register_class<honeycomb_resource::ProfileDataConfigInput>(); \
+ClassDB::register_class<honeycomb_resource::UpdateBadgeCriteriaInput>(); \
+ClassDB::register_class<honeycomb_resource::ClaimBadgeCriteriaInput>(); \
+ClassDB::register_class<honeycomb_resource::ProfileInfoInput>(); \
+ClassDB::register_class<honeycomb_resource::CustomDataInput>(); \
+ClassDB::register_class<honeycomb_resource::UpdateWalletInput>(); \
+ClassDB::register_class<honeycomb_resource::PartialUserInfoInput>(); \
+ClassDB::register_class<honeycomb_resource::TreeSetupConfig>(); \
+ClassDB::register_class<honeycomb_resource::UserInfoInput>(); \
+ClassDB::register_class<honeycomb_resource::RecallFromMissionData>(); \
+ClassDB::register_class<honeycomb_resource::CharacterConfigInput>(); \
+ClassDB::register_class<honeycomb_resource::AddMultiplierMetadataInput>(); \
+ClassDB::register_class<honeycomb_resource::UpdateStakingPoolMetadataInput>(); \
+ClassDB::register_class<honeycomb_resource::InitStakingMultiplierMetadataInput>(); \
+ClassDB::register_class<honeycomb_resource::CreateStakingPoolMetadataInput>(); \
+ClassDB::register_class<honeycomb_resource::ParticipateOnMissionData>(); \
+ClassDB::register_class<honeycomb_resource::UpdateMissionInput>(); \
+ClassDB::register_class<honeycomb_resource::NewMissionData>(); \
+ClassDB::register_class<honeycomb_resource::UpdateMissionPoolData>(); \
+ClassDB::register_class<honeycomb_resource::NewMissionPoolData>(); \
+ClassDB::register_class<honeycomb_resource::MealInput>(); \
+ClassDB::register_class<honeycomb_resource::InitResourceInput>(); \
+ClassDB::register_class<honeycomb_resource::MultiplierTypeInput>(); \
+ClassDB::register_class<honeycomb_resource::AssemblerConfigInput>(); \
+ClassDB::register_class<honeycomb_resource::ModifyServiceDelegationInput>(); \
+ClassDB::register_class<honeycomb_resource::ServiceDelegationHiveControl>(); \
+ClassDB::register_class<honeycomb_resource::TransactionBundlesOptions>(); \
+ClassDB::register_class<honeycomb_resource::ServiceDelegationAssetAssembler>(); \
+ClassDB::register_class<honeycomb_resource::NewMissionCost>(); \
+ClassDB::register_class<honeycomb_resource::ServiceDelegationAssetManager>(); \
+ClassDB::register_class<honeycomb_resource::ServiceDelegationCurrencyManager>(); \
+ClassDB::register_class<honeycomb_resource::ServiceDelegationNectarStaking>(); \
+ClassDB::register_class<honeycomb_resource::ServiceDelegationNectarMissions>(); \
+ClassDB::register_class<honeycomb_resource::ServiceDelegationBuzzGuild>(); \
+ClassDB::register_class<honeycomb_resource::BasicTreeConfig>(); \
+ClassDB::register_class<honeycomb_resource::AdvancedTreeConfig>(); 
+

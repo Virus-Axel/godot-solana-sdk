@@ -10,7 +10,6 @@ namespace honeycomb_resource{
 class UserInfoInput : public Resource{
 GDCLASS(UserInfoInput, Resource)
 private:
-String username;
 String name;
 String bio;
 String pfp;
@@ -18,8 +17,6 @@ protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
-void set_username(const String& val);
-String get_username();
 void set_name(const String& val);
 String get_name();
 void set_bio(const String& val);

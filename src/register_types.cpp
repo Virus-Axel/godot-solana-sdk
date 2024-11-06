@@ -30,6 +30,7 @@
 #include "address_lookup_table.hpp"
 #include "shdwdrive.hpp"
 #include "honeycomb/honeycomb.hpp"
+#include "honeycomb/honeycomb_generated.hpp"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -37,6 +38,48 @@
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/engine.hpp>
+
+#include "honeycomb/types/Transaction.hpp"
+#include "honeycomb/types/SendTransactionBundlesOptions.hpp"
+#include "honeycomb/types/CreateBadgeCriteriaInput.hpp"
+#include "honeycomb/types/ModifyDelegationInput.hpp"
+#include "honeycomb/types/ServiceDelegationInput.hpp"
+#include "honeycomb/types/ProfileDataConfigInput.hpp"
+#include "honeycomb/types/UpdateBadgeCriteriaInput.hpp"
+#include "honeycomb/types/ClaimBadgeCriteriaInput.hpp"
+#include "honeycomb/types/ProfileInfoInput.hpp"
+#include "honeycomb/types/CustomDataInput.hpp"
+#include "honeycomb/types/UpdateWalletInput.hpp"
+#include "honeycomb/types/PartialUserInfoInput.hpp"
+#include "honeycomb/types/TreeSetupConfig.hpp"
+#include "honeycomb/types/UserInfoInput.hpp"
+#include "honeycomb/types/RecallFromMissionData.hpp"
+#include "honeycomb/types/CharacterConfigInput.hpp"
+#include "honeycomb/types/AddMultiplierMetadataInput.hpp"
+#include "honeycomb/types/UpdateStakingPoolMetadataInput.hpp"
+#include "honeycomb/types/InitStakingMultiplierMetadataInput.hpp"
+#include "honeycomb/types/CreateStakingPoolMetadataInput.hpp"
+#include "honeycomb/types/ParticipateOnMissionData.hpp"
+#include "honeycomb/types/UpdateMissionInput.hpp"
+#include "honeycomb/types/NewMissionData.hpp"
+#include "honeycomb/types/UpdateMissionPoolData.hpp"
+#include "honeycomb/types/NewMissionPoolData.hpp"
+#include "honeycomb/types/MealInput.hpp"
+#include "honeycomb/types/InitResourceInput.hpp"
+#include "honeycomb/types/MultiplierTypeInput.hpp"
+#include "honeycomb/types/AssemblerConfigInput.hpp"
+#include "honeycomb/types/ModifyServiceDelegationInput.hpp"
+#include "honeycomb/types/ServiceDelegationHiveControl.hpp"
+#include "honeycomb/types/TransactionBundlesOptions.hpp"
+#include "honeycomb/types/ServiceDelegationAssetAssembler.hpp"
+#include "honeycomb/types/NewMissionCost.hpp"
+#include "honeycomb/types/ServiceDelegationAssetManager.hpp"
+#include "honeycomb/types/ServiceDelegationCurrencyManager.hpp"
+#include "honeycomb/types/ServiceDelegationNectarStaking.hpp"
+#include "honeycomb/types/ServiceDelegationNectarMissions.hpp"
+#include "honeycomb/types/ServiceDelegationBuzzGuild.hpp"
+#include "honeycomb/types/BasicTreeConfig.hpp"
+#include "honeycomb/types/AdvancedTreeConfig.hpp"
 
 using namespace godot;
 
@@ -100,6 +143,8 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<RpcSingleHttpRequestClient>();
     ClassDB::register_class<RpcMultiHttpRequestClient>();
     ClassDB::register_class<HoneyComb>();
+
+    REGISTER_HONEYCOMB_TYPES
 
     add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
     add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, 443);

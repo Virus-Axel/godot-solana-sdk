@@ -463,6 +463,13 @@ class GQLParse:
     #result += "};\n"
     #result += "} // godot"
 
+    result += "#define REGISTER_HONEYCOMB_TYPES "
+    includes = ""
+    for type in self.types:
+      includes += f'#include "honeycomb/types/{type["classname"]}.hpp"\n'
+      result += f'ClassDB::register_class<honeycomb_resource::{type["classname"]}>(); \\\n'
+    result = result[:-2] + "\n\n"
+    print(includes)
     return result
 
   def print_resource_hpp_file(self, index):

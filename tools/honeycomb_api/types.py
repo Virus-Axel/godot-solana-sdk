@@ -101,7 +101,6 @@ advanced - AdvancedTreeConfig
 
 UserInfoInput = """
 UserInfoInput
-username - String!
 name - String!
 bio - String!
 pfp - String!
