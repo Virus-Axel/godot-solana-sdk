@@ -33,7 +33,7 @@ const char* SIGN_TRANSACTION_SCRIPT = "\
     const { solflare } = window;\
     try{\
       var tx = Module.solanaWeb3.Transaction.from(Module.serialized_message);\
-      await solflare.signTransaction(tx);\
+      tx = await solflare.signTransaction(tx);\
       Module.message_signature = tx.signatures[{0}].signature;\
       if(Module.message_signature == null){\
         Module.wallet_status = -1;\
@@ -51,7 +51,6 @@ const char* SIGN_TRANSACTION_SCRIPT = "\
 ";
 
 const char* CONNECT_SCRIPT = "\
-    console.log(Module.solanaWeb3);\
     Module.wallet_status = 0;\
     async function checkIfWalletIsConnected() {\
     try{\
@@ -67,7 +66,6 @@ const char* CONNECT_SCRIPT = "\
       }\
       }\
       catch (error){\
-        console.error(error);\
         Module.wallet_status = -1;\
       }\
     }\
