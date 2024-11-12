@@ -80,6 +80,7 @@
 #include "honeycomb/types/ServiceDelegationBuzzGuild.hpp"
 #include "honeycomb/types/BasicTreeConfig.hpp"
 #include "honeycomb/types/AdvancedTreeConfig.hpp"
+#include "honeycomb/types/AssociatedProgramInput.hpp"
 
 using namespace godot;
 

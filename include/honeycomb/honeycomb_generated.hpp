@@ -90,5 +90,6 @@ ClassDB::register_class<honeycomb_resource::ServiceDelegationNectarStaking>(); \
 ClassDB::register_class<honeycomb_resource::ServiceDelegationNectarMissions>(); \
 ClassDB::register_class<honeycomb_resource::ServiceDelegationBuzzGuild>(); \
 ClassDB::register_class<honeycomb_resource::BasicTreeConfig>(); \
-ClassDB::register_class<honeycomb_resource::AdvancedTreeConfig>(); 
+ClassDB::register_class<honeycomb_resource::AdvancedTreeConfig>(); \
+ClassDB::register_class<honeycomb_resource::AssociatedProgramInput>(); 
 

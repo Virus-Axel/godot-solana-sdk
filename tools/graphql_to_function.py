@@ -102,6 +102,7 @@ QL_TO_VARIANT = {
    "ServiceDelegationNectarStaking": "Variant",
    "ServiceDelegationNectarMissions": "Variant",
    "ServiceDelegationBuzzGuild": "Variant",
+   "[SerializableActionsInput!]": "Array",
 }
 
 GODOT_TYPE_DEFVAL = {
@@ -651,8 +652,7 @@ def main():
     qlparser.graphql_to_type(ServiceDelegationBuzzGuild)
     qlparser.graphql_to_type(BasicTreeConfig)
     qlparser.graphql_to_type(AdvancedTreeConfig)
-    
-    
+    qlparser.graphql_to_type(AssociatedProgramInput)
 
   
     qlparser.graphql_to_function(CREATE_NEW_RESOURCE, ["authority", "."], ["project"])

@@ -321,3 +321,9 @@ maxDepth - Int!
 maxBufferSize - Int!
 canopyDepth - Int!
 """
+
+AssociatedProgramInput = """
+AssociatedProgramInput
+address - String!
+trustedActions - [SerializableActionsInput!]!
+"""

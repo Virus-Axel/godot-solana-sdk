@@ -41,6 +41,7 @@
 #include "honeycomb/types/ServiceDelegationBuzzGuild.hpp"
 #include "honeycomb/types/BasicTreeConfig.hpp"
 #include "honeycomb/types/AdvancedTreeConfig.hpp"
+#include "honeycomb/types/AssociatedProgramInput.hpp"
 namespace godot{
 
 Variant HoneyComb::createCreateNewResourceTransaction(const Variant& project, const Variant& authority, Variant params, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
@@ -1264,11 +1265,9 @@ Variant HoneyComb::createNewUserTransaction(const Variant& wallet, Variant info,
 		return ERR_BUSY;
 	}
 	if(wallet.get_type() != Variant::NIL){
-		std::cout << "HWHW" << std::endl;
 		signers.append(wallet);
 	}
 	if(payer.get_type() != Variant::NIL){
-		std::cout << "HOHO" << std::endl;
 		signers.append(payer);
 	}
 
