@@ -13,3 +13,6 @@
 [submodule "GodotSolanaSDKDemoPackage"]
 	path = GodotSolanaSDKDemoPackage
 	url = git@github.com:ZenRepublic/GodotSolanaSDKDemoPackage.git
+[submodule "doctest"]
+	path = doctest
+	url = git@github.com:doctest/doctest.git

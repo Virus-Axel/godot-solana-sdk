@@ -206,3 +206,21 @@ else:
         )
 
     Default(library)
+
+    # Define the 'test' target
+
+    include_dirs = ["doctest/doctest", "include"]
+    test_env = env
+    test_env.Append(CPPPATH=include_dirs)
+
+    test_dir = "test"
+    test_bin = "bin"
+    test_cpp_file = File(f"{test_dir}/test.cpp")
+    test_target = test_env.Program(source=test_cpp_file, target=f"{test_dir}/{test_bin}/test")
+
+    # Define a target to run the program
+    run_test = test_env.Command("run_test", test_target, test_env.Action(test_target[0].abspath))
+
+    Depends(run_test, test_target)
+    AlwaysBuild(run_test)
+    Alias("test", run_test)
