@@ -7,6 +7,21 @@
 
 namespace godot{
 
+void HoneyComb::fetch_type_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body){
+    Dictionary response = JSON::parse_string(body.get_string_from_ascii());
+    std::cout << body.get_string_from_ascii().ascii() << std::endl;
+
+    if(response["data"].get_type() != Variant::DICTIONARY){
+        ERR_FAIL_EDMSG("Error in request, check console logs");
+    }
+
+    Dictionary method_response = ((Dictionary)response["data"])[method_name];
+    Array params;
+    params.append(method_response);
+
+    type_fetched_callback->callv(params);
+}
+
 void HoneyComb::query_response_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body){
     Dictionary response = JSON::parse_string(body.get_string_from_ascii());
     std::cout << body.get_string_from_ascii().ascii() << std::endl;
@@ -71,9 +86,23 @@ void HoneyComb::transaction_response_callback(const Dictionary& response){
 
 
 void HoneyComb::send_query(){
-    const String HONEYCOMB_URL = "https://edge.test.honeycombprotocol.com/";
 
     Callable callback = Callable(this, "query_response_callback");
+    api_request->connect("request_completed", callback);
+
+    PackedStringArray headers;
+    headers.append("content-type: application/json");
+    add_child(api_request);
+    child = api_request;
+    pending = true;
+    std::cout << "honey request: " << build().ascii() << std::endl;
+    api_request->request(HONEYCOMB_URL, headers, HTTPClient::METHOD_POST, build());
+}
+
+void HoneyComb::fetch_type(Callable type_fetched_callback){
+    *(this->type_fetched_callback) = type_fetched_callback;
+
+    Callable callback = Callable(this, "fetch_type_callback");
     api_request->connect("request_completed", callback);
 
     PackedStringArray headers;
@@ -147,6 +176,7 @@ void HoneyComb::add_arg(const String& name, const String& type_name, const Varia
 HoneyComb::HoneyComb(){
     api_request = memnew(HTTPRequest);
     result_tx = memnew(Transaction);
+    type_fetched_callback = memnew(Callable);
 }
 /*
 Variant HoneyComb::create_project(const Variant& authority, const String& name){

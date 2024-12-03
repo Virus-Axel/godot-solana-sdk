@@ -1736,6 +1736,29 @@ Variant HoneyComb::createInitializeBadgeCriteriaTransaction(Variant args, Packed
 	return OK;
 }
 
+Variant HoneyComb::delegateAuthority(Callable callback, Array addresses, Array delegates, Array projects){
+	if(pending){
+		return ERR_BUSY;
+	}
+	if(addresses != Array()){
+		add_arg("addresses", "[Bytes!]", addresses, true);
+	}
+	if(delegates != Array()){
+		add_arg("delegates", "[Pubkey!]", delegates, true);
+	}
+	if(projects != Array()){
+		add_arg("projects", "[Pubkey!]", projects, true);
+	}
+
+
+	method_name = "delegateAuthority";
+
+
+	query_fields = " kind index permission ";
+	fetch_type(callback);
+	return OK;
+}
+
 void HoneyComb::_bind_methods(){
 	bind_non_changing_methods();
 	ClassDB::bind_method(D_METHOD("create_new_resource", "project", "authority", "params", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
@@ -1789,5 +1812,6 @@ void HoneyComb::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("modify_delegation", "project", "delegate", "modifyDelegation", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createModifyDelegationTransaction, DEFVAL(Variant(nullptr)), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_assembler_config", "treeConfig", "ticker", "order", "project", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateAssemblerConfigTransaction, DEFVAL(Variant(nullptr)), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("initialize_badge_criteria", "args", "lutAddresses", "computeUnitPrice"), &HoneyComb::createInitializeBadgeCriteriaTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("delegateAuthority", "addresses", "delegates", "projects"), &HoneyComb::delegateAuthority, DEFVAL(Array()), DEFVAL(Array()), DEFVAL(Array()));
 }
 } // godot

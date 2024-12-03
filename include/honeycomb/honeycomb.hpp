@@ -65,6 +65,9 @@ enum NectarStakingPermissionInput{
 class HoneyComb: public Node{
 GDCLASS(HoneyComb, Node)
 private:
+    const String HONEYCOMB_URL = "https://edge.test.honeycombprotocol.com/";
+
+    Callable* type_fetched_callback;
     bool pending = false;
     Node* child = nullptr;
     HTTPRequest* api_request;
@@ -79,9 +82,11 @@ private:
 
     String build();
     void send_query();
+    void fetch_type(Callable type_fetched_callback);
 
     void bind_method_from_ref(const String ref);
     void add_arg(const String& name, const String& type_name, const Variant& value, bool optional = false);
+    void fetch_type_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body);
     void query_response_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body);
     void transaction_response_callback(const Dictionary& response);
 
