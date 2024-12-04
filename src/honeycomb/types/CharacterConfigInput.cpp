@@ -36,6 +36,12 @@ res["assemblerConfigInput"] = Object::cast_to<godot::honeycomb_resource::Assembl
 return res;
 }
 
+void CharacterConfigInput::from_dict(const Dictionary& dict){
+kind = dict["kind"];
+criterias = dict["criterias"];
+Object::cast_to<godot::honeycomb_resource::AssemblerConfigInput>(assemblerConfigInput)->from_dict(dict["assemblerConfigInput"]);
+}
+
 void CharacterConfigInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_kind"), &CharacterConfigInput::get_kind);
 ClassDB::bind_method(D_METHOD("set_kind", "value"), &CharacterConfigInput::set_kind);

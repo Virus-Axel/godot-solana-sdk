@@ -26,6 +26,11 @@ res["amount"] = amount;
 return res;
 }
 
+void MealInput::from_dict(const Dictionary& dict){
+resourceAddress = dict["resourceAddress"];
+amount = dict["amount"];
+}
+
 void MealInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_resourceAddress"), &MealInput::get_resourceAddress);
 ClassDB::bind_method(D_METHOD("set_resourceAddress", "value"), &MealInput::set_resourceAddress);

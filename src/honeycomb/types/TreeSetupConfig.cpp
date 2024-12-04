@@ -28,6 +28,11 @@ res["advanced"] = Object::cast_to<godot::honeycomb_resource::AdvancedTreeConfig>
 return res;
 }
 
+void TreeSetupConfig::from_dict(const Dictionary& dict){
+Object::cast_to<godot::honeycomb_resource::BasicTreeConfig>(basic)->from_dict(dict["basic"]);
+Object::cast_to<godot::honeycomb_resource::AdvancedTreeConfig>(advanced)->from_dict(dict["advanced"]);
+}
+
 void TreeSetupConfig::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_basic"), &TreeSetupConfig::get_basic);
 ClassDB::bind_method(D_METHOD("set_basic", "value"), &TreeSetupConfig::set_basic);

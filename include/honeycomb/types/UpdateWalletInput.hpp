@@ -16,6 +16,7 @@ protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
+void from_dict(const Dictionary& dict);
 void set_add(const PackedStringArray& val);
 PackedStringArray get_add();
 void set_remove(const PackedStringArray& val);

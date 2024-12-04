@@ -27,6 +27,11 @@ res["index"] = index;
 return res;
 }
 
+void ModifyDelegationInput::from_dict(const Dictionary& dict){
+Object::cast_to<godot::honeycomb_resource::ModifyServiceDelegationInput>(delegation)->from_dict(dict["delegation"]);
+index = dict["index"];
+}
+
 void ModifyDelegationInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_delegation"), &ModifyDelegationInput::get_delegation);
 ClassDB::bind_method(D_METHOD("set_delegation", "value"), &ModifyDelegationInput::set_delegation);

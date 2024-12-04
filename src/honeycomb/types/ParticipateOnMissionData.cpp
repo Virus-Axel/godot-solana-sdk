@@ -44,6 +44,13 @@ res["payer"] = payer;
 return res;
 }
 
+void ParticipateOnMissionData::from_dict(const Dictionary& dict){
+mission = dict["mission"];
+characterAddresses = dict["characterAddresses"];
+authority = dict["authority"];
+payer = dict["payer"];
+}
+
 void ParticipateOnMissionData::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_mission"), &ParticipateOnMissionData::get_mission);
 ClassDB::bind_method(D_METHOD("set_mission", "value"), &ParticipateOnMissionData::set_mission);

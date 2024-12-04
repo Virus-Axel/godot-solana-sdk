@@ -16,6 +16,7 @@ protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
+void from_dict(const Dictionary& dict);
 void set_value(const int64_t& val);
 int64_t get_value();
 void set_type(const Variant& val);

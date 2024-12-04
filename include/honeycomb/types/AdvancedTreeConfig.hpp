@@ -17,6 +17,7 @@ protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
+void from_dict(const Dictionary& dict);
 void set_maxDepth(const int32_t& val);
 int32_t get_maxDepth();
 void set_maxBufferSize(const int32_t& val);

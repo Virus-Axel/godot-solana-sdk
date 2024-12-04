@@ -21,6 +21,7 @@ protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
+void from_dict(const Dictionary& dict);
 void set_HiveControl(const Variant& val);
 Variant get_HiveControl();
 void set_AssetAssembler(const Variant& val);

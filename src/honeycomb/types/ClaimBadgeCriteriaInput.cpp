@@ -56,6 +56,14 @@ res["proof"] = proof;
 return res;
 }
 
+void ClaimBadgeCriteriaInput::from_dict(const Dictionary& dict){
+Object::cast_to<Pubkey>(projectAddress)->from_string(dict["projectAddress"]);
+Object::cast_to<Pubkey>(profileAddress)->from_string(dict["profileAddress"]);
+Object::cast_to<Pubkey>(payer)->from_string(dict["payer"]);
+criteriaIndex = dict["criteriaIndex"];
+proof = dict["proof"];
+}
+
 void ClaimBadgeCriteriaInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_projectAddress"), &ClaimBadgeCriteriaInput::get_projectAddress);
 ClassDB::bind_method(D_METHOD("set_projectAddress", "value"), &ClaimBadgeCriteriaInput::set_projectAddress);

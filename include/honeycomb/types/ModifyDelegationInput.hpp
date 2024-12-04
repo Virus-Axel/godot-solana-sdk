@@ -16,6 +16,7 @@ protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
+void from_dict(const Dictionary& dict);
 void set_delegation(const Variant& val);
 Variant get_delegation();
 void set_index(const int32_t& val);

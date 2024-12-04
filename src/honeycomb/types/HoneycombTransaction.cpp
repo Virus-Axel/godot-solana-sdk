@@ -35,6 +35,12 @@ res["lastValidBlockHeight"] = lastValidBlockHeight;
 return res;
 }
 
+void HoneycombTransaction::from_dict(const Dictionary& dict){
+transaction = dict["transaction"];
+blockhash = dict["blockhash"];
+lastValidBlockHeight = dict["lastValidBlockHeight"];
+}
+
 void HoneycombTransaction::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_transaction"), &HoneycombTransaction::get_transaction);
 ClassDB::bind_method(D_METHOD("set_transaction", "value"), &HoneycombTransaction::set_transaction);

@@ -63,6 +63,15 @@ res["updateRewards"] = updateRewards;
 return res;
 }
 
+void UpdateMissionInput::from_dict(const Dictionary& dict){
+Object::cast_to<godot::honeycomb_resource::NewMissionCost>(cost)->from_dict(dict["cost"]);
+minXp = dict["minXp"];
+duration = dict["duration"];
+removeRewards = dict["removeRewards"];
+newRewards = dict["newRewards"];
+updateRewards = dict["updateRewards"];
+}
+
 void UpdateMissionInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_cost"), &UpdateMissionInput::get_cost);
 ClassDB::bind_method(D_METHOD("set_cost", "value"), &UpdateMissionInput::set_cost);

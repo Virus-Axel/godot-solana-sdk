@@ -6,6 +6,7 @@
 #include <godot_cpp/classes/http_request.hpp>
 #include "transaction.hpp"
 #include "honeycomb/honeycomb_generated.hpp"
+#include "godot_cpp/classes/json.hpp"
 
 namespace godot{
 
@@ -67,7 +68,6 @@ GDCLASS(HoneyComb, Node)
 private:
     const String HONEYCOMB_URL = "https://edge.test.honeycombprotocol.com/";
 
-    Callable* type_fetched_callback;
     bool pending = false;
     Node* child = nullptr;
     HTTPRequest* api_request;
@@ -82,15 +82,44 @@ private:
 
     String build();
     void send_query();
-    void fetch_type(Callable type_fetched_callback);
 
     void bind_method_from_ref(const String ref);
     void add_arg(const String& name, const String& type_name, const Variant& value, bool optional = false);
-    void fetch_type_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body);
+    
     void query_response_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body);
     void transaction_response_callback(const Dictionary& response);
 
     static void bind_non_changing_methods();
+
+    template <typename T>
+    void fetch_type_callback(int result, int response_code, const PackedStringArray& headers, const PackedByteArray& body){
+        Dictionary response = JSON::parse_string(body.get_string_from_ascii());
+        std::cout << body.get_string_from_ascii().ascii() << std::endl;
+
+        if(response["data"].get_type() != Variant::DICTIONARY){
+            ERR_FAIL_EDMSG("Error in request, check console logs");
+        }
+
+        Dictionary method_response = ((Dictionary)response["data"])[method_name];
+        T* ret = memnew(T);
+        Object::cast_to<T>(ret)->from_dict(method_response);
+
+        emit_signal("type_fetched", ret);
+    }
+
+    template <typename T>
+    void fetch_type(){
+        Callable callback = callable_mp(this, &HoneyComb::fetch_type_callback<T>);
+        api_request->connect("request_completed", callback);
+
+        PackedStringArray headers;
+        headers.append("content-type: application/json");
+        add_child(api_request);
+        child = api_request;
+        pending = true;
+        std::cout << "honey request: " << build().ascii() << std::endl;
+        api_request->request(HONEYCOMB_URL, headers, HTTPClient::METHOD_POST, build());
+    }
 
 protected:
     HoneyComb();

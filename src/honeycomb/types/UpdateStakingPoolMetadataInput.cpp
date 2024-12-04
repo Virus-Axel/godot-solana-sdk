@@ -89,6 +89,18 @@ res["endTime"] = endTime;
 return res;
 }
 
+void UpdateStakingPoolMetadataInput::from_dict(const Dictionary& dict){
+name = dict["name"];
+rewardsPerDuration = dict["rewardsPerDuration"];
+rewardsDuration = dict["rewardsDuration"];
+maxRewardsDuration = dict["maxRewardsDuration"];
+minStakeDuration = dict["minStakeDuration"];
+cooldownDuration = dict["cooldownDuration"];
+resetStakeDuration = dict["resetStakeDuration"];
+startTime = dict["startTime"];
+endTime = dict["endTime"];
+}
+
 void UpdateStakingPoolMetadataInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_name"), &UpdateStakingPoolMetadataInput::get_name);
 ClassDB::bind_method(D_METHOD("set_name", "value"), &UpdateStakingPoolMetadataInput::set_name);

@@ -17,6 +17,10 @@ res["permission"] = permission;
 return res;
 }
 
+void ServiceDelegationHiveControl::from_dict(const Dictionary& dict){
+permission = dict["permission"];
+}
+
 void ServiceDelegationHiveControl::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_permission"), &ServiceDelegationHiveControl::get_permission);
 ClassDB::bind_method(D_METHOD("set_permission", "value"), &ServiceDelegationHiveControl::set_permission);

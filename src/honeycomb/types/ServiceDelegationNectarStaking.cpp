@@ -26,6 +26,11 @@ res["permission"] = permission;
 return res;
 }
 
+void ServiceDelegationNectarStaking::from_dict(const Dictionary& dict){
+index = dict["index"];
+permission = dict["permission"];
+}
+
 void ServiceDelegationNectarStaking::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_index"), &ServiceDelegationNectarStaking::get_index);
 ClassDB::bind_method(D_METHOD("set_index", "value"), &ServiceDelegationNectarStaking::set_index);

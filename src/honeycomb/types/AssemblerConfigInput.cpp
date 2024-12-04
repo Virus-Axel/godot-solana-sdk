@@ -71,6 +71,16 @@ res["collectionName"] = collectionName;
 return res;
 }
 
+void AssemblerConfigInput::from_dict(const Dictionary& dict){
+assemblerConfig = dict["assemblerConfig"];
+name = dict["name"];
+symbol = dict["symbol"];
+description = dict["description"];
+creators = dict["creators"];
+sellerFeeBasisPoints = dict["sellerFeeBasisPoints"];
+collectionName = dict["collectionName"];
+}
+
 void AssemblerConfigInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_assemblerConfig"), &AssemblerConfigInput::get_assemblerConfig);
 ClassDB::bind_method(D_METHOD("set_assemblerConfig", "value"), &AssemblerConfigInput::set_assemblerConfig);

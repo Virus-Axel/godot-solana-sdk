@@ -71,6 +71,16 @@ res["BuzzGuild"] = BuzzGuild;
 return res;
 }
 
+void ServiceDelegationInput::from_dict(const Dictionary& dict){
+HiveControl = dict["HiveControl"];
+AssetAssembler = dict["AssetAssembler"];
+AssetManager = dict["AssetManager"];
+CurrencyManager = dict["CurrencyManager"];
+NectarStaking = dict["NectarStaking"];
+NectarMissions = dict["NectarMissions"];
+BuzzGuild = dict["BuzzGuild"];
+}
+
 void ServiceDelegationInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_HiveControl"), &ServiceDelegationInput::get_HiveControl);
 ClassDB::bind_method(D_METHOD("set_HiveControl", "value"), &ServiceDelegationInput::set_HiveControl);

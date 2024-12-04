@@ -26,6 +26,11 @@ res["amount"] = amount;
 return res;
 }
 
+void NewMissionCost::from_dict(const Dictionary& dict){
+address = dict["address"];
+amount = dict["amount"];
+}
+
 void NewMissionCost::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_address"), &NewMissionCost::get_address);
 ClassDB::bind_method(D_METHOD("set_address", "value"), &NewMissionCost::set_address);

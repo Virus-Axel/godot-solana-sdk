@@ -23,6 +23,7 @@ protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
+void from_dict(const Dictionary& dict);
 void set_name(const String& val);
 String get_name();
 void set_rewardsPerDuration(const int64_t& val);

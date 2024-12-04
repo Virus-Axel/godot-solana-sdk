@@ -44,6 +44,13 @@ res["pfp"] = pfp;
 return res;
 }
 
+void PartialUserInfoInput::from_dict(const Dictionary& dict){
+username = dict["username"];
+name = dict["name"];
+bio = dict["bio"];
+pfp = dict["pfp"];
+}
+
 void PartialUserInfoInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_username"), &PartialUserInfoInput::get_username);
 ClassDB::bind_method(D_METHOD("set_username", "value"), &PartialUserInfoInput::set_username);

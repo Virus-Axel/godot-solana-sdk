@@ -74,6 +74,16 @@ res["condition"] = condition;
 return res;
 }
 
+void UpdateBadgeCriteriaInput::from_dict(const Dictionary& dict){
+Object::cast_to<Pubkey>(projectAddress)->from_string(dict["projectAddress"]);
+Object::cast_to<Pubkey>(authority)->from_string(dict["authority"]);
+criteriaIndex = dict["criteriaIndex"];
+Object::cast_to<Pubkey>(payer)->from_string(dict["payer"]);
+startTime = dict["startTime"];
+endTime = dict["endTime"];
+condition = dict["condition"];
+}
+
 void UpdateBadgeCriteriaInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_projectAddress"), &UpdateBadgeCriteriaInput::get_projectAddress);
 ClassDB::bind_method(D_METHOD("set_projectAddress", "value"), &UpdateBadgeCriteriaInput::set_projectAddress);

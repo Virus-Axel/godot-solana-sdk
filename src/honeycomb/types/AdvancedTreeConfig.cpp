@@ -35,6 +35,12 @@ res["canopyDepth"] = canopyDepth;
 return res;
 }
 
+void AdvancedTreeConfig::from_dict(const Dictionary& dict){
+maxDepth = dict["maxDepth"];
+maxBufferSize = dict["maxBufferSize"];
+canopyDepth = dict["canopyDepth"];
+}
+
 void AdvancedTreeConfig::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_maxDepth"), &AdvancedTreeConfig::get_maxDepth);
 ClassDB::bind_method(D_METHOD("set_maxDepth", "value"), &AdvancedTreeConfig::set_maxDepth);

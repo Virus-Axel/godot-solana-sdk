@@ -17,6 +17,7 @@ protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
+void from_dict(const Dictionary& dict);
 void set_commitment(const String& val);
 String get_commitment();
 void set_skipPreflight(const bool& val);

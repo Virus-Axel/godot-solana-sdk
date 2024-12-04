@@ -26,6 +26,11 @@ res["trustedActions"] = trustedActions;
 return res;
 }
 
+void AssociatedProgramInput::from_dict(const Dictionary& dict){
+address = dict["address"];
+trustedActions = dict["trustedActions"];
+}
+
 void AssociatedProgramInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_address"), &AssociatedProgramInput::get_address);
 ClassDB::bind_method(D_METHOD("set_address", "value"), &AssociatedProgramInput::set_address);

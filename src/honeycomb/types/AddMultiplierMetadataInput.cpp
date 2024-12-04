@@ -27,6 +27,11 @@ res["type"] = Object::cast_to<godot::honeycomb_resource::MultiplierTypeInput>(ty
 return res;
 }
 
+void AddMultiplierMetadataInput::from_dict(const Dictionary& dict){
+value = dict["value"];
+Object::cast_to<godot::honeycomb_resource::MultiplierTypeInput>(type)->from_dict(dict["type"]);
+}
+
 void AddMultiplierMetadataInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_value"), &AddMultiplierMetadataInput::get_value);
 ClassDB::bind_method(D_METHOD("set_value", "value"), &AddMultiplierMetadataInput::set_value);

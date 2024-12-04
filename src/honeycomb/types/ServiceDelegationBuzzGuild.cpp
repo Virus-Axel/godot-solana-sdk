@@ -26,6 +26,11 @@ res["permission"] = permission;
 return res;
 }
 
+void ServiceDelegationBuzzGuild::from_dict(const Dictionary& dict){
+index = dict["index"];
+permission = dict["permission"];
+}
+
 void ServiceDelegationBuzzGuild::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_index"), &ServiceDelegationBuzzGuild::get_index);
 ClassDB::bind_method(D_METHOD("set_index", "value"), &ServiceDelegationBuzzGuild::set_index);

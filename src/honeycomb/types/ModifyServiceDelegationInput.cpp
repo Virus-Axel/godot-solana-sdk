@@ -78,6 +78,16 @@ res["BuzzGuild"] = Object::cast_to<godot::honeycomb_resource::ServiceDelegationB
 return res;
 }
 
+void ModifyServiceDelegationInput::from_dict(const Dictionary& dict){
+Object::cast_to<godot::honeycomb_resource::ServiceDelegationHiveControl>(HiveControl)->from_dict(dict["HiveControl"]);
+Object::cast_to<godot::honeycomb_resource::ServiceDelegationAssetAssembler>(AssetAssembler)->from_dict(dict["AssetAssembler"]);
+Object::cast_to<godot::honeycomb_resource::ServiceDelegationAssetManager>(AssetManager)->from_dict(dict["AssetManager"]);
+Object::cast_to<godot::honeycomb_resource::ServiceDelegationCurrencyManager>(CurrencyManager)->from_dict(dict["CurrencyManager"]);
+Object::cast_to<godot::honeycomb_resource::ServiceDelegationNectarStaking>(NectarStaking)->from_dict(dict["NectarStaking"]);
+Object::cast_to<godot::honeycomb_resource::ServiceDelegationNectarMissions>(NectarMissions)->from_dict(dict["NectarMissions"]);
+Object::cast_to<godot::honeycomb_resource::ServiceDelegationBuzzGuild>(BuzzGuild)->from_dict(dict["BuzzGuild"]);
+}
+
 void ModifyServiceDelegationInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_HiveControl"), &ModifyServiceDelegationInput::get_HiveControl);
 ClassDB::bind_method(D_METHOD("set_HiveControl", "value"), &ModifyServiceDelegationInput::set_HiveControl);

@@ -17,6 +17,7 @@ protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
+void from_dict(const Dictionary& dict);
 void set_kind(const String& val);
 String get_kind();
 void set_criterias(const Array& val);

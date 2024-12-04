@@ -21,6 +21,7 @@ protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
+void from_dict(const Dictionary& dict);
 void set_assemblerConfig(const String& val);
 String get_assemblerConfig();
 void set_name(const String& val);

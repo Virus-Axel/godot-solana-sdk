@@ -327,3 +327,12 @@ AssociatedProgramInput
 address - String!
 trustedActions - [SerializableActionsInput!]!
 """
+
+DelegateAuthority = """
+DelegateAuthority
+address - Bytes!
+bump - Int!
+project - Pubkey!
+authority - Pubkey!
+delegations - [ServiceDelegation!]!
+"""

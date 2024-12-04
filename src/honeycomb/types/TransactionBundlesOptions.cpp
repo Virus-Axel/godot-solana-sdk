@@ -35,6 +35,12 @@ res["lastBundleSize"] = lastBundleSize;
 return res;
 }
 
+void TransactionBundlesOptions::from_dict(const Dictionary& dict){
+bundleSize = dict["bundleSize"];
+firstBundleSize = dict["firstBundleSize"];
+lastBundleSize = dict["lastBundleSize"];
+}
+
 void TransactionBundlesOptions::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_bundleSize"), &TransactionBundlesOptions::get_bundleSize);
 ClassDB::bind_method(D_METHOD("set_bundleSize", "value"), &TransactionBundlesOptions::set_bundleSize);

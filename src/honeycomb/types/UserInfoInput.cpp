@@ -35,6 +35,12 @@ res["pfp"] = pfp;
 return res;
 }
 
+void UserInfoInput::from_dict(const Dictionary& dict){
+name = dict["name"];
+bio = dict["bio"];
+pfp = dict["pfp"];
+}
+
 void UserInfoInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_name"), &UserInfoInput::get_name);
 ClassDB::bind_method(D_METHOD("set_name", "value"), &UserInfoInput::set_name);

@@ -26,6 +26,11 @@ res["customDataFields"] = customDataFields;
 return res;
 }
 
+void ProfileDataConfigInput::from_dict(const Dictionary& dict){
+achievements = dict["achievements"];
+customDataFields = dict["customDataFields"];
+}
+
 void ProfileDataConfigInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_achievements"), &ProfileDataConfigInput::get_achievements);
 ClassDB::bind_method(D_METHOD("set_achievements", "value"), &ProfileDataConfigInput::set_achievements);

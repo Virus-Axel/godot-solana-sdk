@@ -44,6 +44,13 @@ res["collection"] = collection;
 return res;
 }
 
+void MultiplierTypeInput::from_dict(const Dictionary& dict){
+minStakeDuration = dict["minStakeDuration"];
+minNftCount = dict["minNftCount"];
+creator = dict["creator"];
+collection = dict["collection"];
+}
+
 void MultiplierTypeInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_minStakeDuration"), &MultiplierTypeInput::get_minStakeDuration);
 ClassDB::bind_method(D_METHOD("set_minStakeDuration", "value"), &MultiplierTypeInput::set_minStakeDuration);

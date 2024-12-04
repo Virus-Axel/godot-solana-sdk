@@ -16,6 +16,7 @@ protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
+void from_dict(const Dictionary& dict);
 void set_achievements(const PackedStringArray& val);
 PackedStringArray get_achievements();
 void set_customDataFields(const PackedStringArray& val);

@@ -17,6 +17,10 @@ res["permission"] = permission;
 return res;
 }
 
+void ServiceDelegationCurrencyManager::from_dict(const Dictionary& dict){
+permission = dict["permission"];
+}
+
 void ServiceDelegationCurrencyManager::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_permission"), &ServiceDelegationCurrencyManager::get_permission);
 ClassDB::bind_method(D_METHOD("set_permission", "value"), &ServiceDelegationCurrencyManager::set_permission);

@@ -26,6 +26,11 @@ res["remove"] = remove;
 return res;
 }
 
+void CustomDataInput::from_dict(const Dictionary& dict){
+add = dict["add"];
+remove = dict["remove"];
+}
+
 void CustomDataInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_add"), &CustomDataInput::get_add);
 ClassDB::bind_method(D_METHOD("set_add", "value"), &CustomDataInput::set_add);

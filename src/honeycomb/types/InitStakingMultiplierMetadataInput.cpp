@@ -26,6 +26,11 @@ res["multipliers"] = multipliers;
 return res;
 }
 
+void InitStakingMultiplierMetadataInput::from_dict(const Dictionary& dict){
+decimals = dict["decimals"];
+multipliers = dict["multipliers"];
+}
+
 void InitStakingMultiplierMetadataInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_decimals"), &InitStakingMultiplierMetadataInput::get_decimals);
 ClassDB::bind_method(D_METHOD("set_decimals", "value"), &InitStakingMultiplierMetadataInput::set_decimals);

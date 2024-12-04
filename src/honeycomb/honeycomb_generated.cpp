@@ -42,6 +42,7 @@
 #include "honeycomb/types/BasicTreeConfig.hpp"
 #include "honeycomb/types/AdvancedTreeConfig.hpp"
 #include "honeycomb/types/AssociatedProgramInput.hpp"
+#include "honeycomb/types/DelegateAuthority.hpp"
 namespace godot{
 
 Variant HoneyComb::createCreateNewResourceTransaction(const Variant& project, const Variant& authority, Variant params, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
@@ -1736,7 +1737,7 @@ Variant HoneyComb::createInitializeBadgeCriteriaTransaction(Variant args, Packed
 	return OK;
 }
 
-Variant HoneyComb::delegateAuthority(Callable callback, Array addresses, Array delegates, Array projects){
+Variant HoneyComb::delegateAuthority(Array addresses, Array delegates, Array projects){
 	if(pending){
 		return ERR_BUSY;
 	}
@@ -1755,7 +1756,7 @@ Variant HoneyComb::delegateAuthority(Callable callback, Array addresses, Array d
 
 
 	query_fields = " kind index permission ";
-	fetch_type(callback);
+	fetch_type<honeycomb_resource::DelegateAuthority>();
 	return OK;
 }
 

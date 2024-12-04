@@ -17,6 +17,7 @@ protected:
 static void _bind_methods();
 public:
 Dictionary to_dict();
+void from_dict(const Dictionary& dict);
 void set_transaction(const PackedByteArray& val);
 PackedByteArray get_transaction();
 void set_blockhash(const String& val);

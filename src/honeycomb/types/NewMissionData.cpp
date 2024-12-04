@@ -99,6 +99,19 @@ res["rewards"] = rewards;
 return res;
 }
 
+void NewMissionData::from_dict(const Dictionary& dict){
+project = dict["project"];
+missionPool = dict["missionPool"];
+authority = dict["authority"];
+delegateAuthority = dict["delegateAuthority"];
+payer = dict["payer"];
+name = dict["name"];
+minXp = dict["minXp"];
+Object::cast_to<godot::honeycomb_resource::NewMissionCost>(cost)->from_dict(dict["cost"]);
+duration = dict["duration"];
+rewards = dict["rewards"];
+}
+
 void NewMissionData::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_project"), &NewMissionData::get_project);
 ClassDB::bind_method(D_METHOD("set_project", "value"), &NewMissionData::set_project);

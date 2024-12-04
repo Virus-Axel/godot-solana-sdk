@@ -105,6 +105,7 @@ QL_TO_VARIANT = {
    "ServiceDelegationNectarMissions": "Variant",
    "ServiceDelegationBuzzGuild": "Variant",
    "[SerializableActionsInput!]": "Array",
+   "[ServiceDelegation!]": "Array"
 }
 
 GODOT_TYPE_DEFVAL = {
@@ -348,6 +349,8 @@ class GQLParse:
 
       # Make a line of query
       query_fields_re = re.sub(r"[\r\n]+", "", self.str)
+      print(query_fields_re)
+      exit(1)
       self.query_fields = re.sub(r'\s+', ' ', query_fields_re)
 
       self.method_definitions += f'\t{self.print_function_name_header_special()}\n'
@@ -367,12 +370,21 @@ class GQLParse:
 
       # Find type that this function returns and add special attributes to it.
       for type in self.types:
-        if type['classname'] == self.function_name:
+        if type['classname'][1:] == self.function_name[1:]:
           self.function_name = "fetch"
-          type['fetch_definition'] = self.function_name
+          type['fetch_declaration'] = f'\t{self.print_function_name_header()}\n'
+          type['fetch_definition'] = self.print_function_name().replace(CLASS_TYPE, type['classname'])
+          type['fetch_definition'] += "{\n"
+          type['fetch_definition'] += self.print_fetch_implementation()
+          type['fetch_definition'] += "}\n"
 
       return ""
 
+
+  def print_fetch_implementation(self):
+    result = "\tif(honey_comb == nullptr){\n\t\thoney_comb = memnew(HoneyComb);\n\t}\n"
+
+    return result
 
   def graphql_to_function(self, str, signers, non_signers):
       self.str = str
@@ -524,7 +536,7 @@ class GQLParse:
 
   def print_function_name_special(self):
     result_string = ""
-    result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{self.function_name}(Callable callback, "
+    result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{self.function_name}("
 
     for required_arg in self.required_args:
       result_string += f'{self.print_function_param(required_arg)}, '
@@ -561,7 +573,7 @@ class GQLParse:
 
   def print_function_name_header_special(self):
     result_string = ""
-    result_string += f"{RETURN_TYPE} {self.function_name}(Callable callback, "
+    result_string += f"{RETURN_TYPE} {self.function_name}("
 
     for required_arg in self.required_args:
       result_string += f'{self.print_function_param(required_arg)}, '
@@ -607,8 +619,10 @@ class GQLParse:
     return result_string
   
   def print_last_section_special(self):
+    class_name = self.function_name
+    class_name = class_name[0].upper() + class_name[1:]
     result_string = f'\n\tquery_fields = "{self.query_fields}";\n'
-    result_string += "\tfetch_type(callback);\n"
+    result_string += f'\tfetch_type<honeycomb_resource::{class_name}>();\n'
     result_string += "\treturn OK;\n"
     result_string += "}\n"
 
@@ -688,10 +702,17 @@ class GQLParse:
       prop_type = self.ql_type_to_godot(prop_type)
       result += f'{prop_type} {prop_name};\n'
 
+    #if 'fetch_declaration' in type:
+    #  result += "HoneyComb* honey_comb = nullptr;\n"
+
     result += "protected:\n"
     result += f'static void _bind_methods();\n'
     result += "public:\n"
     result += f"Dictionary to_dict();\n"
+    result += f"void from_dict(const Dictionary& dict);\n"
+
+    #if 'fetch_declaration' in type:
+    #  result += type['fetch_declaration']
 
     for prop in properties:
       (prop_name, prop_type) = prop
@@ -734,15 +755,21 @@ class GQLParse:
     to_dict = f"Dictionary {class_name}::to_dict()"
     to_dict += "{\nDictionary res;\n"
 
+    from_dict = f"void {class_name}::from_dict(const Dictionary& dict)"
+    from_dict += "{\n"
+
     for prop in properties:
       (prop_name, og_prop_type) = prop
       prop_type = self.ql_type_to_godot(og_prop_type)
       if prop_type == "Variant" and og_prop_type.replace("!", "") == "Pubkey":
         to_dict += f'res["{prop_name}"] = Object::cast_to<{og_prop_type.replace("!", "")}>({prop_name})->to_string();\n'
+        from_dict += f'Object::cast_to<{og_prop_type.replace("!", "")}>({prop_name})->from_string(dict["{prop_name}"]);\n'
       elif prop_type == "Variant":
         to_dict += f'res["{prop_name}"] = Object::cast_to<godot::honeycomb_resource::{og_prop_type.replace("!", "")}>({prop_name})->to_dict();\n'
+        from_dict += f'Object::cast_to<godot::honeycomb_resource::{og_prop_type.replace("!", "")}>({prop_name})->from_dict(dict["{prop_name}"]);\n'
       else:
         to_dict += f'res["{prop_name}"] = {prop_name};\n'
+        from_dict += f'{prop_name} = dict["{prop_name}"];\n'
       result += f"void {class_name}::set_{prop_name}(const {prop_type}& val)"
       result += "{\n"
       result += f"this->{prop_name} = val;\n"
@@ -758,6 +785,11 @@ class GQLParse:
       bind_methods += f'ClassDB::add_property("{class_name}", PropertyInfo(Variant::Type::{GODOT_VARIANT_ENUM_TYPE[prop_type]}, "{prop_name}"), "set_{prop_name}", "get_{prop_name}");\n'
 
     result += to_dict + "return res;\n}\n\n"
+    result += from_dict + "}\n\n"
+
+    #if 'fetch_definition' in type:
+    #  result += type['fetch_definition']
+
     result += bind_methods
     result += "}\n} // honeycomb_resource\n} // godot"
 
@@ -838,6 +870,7 @@ def main():
     qlparser.graphql_to_type(BasicTreeConfig)
     qlparser.graphql_to_type(AdvancedTreeConfig)
     qlparser.graphql_to_type(AssociatedProgramInput)
+    qlparser.graphql_to_type(DelegateAuthority)
 
   
     qlparser.graphql_to_function(CREATE_NEW_RESOURCE, ["authority", "."], ["project"])

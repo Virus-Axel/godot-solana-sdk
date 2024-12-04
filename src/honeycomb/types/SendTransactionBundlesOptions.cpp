@@ -36,6 +36,12 @@ res["bundles"] = Object::cast_to<godot::honeycomb_resource::TransactionBundlesOp
 return res;
 }
 
+void SendTransactionBundlesOptions::from_dict(const Dictionary& dict){
+commitment = dict["commitment"];
+skipPreflight = dict["skipPreflight"];
+Object::cast_to<godot::honeycomb_resource::TransactionBundlesOptions>(bundles)->from_dict(dict["bundles"]);
+}
+
 void SendTransactionBundlesOptions::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_commitment"), &SendTransactionBundlesOptions::get_commitment);
 ClassDB::bind_method(D_METHOD("set_commitment", "value"), &SendTransactionBundlesOptions::set_commitment);

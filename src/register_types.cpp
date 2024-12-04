@@ -81,6 +81,7 @@
 #include "honeycomb/types/BasicTreeConfig.hpp"
 #include "honeycomb/types/AdvancedTreeConfig.hpp"
 #include "honeycomb/types/AssociatedProgramInput.hpp"
+#include "honeycomb/types/DelegateAuthority.hpp"
 
 using namespace godot;
 

@@ -49,7 +49,7 @@
 	Variant createModifyDelegationTransaction(const Variant& project, const Variant& delegate, Variant modifyDelegation, const Variant& authority, const Variant& payer = Variant(nullptr), PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);\
 	Variant createCreateAssemblerConfigTransaction(Variant treeConfig, String ticker, PackedStringArray order, const Variant& project, const Variant& authority, const Variant& payer = Variant(nullptr), PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);\
 	Variant createInitializeBadgeCriteriaTransaction(Variant args, PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);\
-	Variant delegateAuthority(Callable callback, Array addresses = Array(), Array delegates = Array(), Array projects = Array());
+	Variant delegateAuthority(Array addresses = Array(), Array delegates = Array(), Array projects = Array());
 
 #define REGISTER_HONEYCOMB_TYPES ClassDB::register_class<honeycomb_resource::HoneycombTransaction>(); \
 ClassDB::register_class<honeycomb_resource::SendTransactionBundlesOptions>(); \
@@ -92,5 +92,6 @@ ClassDB::register_class<honeycomb_resource::ServiceDelegationNectarMissions>(); 
 ClassDB::register_class<honeycomb_resource::ServiceDelegationBuzzGuild>(); \
 ClassDB::register_class<honeycomb_resource::BasicTreeConfig>(); \
 ClassDB::register_class<honeycomb_resource::AdvancedTreeConfig>(); \
-ClassDB::register_class<honeycomb_resource::AssociatedProgramInput>(); 
+ClassDB::register_class<honeycomb_resource::AssociatedProgramInput>(); \
+ClassDB::register_class<honeycomb_resource::DelegateAuthority>(); 
 

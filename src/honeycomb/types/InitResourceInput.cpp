@@ -53,6 +53,14 @@ res["storage"] = storage;
 return res;
 }
 
+void InitResourceInput::from_dict(const Dictionary& dict){
+name = dict["name"];
+symbol = dict["symbol"];
+uri = dict["uri"];
+decimals = dict["decimals"];
+storage = dict["storage"];
+}
+
 void InitResourceInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_name"), &InitResourceInput::get_name);
 ClassDB::bind_method(D_METHOD("set_name", "value"), &InitResourceInput::set_name);

@@ -86,6 +86,9 @@ func pubkey_demo_program_derived_address():
 
 
 func _ready():
+	$HoneyComb.delegateAuthority()
+	await $HoneyComb.type_fetched
+	return
 	pubkey_demo_from_string()
 	pubkey_demo_from_bytes()
 	pubkey_demo_metadata_program()

@@ -26,6 +26,11 @@ res["remove"] = remove;
 return res;
 }
 
+void UpdateWalletInput::from_dict(const Dictionary& dict){
+add = dict["add"];
+remove = dict["remove"];
+}
+
 void UpdateWalletInput::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_add"), &UpdateWalletInput::get_add);
 ClassDB::bind_method(D_METHOD("set_add", "value"), &UpdateWalletInput::set_add);

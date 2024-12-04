@@ -17,6 +17,10 @@ res["numAssets"] = numAssets;
 return res;
 }
 
+void BasicTreeConfig::from_dict(const Dictionary& dict){
+numAssets = dict["numAssets"];
+}
+
 void BasicTreeConfig::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_numAssets"), &BasicTreeConfig::get_numAssets);
 ClassDB::bind_method(D_METHOD("set_numAssets", "value"), &BasicTreeConfig::set_numAssets);

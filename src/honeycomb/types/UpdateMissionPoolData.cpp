@@ -62,6 +62,15 @@ res["payer"] = payer;
 return res;
 }
 
+void UpdateMissionPoolData::from_dict(const Dictionary& dict){
+project = dict["project"];
+missionPool = dict["missionPool"];
+characterModel = dict["characterModel"];
+authority = dict["authority"];
+delegateAuthority = dict["delegateAuthority"];
+payer = dict["payer"];
+}
+
 void UpdateMissionPoolData::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_project"), &UpdateMissionPoolData::get_project);
 ClassDB::bind_method(D_METHOD("set_project", "value"), &UpdateMissionPoolData::set_project);
