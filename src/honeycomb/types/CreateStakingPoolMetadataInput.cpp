@@ -142,6 +142,8 @@ ClassDB::add_property("CreateStakingPoolMetadataInput", PropertyInfo(Variant::Ty
 ClassDB::bind_method(D_METHOD("get_endTime"), &CreateStakingPoolMetadataInput::get_endTime);
 ClassDB::bind_method(D_METHOD("set_endTime", "value"), &CreateStakingPoolMetadataInput::set_endTime);
 ClassDB::add_property("CreateStakingPoolMetadataInput", PropertyInfo(Variant::Type::INT, "endTime"), "set_endTime", "get_endTime");
+ClassDB::bind_method(D_METHOD("to_dict"), &CreateStakingPoolMetadataInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &CreateStakingPoolMetadataInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

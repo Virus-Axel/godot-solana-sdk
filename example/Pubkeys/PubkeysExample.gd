@@ -87,7 +87,10 @@ func pubkey_demo_program_derived_address():
 
 func _ready():
 	$HoneyComb.delegateAuthority()
-	await $HoneyComb.type_fetched
+	#$HoneyComb.delegateAuthority(["hi"], ["hi"], ["hi"])
+	var auth = await $HoneyComb.type_fetched
+	for a in auth:
+		print(a.to_dict())
 	return
 	pubkey_demo_from_string()
 	pubkey_demo_from_bytes()

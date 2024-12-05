@@ -77,6 +77,8 @@ ClassDB::add_property("InitResourceInput", PropertyInfo(Variant::Type::INT, "dec
 ClassDB::bind_method(D_METHOD("get_storage"), &InitResourceInput::get_storage);
 ClassDB::bind_method(D_METHOD("set_storage", "value"), &InitResourceInput::set_storage);
 ClassDB::add_property("InitResourceInput", PropertyInfo(Variant::Type::INT, "storage"), "set_storage", "get_storage");
+ClassDB::bind_method(D_METHOD("to_dict"), &InitResourceInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &InitResourceInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

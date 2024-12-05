@@ -38,6 +38,8 @@ ClassDB::add_property("InitStakingMultiplierMetadataInput", PropertyInfo(Variant
 ClassDB::bind_method(D_METHOD("get_multipliers"), &InitStakingMultiplierMetadataInput::get_multipliers);
 ClassDB::bind_method(D_METHOD("set_multipliers", "value"), &InitStakingMultiplierMetadataInput::set_multipliers);
 ClassDB::add_property("InitStakingMultiplierMetadataInput", PropertyInfo(Variant::Type::ARRAY, "multipliers"), "set_multipliers", "get_multipliers");
+ClassDB::bind_method(D_METHOD("to_dict"), &InitStakingMultiplierMetadataInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &InitStakingMultiplierMetadataInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

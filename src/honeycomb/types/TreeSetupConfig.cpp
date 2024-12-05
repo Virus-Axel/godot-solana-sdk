@@ -40,6 +40,8 @@ ClassDB::add_property("TreeSetupConfig", PropertyInfo(Variant::Type::OBJECT, "ba
 ClassDB::bind_method(D_METHOD("get_advanced"), &TreeSetupConfig::get_advanced);
 ClassDB::bind_method(D_METHOD("set_advanced", "value"), &TreeSetupConfig::set_advanced);
 ClassDB::add_property("TreeSetupConfig", PropertyInfo(Variant::Type::OBJECT, "advanced"), "set_advanced", "get_advanced");
+ClassDB::bind_method(D_METHOD("to_dict"), &TreeSetupConfig::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &TreeSetupConfig::from_dict);
 }
 } // honeycomb_resource
 } // godot

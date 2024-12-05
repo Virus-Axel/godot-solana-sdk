@@ -57,9 +57,9 @@ return res;
 }
 
 void ClaimBadgeCriteriaInput::from_dict(const Dictionary& dict){
-Object::cast_to<Pubkey>(projectAddress)->from_string(dict["projectAddress"]);
-Object::cast_to<Pubkey>(profileAddress)->from_string(dict["profileAddress"]);
-Object::cast_to<Pubkey>(payer)->from_string(dict["payer"]);
+projectAddress = Pubkey::new_from_string(dict["projectAddress"]);
+profileAddress = Pubkey::new_from_string(dict["profileAddress"]);
+payer = Pubkey::new_from_string(dict["payer"]);
 criteriaIndex = dict["criteriaIndex"];
 proof = dict["proof"];
 }
@@ -80,6 +80,8 @@ ClassDB::add_property("ClaimBadgeCriteriaInput", PropertyInfo(Variant::Type::INT
 ClassDB::bind_method(D_METHOD("get_proof"), &ClaimBadgeCriteriaInput::get_proof);
 ClassDB::bind_method(D_METHOD("set_proof", "value"), &ClaimBadgeCriteriaInput::set_proof);
 ClassDB::add_property("ClaimBadgeCriteriaInput", PropertyInfo(Variant::Type::INT, "proof"), "set_proof", "get_proof");
+ClassDB::bind_method(D_METHOD("to_dict"), &ClaimBadgeCriteriaInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &ClaimBadgeCriteriaInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

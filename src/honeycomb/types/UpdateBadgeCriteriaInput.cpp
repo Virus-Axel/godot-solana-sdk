@@ -75,10 +75,10 @@ return res;
 }
 
 void UpdateBadgeCriteriaInput::from_dict(const Dictionary& dict){
-Object::cast_to<Pubkey>(projectAddress)->from_string(dict["projectAddress"]);
-Object::cast_to<Pubkey>(authority)->from_string(dict["authority"]);
+projectAddress = Pubkey::new_from_string(dict["projectAddress"]);
+authority = Pubkey::new_from_string(dict["authority"]);
 criteriaIndex = dict["criteriaIndex"];
-Object::cast_to<Pubkey>(payer)->from_string(dict["payer"]);
+payer = Pubkey::new_from_string(dict["payer"]);
 startTime = dict["startTime"];
 endTime = dict["endTime"];
 condition = dict["condition"];
@@ -106,6 +106,8 @@ ClassDB::add_property("UpdateBadgeCriteriaInput", PropertyInfo(Variant::Type::IN
 ClassDB::bind_method(D_METHOD("get_condition"), &UpdateBadgeCriteriaInput::get_condition);
 ClassDB::bind_method(D_METHOD("set_condition", "value"), &UpdateBadgeCriteriaInput::set_condition);
 ClassDB::add_property("UpdateBadgeCriteriaInput", PropertyInfo(Variant::Type::INT, "condition"), "set_condition", "get_condition");
+ClassDB::bind_method(D_METHOD("to_dict"), &UpdateBadgeCriteriaInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &UpdateBadgeCriteriaInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

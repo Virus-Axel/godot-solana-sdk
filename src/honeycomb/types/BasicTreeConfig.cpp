@@ -25,6 +25,8 @@ void BasicTreeConfig::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_numAssets"), &BasicTreeConfig::get_numAssets);
 ClassDB::bind_method(D_METHOD("set_numAssets", "value"), &BasicTreeConfig::set_numAssets);
 ClassDB::add_property("BasicTreeConfig", PropertyInfo(Variant::Type::INT, "numAssets"), "set_numAssets", "get_numAssets");
+ClassDB::bind_method(D_METHOD("to_dict"), &BasicTreeConfig::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &BasicTreeConfig::from_dict);
 }
 } // honeycomb_resource
 } // godot

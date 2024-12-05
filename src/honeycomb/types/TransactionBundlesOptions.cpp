@@ -51,6 +51,8 @@ ClassDB::add_property("TransactionBundlesOptions", PropertyInfo(Variant::Type::I
 ClassDB::bind_method(D_METHOD("get_lastBundleSize"), &TransactionBundlesOptions::get_lastBundleSize);
 ClassDB::bind_method(D_METHOD("set_lastBundleSize", "value"), &TransactionBundlesOptions::set_lastBundleSize);
 ClassDB::add_property("TransactionBundlesOptions", PropertyInfo(Variant::Type::INT, "lastBundleSize"), "set_lastBundleSize", "get_lastBundleSize");
+ClassDB::bind_method(D_METHOD("to_dict"), &TransactionBundlesOptions::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &TransactionBundlesOptions::from_dict);
 }
 } // honeycomb_resource
 } // godot

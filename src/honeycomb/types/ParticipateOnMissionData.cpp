@@ -64,6 +64,8 @@ ClassDB::add_property("ParticipateOnMissionData", PropertyInfo(Variant::Type::ST
 ClassDB::bind_method(D_METHOD("get_payer"), &ParticipateOnMissionData::get_payer);
 ClassDB::bind_method(D_METHOD("set_payer", "value"), &ParticipateOnMissionData::set_payer);
 ClassDB::add_property("ParticipateOnMissionData", PropertyInfo(Variant::Type::STRING, "payer"), "set_payer", "get_payer");
+ClassDB::bind_method(D_METHOD("to_dict"), &ParticipateOnMissionData::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &ParticipateOnMissionData::from_dict);
 }
 } // honeycomb_resource
 } // godot

@@ -38,6 +38,8 @@ ClassDB::add_property("ServiceDelegationAssetAssembler", PropertyInfo(Variant::T
 ClassDB::bind_method(D_METHOD("get_permission"), &ServiceDelegationAssetAssembler::get_permission);
 ClassDB::bind_method(D_METHOD("set_permission", "value"), &ServiceDelegationAssetAssembler::set_permission);
 ClassDB::add_property("ServiceDelegationAssetAssembler", PropertyInfo(Variant::Type::INT, "permission"), "set_permission", "get_permission");
+ClassDB::bind_method(D_METHOD("to_dict"), &ServiceDelegationAssetAssembler::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &ServiceDelegationAssetAssembler::from_dict);
 }
 } // honeycomb_resource
 } // godot

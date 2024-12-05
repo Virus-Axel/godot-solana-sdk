@@ -38,6 +38,8 @@ ClassDB::add_property("UpdateWalletInput", PropertyInfo(Variant::Type::PACKED_ST
 ClassDB::bind_method(D_METHOD("get_remove"), &UpdateWalletInput::get_remove);
 ClassDB::bind_method(D_METHOD("set_remove", "value"), &UpdateWalletInput::set_remove);
 ClassDB::add_property("UpdateWalletInput", PropertyInfo(Variant::Type::PACKED_STRING_ARRAY, "remove"), "set_remove", "get_remove");
+ClassDB::bind_method(D_METHOD("to_dict"), &UpdateWalletInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &UpdateWalletInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

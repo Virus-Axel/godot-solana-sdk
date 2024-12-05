@@ -73,7 +73,7 @@ void HoneyComb::transaction_response_callback(const Dictionary& response){
 void HoneyComb::send_query(){
 
     Callable callback = Callable(this, "query_response_callback");
-    api_request->connect("request_completed", callback);
+    api_request->connect("request_completed", callback, CONNECT_ONE_SHOT);
 
     PackedStringArray headers;
     headers.append("content-type: application/json");
@@ -93,16 +93,21 @@ String HoneyComb::build(){
         Dictionary arg = args[i];
         format_params.append(arg["name"]);
         format_params.append(arg["type"]);
+        std::cout << "arg type list" << std::endl;
         args_type_list += String("${0}: {1},").format(format_params);
 
         format_params.clear();
         format_params.append(arg["name"]);
+        std::cout << "arg list" << std::endl;
         args_list += String("{0}: ${0},").format(format_params);
 
         format_params.clear();
-        format_params.append(arg["name"]);
-        format_params.append(arg["value"]);
-        if(String(arg["value"]).begins_with("{")){
+        format_params.append(String(arg["name"]));
+        format_params.append(String(arg["value"]));
+        std::cout << String(arg["name"]).ascii() << std::endl;
+        std::cout << String(arg["value"]).ascii() << std::endl;
+
+        if(String(arg["value"]).begins_with("{") || String(arg["value"]).begins_with("[")){
             args_values += String("\"{0}\": {1},").format(format_params);
         }
         else{
@@ -110,10 +115,12 @@ String HoneyComb::build(){
         }
     }
 
-    // pop last ,
-    args_type_list = args_type_list.erase(args_type_list.length() -1);
-    args_list = args_list.erase(args_list.length() -1);
-    args_values = args_values.erase(args_values.length() -1);
+    if(!args.is_empty()){
+        // pop last ,
+        args_type_list = args_type_list.erase(args_type_list.length() -1);
+        args_list = args_list.erase(args_list.length() -1);
+        args_values = args_values.erase(args_values.length() -1);
+    }
 
     Array format_params;
     format_params.append(method_name);
@@ -121,6 +128,8 @@ String HoneyComb::build(){
     format_params.append(args_list);
     format_params.append(args_values);
     format_params.append(query_fields);
+
+    std::cout << " list" << std::endl;
 
     const String query_template = "{ \"query\":\"query {0}({1}) { {0}({2}) { {4} } }\", \"variables\":{{3}}}"; 
     return query_template.format(format_params);
@@ -215,7 +224,7 @@ void HoneyComb::create_resource(const Variant& project, const Variant& authority
 
 void HoneyComb::bind_non_changing_methods(){
     ClassDB::add_signal("HoneyComb", MethodInfo("transaction_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
-    ClassDB::add_signal("HoneyComb", MethodInfo("type_fetched", PropertyInfo(Variant::OBJECT, "fetched_resource")));
+    ClassDB::add_signal("HoneyComb", MethodInfo("type_fetched", PropertyInfo(Variant::ARRAY, "fetched_resource")));
 
     //ClassDB::bind_method(D_METHOD("create_project", "authority", "name"), &HoneyComb::create_project);
     //ClassDB::bind_method(D_METHOD("create_user", "user_wallet_key"), &HoneyComb::create_user);

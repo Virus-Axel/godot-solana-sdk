@@ -103,6 +103,8 @@ ClassDB::add_property("AssemblerConfigInput", PropertyInfo(Variant::Type::INT, "
 ClassDB::bind_method(D_METHOD("get_collectionName"), &AssemblerConfigInput::get_collectionName);
 ClassDB::bind_method(D_METHOD("set_collectionName", "value"), &AssemblerConfigInput::set_collectionName);
 ClassDB::add_property("AssemblerConfigInput", PropertyInfo(Variant::Type::STRING, "collectionName"), "set_collectionName", "get_collectionName");
+ClassDB::bind_method(D_METHOD("to_dict"), &AssemblerConfigInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &AssemblerConfigInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

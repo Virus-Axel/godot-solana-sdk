@@ -38,6 +38,8 @@ ClassDB::add_property("ServiceDelegationNectarStaking", PropertyInfo(Variant::Ty
 ClassDB::bind_method(D_METHOD("get_permission"), &ServiceDelegationNectarStaking::get_permission);
 ClassDB::bind_method(D_METHOD("set_permission", "value"), &ServiceDelegationNectarStaking::set_permission);
 ClassDB::add_property("ServiceDelegationNectarStaking", PropertyInfo(Variant::Type::INT, "permission"), "set_permission", "get_permission");
+ClassDB::bind_method(D_METHOD("to_dict"), &ServiceDelegationNectarStaking::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &ServiceDelegationNectarStaking::from_dict);
 }
 } // honeycomb_resource
 } // godot

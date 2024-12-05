@@ -90,6 +90,8 @@ ClassDB::add_property("UpdateMissionPoolData", PropertyInfo(Variant::Type::STRIN
 ClassDB::bind_method(D_METHOD("get_payer"), &UpdateMissionPoolData::get_payer);
 ClassDB::bind_method(D_METHOD("set_payer", "value"), &UpdateMissionPoolData::set_payer);
 ClassDB::add_property("UpdateMissionPoolData", PropertyInfo(Variant::Type::STRING, "payer"), "set_payer", "get_payer");
+ClassDB::bind_method(D_METHOD("to_dict"), &UpdateMissionPoolData::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &UpdateMissionPoolData::from_dict);
 }
 } // honeycomb_resource
 } // godot

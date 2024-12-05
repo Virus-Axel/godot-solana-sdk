@@ -51,6 +51,8 @@ ClassDB::add_property("ProfileInfoInput", PropertyInfo(Variant::Type::STRING, "b
 ClassDB::bind_method(D_METHOD("get_pfp"), &ProfileInfoInput::get_pfp);
 ClassDB::bind_method(D_METHOD("set_pfp", "value"), &ProfileInfoInput::set_pfp);
 ClassDB::add_property("ProfileInfoInput", PropertyInfo(Variant::Type::STRING, "pfp"), "set_pfp", "get_pfp");
+ClassDB::bind_method(D_METHOD("to_dict"), &ProfileInfoInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &ProfileInfoInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

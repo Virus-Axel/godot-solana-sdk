@@ -91,6 +91,8 @@ ClassDB::add_property("UpdateMissionInput", PropertyInfo(Variant::Type::ARRAY, "
 ClassDB::bind_method(D_METHOD("get_updateRewards"), &UpdateMissionInput::get_updateRewards);
 ClassDB::bind_method(D_METHOD("set_updateRewards", "value"), &UpdateMissionInput::set_updateRewards);
 ClassDB::add_property("UpdateMissionInput", PropertyInfo(Variant::Type::ARRAY, "updateRewards"), "set_updateRewards", "get_updateRewards");
+ClassDB::bind_method(D_METHOD("to_dict"), &UpdateMissionInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &UpdateMissionInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

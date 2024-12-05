@@ -64,6 +64,8 @@ ClassDB::add_property("MultiplierTypeInput", PropertyInfo(Variant::Type::STRING,
 ClassDB::bind_method(D_METHOD("get_collection"), &MultiplierTypeInput::get_collection);
 ClassDB::bind_method(D_METHOD("set_collection", "value"), &MultiplierTypeInput::set_collection);
 ClassDB::add_property("MultiplierTypeInput", PropertyInfo(Variant::Type::STRING, "collection"), "set_collection", "get_collection");
+ClassDB::bind_method(D_METHOD("to_dict"), &MultiplierTypeInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &MultiplierTypeInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

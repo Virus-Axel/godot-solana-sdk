@@ -38,6 +38,8 @@ ClassDB::add_property("AssociatedProgramInput", PropertyInfo(Variant::Type::STRI
 ClassDB::bind_method(D_METHOD("get_trustedActions"), &AssociatedProgramInput::get_trustedActions);
 ClassDB::bind_method(D_METHOD("set_trustedActions", "value"), &AssociatedProgramInput::set_trustedActions);
 ClassDB::add_property("AssociatedProgramInput", PropertyInfo(Variant::Type::ARRAY, "trustedActions"), "set_trustedActions", "get_trustedActions");
+ClassDB::bind_method(D_METHOD("to_dict"), &AssociatedProgramInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &AssociatedProgramInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

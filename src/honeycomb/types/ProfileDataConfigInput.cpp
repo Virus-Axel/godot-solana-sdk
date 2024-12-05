@@ -38,6 +38,8 @@ ClassDB::add_property("ProfileDataConfigInput", PropertyInfo(Variant::Type::PACK
 ClassDB::bind_method(D_METHOD("get_customDataFields"), &ProfileDataConfigInput::get_customDataFields);
 ClassDB::bind_method(D_METHOD("set_customDataFields", "value"), &ProfileDataConfigInput::set_customDataFields);
 ClassDB::add_property("ProfileDataConfigInput", PropertyInfo(Variant::Type::PACKED_STRING_ARRAY, "customDataFields"), "set_customDataFields", "get_customDataFields");
+ClassDB::bind_method(D_METHOD("to_dict"), &ProfileDataConfigInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &ProfileDataConfigInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

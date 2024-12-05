@@ -64,6 +64,8 @@ ClassDB::add_property("PartialUserInfoInput", PropertyInfo(Variant::Type::STRING
 ClassDB::bind_method(D_METHOD("get_pfp"), &PartialUserInfoInput::get_pfp);
 ClassDB::bind_method(D_METHOD("set_pfp", "value"), &PartialUserInfoInput::set_pfp);
 ClassDB::add_property("PartialUserInfoInput", PropertyInfo(Variant::Type::STRING, "pfp"), "set_pfp", "get_pfp");
+ClassDB::bind_method(D_METHOD("to_dict"), &PartialUserInfoInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &PartialUserInfoInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

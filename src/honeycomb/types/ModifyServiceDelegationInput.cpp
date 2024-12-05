@@ -110,6 +110,8 @@ ClassDB::add_property("ModifyServiceDelegationInput", PropertyInfo(Variant::Type
 ClassDB::bind_method(D_METHOD("get_BuzzGuild"), &ModifyServiceDelegationInput::get_BuzzGuild);
 ClassDB::bind_method(D_METHOD("set_BuzzGuild", "value"), &ModifyServiceDelegationInput::set_BuzzGuild);
 ClassDB::add_property("ModifyServiceDelegationInput", PropertyInfo(Variant::Type::OBJECT, "BuzzGuild"), "set_BuzzGuild", "get_BuzzGuild");
+ClassDB::bind_method(D_METHOD("to_dict"), &ModifyServiceDelegationInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &ModifyServiceDelegationInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

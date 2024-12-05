@@ -90,6 +90,8 @@ ClassDB::add_property("NewMissionPoolData", PropertyInfo(Variant::Type::STRING, 
 ClassDB::bind_method(D_METHOD("get_name"), &NewMissionPoolData::get_name);
 ClassDB::bind_method(D_METHOD("set_name", "value"), &NewMissionPoolData::set_name);
 ClassDB::add_property("NewMissionPoolData", PropertyInfo(Variant::Type::STRING, "name"), "set_name", "get_name");
+ClassDB::bind_method(D_METHOD("to_dict"), &NewMissionPoolData::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &NewMissionPoolData::from_dict);
 }
 } // honeycomb_resource
 } // godot

@@ -64,6 +64,8 @@ ClassDB::add_property("RecallFromMissionData", PropertyInfo(Variant::Type::STRIN
 ClassDB::bind_method(D_METHOD("get_payer"), &RecallFromMissionData::get_payer);
 ClassDB::bind_method(D_METHOD("set_payer", "value"), &RecallFromMissionData::set_payer);
 ClassDB::add_property("RecallFromMissionData", PropertyInfo(Variant::Type::STRING, "payer"), "set_payer", "get_payer");
+ClassDB::bind_method(D_METHOD("to_dict"), &RecallFromMissionData::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &RecallFromMissionData::from_dict);
 }
 } // honeycomb_resource
 } // godot

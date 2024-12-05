@@ -221,13 +221,13 @@ class GQLParse:
       self.function_name = function_name
 
 
-  def print_arg(self, arg, optional=False):
+  def print_arg(self, arg, optional=False, special=False):
     result_string = ""
     (arg_name, arg_type) = arg
     godot_type = self.ql_type_to_godot(arg_type)
 
     is_optional = "false"
-    if optional:
+    if optional and not special:
       is_optional = "true"
       if arg_name in self.signers or arg_name in self.non_signers:
         result_string += f'\tif({arg_name} != Variant(nullptr))' + "{\n\t"
@@ -245,7 +245,7 @@ class GQLParse:
     else:
       result_string += f'("{arg_name}", "{arg_type}", {arg_name}, {is_optional});\n'
 
-    if optional:
+    if optional and not special:
       result_string += '\t}\n'
 
     return result_string
@@ -286,9 +286,9 @@ class GQLParse:
     result_string = ""
 
     for required_arg in self.required_args:
-       result_string += self.print_arg(required_arg)
+       result_string += self.print_arg(required_arg, False, True)
     for optional_arg in self.optional_args:
-       result_string += self.print_arg(optional_arg, True)
+       result_string += self.print_arg(optional_arg, True, True)
 
     return result_string
 
@@ -339,6 +339,8 @@ class GQLParse:
       chunk_string = re.search(r"\{\s*[\w\s:,$]*?\([\s\S]*?\)", self.str)
       self.str = self.str[chunk_string.span()[1]:]
 
+      self.query_fields = re.sub(r"[\r\n]+", "", self.str.lstrip().rstrip()[1:-1].rstrip()[:-1])
+
       chunk_string = re.search(r"\{\s*tx\s*\{\s*[\w\s]*\}\s*[\w\s]*\}", self.str)
       if not chunk_string:
          chunk_string = re.search(r"\{\s*[\w\s]*\}", self.str)
@@ -349,9 +351,9 @@ class GQLParse:
 
       # Make a line of query
       query_fields_re = re.sub(r"[\r\n]+", "", self.str)
-      print(query_fields_re)
-      exit(1)
-      self.query_fields = re.sub(r'\s+', ' ', query_fields_re)
+      #print(query_fields_re)
+      #exit(1)
+      #self.query_fields = re.sub(r'\s+', ' ', query_fields_re)
 
       self.method_definitions += f'\t{self.print_function_name_header_special()}\n'
       self.method_implementations += self.print_function_name_special()
@@ -763,7 +765,7 @@ class GQLParse:
       prop_type = self.ql_type_to_godot(og_prop_type)
       if prop_type == "Variant" and og_prop_type.replace("!", "") == "Pubkey":
         to_dict += f'res["{prop_name}"] = Object::cast_to<{og_prop_type.replace("!", "")}>({prop_name})->to_string();\n'
-        from_dict += f'Object::cast_to<{og_prop_type.replace("!", "")}>({prop_name})->from_string(dict["{prop_name}"]);\n'
+        from_dict += f'{prop_name} = Pubkey::new_from_string(dict["{prop_name}"]);\n'
       elif prop_type == "Variant":
         to_dict += f'res["{prop_name}"] = Object::cast_to<godot::honeycomb_resource::{og_prop_type.replace("!", "")}>({prop_name})->to_dict();\n'
         from_dict += f'Object::cast_to<godot::honeycomb_resource::{og_prop_type.replace("!", "")}>({prop_name})->from_dict(dict["{prop_name}"]);\n'
@@ -783,6 +785,9 @@ class GQLParse:
       bind_methods += f'ClassDB::bind_method(D_METHOD("get_{prop_name}"), &{class_name}::get_{prop_name});\n'
       bind_methods += f'ClassDB::bind_method(D_METHOD("set_{prop_name}", "value"), &{class_name}::set_{prop_name});\n'
       bind_methods += f'ClassDB::add_property("{class_name}", PropertyInfo(Variant::Type::{GODOT_VARIANT_ENUM_TYPE[prop_type]}, "{prop_name}"), "set_{prop_name}", "get_{prop_name}");\n'
+
+    bind_methods += f'ClassDB::bind_method(D_METHOD("to_dict"), &{class_name}::to_dict);\n'
+    bind_methods += f'ClassDB::bind_method(D_METHOD("from_dict", "dict"), &{class_name}::from_dict);\n'
 
     result += to_dict + "return res;\n}\n\n"
     result += from_dict + "}\n\n"

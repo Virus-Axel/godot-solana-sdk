@@ -52,6 +52,8 @@ ClassDB::add_property("CharacterConfigInput", PropertyInfo(Variant::Type::ARRAY,
 ClassDB::bind_method(D_METHOD("get_assemblerConfigInput"), &CharacterConfigInput::get_assemblerConfigInput);
 ClassDB::bind_method(D_METHOD("set_assemblerConfigInput", "value"), &CharacterConfigInput::set_assemblerConfigInput);
 ClassDB::add_property("CharacterConfigInput", PropertyInfo(Variant::Type::OBJECT, "assemblerConfigInput"), "set_assemblerConfigInput", "get_assemblerConfigInput");
+ClassDB::bind_method(D_METHOD("to_dict"), &CharacterConfigInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &CharacterConfigInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

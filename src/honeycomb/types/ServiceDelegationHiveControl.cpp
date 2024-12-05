@@ -25,6 +25,8 @@ void ServiceDelegationHiveControl::_bind_methods(){
 ClassDB::bind_method(D_METHOD("get_permission"), &ServiceDelegationHiveControl::get_permission);
 ClassDB::bind_method(D_METHOD("set_permission", "value"), &ServiceDelegationHiveControl::set_permission);
 ClassDB::add_property("ServiceDelegationHiveControl", PropertyInfo(Variant::Type::INT, "permission"), "set_permission", "get_permission");
+ClassDB::bind_method(D_METHOD("to_dict"), &ServiceDelegationHiveControl::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &ServiceDelegationHiveControl::from_dict);
 }
 } // honeycomb_resource
 } // godot

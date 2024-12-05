@@ -38,6 +38,8 @@ ClassDB::add_property("MealInput", PropertyInfo(Variant::Type::STRING, "resource
 ClassDB::bind_method(D_METHOD("get_amount"), &MealInput::get_amount);
 ClassDB::bind_method(D_METHOD("set_amount", "value"), &MealInput::set_amount);
 ClassDB::add_property("MealInput", PropertyInfo(Variant::Type::INT, "amount"), "set_amount", "get_amount");
+ClassDB::bind_method(D_METHOD("to_dict"), &MealInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &MealInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

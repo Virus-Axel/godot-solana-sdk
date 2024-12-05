@@ -39,6 +39,8 @@ ClassDB::add_property("ModifyDelegationInput", PropertyInfo(Variant::Type::OBJEC
 ClassDB::bind_method(D_METHOD("get_index"), &ModifyDelegationInput::get_index);
 ClassDB::bind_method(D_METHOD("set_index", "value"), &ModifyDelegationInput::set_index);
 ClassDB::add_property("ModifyDelegationInput", PropertyInfo(Variant::Type::INT, "index"), "set_index", "get_index");
+ClassDB::bind_method(D_METHOD("to_dict"), &ModifyDelegationInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &ModifyDelegationInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

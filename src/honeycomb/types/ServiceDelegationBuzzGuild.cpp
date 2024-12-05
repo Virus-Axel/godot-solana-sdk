@@ -38,6 +38,8 @@ ClassDB::add_property("ServiceDelegationBuzzGuild", PropertyInfo(Variant::Type::
 ClassDB::bind_method(D_METHOD("get_permission"), &ServiceDelegationBuzzGuild::get_permission);
 ClassDB::bind_method(D_METHOD("set_permission", "value"), &ServiceDelegationBuzzGuild::set_permission);
 ClassDB::add_property("ServiceDelegationBuzzGuild", PropertyInfo(Variant::Type::INT, "permission"), "set_permission", "get_permission");
+ClassDB::bind_method(D_METHOD("to_dict"), &ServiceDelegationBuzzGuild::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &ServiceDelegationBuzzGuild::from_dict);
 }
 } // honeycomb_resource
 } // godot

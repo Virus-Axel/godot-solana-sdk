@@ -52,6 +52,8 @@ ClassDB::add_property("SendTransactionBundlesOptions", PropertyInfo(Variant::Typ
 ClassDB::bind_method(D_METHOD("get_bundles"), &SendTransactionBundlesOptions::get_bundles);
 ClassDB::bind_method(D_METHOD("set_bundles", "value"), &SendTransactionBundlesOptions::set_bundles);
 ClassDB::add_property("SendTransactionBundlesOptions", PropertyInfo(Variant::Type::OBJECT, "bundles"), "set_bundles", "get_bundles");
+ClassDB::bind_method(D_METHOD("to_dict"), &SendTransactionBundlesOptions::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &SendTransactionBundlesOptions::from_dict);
 }
 } // honeycomb_resource
 } // godot

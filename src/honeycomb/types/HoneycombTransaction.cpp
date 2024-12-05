@@ -51,6 +51,8 @@ ClassDB::add_property("HoneycombTransaction", PropertyInfo(Variant::Type::STRING
 ClassDB::bind_method(D_METHOD("get_lastValidBlockHeight"), &HoneycombTransaction::get_lastValidBlockHeight);
 ClassDB::bind_method(D_METHOD("set_lastValidBlockHeight", "value"), &HoneycombTransaction::set_lastValidBlockHeight);
 ClassDB::add_property("HoneycombTransaction", PropertyInfo(Variant::Type::INT, "lastValidBlockHeight"), "set_lastValidBlockHeight", "get_lastValidBlockHeight");
+ClassDB::bind_method(D_METHOD("to_dict"), &HoneycombTransaction::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &HoneycombTransaction::from_dict);
 }
 } // honeycomb_resource
 } // godot

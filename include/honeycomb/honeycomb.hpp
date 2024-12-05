@@ -100,17 +100,28 @@ private:
             ERR_FAIL_EDMSG("Error in request, check console logs");
         }
 
-        Dictionary method_response = ((Dictionary)response["data"])[method_name];
-        T* ret = memnew(T);
-        Object::cast_to<T>(ret)->from_dict(method_response);
+        Array method_response = ((Dictionary)response["data"])[method_name];
+        std::cout << "AAA" << std::endl;
+        std::cout << "AAA" << std::endl;
+        Array ret;
+
+        for(unsigned int i = 0; i < method_response.size(); i++){
+            Dictionary element = method_response[i];
+
+            T* item = memnew(T);
+            Object::cast_to<T>(item)->from_dict(element);
+            ret.append(item);
+        }
+        std::cout << "AAA" << std::endl;
 
         emit_signal("type_fetched", ret);
+        std::cout << "AAA" << std::endl;
     }
 
     template <typename T>
     void fetch_type(){
         Callable callback = callable_mp(this, &HoneyComb::fetch_type_callback<T>);
-        api_request->connect("request_completed", callback);
+        api_request->connect("request_completed", callback, CONNECT_ONE_SHOT);
 
         PackedStringArray headers;
         headers.append("content-type: application/json");

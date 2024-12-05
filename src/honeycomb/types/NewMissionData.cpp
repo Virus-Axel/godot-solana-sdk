@@ -143,6 +143,8 @@ ClassDB::add_property("NewMissionData", PropertyInfo(Variant::Type::INT, "durati
 ClassDB::bind_method(D_METHOD("get_rewards"), &NewMissionData::get_rewards);
 ClassDB::bind_method(D_METHOD("set_rewards", "value"), &NewMissionData::set_rewards);
 ClassDB::add_property("NewMissionData", PropertyInfo(Variant::Type::ARRAY, "rewards"), "set_rewards", "get_rewards");
+ClassDB::bind_method(D_METHOD("to_dict"), &NewMissionData::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &NewMissionData::from_dict);
 }
 } // honeycomb_resource
 } // godot

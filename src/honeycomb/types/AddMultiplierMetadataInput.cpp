@@ -39,6 +39,8 @@ ClassDB::add_property("AddMultiplierMetadataInput", PropertyInfo(Variant::Type::
 ClassDB::bind_method(D_METHOD("get_type"), &AddMultiplierMetadataInput::get_type);
 ClassDB::bind_method(D_METHOD("set_type", "value"), &AddMultiplierMetadataInput::set_type);
 ClassDB::add_property("AddMultiplierMetadataInput", PropertyInfo(Variant::Type::OBJECT, "type"), "set_type", "get_type");
+ClassDB::bind_method(D_METHOD("to_dict"), &AddMultiplierMetadataInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &AddMultiplierMetadataInput::from_dict);
 }
 } // honeycomb_resource
 } // godot

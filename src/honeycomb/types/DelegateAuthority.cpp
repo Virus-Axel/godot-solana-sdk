@@ -58,8 +58,8 @@ return res;
 void DelegateAuthority::from_dict(const Dictionary& dict){
 address = dict["address"];
 bump = dict["bump"];
-Object::cast_to<Pubkey>(project)->from_string(dict["project"]);
-Object::cast_to<Pubkey>(authority)->from_string(dict["authority"]);
+project = Pubkey::new_from_string(dict["project"]);
+authority = Pubkey::new_from_string(dict["authority"]);
 delegations = dict["delegations"];
 }
 
@@ -79,6 +79,8 @@ ClassDB::add_property("DelegateAuthority", PropertyInfo(Variant::Type::OBJECT, "
 ClassDB::bind_method(D_METHOD("get_delegations"), &DelegateAuthority::get_delegations);
 ClassDB::bind_method(D_METHOD("set_delegations", "value"), &DelegateAuthority::set_delegations);
 ClassDB::add_property("DelegateAuthority", PropertyInfo(Variant::Type::ARRAY, "delegations"), "set_delegations", "get_delegations");
+ClassDB::bind_method(D_METHOD("to_dict"), &DelegateAuthority::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &DelegateAuthority::from_dict);
 }
 } // honeycomb_resource
 } // godot

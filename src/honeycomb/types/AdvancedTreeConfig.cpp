@@ -51,6 +51,8 @@ ClassDB::add_property("AdvancedTreeConfig", PropertyInfo(Variant::Type::INT, "ma
 ClassDB::bind_method(D_METHOD("get_canopyDepth"), &AdvancedTreeConfig::get_canopyDepth);
 ClassDB::bind_method(D_METHOD("set_canopyDepth", "value"), &AdvancedTreeConfig::set_canopyDepth);
 ClassDB::add_property("AdvancedTreeConfig", PropertyInfo(Variant::Type::INT, "canopyDepth"), "set_canopyDepth", "get_canopyDepth");
+ClassDB::bind_method(D_METHOD("to_dict"), &AdvancedTreeConfig::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &AdvancedTreeConfig::from_dict);
 }
 } // honeycomb_resource
 } // godot

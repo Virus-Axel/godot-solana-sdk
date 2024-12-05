@@ -38,6 +38,8 @@ ClassDB::add_property("ServiceDelegationNectarMissions", PropertyInfo(Variant::T
 ClassDB::bind_method(D_METHOD("get_permission"), &ServiceDelegationNectarMissions::get_permission);
 ClassDB::bind_method(D_METHOD("set_permission", "value"), &ServiceDelegationNectarMissions::set_permission);
 ClassDB::add_property("ServiceDelegationNectarMissions", PropertyInfo(Variant::Type::INT, "permission"), "set_permission", "get_permission");
+ClassDB::bind_method(D_METHOD("to_dict"), &ServiceDelegationNectarMissions::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &ServiceDelegationNectarMissions::from_dict);
 }
 } // honeycomb_resource
 } // godot

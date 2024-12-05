@@ -38,6 +38,8 @@ ClassDB::add_property("CustomDataInput", PropertyInfo(Variant::Type::DICTIONARY,
 ClassDB::bind_method(D_METHOD("get_remove"), &CustomDataInput::get_remove);
 ClassDB::bind_method(D_METHOD("set_remove", "value"), &CustomDataInput::set_remove);
 ClassDB::add_property("CustomDataInput", PropertyInfo(Variant::Type::PACKED_STRING_ARRAY, "remove"), "set_remove", "get_remove");
+ClassDB::bind_method(D_METHOD("to_dict"), &CustomDataInput::to_dict);
+ClassDB::bind_method(D_METHOD("from_dict", "dict"), &CustomDataInput::from_dict);
 }
 } // honeycomb_resource
 } // godot
