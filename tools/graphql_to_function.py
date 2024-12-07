@@ -14,13 +14,13 @@ SIGNER_TYPE = "const Variant&"
 SERVER_SIGNER = 'Pubkey::new_from_string("11111111111111111111111111111111")'
 
 resource_includes = [
-  'godot_cpp/variant/variant.hpp',
-  'godot_cpp/core/class_db.hpp',
-  'godot_cpp/classes/resource.hpp',
+    'godot_cpp/variant/variant.hpp',
+    'godot_cpp/core/class_db.hpp',
+    'godot_cpp/classes/resource.hpp',
 ]
 
 header_includes = [
-  '"pubkey.hpp"',
+    '"pubkey.hpp"',
 ]
 
 QL_TO_VARIANT = {
@@ -131,685 +131,753 @@ GODOT_VARIANT_ENUM_TYPE = {
   "Dictionary": "DICTIONARY",
 }
 
+def strip(input_string: str):
+    """Strips whitespaces in beginning and end of input string.
+
+    Args:
+        input (str): Input string to strip whitespaces from.
+
+    Returns:
+        _type_: String without whitespaces trailing and leading whitespaces.
+    """
+    return input_string.lstrip().rstrip()
+
+class SimpleQLRequestParser:
+    """Simple query parser for the honeycomb transaction creating queries.
+    """
+    def __init__(self):
+        self.query_name = ""
+        self.function_name = ""
+        self.query_fields = ""
+        self.names = []
+        self.types = []
+
+    def parse(self, request_query: str):
+        """Parses a string of a request query.
+
+        Args:
+            request_query (str): The request query to parse.
+        """
+        # Parse Query name.
+        query_keyword = "query"
+        start_pos = request_query.find(query_keyword) + len(query_keyword)
+        end_pos = request_query.find('(')
+        self.query_name = strip(request_query[start_pos:end_pos])
+
+        # Parse argument names and types.
+        start_pos = request_query.find('(') + 1
+        end_pos = request_query.find(')')
+
+        argument_section = request_query[start_pos:end_pos]
+        argument_section = strip(argument_section)
+
+        arguments = argument_section.split(',')
+        for argument in arguments:
+            (name, type_name) = argument.split(':')
+
+            # Remove $ from name.
+            name = name.strip()[1:]
+
+            self.names.append(name)
+            self.types.append(type_name)
+
+        # Fetch function part of input.
+        start_pos = request_query.find('{')
+        function_section = request_query[start_pos:]
+
+        # Strip one layer of {}'s.
+        function_section = strip(function_section)[1:-1]
+
+        # Parse function name.
+        end_pos = function_section.find('(')
+        self.function_name = strip(function_section[:end_pos])
+
+        # Parse query fields.
+        start_pos = function_section.find('{')
+        self.query_fields = strip(function_section[start_pos:])
+
 
 class GQLParse:
-  def __init__(self):
-    self.required_args = []
-    self.optional_args = []
-    self.original_required_args = []
-    self.original_optional_args = []
-    self.str = ""
-    self.method_definitions = ""
-    self.bound_methods = ""
-    self.method_implementations = ""
-    self.types = []
-
-  def save_cpp_file(self, filepath, outdir_hpp):
-    file = open(filepath, "w")
-    file.write(self.print_cpp_file(outdir_hpp))
-    file.close()
+    def __init__(self):
+        self.signers = []
+        self.non_signers = []
+        self.required_args = []
+        self.optional_args = []
+        self.original_required_args = []
+        self.original_optional_args = []
+        self.str = ""
+        self.method_definitions = ""
+        self.bound_methods = ""
+        self.method_implementations = ""
+        self.types = []
 
-  def save_hpp_file(self, filepath):
-    file = open(filepath, "w")
-    file.write(self.print_header_file())
-    file.close()
+    def save_cpp_file(self, filepath, outdir_hpp):
+        file = open(filepath, "w")
+        file.write(self.print_cpp_file(outdir_hpp))
+        file.close()
 
-  def save_resource_files(self, outdir_cpp, outdir_hpp):
-    for i in range(len(self.types)):
-      type = self.types[i]
-      class_name = type["classname"]
-      hpp_file = open(os.path.join(outdir_hpp, f"{class_name}.hpp"), "w")
-      hpp_file.write(self.print_resource_hpp_file(i))
-      hpp_file.close()
+    def save_hpp_file(self, filepath):
+        file = open(filepath, "w")
+        file.write(self.print_header_file())
+        file.close()
 
-      cpp_file = open(os.path.join(outdir_cpp, f"{class_name}.cpp"), "w")
-      cpp_file.write(self.print_resource_cpp_file(i, outdir_hpp.split("/", maxsplit=1)[-1]))
-      cpp_file.close()
-    pass
+    def save_resource_files(self, outdir_cpp, outdir_hpp):
+        for i in range(len(self.types)):
+            type = self.types[i]
+            class_name = type["classname"]
+            hpp_file = open(os.path.join(outdir_hpp, f"{class_name}.hpp"), "w")
+            hpp_file.write(self.print_resource_hpp_file(i))
+            hpp_file.close()
 
-  def function_name_to_alias(self, function_name):
-    alias = function_name[6:-11]
-    return ''.join(['_'+c.lower() if c.isupper() else c for c in alias]).lstrip('_')
-
-
-  def ql_type_to_godot(self, ql_type):
-    if ql_type[-1] == '!':
-      return QL_TO_VARIANT[ql_type[:-1]]
-    else:
-      return QL_TO_VARIANT[ql_type]
-
-
-  def add_required_arg_to_bind(self, arg):
-    self.bind_methods = ""
+            cpp_file = open(os.path.join(outdir_cpp, f"{class_name}.cpp"), "w")
+            cpp_file.write(self.print_resource_cpp_file(i, outdir_hpp.split("/", maxsplit=1)[-1]))
+            cpp_file.close()
 
 
-  def add_required_arg(self, name, data_type):
-    self.required_args.append((name, data_type))
+    def function_name_to_alias(self, function_name):
+        alias = function_name[6:-11]
+        return ''.join(['_'+c.lower() if c.isupper() else c for c in alias]).lstrip('_')
 
 
-  def add_optional_arg(self, name, data_type):
-    self.optional_args.append((name, data_type))
+    def ql_type_to_godot(self, ql_type):
+        if ql_type[-1] == '!':
+            return QL_TO_VARIANT[ql_type[:-1]]
+        else:
+            return QL_TO_VARIANT[ql_type]
+
 
+    def add_required_arg_to_bind(self, arg):
+        self.bind_methods = ""
 
-  def process_arg(self, arg):
-    (name, data_type) = arg.split(":")
-    name = name.lstrip()
-    data_type = data_type.lstrip().rstrip()
-    assert(name[0] == '$')
-    name = name[1:]
-    if(data_type[-1] == "!"):
-      data_type = data_type[0:-1]
 
-      self.add_required_arg_to_bind(arg)
-      self.add_required_arg(name, data_type)
+    def add_required_arg(self, name, data_type):
+        self.required_args.append((name, data_type))
 
-    else:
-      self.add_optional_arg(name, data_type)
 
+    def add_optional_arg(self, name, data_type):
+        self.optional_args.append((name, data_type))
 
-  def read_args(self, str):
-      (function_name, str) = str.split("(", maxsplit=1)
-      function_name = function_name[0].lower() + function_name[1:]
 
-      assert(str[-1] == ")")
-      str = str[0:-1]
+    def process_arg(self, arg):
+        (name, data_type) = arg.split(":")
+        name = name.lstrip()
+        data_type = data_type.lstrip().rstrip()
+        assert(name[0] == '$')
+        name = name[1:]
+        if(data_type[-1] == "!"):
+            data_type = data_type[0:-1]
 
-      args = str.split(",")
-      for arg in args:
-          self.process_arg(arg)
+            self.add_required_arg_to_bind(arg)
+            self.add_required_arg(name, data_type)
 
-      self.function_name = function_name
+        else:
+            self.add_optional_arg(name, data_type)
 
 
-  def print_arg(self, arg, optional=False, special=False):
-    result_string = ""
-    (arg_name, arg_type) = arg
-    godot_type = self.ql_type_to_godot(arg_type)
+    def read_args(self, str):
+        (function_name, str) = str.split("(", maxsplit=1)
+        function_name = function_name[0].lower() + function_name[1:]
 
-    is_optional = "false"
-    if optional and not special:
-      is_optional = "true"
-      if arg_name in self.signers or arg_name in self.non_signers:
-        result_string += f'\tif({arg_name} != Variant(nullptr))' + "{\n\t"
-      else:
-        result_string += f'\tif({arg_name} != {GODOT_TYPE_DEFVAL[godot_type]})' + "{\n\t"
+        assert(str[-1] == ")")
+        str = str[0:-1]
 
-    result_string += "\tadd_arg"
+        args = str.split(",")
+        for arg in args:
+            self.process_arg(arg)
 
-    if godot_type == "String":
-      result_string += f'("{arg_name}", "{arg_type}", Pubkey::string_from_variant({arg_name}), {is_optional});\n'
-    elif godot_type == "Variant" and arg_type == "Pubkey":
-       result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<{arg_type}>({arg_name})->to_string(), {is_optional});\n'
-    elif godot_type == "Variant":
-       result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<godot::honeycomb_resource::{arg_type}>({arg_name})->to_dict(), {is_optional});\n'
-    else:
-      result_string += f'("{arg_name}", "{arg_type}", {arg_name}, {is_optional});\n'
+        self.function_name = function_name
 
-    if optional and not special:
-      result_string += '\t}\n'
 
-    return result_string
+    def print_arg(self, arg, optional=False, special=False):
+        result_string = ""
+        (arg_name, arg_type) = arg
+        godot_type = self.ql_type_to_godot(arg_type)
 
+        is_optional = "false"
+        if optional and not special:
+            is_optional = "true"
+            if arg_name in self.signers or arg_name in self.non_signers:
+                result_string += f'\tif({arg_name} != Variant(nullptr))' + "{\n\t"
+            else:
+                result_string += f'\tif({arg_name} != {GODOT_TYPE_DEFVAL[godot_type]})' + "{\n\t"
 
-  def print_arg_array(self, arg, optional=False):
-    result_string = ""
-    (arg_name, arg_type) = arg
-    godot_type = self.ql_type_to_godot(arg_type)
+        result_string += "\tadd_arg"
 
-    is_optional = "false"
-    if optional:
-      is_optional = "true"
-      if arg_name in self.signers or arg_name in self.non_signers:
-        result_string += f'\tif({arg_name} != Variant(nullptr))' + "{\n\t"
-      else:
-        result_string += f'\tif({arg_name} != {GODOT_TYPE_DEFVAL[godot_type]})' + "{\n\t"
+        if godot_type == "String":
+            result_string += f'("{arg_name}", "{arg_type}", Pubkey::string_from_variant({arg_name}), {is_optional});\n'
+        elif godot_type == "Variant" and arg_type == "Pubkey":
+            result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<{arg_type}>({arg_name})->to_string(), {is_optional});\n'
+        elif godot_type == "Variant":
+            result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<godot::honeycomb_resource::{arg_type}>({arg_name})->to_dict(), {is_optional});\n'
+        else:
+            result_string += f'("{arg_name}", "{arg_type}", {arg_name}, {is_optional});\n'
 
-    result_string += "\targs.append"
+        if optional and not special:
+            result_string += '\t}\n'
 
-    if godot_type == "String":
-      result_string += f'("{arg_name}", "{arg_type}", Pubkey::string_from_variant({arg_name}), {is_optional});\n'
-    elif godot_type == "Variant" and arg_type == "Pubkey":
-       result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<{arg_type}>({arg_name})->to_string(), {is_optional});\n'
-    elif godot_type == "Variant":
-       result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<godot::honeycomb_resource::{arg_type}>({arg_name})->to_dict(), {is_optional});\n'
-    else:
-      result_string += f'("{arg_name}", "{arg_type}", {arg_name}, {is_optional});\n'
+        return result_string
 
-    if optional:
-      result_string += '\t}\n'
 
-    return result_string
+    def print_arg_array(self, arg, optional=False):
+        result_string = ""
+        (arg_name, arg_type) = arg
+        godot_type = self.ql_type_to_godot(arg_type)
 
+        is_optional = "false"
+        if optional:
+            is_optional = "true"
+            if arg_name in self.signers or arg_name in self.non_signers:
+                    result_string += f'\tif({arg_name} != Variant(nullptr))' + "{\n\t"
+            else:
+                    result_string += f'\tif({arg_name} != {GODOT_TYPE_DEFVAL[godot_type]})' + "{\n\t"
 
-  def print_args_section(self):
+        result_string += "\targs.append"
 
-    result_string = ""
+        if godot_type == "String":
+            result_string += f'("{arg_name}", "{arg_type}", Pubkey::string_from_variant({arg_name}), {is_optional});\n'
+        elif godot_type == "Variant" and arg_type == "Pubkey":
+            result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<{arg_type}>({arg_name})->to_string(), {is_optional});\n'
+        elif godot_type == "Variant":
+            result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<godot::honeycomb_resource::{arg_type}>({arg_name})->to_dict(), {is_optional});\n'
+        else:
+            result_string += f'("{arg_name}", "{arg_type}", {arg_name}, {is_optional});\n'
 
-    for required_arg in self.required_args:
-       result_string += self.print_arg(required_arg, False, True)
-    for optional_arg in self.optional_args:
-       result_string += self.print_arg(optional_arg, True, True)
+        if optional:
+            result_string += '\t}\n'
 
-    return result_string
+        return result_string
 
 
-  def print_args_section_special(self):
+    def print_args_section(self):
 
-    result_string = ""
+        result_string = ""
 
-    for required_arg in self.required_args:
-       result_string += self.print_arg_array(required_arg)
-    for optional_arg in self.optional_args:
-       result_string += self.print_arg_array(optional_arg, True)
+        for required_arg in self.required_args:
+            result_string += self.print_arg(required_arg, False, True)
+        for optional_arg in self.optional_args:
+            result_string += self.print_arg(optional_arg, True, True)
 
-    return result_string
+        return result_string
 
 
-  def graphql_to_type(self, type_str):
-      new_type = {}
-      (firstWord, type_str) = type_str.split(maxsplit=1)
+    def print_args_section_special(self):
 
-      new_type['classname'] = firstWord
-      new_type['properties'] = []
+        result_string = ""
 
-      lines = type_str.splitlines()
+        for required_arg in self.required_args:
+            result_string += self.print_arg_array(required_arg)
+        for optional_arg in self.optional_args:
+            result_string += self.print_arg_array(optional_arg, True)
 
-      for line in lines:
-        (name, type) = line.split('-', maxsplit=1)
-        new_type['properties'].append((name.rstrip(), type.lstrip()))
+        return result_string
 
-      self.types.append(new_type)
 
+    def graphql_to_type(self, type_str):
+        new_type = {}
+        (firstWord, type_str) = type_str.split(maxsplit=1)
 
-  def graphql_to_fetcher(self, str):
-      self.str = str
-      self.required_args = []
-      self.optional_args = []
-      self.original_required_args = []
-      self.original_optional_args = []
+        new_type['classname'] = firstWord
+        new_type['properties'] = []
 
-      (firstWord, self.str) = self.str.split(maxsplit=1)
-      assert(firstWord == "query")
+        lines = type_str.splitlines()
 
-      func_header = re.match(r"(.*)\(([\s\S]*?)\)", self.str)
+        for line in lines:
+            (name, type) = line.split('-', maxsplit=1)
+            new_type['properties'].append((name.rstrip(), type.lstrip()))
 
-      self.read_args(func_header.group())
+        self.types.append(new_type)
 
-      self.str = self.str[func_header.span()[1]:]
-      chunk_string = re.search(r"\{\s*[\w\s:,$]*?\([\s\S]*?\)", self.str)
-      self.str = self.str[chunk_string.span()[1]:]
 
-      self.query_fields = re.sub(r"[\r\n]+", "", self.str.lstrip().rstrip()[1:-1].rstrip()[:-1])
+    def graphql_to_fetcher(self, str):
+        self.str = str
+        self.required_args = []
+        self.optional_args = []
+        self.original_required_args = []
+        self.original_optional_args = []
 
-      chunk_string = re.search(r"\{\s*tx\s*\{\s*[\w\s]*\}\s*[\w\s]*\}", self.str)
-      if not chunk_string:
-         chunk_string = re.search(r"\{\s*[\w\s]*\}", self.str)
+        (firstWord, self.str) = self.str.split(maxsplit=1)
+        assert(firstWord == "query")
 
-      self.str = chunk_string.group()
-      self.str = self.str.lstrip()[1:]
-      self.str = self.str.rstrip()[0:-1]
+        func_header = re.match(r"(.*)\(([\s\S]*?)\)", self.str)
 
-      # Make a line of query
-      query_fields_re = re.sub(r"[\r\n]+", "", self.str)
-      #print(query_fields_re)
-      #exit(1)
-      #self.query_fields = re.sub(r'\s+', ' ', query_fields_re)
+        self.read_args(func_header.group())
 
-      self.method_definitions += f'\t{self.print_function_name_header_special()}\n'
-      self.method_implementations += self.print_function_name_special()
+        self.str = self.str[func_header.span()[1]:]
+        chunk_string = re.search(r"\{\s*[\w\s:,$]*?\([\s\S]*?\)", self.str)
+        self.str = self.str[chunk_string.span()[1]:]
 
-      self.method_implementations += "{\n"
-      self.method_implementations += "\tif(pending){\n"
-      self.method_implementations += "\t\treturn ERR_BUSY;\n"
-      self.method_implementations += "\t}\n"
-      self.method_implementations += self.print_args_section() + '\n'
-      self.method_implementations += self.print_method_name() + '\n'
-      self.method_implementations += self.print_last_section_special() + '\n'
+        self.query_fields = re.sub(r"[\r\n]+", "", self.str.lstrip().rstrip()[1:-1].rstrip()[:-1])
 
-      self.append_method_bind_special()
+        chunk_string = re.search(r"\{\s*tx\s*\{\s*[\w\s]*\}\s*[\w\s]*\}", self.str)
+        if not chunk_string:
+            chunk_string = re.search(r"\{\s*[\w\s]*\}", self.str)
 
-      self.str = self.str[chunk_string.span()[1]:]
+        self.str = chunk_string.group()
+        self.str = self.str.lstrip()[1:]
+        self.str = self.str.rstrip()[0:-1]
 
-      # Find type that this function returns and add special attributes to it.
-      for type in self.types:
-        if type['classname'][1:] == self.function_name[1:]:
-          self.function_name = "fetch"
-          type['fetch_declaration'] = f'\t{self.print_function_name_header()}\n'
-          type['fetch_definition'] = self.print_function_name().replace(CLASS_TYPE, type['classname'])
-          type['fetch_definition'] += "{\n"
-          type['fetch_definition'] += self.print_fetch_implementation()
-          type['fetch_definition'] += "}\n"
+        # Make a line of query
+        query_fields_re = re.sub(r"[\r\n]+", "", self.str)
+        #print(query_fields_re)
+        #exit(1)
+        #self.query_fields = re.sub(r'\s+', ' ', query_fields_re)
 
-      return ""
+        self.method_definitions += f'\t{self.print_function_name_header_special()}\n'
+        self.method_implementations += self.print_function_name_special()
 
+        self.method_implementations += "{\n"
+        self.method_implementations += "\tif(pending){\n"
+        self.method_implementations += "\t\treturn ERR_BUSY;\n"
+        self.method_implementations += "\t}\n"
+        self.method_implementations += self.print_args_section() + '\n'
+        self.method_implementations += self.print_method_name() + '\n'
+        self.method_implementations += self.print_last_section_special() + '\n'
 
-  def print_fetch_implementation(self):
-    result = "\tif(honey_comb == nullptr){\n\t\thoney_comb = memnew(HoneyComb);\n\t}\n"
+        self.append_method_bind_special()
 
-    return result
+        self.str = self.str[chunk_string.span()[1]:]
 
-  def graphql_to_function(self, str, signers, non_signers):
-      self.str = str
-      self.signers = signers
-      self.non_signers = non_signers
-      self.required_args = []
-      self.optional_args = []
-      self.original_required_args = []
-      self.original_optional_args = []
+        # Find type that this function returns and add special attributes to it.
+        for type in self.types:
+            if type['classname'][1:] == self.function_name[1:]:
+                self.function_name = "fetch"
+                type['fetch_declaration'] = f'\t{self.print_function_name_header()}\n'
+                type['fetch_definition'] = self.print_function_name().replace(CLASS_TYPE, type['classname'])
+                type['fetch_definition'] += "{\n"
+                type['fetch_definition'] += self.print_fetch_implementation()
+                type['fetch_definition'] += "}\n"
 
-      (firstWord, self.str) = self.str.split(maxsplit=1)
-      assert(firstWord == "query")
+        return ""
 
-      func_header = re.match(r"(.*)\(([\s\S]*?)\)", self.str)
 
-      self.read_args(func_header.group())
+    def print_fetch_implementation(self):
+        result = "\tif(honey_comb == nullptr){\n\t\thoney_comb = memnew(HoneyComb);\n\t}\n"
 
-      self.str = self.str[func_header.span()[1]:]
-      chunk_string = re.search(r"\{\s*[\w\s:,$]*?\([\s\S]*?\)", self.str)
-      self.str = self.str[chunk_string.span()[1]:]
+        return result
 
-      chunk_string = re.search(r"\{\s*tx\s*\{\s*[\w\s]*\}\s*[\w\s]*\}", self.str)
-      if not chunk_string:
-         chunk_string = re.search(r"\{\s*[\w\s]*\}", self.str)
+    def graphql_to_function(self, str, signers, non_signers):
+        self.str = str
+        self.signers = signers
+        self.non_signers = non_signers
+        self.required_args = []
+        self.optional_args = []
+        self.original_required_args = []
+        self.original_optional_args = []
 
-      self.str = chunk_string.group()
-      self.str = self.str.lstrip()[1:]
-      self.str = self.str.rstrip()[0:-1]
+        (firstWord, self.str) = self.str.split(maxsplit=1)
+        assert(firstWord == "query")
 
-      # Make a line of query
-      query_fields_re = re.sub(r"[\r\n]+", "", self.str)
-      self.query_fields = re.sub(r'\s+', ' ', query_fields_re)
+        func_header = re.match(r"(.*)\(([\s\S]*?)\)", self.str)
 
-      self.method_definitions += f'\t{self.print_function_name_header()}\n'
+        self.read_args(func_header.group())
 
-      self.method_implementations += self.print_function_name()
-      self.method_implementations += "{\n"
-      self.method_implementations += "\tif(pending){\n"
-      self.method_implementations += "\t\treturn ERR_BUSY;\n"
-      self.method_implementations += "\t}\n"
-      self.method_implementations += self.print_signer_section() + '\n'
-      self.method_implementations += self.print_args_section() + '\n'
-      self.method_implementations += self.print_method_name() + '\n'
-      self.method_implementations += self.print_last_section() + '\n'
+        self.str = self.str[func_header.span()[1]:]
+        chunk_string = re.search(r"\{\s*[\w\s:,$]*?\([\s\S]*?\)", self.str)
+        self.str = self.str[chunk_string.span()[1]:]
 
-      self.append_method_bind()
+        chunk_string = re.search(r"\{\s*tx\s*\{\s*[\w\s]*\}\s*[\w\s]*\}", self.str)
+        if not chunk_string:
+            chunk_string = re.search(r"\{\s*[\w\s]*\}", self.str)
 
+        self.str = chunk_string.group()
+        self.str = self.str.lstrip()[1:]
+        self.str = self.str.rstrip()[0:-1]
 
+        # Make a line of query
+        query_fields_re = re.sub(r"[\r\n]+", "", self.str)
+        self.query_fields = re.sub(r'\s+', ' ', query_fields_re)
 
-      self.str = self.str[chunk_string.span()[1]:]
-      return ""
+        self.method_definitions += f'\t{self.print_function_name_header()}\n'
+
+        self.method_implementations += self.print_function_name()
+        self.method_implementations += "{\n"
+        self.method_implementations += "\tif(pending){\n"
+        self.method_implementations += "\t\treturn ERR_BUSY;\n"
+        self.method_implementations += "\t}\n"
+        self.method_implementations += self.print_signer_section() + '\n'
+        self.method_implementations += self.print_args_section() + '\n'
+        self.method_implementations += self.print_method_name() + '\n'
+        self.method_implementations += self.print_last_section() + '\n'
+
+        self.append_method_bind()
+
+
+
+        self.str = self.str[chunk_string.span()[1]:]
+        return ""
   
 
-  def append_method_bind(self):
-    result_string = f'ClassDB::bind_method(D_METHOD("{self.function_name_to_alias(self.function_name)}", '
+    def append_method_bind(self):
+        result_string = f'ClassDB::bind_method(D_METHOD("{self.function_name_to_alias(self.function_name)}", '
 
-    for required_arg in self.required_args:
-       (arg_name, _arg_type) = required_arg
-       result_string += f'"{arg_name}", '
+        for required_arg in self.required_args:
+            (arg_name, _arg_type) = required_arg
+            result_string += f'"{arg_name}", '
 
-    for optional_arg in self.optional_args:
-       (arg_name, _arg_type) = optional_arg
-       result_string += f'"{arg_name}", '
-      
-    if self.required_args or self.optional_args:
-      result_string = result_string[0:-2]
+        for optional_arg in self.optional_args:
+            (arg_name, _arg_type) = optional_arg
+            result_string += f'"{arg_name}", '
+        
+        if self.required_args or self.optional_args:
+            result_string = result_string[0:-2]
 
-    result_string += f'), &{CLASS_TYPE}::{self.function_name}'
+        result_string += f'), &{CLASS_TYPE}::{self.function_name}'
 
-    if self.optional_args:
-      result_string += ', '
+        if self.optional_args:
+            result_string += ', '
 
-    temp_optional_args = self.optional_args
-    #temp_optional_args.reverse()
+        temp_optional_args = self.optional_args
+        #temp_optional_args.reverse()
 
-    for optional_arg in temp_optional_args:
-      (arg_name, arg_type) = optional_arg
-      godot_type = QL_TO_VARIANT[arg_type]
-      if arg_name in self.signers or arg_name in self.non_signers:
-        result_string += f'DEFVAL({GODOT_TYPE_DEFVAL["Variant"]}), '
-      else:
-        result_string += f'DEFVAL({GODOT_TYPE_DEFVAL[godot_type]}), '
+        for optional_arg in temp_optional_args:
+            (arg_name, arg_type) = optional_arg
+            godot_type = QL_TO_VARIANT[arg_type]
+            if arg_name in self.signers or arg_name in self.non_signers:
+                result_string += f'DEFVAL({GODOT_TYPE_DEFVAL["Variant"]}), '
+            else:
+                result_string += f'DEFVAL({GODOT_TYPE_DEFVAL[godot_type]}), '
 
-    if self.optional_args:
-      result_string = result_string[0:-2]
+        if self.optional_args:
+            result_string = result_string[0:-2]
 
-    result_string += ');\n'
+        result_string += ');\n'
 
-    self.bound_methods += "\t" + result_string
+        self.bound_methods += "\t" + result_string
 
-    return result_string
-
-
-  def append_method_bind_special(self):
-    result_string = f'ClassDB::bind_method(D_METHOD("{self.function_name}", '
-
-    for required_arg in self.required_args:
-       (arg_name, _arg_type) = required_arg
-       result_string += f'"{arg_name}", '
-
-    for optional_arg in self.optional_args:
-       (arg_name, _arg_type) = optional_arg
-       result_string += f'"{arg_name}", '
-      
-    if self.required_args or self.optional_args:
-      result_string = result_string[0:-2]
-
-    result_string += f'), &{CLASS_TYPE}::{self.function_name}'
-
-    if self.optional_args:
-      result_string += ', '
-
-    temp_optional_args = self.optional_args
-    #temp_optional_args.reverse()
-
-    for optional_arg in temp_optional_args:
-      (arg_name, arg_type) = optional_arg
-      godot_type = QL_TO_VARIANT[arg_type]
-      if arg_name in self.signers or arg_name in self.non_signers:
-        result_string += f'DEFVAL({GODOT_TYPE_DEFVAL["Variant"]}), '
-      else:
-        result_string += f'DEFVAL({GODOT_TYPE_DEFVAL[godot_type]}), '
-
-    if self.optional_args:
-      result_string = result_string[0:-2]
-
-    result_string += ');\n'
-
-    self.bound_methods += "\t" + result_string
-
-    return result_string
+        return result_string
 
 
-  def print_function_name(self):
-    result_string = ""
-    result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{self.function_name}("
+    def append_method_bind_special(self):
+        result_string = f'ClassDB::bind_method(D_METHOD("{self.function_name}", '
 
-    for required_arg in self.required_args:
-      result_string += f'{self.print_function_param(required_arg)}, '
-    for optional_arg in self.optional_args:
-      result_string += f'{self.print_function_param(optional_arg)}, '
+        for required_arg in self.required_args:
+            (arg_name, _arg_type) = required_arg
+            result_string += f'"{arg_name}", '
 
-    if self.required_args or self.optional_args:
-      result_string = result_string[0:-2]
+        for optional_arg in self.optional_args:
+            (arg_name, _arg_type) = optional_arg
+            result_string += f'"{arg_name}", '
+        
+        if self.required_args or self.optional_args:
+            result_string = result_string[0:-2]
 
-    result_string += ")"
-    return result_string
+        result_string += f'), &{CLASS_TYPE}::{self.function_name}'
+
+        if self.optional_args:
+            result_string += ', '
+
+        temp_optional_args = self.optional_args
+        #temp_optional_args.reverse()
+
+        for optional_arg in temp_optional_args:
+            (arg_name, arg_type) = optional_arg
+            godot_type = QL_TO_VARIANT[arg_type]
+            if arg_name in self.signers or arg_name in self.non_signers:
+                result_string += f'DEFVAL({GODOT_TYPE_DEFVAL["Variant"]}), '
+            else:
+                result_string += f'DEFVAL({GODOT_TYPE_DEFVAL[godot_type]}), '
+
+        if self.optional_args:
+            result_string = result_string[0:-2]
+
+        result_string += ');\n'
+
+        self.bound_methods += "\t" + result_string
+
+        return result_string
+
+
+    def print_function_name(self):
+        result_string = ""
+        result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{self.function_name}("
+
+        for required_arg in self.required_args:
+            result_string += f'{self.print_function_param(required_arg)}, '
+        for optional_arg in self.optional_args:
+            result_string += f'{self.print_function_param(optional_arg)}, '
+
+        if self.required_args or self.optional_args:
+            result_string = result_string[0:-2]
+
+        result_string += ")"
+        return result_string
   
 
-  def print_function_name_special(self):
-    result_string = ""
-    result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{self.function_name}("
+    def print_function_name_special(self):
+        result_string = ""
+        result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{self.function_name}("
 
-    for required_arg in self.required_args:
-      result_string += f'{self.print_function_param(required_arg)}, '
-    for optional_arg in self.optional_args:
-      result_string += f'{self.print_function_param(optional_arg)}, '
+        for required_arg in self.required_args:
+            result_string += f'{self.print_function_param(required_arg)}, '
+        for optional_arg in self.optional_args:
+            result_string += f'{self.print_function_param(optional_arg)}, '
 
-    if self.required_args or self.optional_args:
-      result_string = result_string[0:-2]
+        if self.required_args or self.optional_args:
+            result_string = result_string[0:-2]
 
-    result_string += ")"
-    return result_string
+        result_string += ")"
+        return result_string
 
 
-  def print_function_name_header(self):
-    result_string = ""
-    result_string += f"{RETURN_TYPE} {self.function_name}("
+    def print_function_name_header(self):
+        result_string = ""
+        result_string += f"{RETURN_TYPE} {self.function_name}("
 
-    for required_arg in self.required_args:
-      result_string += f'{self.print_function_param(required_arg)}, '
-    for optional_arg in self.optional_args:
-      (arg_name, arg_type) = optional_arg
-      godot_type = QL_TO_VARIANT[arg_type]
-      if arg_name in self.signers or arg_name in self.non_signers:
-        result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL["Variant"]}, '
-      else:
-        result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL[godot_type]}, '
+        for required_arg in self.required_args:
+            result_string += f'{self.print_function_param(required_arg)}, '
+        for optional_arg in self.optional_args:
+            (arg_name, arg_type) = optional_arg
+            godot_type = QL_TO_VARIANT[arg_type]
+            if arg_name in self.signers or arg_name in self.non_signers:
+                result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL["Variant"]}, '
+            else:
+                result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL[godot_type]}, '
 
-    if self.required_args or self.optional_args:
-      result_string = result_string[0:-2]
+        if self.required_args or self.optional_args:
+            result_string = result_string[0:-2]
 
-    result_string += ");"
-    return result_string
+        result_string += ");"
+        return result_string
   
 
-  def print_function_name_header_special(self):
-    result_string = ""
-    result_string += f"{RETURN_TYPE} {self.function_name}("
+    def print_function_name_header_special(self):
+        result_string = ""
+        result_string += f"{RETURN_TYPE} {self.function_name}("
 
-    for required_arg in self.required_args:
-      result_string += f'{self.print_function_param(required_arg)}, '
-    for optional_arg in self.optional_args:
-      (arg_name, arg_type) = optional_arg
-      godot_type = QL_TO_VARIANT[arg_type]
-      if arg_name in self.signers or arg_name in self.non_signers:
-        result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL["Variant"]}, '
-      else:
-        result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL[godot_type]}, '
+        for required_arg in self.required_args:
+            result_string += f'{self.print_function_param(required_arg)}, '
+        for optional_arg in self.optional_args:
+            (arg_name, arg_type) = optional_arg
+            godot_type = QL_TO_VARIANT[arg_type]
+            if arg_name in self.signers or arg_name in self.non_signers:
+                result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL["Variant"]}, '
+            else:
+                result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL[godot_type]}, '
 
-    if self.required_args or self.optional_args:
-      result_string = result_string[0:-2]
+        if self.required_args or self.optional_args:
+            result_string = result_string[0:-2]
 
-    result_string += ");"
-    return result_string
+        result_string += ");"
+        return result_string
   
 
-  def print_signer_section(self):
-    result_string = ""
-    for signer in self.signers:
-      if signer == ".":
-          result_string += f"\tsigners.append({SERVER_SIGNER});\n"
-      else:
-          result_string += f'\tif({signer}.get_type() != Variant::NIL)'
-          result_string += "{\n"
-          result_string += f"\t\tsigners.append({signer});\n"
-          result_string += "\t}\n"
-    return result_string
+    def print_signer_section(self):
+        result_string = ""
+        for signer in self.signers:
+            if signer == ".":
+                result_string += f"\tsigners.append({SERVER_SIGNER});\n"
+            else:
+                result_string += f'\tif({signer}.get_type() != Variant::NIL)'
+                result_string += "{\n"
+                result_string += f"\t\tsigners.append({signer});\n"
+                result_string += "\t}\n"
+                
+        return result_string
 
 
-  def print_method_name(self):
-     result_string = f'\n\tmethod_name = "{self.function_name}";\n'
-     return result_string
+    def print_method_name(self):
+        result_string = f'\n\tmethod_name = "{self.function_name}";\n'
+        return result_string
 
 
-  def print_last_section(self):
-    result_string = f'\n\tquery_fields = "{self.query_fields}";\n'
-    result_string += "\tsend_query();\n"
-    result_string += "\treturn OK;\n"
-    result_string += "}\n"
+    def print_last_section(self):
+        result_string = f'\n\tquery_fields = "{self.query_fields}";\n'
+        result_string += "\tsend_query();\n"
+        result_string += "\treturn OK;\n"
+        result_string += "}\n"
 
-    return result_string
+        return result_string
   
-  def print_last_section_special(self):
-    class_name = self.function_name
-    class_name = class_name[0].upper() + class_name[1:]
-    result_string = f'\n\tquery_fields = "{self.query_fields}";\n'
-    result_string += f'\tfetch_type<honeycomb_resource::{class_name}>();\n'
-    result_string += "\treturn OK;\n"
-    result_string += "}\n"
+    def print_last_section_special(self):
+        class_name = self.function_name
+        class_name = class_name[0].upper() + class_name[1:]
+        result_string = f'\n\tquery_fields = "{self.query_fields}";\n'
+        result_string += f'\tfetch_type<honeycomb_resource::{class_name}>();\n'
+        result_string += "\treturn OK;\n"
+        result_string += "}\n"
 
-    return result_string
+        return result_string
 
-  def print_function_param(self, arg):
-    (arg_name, arg_type) = arg
+    def print_function_param(self, arg):
+        (arg_name, arg_type) = arg
 
-    if arg_name in self.signers or arg_name in self.non_signers:
-        godot_type = SIGNER_TYPE
-    else:
-      godot_type = self.ql_type_to_godot(arg_type)
+        if arg_name in self.signers or arg_name in self.non_signers:
+            godot_type = SIGNER_TYPE
+        else:
+            godot_type = self.ql_type_to_godot(arg_type)
 
-    result_string = f"{godot_type} {arg_name}"
-    #print(result_string)
+        result_string = f"{godot_type} {arg_name}"
+        #print(result_string)
 
-    return result_string
+        return result_string
      
 
-  def print_bind_methods(self):
-    result_string = f"void {CLASS_TYPE}::_bind_methods()" + "{\n"
-    result_string += f'\tbind_non_changing_methods();\n'
-    result_string += self.bound_methods
-    result_string += "}"
-    return result_string
+    def print_bind_methods(self):
+        result_string = f"void {CLASS_TYPE}::_bind_methods()" + "{\n"
+        result_string += f'\tbind_non_changing_methods();\n'
+        result_string += self.bound_methods
+        result_string += "}"
+        return result_string
 
 
-  def print_header_includes(self):
-    result = ""
-    for header_include in header_includes:
-      result += f'#include {header_include}\n'
-    
-    return result
+    def print_header_includes(self):
+        result = ""
+        for header_include in header_includes:
+            result += f'#include {header_include}\n'
+        
+        return result
 
-  def print_header_file(self):
-    #result = self.print_header_includes()
-    #result += "\nnamespace godot{\n"
-    #result += f"\nClass {CLASS_TYPE} : public Node" + "{\n"
-    #result += f"GDCLASS({CLASS_TYPE}, Node)\n"
-    #result += "private:\n"
-    #result += "protected:\n"
-    #result += "static void _bind_methods();\n"
-    #result += "public:\n"
-    result = "#define HONEYCOMB_METHOD_DEFS "
-    result += self.method_definitions.replace("\n", "\\\n")
-    result = result[:-2] + "\n\n"
-    #result += "};\n"
-    #result += "} // godot"
+    def print_header_file(self):
+        #result = self.print_header_includes()
+        #result += "\nnamespace godot{\n"
+        #result += f"\nClass {CLASS_TYPE} : public Node" + "{\n"
+        #result += f"GDCLASS({CLASS_TYPE}, Node)\n"
+        #result += "private:\n"
+        #result += "protected:\n"
+        #result += "static void _bind_methods();\n"
+        #result += "public:\n"
+        result = "#define HONEYCOMB_METHOD_DEFS "
+        result += self.method_definitions.replace("\n", "\\\n")
+        result = result[:-2] + "\n\n"
+        #result += "};\n"
+        #result += "} // godot"
 
-    result += "#define REGISTER_HONEYCOMB_TYPES "
-    includes = ""
-    for type in self.types:
-      includes += f'#include "honeycomb/types/{type["classname"]}.hpp"\n'
-      result += f'ClassDB::register_class<honeycomb_resource::{type["classname"]}>(); \\\n'
-    result = result[:-2] + "\n\n"
-    print(includes)
-    return result
+        result += "#define REGISTER_HONEYCOMB_TYPES "
+        includes = ""
+        for type in self.types:
+            includes += f'#include "honeycomb/types/{type["classname"]}.hpp"\n'
+            result += f'ClassDB::register_class<honeycomb_resource::{type["classname"]}>(); \\\n'
+        result = result[:-2] + "\n\n"
+        print(includes)
+        return result
 
-  def print_resource_hpp_file(self, index):
-    type = self.types[index]
-    class_name = type["classname"]
-    properties = type["properties"]
+    def print_resource_hpp_file(self, index):
+        type = self.types[index]
+        class_name = type["classname"]
+        properties = type["properties"]
 
-    result = f'#ifndef GODOT_SOLANA_SDK_HONEYCOMB_TYPE_{class_name.upper()}\n'
-    result += f'#define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_{class_name.upper()}\n'
-    for include in resource_includes:
-      result += f'#include "{include}"\n'
-    result += "\nnamespace godot{\nnamespace honeycomb_resource{\n\n"
+        result = f'#ifndef GODOT_SOLANA_SDK_HONEYCOMB_TYPE_{class_name.upper()}\n'
+        result += f'#define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_{class_name.upper()}\n'
+        for include in resource_includes:
+            result += f'#include "{include}"\n'
+        result += "\nnamespace godot{\nnamespace honeycomb_resource{\n\n"
 
-    result += f'class {class_name} : public Resource'
-    result += "{\n"
-    result += f"GDCLASS({class_name}, Resource)\n"
+        result += f'class {class_name} : public Resource'
+        result += "{\n"
+        result += f"GDCLASS({class_name}, Resource)\n"
 
-    result += "private:\n"
-    for prop in properties:
-      (prop_name, prop_type) = prop
-      prop_type = self.ql_type_to_godot(prop_type)
-      result += f'{prop_type} {prop_name};\n'
+        result += "private:\n"
+        for prop in properties:
+            (prop_name, prop_type) = prop
+            prop_type = self.ql_type_to_godot(prop_type)
+            result += f'{prop_type} {prop_name};\n'
 
-    #if 'fetch_declaration' in type:
-    #  result += "HoneyComb* honey_comb = nullptr;\n"
+        #if 'fetch_declaration' in type:
+        #  result += "HoneyComb* honey_comb = nullptr;\n"
 
-    result += "protected:\n"
-    result += f'static void _bind_methods();\n'
-    result += "public:\n"
-    result += f"Dictionary to_dict();\n"
-    result += f"void from_dict(const Dictionary& dict);\n"
+        result += "protected:\n"
+        result += f'static void _bind_methods();\n'
+        result += "public:\n"
+        result += f"Dictionary to_dict();\n"
+        result += f"void from_dict(const Dictionary& dict);\n"
 
-    #if 'fetch_declaration' in type:
-    #  result += type['fetch_declaration']
+        #if 'fetch_declaration' in type:
+        #  result += type['fetch_declaration']
 
-    for prop in properties:
-      (prop_name, prop_type) = prop
-      prop_type = self.ql_type_to_godot(prop_type)
-      result += f"void set_{prop_name}(const {prop_type}& val);\n"
-      result += f"{prop_type} get_{prop_name}();\n"
+        for prop in properties:
+            (prop_name, prop_type) = prop
+            prop_type = self.ql_type_to_godot(prop_type)
+            result += f"void set_{prop_name}(const {prop_type}& val);\n"
+            result += f"{prop_type} get_{prop_name}();\n"
 
-    result += "};\n"
-    result += "} // honeycomb_resource\n} // godot\n"
-    result += "#endif"
+        result += "};\n"
+        result += "} // honeycomb_resource\n} // godot\n"
+        result += "#endif"
 
-    return result
+        return result
 
-  def print_resource_cpp_file(self, index, outdir_hpp):
-    type = self.types[index]
-    class_name = type["classname"]
-    properties = type["properties"]
+    def print_resource_cpp_file(self, index, outdir_hpp):
+        type = self.types[index]
+        class_name = type["classname"]
+        properties = type["properties"]
 
-    extra_includes = []
+        extra_includes = []
 
-    for prop in properties:
-      (prop_name, og_prop_type) = prop
-      prop_type = self.ql_type_to_godot(og_prop_type)
-      if prop_type == "Variant":
-        extra_includes.append(og_prop_type + ".hpp")
+        for prop in properties:
+            (prop_name, og_prop_type) = prop
+            prop_type = self.ql_type_to_godot(og_prop_type)
+            if prop_type == "Variant":
+                extra_includes.append(og_prop_type + ".hpp")
 
-    result = f'#include "{os.path.join(outdir_hpp, class_name)}.hpp"\n\n'
+        result = f'#include "{os.path.join(outdir_hpp, class_name)}.hpp"\n\n'
 
-    for include in extra_includes:
-      if include.replace("!", "") == "Pubkey.hpp":
-        result += f'#include "pubkey.hpp"\n'
-      else:
-        result += f'#include "{os.path.join(outdir_hpp, include)}"\n'.replace("!", "")
+        for include in extra_includes:
+            if include.replace("!", "") == "Pubkey.hpp":
+                result += f'#include "pubkey.hpp"\n'
+            else:
+                result += f'#include "{os.path.join(outdir_hpp, include)}"\n'.replace("!", "")
 
-    result += "namespace godot{\nnamespace honeycomb_resource{\n\n"
+        result += "namespace godot{\nnamespace honeycomb_resource{\n\n"
 
-    bind_methods = f'void {class_name}::_bind_methods()'
-    bind_methods += '{\n'
+        bind_methods = f'void {class_name}::_bind_methods()'
+        bind_methods += '{\n'
 
-    to_dict = f"Dictionary {class_name}::to_dict()"
-    to_dict += "{\nDictionary res;\n"
+        to_dict = f"Dictionary {class_name}::to_dict()"
+        to_dict += "{\nDictionary res;\n"
 
-    from_dict = f"void {class_name}::from_dict(const Dictionary& dict)"
-    from_dict += "{\n"
+        from_dict = f"void {class_name}::from_dict(const Dictionary& dict)"
+        from_dict += "{\n"
 
-    for prop in properties:
-      (prop_name, og_prop_type) = prop
-      prop_type = self.ql_type_to_godot(og_prop_type)
-      if prop_type == "Variant" and og_prop_type.replace("!", "") == "Pubkey":
-        to_dict += f'res["{prop_name}"] = Object::cast_to<{og_prop_type.replace("!", "")}>({prop_name})->to_string();\n'
-        from_dict += f'{prop_name} = Pubkey::new_from_string(dict["{prop_name}"]);\n'
-      elif prop_type == "Variant":
-        to_dict += f'res["{prop_name}"] = Object::cast_to<godot::honeycomb_resource::{og_prop_type.replace("!", "")}>({prop_name})->to_dict();\n'
-        from_dict += f'Object::cast_to<godot::honeycomb_resource::{og_prop_type.replace("!", "")}>({prop_name})->from_dict(dict["{prop_name}"]);\n'
-      else:
-        to_dict += f'res["{prop_name}"] = {prop_name};\n'
-        from_dict += f'{prop_name} = dict["{prop_name}"];\n'
-      result += f"void {class_name}::set_{prop_name}(const {prop_type}& val)"
-      result += "{\n"
-      result += f"this->{prop_name} = val;\n"
-      result += "}\n\n"
+        for prop in properties:
+            (prop_name, og_prop_type) = prop
+            prop_type = self.ql_type_to_godot(og_prop_type)
+            if prop_type == "Variant" and og_prop_type.replace("!", "") == "Pubkey":
+                to_dict += f'res["{prop_name}"] = Object::cast_to<{og_prop_type.replace("!", "")}>({prop_name})->to_string();\n'
+                from_dict += f'{prop_name} = Pubkey::new_from_string(dict["{prop_name}"]);\n'
+            elif prop_type == "Variant":
+                to_dict += f'res["{prop_name}"] = Object::cast_to<godot::honeycomb_resource::{og_prop_type.replace("!", "")}>({prop_name})->to_dict();\n'
+                from_dict += f'Object::cast_to<godot::honeycomb_resource::{og_prop_type.replace("!", "")}>({prop_name})->from_dict(dict["{prop_name}"]);\n'
+            else:
+                to_dict += f'res["{prop_name}"] = {prop_name};\n'
+                from_dict += f'{prop_name} = dict["{prop_name}"];\n'
+            result += f"void {class_name}::set_{prop_name}(const {prop_type}& val)"
+            result += "{\n"
+            result += f"this->{prop_name} = val;\n"
+            result += "}\n\n"
 
-      result += f"{prop_type} {class_name}::get_{prop_name}()"
-      result += "{\n"
-      result += f"return this->{prop_name};\n"
-      result += "}\n\n"
+            result += f"{prop_type} {class_name}::get_{prop_name}()"
+            result += "{\n"
+            result += f"return this->{prop_name};\n"
+            result += "}\n\n"
 
-      bind_methods += f'ClassDB::bind_method(D_METHOD("get_{prop_name}"), &{class_name}::get_{prop_name});\n'
-      bind_methods += f'ClassDB::bind_method(D_METHOD("set_{prop_name}", "value"), &{class_name}::set_{prop_name});\n'
-      bind_methods += f'ClassDB::add_property("{class_name}", PropertyInfo(Variant::Type::{GODOT_VARIANT_ENUM_TYPE[prop_type]}, "{prop_name}"), "set_{prop_name}", "get_{prop_name}");\n'
+            bind_methods += f'ClassDB::bind_method(D_METHOD("get_{prop_name}"), &{class_name}::get_{prop_name});\n'
+            bind_methods += f'ClassDB::bind_method(D_METHOD("set_{prop_name}", "value"), &{class_name}::set_{prop_name});\n'
+            bind_methods += f'ClassDB::add_property("{class_name}", PropertyInfo(Variant::Type::{GODOT_VARIANT_ENUM_TYPE[prop_type]}, "{prop_name}"), "set_{prop_name}", "get_{prop_name}");\n'
 
-    bind_methods += f'ClassDB::bind_method(D_METHOD("to_dict"), &{class_name}::to_dict);\n'
-    bind_methods += f'ClassDB::bind_method(D_METHOD("from_dict", "dict"), &{class_name}::from_dict);\n'
+        bind_methods += f'ClassDB::bind_method(D_METHOD("to_dict"), &{class_name}::to_dict);\n'
+        bind_methods += f'ClassDB::bind_method(D_METHOD("from_dict", "dict"), &{class_name}::from_dict);\n'
 
-    result += to_dict + "return res;\n}\n\n"
-    result += from_dict + "}\n\n"
+        result += to_dict + "return res;\n}\n\n"
+        result += from_dict + "}\n\n"
 
-    #if 'fetch_definition' in type:
-    #  result += type['fetch_definition']
+        #if 'fetch_definition' in type:
+        #  result += type['fetch_definition']
 
-    result += bind_methods
-    result += "}\n} // honeycomb_resource\n} // godot"
+        result += bind_methods
+        result += "}\n} // honeycomb_resource\n} // godot"
 
-    return result
+        return result
 
-  def print_cpp_file(self, outdir_hpp):
-    result = f'#include "{os.path.join(outdir_hpp, "honeycomb")}.hpp"\n\n'
-    for type in self.types:
-      result += f'#include "{os.path.join(outdir_hpp, "types/" + type["classname"])}.hpp"\n'.replace("!", "")
-    result += "namespace godot{\n\n"
-    result += self.method_implementations
-    result += self.print_bind_methods() + '\n'
-    result += "} // godot"
+    def print_cpp_file(self, outdir_hpp):
+        result = f'#include "{os.path.join(outdir_hpp, "honeycomb")}.hpp"\n\n'
+        for type in self.types:
+            result += f'#include "{os.path.join(outdir_hpp, "types/" + type["classname"])}.hpp"\n'.replace("!", "")
+        result += "namespace godot{\n\n"
+        result += self.method_implementations
+        result += self.print_bind_methods() + '\n'
+        result += "} // godot"
 
-    return result
+        return result
 
 
 def main():
@@ -830,9 +898,12 @@ def main():
                         help='Tells generator to skip creating resource classes.')
 
     args = parser.parse_args()
-    print(args.out_cpp_directory)
 
     qlparser = GQLParse()
+    
+    request_parser = SimpleQLRequestParser()
+    request_parser.parse(CREATE_NEW_RESOURCE)
+    
     qlparser.graphql_to_type(HoneycombTransaction)
     qlparser.graphql_to_type(SendTransactionBundlesOptions)
     qlparser.graphql_to_type(CreateBadgeCriteriaInput)
