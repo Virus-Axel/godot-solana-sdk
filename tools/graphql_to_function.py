@@ -105,7 +105,16 @@ QL_TO_VARIANT = {
    "ServiceDelegationNectarMissions": "Variant",
    "ServiceDelegationBuzzGuild": "Variant",
    "[SerializableActionsInput!]": "Array",
-   "[ServiceDelegation!]": "Array"
+   "[ServiceDelegation!]": "Array",
+   "InitResourceInput!": "Variant",
+   "TreeSetupConfig!": "Variant",
+   "BigInt!": "Variant",
+   '[IngredientsInput!]!': "Array",
+   'MealInput!': "Variant",
+   '[String!]!': "PackedStringArray",
+   'NewMissionPoolData!': "Variant",
+   'UpdateMissionPoolData!': "Variant",
+   'NewMissionData!': "Variant",
 }
 
 GODOT_TYPE_DEFVAL = {
@@ -142,6 +151,14 @@ def strip(input_string: str):
     """
     return input_string.lstrip().rstrip()
 
+
+class QLArgumentList:
+    def __init__(self):
+        self.optional_names = []
+        self.optional_types = []
+        self.required_names = []
+        self.required_types = []
+
 class SimpleQLRequestParser:
     """Simple query parser for the honeycomb transaction creating queries.
     """
@@ -175,8 +192,9 @@ class SimpleQLRequestParser:
         for argument in arguments:
             (name, type_name) = argument.split(':')
 
-            # Remove $ from name.
-            name = name.strip()[1:]
+            # Remove $ from name and type.
+            name = strip(name)[1:]
+            type_name = strip(type_name)
 
             self.names.append(name)
             self.types.append(type_name)
@@ -195,6 +213,54 @@ class SimpleQLRequestParser:
         # Parse query fields.
         start_pos = function_section.find('{')
         self.query_fields = strip(function_section[start_pos:])
+
+
+    def get_optional_argument_names(self) -> list[str]:
+        """Gets all optional argument names.
+
+        Returns:
+            list[str]: Optional arguments names.
+        """
+        return [n for n, t in zip(self.names, self.types) if not t.endswith('!')]
+
+    def get_optional_argument_types(self) -> list[str]:
+        """Gets all optional argument types
+
+        Returns:
+            list[str]: Optional argument types.
+        """
+        return [t for t in self.types if not t.endswith('!')]
+
+    def get_required_argument_names(self) -> list[str]:
+        """Gets all required arguments.
+
+        Returns:
+            list[str]: Required argument names.
+        """
+        return [n for n, t in zip(self.names, self.types) if t.endswith('!')]
+
+    def get_required_argument_types(self) -> list[str]:
+        """Gets all required argument types.
+
+        Returns:
+            list[str]: Required argument types.
+        """
+        return [t for t in self.types if t.endswith('!')]
+
+
+    def get_argument_list(self) -> QLArgumentList:
+        """Returns information about optional and required arguments.
+
+        Returns:
+            QLArgumentList: Information about required and optional arguments.
+        """
+        argument_list = QLArgumentList()
+        argument_list.required_names = self.get_required_argument_names()
+        argument_list.required_types = self.get_required_argument_types()
+        argument_list.optional_names = self.get_optional_argument_names()
+        argument_list.optional_types = self.get_optional_argument_types()
+
+        return argument_list
 
 
 class GQLParse:
@@ -288,9 +354,8 @@ class GQLParse:
         self.function_name = function_name
 
 
-    def print_arg(self, arg, optional=False, special=False):
+    def print_arg(self, arg_name, arg_type, optional=False, special=False):
         result_string = ""
-        (arg_name, arg_type) = arg
         godot_type = self.ql_type_to_godot(arg_type)
 
         is_optional = "false"
@@ -348,14 +413,27 @@ class GQLParse:
         return result_string
 
 
-    def print_args_section(self):
+    def print_args_section(self, required_arg_names: list[str], required_arg_types: list[str], optional_arg_names: list[str], optional_arg_types: list[str], signers: list[str] = None, non_signers: list[str] = None):
+        """Returns the section of code that adds arguments to QL client.
+
+        Args:
+            required_arg_names (list[str]): List of required argument names.
+            required_arg_types (list[str]): List of required argument types.
+            optional_arg_names (list[str]): List of optional argument names.
+            optional_arg_types (list[str]): List of optional argument types.
+            signers (list[str], optional): List of argument names that are signers. Defaults to None.
+            non_signers (list[str], optional): List of argument names that are non signers. Defaults to None.
+        """
 
         result_string = ""
 
-        for required_arg in self.required_args:
-            result_string += self.print_arg(required_arg, False, True)
-        for optional_arg in self.optional_args:
-            result_string += self.print_arg(optional_arg, True, True)
+        result_string += "".join(self.print_arg(n, t, False, True) for n, t in zip(required_arg_names, required_arg_types))
+        result_string += "".join(self.print_arg(n, t, True, True) for n, t in zip(optional_arg_names, optional_arg_types))
+
+#        for required_arg in self.required_args:
+#            result_string += self.print_arg(required_arg, False, True)
+#        for optional_arg in self.optional_args:
+#            result_string += self.print_arg(optional_arg, True, True)
 
         return result_string
 
@@ -389,6 +467,8 @@ class GQLParse:
 
 
     def graphql_to_fetcher(self, str):
+        request_parser = SimpleQLRequestParser()
+        request_parser.parse(str)
         self.str = str
         self.required_args = []
         self.optional_args = []
@@ -429,7 +509,7 @@ class GQLParse:
         self.method_implementations += "\tif(pending){\n"
         self.method_implementations += "\t\treturn ERR_BUSY;\n"
         self.method_implementations += "\t}\n"
-        self.method_implementations += self.print_args_section() + '\n'
+        self.method_implementations += self.print_args_section(request_parser.get_required_argument_names(), request_parser.get_required_argument_types(), request_parser.get_optional_argument_names(), request_parser.get_optional_argument_types(), self.signers, self.non_signers) + '\n'
         self.method_implementations += self.print_method_name() + '\n'
         self.method_implementations += self.print_last_section_special() + '\n'
 
@@ -441,7 +521,7 @@ class GQLParse:
         for type in self.types:
             if type['classname'][1:] == self.function_name[1:]:
                 self.function_name = "fetch"
-                type['fetch_declaration'] = f'\t{self.print_function_name_header()}\n'
+                type['fetch_declaration'] = f'\t{self.print_function_name_header(request_parser.function_name, request_parser.get_required_argument_names(), request_parser.get_required_argument_types(), request_parser.get_optional_argument_names(), request_parser.get_optional_argument_types())}\n'
                 type['fetch_definition'] = self.print_function_name().replace(CLASS_TYPE, type['classname'])
                 type['fetch_definition'] += "{\n"
                 type['fetch_definition'] += self.print_fetch_implementation()
@@ -464,30 +544,36 @@ class GQLParse:
         self.original_required_args = []
         self.original_optional_args = []
 
-        (firstWord, self.str) = self.str.split(maxsplit=1)
-        assert(firstWord == "query")
+        request_parser = SimpleQLRequestParser()
+        request_parser.parse(str)
 
-        func_header = re.match(r"(.*)\(([\s\S]*?)\)", self.str)
+        #(firstWord, self.str) = self.str.split(maxsplit=1)
+        #assert(firstWord == "query")
 
-        self.read_args(func_header.group())
+        #func_header = re.match(r"(.*)\(([\s\S]*?)\)", self.str)
 
-        self.str = self.str[func_header.span()[1]:]
-        chunk_string = re.search(r"\{\s*[\w\s:,$]*?\([\s\S]*?\)", self.str)
-        self.str = self.str[chunk_string.span()[1]:]
+        self.function_name = request_parser.function_name
+        #self.read_args(func_header.group())
 
-        chunk_string = re.search(r"\{\s*tx\s*\{\s*[\w\s]*\}\s*[\w\s]*\}", self.str)
-        if not chunk_string:
-            chunk_string = re.search(r"\{\s*[\w\s]*\}", self.str)
+        #self.str = self.str[func_header.span()[1]:]
+        #chunk_string = re.search(r"\{\s*[\w\s:,$]*?\([\s\S]*?\)", self.str)
+        #self.str = self.str[chunk_string.span()[1]:]
 
-        self.str = chunk_string.group()
-        self.str = self.str.lstrip()[1:]
-        self.str = self.str.rstrip()[0:-1]
+        #chunk_string = re.search(r"\{\s*tx\s*\{\s*[\w\s]*\}\s*[\w\s]*\}", self.str)
+        #if not chunk_string:
+        #    chunk_string = re.search(r"\{\s*[\w\s]*\}", self.str)
+
+        #self.str = chunk_string.group()
+        #self.str = self.str.lstrip()[1:]
+        #self.str = self.str.rstrip()[0:-1]
 
         # Make a line of query
-        query_fields_re = re.sub(r"[\r\n]+", "", self.str)
-        self.query_fields = re.sub(r'\s+', ' ', query_fields_re)
+        #query_fields_re = re.sub(r"[\r\n]+", "", self.str)
+        #self.query_fields = re.sub(r'\s+', ' ', query_fields_re)
+        self.query_fields = request_parser.query_fields
 
-        self.method_definitions += f'\t{self.print_function_name_header()}\n'
+        method_definition = self.print_function_name_header(request_parser.function_name, request_parser.get_required_argument_names(), request_parser.get_required_argument_types(), request_parser.get_optional_argument_names(), request_parser.get_optional_argument_types(), signers, non_signers)
+        self.method_definitions += f'\t{method_definition}\n'
 
         self.method_implementations += self.print_function_name()
         self.method_implementations += "{\n"
@@ -495,7 +581,7 @@ class GQLParse:
         self.method_implementations += "\t\treturn ERR_BUSY;\n"
         self.method_implementations += "\t}\n"
         self.method_implementations += self.print_signer_section() + '\n'
-        self.method_implementations += self.print_args_section() + '\n'
+        self.method_implementations += self.print_args_section(request_parser.get_required_argument_names(), request_parser.get_required_argument_types(), request_parser.get_optional_argument_names(), request_parser.get_optional_argument_types(), self.signers, self.non_signers) + '\n'
         self.method_implementations += self.print_method_name() + '\n'
         self.method_implementations += self.print_last_section() + '\n'
 
@@ -503,7 +589,7 @@ class GQLParse:
 
 
 
-        self.str = self.str[chunk_string.span()[1]:]
+        #self.str = self.str[chunk_string.span()[1]:]
         return ""
   
 
@@ -592,9 +678,9 @@ class GQLParse:
         result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{self.function_name}("
 
         for required_arg in self.required_args:
-            result_string += f'{self.print_function_param(required_arg)}, '
+            result_string += f'{self.print_function_param(required_arg[0], required_arg[1])}, '
         for optional_arg in self.optional_args:
-            result_string += f'{self.print_function_param(optional_arg)}, '
+            result_string += f'{self.print_function_param(optional_arg[0], optional_arg[1])}, '
 
         if self.required_args or self.optional_args:
             result_string = result_string[0:-2]
@@ -608,9 +694,9 @@ class GQLParse:
         result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{self.function_name}("
 
         for required_arg in self.required_args:
-            result_string += f'{self.print_function_param(required_arg)}, '
+            result_string += f'{self.print_function_param(required_arg[0], required_arg[1])}, '
         for optional_arg in self.optional_args:
-            result_string += f'{self.print_function_param(optional_arg)}, '
+            result_string += f'{self.print_function_param(optional_arg[0], optional_arg[1])}, '
 
         if self.required_args or self.optional_args:
             result_string = result_string[0:-2]
@@ -619,22 +705,42 @@ class GQLParse:
         return result_string
 
 
-    def print_function_name_header(self):
+    def print_function_name_header(self, function_name: str, required_arg_names: list[str], required_arg_types: list[str], optional_arg_names: list[str], optional_arg_types: list[str], signers: list[str] = None, non_signers: list[str] = None):
         result_string = ""
-        result_string += f"{RETURN_TYPE} {self.function_name}("
+        result_string += f"{RETURN_TYPE} {function_name}("
 
-        for required_arg in self.required_args:
-            result_string += f'{self.print_function_param(required_arg)}, '
-        for optional_arg in self.optional_args:
-            (arg_name, arg_type) = optional_arg
-            godot_type = QL_TO_VARIANT[arg_type]
-            if arg_name in self.signers or arg_name in self.non_signers:
-                result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL["Variant"]}, '
-            else:
-                result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL[godot_type]}, '
+        def get_godot_type(name, ql_type):
+            if name in (signers or []) or name in (non_signers or []):
+                return SIGNER_TYPE
+            return self.ql_type_to_godot(ql_type)
+        
+        def get_defval(name, ql_type):
+            if name in (signers or []) or name in (non_signers or []):
+                return GODOT_TYPE_DEFVAL["Variant"]
+            #if ql_type.endswith("!"):
+            #    ql_type = ql_type[:-1]
+            return GODOT_TYPE_DEFVAL[QL_TO_VARIANT[ql_type]]
 
-        if self.required_args or self.optional_args:
-            result_string = result_string[0:-2]
+        result_string += ", ".join(f'{get_godot_type(n, t)} {n}' for t, n in zip(required_arg_types, required_arg_names))
+        
+        # Add comma if needed.
+        if optional_arg_names and required_arg_names:
+            result_string += ', '
+        
+        result_string += ", ".join(f'{get_godot_type(n, t)} {n} = {get_defval(n, t)}' for t, n in zip(optional_arg_types, optional_arg_names))
+
+#        for required_arg in required_args:
+#            result_string += f'{self.print_function_param(required_arg)}, '
+#        for optional_arg in optional_args:
+#            (arg_name, arg_type) = optional_arg
+#            godot_type = QL_TO_VARIANT[arg_type]
+#            if arg_name in signers or arg_name in non_signers:
+#                result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL["Variant"]}, '
+#            else:
+#                result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL[godot_type]}, '
+#
+#        if required_args or optional_args:
+#            result_string = result_string[0:-2]
 
         result_string += ");"
         return result_string
@@ -645,14 +751,14 @@ class GQLParse:
         result_string += f"{RETURN_TYPE} {self.function_name}("
 
         for required_arg in self.required_args:
-            result_string += f'{self.print_function_param(required_arg)}, '
+            result_string += f'{self.print_function_param(required_arg[0], required_arg[1])}, '
         for optional_arg in self.optional_args:
             (arg_name, arg_type) = optional_arg
             godot_type = QL_TO_VARIANT[arg_type]
             if arg_name in self.signers or arg_name in self.non_signers:
-                result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL["Variant"]}, '
+                result_string += f'{self.print_function_param(optional_arg[0], optional_arg[1])} = {GODOT_TYPE_DEFVAL["Variant"]}, '
             else:
-                result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL[godot_type]}, '
+                result_string += f'{self.print_function_param(optional_arg[0], optional_arg[1])} = {GODOT_TYPE_DEFVAL[godot_type]}, '
 
         if self.required_args or self.optional_args:
             result_string = result_string[0:-2]
@@ -698,15 +804,17 @@ class GQLParse:
 
         return result_string
 
-    def print_function_param(self, arg):
-        (arg_name, arg_type) = arg
+    def ql_types_to_godot_types(self, ql_types: list[str]):
+        return [self.ql_type_to_godot(ql_type) for ql_type in ql_types]
 
-        if arg_name in self.signers or arg_name in self.non_signers:
+
+    def print_function_param(self, argument_name: str, argument_type: str):
+        if argument_name in self.signers or argument_name in self.non_signers:
             godot_type = SIGNER_TYPE
         else:
-            godot_type = self.ql_type_to_godot(arg_type)
+            godot_type = self.ql_type_to_godot(argument_type)
 
-        result_string = f"{godot_type} {arg_name}"
+        result_string = f"{godot_type} {argument_name}"
         #print(result_string)
 
         return result_string
