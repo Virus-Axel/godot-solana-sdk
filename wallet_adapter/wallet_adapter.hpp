@@ -5,6 +5,14 @@
 #include <godot_cpp/classes/wrapped.hpp>
 
 namespace godot{
+
+enum WalletType{
+    PHANTOM = 0,
+    SOLFLARE = 1,
+    BACKPACK = 2,
+    MAX_TYPES = 3,
+};
+
 class WalletAdapter : public Node{
     GDCLASS(WalletAdapter, Node)
 private:
@@ -14,12 +22,6 @@ private:
         IDLE = 0,
         CONNECTING = 1,
         SIGNING = 2,
-    };
-    enum WalletType{
-        PHANTOM = 0,
-        SOLFLARE = 1,
-        BACKPACK = 2,
-        MAX_TYPES = 3,
     };
 
     PackedByteArray connected_key;
