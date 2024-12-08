@@ -34,6 +34,7 @@ private:
     int locate_account_meta(const TypedArray<AccountMeta>& arr, const AccountMeta &input);
 
     bool is_versioned();
+    bool has_solflare_signer();
 
 protected:
     static void _bind_methods();

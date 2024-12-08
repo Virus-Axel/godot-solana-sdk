@@ -4,6 +4,7 @@
 #include <solana_utils.hpp>
 #include "compute_budget.hpp"
 #include "address_lookup_table.hpp"
+#include "wallet_adapter.hpp"
 
 TypedArray<AccountMeta> sort_metas(TypedArray<AccountMeta> input){
     TypedArray<AccountMeta> m1;
@@ -44,6 +45,22 @@ TypedArray<AccountMeta> sort_metas(TypedArray<AccountMeta> input){
 }
 
 Message::Message(){
+}
+
+bool Message::has_solflare_signer(){
+    for(unsigned int i = 0; i < signers.size(); i++){
+        if(signers[i].get_type() != Variant::OBJECT){
+            continue;
+        }
+        if(((Object*)signers[i])->get_class() == "WalletAdapter"){
+            WalletAdapter* controller = Object::cast_to<WalletAdapter>(signers[i]);
+            if(controller->get_wallet_type() == WalletType::SOLFLARE){
+                return true;
+            }
+        }
+    }
+    
+    return false;
 }
 
 void Message::_bind_methods(){
@@ -122,6 +139,16 @@ Message::Message(TypedArray<Instruction> instructions, Variant &payer, uint32_t 
     merged_metas.append(payer_meta);
 
     latest_blockhash = "";
+
+    // Check minimum unit price for solflare.
+    const uint32_t MINIMUM_SOLFLARE_PRICE = 100000;
+    if(has_solflare_signer() && unit_price < MINIMUM_SOLFLARE_PRICE){
+        Array format_params;
+        format_params.append(unit_price);
+        format_params.append(MINIMUM_SOLFLARE_PRICE);
+        WARN_PRINT_ONCE_ED(String("Unit price adjusted by solflare from {0}, to {1}").format(format_params));
+        unit_price = MINIMUM_SOLFLARE_PRICE;
+    }
 
     // Prepend ComputeBudget instructions.
     instructions.insert(0, ComputeBudget::set_compute_unit_limit(unit_limit));
