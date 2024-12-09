@@ -10,6 +10,7 @@ from honeycomb_api.fetchers import *
 CLASS_TYPE = "HoneyComb"
 RETURN_TYPE = "Variant"
 TYPE_DIR = "honeycomb/types/"
+TYPE_INCLUDE_GUARD_PREFIX = "GODOT_SOLANA_SDK_HONEYCOMB_TYPE_"
 
 SIGNER_TYPE = "const Variant&"
 SERVER_SIGNER = 'Pubkey::new_from_string("11111111111111111111111111111111")'
@@ -212,6 +213,17 @@ class CppBuilder:
         """
         return f'#ifndef {guard_name}\n#define {guard_name}\n'
 
+    def assign_query_fields(self, fields: str) -> str:
+        """Flattens given fields and assigns it to CPP property.
+
+        Args:
+            fields (str): Input query fields.
+
+        Returns:
+            str: Assigning query fields code.
+        """
+        return f'{self.indent()}query_fields = "{re.sub(r'\s+', ' ', fields.replace('\n', ''))}";\n'
+
 
 class QLArgumentList:
     """Argument list for a graphQL query.
@@ -299,6 +311,9 @@ class SimpleQLRequestParser:
         # Parse query fields.
         start_pos = function_section.find('{')
         self.query_fields = strip(function_section[start_pos:])
+        
+        # Strip one layer of {}'s.
+        self.query_fields = self.query_fields[1:-1]
 
 
     def get_optional_argument_names(self) -> list[str]:
@@ -815,7 +830,8 @@ class GQLParse:
 
 
     def print_last_section(self):
-        result_string = f'\n\tquery_fields = "{self.query_fields}";\n'
+        result_string = self.builder.assign_query_fields(self.query_fields)
+        #result_string = f'\n\tquery_fields = "{self.query_fields}";\n'
         result_string += "\tsend_query();\n"
         result_string += "\treturn OK;\n"
         result_string += "}\n"
@@ -883,8 +899,8 @@ class GQLParse:
         class_name = type["classname"]
         properties = type["properties"]
 
-        result = f'#ifndef GODOT_SOLANA_SDK_HONEYCOMB_TYPE_{class_name.upper()}\n'
-        result += f'#define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_{class_name.upper()}\n'
+        result = self.builder.start_include_guard(f'{TYPE_INCLUDE_GUARD_PREFIX}{class_name.upper()}')
+
         for include in resource_includes:
             result += self.builder.print_include_statement(include)
         result += "\nnamespace godot{\nnamespace honeycomb_resource{\n\n"
