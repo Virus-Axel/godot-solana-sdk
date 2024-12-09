@@ -9,6 +9,7 @@ from honeycomb_api.fetchers import *
 
 CLASS_TYPE = "HoneyComb"
 RETURN_TYPE = "Variant"
+TYPE_DIR = "honeycomb/types/"
 
 SIGNER_TYPE = "const Variant&"
 SERVER_SIGNER = 'Pubkey::new_from_string("11111111111111111111111111111111")'
@@ -152,12 +153,97 @@ def strip(input_string: str):
     return input_string.lstrip().rstrip()
 
 
+class CppBuilder:
+    """Simple CPP builder that keeps states of brackets.
+    """
+    def __init__(self):
+        self.namespace_stack = []
+        self.include_guard_stack = []
+        self.indent_level = 0
+
+    def indent(self) -> str:
+        """Returns the appropriate level of indentation.
+
+        Returns:
+            str: Indentation string.
+        """
+        return '\t' * self.indent_level
+
+
+    def print_include_statement(self, filename: str, use_angle_brackets: bool = False) -> str:
+        """Prints an include statement, including the provided file.
+
+        Args:
+            filename (str): File to include.
+            use_angle_brackets (bool, optional): Specifies if angle brackets should be used.
+            Defaults to False.
+
+        Returns:
+            str: Include statement.
+        """
+        if use_angle_brackets:
+            return f'#include <{filename}>\n'
+
+        return f'#include "{filename}"\n'
+
+    def start_namespace(self, namespace: str) -> str:
+        """Prints a namespace start.
+
+        Args:
+            namespace (str): name of namespace.
+
+        Returns:
+            str: Cpp code for namespace start.
+        """
+        self.namespace_stack.append(namespace)
+        namespace_string = f'{self.indent()}namespace {namespace}'
+        self.indent_level += 1
+
+        return namespace_string + '{\n'
+
+    def start_include_guard(self, guard_name: str) -> str:
+        """Starts an include guard.
+
+        Args:
+            guard_name (str): Include guard name.
+
+        Returns:
+            str: Cpp code for include guard start.
+        """
+        return f'#ifndef {guard_name}\n#define {guard_name}\n'
+
+
 class QLArgumentList:
+    """Argument list for a graphQL query.
+    """
     def __init__(self):
         self.optional_names = []
         self.optional_types = []
         self.required_names = []
         self.required_types = []
+
+    def has_required_and_optional(self) -> bool:
+        """Checks if there are both required and optional arguments.
+
+        Returns:
+            bool: Both required and optional arguments exist.
+        """
+        return self.required_names and self.optional_names
+
+    def is_valid(self) -> bool:
+        """Checks if argument list names has a corresponding types.
+
+        Returns:
+            bool: Argument names has corresponding type.
+        """
+        if len(self.optional_names) != len(self.optional_types):
+            return False
+
+        if len(self.required_names) != len(self.required_types):
+            return False
+
+        return True
+
 
 class SimpleQLRequestParser:
     """Simple query parser for the honeycomb transaction creating queries.
@@ -276,11 +362,11 @@ class GQLParse:
         self.bound_methods = ""
         self.method_implementations = ""
         self.types = []
+        self.builder = CppBuilder()
 
     def save_cpp_file(self, filepath, outdir_hpp):
-        file = open(filepath, "w")
-        file.write(self.print_cpp_file(outdir_hpp))
-        file.close()
+        with open(filepath, 'w', encoding='utf-8') as file:
+            file.write(self.print_cpp_file(outdir_hpp))
 
     def save_hpp_file(self, filepath):
         file = open(filepath, "w")
@@ -430,11 +516,6 @@ class GQLParse:
         result_string += "".join(self.print_arg(n, t, False, True) for n, t in zip(required_arg_names, required_arg_types))
         result_string += "".join(self.print_arg(n, t, True, True) for n, t in zip(optional_arg_names, optional_arg_types))
 
-#        for required_arg in self.required_args:
-#            result_string += self.print_arg(required_arg, False, True)
-#        for optional_arg in self.optional_args:
-#            result_string += self.print_arg(optional_arg, True, True)
-
         return result_string
 
 
@@ -547,29 +628,7 @@ class GQLParse:
         request_parser = SimpleQLRequestParser()
         request_parser.parse(str)
 
-        #(firstWord, self.str) = self.str.split(maxsplit=1)
-        #assert(firstWord == "query")
-
-        #func_header = re.match(r"(.*)\(([\s\S]*?)\)", self.str)
-
         self.function_name = request_parser.function_name
-        #self.read_args(func_header.group())
-
-        #self.str = self.str[func_header.span()[1]:]
-        #chunk_string = re.search(r"\{\s*[\w\s:,$]*?\([\s\S]*?\)", self.str)
-        #self.str = self.str[chunk_string.span()[1]:]
-
-        #chunk_string = re.search(r"\{\s*tx\s*\{\s*[\w\s]*\}\s*[\w\s]*\}", self.str)
-        #if not chunk_string:
-        #    chunk_string = re.search(r"\{\s*[\w\s]*\}", self.str)
-
-        #self.str = chunk_string.group()
-        #self.str = self.str.lstrip()[1:]
-        #self.str = self.str.rstrip()[0:-1]
-
-        # Make a line of query
-        #query_fields_re = re.sub(r"[\r\n]+", "", self.str)
-        #self.query_fields = re.sub(r'\s+', ' ', query_fields_re)
         self.query_fields = request_parser.query_fields
 
         method_definition = self.print_function_name_header(request_parser.function_name, request_parser.get_required_argument_names(), request_parser.get_required_argument_types(), request_parser.get_optional_argument_names(), request_parser.get_optional_argument_types(), signers, non_signers)
@@ -587,9 +646,6 @@ class GQLParse:
 
         self.append_method_bind(request_parser.function_name, request_parser.get_argument_list(), signers, non_signers)
 
-
-
-        #self.str = self.str[chunk_string.span()[1]:]
         return ""
   
 
@@ -597,29 +653,15 @@ class GQLParse:
         result_string = f'ClassDB::bind_method(D_METHOD("{self.function_name_to_alias(function_name)}", '
 
         result_string += ", ".join([f'"{n}"' for n in argument_list.required_names])
-#        for required_arg in self.required_args:
-#            (arg_name, _arg_type) = required_arg
-#            result_string += f'"{arg_name}", '
 
         if argument_list.required_names and argument_list.optional_names:
             result_string += ', '
 
         result_string += ", ".join([f'"{n}"' for n in argument_list.optional_names])
-
-#        for optional_arg in self.optional_args:
-#            (arg_name, _arg_type) = optional_arg
-#            result_string += f'"{arg_name}", '
-        
-#        if self.required_args or self.optional_args:
-#            result_string = result_string[0:-2]
-
         result_string += f'), &{CLASS_TYPE}::{function_name}'
 
         if argument_list.optional_names:
             result_string += ', '
-
-        #temp_optional_args = self.optional_args
-        #temp_optional_args.reverse()
 
         def get_defval(name, ql_type):
             if name in (signers or []) or name in (non_signers or []):
@@ -628,17 +670,6 @@ class GQLParse:
             return f'DEFVAL({GODOT_TYPE_DEFVAL[QL_TO_VARIANT[ql_type]]})'
 
         result_string += ', '.join([f'{get_defval(n, t)}' for n, t in zip(argument_list.optional_names, argument_list.optional_types)])
-
-#        for (arg_name, arg_type) in zip(argument_list.optional_names, argument_list.optional_types):
-#            godot_type = QL_TO_VARIANT[arg_type]
-#            if arg_name in (signers or []) or arg_name in (non_signers or []):
-#                result_string += f'DEFVAL({GODOT_TYPE_DEFVAL["Variant"]}), '
-#            else:
-#                result_string += f'DEFVAL({GODOT_TYPE_DEFVAL[godot_type]}), '
-
-#        if self.optional_args:
-#            result_string = result_string[0:-2]
-
         result_string += ');\n'
 
         self.bound_methods += "\t" + result_string
@@ -666,7 +697,6 @@ class GQLParse:
             result_string += ', '
 
         temp_optional_args = self.optional_args
-        #temp_optional_args.reverse()
 
         for optional_arg in temp_optional_args:
             (arg_name, arg_type) = optional_arg
@@ -697,14 +727,6 @@ class GQLParse:
             result_string += ', '
         
         result_string += ", ".join([f'{self.print_function_param(n, t)}' for n, t in zip(argument_list.optional_names, argument_list.optional_types)])
-
-#        for required_arg in argument_list.required_args:
-#            result_string += f'{self.print_function_param(required_arg[0], required_arg[1])}, '
-#        for optional_arg in self.optional_args:
-#            result_string += f'{self.print_function_param(optional_arg[0], optional_arg[1])}, '
-
-#        if self.required_args or self.optional_args:
-#            result_string = result_string[0:-2]
 
         result_string += ")"
         return result_string
@@ -738,8 +760,6 @@ class GQLParse:
         def get_defval(name, ql_type):
             if name in (signers or []) or name in (non_signers or []):
                 return GODOT_TYPE_DEFVAL["Variant"]
-            #if ql_type.endswith("!"):
-            #    ql_type = ql_type[:-1]
             return GODOT_TYPE_DEFVAL[QL_TO_VARIANT[ql_type]]
 
         result_string += ", ".join(f'{get_godot_type(n, t)} {n}' for t, n in zip(required_arg_types, required_arg_names))
@@ -749,19 +769,6 @@ class GQLParse:
             result_string += ', '
         
         result_string += ", ".join(f'{get_godot_type(n, t)} {n} = {get_defval(n, t)}' for t, n in zip(optional_arg_types, optional_arg_names))
-
-#        for required_arg in required_args:
-#            result_string += f'{self.print_function_param(required_arg)}, '
-#        for optional_arg in optional_args:
-#            (arg_name, arg_type) = optional_arg
-#            godot_type = QL_TO_VARIANT[arg_type]
-#            if arg_name in signers or arg_name in non_signers:
-#                result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL["Variant"]}, '
-#            else:
-#                result_string += f'{self.print_function_param(optional_arg)} = {GODOT_TYPE_DEFVAL[godot_type]}, '
-#
-#        if required_args or optional_args:
-#            result_string = result_string[0:-2]
 
         result_string += ");"
         return result_string
@@ -836,7 +843,6 @@ class GQLParse:
             godot_type = self.ql_type_to_godot(argument_type)
 
         result_string = f"{godot_type} {argument_name}"
-        #print(result_string)
 
         return result_string
      
@@ -857,24 +863,16 @@ class GQLParse:
         return result
 
     def print_header_file(self):
-        #result = self.print_header_includes()
-        #result += "\nnamespace godot{\n"
-        #result += f"\nClass {CLASS_TYPE} : public Node" + "{\n"
-        #result += f"GDCLASS({CLASS_TYPE}, Node)\n"
-        #result += "private:\n"
-        #result += "protected:\n"
-        #result += "static void _bind_methods();\n"
-        #result += "public:\n"
         result = "#define HONEYCOMB_METHOD_DEFS "
         result += self.method_definitions.replace("\n", "\\\n")
         result = result[:-2] + "\n\n"
-        #result += "};\n"
-        #result += "} // godot"
 
         result += "#define REGISTER_HONEYCOMB_TYPES "
         includes = ""
         for type in self.types:
-            includes += f'#include "honeycomb/types/{type["classname"]}.hpp"\n'
+            include_path = os.path.join(TYPE_DIR, type["classname"] + ".hpp")
+            includes += self.builder.print_include_statement(include_path)
+
             result += f'ClassDB::register_class<honeycomb_resource::{type["classname"]}>(); \\\n'
         result = result[:-2] + "\n\n"
         print(includes)
@@ -888,7 +886,7 @@ class GQLParse:
         result = f'#ifndef GODOT_SOLANA_SDK_HONEYCOMB_TYPE_{class_name.upper()}\n'
         result += f'#define GODOT_SOLANA_SDK_HONEYCOMB_TYPE_{class_name.upper()}\n'
         for include in resource_includes:
-            result += f'#include "{include}"\n'
+            result += self.builder.print_include_statement(include)
         result += "\nnamespace godot{\nnamespace honeycomb_resource{\n\n"
 
         result += f'class {class_name} : public Resource'
@@ -901,17 +899,11 @@ class GQLParse:
             prop_type = self.ql_type_to_godot(prop_type)
             result += f'{prop_type} {prop_name};\n'
 
-        #if 'fetch_declaration' in type:
-        #  result += "HoneyComb* honey_comb = nullptr;\n"
-
         result += "protected:\n"
         result += f'static void _bind_methods();\n'
         result += "public:\n"
         result += f"Dictionary to_dict();\n"
         result += f"void from_dict(const Dictionary& dict);\n"
-
-        #if 'fetch_declaration' in type:
-        #  result += type['fetch_declaration']
 
         for prop in properties:
             (prop_name, prop_type) = prop
@@ -942,7 +934,7 @@ class GQLParse:
 
         for include in extra_includes:
             if include.replace("!", "") == "Pubkey.hpp":
-                result += f'#include "pubkey.hpp"\n'
+                result += self.builder.print_include_statement('pubkey.hpp')
             else:
                 result += f'#include "{os.path.join(outdir_hpp, include)}"\n'.replace("!", "")
 
@@ -989,16 +981,15 @@ class GQLParse:
         result += to_dict + "return res;\n}\n\n"
         result += from_dict + "}\n\n"
 
-        #if 'fetch_definition' in type:
-        #  result += type['fetch_definition']
-
         result += bind_methods
         result += "}\n} // honeycomb_resource\n} // godot"
 
         return result
 
     def print_cpp_file(self, outdir_hpp):
-        result = f'#include "{os.path.join(outdir_hpp, "honeycomb")}.hpp"\n\n'
+
+        include_file = os.path.join(outdir_hpp, "honeycomb.hpp")
+        result = self.builder.print_include_statement(include_file)
         for type in self.types:
             result += f'#include "{os.path.join(outdir_hpp, "types/" + type["classname"])}.hpp"\n'.replace("!", "")
         result += "namespace godot{\n\n"
@@ -1139,7 +1130,6 @@ def main():
     qlparser.graphql_to_fetcher(findDelegateAuthority)
 
     print(qlparser.print_header_file())
-    #qlparser.print_cpp_file()
 
     qlparser.save_cpp_file(os.path.join(args.out_cpp_directory, args.cpp_filename), args.out_hpp_directory.split("/", maxsplit=1)[-1])
     qlparser.save_hpp_file(os.path.join(args.out_hpp_directory, args.hpp_filename))
