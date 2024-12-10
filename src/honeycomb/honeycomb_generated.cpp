@@ -1,5 +1,4 @@
 #include "honeycomb/honeycomb.hpp"
-
 #include "honeycomb/types/HoneycombTransaction.hpp"
 #include "honeycomb/types/SendTransactionBundlesOptions.hpp"
 #include "honeycomb/types/CreateBadgeCriteriaInput.hpp"
@@ -62,10 +61,7 @@ Variant HoneyComb::createCreateNewResourceTransaction(const Variant& project, co
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateNewResourceTransaction";
-
-
 	query_fields = " tx { transaction blockhash lastValidBlockHeight } resource ";
 	send_query();
 	return OK;
@@ -94,10 +90,7 @@ Variant HoneyComb::createCreateNewResourceTreeTransaction(const Variant& project
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateNewResourceTreeTransaction";
-
-
 	query_fields = " tx { transaction blockhash lastValidBlockHeight } treeAddress proofBytes space cost maxTreeCapacity ";
 	send_query();
 	return OK;
@@ -129,10 +122,7 @@ Variant HoneyComb::createMintResourceTransaction(const Variant& resource, const 
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createMintResourceTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -164,10 +154,7 @@ Variant HoneyComb::createBurnResourceTransaction(const Variant& resource, int64_
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createBurnResourceTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -191,10 +178,7 @@ Variant HoneyComb::createCreateUnwrapHoldingTransaction(String resource, int64_t
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateUnwrapHoldingTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -218,10 +202,7 @@ Variant HoneyComb::createCreateWrapHoldingTransaction(String resource, int64_t a
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateWrapHoldingTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -246,10 +227,7 @@ Variant HoneyComb::createTransferResourceTransaction(String resource, const Vari
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createTransferResourceTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -279,11 +257,8 @@ Variant HoneyComb::createInitializeRecipeTransaction(const Variant& project, int
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createInitializeRecipeTransaction";
-
-
-	query_fields = " transactions blockhash lastValidBlockHeight ";
+	query_fields = " transactions { transactions blockhash lastValidBlockHeight } recipe ";
 	send_query();
 	return OK;
 }
@@ -310,10 +285,7 @@ Variant HoneyComb::createAddIngredientsTransaction(const Variant& recipe, Array 
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createAddIngredientsTransaction";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -341,10 +313,7 @@ Variant HoneyComb::createRemoveIngredientsTransaction(const Variant& recipe, Pac
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createRemoveIngredientsTransaction";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -367,10 +336,7 @@ Variant HoneyComb::createInitCookingProcessTransactions(const Variant& recipe, c
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createInitCookingProcessTransactions";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -385,10 +351,7 @@ Variant HoneyComb::createCreateMissionPoolTransaction(Variant data, PackedString
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateMissionPoolTransaction";
-
-
 	query_fields = " tx { transaction blockhash lastValidBlockHeight } missionPoolAddress ";
 	send_query();
 	return OK;
@@ -403,10 +366,7 @@ Variant HoneyComb::createUpdateMissionPoolTransaction(Variant data, PackedString
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createUpdateMissionPoolTransaction";
-
-
 	query_fields = " tx { transaction blockhash lastValidBlockHeight } ";
 	send_query();
 	return OK;
@@ -421,10 +381,7 @@ Variant HoneyComb::createCreateMissionTransaction(Variant data, PackedStringArra
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateMissionTransaction";
-
-
 	query_fields = " tx { transaction blockhash lastValidBlockHeight } missionAddress ";
 	send_query();
 	return OK;
@@ -452,10 +409,7 @@ Variant HoneyComb::createUpdateMissionTransaction(const Variant& missionAddress,
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createUpdateMissionTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -470,10 +424,7 @@ Variant HoneyComb::createSendCharactersOnMissionTransaction(Variant data, Packed
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createSendCharactersOnMissionTransaction";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -503,11 +454,8 @@ Variant HoneyComb::createCreateStakingPoolTransaction(const Variant& project, co
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateStakingPoolTransaction";
-
-
-	query_fields = " transactions blockhash lastValidBlockHeight ";
+	query_fields = " transactions { transactions blockhash lastValidBlockHeight } stakingPoolAddress multipliersAddress ";
 	send_query();
 	return OK;
 }
@@ -537,10 +485,7 @@ Variant HoneyComb::createUpdateStakingPoolTransaction(const Variant& project, co
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createUpdateStakingPoolTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -570,10 +515,7 @@ Variant HoneyComb::createInitMultipliersTransaction(const Variant& project, cons
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createInitMultipliersTransaction";
-
-
 	query_fields = " tx { transaction blockhash lastValidBlockHeight } multipliersAddress ";
 	send_query();
 	return OK;
@@ -602,10 +544,7 @@ Variant HoneyComb::createAddMultiplierTransaction(const Variant& project, const 
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createAddMultiplierTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -627,10 +566,7 @@ Variant HoneyComb::createStakeCharactersTransactions(PackedStringArray character
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createStakeCharactersTransactions";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -650,10 +586,7 @@ Variant HoneyComb::createClaimStakingRewardsTransactions(PackedStringArray chara
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createClaimStakingRewardsTransactions";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -673,10 +606,7 @@ Variant HoneyComb::createUnstakeCharactersTransactions(PackedStringArray charact
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createUnstakeCharactersTransactions";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -700,10 +630,7 @@ Variant HoneyComb::createAddCharacterTraitsTransactions(const Variant& assembler
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createAddCharacterTraitsTransactions";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -727,10 +654,7 @@ Variant HoneyComb::createRemoveCharacterTraitsTransactions(const Variant& assemb
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createRemoveCharacterTraitsTransactions";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -755,10 +679,7 @@ Variant HoneyComb::createCreateCharacterModelTransaction(Variant config, const V
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateCharacterModelTransaction";
-
-
 	query_fields = " tx { transaction blockhash lastValidBlockHeight } characterModel ";
 	send_query();
 	return OK;
@@ -783,10 +704,7 @@ Variant HoneyComb::createCreateCharactersTreeTransaction(Variant treeConfig, con
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateCharactersTreeTransaction";
-
-
 	query_fields = " tx { transaction blockhash lastValidBlockHeight } treeAddress proofBytes space cost maxTreeCapacity ";
 	send_query();
 	return OK;
@@ -809,10 +727,7 @@ Variant HoneyComb::createAssembleCharacterTransaction(Array attributes, const Va
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createAssembleCharacterTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -836,10 +751,7 @@ Variant HoneyComb::createUpdateCharacterTraitsTransaction(const Variant& charact
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createUpdateCharacterTraitsTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -870,10 +782,7 @@ Variant HoneyComb::createPopulateAssembleablCharacterTransaction(Array attribute
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createPopulateAssembleablCharacterTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -895,10 +804,7 @@ Variant HoneyComb::createWrapAssetsToCharacterTransactions(PackedStringArray min
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createWrapAssetsToCharacterTransactions";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -920,10 +826,7 @@ Variant HoneyComb::createUnwrapAssetsFromCharacterTransactions(PackedStringArray
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createUnwrapAssetsFromCharacterTransactions";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -938,10 +841,7 @@ Variant HoneyComb::createRecallCharactersTransaction(Variant data, PackedStringA
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createRecallCharactersTransaction";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -958,11 +858,8 @@ Variant HoneyComb::signWithShadowSignerAndSendTransactionBundles(Array txs, Stri
 	add_arg("authToken", "String", Pubkey::string_from_variant(authToken), false);
 	add_arg("options", "SendTransactionBundlesOptions", Object::cast_to<godot::honeycomb_resource::SendTransactionBundlesOptions>(options)->to_dict(), false);
 
-
 	method_name = "signWithShadowSignerAndSendTransactionBundles";
-
-
-	query_fields = " signature error status ";
+	query_fields = " bundleId responses { signature error status } ";
 	send_query();
 	return OK;
 }
@@ -990,10 +887,7 @@ Variant HoneyComb::createInitializeFaucetTransaction(const Variant& resource, in
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createInitializeFaucetTransaction";
-
-
 	query_fields = " tx { transaction blockhash lastValidBlockHeight } faucet ";
 	send_query();
 	return OK;
@@ -1016,10 +910,7 @@ Variant HoneyComb::createClaimFaucetTransaction(const Variant& faucet, const Var
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createClaimFaucetTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1042,10 +933,7 @@ Variant HoneyComb::createNewUserTransaction(const Variant& wallet, Variant info,
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createNewUserTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1065,10 +953,7 @@ Variant HoneyComb::createNewUserBulkTransaction(Array info, PackedStringArray wa
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createNewUserBulkTransaction";
-
-
 	query_fields = " transactions blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1089,10 +974,7 @@ Variant HoneyComb::createUpdateUserTransaction(const Variant& payer, Variant inf
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createUpdateUserTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1112,10 +994,7 @@ Variant HoneyComb::createCreateProfilesTreeTransaction(Variant treeConfig, const
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateProfilesTreeTransaction";
-
-
 	query_fields = " tx { transaction blockhash lastValidBlockHeight } treeAddress proofBytes space cost maxTreeCapacity ";
 	send_query();
 	return OK;
@@ -1136,10 +1015,7 @@ Variant HoneyComb::createNewProfileTransaction(const Variant& project, const Var
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createNewProfileTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1163,10 +1039,7 @@ Variant HoneyComb::createUpdateProfileTransaction(const Variant& profile, const 
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createUpdateProfileTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1192,10 +1065,7 @@ Variant HoneyComb::createNewUserWithProfileTransaction(const Variant& project, c
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createNewUserWithProfileTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1210,10 +1080,7 @@ Variant HoneyComb::createClaimBadgeCriteriaTransaction(Variant args, PackedStrin
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createClaimBadgeCriteriaTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1228,10 +1095,7 @@ Variant HoneyComb::createUpdateBadgeCriteriaTransaction(Variant args, PackedStri
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createUpdateBadgeCriteriaTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1258,10 +1122,7 @@ Variant HoneyComb::createCreateProjectTransaction(const Variant& authority, Stri
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateProjectTransaction";
-
-
 	query_fields = " tx { transaction blockhash lastValidBlockHeight } project ";
 	send_query();
 	return OK;
@@ -1285,10 +1146,7 @@ Variant HoneyComb::createChangeProjectDriverTransaction(const Variant& project, 
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createChangeProjectDriverTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1313,10 +1171,7 @@ Variant HoneyComb::createCreateDelegateAuthorityTransaction(const Variant& proje
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateDelegateAuthorityTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1341,10 +1196,7 @@ Variant HoneyComb::createModifyDelegationTransaction(const Variant& project, con
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createModifyDelegationTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1370,10 +1222,7 @@ Variant HoneyComb::createCreateAssemblerConfigTransaction(Variant treeConfig, St
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createCreateAssemblerConfigTransaction";
-
-
 	query_fields = " tx { transaction blockhash lastValidBlockHeight } assemblerConfig treeAddress proofBytes space cost maxTreeCapacity ";
 	send_query();
 	return OK;
@@ -1388,10 +1237,7 @@ Variant HoneyComb::createInitializeBadgeCriteriaTransaction(Variant args, Packed
 	add_arg("lutAddresses", "[String!]", lutAddresses, false);
 	add_arg("computeUnitPrice", "Int", computeUnitPrice, false);
 
-
 	method_name = "createInitializeBadgeCriteriaTransaction";
-
-
 	query_fields = " transaction blockhash lastValidBlockHeight ";
 	send_query();
 	return OK;
@@ -1405,11 +1251,8 @@ Variant HoneyComb::delegateAuthority(Array addresses, Array delegates, Array pro
 	add_arg("delegates", "[Pubkey!]", delegates, false);
 	add_arg("projects", "[Pubkey!]", projects, false);
 
-
 	method_name = "delegateAuthority";
-
-
-	query_fields = "    address    bump    project    authority    delegations {      kind      index      permission    }  ";
+	query_fields = " address bump project authority delegations { kind index permission } ";
 	fetch_type<honeycomb_resource::DelegateAuthority>();
 	return OK;
 }
@@ -1469,4 +1312,5 @@ void HoneyComb::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("initialize_badge_criteria", "args", "lutAddresses", "computeUnitPrice"), &HoneyComb::createInitializeBadgeCriteriaTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("delegateAuthority", "addresses", "delegates", "projects"), &HoneyComb::delegateAuthority, DEFVAL(Array()), DEFVAL(Array()), DEFVAL(Array()));
 }
+
 } // godot

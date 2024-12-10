@@ -224,6 +224,125 @@ class CppBuilder:
         """
         return f'{self.indent()}query_fields = "{re.sub(r'\s+', ' ', fields.replace('\n', ''))}";\n'
 
+    def signer_append(self, signer: str, type_check: bool = True) -> str:
+        """Print signer append code.
+
+        Args:
+            signer (str): Signer to append.
+            type_check (bool): 
+
+        Returns:
+            str: Append signer code.
+        """
+        append_statement = f"{self.indent()}signers.append({signer});\n"
+        result_string = ""
+        if type_check:
+            result_string += f'{self.indent()}if({signer}.get_type() != Variant::NIL)'
+            result_string += "{\n\t"
+            result_string += append_statement
+            result_string += self.indent() + "}\n"
+        else:
+            result_string += append_statement
+
+        return result_string
+
+    def bind_non_changing_methods(self) -> str:
+        """Print the function call to bind the non changin functions
+
+        Returns:
+            str: Code to bind call.
+        """
+        return f'{self.indent()}bind_non_changing_methods();\n'
+
+    def start_method_definition(self, return_type: str, class_type: str, method_name: str) -> str:
+        """Start a method definition.
+
+        Args:
+            return_type (str): Return type of method definition.
+            class_type (str): Class type for method.
+            method_name (str): Method name.
+
+        Returns:
+            str: Code of method definition start.
+        """
+        result_string = f"{self.indent()}{return_type} {class_type}::{method_name}()" + "{\n"
+        self.indent_level += 1
+        return result_string
+
+    def check_pending(self) -> str:
+        """Builds the code for checking for pending operations.
+
+        Returns:
+            str: Code for checking for pending operations.
+        """
+        result_string = self.indent() + "if(pending){\n"
+        result_string += f"{self.indent()}\treturn ERR_BUSY;\n"
+        result_string += self.indent() + "}\n"
+
+        return result_string
+
+    def close_block(self) -> str:
+        """Closes anything that is opened with a {}.
+
+        Returns:
+            str: Block closing code.
+        """
+        self.indent_level -= 1
+        return self.indent() + "}\n"
+
+    def start_block(self, should_indent: bool = False) -> str:
+        """Start a block
+
+        Args:
+            indent (bool): Determines if indentation should happen.
+
+        Returns:
+            str: Block starting code.
+        """
+        self.indent_level += 1
+        if should_indent:
+            return self.indent() + "{\n"
+
+        return "{\n"
+
+    def function_call(self, function_name: str, arguments: list[str], template_type: str = "") -> str:
+        """Builds code for a function call.
+
+        Args:
+            function_name (str): Name of function to call.
+            arguments (list[str]): list of arguments to pass.
+            template_type (str, optional): template type name. Defaults to "".
+
+        Returns:
+            str: Function call code.
+        """
+        template = ""
+        if template_type:
+            template = f'<{template_type}>'
+        return f'{self.indent()}{function_name}{template}({", ".join(arguments)});\n'
+
+    def return_value(self, return_value: str) -> str:
+        """Builds a return statement.
+
+        Args:
+            return_value (str): Value to return.
+
+        Returns:
+            str: Return statement code.
+        """
+        return f'{self.indent()}return {return_value};\n'
+
+    def set_method_name(self, method_name: str) -> str:
+        """Builds code to set method name.
+
+        Args:
+            method_name (str): Method name.
+
+        Returns:
+            str: Code to set method name.
+        """
+        return f'{self.indent()}method_name = "{method_name}";\n'
+
 
 class QLArgumentList:
     """Argument list for a graphQL query.
@@ -592,22 +711,14 @@ class GQLParse:
         self.str = self.str.lstrip()[1:]
         self.str = self.str.rstrip()[0:-1]
 
-        # Make a line of query
-        query_fields_re = re.sub(r"[\r\n]+", "", self.str)
-        #print(query_fields_re)
-        #exit(1)
-        #self.query_fields = re.sub(r'\s+', ' ', query_fields_re)
+        self.method_definitions += f'\t{self.print_function_name_header_special(request_parser.function_name, request_parser.get_argument_list())}\n'
+        self.method_implementations += self.print_function_name_special(request_parser.function_name, request_parser.get_argument_list())
 
-        self.method_definitions += f'\t{self.print_function_name_header_special()}\n'
-        self.method_implementations += self.print_function_name_special()
-
-        self.method_implementations += "{\n"
-        self.method_implementations += "\tif(pending){\n"
-        self.method_implementations += "\t\treturn ERR_BUSY;\n"
-        self.method_implementations += "\t}\n"
+        self.method_implementations += self.builder.start_block(False)
+        self.method_implementations += self.builder.check_pending()
         self.method_implementations += self.print_args_section(request_parser.get_required_argument_names(), request_parser.get_required_argument_types(), request_parser.get_optional_argument_names(), request_parser.get_optional_argument_types(), self.signers, self.non_signers) + '\n'
-        self.method_implementations += self.print_method_name() + '\n'
-        self.method_implementations += self.print_last_section_special() + '\n'
+        self.method_implementations += self.builder.set_method_name(request_parser.function_name)
+        self.method_implementations += self.print_last_section_special(request_parser.function_name, request_parser.query_fields) + '\n'
 
         self.append_method_bind_special()
 
@@ -650,14 +761,12 @@ class GQLParse:
         self.method_definitions += f'\t{method_definition}\n'
 
         self.method_implementations += self.print_function_name(request_parser.function_name, request_parser.get_argument_list())
-        self.method_implementations += "{\n"
-        self.method_implementations += "\tif(pending){\n"
-        self.method_implementations += "\t\treturn ERR_BUSY;\n"
-        self.method_implementations += "\t}\n"
-        self.method_implementations += self.print_signer_section() + '\n'
+        self.method_implementations += self.builder.start_block(False)
+        self.method_implementations += self.builder.check_pending()
+        self.method_implementations += self.print_signer_section(signers) + '\n'
         self.method_implementations += self.print_args_section(request_parser.get_required_argument_names(), request_parser.get_required_argument_types(), request_parser.get_optional_argument_names(), request_parser.get_optional_argument_types(), self.signers, self.non_signers) + '\n'
-        self.method_implementations += self.print_method_name() + '\n'
-        self.method_implementations += self.print_last_section() + '\n'
+        self.method_implementations += self.builder.set_method_name(request_parser.function_name)
+        self.method_implementations += self.print_last_section(request_parser.query_fields) + '\n'
 
         self.append_method_bind(request_parser.function_name, request_parser.get_argument_list(), signers, non_signers)
 
@@ -747,17 +856,23 @@ class GQLParse:
         return result_string
   
 
-    def print_function_name_special(self):
+    def print_function_name_special(self, function_name: str, argument_list: QLArgumentList):
         result_string = ""
-        result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{self.function_name}("
+        result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{function_name}("
 
-        for required_arg in self.required_args:
-            result_string += f'{self.print_function_param(required_arg[0], required_arg[1])}, '
-        for optional_arg in self.optional_args:
-            result_string += f'{self.print_function_param(optional_arg[0], optional_arg[1])}, '
+        args_names = argument_list.required_names + argument_list.optional_names
+        args_types = argument_list.required_types + argument_list.optional_types
+        args = zip(args_names, args_types)
 
-        if self.required_args or self.optional_args:
-            result_string = result_string[0:-2]
+        result_string += ', '.join([self.print_function_param(n, t) for n, t in args])
+        #result_string += ', '.join([self.print_function_param(n, t) for n, t in optional_args])
+        #for arg_type, arg_name in zip(argument_list.required_names, argument_list.required_types):
+            #result_string += f'{self.print_function_param(arg_name, arg_type)}, '
+        #for optional_arg in self.optional_args:
+        #    result_string += f'{self.print_function_param(optional_arg[0], optional_arg[1])}, '
+
+        #if self.required_args or self.optional_args:
+        #    result_string = result_string[0:-2]
 
         result_string += ")"
         return result_string
@@ -789,62 +904,62 @@ class GQLParse:
         return result_string
   
 
-    def print_function_name_header_special(self):
-        result_string = ""
-        result_string += f"{RETURN_TYPE} {self.function_name}("
+    def print_function_name_header_special(self, function_name: str, argument_list: QLArgumentList, signers: list[str] = None, non_signers: list[str] = None):
+        result_string = f"{RETURN_TYPE} {function_name}("
 
-        for required_arg in self.required_args:
-            result_string += f'{self.print_function_param(required_arg[0], required_arg[1])}, '
-        for optional_arg in self.optional_args:
-            (arg_name, arg_type) = optional_arg
+        for arg_name, arg_type in zip(argument_list.required_names, argument_list.required_types):
+            result_string += f'{self.print_function_param(arg_name, arg_type)}, '
+        for arg_name, arg_type in zip(argument_list.optional_names, argument_list.optional_types):
             godot_type = QL_TO_VARIANT[arg_type]
-            if arg_name in self.signers or arg_name in self.non_signers:
-                result_string += f'{self.print_function_param(optional_arg[0], optional_arg[1])} = {GODOT_TYPE_DEFVAL["Variant"]}, '
+            if arg_name in (signers or []) or arg_name in (non_signers or []):
+                result_string += f'{self.print_function_param(arg_name, arg_type)} = {GODOT_TYPE_DEFVAL["Variant"]}, '
             else:
-                result_string += f'{self.print_function_param(optional_arg[0], optional_arg[1])} = {GODOT_TYPE_DEFVAL[godot_type]}, '
+                result_string += f'{self.print_function_param(arg_name, arg_type)} = {GODOT_TYPE_DEFVAL[godot_type]}, '
 
-        if self.required_args or self.optional_args:
+        if argument_list.required_names or argument_list.optional_names:
             result_string = result_string[0:-2]
 
         result_string += ");"
         return result_string
-  
 
-    def print_signer_section(self):
+
+    def print_signer_section(self, signers: list[str]) -> str:
+        """Prints section where signers are appended to QL client.
+
+        Args:
+            signers (list[str]): list of signers to append. For server signer, add a "." as signer.
+
+        Returns:
+            str: Code section that appends signers. 
+        """
         result_string = ""
-        for signer in self.signers:
+        for signer in signers:
             if signer == ".":
-                result_string += f"\tsigners.append({SERVER_SIGNER});\n"
+                result_string += self.builder.signer_append(SERVER_SIGNER, False)
             else:
-                result_string += f'\tif({signer}.get_type() != Variant::NIL)'
-                result_string += "{\n"
-                result_string += f"\t\tsigners.append({signer});\n"
-                result_string += "\t}\n"
-                
+                result_string += self.builder.signer_append(signer)
+
         return result_string
 
 
-    def print_method_name(self):
-        result_string = f'\n\tmethod_name = "{self.function_name}";\n'
-        return result_string
-
-
-    def print_last_section(self):
-        result_string = self.builder.assign_query_fields(self.query_fields)
+    def print_last_section(self, query_fields: str):
+        result_string = self.builder.assign_query_fields(query_fields)
         #result_string = f'\n\tquery_fields = "{self.query_fields}";\n'
-        result_string += "\tsend_query();\n"
-        result_string += "\treturn OK;\n"
-        result_string += "}\n"
+        result_string += self.builder.function_call("send_query", [])
+        result_string += self.builder.return_value("OK")
+        result_string += self.builder.close_block()
 
         return result_string
   
-    def print_last_section_special(self):
-        class_name = self.function_name
+    def print_last_section_special(self, function_name: str, query_fields: str):
+        class_name = function_name
         class_name = class_name[0].upper() + class_name[1:]
-        result_string = f'\n\tquery_fields = "{self.query_fields}";\n'
-        result_string += f'\tfetch_type<honeycomb_resource::{class_name}>();\n'
-        result_string += "\treturn OK;\n"
-        result_string += "}\n"
+        result_string = self.builder.assign_query_fields(query_fields)
+        #result_string = f'\n\tquery_fields = "{self.query_fields}";\n'
+        #result_string += f'\tfetch_type<honeycomb_resource::{class_name}>();\n'
+        result_string += self.builder.function_call("fetch_type", [], f'honeycomb_resource::{class_name}')
+        result_string += self.builder.return_value("OK")
+        result_string += self.builder.close_block()
 
         return result_string
 
@@ -864,10 +979,12 @@ class GQLParse:
      
 
     def print_bind_methods(self):
-        result_string = f"void {CLASS_TYPE}::_bind_methods()" + "{\n"
-        result_string += f'\tbind_non_changing_methods();\n'
+        result_string = self.builder.start_method_definition("void", CLASS_TYPE, "_bind_methods")
+        #result_string = f"void {CLASS_TYPE}::_bind_methods()" + "{\n"
+        result_string += self.builder.bind_non_changing_methods()
         result_string += self.bound_methods
-        result_string += "}"
+        result_string += self.builder.close_block()
+        
         return result_string
 
 
@@ -984,7 +1101,8 @@ class GQLParse:
 
             result += f"{prop_type} {class_name}::get_{prop_name}()"
             result += "{\n"
-            result += f"return this->{prop_name};\n"
+            result += self.builder.return_value(f'this->{prop_name}')
+            #result += f"return this->{prop_name};\n"
             result += "}\n\n"
 
             bind_methods += f'ClassDB::bind_method(D_METHOD("get_{prop_name}"), &{class_name}::get_{prop_name});\n'
