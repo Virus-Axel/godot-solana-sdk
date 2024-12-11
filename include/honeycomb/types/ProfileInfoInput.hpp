@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class ProfileInfoInput : public Resource{
 GDCLASS(ProfileInfoInput, Resource)
 private:
@@ -25,6 +23,6 @@ String get_bio();
 void set_pfp(const String& val);
 String get_pfp();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

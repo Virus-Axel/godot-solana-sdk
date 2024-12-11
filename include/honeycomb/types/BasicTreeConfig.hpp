@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class BasicTreeConfig : public Resource{
 GDCLASS(BasicTreeConfig, Resource)
 private:
@@ -19,6 +17,6 @@ void from_dict(const Dictionary& dict);
 void set_numAssets(const int32_t& val);
 int32_t get_numAssets();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

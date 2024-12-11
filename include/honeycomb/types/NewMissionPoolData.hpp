@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class NewMissionPoolData : public Resource{
 GDCLASS(NewMissionPoolData, Resource)
 private:
@@ -34,6 +32,6 @@ String get_characterModel();
 void set_name(const String& val);
 String get_name();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class InitStakingMultiplierMetadataInput : public Resource{
 GDCLASS(InitStakingMultiplierMetadataInput, Resource)
 private:
@@ -22,6 +20,6 @@ int32_t get_decimals();
 void set_multipliers(const Array& val);
 Array get_multipliers();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

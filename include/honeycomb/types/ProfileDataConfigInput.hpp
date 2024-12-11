@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class ProfileDataConfigInput : public Resource{
 GDCLASS(ProfileDataConfigInput, Resource)
 private:
@@ -22,6 +20,6 @@ PackedStringArray get_achievements();
 void set_customDataFields(const PackedStringArray& val);
 PackedStringArray get_customDataFields();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

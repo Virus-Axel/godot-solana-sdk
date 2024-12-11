@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class NewMissionData : public Resource{
 GDCLASS(NewMissionData, Resource)
 private:
@@ -46,6 +44,6 @@ int64_t get_duration();
 void set_rewards(const Array& val);
 Array get_rewards();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

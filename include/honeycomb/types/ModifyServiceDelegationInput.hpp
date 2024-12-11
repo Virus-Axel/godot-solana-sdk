@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class ModifyServiceDelegationInput : public Resource{
 GDCLASS(ModifyServiceDelegationInput, Resource)
 private:
@@ -37,6 +35,6 @@ Variant get_NectarMissions();
 void set_BuzzGuild(const Variant& val);
 Variant get_BuzzGuild();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

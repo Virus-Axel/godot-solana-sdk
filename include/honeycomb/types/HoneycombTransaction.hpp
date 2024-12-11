@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class HoneycombTransaction : public Resource{
 GDCLASS(HoneycombTransaction, Resource)
 private:
@@ -25,6 +23,6 @@ String get_blockhash();
 void set_lastValidBlockHeight(const int32_t& val);
 int32_t get_lastValidBlockHeight();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

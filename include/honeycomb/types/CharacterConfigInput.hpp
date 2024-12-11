@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class CharacterConfigInput : public Resource{
 GDCLASS(CharacterConfigInput, Resource)
 private:
@@ -25,6 +23,6 @@ Array get_criterias();
 void set_assemblerConfigInput(const Variant& val);
 Variant get_assemblerConfigInput();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

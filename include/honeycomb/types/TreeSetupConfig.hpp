@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class TreeSetupConfig : public Resource{
 GDCLASS(TreeSetupConfig, Resource)
 private:
@@ -22,6 +20,6 @@ Variant get_basic();
 void set_advanced(const Variant& val);
 Variant get_advanced();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

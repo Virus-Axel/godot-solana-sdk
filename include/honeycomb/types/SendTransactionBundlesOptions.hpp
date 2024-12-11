@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class SendTransactionBundlesOptions : public Resource{
 GDCLASS(SendTransactionBundlesOptions, Resource)
 private:
@@ -25,6 +23,6 @@ bool get_skipPreflight();
 void set_bundles(const Variant& val);
 Variant get_bundles();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

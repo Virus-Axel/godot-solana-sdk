@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class AddMultiplierMetadataInput : public Resource{
 GDCLASS(AddMultiplierMetadataInput, Resource)
 private:
@@ -22,6 +20,6 @@ int64_t get_value();
 void set_type(const Variant& val);
 Variant get_type();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class CreateStakingPoolMetadataInput : public Resource{
 GDCLASS(CreateStakingPoolMetadataInput, Resource)
 private:
@@ -46,6 +44,6 @@ int32_t get_lockType();
 void set_endTime(const int64_t& val);
 int64_t get_endTime();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

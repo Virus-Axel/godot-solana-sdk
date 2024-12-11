@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class UpdateBadgeCriteriaInput : public Resource{
 GDCLASS(UpdateBadgeCriteriaInput, Resource)
 private:
@@ -37,6 +35,6 @@ int32_t get_endTime();
 void set_condition(const int32_t& val);
 int32_t get_condition();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class AssemblerConfigInput : public Resource{
 GDCLASS(AssemblerConfigInput, Resource)
 private:
@@ -37,6 +35,6 @@ int32_t get_sellerFeeBasisPoints();
 void set_collectionName(const String& val);
 String get_collectionName();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

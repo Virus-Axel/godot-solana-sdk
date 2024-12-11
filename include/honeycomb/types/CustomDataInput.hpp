@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class CustomDataInput : public Resource{
 GDCLASS(CustomDataInput, Resource)
 private:
@@ -22,6 +20,6 @@ Dictionary get_add();
 void set_remove(const PackedStringArray& val);
 PackedStringArray get_remove();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

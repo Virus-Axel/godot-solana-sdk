@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class DelegateAuthority : public Resource{
 GDCLASS(DelegateAuthority, Resource)
 private:
@@ -31,6 +29,6 @@ Variant get_authority();
 void set_delegations(const Array& val);
 Array get_delegations();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class ParticipateOnMissionData : public Resource{
 GDCLASS(ParticipateOnMissionData, Resource)
 private:
@@ -28,6 +26,6 @@ String get_authority();
 void set_payer(const String& val);
 String get_payer();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

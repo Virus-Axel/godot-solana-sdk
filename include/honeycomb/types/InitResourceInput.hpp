@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class InitResourceInput : public Resource{
 GDCLASS(InitResourceInput, Resource)
 private:
@@ -31,6 +29,6 @@ int32_t get_decimals();
 void set_storage(const int32_t& val);
 int32_t get_storage();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

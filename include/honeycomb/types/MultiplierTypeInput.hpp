@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class MultiplierTypeInput : public Resource{
 GDCLASS(MultiplierTypeInput, Resource)
 private:
@@ -28,6 +26,6 @@ String get_creator();
 void set_collection(const String& val);
 String get_collection();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

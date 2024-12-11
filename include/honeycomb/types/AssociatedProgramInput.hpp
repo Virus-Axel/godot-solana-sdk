@@ -3,10 +3,8 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/classes/resource.hpp"
-
 namespace godot{
 namespace honeycomb_resource{
-
 class AssociatedProgramInput : public Resource{
 GDCLASS(AssociatedProgramInput, Resource)
 private:
@@ -22,6 +20,6 @@ String get_address();
 void set_trustedActions(const Array& val);
 Array get_trustedActions();
 };
-} // honeycomb_resource
-} // godot
+}
+}
 #endif

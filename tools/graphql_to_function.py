@@ -198,7 +198,6 @@ class CppBuilder:
         """
         self.namespace_stack.append(namespace)
         namespace_string = f'{self.indent()}namespace {namespace}'
-        self.indent_level += 1
 
         return namespace_string + '{\n'
 
@@ -212,6 +211,14 @@ class CppBuilder:
             str: Cpp code for include guard start.
         """
         return f'#ifndef {guard_name}\n#define {guard_name}\n'
+
+    def stop_include_guard(self) -> str:
+        """Build include guard stop.
+
+        Returns:
+            str: Code to end include guard.
+        """
+        return '#endif\n'
 
     def assign_query_fields(self, fields: str) -> str:
         """Flattens given fields and assigns it to CPP property.
@@ -287,7 +294,7 @@ class CppBuilder:
         Returns:
             str: Block closing code.
         """
-        self.indent_level -= 1
+        self.decrease_indentation_level()
         return self.indent() + "}\n"
 
     def start_block(self, should_indent: bool = False) -> str:
@@ -343,11 +350,78 @@ class CppBuilder:
         """
         return f'{self.indent()}method_name = "{method_name}";\n'
 
+    def define_macro(self, macro_name: str, macro_content: str) -> str:
+        """Builds a macro definition.
+
+        Args:
+            macro_name (str): Name of the macro.
+            macro_content (str): Content that macro expands to.
+
+        Returns:
+            str: Macro definition code.
+        """
+
+        return f'#define {macro_name} {macro_content}\n'
+
+    def start_class_definition(self, class_name: str, inherited_classes: list[str] = None) -> str:
+        """Builds the start of a class definition.
+
+        Args:
+            class_name (str): Name of the class.
+            inherited_classes (list[str], optional): list of inherited classes. Defaults to None.
+
+        Returns:
+            str: Code for class definition start
+        """
+        inheritance = ', '.join([f'public {t}' for t in (inherited_classes or None)])
+        result_string = f'{self.indent()}class {class_name} {": " if inherited_classes else ""}{inheritance}'
+        result_string += "{\n"
+        self.indent_level += 1
+
+        return result_string
+
+    def end_class_definition(self) -> str:
+        """Builds an end to a class definition.
+
+        Returns:
+            str: Code to end class.
+        """
+        self.decrease_indentation_level()
+
+        return self.indent() + '};\n'
+
+    def decrease_indentation_level(self) -> None:
+        """Decrease the indentation level by one.
+        """
+        self.indent_level = max(0, self.indent_level - 1)
+
+    def function_declaration(self, ) -> str:
+        return ""
+
+
+class QLArgument:
+    """A QL Argument containing name and type.
+    """
+    def __init__(self):
+        self.name = ""
+        self.data_type = ""
+
+    def get_default_value(self) -> str:
+        """Gets default value for data type.
+
+        Returns:
+            str: Default value of data type.
+        """
+        godot_type = QL_TO_VARIANT[self.data_type]
+
+        return GODOT_TYPE_DEFVAL[godot_type]
 
 class QLArgumentList:
     """Argument list for a graphQL query.
     """
     def __init__(self):
+        self.optional = []
+        self.required = []
         self.optional_names = []
         self.optional_types = []
         self.required_names = []
@@ -491,7 +565,7 @@ class GQLParse:
         self.original_required_args = []
         self.original_optional_args = []
         self.str = ""
-        self.method_definitions = ""
+        self.method_definitions = []
         self.bound_methods = ""
         self.method_implementations = ""
         self.types = []
@@ -688,7 +762,7 @@ class GQLParse:
         self.original_required_args = []
         self.original_optional_args = []
 
-        self.method_definitions += f'\t{self.print_function_name_header_special(request_parser.function_name, request_parser.get_argument_list())}\n'
+        self.method_definitions.append(self.print_function_name_header_special(request_parser.function_name, request_parser.get_argument_list()))
         self.method_implementations += self.print_function_name_special(request_parser.function_name, request_parser.get_argument_list())
 
         self.method_implementations += self.builder.start_block(False)
@@ -730,7 +804,7 @@ class GQLParse:
         request_parser.parse(str)
 
         method_definition = self.print_function_name_header(request_parser.function_name, request_parser.get_required_argument_names(), request_parser.get_required_argument_types(), request_parser.get_optional_argument_names(), request_parser.get_optional_argument_types(), signers, non_signers)
-        self.method_definitions += f'\t{method_definition}\n'
+        self.method_definitions.append(method_definition)
 
         self.method_implementations += self.print_function_name(request_parser.function_name, request_parser.get_argument_list(), signers, non_signers)
         self.method_implementations += self.builder.start_block(False)
@@ -911,7 +985,6 @@ class GQLParse:
 
     def print_last_section(self, query_fields: str):
         result_string = self.builder.assign_query_fields(query_fields)
-        #result_string = f'\n\tquery_fields = "{self.query_fields}";\n'
         result_string += self.builder.function_call("send_query", [])
         result_string += self.builder.return_value("OK")
         result_string += self.builder.close_block()
@@ -922,8 +995,6 @@ class GQLParse:
         class_name = function_name
         class_name = class_name[0].upper() + class_name[1:]
         result_string = self.builder.assign_query_fields(query_fields)
-        #result_string = f'\n\tquery_fields = "{self.query_fields}";\n'
-        #result_string += f'\tfetch_type<honeycomb_resource::{class_name}>();\n'
         result_string += self.builder.function_call("fetch_type", [], f'honeycomb_resource::{class_name}')
         result_string += self.builder.return_value("OK")
         result_string += self.builder.close_block()
@@ -958,39 +1029,50 @@ class GQLParse:
     def print_header_includes(self):
         result = ""
         for header_include in header_includes:
-            result += f'#include {header_include}\n'
-        
+            result += self.builder.print_include_statement(header_include)
+
         return result
 
     def print_header_file(self):
-        result = "#define HONEYCOMB_METHOD_DEFS "
-        result += self.method_definitions.replace("\n", "\\\n")
-        result = result[:-2] + "\n\n"
+        result = self.builder.define_macro("HONEYCOMB_METHOD_DEFS", "\\\n\t".join(self.method_definitions))
+        #result = "#define HONEYCOMB_METHOD_DEFS "
+        #result += "\\\n".join(self.method_definitions)
 
-        result += "#define REGISTER_HONEYCOMB_TYPES "
-        includes = ""
-        for type in self.types:
-            include_path = os.path.join(TYPE_DIR, type["classname"] + ".hpp")
-            includes += self.builder.print_include_statement(include_path)
+        function_name = "ClassDB::register_class"
+        macro_types = '\\\n'.join([self.builder.function_call(function_name, [], f'honeycomb_resource::{t["classname"]}')[:-1] for t in self.types])
+        #result += "#define REGISTER_HONEYCOMB_TYPES "
+        result += self.builder.define_macro('REGISTER_HONEYCOMB_TYPES', macro_types)
+        #includes = ""
 
-            result += f'ClassDB::register_class<honeycomb_resource::{type["classname"]}>(); \\\n'
-        result = result[:-2] + "\n\n"
+        def get_include_path(type_data) -> str:
+            return os.path.join(TYPE_DIR, type_data["classname"] + ".hpp")
+
+        includes = "".join([self.builder.print_include_statement(get_include_path(t)) for t in self.types])
+
+        #for type in self.types:
+        #    include_path = os.path.join(TYPE_DIR, type["classname"] + ".hpp")
+        #    includes += self.builder.print_include_statement(include_path)
+
+        #    result += f'ClassDB::register_class<honeycomb_resource::{type["classname"]}>(); \\\n'
+        #result = result[:-2] + "\n\n"
         print(includes)
         return result
 
     def print_resource_hpp_file(self, index):
-        type = self.types[index]
-        class_name = type["classname"]
-        properties = type["properties"]
+        type_data = self.types[index]
+        class_name = type_data["classname"]
+        properties = type_data["properties"]
 
         result = self.builder.start_include_guard(f'{TYPE_INCLUDE_GUARD_PREFIX}{class_name.upper()}')
 
         for include in resource_includes:
             result += self.builder.print_include_statement(include)
-        result += "\nnamespace godot{\nnamespace honeycomb_resource{\n\n"
+        result += self.builder.start_namespace('godot')
+        result += self.builder.start_namespace('honeycomb_resource')
 
-        result += f'class {class_name} : public Resource'
-        result += "{\n"
+        result += self.builder.start_class_definition(class_name, ['Resource'])
+        #result += f'class {class_name} : public Resource'
+        #result += "{\n"
         result += f"GDCLASS({class_name}, Resource)\n"
 
         result += "private:\n"
@@ -1008,12 +1090,17 @@ class GQLParse:
         for prop in properties:
             (prop_name, prop_type) = prop
             prop_type = self.ql_type_to_godot(prop_type)
+            result += self.builder.function_declaration()
             result += f"void set_{prop_name}(const {prop_type}& val);\n"
             result += f"{prop_type} get_{prop_name}();\n"
 
-        result += "};\n"
-        result += "} // honeycomb_resource\n} // godot\n"
-        result += "#endif"
+        result += self.builder.end_class_definition()
+        #result += "};\n"
+        result += self.builder.close_block()
+        result += self.builder.close_block()
+        #result += "} // honeycomb_resource\n} // godot\n"
+        #result += "#endif"
+        result += self.builder.stop_include_guard()
 
         return result
 
