@@ -660,7 +660,6 @@ class GQLParse:
         self.types = []
         self.builder = CppBuilder()
 
-
     def save_cpp_file(self, filepath: str, outdir_hpp: str) -> None:
         """Writes a cpp file for all functions and fetchers.
 
@@ -671,7 +670,6 @@ class GQLParse:
         with open(filepath, 'w', encoding='utf-8') as file:
             file.write(self.print_cpp_file(outdir_hpp))
 
-
     def save_hpp_file(self, filepath: str) -> None:
         """Writes a hpp file for all function declarations.
 
@@ -680,7 +678,6 @@ class GQLParse:
         """
         with open(filepath, "w", encoding='utf-8') as file:
             file.write(self.print_header_file())
-
 
     def save_resource_files(self, outdir_cpp: str, outdir_hpp: str):
         """Writes a resource hpp and cpp file.
@@ -697,7 +694,6 @@ class GQLParse:
             with open(os.path.join(outdir_cpp, f"{class_name}.cpp"), "w", encoding='utf8') as cpp_file:
                 cpp_file.write(self.print_resource_cpp_file(i, outdir_hpp.split("/", maxsplit=1)[-1]))
 
-
     def function_name_to_alias(self, function_name: str) -> str:
         """Takes a transaction create function name and converts it to a godot name.
 
@@ -707,9 +703,12 @@ class GQLParse:
         Returns:
             str: Alias name.
         """
-        alias = function_name[6:-11]
+        if function_name.startswith("create"):
+            alias = function_name[6:-11]
+        else: # Assume fetcher
+            return function_name
+        
         return ''.join(['_'+c.lower() if c.isupper() else c for c in alias]).lstrip('_')
-
 
     def ql_type_to_godot(self, ql_type: str) -> str:
         """Converts a QL type to Godot type.
@@ -724,7 +723,6 @@ class GQLParse:
             return QL_TO_VARIANT[ql_type[:-1]]
 
         return QL_TO_VARIANT[ql_type]
-
 
     def print_arg(self, arg_name, arg_type, optional=False, special=False):
         result_string = ""
@@ -753,7 +751,6 @@ class GQLParse:
             result_string += '\t}\n'
 
         return result_string
-
 
     def print_arg_array(self, arg, optional=False):
         result_string = ""
@@ -784,7 +781,6 @@ class GQLParse:
 
         return result_string
 
-
     def print_args_section(self, required_arg_names: list[str], required_arg_types: list[str], optional_arg_names: list[str], optional_arg_types: list[str]):
         """Returns the section of code that adds arguments to QL client.
 
@@ -804,7 +800,6 @@ class GQLParse:
 
         return result_string
 
-
     def print_args_section_special(self):
 
         result_string = ""
@@ -815,7 +810,6 @@ class GQLParse:
             result_string += self.print_arg_array(optional_arg, True)
 
         return result_string
-
 
     def graphql_to_type(self, type_str):
         new_type = {}
@@ -832,7 +826,6 @@ class GQLParse:
 
         self.types.append(new_type)
 
-
     def graphql_to_fetcher(self, ql_data: str):
         request_parser = SimpleQLRequestParser()
         request_parser.parse(ql_data)
@@ -841,14 +834,14 @@ class GQLParse:
         self.original_required_args = []
         self.original_optional_args = []
 
-        self.method_definitions.append(self.print_function_name_header_special(request_parser.function_name, request_parser.get_argument_list()))
-        self.method_implementations += self.print_function_name_special(request_parser.function_name, request_parser.get_argument_list())
+        self.method_definitions.append(self.print_function_name_header(request_parser.function_name, request_parser.get_argument_list()))
+        self.method_implementations += self.print_function_name(request_parser.function_name, request_parser.get_argument_list())
 
         self.method_implementations += self.builder.start_block(False)
         self.method_implementations += self.builder.check_pending()
         self.method_implementations += self.print_args_section(request_parser.get_required_argument_names(), request_parser.get_required_argument_types(), request_parser.get_optional_argument_names(), request_parser.get_optional_argument_types()) + '\n'
         self.method_implementations += self.builder.set_method_name(request_parser.function_name)
-        self.method_implementations += self.print_last_section_special(request_parser.function_name, request_parser.query_fields) + '\n'
+        self.method_implementations += self.print_last_section_fetcher(request_parser.function_name, request_parser.query_fields) + '\n'
 
         self.append_method_bind_special(request_parser.function_name, request_parser.get_argument_list())
 
@@ -862,7 +855,6 @@ class GQLParse:
                 class_type['fetch_definition'] += "}\n"
 
         return ""
-
 
     def print_fetch_implementation(self):
         result = "\tif(honey_comb == nullptr){\n\t\thoney_comb = memnew(HoneyComb);\n\t}\n"
@@ -880,24 +872,50 @@ class GQLParse:
         request_parser = SimpleQLRequestParser()
         request_parser.parse(ql_data)
 
-        method_definition = self.print_function_name_header(request_parser.function_name, request_parser.get_argument_list(), signers, non_signers)
+        method_definition = self.print_function_name_header(
+            request_parser.function_name,
+            request_parser.get_argument_list(),
+            signers,
+            non_signers,
+        )
         self.method_definitions.append(method_definition)
 
-        self.method_implementations += self.print_function_name(request_parser.function_name, request_parser.get_argument_list(), signers, non_signers)
+        self.method_implementations += self.print_function_name(
+            request_parser.function_name,
+            request_parser.get_argument_list(),
+            signers,
+            non_signers,
+        )
         self.method_implementations += self.builder.start_block(False)
         self.method_implementations += self.builder.check_pending()
         self.method_implementations += self.print_signer_section(signers) + '\n'
-        self.method_implementations += self.print_args_section(request_parser.get_required_argument_names(), request_parser.get_required_argument_types(), request_parser.get_optional_argument_names(), request_parser.get_optional_argument_types()) + '\n'
-        self.method_implementations += self.builder.set_method_name(request_parser.function_name)
-        self.method_implementations += self.print_last_section(request_parser.query_fields) + '\n'
+        self.method_implementations += (
+            self.print_args_section(
+                request_parser.get_required_argument_names(),
+                request_parser.get_required_argument_types(),
+                request_parser.get_optional_argument_names(),
+                request_parser.get_optional_argument_types(),
+            )
+            + "\n"
+        )
+        self.method_implementations += self.builder.set_method_name(
+            request_parser.function_name
+        )
+        self.method_implementations\
+            += self.print_last_section_tx_creator(request_parser.query_fields) + '\n'
 
-        self.append_method_bind(request_parser.function_name, request_parser.get_argument_list(), signers, non_signers)
+        self.append_method_bind(
+            request_parser.function_name,
+            request_parser.get_argument_list(),
+            signers,
+            non_signers,
+        )
 
         return ""
-  
 
     def append_method_bind(self, function_name : str, argument_list: QLArgumentList, signers: list[str] = None, non_signers: list[str] = None):
-        result_string = f'ClassDB::bind_method(D_METHOD("{self.function_name_to_alias(function_name)}", '
+        method_name = self.function_name_to_alias(function_name)
+        result_string = f'ClassDB::bind_method(D_METHOD("{method_name}", '
 
         result_string += ", ".join([f'"{n}"' for n in argument_list.required_names])
 
@@ -913,7 +931,7 @@ class GQLParse:
         def get_defval(name, ql_type):
             if name in (signers or []) or name in (non_signers or []):
                 return f'DEFVAL({GODOT_TYPE_DEFVAL["Variant"]})'
-            
+
             return f'DEFVAL({GODOT_TYPE_DEFVAL[QL_TO_VARIANT[ql_type]]})'
 
         result_string += ', '.join([f'{get_defval(n, t)}' for n, t in zip(argument_list.optional_names, argument_list.optional_types)])
@@ -923,7 +941,6 @@ class GQLParse:
 
         return result_string
 
-
     def append_method_bind_special(self, function_name, argument_list: QLArgumentList, signers: list[str] = None, non_signers: list[str] = None):
         result_string = f'ClassDB::bind_method(D_METHOD("{function_name}", '
 
@@ -932,7 +949,7 @@ class GQLParse:
 
         for arg_name in argument_list.optional_names:
             result_string += f'"{arg_name}", '
-        
+
         if argument_list.required_names or argument_list.optional_names:
             result_string = result_string[0:-2]
 
@@ -957,7 +974,6 @@ class GQLParse:
 
         return result_string
 
-
     def print_function_name(self, function_name: str, argument_list: QLArgumentList, signers: list[str] = None, non_signers: list[str] = None):
         result_string = ""
         result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{function_name}("
@@ -967,12 +983,11 @@ class GQLParse:
         # Add comma if needed.
         if argument_list.required_names and argument_list.optional_names:
             result_string += ', '
-        
+
         result_string += ", ".join([f'{self.print_function_param(n, t, signers, non_signers)}' for n, t in zip(argument_list.optional_names, argument_list.optional_types)])
 
         result_string += ")"
         return result_string
-  
 
     def print_function_name_special(self, function_name: str, argument_list: QLArgumentList):
         result_string = ""
@@ -986,7 +1001,6 @@ class GQLParse:
 
         result_string += ")"
         return result_string
-
 
     def print_function_name_header(self, function_name: str, argument_list: QLArgumentList, signers: list[str] = None, non_signers: list[str] = None):
         result_string = ""
@@ -1003,16 +1017,15 @@ class GQLParse:
             return GODOT_TYPE_DEFVAL[QL_TO_VARIANT[ql_type]]
 
         result_string += ", ".join(f'{get_godot_type(n, t)} {n}' for t, n in zip(argument_list.required_types, argument_list.required_names))
-        
+
         # Add comma if needed.
         if argument_list.optional_names and argument_list.required_names:
             result_string += ', '
-        
+
         result_string += ", ".join(f'{get_godot_type(n, t)} {n} = {get_defval(n, t)}' for t, n in zip(argument_list.optional_types, argument_list.optional_names))
 
         result_string += ");"
         return result_string
-
 
     def print_function_name_header_special(self, function_name: str, argument_list: QLArgumentList, signers: list[str] = None, non_signers: list[str] = None):
         result_string = f"{RETURN_TYPE} {function_name}("
@@ -1032,7 +1045,6 @@ class GQLParse:
         result_string += ");"
         return result_string
 
-
     def print_signer_section(self, signers: list[str]) -> str:
         """Prints section where signers are appended to QL client.
 
@@ -1051,8 +1063,15 @@ class GQLParse:
 
         return result_string
 
+    def print_last_section_tx_creator(self, query_fields: str) -> str:
+        """Builds last section of a transaction builder call.
 
-    def print_last_section(self, query_fields: str):
+        Args:
+            query_fields (str): Fields to query for
+
+        Returns:
+            str: Code to end transaction creator code.
+        """
         result_string = self.builder.assign_query_fields(query_fields)
         result_string += self.builder.function_call("send_query", [])
         result_string += self.builder.return_value("OK")
@@ -1060,19 +1079,38 @@ class GQLParse:
 
         return result_string
 
-    def print_last_section_special(self, function_name: str, query_fields: str):
+    def print_last_section_fetcher(self, function_name: str, query_fields: str) -> str:
+        """Builds last section of a fetcher call.
+
+        Args:
+            function_name (str): Name of the QL fetch call.
+            query_fields (str): Fields to query.
+
+        Returns:
+            str: Code to end fetcher.
+        """
         class_name = function_name
         class_name = class_name[0].upper() + class_name[1:]
         result_string = self.builder.assign_query_fields(query_fields)
-        result_string += self.builder.function_call("fetch_type", [], f'honeycomb_resource::{class_name}')
+
+        template = f'honeycomb_resource::{class_name}'
+        result_string += self.builder.function_call("fetch_type", [], template)
+
         result_string += self.builder.return_value("OK")
         result_string += self.builder.close_block()
 
         return result_string
 
     def ql_types_to_godot_types(self, ql_types: list[str]):
-        return [self.ql_type_to_godot(ql_type) for ql_type in ql_types]
+        """Converts a list of QL types to a list of Godot types.
 
+        Args:
+            ql_types (list[str]): List of QL types.
+
+        Returns:
+            _type_: List of Godot types
+        """
+        return [self.ql_type_to_godot(ql_type) for ql_type in ql_types]
 
     def print_function_param(self, argument_name: str, argument_type: str, signers: list[str] = None, non_signer: list[str] = None):
         if argument_name in (signers or []) + (non_signer or []):
@@ -1089,9 +1127,8 @@ class GQLParse:
         result_string += self.builder.bind_non_changing_methods()
         result_string += self.bound_methods
         result_string += self.builder.close_block()
-        
-        return result_string
 
+        return result_string
 
     def print_header_includes(self):
         result = ""
@@ -1372,4 +1409,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
