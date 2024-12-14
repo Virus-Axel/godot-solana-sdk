@@ -153,80 +153,6 @@ def strip(input_string: str):
     """
     return input_string.lstrip().rstrip()
 
-class CppProperty:
-    def __init__(self, data_type: str, name: str, value: any = None):
-        self.indent_level = 0
-        self.data_type = data_type
-        self.name = name
-        self.value = value
-
-    def build_param(self, skip_default=False):
-        default_value = f' = {self.value}' if self.value or skip_default else ''
-        result_string = f'{self.data_type} {self.name}{default_value}'
-        
-        return result_string
-
-
-class CppMethod:
-    def __init__(self, return_type: str, name: str, params: list[CppProperty] = None):
-        self.indent_level = 0
-        self.return_type = return_type
-        self.name = name
-        self.params = params
-        self.object = ""
-        self.definition = ""
-
-    def build_declaration(self):
-        indent = '\t' * self.indent_level
-        param_list = ', '.join(p.build_param() for p in self.params)
-        result_string = f'{indent}{self.return_type} {self.name}({param_list})'
-
-        return result_string
-
-    def build_definition(self) -> str:
-        result_string = indent = '\t' * self.indent_level
-        param_list = ', '.join(p.build_param(True) for p in self.params)
-        result_string = f'{indent}{self.return_type} {self.name}({param_list})'
-        result_string += '{\n'
-        result_string += f'{indent}\t'
-
-class CppClass:
-    def __init__(self):
-        self.indent_level = 0
-
-        self.name = ""
-        self.inherited_classes = []
-
-        self.private_properties: list[CppProperty] = []
-        self.protected_properties: list[CppProperty] = []
-        self.public_properties: list[CppProperty] = []
-
-        self.private_methods: list[CppMethod] = []
-        self.protected_methods: list[CppMethod] = []
-        self.public_methods: list[CppMethod] = []
-
-    def build(self):
-        indent = '\t' * self.indent_level
-        result_string = f'{indent}class {self.name}'
-
-        inheritance = ', '.join([f'public {t}' for t in (self.inherited_classes or [])])
-        result_string += f'{": " if self.inherited_classes else ""}{inheritance}'
-        result_string += "{\n"
-
-        private_properties = f';\n{indent}\t'.join(m.build_param() for m in self.private_properties)
-        protected_properties = f';\n{indent}\t'.join(m.build_param() for m in self.protected_properties)
-        public_properties = f';\n{indent}\t'.join(m.build_param() for m in self.public_properties)
-
-        private_methods = f';\n{indent}\t'.join(m.build_declaration() for m in self.private_methods)
-        protected_methods = f';\n{indent}\t'.join(m.build_declaration() for m in self.protected_methods)
-        public_methods = f';\n{indent}\t'.join(m.build_declaration() for m in self.public_methods)
-        result_string += f'{indent}private:\n{private_properties}\n\n{private_methods}\n\n'
-        result_string += f'{indent}protected:\n{protected_properties}\n\n{protected_methods}\n\n'
-        result_string += f'{indent}public:\n{public_properties}\n\n{public_methods}\n\n'
-        result_string += indent + '}'
-
-        return result_string
-
 
 class CppBuilder:
     """Simple CPP builder that keeps states of brackets.
@@ -243,7 +169,6 @@ class CppBuilder:
             str: Indentation string.
         """
         return '\t' * self.indent_level
-
 
     def print_include_statement(self, filename: str, use_angle_brackets: bool = False) -> str:
         """Prints an include statement, including the provided file.
@@ -386,7 +311,9 @@ class CppBuilder:
 
         return "{\n"
 
-    def function_call(self, function_name: str, arguments: list[str], template_type: str = "") -> str:
+    def function_call(
+        self, function_name: str, arguments: list[str], template_type: str = ""
+    ) -> str:
         """Builds code for a function call.
 
         Args:
@@ -448,7 +375,8 @@ class CppBuilder:
             str: Code for class definition start
         """
         inheritance = ', '.join([f'public {t}' for t in (inherited_classes or None)])
-        result_string = f'{self.indent()}class {class_name} {": " if inherited_classes else ""}{inheritance}'
+        result_string =\
+            f'{self.indent()}class {class_name} {": " if inherited_classes else ""}{inheritance}'
         result_string += "{\n"
         self.indent_level += 1
 
@@ -469,19 +397,41 @@ class CppBuilder:
         """
         self.indent_level = max(0, self.indent_level - 1)
 
-    def function_declaration(self, ) -> str:
-        return ""
-    
-    def add_bind_property(self, class_name: str, property_type: str, property_name: str):
-        result_string = f'ClassDB::bind_method(D_METHOD("get_{property_name}"), &{class_name}::get_{property_name});\n'
-        result_string += f'ClassDB::bind_method(D_METHOD("set_{property_name}", "value"), &{class_name}::set_{property_name});\n'
-        result_string += f'ClassDB::add_property("{class_name}", PropertyInfo(Variant::Type::{GODOT_VARIANT_ENUM_TYPE[property_type]}, "{property_name}"), "set_{property_name}", "get_{property_name}");\n'
-        
+    def add_bind_property(self, class_name: str, property_type: str, property_name: str) -> str:
+        """Builds code to bind geter and seter for a new property.
+
+        Args:
+            class_name (str): Name of the class.
+            property_type (str): Type of the property.
+            property_name (str): Name of the property.
+
+        Returns:
+            str: Code to add a new property.
+        """
+        result_string = 'ClassDB::bind_method('
+        result_string += f'D_METHOD("get_{property_name}"), '
+        result_string += f'&{class_name}::get_{property_name});\n'
+        result_string += 'ClassDB::bind_method('
+        result_string += f'D_METHOD("set_{property_name}", "value"), '
+        result_string += f'&{class_name}::set_{property_name});\n'
+        result_string += f'ClassDB::add_property("{class_name}", '
+        result_string += f'PropertyInfo(Variant::Type::{GODOT_VARIANT_ENUM_TYPE[property_type]}, '
+        result_string += f'"{property_name}"), "set_{property_name}", "get_{property_name}");\n'
+
         return result_string
 
-    def add_dict_bind_conversions(self, class_name: str):
+    def add_dict_bind_conversions(self, class_name: str) -> str:
+        """Builds code that binds methods for dict conversions.
+
+        Args:
+            class_name (str): Name of the class.
+
+        Returns:
+            str: Code that binds dict conversion methods.
+        """
         result_string = f'ClassDB::bind_method(D_METHOD("to_dict"), &{class_name}::to_dict);\n'
-        result_string += f'ClassDB::bind_method(D_METHOD("from_dict", "dict"), &{class_name}::from_dict);\n'
+        result_string +=\
+            f'ClassDB::bind_method(D_METHOD("from_dict", "dict"), &{class_name}::from_dict);\n'
 
         return result_string
 
@@ -591,7 +541,7 @@ class SimpleQLRequestParser:
         # Parse query fields.
         start_pos = function_section.find('{')
         self.query_fields = strip(function_section[start_pos:])
-        
+
         # Strip one layer of {}'s.
         self.query_fields = self.query_fields[1:-1]
 
@@ -688,11 +638,14 @@ class GQLParse:
         """
         for i, class_type in enumerate(self.types):
             class_name = class_type["classname"]
-            with open(os.path.join(outdir_hpp, f"{class_name}.hpp"), "w", encoding='utf8') as hpp_file:
+            filename = os.path.join(outdir_hpp, f"{class_name}.hpp")
+            with open(filename, "w", encoding='utf8') as hpp_file:
                 hpp_file.write(self.print_resource_hpp_file(i))
 
-            with open(os.path.join(outdir_cpp, f"{class_name}.cpp"), "w", encoding='utf8') as cpp_file:
-                cpp_file.write(self.print_resource_cpp_file(i, outdir_hpp.split("/", maxsplit=1)[-1]))
+            filename = os.path.join(outdir_cpp, f"{class_name}.cpp")
+            with open(filename, "w", encoding='utf8') as cpp_file:
+                content = self.print_resource_cpp_file(i, outdir_hpp.split("/", maxsplit=1)[-1])
+                cpp_file.write(content)
 
     def function_name_to_alias(self, function_name: str) -> str:
         """Takes a transaction create function name and converts it to a godot name.
@@ -707,7 +660,7 @@ class GQLParse:
             alias = function_name[6:-11]
         else: # Assume fetcher
             return function_name
-        
+
         return ''.join(['_'+c.lower() if c.isupper() else c for c in alias]).lstrip('_')
 
     def ql_type_to_godot(self, ql_type: str) -> str:
@@ -724,7 +677,18 @@ class GQLParse:
 
         return QL_TO_VARIANT[ql_type]
 
-    def print_arg(self, arg_name, arg_type, optional=False, special=False):
+    def print_arg(self, arg_name, arg_type, optional=False, special=False) -> str:
+        """Builds code that adds args to godot QL handler.
+
+        Args:
+            arg_name (_type_): Name of argument.
+            arg_type (_type_): Type of the argument.
+            optional (bool, optional): Indicates an optional argument. Defaults to False.
+            special (bool, optional): Indicates a fetcher arg. Defaults to False.
+
+        Returns:
+            str: _description_
+        """
         result_string = ""
         godot_type = self.ql_type_to_godot(arg_type)
 
@@ -739,11 +703,29 @@ class GQLParse:
         result_string += "\tadd_arg"
 
         if godot_type == "String":
-            result_string += f'("{arg_name}", "{arg_type}", Pubkey::string_from_variant({arg_name}), {is_optional});\n'
+            call_params = [
+                f'"{arg_name}"',
+                f'"{arg_type}"',
+                f'Pubkey::string_from_variant({arg_name})',
+                f"{is_optional}",
+            ]
+            result_string += f'({", ".join(call_params)});\n'
         elif godot_type == "Variant" and arg_type == "Pubkey":
-            result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<{arg_type}>({arg_name})->to_string(), {is_optional});\n'
+            call_params = [
+                f'"{arg_name}"',
+                f'"{arg_type}"',
+                f"Object::cast_to<{arg_type}>({arg_name})->to_string()",
+                f"{is_optional}",
+            ]
+            result_string += f'({", ".join(call_params)});\n'
         elif godot_type == "Variant":
-            result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<godot::honeycomb_resource::{arg_type}>({arg_name})->to_dict(), {is_optional});\n'
+            call_params = [
+                f'"{arg_name}"',
+                f'"{arg_type}"',
+                f"Object::cast_to<godot::honeycomb_resource::{arg_type}>({arg_name})->to_dict()",
+                f"{is_optional}",
+            ]
+            result_string += f'({", ".join(call_params)});\n'
         else:
             result_string += f'("{arg_name}", "{arg_type}", {arg_name}, {is_optional});\n'
 
@@ -752,70 +734,35 @@ class GQLParse:
 
         return result_string
 
-    def print_arg_array(self, arg, optional=False):
-        result_string = ""
-        (arg_name, arg_type) = arg
-        godot_type = self.ql_type_to_godot(arg_type)
-
-        is_optional = "false"
-        if optional:
-            is_optional = "true"
-            if arg_name in self.signers or arg_name in self.non_signers:
-                result_string += f'\tif({arg_name} != Variant(nullptr))' + "{\n\t"
-            else:
-                result_string += f'\tif({arg_name} != {GODOT_TYPE_DEFVAL[godot_type]})' + "{\n\t"
-
-        result_string += "\targs.append"
-
-        if godot_type == "String":
-            result_string += f'("{arg_name}", "{arg_type}", Pubkey::string_from_variant({arg_name}), {is_optional});\n'
-        elif godot_type == "Variant" and arg_type == "Pubkey":
-            result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<{arg_type}>({arg_name})->to_string(), {is_optional});\n'
-        elif godot_type == "Variant":
-            result_string += f'("{arg_name}", "{arg_type}", Object::cast_to<godot::honeycomb_resource::{arg_type}>({arg_name})->to_dict(), {is_optional});\n'
-        else:
-            result_string += f'("{arg_name}", "{arg_type}", {arg_name}, {is_optional});\n'
-
-        if optional:
-            result_string += '\t}\n'
-
-        return result_string
-
-    def print_args_section(self, required_arg_names: list[str], required_arg_types: list[str], optional_arg_names: list[str], optional_arg_types: list[str]):
+    def print_args_section(self, argument_list: QLArgumentList):
         """Returns the section of code that adds arguments to QL client.
 
         Args:
-            required_arg_names (list[str]): List of required argument names.
-            required_arg_types (list[str]): List of required argument types.
-            optional_arg_names (list[str]): List of optional argument names.
-            optional_arg_types (list[str]): List of optional argument types.
-            signers (list[str], optional): List of argument names that are signers. Defaults to None.
-            non_signers (list[str], optional): List of argument names that are non signers. Defaults to None.
+            argument_list (QLArgumentList): List of arguments.
+
+        Returns:
+            _type_: Code containing argument section.
         """
 
         result_string = ""
 
-        result_string += "".join(self.print_arg(n, t, False, True) for n, t in zip(required_arg_names, required_arg_types))
-        result_string += "".join(self.print_arg(n, t, True, True) for n, t in zip(optional_arg_names, optional_arg_types))
+        required_args = zip(argument_list.required_names, argument_list.required_types)
+        optional_args = zip(argument_list.optional_names, argument_list.optional_types)
+        result_string += "".join(self.print_arg(n, t, False, True) for n, t in required_args)
+        result_string += "".join(self.print_arg(n, t, True, True) for n, t in optional_args)
 
         return result_string
 
-    def print_args_section_special(self):
+    def graphql_to_type(self, type_str: str) -> None:
+        """Extracts the QL type from a QL variable line.
 
-        result_string = ""
-
-        for required_arg in self.required_args:
-            result_string += self.print_arg_array(required_arg)
-        for optional_arg in self.optional_args:
-            result_string += self.print_arg_array(optional_arg, True)
-
-        return result_string
-
-    def graphql_to_type(self, type_str):
+        Args:
+            type_str (str): QL Variable line.
+        """
         new_type = {}
-        (firstWord, type_str) = type_str.split(maxsplit=1)
+        (first_word, type_str) = type_str.split(maxsplit=1)
 
-        new_type['classname'] = firstWord
+        new_type['classname'] = first_word
         new_type['properties'] = []
 
         lines = type_str.splitlines()
@@ -826,7 +773,12 @@ class GQLParse:
 
         self.types.append(new_type)
 
-    def graphql_to_fetcher(self, ql_data: str):
+    def graphql_to_fetcher(self, ql_data: str) -> None:
+        """Builds code for fetching function of a resource.
+
+        Args:
+            ql_data (str): QL reference of fetcher function.
+        """
         request_parser = SimpleQLRequestParser()
         request_parser.parse(ql_data)
         self.required_args = []
@@ -834,34 +786,61 @@ class GQLParse:
         self.original_required_args = []
         self.original_optional_args = []
 
-        self.method_definitions.append(self.print_function_name_header(request_parser.function_name, request_parser.get_argument_list()))
-        self.method_implementations += self.print_function_name(request_parser.function_name, request_parser.get_argument_list())
+        method_definition = self.print_function_name_header(
+            request_parser.function_name, request_parser.get_argument_list()
+        )
+        self.method_definitions.append(method_definition)
+        self.method_implementations += self.print_function_name(
+            request_parser.function_name, request_parser.get_argument_list()
+        )
 
         self.method_implementations += self.builder.start_block(False)
         self.method_implementations += self.builder.check_pending()
-        self.method_implementations += self.print_args_section(request_parser.get_required_argument_names(), request_parser.get_required_argument_types(), request_parser.get_optional_argument_names(), request_parser.get_optional_argument_types()) + '\n'
+        self.method_implementations += self.print_args_section(request_parser.get_argument_list())
+        self.method_implementations += '\n'
         self.method_implementations += self.builder.set_method_name(request_parser.function_name)
-        self.method_implementations += self.print_last_section_fetcher(request_parser.function_name, request_parser.query_fields) + '\n'
+        self.method_implementations += self.print_last_section_fetcher(
+            request_parser.function_name, request_parser.query_fields
+        )
+        self.method_implementations += "\n"
 
-        self.append_method_bind_special(request_parser.function_name, request_parser.get_argument_list())
+        self.append_method_bind(request_parser.function_name, request_parser.get_argument_list())
+
+        def add_fetcher_attributes(function_name, arg_list):
+            class_type['fetch_declaration'] =\
+                f'\t{self.print_function_name_header(function_name, arg_list)}\n'
+            function_def = self.print_function_name(function_name, arg_list)
+            class_type['fetch_definition'] =\
+                function_def.replace(CLASS_TYPE, class_type['classname'])
+            class_type['fetch_definition'] += "{\n"
+            class_type['fetch_definition'] += self.print_fetch_implementation()
+            class_type['fetch_definition'] += "}\n"
 
         # Find type that this function returns and add special attributes to it.
         for class_type in self.types:
             if class_type['classname'][1:] == request_parser.function_name[1:]:
-                class_type['fetch_declaration'] = f'\t{self.print_function_name_header(request_parser.function_name, request_parser.get_argument_list())}\n'
-                class_type['fetch_definition'] = self.print_function_name(request_parser.function_name, request_parser.get_argument_list()).replace(CLASS_TYPE, class_type['classname'])
-                class_type['fetch_definition'] += "{\n"
-                class_type['fetch_definition'] += self.print_fetch_implementation()
-                class_type['fetch_definition'] += "}\n"
+                add_fetcher_attributes(
+                    request_parser.function_name, request_parser.get_argument_list()
+                )
 
-        return ""
+    def print_fetch_implementation(self) -> str:
+        """Builds code to initialize HoneyComb node if not done already.
 
-    def print_fetch_implementation(self):
+        Returns:
+            str: Code to initialize HoneyComb node.
+        """
         result = "\tif(honey_comb == nullptr){\n\t\thoney_comb = memnew(HoneyComb);\n\t}\n"
 
         return result
 
-    def graphql_to_function(self, ql_data: str, signers, non_signers):
+    def graphql_to_function(self, ql_data: str, signers: list[str], non_signers: list[str]) -> None:
+        """Takes a graphQL scheme reference and parses it.
+
+        Args:
+            ql_data (str): GraphQL snippet.
+            signers (list[str]): List of signers.
+            non_signers (list[str]): List of non signers.
+        """
         self.signers = signers
         self.non_signers = non_signers
         self.required_args = []
@@ -891,10 +870,7 @@ class GQLParse:
         self.method_implementations += self.print_signer_section(signers) + '\n'
         self.method_implementations += (
             self.print_args_section(
-                request_parser.get_required_argument_names(),
-                request_parser.get_required_argument_types(),
-                request_parser.get_optional_argument_names(),
-                request_parser.get_optional_argument_types(),
+                request_parser.get_argument_list()
             )
             + "\n"
         )
@@ -911,98 +887,122 @@ class GQLParse:
             non_signers,
         )
 
-        return ""
+    def append_method_bind(
+        self,
+        function_name: str,
+        argument_list: QLArgumentList,
+        signers: list[str] = None,
+        non_signers: list[str] = None,
+    ):
+        """
+        Appends a method binding to the class's method definitions.
 
-    def append_method_bind(self, function_name : str, argument_list: QLArgumentList, signers: list[str] = None, non_signers: list[str] = None):
+        Args:
+            function_name (str): Name of the function to bind.
+            argument_list (QLArgumentList): List of required and optional arguments.
+            signers (list[str], optional): Names of arguments considered as "signers".
+            non_signers (list[str], optional): Names of arguments considered as "non-signers".
+
+        Returns:
+            str: Generated method binding string.
+        """
+
         method_name = self.function_name_to_alias(function_name)
         result_string = f'ClassDB::bind_method(D_METHOD("{method_name}", '
 
-        result_string += ", ".join([f'"{n}"' for n in argument_list.required_names])
+        # Add required argument names
+        required_args = ", ".join(f'"{n}"' for n in argument_list.required_names)
+        result_string += required_args
 
         if argument_list.required_names and argument_list.optional_names:
             result_string += ', '
 
-        result_string += ", ".join([f'"{n}"' for n in argument_list.optional_names])
+        # Add optional argument names
+        optional_args = ", ".join(f'"{n}"' for n in argument_list.optional_names)
+        result_string += optional_args
         result_string += f'), &{CLASS_TYPE}::{function_name}'
 
+        # Add default values for optional arguments
         if argument_list.optional_names:
             result_string += ', '
 
-        def get_defval(name, ql_type):
-            if name in (signers or []) or name in (non_signers or []):
-                return f'DEFVAL({GODOT_TYPE_DEFVAL["Variant"]})'
+            def get_defval(name, ql_type):
+                if name in (signers or []) or name in (non_signers or []):
+                    return f'DEFVAL({GODOT_TYPE_DEFVAL["Variant"]})'
+                return f'DEFVAL({GODOT_TYPE_DEFVAL[QL_TO_VARIANT[ql_type]]})'
 
-            return f'DEFVAL({GODOT_TYPE_DEFVAL[QL_TO_VARIANT[ql_type]]})'
+            optional_args = zip(argument_list.optional_names, argument_list.optional_types)
+            default_values = ', '.join(
+                get_defval(name, ql_type) for name, ql_type in optional_args
+            )
+            result_string += default_values
 
-        result_string += ', '.join([f'{get_defval(n, t)}' for n, t in zip(argument_list.optional_names, argument_list.optional_types)])
         result_string += ');\n'
-
         self.bound_methods += "\t" + result_string
 
         return result_string
 
-    def append_method_bind_special(self, function_name, argument_list: QLArgumentList, signers: list[str] = None, non_signers: list[str] = None):
-        result_string = f'ClassDB::bind_method(D_METHOD("{function_name}", '
+    def print_function_name(
+        self,
+        function_name: str,
+        argument_list: QLArgumentList,
+        signers: list[str] = None,
+        non_signers: list[str] = None,
+    ) -> str:
+        """Prints the CPP code for the function name for definition.
 
-        for arg_name in argument_list.required_names:
-            result_string += f'"{arg_name}", '
+        Args:
+            function_name (str): name of the function.
+            argument_list (QLArgumentList): list of function parameters.
+            signers (list[str], optional): List of signers. Defaults to None.
+            non_signers (list[str], optional): List of non signers. Defaults to None.
 
-        for arg_name in argument_list.optional_names:
-            result_string += f'"{arg_name}", '
-
-        if argument_list.required_names or argument_list.optional_names:
-            result_string = result_string[0:-2]
-
-        result_string += f'), &{CLASS_TYPE}::{function_name}'
-
-        if argument_list.optional_names:
-            result_string += ', '
-
-        for (arg_name, arg_type) in zip(argument_list.optional_names, argument_list.optional_types):
-            godot_type = QL_TO_VARIANT[arg_type]
-            if arg_name in (signers or []) or arg_name in (non_signers or []):
-                result_string += f'DEFVAL({GODOT_TYPE_DEFVAL["Variant"]}), '
-            else:
-                result_string += f'DEFVAL({GODOT_TYPE_DEFVAL[godot_type]}), '
-
-        if argument_list.optional_names:
-            result_string = result_string[0:-2]
-
-        result_string += ');\n'
-
-        self.bound_methods += "\t" + result_string
-
-        return result_string
-
-    def print_function_name(self, function_name: str, argument_list: QLArgumentList, signers: list[str] = None, non_signers: list[str] = None):
+        Returns:
+            str: Code for function name for cpp definition.
+        """
         result_string = ""
         result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{function_name}("
 
-        result_string += ", ".join([f'{self.print_function_param(n, t, signers, non_signers)}' for n, t in zip(argument_list.required_names, argument_list.required_types)])
+        required_args = zip(argument_list.required_names, argument_list.required_types)
+        function_params = [
+            f"{self.print_function_param(n, t, signers, non_signers)}"
+            for n, t in required_args
+        ]
+        result_string += ", ".join(function_params)
 
         # Add comma if needed.
         if argument_list.required_names and argument_list.optional_names:
             result_string += ', '
 
-        result_string += ", ".join([f'{self.print_function_param(n, t, signers, non_signers)}' for n, t in zip(argument_list.optional_names, argument_list.optional_types)])
+        optional_args = zip(argument_list.optional_names, argument_list.optional_types)
+        function_params = [
+            f"{self.print_function_param(n, t, signers, non_signers)}"
+            for n, t in optional_args
+        ]
 
+        result_string += ", ".join(function_params)
         result_string += ")"
+
         return result_string
 
-    def print_function_name_special(self, function_name: str, argument_list: QLArgumentList):
-        result_string = ""
-        result_string += f"{RETURN_TYPE} {CLASS_TYPE}::{function_name}("
+    def print_function_name_header(
+        self,
+        function_name: str,
+        argument_list: QLArgumentList,
+        signers: list[str] = None,
+        non_signers: list[str] = None,
+    ) -> str:
+        """Builds the function declaration of a function.
 
-        args_names = argument_list.required_names + argument_list.optional_names
-        args_types = argument_list.required_types + argument_list.optional_types
-        args = zip(args_names, args_types)
+        Args:
+            function_name (str): Name of the function.
+            argument_list (QLArgumentList): List of arguments.
+            signers (list[str], optional): List of signers. Defaults to None.
+            non_signers (list[str], optional): List of non signers. Defaults to None.
 
-        result_string += ', '.join([self.print_function_param(n, t) for n, t in args])
-
-        result_string += ")"
-        return result_string
-
-    def print_function_name_header(self, function_name: str, argument_list: QLArgumentList, signers: list[str] = None, non_signers: list[str] = None):
+        Returns:
+            str: Code for function declaration.
+        """
         result_string = ""
         result_string += f"{RETURN_TYPE} {function_name}("
 
@@ -1016,31 +1016,17 @@ class GQLParse:
                 return GODOT_TYPE_DEFVAL["Variant"]
             return GODOT_TYPE_DEFVAL[QL_TO_VARIANT[ql_type]]
 
-        result_string += ", ".join(f'{get_godot_type(n, t)} {n}' for t, n in zip(argument_list.required_types, argument_list.required_names))
+        required_args = zip(argument_list.required_types, argument_list.required_names)
+        result_string += ", ".join(f'{get_godot_type(n, t)} {n}' for t, n in required_args)
 
         # Add comma if needed.
         if argument_list.optional_names and argument_list.required_names:
             result_string += ', '
 
-        result_string += ", ".join(f'{get_godot_type(n, t)} {n} = {get_defval(n, t)}' for t, n in zip(argument_list.optional_types, argument_list.optional_names))
+        optional_args = zip(argument_list.optional_types, argument_list.optional_names)
 
-        result_string += ");"
-        return result_string
-
-    def print_function_name_header_special(self, function_name: str, argument_list: QLArgumentList, signers: list[str] = None, non_signers: list[str] = None):
-        result_string = f"{RETURN_TYPE} {function_name}("
-
-        for arg_name, arg_type in zip(argument_list.required_names, argument_list.required_types):
-            result_string += f'{self.print_function_param(arg_name, arg_type, signers, non_signers)}, '
-        for arg_name, arg_type in zip(argument_list.optional_names, argument_list.optional_types):
-            godot_type = QL_TO_VARIANT[arg_type]
-            if arg_name in (signers or []) or arg_name in (non_signers or []):
-                result_string += f'{self.print_function_param(arg_name, arg_type, signers, non_signers)} = {GODOT_TYPE_DEFVAL["Variant"]}, '
-            else:
-                result_string += f'{self.print_function_param(arg_name, arg_type, signers, non_signers)} = {GODOT_TYPE_DEFVAL[godot_type]}, '
-
-        if argument_list.required_names or argument_list.optional_names:
-            result_string = result_string[0:-2]
+        params = [f'{get_godot_type(n, t)} {n} = {get_defval(n, t)}' for t, n in optional_args]
+        result_string += ", ".join(params)
 
         result_string += ");"
         return result_string
@@ -1112,7 +1098,24 @@ class GQLParse:
         """
         return [self.ql_type_to_godot(ql_type) for ql_type in ql_types]
 
-    def print_function_param(self, argument_name: str, argument_type: str, signers: list[str] = None, non_signer: list[str] = None):
+    def print_function_param(
+        self,
+        argument_name: str,
+        argument_type: str,
+        signers: list[str] = None,
+        non_signer: list[str] = None,
+    ) -> str:
+        """Prints a function parameter.
+
+        Args:
+            argument_name (str): Name of argument.
+            argument_type (str): Data type of argument.
+            signers (list[str], optional): List of signers. Defaults to None.
+            non_signer (list[str], optional): List of non signers. Defaults to None.
+
+        Returns:
+            str: Code for function parameter.
+        """
         if argument_name in (signers or []) + (non_signer or []):
             godot_type = SIGNER_TYPE
         else:
@@ -1122,7 +1125,12 @@ class GQLParse:
 
         return result_string
 
-    def print_bind_methods(self):
+    def print_bind_methods(self) -> str:
+        """Builds code for method bindings.
+
+        Returns:
+            str: Code that binds HoneyComb methods.
+        """
         result_string = self.builder.start_method_definition("void", CLASS_TYPE, "_bind_methods")
         result_string += self.builder.bind_non_changing_methods()
         result_string += self.bound_methods
@@ -1130,34 +1138,52 @@ class GQLParse:
 
         return result_string
 
-    def print_header_includes(self):
-        result = ""
-        for header_include in header_includes:
-            result += self.builder.print_include_statement(header_include)
+    def print_header_file(self) -> str:
+        """Builds the header file code.
 
-        return result
-
-    def print_header_file(self):
-        result = self.builder.define_macro("HONEYCOMB_METHOD_DEFS", "\\\n\t".join(self.method_definitions))
+        Returns:
+            str: Header file code.
+        """
+        method_definitions = "\\\n\t".join(self.method_definitions)
+        result = self.builder.define_macro("HONEYCOMB_METHOD_DEFS", method_definitions)
 
         function_name = "ClassDB::register_class"
-        macro_types = '\\\n'.join([self.builder.function_call(function_name, [], f'honeycomb_resource::{t["classname"]}')[:-1] for t in self.types])
+        function_calls = [
+            self.builder.function_call(
+                function_name, [], f'honeycomb_resource::{t["classname"]}'
+            )[:-1]
+            for t in self.types
+        ]
+        macro_types = "\\\n".join(function_calls)
         result += self.builder.define_macro('REGISTER_HONEYCOMB_TYPES', macro_types)
 
         def get_include_path(type_data) -> str:
             return os.path.join(TYPE_DIR, type_data["classname"] + ".hpp")
 
-        includes = "".join([self.builder.print_include_statement(get_include_path(t)) for t in self.types])
+        include_statements = [
+            self.builder.print_include_statement(get_include_path(t))
+            for t in self.types
+        ]
+        includes = "".join(include_statements)
 
         print(includes)
         return result
 
-    def print_resource_hpp_file(self, index):
+    def print_resource_hpp_file(self, index: int) -> str:
+        """Prints the header file of a resource.
+
+        Args:
+            index (int): Index of the honeycomb types.
+
+        Returns:
+            str: Header file code for resource.
+        """
         type_data = self.types[index]
         class_name = type_data["classname"]
         properties = type_data["properties"]
 
-        result = self.builder.start_include_guard(f'{TYPE_INCLUDE_GUARD_PREFIX}{class_name.upper()}')
+        include_guard_name = f'{TYPE_INCLUDE_GUARD_PREFIX}{class_name.upper()}'
+        result = self.builder.start_include_guard(include_guard_name)
 
         for include in resource_includes:
             result += self.builder.print_include_statement(include)
@@ -1182,7 +1208,6 @@ class GQLParse:
         for prop in properties:
             (prop_name, prop_type) = prop
             prop_type = self.ql_type_to_godot(prop_type)
-            result += self.builder.function_declaration()
             result += f"void set_{prop_name}(const {prop_type}& val);\n"
             result += f"{prop_type} get_{prop_name}();\n"
 
@@ -1193,7 +1218,16 @@ class GQLParse:
 
         return result
 
-    def print_resource_cpp_file(self, index, outdir_hpp):
+    def print_resource_cpp_file(self, index: int, outdir_hpp: str) -> str:
+        """Builds the cpp code for a resource.
+
+        Args:
+            index (int): Index of the resource.
+            outdir_hpp (str): Directory where headers will land.
+
+        Returns:
+            str: Code for resource.
+        """
         data_type = self.types[index]
         class_name = data_type["classname"]
         properties = data_type["properties"]
@@ -1229,11 +1263,15 @@ class GQLParse:
             (prop_name, og_prop_type) = prop
             prop_type = self.ql_type_to_godot(og_prop_type)
             if prop_type == "Variant" and og_prop_type.replace("!", "") == "Pubkey":
-                to_dict += f'res["{prop_name}"] = Object::cast_to<{og_prop_type.replace("!", "")}>({prop_name})->to_string();\n'
+                to_dict += f'res["{prop_name}"] = Object::cast_to<'
+                to_dict += f'{og_prop_type.replace("!", "")}>({prop_name})->to_string();\n'
                 from_dict += f'{prop_name} = Pubkey::new_from_string(dict["{prop_name}"]);\n'
             elif prop_type == "Variant":
-                to_dict += f'res["{prop_name}"] = Object::cast_to<godot::honeycomb_resource::{og_prop_type.replace("!", "")}>({prop_name})->to_dict();\n'
-                from_dict += f'Object::cast_to<godot::honeycomb_resource::{og_prop_type.replace("!", "")}>({prop_name})->from_dict(dict["{prop_name}"]);\n'
+                to_dict += f'res["{prop_name}"] = Object::cast_to<godot::honeycomb_resource::'
+                to_dict += f'{og_prop_type.replace("!", "")}>({prop_name})->to_dict();\n'
+                prop = og_prop_type.replace("!", "")
+                from_dict += f'Object::cast_to<godot::honeycomb_resource::{prop}'
+                from_dict += f'>({prop_name})->from_dict(dict["{prop_name}"]);\n'
             else:
                 to_dict += f'res["{prop_name}"] = {prop_name};\n'
                 from_dict += f'{prop_name} = dict["{prop_name}"];\n'
@@ -1258,12 +1296,20 @@ class GQLParse:
 
         return result
 
-    def print_cpp_file(self, outdir_hpp):
+    def print_cpp_file(self, outdir_hpp: str) -> str:
+        """Builds honeycomb generated cpp file contents.
 
+        Args:
+            outdir_hpp (str): Directory where header files will land.
+
+        Returns:
+            str: Code for generated cpp file.
+        """
         include_file = os.path.join(outdir_hpp, "honeycomb.hpp")
         result = self.builder.print_include_statement(include_file)
         for data_type in self.types:
-            result += f'#include "{os.path.join(outdir_hpp, "types/" + data_type["classname"])}.hpp"\n'.replace("!", "")
+            include_file = f'{os.path.join(outdir_hpp, "types/" + data_type["classname"])}.hpp'
+            result += self.builder.print_include_statement(include_file)
         result += "namespace godot{\n\n"
         result += self.method_implementations
         result += self.print_bind_methods() + '\n'
@@ -1272,12 +1318,29 @@ class GQLParse:
         return result
 
 
-def main():
+def main() -> int:
+    """Main entry point if invoked from command line.
+
+    Returns:
+        int: Return status.
+    """
     parser = argparse.ArgumentParser(description='Generates HoneyComb interface source code.')
-    parser.add_argument('-o', '--out_cpp_directory', metavar="PATH", type=str, default="src/honeycomb/generated",
-                        help='Output directory of generated source files.')
-    parser.add_argument('-d', '--out_hpp_directory', metavar="PATH", type=str, default="include/honeycomb/generated",
-                        help='Output directory of generated header files.')
+    parser.add_argument(
+        "-o",
+        "--out_cpp_directory",
+        metavar="PATH",
+        type=str,
+        default="src/honeycomb/generated",
+        help="Output directory of generated source files.",
+    )
+    parser.add_argument(
+        "-d",
+        "--out_hpp_directory",
+        metavar="PATH",
+        type=str,
+        default="include/honeycomb/generated",
+        help="Output directory of generated header files.",
+    )
     parser.add_argument('-c', '--cpp_filename', type=str, default="honeycomb_generated.cpp",
                         help='File name of generated cpp file.')
     parser.add_argument('-p', '--hpp_filename', type=str, default="honeycomb_generated.hpp",
@@ -1292,10 +1355,10 @@ def main():
     args = parser.parse_args()
 
     qlparser = GQLParse()
-    
+
     request_parser = SimpleQLRequestParser()
     request_parser.parse(CREATE_NEW_RESOURCE)
-    
+
     qlparser.graphql_to_type(HoneycombTransaction)
     qlparser.graphql_to_type(SendTransactionBundlesOptions)
     qlparser.graphql_to_type(CreateBadgeCriteriaInput)
@@ -1340,72 +1403,190 @@ def main():
     qlparser.graphql_to_type(AssociatedProgramInput)
     qlparser.graphql_to_type(DelegateAuthority)
 
-  
     qlparser.graphql_to_function(CREATE_NEW_RESOURCE, ["authority", "."], ["project"])
-    qlparser.graphql_to_function(CREATE_NEW_RESOURCE_TREE, ["authority", "delegateAuthority", "payer"], ["project", "resource"])
-    qlparser.graphql_to_function(MINT_RESOURCE_TRANSACTION, ["owner", "authority", "delegateAuthority", "payer"], ["resource"])
-    qlparser.graphql_to_function(CREATE_BURN_RESOURCE_TRANSACTION, ["authority", "owner", "payer", "delegateAuthority"], ["resource"])
-    qlparser.graphql_to_function(CREATE_UNWRAP_HOLDING_TRANSACTION, ["authority", "payer"], [])
+    qlparser.graphql_to_function(
+        CREATE_NEW_RESOURCE_TREE,
+        ["authority", "delegateAuthority", "payer"],
+        ["project", "resource"],
+    )
+    qlparser.graphql_to_function(
+        MINT_RESOURCE_TRANSACTION,
+        ["owner", "authority", "delegateAuthority", "payer"],
+        ["resource"],
+    )
+    qlparser.graphql_to_function(
+        CREATE_BURN_RESOURCE_TRANSACTION,
+        ["authority", "owner", "payer", "delegateAuthority"],
+        ["resource"],
+    )
+    qlparser.graphql_to_function(
+        CREATE_UNWRAP_HOLDING_TRANSACTION, ["authority", "payer"], []
+    )
     qlparser.graphql_to_function(CreateCreateWrapHoldingTransaction, ["authority", "payer"], [])
     qlparser.graphql_to_function(CreateTransferResourceTransaction, ["owner", "payer"], [])
-#    qlparser.graphql_to_function(CreateInitializeRecipeTransaction, ["authority", "payer"], [])
 
-
-    qlparser.graphql_to_function(CreateInitializeRecipeTransaction, ["authority", "delegateAuthority", "payer"], ["project"])
-    qlparser.graphql_to_function(CreateAddIngredientsTransaction, ["authority", "delegateAuthority", "payer"], ["recipe"])
-    qlparser.graphql_to_function(CreateRemoveIngredientsTransaction, ["authority", "delegateAuthority", "payer"], ["recipe"])
-    qlparser.graphql_to_function(CreateInitCookingProcessTransactions, ["authority", "payer"], ["recipe"])
+    qlparser.graphql_to_function(
+        CreateInitializeRecipeTransaction,
+        ["authority", "delegateAuthority", "payer"],
+        ["project"],
+    )
+    qlparser.graphql_to_function(
+        CreateAddIngredientsTransaction,
+        ["authority", "delegateAuthority", "payer"],
+        ["recipe"],
+    )
+    qlparser.graphql_to_function(
+        CreateRemoveIngredientsTransaction,
+        ["authority", "delegateAuthority", "payer"],
+        ["recipe"],
+    )
+    qlparser.graphql_to_function(
+        CreateInitCookingProcessTransactions, ["authority", "payer"], ["recipe"]
+    )
 
     qlparser.graphql_to_function(CreateCreateMissionPoolTransaction, [], [])
     qlparser.graphql_to_function(CreateUpdateMissionPoolTransaction, [], [])
     qlparser.graphql_to_function(CreateCreateMissionTransaction, [], [])
-    qlparser.graphql_to_function(CreateUpdateMissionTransaction, ["authority", "payer", "delegateAuthority"], ["missionAddress"])
+    qlparser.graphql_to_function(
+        CreateUpdateMissionTransaction,
+        ["authority", "payer", "delegateAuthority"],
+        ["missionAddress"],
+    )
     qlparser.graphql_to_function(CreateSendCharactersOnMissionTransaction, [], [])
 
-    qlparser.graphql_to_function(CreateCreateStakingPoolTransaction, ["authority", "delegateAuthority", "payer"], ["project", "resource"])
-    qlparser.graphql_to_function(CreateUpdateStakingPoolTransaction, ["authority", "delegateAuthority", "payer"], ["project", "stakingPool", "characterModel", "resource"])
-    qlparser.graphql_to_function(CreateInitMultipliersTransaction, ["authority", "delegateAuthority", "payer"], ["project", "stakingPool"])
-    qlparser.graphql_to_function(CreateAddMultiplierTransaction, ["authority", "delegateAuthority", "payer"], ["project", "multiplier"])
-    qlparser.graphql_to_function(CreateStakeCharactersTransactions, ["feePayer"], ["project", "characterModel", "stakingPool"])
-    qlparser.graphql_to_function(CreateClaimStakingRewardsTransactions, ["feePayer"], ["characterModel"])
-    qlparser.graphql_to_function(CreateUnstakeCharactersTransactions, ["feePayer"], ["characterModel"])
+    qlparser.graphql_to_function(
+        CreateCreateStakingPoolTransaction,
+        ["authority", "delegateAuthority", "payer"],
+        ["project", "resource"],
+    )
+    qlparser.graphql_to_function(
+        CreateUpdateStakingPoolTransaction,
+        ["authority", "delegateAuthority", "payer"],
+        ["project", "stakingPool", "characterModel", "resource"],
+    )
+    qlparser.graphql_to_function(
+        CreateInitMultipliersTransaction,
+        ["authority", "delegateAuthority", "payer"],
+        ["project", "stakingPool"],
+    )
+    qlparser.graphql_to_function(
+        CreateAddMultiplierTransaction,
+        ["authority", "delegateAuthority", "payer"],
+        ["project", "multiplier"],
+    )
+    qlparser.graphql_to_function(
+        CreateStakeCharactersTransactions,
+        ["feePayer"],
+        ["project", "characterModel", "stakingPool"],
+    )
+    qlparser.graphql_to_function(
+        CreateClaimStakingRewardsTransactions, ["feePayer"], ["characterModel"]
+    )
+    qlparser.graphql_to_function(
+        CreateUnstakeCharactersTransactions, ["feePayer"], ["characterModel"]
+    )
 
-    qlparser.graphql_to_function(CreateAddCharacterTraitsTransactions, ["authority", "payer"], ["assemblerConfig"])
-    qlparser.graphql_to_function(CreateRemoveCharacterTraitsTransactions, ["authority", "payer"], ["assemblerConfig"])
-    qlparser.graphql_to_function(CreateCreateCharacterModelTransaction, ["authority", "payer"], ["project"])
-    qlparser.graphql_to_function(CreateCreateCharactersTreeTransaction, ["authority", "payer"], ["project", "characterModel"])
-    qlparser.graphql_to_function(CreateAssembleCharacterTransaction, ["wallet"], ["project", "assemblerConfig", "characterModel", "charactersTree"])
-    qlparser.graphql_to_function(CreateUpdateCharacterTraitsTransaction, ["wallet"], ["characterAddress", "project", "assemblerConfig", "characterModel", "charactersTree"])
-    qlparser.graphql_to_function(CreatePopulateAssembleablCharacterTransaction, ["owner", "updateAuthority", "payer"], ["project", "characterModel", "charactersTree", "mint"])
-    qlparser.graphql_to_function(CreateWrapAssetsToCharacterTransactions, ["wallet"], ["project", "characterModel"])
-    qlparser.graphql_to_function(CreateUnwrapAssetsFromCharacterTransactions, ["wallet"], ["project"])
+    qlparser.graphql_to_function(
+        CreateAddCharacterTraitsTransactions,
+        ["authority", "payer"],
+        ["assemblerConfig"],
+    )
+    qlparser.graphql_to_function(
+        CreateRemoveCharacterTraitsTransactions,
+        ["authority", "payer"],
+        ["assemblerConfig"],
+    )
+    qlparser.graphql_to_function(
+        CreateCreateCharacterModelTransaction, ["authority", "payer"], ["project"]
+    )
+    qlparser.graphql_to_function(
+        CreateCreateCharactersTreeTransaction,
+        ["authority", "payer"],
+        ["project", "characterModel"],
+    )
+    qlparser.graphql_to_function(
+        CreateAssembleCharacterTransaction,
+        ["wallet"],
+        ["project", "assemblerConfig", "characterModel", "charactersTree"],
+    )
+    qlparser.graphql_to_function(
+        CreateUpdateCharacterTraitsTransaction,
+        ["wallet"],
+        [
+            "characterAddress",
+            "project",
+            "assemblerConfig",
+            "characterModel",
+            "charactersTree",
+        ],
+    )
+    qlparser.graphql_to_function(
+        CreatePopulateAssembleablCharacterTransaction,
+        ["owner", "updateAuthority", "payer"],
+        ["project", "characterModel", "charactersTree", "mint"],
+    )
+    qlparser.graphql_to_function(
+        CreateWrapAssetsToCharacterTransactions,
+        ["wallet"],
+        ["project", "characterModel"],
+    )
+    qlparser.graphql_to_function(
+        CreateUnwrapAssetsFromCharacterTransactions, ["wallet"], ["project"]
+    )
     qlparser.graphql_to_function(CreateRecallCharactersTransaction, [], [])
     qlparser.graphql_to_function(SignWithShadowSignerAndSendTransactionBundles, [], [])
-    qlparser.graphql_to_function(CreateInitializeFaucetTransaction, ["authority", "delegateAuthority", "payer"], ["resource"])
-    qlparser.graphql_to_function(CreateClaimFaucetTransaction, ["owner", "payer"], ["faucet"])
+    qlparser.graphql_to_function(
+        CreateInitializeFaucetTransaction,
+        ["authority", "delegateAuthority", "payer"],
+        ["resource"],
+    )
+    qlparser.graphql_to_function(
+        CreateClaimFaucetTransaction, ["owner", "payer"], ["faucet"]
+    )
     qlparser.graphql_to_function(CreateNewUserTransaction, ["wallet", "payer"], [])
     qlparser.graphql_to_function(CreateNewUserBulkTransaction, ["payer"], [])
     qlparser.graphql_to_function(CreateUpdateUserTransaction, ["payer"], [])
     qlparser.graphql_to_function(CreateCreateProfilesTreeTransaction, ["payer"], ["project"])
     qlparser.graphql_to_function(CreateNewProfileTransaction, ["payer"], ["project"])
     qlparser.graphql_to_function(CreateUpdateProfileTransaction, ["profile", "payer"], [])
-    qlparser.graphql_to_function(CreateNewUserWithProfileTransaction, ["wallet", "payer"], ["project"])
+    qlparser.graphql_to_function(
+        CreateNewUserWithProfileTransaction, ["wallet", "payer"], ["project"]
+    )
     qlparser.graphql_to_function(CreateClaimBadgeCriteriaTransaction, [], [])
     qlparser.graphql_to_function(CreateUpdateBadgeCriteriaTransaction, [], [])
     qlparser.graphql_to_function(CreateCreateProjectTransaction, ["authority", "payer"], ["driver"])
-    qlparser.graphql_to_function(CreateChangeProjectDriverTransaction, ["authority", "payer"], ["project", "driver"])
-    qlparser.graphql_to_function(CreateCreateDelegateAuthorityTransaction, ["authority", "payer"], ["project", "delegate"])
-    qlparser.graphql_to_function(CreateModifyDelegationTransaction, ["authority", "payer"], ["project", "delegate"])
-    qlparser.graphql_to_function(CreateCreateAssemblerConfigTransaction, ["authority", "payer"], ["project"])
+    qlparser.graphql_to_function(
+        CreateChangeProjectDriverTransaction,
+        ["authority", "payer"],
+        ["project", "driver"],
+    )
+    qlparser.graphql_to_function(
+        CreateCreateDelegateAuthorityTransaction,
+        ["authority", "payer"],
+        ["project", "delegate"],
+    )
+    qlparser.graphql_to_function(
+        CreateModifyDelegationTransaction,
+        ["authority", "payer"],
+        ["project", "delegate"],
+    )
+    qlparser.graphql_to_function(
+        CreateCreateAssemblerConfigTransaction, ["authority", "payer"], ["project"]
+    )
     qlparser.graphql_to_function(CreateInitializeBadgeCriteriaTransaction, [], [])
 
     qlparser.graphql_to_fetcher(findDelegateAuthority)
 
     print(qlparser.print_header_file())
 
-    qlparser.save_cpp_file(os.path.join(args.out_cpp_directory, args.cpp_filename), args.out_hpp_directory.split("/", maxsplit=1)[-1])
+    qlparser.save_cpp_file(
+        os.path.join(args.out_cpp_directory, args.cpp_filename),
+        args.out_hpp_directory.split("/", maxsplit=1)[-1],
+    )
     qlparser.save_hpp_file(os.path.join(args.out_hpp_directory, args.hpp_filename))
-    qlparser.save_resource_files(args.out_cpp_directory + "/types", args.out_hpp_directory + "/types")
+    qlparser.save_resource_files(
+        args.out_cpp_directory + "/types", args.out_hpp_directory + "/types"
+    )
 
 if __name__ == "__main__":
     main()
