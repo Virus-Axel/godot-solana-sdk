@@ -23,103 +23,149 @@ def set_tmp_dir(platform, target):
     Execute(Mkdir(dir_name))
     CacheDir(dir_name)
 
+
 def image_id_from_repo_name(repository_name):
-    return os.popen('podman images --format {{.ID}} --filter=reference=' + repository_name).read()
+    return os.popen(
+        "podman images --format {{.ID}} --filter=reference=" + repository_name
+    ).read()
+
 
 def get_build_command(platform, architecture, debug=False, use_threads=True):
     arguments = ""
     env_options = ""
-    if platform == 'ios':
-        arguments = 'IOS_SDK_PATH="/root/ioscross/arm64/SDK/iPhoneOS{}.sdk" IOS_TOOLCHAIN_PATH="/root/ioscross/arm64" ios_triple="arm-apple-darwin11-"'.format(IPHONE_SDK_VERSION)
-    elif platform == 'macos':
-        arguments = 'macos_sdk_path="/root/osxcross/target/SDK/MacOSX14.0.sdk/" osxcross_sdk="darwin23"'    
-    elif platform == 'android':
+    if platform == "ios":
+        arguments = 'IOS_SDK_PATH="/root/ioscross/arm64/SDK/iPhoneOS{}.sdk" IOS_TOOLCHAIN_PATH="/root/ioscross/arm64" ios_triple="arm-apple-darwin11-"'.format(
+            IPHONE_SDK_VERSION
+        )
+    elif platform == "macos":
+        arguments = 'macos_sdk_path="/root/osxcross/target/SDK/MacOSX14.0.sdk/" osxcross_sdk="darwin23"'
+    elif platform == "android":
         arguments = ""
-    elif platform == 'web':
+    elif platform == "web":
         env_options = 'bash -c "source /root/emsdk/emsdk_env.sh && '
         arguments = '"'
-    elif platform == 'linux':
-        if architecture == 'arm64' or architecture == 'arm32':
-            env_options = 'alias g++=/root/arm-godot-linux-gnueabihf_sdk-buildroot/bin/g++ && '
+    elif platform == "linux":
+        if architecture == "arm64" or architecture == "arm32":
+            env_options = (
+                "alias g++=/root/arm-godot-linux-gnueabihf_sdk-buildroot/bin/g++ && "
+            )
         else:
-            env_options = 'alias g++=/root/{}-godot-linux-gnueabihf_sdk-buildroot/bin/g++ && '.format(architecture)
+            env_options = "alias g++=/root/{}-godot-linux-gnueabihf_sdk-buildroot/bin/g++ && ".format(
+                architecture
+            )
 
-    debug_or_release = 'release'
+    debug_or_release = "release"
     if debug:
-        debug_or_release = 'debug'
+        debug_or_release = "debug"
 
-    return '{} scons -j 4 threads={} platform={} arch={} target=template_{} {}'.format(env_options, use_threads, platform, architecture, debug_or_release, arguments)
+    return "{} scons -j 4 threads={} platform={} arch={} target=template_{} {}".format(
+        env_options, use_threads, platform, architecture, debug_or_release, arguments
+    )
 
 
-def build_in_container(platform, architectures, keep_container=False, keep_images=False):
+def build_in_container(
+    platform, architectures, keep_container=False, keep_images=False
+):
     REPOSITORY_NAME = {
-        'ios': 'localhost/godot-ios',
-        'macos': 'localhost/godot-osx',
-        'linux': 'localhost/godot-linux',
-        'windows': 'localhost/godot-windows',
-        'android': 'localhost/godot-android',
-        'web': 'localhost/godot-web'
+        "ios": "localhost/godot-ios",
+        "macos": "localhost/godot-osx",
+        "linux": "localhost/godot-linux",
+        "windows": "localhost/godot-windows",
+        "android": "localhost/godot-android",
+        "web": "localhost/godot-web",
     }
 
     image_id = image_id_from_repo_name(REPOSITORY_NAME[platform])
 
-    env.Execute('podman run --mount type=bind,source=.,target=/root/godot-solana-sdk -d -it --name {} {}'.format(CONTAINER_NAME, image_id))
+    env.Execute(
+        "podman run --mount type=bind,source=.,target=/root/godot-solana-sdk -d -it --name {} {}".format(
+            CONTAINER_NAME, image_id
+        )
+    )
 
     for architecture in architectures:
         build_command = get_build_command(platform, architecture, True)
-        env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
+        env.Execute(
+            "podman exec -w /root/godot-solana-sdk/ {} {}".format(
+                CONTAINER_NAME, build_command
+            )
+        )
 
         build_command = get_build_command(platform, architecture)
-        env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
+        env.Execute(
+            "podman exec -w /root/godot-solana-sdk/ {} {}".format(
+                CONTAINER_NAME, build_command
+            )
+        )
 
         if platform == "web":
             build_command = get_build_command(platform, architecture, True, False)
-            env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
+            env.Execute(
+                "podman exec -w /root/godot-solana-sdk/ {} {}".format(
+                    CONTAINER_NAME, build_command
+                )
+            )
 
             build_command = get_build_command(platform, architecture, False, False)
-            env.Execute('podman exec -w /root/godot-solana-sdk/ {} {}'.format(CONTAINER_NAME ,build_command))
+            env.Execute(
+                "podman exec -w /root/godot-solana-sdk/ {} {}".format(
+                    CONTAINER_NAME, build_command
+                )
+            )
 
     if not keep_container:
-        env.Execute('podman rm -f {}'.format(CONTAINER_NAME))
+        env.Execute("podman rm -f {}".format(CONTAINER_NAME))
 
 
 def remove_all_images(platform):
-    id = image_id_from_repo_name('localhost/godot-' + platform)
-    while(image_id_from_repo_name('localhost/godot-' + platform)):
-        env.Execute('podman rmi -f {}'.format(id))
-        id = image_id_from_repo_name('localhost/godot-' + platform)
+    id = image_id_from_repo_name("localhost/godot-" + platform)
+    while image_id_from_repo_name("localhost/godot-" + platform):
+        env.Execute("podman rmi -f {}".format(id))
+        id = image_id_from_repo_name("localhost/godot-" + platform)
 
 
 def build_all(env, container_path, keep_images):
-    CONTAINER_BUILD_COMMAND = 'echo y | ./build.sh 4.x f36'
+    CONTAINER_BUILD_COMMAND = "echo y | ./build.sh 4.x f36"
 
     # Remove existing container
-    env.Execute('podman rm -fi {}'.format(CONTAINER_NAME))
+    env.Execute("podman rm -fi {}".format(CONTAINER_NAME))
 
     # Build missing containers
-    env.Execute('cd {} && {}'.format(container_path, CONTAINER_BUILD_COMMAND))
+    env.Execute("cd {} && {}".format(container_path, CONTAINER_BUILD_COMMAND))
 
-    build_in_container('linux', ['x86_64'], keep_images=keep_images)
-    build_in_container('windows', ['x86_64'], keep_images=keep_images)
-    build_in_container('web', ['wasm32'], keep_images=keep_images)
-    build_in_container('android', ['aarch64', 'x86_64'], keep_images=keep_images)
-    build_in_container('ios', ['arm64'], keep_images=keep_images)
-    build_in_container('macos', ['aarch64'], keep_images=keep_images)
+    build_in_container("linux", ["x86_64"], keep_images=keep_images)
+    build_in_container("windows", ["x86_64"], keep_images=keep_images)
+    build_in_container("web", ["wasm32"], keep_images=keep_images)
+    build_in_container("android", ["aarch64", "x86_64"], keep_images=keep_images)
+    build_in_container("ios", ["arm64"], keep_images=keep_images)
+    build_in_container("macos", ["aarch64"], keep_images=keep_images)
 
     if not keep_images:
         # Remove existing images
-        remove_all_images('linux')
-        remove_all_images('windows')
-        remove_all_images('web')
-        remove_all_images('android')
-        remove_all_images('ios')
-        remove_all_images('osx')
-        remove_all_images('fedora')
-        remove_all_images('xcode')
+        remove_all_images("linux")
+        remove_all_images("windows")
+        remove_all_images("web")
+        remove_all_images("android")
+        remove_all_images("ios")
+        remove_all_images("osx")
+        remove_all_images("fedora")
+        remove_all_images("xcode")
 
 
-AddOption('--remove_images', dest='remove_images', default=True, action='store_false', help='Remove the podman images after the build.')
-AddOption('--container_build', dest='container_build', default=False, action='store_true', help='Build in containers for all platforms.')
+AddOption(
+    "--remove_images",
+    dest="remove_images",
+    default=True,
+    action="store_false",
+    help="Remove the podman images after the build.",
+)
+AddOption(
+    "--container_build",
+    dest="container_build",
+    default=False,
+    action="store_true",
+    help="Build in containers for all platforms.",
+)
 
 env = SConscript("godot-cpp/SConstruct")
 
@@ -157,9 +203,9 @@ instruction_sources = Glob("instructions/src/*.cpp")
 other_sources = Glob("src/*/*.cpp")
 
 # Handle the container build
-if env.GetOption('container_build'):
-    build_all(env, CONTAINER_BUILD_PATH, env.GetOption('remove_images'))
-    
+if env.GetOption("container_build"):
+    build_all(env, CONTAINER_BUILD_PATH, env.GetOption("remove_images"))
+
     # Stop default targets from dependency SCons files.
     exit(0)
 
@@ -171,38 +217,73 @@ else:
     if env["platform"] == "ios" and platform.system() != "Darwin":
 
         # Add linker settings for ios build.
-        env.Append(LIBS = ['objc'])
-        env.Append(LIBS = ['c'])
-        env.Append(LIBS = ['c++'])
-        env.Append(LINKFLAGS=['-framework', 'Security', '-L', '/root/ioscross/arm64/lib/'])
+        env.Append(LIBS=["objc"])
+        env.Append(LIBS=["c"])
+        env.Append(LIBS=["c++"])
+        env.Append(
+            LINKFLAGS=["-framework", "Security", "-L", "/root/ioscross/arm64/lib/"]
+        )
 
         # Workaround for broken ios builds.
-        env['LINK'] = "/root/osxcross/target/bin/aarch64-apple-darwin{}-ld".format(IOS_OSXCROSS_TRIPPLE)
-        env.Append(LD_LIBRARY_PATH=['/root/ioscross/arm64/lib/'])
+        env["LINK"] = "/root/osxcross/target/bin/aarch64-apple-darwin{}-ld".format(
+            IOS_OSXCROSS_TRIPPLE
+        )
+        env.Append(LD_LIBRARY_PATH=["/root/ioscross/arm64/lib/"])
 
-        for index in range(len(env['LINKFLAGS'])):
-            if env['LINKFLAGS'][index] == "-isysroot":
-                env['LINKFLAGS'][index] = "-syslibroot"
+        for index in range(len(env["LINKFLAGS"])):
+            if env["LINKFLAGS"][index] == "-isysroot":
+                env["LINKFLAGS"][index] = "-syslibroot"
 
-        env['SHLINKFLAGS'].remove("-shared")
-        env.Append(LINKFLAGS=['-dylib'])
+        env["SHLINKFLAGS"].remove("-shared")
+        env.Append(LINKFLAGS=["-dylib"])
 
     if env["platform"] == "web":
         env.Append(LINKFLAGS=["-sWASM_BIGINT=1"])
 
     if env["platform"] == "macos":
         library = env.SharedLibrary(
-            "bin/lib" + LIBRARY_NAME + ".{}.{}.framework/lib".format(
-                env["platform"], env["target"],
-            ) + LIBRARY_NAME + ".{}.{}".format(
-                env["platform"], env["target"]
-            ),
-            source=sources + sha256_sources + ed25519_sources + wallet_sources + instruction_sources + other_sources,
+            "bin/lib"
+            + LIBRARY_NAME
+            + ".{}.{}.framework/lib".format(
+                env["platform"],
+                env["target"],
+            )
+            + LIBRARY_NAME
+            + ".{}.{}".format(env["platform"], env["target"]),
+            source=sources
+            + sha256_sources
+            + ed25519_sources
+            + wallet_sources
+            + instruction_sources
+            + other_sources,
         )
     else:
         library = env.SharedLibrary(
             "bin/lib" + LIBRARY_NAME + "{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-            source=sources + sha256_sources + ed25519_sources + wallet_sources + instruction_sources + other_sources,
+            source=sources
+            + sha256_sources
+            + ed25519_sources
+            + wallet_sources
+            + instruction_sources
+            + other_sources,
         )
 
     Default(library)
+
+    # Define targets related to Clang tidy.
+
+    lint_sources = sources + wallet_sources + instruction_sources + other_sources
+
+    lint_env = Environment()  # SConscript("godot-cpp/SConstruct")
+    lint_env["CLANG_TIDY"] = os.environ.get("CLANG_TIDY", "clang-tidy")
+    lint_env["CLANG_FORMAT"] = os.environ.get("CLANG_FORMAT", "clang-tidy")
+    lint_env.Tool("compilation_db")
+
+    lint_filenames = [str(f) for f in lint_sources]
+    tidy_command = (
+        f'{lint_env['CLANG_TIDY']} -p compile_commands.json {" ".join(lint_filenames)}'
+    )
+    clang_tidy_action = lint_env.Action([tidy_command])
+    clang_tidy_command = lint_env.Command(
+        "lint", "compile_commands.json", clang_tidy_action
+    )
