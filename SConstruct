@@ -280,9 +280,9 @@ else:
     lint_env.Tool("compilation_db")
 
     lint_filenames = [str(f) for f in lint_sources]
-    tidy_command = (
-        f'{lint_env['CLANG_TIDY']} -p compile_commands.json {" ".join(lint_filenames)}'
-    )
+    build_defines = ["-DWEB_ENABLED"]
+    extra_arg = f'--extra-arg {" ".join(build_defines)}' if build_defines else ""
+    tidy_command = f'{lint_env['CLANG_TIDY']} -p compile_commands.json {extra_arg} {" ".join(lint_filenames)}'
     clang_tidy_action = lint_env.Action([tidy_command])
     clang_tidy_command = lint_env.Command(
         "lint", "compile_commands.json", clang_tidy_action

@@ -8,6 +8,9 @@
 
 
 namespace godot{
+
+const int SIGNATURE_LENGTH = 64;
+
 /**
  * @class Keypair
  * @brief An ed25519 Keypair
@@ -25,8 +28,6 @@ private:
     const int PUBLIC_KEY_LENGTH = 32;
     const int PRIVATE_KEY_LENGTH = 64;
     const int SEED_LENGTH = 32;
-
-    const int SIGNATURE_LENGTH = 64;
 
     bool unique = true;
     String public_string = "";
