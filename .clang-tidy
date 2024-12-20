@@ -7,6 +7,13 @@ Checks: '
     modernize-use-nullptr,
     readability-braces-around-statements,
     readability-redundant-member-init,
+    -google-readability-namespace-comments,
+    -modernize-use-trailing-return-type,
+    -llvmlibc-*,
+    -zircon-*,
+    -mpi-*,
+    -fuchsia-default-arguments-calls,
+    -altera-unroll-loops
   '
 HeaderFileExtensions: ['', h, hh, hpp, hxx, inc, glsl]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]
