@@ -594,6 +594,4 @@ Array Transaction::get_address_lookup_tables() {
 	return address_lookup_tables;
 }
 
-Transaction::~Transaction() {
-}
 } //namespace godot

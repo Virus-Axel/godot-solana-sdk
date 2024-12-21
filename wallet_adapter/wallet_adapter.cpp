@@ -1,13 +1,13 @@
 #include "wallet_adapter.hpp"
 
-#include <stdint.h>
 #include <backpack_js.hpp>
+#include <cstdint>
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/java_script_bridge.hpp>
-#include <godot_cpp/classes/os.hpp>
-#include <godot_cpp/classes/thread.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/object.hpp>
+#include <godot_cpp/variant/array.hpp>
+#include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/variant.hpp>
 #include <keypair.hpp>
 #include <phantom_js.hpp>
@@ -56,13 +56,12 @@ String WalletAdapter::wallet_name_from_type(WalletType wallet_type) {
 		return "";
 	}
 
-	const char *WALLET_NAMES[] = {
-		"solana",
-		"solflare",
-		"backpack",
-	};
+	const Array WALLET_NAMES = build_array(
+			"solana",
+			"solflare",
+			"backpack");
 
-	return String(WALLET_NAMES[wallet_type]);
+	return { WALLET_NAMES[wallet_type] };
 }
 
 String WalletAdapter::wallet_check_name_from_type(WalletType wallet_type) {
@@ -148,7 +147,7 @@ void WalletAdapter::store_serialized_message(const PackedByteArray &serialized_m
 #ifdef WEB_ENABLED
 
 	String script = "Module.serialized_message = [";
-	for (const char &value : serialized_message) {
+	for (const uint8_t &value : serialized_message) {
 		script += String::num_int64(value);
 		script += ',';
 	}

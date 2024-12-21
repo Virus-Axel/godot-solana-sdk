@@ -30,7 +30,7 @@ private:
 
 	void clear_state();
 	static void store_serialized_message(const PackedByteArray &serialized_message);
-	void store_encoded_message(const PackedByteArray &store_serialized_message);
+	static void store_encoded_message(const PackedByteArray &store_serialized_message);
 	static String wallet_name_from_type(WalletType wallet_type);
 	static String wallet_check_name_from_type(WalletType wallet_type);
 
@@ -51,7 +51,7 @@ public:
 
 	bool is_connected() const;
 	bool is_idle();
-	bool has_multiple_wallets();
+	static bool has_multiple_wallets();
 
 	void poll_connection();
 	void poll_message_signing();
