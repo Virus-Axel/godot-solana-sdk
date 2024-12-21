@@ -1,0 +1,13 @@
+{
+	"scripts": {
+		"build": "webpack"
+	},
+	"dependencies": {
+		"@solana/wallet-adapter-wallets": "^0.19.32",
+		"@solana/web3.js": "^1.98.0"
+	},
+	"devDependencies": {
+		"webpack": "^5.97.1",
+		"webpack-cli": "^6.0.1"
+	}
+}

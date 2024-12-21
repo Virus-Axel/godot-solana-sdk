@@ -12,7 +12,7 @@ grow_vertical = 2
 script = ExtResource("1_ti5ca")
 
 [node name="WalletAdapter" type="WalletAdapter" parent="."]
-wallet_type = 2
+wallet_type = 20
 
 [node name="Transaction" type="Transaction" parent="."]
 

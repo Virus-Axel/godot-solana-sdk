@@ -1,16 +1,51 @@
 #ifndef SOLANA_SDK_WALLET_ADAPTER_HPP
 #define SOLANA_SDK_WALLET_ADAPTER_HPP
 
+#include "solana_utils.hpp"
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/wrapped.hpp>
 
 namespace godot {
 
 enum WalletType {
-	PHANTOM = 0,
-	SOLFLARE = 1,
-	BACKPACK = 2,
-	MAX_TYPES = 3,
+	ALPHA,
+	AVANA,
+	BITKEEP,
+	BITPIE,
+	CLOVER,
+	COIN98,
+	COINBASE,
+	COINHUB,
+	FRACTAL,
+	HUOBI,
+	HYPERPAY,
+	KEYSTONE,
+	KRYSTAL,
+	LEDGER,
+	MATH,
+	NEKO,
+	NIGHTLY,
+	NUFI,
+	ONTO,
+	PARTICLE,
+	PHANTOM,
+	SAFEPAL,
+	SAIFU,
+	SALMON,
+	SKY,
+	SOLFLARE,
+	SOLONG,
+	SPOT,
+	TOKENARY,
+	TOKENPOCKET,
+	TORUS,
+	TREZOR,
+	TRUST,
+	UNSAFEBURNER,
+	WALLETCONNECT,
+	XDEFI,
+	MAX_TYPES,
+	BACKPACK,
 };
 
 class WalletAdapter : public Node {
@@ -37,6 +72,8 @@ private:
 	String get_sign_transaction_script() const;
 	String get_sign_message_script() const;
 	String get_connect_script() const;
+	static bool is_wallet_installed(WalletType wallet_type);
+	static Array get_all_wallets();
 
 protected:
 	static void _bind_methods();

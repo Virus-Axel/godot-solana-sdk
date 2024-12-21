@@ -10,17 +10,38 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/variant.hpp>
 #include <keypair.hpp>
-#include <phantom_js.hpp>
 #include <pubkey.hpp>
 #include <solana_utils.hpp>
-#include <solflare_js.hpp>
-#include <web3_js.hpp>
 
 #ifdef WEB_ENABLED
 #include <emscripten.h>
+#include <script_builder.hpp>
+#include <wallet_adapter_generated.hpp>
 #endif
 
 namespace godot {
+
+bool WalletAdapter::is_wallet_installed(WalletType wallet_type) {
+#ifdef WEB_ENABLED
+	const String CHECK_SCRIPT = "\
+		try{\
+			adapter = new Module.wallets.{0}WalletAdapter;\
+        	adapter.readyState\
+		}\
+		catch (_error){\
+			'Error'\
+		}";
+
+	const Array params = build_array(wallet_name_from_type(wallet_type));
+	const String ready_state = JavaScriptBridge::get_singleton()->eval(CHECK_SCRIPT.format(params));
+	return ready_state == "Installed";
+#endif
+	return false;
+}
+
+Array WalletAdapter::get_all_wallets() {
+	return build_array("Alpha", "Avana", "BitKeep", "Bitpie", "Clover", "Coin98", "Coinbase", "Coinhub", "Fractal", "Huobi", "HyperPay", "Keystone", "Krystal", "Ledger", "Math", "Neko", "Nightly", "Nufi", "Onto", "Particle", "Phantom", "SafePal", "Saifu", "Salmon", "Sky", "Solflare", "Solong", "Spot", "Tokenary", "TokenPocket", "Torus", "Trezor", "Trust", "UnsafeBurner", "WalletConnect", "Xdefi");
+}
 
 void WalletAdapter::clear_state() {
 	wallet_state = State::IDLE;
@@ -52,16 +73,12 @@ void WalletAdapter::store_encoded_message(const PackedByteArray &serialized_mess
 }
 
 String WalletAdapter::wallet_name_from_type(WalletType wallet_type) {
-	if (wallet_type >= WalletType::MAX_TYPES) {
+	const Array WALLET_NAMES = get_all_wallets();
+	if (wallet_type >= WALLET_NAMES.size()) {
 		return "";
 	}
 
-	const Array WALLET_NAMES = build_array(
-			"solana",
-			"solflare",
-			"backpack");
-
-	return { WALLET_NAMES[wallet_type] };
+	return WALLET_NAMES[wallet_type];
 }
 
 String WalletAdapter::wallet_check_name_from_type(WalletType wallet_type) {
@@ -79,66 +96,28 @@ String WalletAdapter::wallet_check_name_from_type(WalletType wallet_type) {
 
 String WalletAdapter::get_sign_transaction_script() const {
 #ifdef WEB_ENABLED
-	switch (wallet_type) {
-		case WalletType::PHANTOM:
-			return { phantom::SIGN_TRANSACTION_SCRIPT };
-			break;
+	String result(script_builder::SIGN_TRANSACTION_SCRIPT);
 
-		case WalletType::SOLFLARE:
-			return { solflare::SIGN_TRANSACTION_SCRIPT };
-			break;
-
-		case WalletType::BACKPACK:
-			return { backpack::SIGN_TRANSACTION_SCRIPT };
-			break;
-
-		default:
-			break;
-	}
+	return result;
 #endif
 	return "";
 }
 
 String WalletAdapter::get_sign_message_script() const {
 #ifdef WEB_ENABLED
-	switch (wallet_type) {
-		case WalletType::PHANTOM:
-			return { phantom::SIGN_MESSAGE_SCRIPT };
-			break;
+	String result(script_builder::SIGN_MESSAGE_SCRIPT);
 
-		case WalletType::SOLFLARE:
-			return { solflare::SIGN_MESSAGE_SCRIPT };
-			break;
-
-		case WalletType::BACKPACK:
-			return { backpack::SIGN_MESSAGE_SCRIPT };
-			break;
-
-		default:
-			break;
-	}
+	return result;
 #endif
 	return "";
 }
 
 String WalletAdapter::get_connect_script() const {
 #ifdef WEB_ENABLED
-	switch (wallet_type) {
-		case WalletType::PHANTOM:
-			return { phantom::CONNECT_SCRIPT };
-			break;
+	String result(script_builder::CONNECT_SCRIPT);
 
-		case WalletType::SOLFLARE:
-			return { solflare::CONNECT_SCRIPT };
-			break;
-
-		case WalletType::BACKPACK:
-			return { backpack::CONNECT_SCRIPT };
-			break;
-
-		default:
-			break;
-	}
+	const String wallet_name = wallet_name_from_type(wallet_type);
+	return result.format(build_array(wallet_name));
 #endif
 	return "";
 }
@@ -183,7 +162,7 @@ Array WalletAdapter::get_available_wallets() {
 	for (int i = 0; i < WalletType::MAX_TYPES; i++) {
 		Array params;
 		params.append(wallet_name_from_type(static_cast<WalletType>(i)));
-		params.append(wallet_check_name_from_type(static_cast<WalletType>(i)));
+		//params.append(wallet_check_name_from_type(static_cast<WalletType>(i)));
 
 		const String CHECK_SCRIPT = "\
         const {{0}} = window;\
@@ -198,7 +177,7 @@ Array WalletAdapter::get_available_wallets() {
           0\
         }";
 
-		if (static_cast<int>(JavaScriptBridge::get_singleton()->eval(CHECK_SCRIPT.format(params))) == 1) {
+		if (is_wallet_installed(static_cast<WalletType>(i))) {
 			available_wallets.append(i);
 		}
 	}
@@ -284,12 +263,15 @@ void WalletAdapter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_wallet_type"), &WalletAdapter::get_wallet_type);
 	ClassDB::bind_static_method("WalletAdapter", D_METHOD("get_available_wallets"), &WalletAdapter::get_available_wallets);
 
-	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::INT, "wallet_type", PROPERTY_HINT_ENUM, "Phantom,Solflare,Backpack", PROPERTY_USAGE_DEFAULT), "set_wallet_type", "get_wallet_type");
+	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::INT, "wallet_type", PROPERTY_HINT_ENUM, String(",").join(get_all_wallets()), PROPERTY_USAGE_DEFAULT), "set_wallet_type", "get_wallet_type");
 }
 
 WalletAdapter::WalletAdapter() {
 #ifdef WEB_ENABLED
-	emscripten_run_script(WEB3_JS_STR);
+	emscripten_run_script("console.log('Initializing...');");
+	emscripten_run_script(WALLET_ADAPTER_BUNDLED);
+	emscripten_run_script("console.log('Done!');");
+	;
 #endif
 }
 
@@ -323,7 +305,6 @@ int WalletAdapter::get_wallet_type() {
 
 void WalletAdapter::sign_message(const PackedByteArray &serialized_message, const uint32_t index) {
 #ifdef WEB_ENABLED
-
 	active_signer_index = index;
 
 	wallet_state = State::SIGNING;

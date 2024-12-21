@@ -38,3 +38,4 @@ compile_commands.json
 
 # Generated files
 include/doc_data_godot-solana-sdk.gen.h
+include/wallet_adapter/wallet_adapter_generated.hpp
