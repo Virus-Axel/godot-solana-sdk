@@ -70,11 +70,10 @@ String WalletAdapter::wallet_check_name_from_type(WalletType wallet_type) {
 		return "";
 	}
 
-	const char *WALLET_CHECK_NAMES[] = {
-		"isPhantom",
-		"isSolflare",
-		"isBackpack",
-	};
+	const Array WALLET_CHECK_NAMES = build_array(
+			"isPhantom",
+			"isSolflare",
+			"isBackpack");
 
 	return String(WALLET_CHECK_NAMES[wallet_type]);
 }
