@@ -3,6 +3,7 @@
 import os
 import platform
 from docs.xml_to_header import doxy_to_header, get_classes_list
+from tools.js_to_header import js_to_cpp_header
 
 CONTAINER_BUILD_PATH = "build-containers"
 CONTAINER_NAME = "godot-solana-sdk-container"
@@ -191,7 +192,8 @@ env.Append(CPPPATH=["include/instructions"])
 env.Append(CPPPATH=["include/meta_data"])
 env.Append(CPPPATH=["include/transaction"])
 env.Append(CPPPATH=["src/transaction"])
-env.Append(CPPPATH=["wallet_adapter/"])
+env.Append(CPPPATH=["include/wallet_adapter/"])
+env.Append(CPPPATH=["src/wallet_adapter/"])
 
 sources = Glob("src/*.cpp")
 
@@ -237,8 +239,48 @@ else:
         env["SHLINKFLAGS"].remove("-shared")
         env.Append(LINKFLAGS=["-dylib"])
 
+    wallet_adapter_header_target = None
+
     if env["platform"] == "web":
         env.Append(LINKFLAGS=["-sWASM_BIGINT=1"])
+
+        WALLET_ADAPTER_BRIDGE_DIR = "wallet_adapter_bridge"
+
+        wallet_adapter_header = "include/wallet_adapter/wallet_adapter_generated.hpp"
+
+        js_file = f"{WALLET_ADAPTER_BRIDGE_DIR}/dist/index_minified.js"
+
+        def generate_js_hpp(target=None, source=None, env=None):
+            constant_name = "WALLET_ADAPTER_BUNDLED"
+
+            js_to_cpp_header(js_file, wallet_adapter_header, constant_name)
+
+        wallet_adapter_sources = f"{WALLET_ADAPTER_BRIDGE_DIR}/package.json"
+        wallet_adapter_lock = f"{WALLET_ADAPTER_BRIDGE_DIR}/package-lock.json"
+        vite_config = f"{WALLET_ADAPTER_BRIDGE_DIR}/webpack.config.js"
+        js_sources = Glob(f"{WALLET_ADAPTER_BRIDGE_DIR}/src/*.js")
+
+        NPM_INSTALL_COMMAND = f"npm install --prefix {WALLET_ADAPTER_BRIDGE_DIR} --no-audit --no-fund"
+        NPM_BUILD_COMMAND = f"npm run build --prefix {WALLET_ADAPTER_BRIDGE_DIR} -- --no-stats-warnings"
+
+        # Define targets for the package-lock.json (wallet adapter package).
+        npm_install_target = env.Command(
+            wallet_adapter_lock,
+            wallet_adapter_sources,
+            NPM_INSTALL_COMMAND,
+        )
+        package_build_target = env.Command(
+            js_file,
+            [npm_install_target, vite_config, js_sources],
+            NPM_BUILD_COMMAND,
+        )
+
+        # Define target for the generated .hpp wallet adapter file.
+        wallet_adapter_header_target = env.Command(
+            wallet_adapter_header,
+            package_build_target,
+            generate_js_hpp,
+        )
 
     if env["platform"] == "macos":
         library = env.SharedLibrary(
@@ -270,6 +312,9 @@ else:
 
     Default(library)
 
+    if env["platform"] == "web":
+        Depends(library, wallet_adapter_header_target)
+
     # Define targets related to Clang tidy.
 
     lint_sources = sources + wallet_sources + instruction_sources + other_sources
@@ -280,9 +325,9 @@ else:
     lint_env.Tool("compilation_db")
 
     lint_filenames = [str(f) for f in lint_sources]
-    tidy_command = (
-        f'{lint_env['CLANG_TIDY']} -p compile_commands.json {" ".join(lint_filenames)}'
-    )
+    build_defines = ["-DWEB_ENABLED"]
+    extra_arg = f'--extra-arg {" ".join(build_defines)}' if build_defines else ""
+    tidy_command = f'{lint_env['CLANG_TIDY']} -p compile_commands.json {extra_arg} {" ".join(lint_filenames)}'
     clang_tidy_action = lint_env.Action([tidy_command])
     clang_tidy_command = lint_env.Command(
         "lint", "compile_commands.json", clang_tidy_action

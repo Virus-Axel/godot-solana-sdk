@@ -1,0 +1,6 @@
+# Release files
+dist/
+
+# Node
+node_modules/
+package-lock.json
