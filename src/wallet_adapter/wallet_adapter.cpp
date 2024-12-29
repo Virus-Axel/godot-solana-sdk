@@ -1,6 +1,5 @@
 #include "wallet_adapter.hpp"
 
-#include <backpack_js.hpp>
 #include <cstdint>
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/java_script_bridge.hpp>
@@ -40,7 +39,7 @@ bool WalletAdapter::is_wallet_installed(WalletType wallet_type) {
 }
 
 Array WalletAdapter::get_all_wallets() {
-	return build_array("Alpha", "Avana", "BitKeep", "Bitpie", "Clover", "Coin98", "Coinbase", "Coinhub", "Fractal", "Huobi", "HyperPay", "Keystone", "Krystal", "Ledger", "Math", "Neko", "Nightly", "Nufi", "Onto", "Particle", "Phantom", "SafePal", "Saifu", "Salmon", "Sky", "Solflare", "Solong", "Spot", "Tokenary", "TokenPocket", "Torus", "Trezor", "Trust", "UnsafeBurner", "WalletConnect", "Xdefi");
+	return build_array("Alpha", "Avana", "BitKeep", "Bitpie", "Clover", "Coin98", "Coinbase", "Coinhub", "Fractal", "Huobi", "HyperPay", "Keystone", "Krystal", "Ledger", "Math", "Neko", "Nightly", "Nufi", "Onto", "Particle", "Phantom", "SafePal", "Saifu", "Salmon", "Sky", "Solflare", "Solong", "Spot", "Tokenary", "TokenPocket", "Torus", "Trezor", "Trust", "UnsafeBurner", "WalletConnect", "Xdefi", "Backpack");
 }
 
 void WalletAdapter::clear_state() {
@@ -114,7 +113,7 @@ String WalletAdapter::get_sign_message_script() const {
 
 String WalletAdapter::get_connect_script() const {
 #ifdef WEB_ENABLED
-	String result(script_builder::CONNECT_SCRIPT);
+	const String result(script_builder::CONNECT_SCRIPT);
 
 	const String wallet_name = wallet_name_from_type(wallet_type);
 	return result.format(build_array(wallet_name));
