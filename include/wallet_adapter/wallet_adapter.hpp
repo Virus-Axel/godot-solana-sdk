@@ -44,8 +44,8 @@ enum WalletType {
 	UNSAFEBURNER,
 	WALLETCONNECT,
 	XDEFI,
-	MAX_TYPES,
 	BACKPACK,
+	MAX_TYPES,
 };
 
 class WalletAdapter : public Node {
