@@ -45,6 +45,7 @@ var annotated_dup =
       [ "TreeSetupConfig", "classgodot_1_1_tree_setup_config.html", null ],
       [ "UserInfo", "classgodot_1_1_user_info.html", null ],
       [ "UserInfoInput", "classgodot_1_1_user_info_input.html", null ],
+      [ "WalletAdapter", "classgodot_1_1_wallet_adapter.html", null ],
       [ "WsRequestData", "structgodot_1_1_ws_request_data.html", null ]
     ] ],
     [ "FieldElement", "class_field_element.html", null ]

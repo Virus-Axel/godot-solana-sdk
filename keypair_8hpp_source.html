@@ -112,79 +112,80 @@ $(function(){initNavTree('keypair_8hpp_source.html',''); initResizable(true); })
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span>godot{</div>
-<div class="foldopen" id="foldopen00020" data-start="{" data-end="};">
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="classgodot_1_1_keypair.html">   20</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_keypair.html">Keypair</a> : <span class="keyword">public</span> Resource {</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_keypair.html">Keypair</a>, Resource)</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keyword">const</span> <span class="keywordtype">int</span> PUBLIC_KEY_LENGTH = 32;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keyword">const</span> <span class="keywordtype">int</span> PRIVATE_KEY_LENGTH = 64;</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keyword">const</span> <span class="keywordtype">int</span> SEED_LENGTH = 32;</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keyword">const</span> <span class="keywordtype">int</span> SIGNATURE_LENGTH = 64;</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <span class="keywordtype">bool</span> unique = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    String public_string = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    PackedByteArray public_bytes;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    String private_string = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    PackedByteArray private_bytes;</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    PackedByteArray seed;</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keywordtype">bool</span> _set(<span class="keyword">const</span> StringName &amp;p_name, <span class="keyword">const</span> Variant &amp;p_value);</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <span class="keywordtype">bool</span> _get(<span class="keyword">const</span> StringName &amp;p_name, Variant &amp;r_ret) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keywordtype">void</span> _get_property_list(List&lt;PropertyInfo&gt; *p_list) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <a class="code hl_class" href="classgodot_1_1_keypair.html">Keypair</a>();</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <a class="code hl_class" href="classgodot_1_1_keypair.html">Keypair</a>(<span class="keyword">const</span> PackedByteArray &amp;seed);</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    </div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keyword">static</span> Variant <a class="code hl_function" href="classgodot_1_1_keypair.html#a895cbd3904899aa05eac2d21e6edd600">new_from_seed</a>(<span class="keyword">const</span> String &amp;seed);</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keyword">static</span> Variant <a class="code hl_function" href="classgodot_1_1_keypair.html#a895cbd3904899aa05eac2d21e6edd600">new_from_seed</a>(<span class="keyword">const</span> PackedByteArray &amp;seed);</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    <span class="keyword">static</span> Variant <a class="code hl_function" href="classgodot_1_1_keypair.html#aa5b6dc4b47a1d71470e9b3974a72c461">new_from_bytes</a>(<span class="keyword">const</span> Variant &amp;bytes);</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <span class="keyword">static</span> Variant <a class="code hl_function" href="classgodot_1_1_keypair.html#a7107c395e92a58810b6086e4168c5089">new_from_file</a>(<span class="keyword">const</span> String &amp;filename);</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    <span class="keyword">static</span> Variant <a class="code hl_function" href="classgodot_1_1_keypair.html#a311ab62b9b7187be519879d8c4cc1924">new_random</a>();</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    <span class="keyword">static</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#ac34579b325f766f2a289c51887af4792">is_keypair</a>(<span class="keyword">const</span> Variant&amp; <span class="keywordtype">object</span>);</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span> </div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    Variant <a class="code hl_function" href="classgodot_1_1_keypair.html#a6862a65cb2ce976ea81f7f74bd09ee5a">to_pubkey</a>();</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span> </div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#ad316985440e9d95d90855fb18040b8ee">set_public_string</a>(<span class="keyword">const</span> String&amp; p_value);</div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>    String <a class="code hl_function" href="classgodot_1_1_keypair.html#a223b206a87576b7c6d351f73d4e0856a">get_public_string</a>();</div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span> </div>
-<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a6b867559de2faee07bc667de64522c1a">set_public_bytes</a>(<span class="keyword">const</span> PackedByteArray&amp; p_value);</div>
-<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_keypair.html#a61086b7ebb9987b290ce83550171d90a">get_public_bytes</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span> </div>
-<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a4ea9e7e808aaeb4a3c7cfb0fab0d9504">set_private_string</a>(<span class="keyword">const</span> String&amp; p_value);</div>
-<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>    String <a class="code hl_function" href="classgodot_1_1_keypair.html#a2256b007690a685d70aa383aa3f6ac88">get_private_string</a>();</div>
-<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span> </div>
-<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a5dbc438db0b95a561f9cc2e0f88711e5">set_private_bytes</a>(<span class="keyword">const</span> PackedByteArray&amp; p_value);</div>
-<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_keypair.html#a63f6e5a51dfbedae6107e3c725262d35">get_private_bytes</a>();</div>
-<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span> </div>
-<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_keypair.html#ac327bcf081bb6fd2bb2a339b0e266910">sign_message</a>(<span class="keyword">const</span> PackedByteArray&amp; message);</div>
-<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a3b53164fe5f1641ef47a480a5e87394d">verify_signature</a>(<span class="keyword">const</span> PackedByteArray&amp; signature, <span class="keyword">const</span> PackedByteArray&amp; message);</div>
-<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span> </div>
-<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#abd853e5439955fda9eefaac4d7c59b50">set_unique</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> p_value);</div>
-<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#ab805a0de4020dc14ad974857553f8c0e">get_unique</a>();</div>
-<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span> </div>
-<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a195d2a7bf8077629f3bedce4efab3567">set_seed</a>(<span class="keyword">const</span> PackedByteArray &amp;p_value);</div>
-<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_keypair.html#a9402126738e868d1a6b4b0a450a718be">get_seed</a>();</div>
-<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span> </div>
-<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a871e84d1d372c8256d0cb9696f65e4df">random</a>();</div>
-<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a5bae41ffd394a85b05fa40365721766f">from_seed</a>();</div>
-<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span> </div>
-<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a7b7ccac6a23f1b1cb284fa3a05b66c50">save_to_file</a>(<span class="keyword">const</span> String &amp;filename);</div>
-<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span> </div>
-<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>    <a class="code hl_class" href="classgodot_1_1_keypair.html">~Keypair</a>();</div>
-<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>};</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="keyword">const</span> <span class="keywordtype">int</span> SIGNATURE_LENGTH = 64;</div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
+<div class="foldopen" id="foldopen00023" data-start="{" data-end="};">
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno"><a class="line" href="classgodot_1_1_keypair.html">   23</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_keypair.html">Keypair</a> : <span class="keyword">public</span> Resource {</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_keypair.html">Keypair</a>, Resource)</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keyword">const</span> <span class="keywordtype">int</span> PUBLIC_KEY_LENGTH = 32;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keyword">const</span> <span class="keywordtype">int</span> PRIVATE_KEY_LENGTH = 64;</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    <span class="keyword">const</span> <span class="keywordtype">int</span> SEED_LENGTH = 32;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="keywordtype">bool</span> unique = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    String public_string = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    PackedByteArray public_bytes;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    String private_string = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    PackedByteArray private_bytes;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    PackedByteArray seed;</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <span class="keywordtype">bool</span> _set(<span class="keyword">const</span> StringName &amp;p_name, <span class="keyword">const</span> Variant &amp;p_value);</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keywordtype">bool</span> _get(<span class="keyword">const</span> StringName &amp;p_name, Variant &amp;r_ret) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <span class="keywordtype">void</span> _get_property_list(List&lt;PropertyInfo&gt; *p_list) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <a class="code hl_class" href="classgodot_1_1_keypair.html">Keypair</a>();</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <a class="code hl_class" href="classgodot_1_1_keypair.html">Keypair</a>(<span class="keyword">const</span> PackedByteArray &amp;seed);</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keyword">static</span> Variant <a class="code hl_function" href="classgodot_1_1_keypair.html#a895cbd3904899aa05eac2d21e6edd600">new_from_seed</a>(<span class="keyword">const</span> String &amp;seed);</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keyword">static</span> Variant <a class="code hl_function" href="classgodot_1_1_keypair.html#a895cbd3904899aa05eac2d21e6edd600">new_from_seed</a>(<span class="keyword">const</span> PackedByteArray &amp;seed);</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    <span class="keyword">static</span> Variant <a class="code hl_function" href="classgodot_1_1_keypair.html#aa5b6dc4b47a1d71470e9b3974a72c461">new_from_bytes</a>(<span class="keyword">const</span> Variant &amp;bytes);</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="keyword">static</span> Variant <a class="code hl_function" href="classgodot_1_1_keypair.html#a7107c395e92a58810b6086e4168c5089">new_from_file</a>(<span class="keyword">const</span> String &amp;filename);</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    <span class="keyword">static</span> Variant <a class="code hl_function" href="classgodot_1_1_keypair.html#a311ab62b9b7187be519879d8c4cc1924">new_random</a>();</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    <span class="keyword">static</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#ac34579b325f766f2a289c51887af4792">is_keypair</a>(<span class="keyword">const</span> Variant&amp; <span class="keywordtype">object</span>);</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span> </div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>    Variant <a class="code hl_function" href="classgodot_1_1_keypair.html#a6862a65cb2ce976ea81f7f74bd09ee5a">to_pubkey</a>();</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span> </div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#ad316985440e9d95d90855fb18040b8ee">set_public_string</a>(<span class="keyword">const</span> String&amp; p_value);</div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>    String <a class="code hl_function" href="classgodot_1_1_keypair.html#a223b206a87576b7c6d351f73d4e0856a">get_public_string</a>();</div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span> </div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a6b867559de2faee07bc667de64522c1a">set_public_bytes</a>(<span class="keyword">const</span> PackedByteArray&amp; p_value);</div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_keypair.html#a61086b7ebb9987b290ce83550171d90a">get_public_bytes</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span> </div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a4ea9e7e808aaeb4a3c7cfb0fab0d9504">set_private_string</a>(<span class="keyword">const</span> String&amp; p_value);</div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>    String <a class="code hl_function" href="classgodot_1_1_keypair.html#a2256b007690a685d70aa383aa3f6ac88">get_private_string</a>();</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span> </div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a5dbc438db0b95a561f9cc2e0f88711e5">set_private_bytes</a>(<span class="keyword">const</span> PackedByteArray&amp; p_value);</div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_keypair.html#a63f6e5a51dfbedae6107e3c725262d35">get_private_bytes</a>();</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span> </div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_keypair.html#ac327bcf081bb6fd2bb2a339b0e266910">sign_message</a>(<span class="keyword">const</span> PackedByteArray&amp; message);</div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a3b53164fe5f1641ef47a480a5e87394d">verify_signature</a>(<span class="keyword">const</span> PackedByteArray&amp; signature, <span class="keyword">const</span> PackedByteArray&amp; message);</div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span> </div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#abd853e5439955fda9eefaac4d7c59b50">set_unique</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> p_value);</div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#ab805a0de4020dc14ad974857553f8c0e">get_unique</a>();</div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span> </div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a195d2a7bf8077629f3bedce4efab3567">set_seed</a>(<span class="keyword">const</span> PackedByteArray &amp;p_value);</div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_keypair.html#a9402126738e868d1a6b4b0a450a718be">get_seed</a>();</div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span> </div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a871e84d1d372c8256d0cb9696f65e4df">random</a>();</div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a5bae41ffd394a85b05fa40365721766f">from_seed</a>();</div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span> </div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_keypair.html#a7b7ccac6a23f1b1cb284fa3a05b66c50">save_to_file</a>(<span class="keyword">const</span> String &amp;filename);</div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span> </div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>    <a class="code hl_class" href="classgodot_1_1_keypair.html">~Keypair</a>();</div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>};</div>
 </div>
-<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>}</div>
-<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span> </div>
-<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassgodot_1_1_keypair_html"><div class="ttname"><a href="classgodot_1_1_keypair.html">godot::Keypair</a></div><div class="ttdoc">An ed25519 Keypair.</div><div class="ttdef"><b>Definition</b> keypair.hpp:20</div></div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>}</div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span> </div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassgodot_1_1_keypair_html"><div class="ttname"><a href="classgodot_1_1_keypair.html">godot::Keypair</a></div><div class="ttdoc">An ed25519 Keypair.</div><div class="ttdef"><b>Definition</b> keypair.hpp:23</div></div>
 <div class="ttc" id="aclassgodot_1_1_keypair_html_a195d2a7bf8077629f3bedce4efab3567"><div class="ttname"><a href="classgodot_1_1_keypair.html#a195d2a7bf8077629f3bedce4efab3567">godot::Keypair::set_seed</a></div><div class="ttdeci">void set_seed(const PackedByteArray &amp;p_value)</div><div class="ttdoc">Set the ed25519 seed.</div><div class="ttdef"><b>Definition</b> keypair.cpp:325</div></div>
 <div class="ttc" id="aclassgodot_1_1_keypair_html_a223b206a87576b7c6d351f73d4e0856a"><div class="ttname"><a href="classgodot_1_1_keypair.html#a223b206a87576b7c6d351f73d4e0856a">godot::Keypair::get_public_string</a></div><div class="ttdeci">String get_public_string()</div><div class="ttdoc">Get the base58 encoded string representing the public parts.</div><div class="ttdef"><b>Definition</b> keypair.cpp:252</div></div>
 <div class="ttc" id="aclassgodot_1_1_keypair_html_a2256b007690a685d70aa383aa3f6ac88"><div class="ttname"><a href="classgodot_1_1_keypair.html#a2256b007690a685d70aa383aa3f6ac88">godot::Keypair::get_private_string</a></div><div class="ttdeci">String get_private_string()</div><div class="ttdoc">Get the base58 encoded string representing the private parts.</div><div class="ttdef"><b>Definition</b> keypair.cpp:291</div></div>
@@ -214,7 +215,7 @@ $(function(){initNavTree('keypair_8hpp_source.html',''); initResizable(true); })
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><b>keypair.hpp</b></li>
-    <li class="footer">Generated on Mon Dec 23 2024 21:03:16 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sun Dec 29 2024 21:14:12 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

@@ -22,7 +22,8 @@ var hierarchy =
       [ "godot::TokenProgram", "classgodot_1_1_token_program.html", [
         [ "godot::TokenProgram2022", "classgodot_1_1_token_program2022.html", null ]
       ] ],
-      [ "godot::Transaction", "classgodot_1_1_transaction.html", null ]
+      [ "godot::Transaction", "classgodot_1_1_transaction.html", null ],
+      [ "godot::WalletAdapter", "classgodot_1_1_wallet_adapter.html", null ]
     ] ],
     [ "Object", null, [
       [ "godot::CompiledInstruction", "classgodot_1_1_compiled_instruction.html", null ]

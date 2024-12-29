@@ -352,7 +352,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <p>Returns the public bytes of a key. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">other</td><td>Either a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> or a WalletAdapter to get the bytes from. </td></tr>
+    <tr><td class="paramname">other</td><td>Either a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> or a <a class="el" href="classgodot_1_1_wallet_adapter.html">WalletAdapter</a> to get the bytes from. </td></tr>
   </table>
   </dd>
 </dl>
@@ -562,8 +562,8 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <dl class="section note"><dt>Note</dt><dd>This function does not try to find a valid associated token address.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">wallet_address</td><td>Wallet address to associate token address from. Can be <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and WalletAdapter. </td></tr>
-    <tr><td class="paramname">token_mint_address</td><td>Token mint address. Can be <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and WalletAdapter. </td></tr>
+    <tr><td class="paramname">wallet_address</td><td>Wallet address to associate token address from. Can be <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and <a class="el" href="classgodot_1_1_wallet_adapter.html">WalletAdapter</a>. </td></tr>
+    <tr><td class="paramname">token_mint_address</td><td>Token mint address. Can be <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and <a class="el" href="classgodot_1_1_wallet_adapter.html">WalletAdapter</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -781,8 +781,8 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <p>Takes a mint address and a wallet address and returns the associated token address.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">wallet_address</td><td>Wallet address to associate token address from. Can be <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and WalletAdapter. </td></tr>
-    <tr><td class="paramname">token_mint_address</td><td>Token mint address. Can be <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and WalletAdapter. </td></tr>
+    <tr><td class="paramname">wallet_address</td><td>Wallet address to associate token address from. Can be <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and <a class="el" href="classgodot_1_1_wallet_adapter.html">WalletAdapter</a>. </td></tr>
+    <tr><td class="paramname">token_mint_address</td><td>Token mint address. Can be <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> and <a class="el" href="classgodot_1_1_wallet_adapter.html">WalletAdapter</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -865,9 +865,9 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <p>Takes a base address and derives a new <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> from a seed and an owner address.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">basePubkey</td><td>Base address of the derived <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. Accepts WalletAdapter, <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> or a <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </td></tr>
+    <tr><td class="paramname">basePubkey</td><td>Base address of the derived <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. Accepts <a class="el" href="classgodot_1_1_wallet_adapter.html">WalletAdapter</a>, <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> or a <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </td></tr>
     <tr><td class="paramname">seed</td><td>Text seed to use when derriving the new <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </td></tr>
-    <tr><td class="paramname">owner_pubkey</td><td>Owner address of the derived <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. Accepts WalletAdapter, <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> or a <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </td></tr>
+    <tr><td class="paramname">owner_pubkey</td><td>Owner address of the derived <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. Accepts <a class="el" href="classgodot_1_1_wallet_adapter.html">WalletAdapter</a>, <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a> or a <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1268,7 +1268,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <p>Same as bytes_from_variant but returns the base58 encoded string. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">other</td><td>Either a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> or a WalletAdapter to get the string from. </td></tr>
+    <tr><td class="paramname">other</td><td>Either a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>, <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> or a <a class="el" href="classgodot_1_1_wallet_adapter.html">WalletAdapter</a> to get the string from. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1330,7 +1330,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_pubkey.html">Pubkey</a></li>
-    <li class="footer">Generated on Mon Dec 23 2024 21:03:16 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sun Dec 29 2024 21:14:12 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>
