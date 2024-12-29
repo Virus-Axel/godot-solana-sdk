@@ -6,7 +6,6 @@ var NAVTREEINDEX0 =
 "anchor__program_8hpp_source.html":[2,0,0,7],
 "annotated.html":[1,0],
 "associated__token__account_8hpp_source.html":[2,0,0,0,0],
-"backpack__js_8hpp_source.html":[2,0,0,4,0],
 "class_field_element.html":[1,0,1],
 "classes.html":[1,1],
 "classgodot_1_1_account.html":[1,0,0,0],
@@ -132,7 +131,7 @@ var NAVTREEINDEX0 =
 "rpc__multi__http__request__client_8hpp_source.html":[2,0,0,2,0],
 "rpc__single__http__request__client_8hpp_source.html":[2,0,0,2,1],
 "rpc__single__ws__request__client_8hpp_source.html":[2,0,0,2,2],
-"script__builder_8hpp_source.html":[2,0,0,4,1],
+"script__builder_8hpp_source.html":[2,0,0,4,0],
 "shdwdrive_8hpp_source.html":[2,0,0,15],
 "solana__client_8hpp_source.html":[2,0,0,2,3],
 "solana__utils_8hpp_source.html":[2,0,0,16],
@@ -145,5 +144,5 @@ var NAVTREEINDEX0 =
 "transaction_8hpp_source.html":[2,0,0,3,2],
 "uses_8hpp_source.html":[2,0,0,1,4],
 "utils_8hpp_source.html":[2,0,0,17],
-"wallet__adapter_8hpp_source.html":[2,0,0,4,2]
+"wallet__adapter_8hpp_source.html":[2,0,0,4,1]
 };
