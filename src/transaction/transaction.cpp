@@ -5,6 +5,8 @@
 
 #include "utils.hpp"
 
+#include <stdint.h>
+#include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/http_request.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/thread.hpp>
@@ -46,7 +48,6 @@ void Transaction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_unit_price"), &Transaction::get_unit_price);
 	ClassDB::bind_method(D_METHOD("set_unit_price", "value"), &Transaction::set_unit_price);
 
-	ClassDB::bind_method(D_METHOD("create_signed_with_payer", "instructions", "payer", "signers", "latest_blockhash"), &Transaction::create_signed_with_payer);
 	ClassDB::bind_method(D_METHOD("serialize"), &Transaction::serialize);
 
 	ClassDB::bind_method(D_METHOD("add_instruction", "instruction"), &Transaction::add_instruction);
@@ -236,6 +237,9 @@ bool Transaction::_set(const StringName &p_name, const Variant &p_value) {
 	} else if (name == "unit_price") {
 		unit_price = p_value;
 		return true;
+	} else if (name == "skip_preflight") {
+		skip_preflight = p_value;
+		return true;
 	}
 	return false;
 }
@@ -263,6 +267,9 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (name == "unit_price") {
 		r_ret = unit_price;
 		return true;
+	} else if (name == "skip_preflight") {
+		r_ret = skip_preflight;
+		return true;
 	}
 	return false;
 }
@@ -278,6 +285,7 @@ bool Transaction::are_all_bytes_zeroes(const PackedByteArray &bytes) {
 
 void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::STRING, "url_override"));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "skip_preflight"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "external_payer", PROPERTY_HINT_NONE, "false"));
 	if (!external_payer) {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair"));
@@ -377,9 +385,6 @@ void Transaction::_process(double delta) {
 	}
 }
 
-void Transaction::create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash) {
-}
-
 void Transaction::set_instructions(const Array &p_value) {
 	instructions = p_value;
 	reset_state();
@@ -411,7 +416,7 @@ void Transaction::set_external_payer(bool p_value) {
 	notify_property_list_changed();
 }
 
-bool Transaction::get_external_payer() {
+bool Transaction::get_external_payer() const {
 	return external_payer;
 }
 
@@ -456,7 +461,7 @@ void Transaction::set_unit_price(const uint32_t value) {
 	unit_price = value;
 }
 
-uint32_t Transaction::get_unit_price() {
+uint32_t Transaction::get_unit_price() const {
 	return unit_price;
 }
 
@@ -470,7 +475,7 @@ PackedByteArray Transaction::serialize() {
 }
 
 PackedByteArray Transaction::serialize_message() {
-	ERR_FAIL_COND_V_EDMSG(!is_message_valid(), PackedByteArray(), "Invalid message.");
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(!is_message_valid(), PackedByteArray(), "Invalid message.");
 	Object::cast_to<Message>(message)->set_address_lookup_tables(address_lookup_tables);
 	return Object::cast_to<Message>(message)->serialize();
 }
@@ -485,7 +490,7 @@ PackedByteArray Transaction::serialize_signers() {
 }
 
 Variant Transaction::sign_and_send() {
-	ERR_FAIL_COND_V_EDMSG(Object::cast_to<Message>(message)->get_signers().size() != signatures.size(), Error::ERR_UNCONFIGURED, "Transaction does not have enough signers.");
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(Object::cast_to<Message>(message)->get_signers().size() != signatures.size(), Error::ERR_UNCONFIGURED, "Transaction does not have enough signers.");
 	connect("fully_signed", Callable(this, "send"), CONNECT_ONE_SHOT);
 
 	sign();
@@ -514,7 +519,7 @@ void Transaction::blockhash_callback(Dictionary params) {
 			Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
 		}
 		emit_signal("blockhash_updated", params);
-		Array connected_signals = get_signal_connection_list("send_ready");
+		const Array connected_signals = get_signal_connection_list("send_ready");
 		emit_signal("send_ready");
 	} else {
 		emit_signal("blockhash_update_failed", params);
@@ -524,11 +529,11 @@ void Transaction::blockhash_callback(Dictionary params) {
 void Transaction::send() {
 	//ERR_FAIL_COND_EDMSG(!is_inside_tree(), "Transaction node must be added to scene tree.");
 
-	ERR_FAIL_COND_EDMSG(Object::cast_to<Message>(message)->get_signers().size() != signatures.size(), "Transaction does not have enough signers.");
+	ERR_FAIL_COND_EDMSG_CUSTOM(Object::cast_to<Message>(message)->get_signers().size() != signatures.size(), "Transaction does not have enough signers.");
 
-	PackedByteArray serialized_bytes = serialize();
+	const PackedByteArray serialized_bytes = serialize();
 
-	Callable pending_blockhash_callback(this, "send");
+	const Callable pending_blockhash_callback(this, "send");
 	if (pending_blockhash) {
 		Callable pending_blockhash_callback(this, "send");
 		connect("fully_signed", pending_blockhash_callback, CONNECT_ONE_SHOT);
@@ -537,19 +542,19 @@ void Transaction::send() {
 
 	pending_send = true;
 	send_client->connect("http_response_received", callable_mp(this, &Transaction::send_callback), CONNECT_ONE_SHOT);
-	send_client->send_transaction(SolanaUtils::bs64_encode(serialized_bytes), skip_preflight);
+	send_client->send_transaction(SolanaUtils::bs64_encode(serialized_bytes), UINT64_MAX, skip_preflight);
 }
 
 Error Transaction::sign() {
-	ERR_FAIL_COND_V_EDMSG(!is_message_valid(), Error::ERR_INVALID_DATA, "Invalid message.");
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(!is_message_valid(), Error::ERR_INVALID_DATA, "Invalid message.");
 
-	Callable pending_blockhash_callback(this, "sign");
+	const Callable pending_blockhash_callback(this, "sign");
 	if (pending_blockhash) {
 		connect("send_ready", pending_blockhash_callback, CONNECT_ONE_SHOT);
 		return ERR_UNAVAILABLE;
 	}
 
-	PackedByteArray msg = serialize();
+	const PackedByteArray msg = serialize();
 
 	signers = Object::cast_to<Message>(message)->get_signers();
 
@@ -563,9 +568,9 @@ Error Transaction::sign() {
 }
 
 Error Transaction::partially_sign(const Array &array) {
-	ERR_FAIL_COND_V_EDMSG(!is_message_valid(), Error::ERR_INVALID_DATA, "Invalid message.");
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(!is_message_valid(), Error::ERR_INVALID_DATA, "Invalid message.");
 
-	Callable pending_blockhash_callback(this, "partially_sign");
+	const Callable pending_blockhash_callback(this, "partially_sign");
 	if (pending_blockhash) {
 		connect("send_ready", pending_blockhash_callback.bind(array), CONNECT_ONE_SHOT);
 		return ERR_UNAVAILABLE;

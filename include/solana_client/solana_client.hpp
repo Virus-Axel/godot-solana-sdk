@@ -273,7 +273,7 @@ public:
     void is_blockhash_valid(const String& blockhash);
     void minimum_ledger_slot();
     void request_airdrop(const String& address, uint64_t lamports);
-    void send_transaction(const String& encoded_transaction, uint64_t max_retries = 10, bool skip_preflight = false);
+    void send_transaction(const String& encoded_transaction, uint64_t max_retries = UINT64_MAX, bool skip_preflight = false);
     void simulate_transaction(const String& encoded_transaction, bool sig_verify = false, bool replace_blockhash = false, Array account_addresses = Array(), const String& account_encoding = "base64");
 
     void get_asset(const Variant &id);

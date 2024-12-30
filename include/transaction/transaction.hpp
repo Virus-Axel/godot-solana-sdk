@@ -52,7 +52,7 @@ private:
 	bool pending_blockhash = false;
 	bool pending_send = false;
 
-	bool skip_preflight = true;
+	bool skip_preflight = false;
 
 	bool are_all_bytes_zeroes(const PackedByteArray &bytes);
 
@@ -105,10 +105,10 @@ public:
 	uint32_t get_unit_limit();
 
 	void set_unit_price(const uint32_t value);
-	uint32_t get_unit_price();
+	uint32_t get_unit_price() const;
 
 	void set_external_payer(bool p_value);
-	bool get_external_payer();
+	bool get_external_payer() const;
 
 	void update_latest_blockhash(const String &custom_hash = "");
 	void add_instruction(const Variant &instruction);
@@ -120,8 +120,6 @@ public:
 	void send();
 	Variant sign_and_send();
 	Error partially_sign(const Array &array);
-
-	void create_signed_with_payer(Array instructions, Variant payer, Array signers, Variant latest_blockhash);
 
 	void send_callback(Dictionary params);
 	void blockhash_callback(Dictionary params);

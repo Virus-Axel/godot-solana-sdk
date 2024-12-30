@@ -13,7 +13,6 @@
 #include <solana_utils.hpp>
 
 #ifdef WEB_ENABLED
-#include <emscripten.h>
 #include <script_builder.hpp>
 #include <wallet_adapter_generated.hpp>
 #endif
@@ -46,7 +45,7 @@ void WalletAdapter::clear_state() {
 	wallet_state = State::IDLE;
 
 #ifdef WEB_ENABLED
-	emscripten_run_script("Module.wallet_status = 0;");
+	JavaScriptBridge::get_singleton()->eval("Module.wallet_status = 0;");
 #endif
 }
 
@@ -66,7 +65,7 @@ void WalletAdapter::store_encoded_message(const PackedByteArray &serialized_mess
 	script += SolanaUtils::bs58_encode(serialized_message);
 	script += "';";
 
-	emscripten_run_script(script.utf8());
+	JavaScriptBridge::get_singleton()->eval(script);
 
 #endif
 }
@@ -93,27 +92,23 @@ String WalletAdapter::wallet_check_name_from_type(WalletType wallet_type) {
 	return String(WALLET_CHECK_NAMES[wallet_type]);
 }
 
-String WalletAdapter::get_sign_transaction_script() const {
+String WalletAdapter::get_sign_transaction_script() {
 #ifdef WEB_ENABLED
-	String result(script_builder::SIGN_TRANSACTION_SCRIPT);
-
-	return result;
+	return String::utf8(script_builder::SIGN_TRANSACTION_SCRIPT);
 #endif
 	return "";
 }
 
-String WalletAdapter::get_sign_message_script() const {
+String WalletAdapter::get_sign_message_script() {
 #ifdef WEB_ENABLED
-	String result(script_builder::SIGN_MESSAGE_SCRIPT);
-
-	return result;
+	String::utf8(script_builder::SIGN_MESSAGE_SCRIPT);
 #endif
 	return "";
 }
 
 String WalletAdapter::get_connect_script() const {
 #ifdef WEB_ENABLED
-	const String result(script_builder::CONNECT_SCRIPT);
+	const String result = String::utf8(script_builder::CONNECT_SCRIPT);
 
 	const String wallet_name = wallet_name_from_type(wallet_type);
 	return result.format(build_array(wallet_name));
@@ -131,7 +126,7 @@ void WalletAdapter::store_serialized_message(const PackedByteArray &serialized_m
 	}
 	script += "];";
 
-	emscripten_run_script(script.utf8());
+	JavaScriptBridge::get_singleton()->eval(script);
 
 #endif
 }
@@ -146,7 +141,7 @@ PackedByteArray WalletAdapter::get_message_signature() {
 		String script = "Module.message_signature[";
 		script += String::num_uint64(i);
 		script += "]";
-		message_signature[i] = emscripten_run_script_int(script.utf8());
+		message_signature[i] = JavaScriptBridge::get_singleton()->eval(script);
 	}
 
 #endif
@@ -188,7 +183,7 @@ Array WalletAdapter::get_available_wallets() {
 
 void WalletAdapter::poll_connection() {
 #ifdef WEB_ENABLED
-	int wallet_connect_status = emscripten_run_script_int("Module.wallet_status");
+	const int wallet_connect_status = JavaScriptBridge::get_singleton()->eval("Module.wallet_status");
 	switch (wallet_connect_status) {
 		case 0:
 			return;
@@ -196,7 +191,7 @@ void WalletAdapter::poll_connection() {
 
 		case 1: {
 			connected = true;
-			String connected_pubkey(emscripten_run_script_string("Module.connect_key"));
+			const String connected_pubkey(JavaScriptBridge::get_singleton()->eval("Module.connect_key"));
 
 			const PackedByteArray decoded_bytes = SolanaUtils::bs58_decode(connected_pubkey);
 			connected_key = decoded_bytes;
@@ -216,7 +211,7 @@ void WalletAdapter::poll_connection() {
 
 void WalletAdapter::poll_message_signing() {
 #ifdef WEB_ENABLED
-	int wallet_signing_status = emscripten_run_script_int("Module.wallet_status");
+	const int wallet_signing_status = JavaScriptBridge::get_singleton()->eval("Module.wallet_status");
 	switch (wallet_signing_status) {
 		case 0:
 			return;
@@ -267,10 +262,7 @@ void WalletAdapter::_bind_methods() {
 
 WalletAdapter::WalletAdapter() {
 #ifdef WEB_ENABLED
-	emscripten_run_script("console.log('Initializing...');");
-	emscripten_run_script(WALLET_ADAPTER_BUNDLED);
-	emscripten_run_script("console.log('Done!');");
-	;
+	JavaScriptBridge::get_singleton()->eval(String::utf8(WALLET_ADAPTER_BUNDLED));
 #endif
 }
 
