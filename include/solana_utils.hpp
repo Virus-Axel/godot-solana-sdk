@@ -6,6 +6,12 @@
 
 namespace godot {
 
+// Wrap the regular godot macros with lint rules disabled.
+
+#define memnew_custom(...)                            \
+	/* NOLINTBEGIN(cppcoreguidelines-owning-memory)*/ \
+	memnew(__VA_ARGS__) /* NOLINTEND(cppcoreguidelines-owning-memory) */
+
 #define ERR_FAIL_COND_V_EDMSG_CUSTOM(...)                                  \
 	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
 	ERR_FAIL_COND_V_EDMSG(__VA_ARGS__)                                     \

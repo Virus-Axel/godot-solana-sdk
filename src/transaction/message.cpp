@@ -231,7 +231,7 @@ Message::Message(const PackedByteArray& bytes){
     }
 
     if(is_versioned_transaction){
-        unsigned int amount_of_lookup_tables = bytes[cursor++];
+        const unsigned int amount_of_lookup_tables = bytes[cursor++];
         for(unsigned int i = 0; i < amount_of_lookup_tables; i++){
             unsigned int consumed_bytes = 0;
             Variant lookup_table = memnew(AddressLookupTable(bytes.slice(cursor), consumed_bytes));
