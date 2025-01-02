@@ -69,8 +69,8 @@ private:
 	static String wallet_name_from_type(WalletType wallet_type);
 	static String wallet_check_name_from_type(WalletType wallet_type);
 
-	String get_sign_transaction_script() const;
-	String get_sign_message_script() const;
+	static String get_sign_transaction_script();
+	static String get_sign_message_script();
 	String get_connect_script() const;
 	static bool is_wallet_installed(WalletType wallet_type);
 	static Array get_all_wallets();
