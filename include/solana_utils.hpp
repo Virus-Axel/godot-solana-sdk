@@ -22,6 +22,11 @@ namespace godot {
 	ERR_FAIL_COND_EDMSG(__VA_ARGS__)                                       \
 	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
 
+#define ERR_FAIL_COND_CUSTOM(...)                                          \
+	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
+	ERR_FAIL_COND(__VA_ARGS__)                                             \
+	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
+
 template <typename T>
 inline void append_array(Array &arr, T arg) {
 	arr.push_back(arg);
