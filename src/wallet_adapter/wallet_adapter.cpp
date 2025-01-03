@@ -262,7 +262,7 @@ void WalletAdapter::_bind_methods() {
 
 WalletAdapter::WalletAdapter() {
 #ifdef WEB_ENABLED
-	JavaScriptBridge::get_singleton()->eval(String::utf8(WALLET_ADAPTER_BUNDLED));
+	JavaScriptBridge::get_singleton()->eval(String::utf8(static_cast<const char *>(WALLET_ADAPTER_BUNDLED)));
 #endif
 }
 

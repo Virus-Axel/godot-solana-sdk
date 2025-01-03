@@ -43,9 +43,9 @@ private:
 	String latest_commitment = "";
 	String url_override = "";
 
-	SolanaClient *send_client;
-	SolanaClient *blockhash_client;
-	SolanaClient *subscribe_client;
+	SolanaClient *send_client = nullptr;
+	SolanaClient *blockhash_client = nullptr;
+	SolanaClient *subscribe_client = nullptr;
 
 	bool has_cumpute_budget_instructions = false;
 	bool external_payer = false;
@@ -54,10 +54,10 @@ private:
 
 	bool skip_preflight = false;
 
-	bool are_all_bytes_zeroes(const PackedByteArray &bytes);
+	static bool are_all_bytes_zeroes(const PackedByteArray &bytes);
 
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	void _signer_signed(PackedByteArray signature);
+	void _signer_signed(const PackedByteArray &signature);
 	void _signer_failed();
 
 	bool is_phantom_payer() const;
@@ -79,7 +79,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Transaction();
+	Transaction() = default;
 	Transaction(const PackedByteArray &bytes);
 
 	static Variant new_from_bytes(const PackedByteArray &bytes);
@@ -95,14 +95,17 @@ public:
 
 	void set_url_override(const String &p_value);
 
+	// The following functions need to comply with godot layout.
+	/* NOLINTBEGIN(bugprone-easily-swappable-parameters)*/
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
+	/* NOLINTBEGIN(bugprone-easily-swappable-parameters)*/
 
 	void set_signers(const Array &p_value);
 	Array get_signers();
 
 	void set_unit_limit(const uint32_t value);
-	uint32_t get_unit_limit();
+	uint32_t get_unit_limit() const;
 
 	void set_unit_price(const uint32_t value);
 	uint32_t get_unit_price() const;

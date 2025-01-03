@@ -5,21 +5,22 @@
 
 #include "utils.hpp"
 
-#include <stdint.h>
+#include <cstdint>
 #include <godot_cpp/classes/global_constants.hpp>
-#include <godot_cpp/classes/http_request.hpp>
-#include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/classes/thread.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/core/object.hpp>
+#include <godot_cpp/templates/list.hpp>
+#include <godot_cpp/variant/callable_method_pointer.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/packed_byte_array.hpp>
 #include <message.hpp>
 #include <solana_utils.hpp>
 #include <wallet_adapter.hpp>
 
-//#include <emscripten.h>
-
 namespace godot {
-
-using internal::gdextension_interface_print_warning;
 
 void Transaction::_bind_methods() {
 	ClassDB::add_signal("Transaction", MethodInfo("processed"));
@@ -60,8 +61,8 @@ void Transaction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("partially_sign", "latest_blockhash"), &Transaction::partially_sign);
 }
 
-void Transaction::_signer_signed(PackedByteArray signature) {
-	WalletAdapter *controller = Object::cast_to<WalletAdapter>(payer);
+void Transaction::_signer_signed(const PackedByteArray &signature) {
+	auto *controller = Object::cast_to<WalletAdapter>(payer);
 
 	const uint32_t index = controller->get_active_signer_index();
 
@@ -73,7 +74,7 @@ void Transaction::_signer_signed(PackedByteArray signature) {
 }
 
 void Transaction::_signer_failed() {
-	WalletAdapter *controller = Object::cast_to<WalletAdapter>(payer);
+	auto *controller = Object::cast_to<WalletAdapter>(payer);
 
 	emit_signal("signing_failed", controller->get_active_signer_index());
 }
@@ -103,7 +104,7 @@ void Transaction::create_message() {
 			return;
 		}
 	}
-	message = memnew(Message(instructions, payer, unit_limit, unit_price));
+	message = memnew_custom(Message(instructions, payer, unit_limit, unit_price));
 	Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
 	Object::cast_to<Message>(message)->set_address_lookup_tables(address_lookup_tables);
 
@@ -117,7 +118,7 @@ void Transaction::create_message() {
 	signatures.resize(amount_of_signers);
 	for (unsigned int i = 0; i < signatures.size(); i++) {
 		PackedByteArray temp;
-		temp.resize(64);
+		temp.resize(SIGNATURE_LENGTH);
 		signatures[i] = temp;
 	}
 }
@@ -139,17 +140,17 @@ void Transaction::sign_at_index(const uint32_t index) {
 	if (signers[index].get_type() != Variant::Type::OBJECT) {
 		Array params;
 		params.append(signers[index].get_type());
-		internal::gdextension_interface_print_warning(String("Signer is not an object. It is a {0}").format(params).utf8(), "sign_at_index", __FILE__, __LINE__, false);
+		WARN_PRINT_ONCE_ED(String("Signer is not an object. It is a {0}").format(params));
 	} else if (signers[index].has_method("verify_signature")) {
-		Keypair *kp = Object::cast_to<Keypair>(signers[index]);
+		auto *signer_keypair = Object::cast_to<Keypair>(signers[index]);
 
-		PackedByteArray signature = kp->sign_message(serialize_message());
+		const PackedByteArray signature = signer_keypair->sign_message(serialize_message());
 		signatures[index] = signature;
 		ready_signature_amount++;
 		emit_signal("signer_state_changed");
 		check_fully_signed();
 	} else if (signers[index].has_method("sign_message")) {
-		WalletAdapter *controller = Object::cast_to<WalletAdapter>(signers[index]);
+		auto *controller = Object::cast_to<WalletAdapter>(signers[index]);
 
 		controller->connect("message_signed", callable_mp(this, &Transaction::_signer_signed), CONNECT_ONE_SHOT);
 		controller->connect("signing_failed", callable_mp(this, &Transaction::_signer_failed), CONNECT_ONE_SHOT);
@@ -166,6 +167,7 @@ void Transaction::copy_connection_state() {
 }
 
 void Transaction::subscribe_to_signature(ConfirmationLevel confirmation_level) {
+	ERR_FAIL_COND_EDMSG_CUSTOM(subscribe_client == nullptr, "Invalid state");
 	switch (confirmation_level) {
 		case CONFIRMED:
 			subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_confirmed_callback), "confirmed");
@@ -188,56 +190,69 @@ void Transaction::subscribe_to_signature(ConfirmationLevel confirmation_level) {
 }
 
 void Transaction::subscribe_to_signature() {
-	if (processed_connections) {
+	if (processed_connections != 0U) {
 		subscribe_to_signature(PROCESSED);
 	}
-	if (confirmed_connections) {
+	if (confirmed_connections != 0U) {
 		subscribe_to_signature(CONFIRMED);
 	}
-	if (finalized_connections) {
+	if (finalized_connections != 0U) {
 		subscribe_to_signature(FINALIZED);
 	}
 }
 
 void Transaction::_emit_processed_callback(const Dictionary &params) {
+	(void)params; // Unused.
 	active_subscriptions--;
 	emit_signal("processed");
 }
 
 void Transaction::_emit_confirmed_callback(const Dictionary &params) {
+	(void)params; // Unused.
 	active_subscriptions--;
 	emit_signal("confirmed");
 }
 
 void Transaction::_emit_finalized_callback(const Dictionary &params) {
+	(void)params; // Unused.
 	active_subscriptions--;
 	emit_signal("finalized");
 }
 
-bool Transaction::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
+bool Transaction::_set(const StringName &p_name, const Variant &p_value) { // NOLINT(bugprone-easily-swappable-parameters)
+	const String name = p_name;
 	if (name == "instructions") {
 		set_instructions(p_value);
 		return true;
-	} else if (name == "payer") {
+	}
+	if (name == "payer") {
 		set_payer(p_value);
 		return true;
-	} else if (name == "signers") {
+	}
+	if (name == "signers") {
 		set_signers(p_value);
 		return true;
-	} else if (name == "external_payer") {
+	}
+	if (name == "external_payer") {
 		set_external_payer(p_value);
 		return true;
-	} else if (name == "url_override") {
+	}
+	if (name == "url_override") {
 		set_url_override(p_value);
 		return true;
-	} else if (name == "unit_limit") {
+	}
+	if (name == "unit_limit") {
 		unit_limit = p_value;
 		return true;
-	} else if (name == "unit_price") {
+	}
+	if (name == "unit_price") {
 		unit_price = p_value;
 		return true;
 	} else if (name == "skip_preflight") {
+		skip_preflight = p_value;
+		return true;
+	}
+	if (name == "skip_preflight") {
 		skip_preflight = p_value;
 		return true;
 	}
@@ -245,29 +260,39 @@ bool Transaction::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool Transaction::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
+	const String name = p_name;
 	if (name == "instructions") {
 		r_ret = instructions;
 		return true;
-	} else if (name == "payer") {
+	}
+	if (name == "payer") {
 		r_ret = payer;
 		return true;
-	} else if (name == "signers") {
+	}
+	if (name == "signers") {
 		r_ret = signers;
 		return true;
-	} else if (name == "external_payer") {
+	}
+	if (name == "external_payer") {
 		r_ret = external_payer;
 		return true;
-	} else if (name == "url_override") {
+	}
+	if (name == "url_override") {
 		r_ret = url_override;
 		return true;
-	} else if (name == "unit_limit") {
+	}
+	if (name == "unit_limit") {
 		r_ret = unit_limit;
 		return true;
-	} else if (name == "unit_price") {
+	}
+	if (name == "unit_price") {
 		r_ret = unit_price;
 		return true;
 	} else if (name == "skip_preflight") {
+		r_ret = skip_preflight;
+		return true;
+	}
+	if (name == "skip_preflight") {
 		r_ret = skip_preflight;
 		return true;
 	}
@@ -275,8 +300,8 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 bool Transaction::are_all_bytes_zeroes(const PackedByteArray &bytes) {
-	for (unsigned int i = 0; i < bytes.size(); i++) {
-		if (bytes[i] != 0) {
+	for (const unsigned char byte : bytes) {
+		if (byte != 0) {
 			return false;
 		}
 	}
@@ -299,46 +324,26 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "address_lookup_tables", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Instruction")));
 }
 
-Transaction::Transaction() {
-	send_client = memnew(SolanaClient);
-	blockhash_client = memnew(SolanaClient);
-	subscribe_client = memnew(SolanaClient);
-
-	// Override because we call process functions ourselves.
-	send_client->set_async_override(true);
-	blockhash_client->set_async_override(true);
-	subscribe_client->set_async_override(true);
-}
-
 Transaction::Transaction(const PackedByteArray &bytes) {
 	const unsigned int MINIMUM_MESSAGE_SIZE = 32 + 4 + 1;
 	const unsigned int MINIMUM_TRANSACTION_SIZE = MINIMUM_MESSAGE_SIZE + 1;
-	ERR_FAIL_COND_EDMSG(bytes.size() < MINIMUM_TRANSACTION_SIZE, "Invalid transaction size");
-
-	send_client = memnew(SolanaClient);
-	blockhash_client = memnew(SolanaClient);
-	subscribe_client = memnew(SolanaClient);
-
-	// Override because we call process functions ourselves.
-	send_client->set_async_override(true);
-	blockhash_client->set_async_override(true);
-	subscribe_client->set_async_override(true);
+	ERR_FAIL_COND_EDMSG_CUSTOM(bytes.size() < MINIMUM_TRANSACTION_SIZE, "Invalid transaction size");
 
 	int cursor = 0;
 
 	const unsigned int signer_size = bytes[cursor++];
-	ERR_FAIL_COND_EDMSG(bytes.size() < MINIMUM_MESSAGE_SIZE + 1 + signer_size * 64, "Invalid message size.");
+	ERR_FAIL_COND_EDMSG_CUSTOM(bytes.size() < MINIMUM_MESSAGE_SIZE + 1 + signer_size * SIGNATURE_LENGTH, "Invalid message size.");
 	for (unsigned int i = 0; i < signer_size; i++) {
-		const PackedByteArray signature_bytes = bytes.slice(cursor, cursor + 64);
+		const PackedByteArray signature_bytes = bytes.slice(cursor, cursor + SIGNATURE_LENGTH);
 		if (!are_all_bytes_zeroes(signature_bytes)) {
 			ready_signature_amount += 1;
 		}
-		signatures.append(bytes.slice(cursor, cursor + 64));
+		signatures.append(bytes.slice(cursor, cursor + SIGNATURE_LENGTH));
 
-		cursor += 64;
+		cursor += SIGNATURE_LENGTH;
 	}
 
-	message = memnew(Message(bytes.slice(cursor)));
+	message = memnew_custom(Message(bytes.slice(cursor)));
 	address_lookup_tables = Object::cast_to<Message>(message)->get_address_lookup_tables();
 	signers.resize(signer_size);
 
@@ -346,12 +351,20 @@ Transaction::Transaction(const PackedByteArray &bytes) {
 }
 
 Variant Transaction::new_from_bytes(const PackedByteArray &bytes) {
-	Transaction *result = memnew(Transaction(bytes));
+	const Transaction *result = memnew_custom(Transaction(bytes));
 
 	return result;
 }
 
 void Transaction::_ready() {
+	send_client = memnew_custom(SolanaClient);
+	blockhash_client = memnew_custom(SolanaClient);
+	subscribe_client = memnew_custom(SolanaClient);
+
+	// Override because we call process functions ourselves.
+	send_client->set_async_override(true);
+	blockhash_client->set_async_override(true);
+	subscribe_client->set_async_override(true);
 }
 
 void Transaction::_process(double delta) {
@@ -361,24 +374,24 @@ void Transaction::_process(double delta) {
 	if (pending_blockhash) {
 		blockhash_client->_process(delta);
 	}
-	if (subscribe_client) {
+	if (subscribe_client != nullptr) {
 		blockhash_client->_process(delta);
-	}
-	if (active_subscriptions) {
-		subscribe_client->_process(delta);
+		if (active_subscriptions != 0U) {
+			subscribe_client->_process(delta);
+		}
 	}
 
 	// Detect new connections after transaction is performed.
 	if (!result_signature.is_empty()) {
-		if (get_signal_connection_list("processed").size() && !processed_connections) {
+		if ((get_signal_connection_list("processed").size() != 0U) && (processed_connections == 0U)) {
 			processed_connections = get_signal_connection_list("processed").size();
 			subscribe_to_signature(PROCESSED);
 		}
-		if (get_signal_connection_list("confirmed").size() && !confirmed_connections) {
+		if ((get_signal_connection_list("confirmed").size() != 0U) && (confirmed_connections == 0U)) {
 			confirmed_connections = get_signal_connection_list("confirmed").size();
 			subscribe_to_signature(CONFIRMED);
 		}
-		if (get_signal_connection_list("finalized").size() && !finalized_connections) {
+		if ((get_signal_connection_list("finalized").size() != 0U) && (finalized_connections == 0U)) {
 			finalized_connections = get_signal_connection_list("finalized").size();
 			subscribe_to_signature(FINALIZED);
 		}
@@ -453,7 +466,7 @@ void Transaction::set_unit_limit(const uint32_t value) {
 	unit_limit = value;
 }
 
-uint32_t Transaction::get_unit_limit() {
+uint32_t Transaction::get_unit_limit() const {
 	return unit_limit;
 }
 
@@ -535,7 +548,7 @@ void Transaction::send() {
 
 	const Callable pending_blockhash_callback(this, "send");
 	if (pending_blockhash) {
-		Callable pending_blockhash_callback(this, "send");
+		const Callable pending_blockhash_callback(this, "send");
 		connect("fully_signed", pending_blockhash_callback, CONNECT_ONE_SHOT);
 		return;
 	}

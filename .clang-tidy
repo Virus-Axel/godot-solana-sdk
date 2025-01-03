@@ -13,7 +13,10 @@ Checks: '
     -zircon-*,
     -mpi-*,
     -fuchsia-default-arguments-calls,
-    -altera-unroll-loops
+    -altera-unroll-loops,
+    -altera-id-dependent-backward-branch,
+    -boost-use-ranges,
+    -readability-use-anyofallof
   '
 HeaderFileExtensions: ['', h, hh, hpp, hxx, inc, glsl]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]
