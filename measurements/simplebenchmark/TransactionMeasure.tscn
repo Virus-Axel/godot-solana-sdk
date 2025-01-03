@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3 uid="uid://b46gh8t6ocmka"]
+
+[ext_resource type="Script" path="res://transaction_measure.gd" id="1_54535"]
+
+[node name="TransactionMeasure" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_54535")
+
+[node name="RoundTimer" type="Timer" parent="."]
+wait_time = 2.0
+autostart = true
+
+[connection signal="timeout" from="RoundTimer" to="." method="_on_round_timer_timeout"]
