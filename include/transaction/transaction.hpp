@@ -5,6 +5,7 @@
 #include "hash.hpp"
 #include "instruction.hpp"
 #include "pubkey.hpp"
+#include <message.hpp>
 
 #include <godot_cpp/classes/node.hpp>
 #include <solana_client.hpp>
@@ -30,7 +31,7 @@ private:
 	uint32_t unit_price = 8000;
 	uint32_t ready_signature_amount = 0;
 
-	Variant message;
+	Message message;
 
 	Array address_lookup_tables;
 	Array instructions;
@@ -51,6 +52,7 @@ private:
 	bool external_payer = false;
 	bool pending_blockhash = false;
 	bool pending_send = false;
+	bool append_budget_instructions = true;
 
 	bool skip_preflight = false;
 
@@ -70,6 +72,8 @@ private:
 	void copy_connection_state();
 	void subscribe_to_signature(ConfirmationLevel confirmation_level);
 	void subscribe_to_signature();
+
+	static bool has_solflare_signer(const Array &signer_list);
 
 	void _emit_processed_callback(const Dictionary &params);
 	void _emit_confirmed_callback(const Dictionary &params);

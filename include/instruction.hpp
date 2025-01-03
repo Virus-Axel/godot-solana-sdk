@@ -2,67 +2,46 @@
 #define SOLANA_SDK_INSTRUCTION_HPP
 
 #include "account_meta.hpp"
+#include "hash.hpp"
 #include "pubkey.hpp"
 #include "utils.hpp"
-#include "hash.hpp"
 #include <vector>
 
 #include <godot_cpp/classes/node.hpp>
 
-namespace godot{
-
-class CompiledInstruction;
+namespace godot {
 
 class Instruction : public Resource {
-    GDCLASS(Instruction, Resource)
+	GDCLASS(Instruction, Resource)
 
 private:
-    Variant program_id;
-    PackedByteArray data;
-    TypedArray<AccountMeta> accounts;
+	Variant program_id;
+	PackedByteArray data;
+	TypedArray<AccountMeta> accounts;
 
 protected:
-    static void _bind_methods();
+	static void _bind_methods();
 
 public:
-    Instruction();
+	Instruction();
 
-    void set_program_id(const Variant& p_value);
-    Variant get_program_id();
+	void set_program_id(const Variant &p_value);
+	Variant get_program_id() const;
 
-    void set_data(const PackedByteArray& p_value);
-    PackedByteArray get_data();
+	void set_data(const PackedByteArray &p_value);
+	PackedByteArray get_data() const;
 
-    void set_accounts(const TypedArray<AccountMeta>& p_value);
-    TypedArray<AccountMeta> get_accounts();
+	void set_accounts(const TypedArray<AccountMeta> &p_value);
+	TypedArray<AccountMeta> get_accounts() const;
 
-    void append_meta(const AccountMeta& meta);
+	void append_meta(const AccountMeta &meta);
 
-    PackedByteArray serialize();
-    bool is_serializable();
-    
-    ~Instruction();
+	PackedByteArray serialize();
+	bool is_serializable();
+
+	~Instruction();
 };
 
-class CompiledInstruction : public Object{
-    GDCLASS(CompiledInstruction, Object)
-
-protected:
-    static void _bind_methods();
-
-public:
-    uint8_t program_id_index = 0;
-    PackedByteArray accounts;
-    PackedByteArray data;
-
-    CompiledInstruction();
-    int create_from_bytes(const PackedByteArray& bytes);
-
-    PackedByteArray serialize();
-
-    ~CompiledInstruction();
-};
-
-}
+} //namespace godot
 
 #endif

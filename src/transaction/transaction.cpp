@@ -16,6 +16,7 @@
 #include <godot_cpp/variant/callable_method_pointer.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
+#include <instructions/compute_budget.hpp>
 #include <message.hpp>
 #include <solana_utils.hpp>
 #include <wallet_adapter.hpp>
@@ -84,12 +85,11 @@ bool Transaction::is_phantom_payer() const {
 }
 
 bool Transaction::is_message_valid() {
-	return (message.get_type() == Variant::OBJECT);
+	// TODO(Virax): implement
+	return true;
 }
 
 void Transaction::create_message() {
-	// Free existing memory.
-	message.clear();
 	if (instructions.is_empty() || (payer.get_type() == Variant::NIL)) {
 		signatures.clear();
 		return;
@@ -104,11 +104,33 @@ void Transaction::create_message() {
 			return;
 		}
 	}
-	message = memnew_custom(Message(instructions, payer, unit_limit, unit_price));
-	Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
-	Object::cast_to<Message>(message)->set_address_lookup_tables(address_lookup_tables);
 
-	const int amount_of_signers = Object::cast_to<Message>(message)->get_amount_signers();
+	Array instruction_list = instructions.duplicate();
+
+	MergedAccountMetas merged_metas;
+	if (append_budget_instructions) {
+		instruction_list.insert(0, ComputeBudget::set_compute_unit_limit(unit_limit));
+		instruction_list.insert(1, ComputeBudget::set_compute_unit_price(unit_price));
+	}
+	merged_metas.from_instructions(instruction_list);
+
+	// Check minimum unit price for solflare.
+	const uint32_t MINIMUM_SOLFLARE_PRICE = 100000;
+	if (append_budget_instructions && has_solflare_signer(merged_metas.get_signers()) && unit_price < MINIMUM_SOLFLARE_PRICE) {
+		Array format_params;
+		format_params.append(unit_price);
+		format_params.append(MINIMUM_SOLFLARE_PRICE);
+		WARN_PRINT_ONCE_ED(String("Unit price adjusted by solflare from {0}, to {1}").format(format_params));
+		instruction_list[1] = ComputeBudget::set_compute_unit_price(unit_price);
+	}
+
+	message.create(merged_metas, payer);
+	message.compile_instructions(instruction_list);
+
+	message.set_latest_blockhash(latest_blockhash_string);
+	message.set_address_lookup_tables(address_lookup_tables);
+
+	const int amount_of_signers = message.get_amount_signers();
 
 	if (signers.size() == amount_of_signers) {
 		return;
@@ -201,6 +223,22 @@ void Transaction::subscribe_to_signature() {
 	}
 }
 
+bool Transaction::has_solflare_signer(const Array &signer_list) {
+	for (unsigned int i = 0; i < signer_list.size(); i++) {
+		if (signer_list[i].get_type() != Variant::OBJECT) {
+			continue;
+		}
+		if (((Object *)signer_list[i])->get_class() == "WalletAdapter") {
+			WalletAdapter *controller = Object::cast_to<WalletAdapter>(signer_list[i]);
+			if (controller->get_wallet_type() == WalletType::SOLFLARE) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 void Transaction::_emit_processed_callback(const Dictionary &params) {
 	(void)params; // Unused.
 	active_subscriptions--;
@@ -256,6 +294,10 @@ bool Transaction::_set(const StringName &p_name, const Variant &p_value) { // NO
 		skip_preflight = p_value;
 		return true;
 	}
+	if (name == "append_budget_instructions") {
+		append_budget_instructions = p_value;
+		return true;
+	}
 	return false;
 }
 
@@ -296,6 +338,10 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = skip_preflight;
 		return true;
 	}
+	if (name == "append_budget_instructions") {
+		r_ret = append_budget_instructions;
+		return true;
+	}
 	return false;
 }
 
@@ -311,6 +357,11 @@ bool Transaction::are_all_bytes_zeroes(const PackedByteArray &bytes) {
 void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::STRING, "url_override"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "skip_preflight"));
+	if (append_budget_instructions) {
+		p_list->push_back(PropertyInfo(Variant::INT, "unit_limit"));
+		p_list->push_back(PropertyInfo(Variant::INT, "unit_price"));
+	}
+	p_list->push_back(PropertyInfo(Variant::BOOL, "skip_preflight"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "external_payer", PROPERTY_HINT_NONE, "false"));
 	if (!external_payer) {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair"));
@@ -318,9 +369,6 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_NODE_TYPE, "WalletAdapter"));
 	}
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "instructions", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Instruction")));
-
-	p_list->push_back(PropertyInfo(Variant::INT, "unit_limit"));
-	p_list->push_back(PropertyInfo(Variant::INT, "unit_price"));
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "address_lookup_tables", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Instruction")));
 }
 
@@ -343,8 +391,8 @@ Transaction::Transaction(const PackedByteArray &bytes) {
 		cursor += SIGNATURE_LENGTH;
 	}
 
-	message = memnew_custom(Message(bytes.slice(cursor)));
-	address_lookup_tables = Object::cast_to<Message>(message)->get_address_lookup_tables();
+	message.create(bytes.slice(cursor));
+	address_lookup_tables = message.get_address_lookup_tables();
 	signers.resize(signer_size);
 
 	check_fully_signed();
@@ -443,7 +491,7 @@ void Transaction::update_latest_blockhash(const String &custom_hash) {
 		blockhash_client->get_latest_blockhash();
 	} else {
 		latest_blockhash_string = custom_hash;
-		Object::cast_to<Message>(message)->set_latest_blockhash(custom_hash);
+		message.set_latest_blockhash(custom_hash);
 	}
 }
 
@@ -454,7 +502,7 @@ void Transaction::add_instruction(const Variant &instruction) {
 }
 
 void Transaction::set_signers(const Array &p_value) {
-	Object::cast_to<Message>(message)->set_signers(p_value);
+	message.supply_signers(p_value);
 	signers = p_value;
 }
 
@@ -489,8 +537,8 @@ PackedByteArray Transaction::serialize() {
 
 PackedByteArray Transaction::serialize_message() {
 	ERR_FAIL_COND_V_EDMSG_CUSTOM(!is_message_valid(), PackedByteArray(), "Invalid message.");
-	Object::cast_to<Message>(message)->set_address_lookup_tables(address_lookup_tables);
-	return Object::cast_to<Message>(message)->serialize();
+	message.set_address_lookup_tables(address_lookup_tables);
+	return message.serialize();
 }
 
 PackedByteArray Transaction::serialize_signers() {
@@ -503,7 +551,7 @@ PackedByteArray Transaction::serialize_signers() {
 }
 
 Variant Transaction::sign_and_send() {
-	ERR_FAIL_COND_V_EDMSG_CUSTOM(Object::cast_to<Message>(message)->get_signers().size() != signatures.size(), Error::ERR_UNCONFIGURED, "Transaction does not have enough signers.");
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(message.get_signers().size() != signatures.size(), Error::ERR_UNCONFIGURED, "Transaction does not have enough signers.");
 	connect("fully_signed", Callable(this, "send"), CONNECT_ONE_SHOT);
 
 	sign();
@@ -529,7 +577,7 @@ void Transaction::blockhash_callback(Dictionary params) {
 		const Dictionary blockhash_value = blockhash_result["value"];
 		latest_blockhash_string = blockhash_value["blockhash"];
 		if (is_message_valid()) {
-			Object::cast_to<Message>(message)->set_latest_blockhash(latest_blockhash_string);
+			message.set_latest_blockhash(latest_blockhash_string);
 		}
 		emit_signal("blockhash_updated", params);
 		const Array connected_signals = get_signal_connection_list("send_ready");
@@ -542,7 +590,7 @@ void Transaction::blockhash_callback(Dictionary params) {
 void Transaction::send() {
 	//ERR_FAIL_COND_EDMSG(!is_inside_tree(), "Transaction node must be added to scene tree.");
 
-	ERR_FAIL_COND_EDMSG_CUSTOM(Object::cast_to<Message>(message)->get_signers().size() != signatures.size(), "Transaction does not have enough signers.");
+	ERR_FAIL_COND_EDMSG_CUSTOM(message.get_signers().size() != signatures.size(), "Transaction does not have enough signers.");
 
 	const PackedByteArray serialized_bytes = serialize();
 
@@ -569,7 +617,7 @@ Error Transaction::sign() {
 
 	const PackedByteArray msg = serialize();
 
-	signers = Object::cast_to<Message>(message)->get_signers();
+	signers = message.get_signers();
 
 	for (unsigned int i = 0; i < signers.size(); i++) {
 		sign_at_index(i);
@@ -589,7 +637,7 @@ Error Transaction::partially_sign(const Array &array) {
 		return ERR_UNAVAILABLE;
 	}
 
-	signers = Object::cast_to<Message>(message)->get_signers();
+	signers = message.get_signers();
 
 	for (unsigned int i = 0; i < array.size(); i++) {
 		for (unsigned int j = 0; j < signers.size(); j++) {
