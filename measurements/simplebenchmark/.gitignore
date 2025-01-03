@@ -1,0 +1,9 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Benchmark output
+output.txt
+
+# Plugin
+bin

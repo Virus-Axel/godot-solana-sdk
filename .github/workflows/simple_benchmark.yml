@@ -1,0 +1,70 @@
+name: Simple Benchmark
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  measure-and-graph:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+
+      - name: Set up SCons
+        shell: bash
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons==4.8
+          scons --version
+
+      - uses: chickensoft-games/setup-godot@v1
+        name: 🤖 Setup Godot
+        with:
+          version: 4.3.0
+          use-dotnet: false
+          include-templates: false
+
+      - name: Build binary
+        shell: bash
+        run: |
+          scons
+
+      - name: Prepare project 
+        shell: bash
+        run: |
+          cp godot-solana-sdk.gdextension bin/
+          cd measurements/simplebenchmark
+          ln -s ../../bin
+          mkdir .godot
+          echo "res://bin/godot-solana-sdk.gdextension" >> .godot/extension_list.cfg
+
+      - name: Run Benchmark
+        shell: bash
+        run: |
+          cd measurements/simplebenchmark
+          godot --headless --quit-after 20000
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customBiggerIsBetter'
+          # Where the output from the benchmark tool is stored
+          output-file-path: measurements/simplebenchmark/output.txt
+          # Workflow will fail when an alert happens
+          fail-on-alert: true
+          comment-on-alert: false
+          auto-push: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-pages-branch: doxygen-docs
