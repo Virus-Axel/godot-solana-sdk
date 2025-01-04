@@ -21,4 +21,4 @@ jobs:
           doxyfile-path: docs/Doxyfile
           html-output-folder: docs/html
           branch: doxygen-docs
-          target-folder: docs
+          target_folder: docs
