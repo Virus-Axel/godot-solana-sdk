@@ -1,6 +1,7 @@
 #ifndef SOLANA_SDK_MESSAGE_HPP
 #define SOLANA_SDK_MESSAGE_HPP
 
+#include <compiled_instruction.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <instruction.hpp>
 
@@ -10,8 +11,7 @@ namespace godot {
 
 const int64_t BLOCKHASH_LENGTH = 32;
 
-class Message : public Resource { // Message
-	GDCLASS(Message, Resource)
+class Message {
 private:
 	uint8_t payer_index = 0;
 	uint8_t num_required_signatures = 0;
@@ -20,40 +20,37 @@ private:
 	TypedArray<Pubkey> account_keys;
 	String latest_blockhash = "";
 	TypedArray<CompiledInstruction> compiled_instructions;
-	Array signers;
+	MergedAccountMetas meta_list;
 
 	bool is_versioned_transaction = false;
 
 	Array address_lookup_tables;
 
-	TypedArray<AccountMeta> merged_metas;
-
 	void compile_instruction(Variant instruction);
 	void recalculate_headers();
-	void merge_account_meta(const AccountMeta &account_meta);
-	void merge_signer(const Variant &signer);
-
-	int64_t locate_account_meta(const TypedArray<AccountMeta> &arr, const AccountMeta &input);
+	void read_accounts_from_bytes(const PackedByteArray bytes, uint8_t num_accounts, bool is_signer, bool is_writable, int64_t &cursor);
 
 	bool is_versioned();
-	bool has_solflare_signer();
 
 protected:
-	static void _bind_methods();
-
 public:
-	Message();
-	Message(TypedArray<Instruction> instructions, Variant &payer, uint32_t unit_limit, uint32_t unit_price);
-	Message(const PackedByteArray &bytes);
+	Message() = default;
+	void create(const MergedAccountMetas &merged_meta_list, Variant &payer);
+	void create(const PackedByteArray &bytes);
 	void set_latest_blockhash(const String &blockhash);
+
 	PackedByteArray serialize();
 	PackedByteArray serialize_blockhash();
 	PackedByteArray serialize_lookup_tables();
+
+	TypedArray<CompiledInstruction> get_compiled_instructions() const;
+
 	int get_amount_signers() const;
-	void set_signers(const Array &signers);
-	Array &get_signers();
+	Array get_signers();
 	void set_address_lookup_tables(const Array &address_lookup_tables);
 	Array get_address_lookup_tables();
+	void compile_instructions(const TypedArray<Instruction> &instructions);
+	void supply_signers(const Array &signers);
 	~Message() = default;
 };
 

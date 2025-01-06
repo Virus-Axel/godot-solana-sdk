@@ -33,6 +33,9 @@ public:
 
     Variant get_signer() const;
 
+    void set_key(const Variant &p_value);
+    Variant get_key() const;
+
     void set_is_signer(const bool p_value);
     bool get_is_signer() const;
 
