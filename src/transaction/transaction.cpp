@@ -17,6 +17,7 @@
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
 #include <instructions/compute_budget.hpp>
+#include <merged_account_metas.hpp>
 #include <message.hpp>
 #include <solana_utils.hpp>
 #include <wallet_adapter.hpp>
@@ -82,11 +83,6 @@ void Transaction::_signer_failed() {
 
 bool Transaction::is_phantom_payer() const {
 	return payer.has_method("get_connected_key");
-}
-
-bool Transaction::is_message_valid() {
-	// TODO(Virax): implement
-	return true;
 }
 
 void Transaction::create_message() {
@@ -228,8 +224,8 @@ bool Transaction::has_solflare_signer(const Array &signer_list) {
 		if (signer_list[i].get_type() != Variant::OBJECT) {
 			continue;
 		}
-		if (((Object *)signer_list[i])->get_class() == "WalletAdapter") {
-			WalletAdapter *controller = Object::cast_to<WalletAdapter>(signer_list[i]);
+		if ((static_cast<Object *>(signer_list[i]))->get_class() == "WalletAdapter") {
+			auto *controller = Object::cast_to<WalletAdapter>(signer_list[i]);
 			if (controller->get_wallet_type() == WalletType::SOLFLARE) {
 				return true;
 			}
@@ -286,7 +282,8 @@ bool Transaction::_set(const StringName &p_name, const Variant &p_value) { // NO
 	if (name == "unit_price") {
 		unit_price = p_value;
 		return true;
-	} else if (name == "skip_preflight") {
+	}
+	if (name == "skip_preflight") {
 		skip_preflight = p_value;
 		return true;
 	}
@@ -330,7 +327,8 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const {
 	if (name == "unit_price") {
 		r_ret = unit_price;
 		return true;
-	} else if (name == "skip_preflight") {
+	}
+	if (name == "skip_preflight") {
 		r_ret = skip_preflight;
 		return true;
 	}
@@ -536,7 +534,7 @@ PackedByteArray Transaction::serialize() {
 }
 
 PackedByteArray Transaction::serialize_message() {
-	ERR_FAIL_COND_V_EDMSG_CUSTOM(!is_message_valid(), PackedByteArray(), "Invalid message.");
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(!message.is_valid(), PackedByteArray(), "Invalid message.");
 	message.set_address_lookup_tables(address_lookup_tables);
 	return message.serialize();
 }
@@ -576,7 +574,7 @@ void Transaction::blockhash_callback(Dictionary params) {
 		const Dictionary blockhash_result = params["result"];
 		const Dictionary blockhash_value = blockhash_result["value"];
 		latest_blockhash_string = blockhash_value["blockhash"];
-		if (is_message_valid()) {
+		if (message.is_valid()) {
 			message.set_latest_blockhash(latest_blockhash_string);
 		}
 		emit_signal("blockhash_updated", params);
@@ -607,7 +605,7 @@ void Transaction::send() {
 }
 
 Error Transaction::sign() {
-	ERR_FAIL_COND_V_EDMSG_CUSTOM(!is_message_valid(), Error::ERR_INVALID_DATA, "Invalid message.");
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(!message.is_valid(), Error::ERR_INVALID_DATA, "Invalid message.");
 
 	const Callable pending_blockhash_callback(this, "sign");
 	if (pending_blockhash) {
@@ -629,7 +627,7 @@ Error Transaction::sign() {
 }
 
 Error Transaction::partially_sign(const Array &array) {
-	ERR_FAIL_COND_V_EDMSG_CUSTOM(!is_message_valid(), Error::ERR_INVALID_DATA, "Invalid message.");
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(!message.is_valid(), Error::ERR_INVALID_DATA, "Invalid message.");
 
 	const Callable pending_blockhash_callback(this, "partially_sign");
 	if (pending_blockhash) {
