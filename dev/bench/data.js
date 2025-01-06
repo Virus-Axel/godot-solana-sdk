@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1735983954482,
+  "lastUpdate": 1736139199026,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -57,6 +57,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.164383561643836,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "82dbfa0a01f94273ed9acf627334a38c2f89d042",
+          "message": "Merge pull request #313 from Virus-Axel/refactor/clang_tidy_checks\n\nRefactor Message class",
+          "timestamp": "2025-01-06T05:46:29+01:00",
+          "tree_id": "deb178cfce78136c097de6738a82a07c9a11092b",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/82dbfa0a01f94273ed9acf627334a38c2f89d042"
+        },
+        "date": 1736139198488,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.25,
             "unit": "Percent"
           }
         ]
