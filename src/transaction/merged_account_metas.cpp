@@ -1,13 +1,16 @@
 #include "merged_account_metas.hpp"
 
-#include "address_lookup_table.hpp"
-#include "compute_budget.hpp"
-#include "wallet_adapter.hpp"
 #include <cstdint>
-#include <godot_cpp/core/error_macros.hpp>
-#include <keypair.hpp>
-#include <pubkey.hpp>
-#include <solana_utils.hpp>
+
+#include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/core/error_macros.hpp"
+#include "godot_cpp/variant/typed_array.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "account_meta.hpp"
+#include "instruction.hpp"
+#include "pubkey.hpp"
+#include "solana_utils.hpp"
 
 Variant MergedAccountMetas::preferred_signer(const Variant &left, const Variant &right) {
 	const auto *left_object = static_cast<Object *>(left);
@@ -30,21 +33,20 @@ Variant MergedAccountMetas::preferred_signer(const Variant &left, const Variant 
 	return left;
 }
 
-void MergedAccountMetas::merge_at(int64_t index, const Variant &account_meta) {
+void MergedAccountMetas::merge_at(const AccountMeta *account_meta, int64_t index) {
 	auto *existing_meta = Object::cast_to<AccountMeta>(merged_metas[index]);
-	auto *new_meta = Object::cast_to<AccountMeta>(account_meta);
-	existing_meta->set_key(preferred_signer(existing_meta->get_key(), new_meta->get_key()));
-	existing_meta->set_is_signer(existing_meta->get_is_signer() || new_meta->get_is_signer());
-	existing_meta->set_writeable(existing_meta->get_writeable() || new_meta->get_writeable());
+	existing_meta->set_key(preferred_signer(existing_meta->get_key(), account_meta->get_key()));
+	existing_meta->set_is_signer(existing_meta->get_is_signer() || account_meta->get_is_signer());
+	existing_meta->set_writeable(existing_meta->get_writeable() || account_meta->get_writeable());
 }
 
 void MergedAccountMetas::add(const Variant &account_meta) {
 	const auto *account_meta_ptr = Object::cast_to<AccountMeta>(account_meta);
-	const int index = find(*account_meta_ptr);
+	const int64_t index = find(*account_meta_ptr);
 
 	// Merge attributes if address is already in list.
 	if (index != -1) {
-		merge_at(index, account_meta);
+		merge_at(account_meta_ptr, index);
 	} else {
 		// Create a new entry.
 		merged_metas.append(account_meta);
@@ -68,27 +70,27 @@ void MergedAccountMetas::from_instructions(const TypedArray<Instruction> &instru
 }
 
 void MergedAccountMetas::sort() {
-	TypedArray<AccountMeta> m1;
-	TypedArray<AccountMeta> m2;
-	TypedArray<AccountMeta> m3;
-	TypedArray<AccountMeta> m4;
+	TypedArray<AccountMeta> writable_signers;
+	TypedArray<AccountMeta> readonly_signers;
+	TypedArray<AccountMeta> writable_nonsigners;
+	TypedArray<AccountMeta> readonly_nonsigners;
 
 	for (unsigned int i = 0; i < merged_metas.size(); i++) {
-		AccountMeta *element = Object::cast_to<AccountMeta>(merged_metas[i]);
-		const int value = element->get_is_signer() * 2 + element->get_writeable() * 1;
+		auto *element = Object::cast_to<AccountMeta>(merged_metas[i]);
+		const int value = (static_cast<int>(element->get_is_signer()) * 2) + (static_cast<int>(element->get_writeable()) * 1);
 
 		switch (value) {
 			case 3:
-				m1.append(element);
+				writable_signers.append(element);
 				break;
 			case 2:
-				m2.append(element);
+				readonly_signers.append(element);
 				break;
 			case 1:
-				m3.append(element);
+				writable_nonsigners.append(element);
 				break;
 			case 0:
-				m4.append(element);
+				readonly_nonsigners.append(element);
 				break;
 			default:
 				ERR_FAIL_EDMSG("Unexpected Error.");
@@ -96,16 +98,20 @@ void MergedAccountMetas::sort() {
 		}
 	}
 	TypedArray<AccountMeta> result;
-	result.append_array(m1);
-	result.append_array(m2);
-	result.append_array(m3);
-	result.append_array(m4);
+	result.append_array(writable_signers);
+	result.append_array(readonly_signers);
+	result.append_array(writable_nonsigners);
+	result.append_array(readonly_nonsigners);
 
 	merged_metas = result;
 }
 
-bool MergedAccountMetas::is_key_at_index(const Variant &key, uint64_t index) const {
+bool MergedAccountMetas::is_key_at_index(const Variant &key, int64_t index) const {
 	return (Pubkey::bytes_from_variant(merged_metas[index]) == Pubkey::bytes_from_variant(key));
+}
+
+bool MergedAccountMetas::is_empty() const {
+	return merged_metas.size() == 0;
 }
 
 TypedArray<AccountMeta> MergedAccountMetas::get_list() const {
@@ -126,10 +132,10 @@ Array MergedAccountMetas::get_signers() const {
 
 void MergedAccountMetas::supply_signers(const Array &signers) {
 	for (unsigned int i = 0; i < signers.size(); i++) {
-		Variant signer_meta = AccountMeta::new_account_meta(signers[i], true, false);
+		const Variant signer_meta = AccountMeta::new_account_meta(signers[i], true, false);
 		const int64_t index = find(*Object::cast_to<AccountMeta>(signer_meta));
 		if (index != -1) {
-			merge_at(index, signer_meta);
+			merge_at(Object::cast_to<AccountMeta>(signer_meta), index);
 		} else {
 			WARN_PRINT_ONCE_ED("A supplied signer is not relevant to this transaction");
 		}

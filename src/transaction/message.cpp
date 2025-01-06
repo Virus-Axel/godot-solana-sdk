@@ -1,28 +1,33 @@
-#include <message.hpp>
+#include "message.hpp"
 
-#include "address_lookup_table.hpp"
-#include "compute_budget.hpp"
-#include "wallet_adapter.hpp"
 #include <cstdint>
-#include <godot_cpp/core/error_macros.hpp>
-#include <keypair.hpp>
-#include <pubkey.hpp>
-#include <solana_utils.hpp>
+
+#include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/core/error_macros.hpp"
+#include "godot_cpp/variant/typed_array.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "account_meta.hpp"
+#include "address_lookup_table.hpp"
+#include "compiled_instruction.hpp"
+#include "instruction.hpp"
+#include "pubkey.hpp"
+#include "solana_utils.hpp"
 
 const unsigned char V0_INDICATOR = 128;
 
-void Message::compile_instruction(Variant instruction) {
-	Instruction *element = Object::cast_to<Instruction>(instruction);
+void Message::compile_instruction(const Variant &instruction) {
+	auto *element = Object::cast_to<Instruction>(instruction);
 	const TypedArray<AccountMeta> &account_metas = element->get_accounts();
 
-	CompiledInstruction *compiled_instruction = memnew(CompiledInstruction);
+	CompiledInstruction *compiled_instruction = memnew_custom(CompiledInstruction);
 
 	compiled_instruction->data = element->get_data();
-	Variant pid_meta = memnew(AccountMeta(element->get_program_id(), false, false));
+	const Variant pid_meta = memnew_custom(AccountMeta(element->get_program_id(), false, false));
 	compiled_instruction->program_id_index = meta_list.find(*Object::cast_to<AccountMeta>(pid_meta));
 
 	for (unsigned int j = 0; j < account_metas.size(); j++) {
-		AccountMeta *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
+		auto *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
 		compiled_instruction->accounts.push_back(meta_list.find(*account_meta));
 	}
 	compiled_instructions.push_back(compiled_instruction);
@@ -34,7 +39,7 @@ void Message::recalculate_headers() {
 	num_readonly_unsigned_accounts = 0;
 	account_keys.clear();
 	for (unsigned int i = 0; i < meta_list.get_list().size(); i++) {
-		AccountMeta *account_meta = Object::cast_to<AccountMeta>(meta_list.get_list()[i]);
+		auto *account_meta = Object::cast_to<AccountMeta>(meta_list.get_list()[i]);
 		if (account_meta->get_is_signer()) {
 			num_required_signatures++;
 			if (!account_meta->get_writeable()) {
@@ -48,10 +53,10 @@ void Message::recalculate_headers() {
 	}
 }
 
-void Message::read_accounts_from_bytes(const PackedByteArray bytes, uint8_t num_accounts, bool is_signer, bool is_writable, int64_t &cursor) {
+void Message::read_accounts_from_bytes(const PackedByteArray &bytes, uint8_t num_accounts, bool is_signer, bool is_writable, int64_t &cursor) {
 	for (uint8_t i = 0; i < num_accounts; i++) {
 		account_keys.append(Pubkey::new_from_bytes(bytes.slice(cursor, cursor + static_cast<int64_t>(PUBKEY_LENGTH))));
-		Variant new_meta = AccountMeta::new_account_meta(account_keys.back(), is_signer, is_writable);
+		const Variant new_meta = AccountMeta::new_account_meta(account_keys.back(), is_signer, is_writable);
 		meta_list.add(new_meta);
 		cursor += static_cast<int64_t>(PUBKEY_LENGTH);
 	}
@@ -60,7 +65,7 @@ void Message::read_accounts_from_bytes(const PackedByteArray bytes, uint8_t num_
 void Message::compile_instructions(const TypedArray<Instruction> &instructions) {
 	compiled_instructions.clear();
 	for (unsigned int i = 0; i < instructions.size(); i++) {
-		CompiledInstruction *compiled_instruction = memnew(CompiledInstruction);
+		CompiledInstruction *compiled_instruction = memnew_custom(CompiledInstruction);
 		compiled_instruction->compile(Object::cast_to<Instruction>(instructions[i]), meta_list);
 		compiled_instructions.push_back(compiled_instruction);
 	}
@@ -101,12 +106,10 @@ void Message::create(const PackedByteArray &bytes) {
 	} else {
 		num_readonly_signed_accounts = bytes[cursor++];
 	}
-	//ERR_FAIL_COND_EDMSG(num_required_signatures > 127, "V0 transactions are not yet supported.");
 
 	num_readonly_unsigned_accounts = bytes[cursor++];
 
 	const uint8_t account_size = bytes[cursor++];
-
 	const uint8_t writable_signed_accounts = num_required_signatures - num_readonly_signed_accounts;
 	const uint8_t writable_unsigned_accounts = account_size - writable_signed_accounts - num_readonly_signed_accounts - num_readonly_unsigned_accounts;
 
@@ -215,6 +218,10 @@ bool Message::is_versioned() {
 	}
 
 	return true;
+}
+
+bool Message::is_valid() const {
+	return !(meta_list.is_empty() || compiled_instructions.is_empty() || account_keys.is_empty());
 }
 
 PackedByteArray Message::serialize_blockhash() {
