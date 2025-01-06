@@ -1,0 +1,49 @@
+[gd_scene load_steps=3 format=3 uid="uid://b0iqm3erodaqo"]
+
+[ext_resource type="Script" path="res://addons/SolanaSDK/Demos/6.HighscoreDemo/leaderboard_entry.gd" id="1_13eo7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dyygh"]
+bg_color = Color(0.411765, 0.666667, 0.517647, 1)
+
+[node name="LeaderboardEntry" type="PanelContainer" node_paths=PackedStringArray("id", "nickname", "score")]
+custom_minimum_size = Vector2(450, 50)
+theme_override_styles/panel = SubResource("StyleBoxFlat_dyygh")
+script = ExtResource("1_13eo7")
+id = NodePath("MarginContainer/HBoxContainer/CenterContainer/Id")
+nickname = NodePath("MarginContainer/HBoxContainer/MarginContainer/username")
+score = NodePath("MarginContainer/HBoxContainer/Centerontainer/Score")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_right = -15
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+
+[node name="Id" type="Label" parent="MarginContainer/HBoxContainer/CenterContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "1."
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+
+[node name="username" type="Label" parent="MarginContainer/HBoxContainer/MarginContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "Rubian420"
+
+[node name="Centerontainer" type="CenterContainer" parent="MarginContainer/HBoxContainer"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+
+[node name="Score" type="Label" parent="MarginContainer/HBoxContainer/Centerontainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "560"
