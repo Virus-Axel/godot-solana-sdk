@@ -4,11 +4,13 @@ const PLUGIN_PATH = process.env.GITHUB_WORKSPACE + '/solana-wallet-mock/extensio
 
 
 (async () => {
-    try{
-        const browser = await puppeteer.launch({ headless: true,
+    try {
+        const browser = await puppeteer.launch({
+            headless: true,
             //executablePath: '/usr/bin/google-chrome',
             ignoreDefaultArgs: false,
             args: [
+                '--no-sandbox',
                 '--disable-extensions-except=' + PLUGIN_PATH,
                 '--load-extension=' + PLUGIN_PATH,
             ]
@@ -30,7 +32,7 @@ const PLUGIN_PATH = process.env.GITHUB_WORKSPACE + '/solana-wallet-mock/extensio
         await new Promise(resolve => setTimeout(resolve, 35000));
         await browser.close();
     }
-    catch(e){
+    catch (e) {
         console.log(e)
         console.log("FAIL")
     }
