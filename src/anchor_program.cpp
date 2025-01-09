@@ -880,7 +880,8 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
         const bool is_signer = detect_is_signer(ref_accounts[i]);
         if (is_optional && accounts[i].get_type() == Variant::NIL) {
             // optional accounts are passed in as pid, no signer, immutable
-            result->append_meta(*memnew(AccountMeta(pid, false, false)));
+            const Variant pid_key = Pubkey::new_from_string(pid);
+            result->append_meta(*memnew(AccountMeta(pid_key, false, false)));
             continue;
         }
         result->append_meta(*memnew(AccountMeta(accounts[i], is_signer, writable)));

@@ -16,6 +16,7 @@ windows.template_debug.x86_64="libgodot-solana-sdk.windows.template_debug.x86_64
 macos.template_release="libgodot-solana-sdk.macos.template_release.framework"
 macos.template_debug="libgodot-solana-sdk.macos.template_debug.framework"
 macos.arm64="libgodot-solana-sdk.macos.template_debug.framework"
+macos.x86_64="libgodot-solana-sdk.macos.template_debug.framework"
 web.template_release.wasm32="libgodot-solana-sdk.web.template_release.wasm32.wasm"
 web.template_debug.wasm32="libgodot-solana-sdk.web.template_debug.wasm32.wasm"
 web.template_release.wasm32.nothreads="libgodot-solana-sdk.web.template_debug.wasm32.nothreads.wasm"

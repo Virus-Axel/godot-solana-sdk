@@ -12,7 +12,6 @@ grow_vertical = 2
 script = ExtResource("1_ti5ca")
 
 [node name="WalletAdapter" type="WalletAdapter" parent="."]
-wallet_type = 20
 
 [node name="Transaction" type="Transaction" parent="."]
 
@@ -33,7 +32,7 @@ text = "Signature: "
 autowrap_mode = 1
 
 [node name="Timeout" type="Timer" parent="."]
-wait_time = 20.0
+wait_time = 5.0
 one_shot = true
 autostart = true
 

@@ -141,6 +141,12 @@ jobs:
           # Make sure to set a version number!
           version: 3.1.64
 
+      - name: (Web) Install node
+        if: ${{ startsWith(matrix.identifier, 'web-') }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Set up Python
         uses: actions/setup-python@v2
 
@@ -165,8 +171,19 @@ jobs:
           ls -l */bin/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.repository.name }}
+          name: ${{ github.event.repository.name }}-${{ matrix.identifier }}
           path: |
             ${{ github.workspace }}/bin/
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: ${{ github.event.repository.name }}
+          pattern: ${{ github.event.repository.name }}-*
+          delete-merged: true
