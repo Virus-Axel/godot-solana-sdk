@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1736163151294,
+  "lastUpdate": 1736454437223,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -115,6 +115,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.253424657534247,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0c26ad497217b270a620735c7e5536e758b76ac6",
+          "message": "Merge pull request #316 from Virus-Axel/bugfix/optional_anchor_accounts\n\nFix Anchor crash with optional accounts",
+          "timestamp": "2025-01-09T21:09:17+01:00",
+          "tree_id": "b405c1be9c3d75184f8003763b1dcbb9b76748c4",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/0c26ad497217b270a620735c7e5536e758b76ac6"
+        },
+        "date": 1736454436686,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.26027397260274,
             "unit": "Percent"
           }
         ]
