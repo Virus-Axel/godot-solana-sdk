@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1736454437223,
+  "lastUpdate": 1736629715133,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -144,6 +144,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.26027397260274,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d25fcb98894355198232d04880a717c59752b1ed",
+          "message": "Add shields to README.md",
+          "timestamp": "2025-01-11T22:01:48+01:00",
+          "tree_id": "5d91f367b4d8a2ca8492794c50b70bdd3ba722a3",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/d25fcb98894355198232d04880a717c59752b1ed"
+        },
+        "date": 1736629714601,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.253424657534247,
             "unit": "Percent"
           }
         ]
