@@ -1,6 +1,8 @@
 name: Verify Docs
 on:
   push:
+    branches-ignore:
+      - 'refs/pull/*'
   pull_request:
   workflow_dispatch:
 

@@ -1,10 +1,13 @@
 name: 🛠️ Builds
 on:
   push:
+    branches-ignore:
+      - 'refs/pull/*'
   pull_request:
   workflow_dispatch:
 jobs:
   build:
+    if: github.event_name != 'push' || (github.event_name == 'push' && !startsWith(github.ref, 'refs/pull/'))
     runs-on: ${{ matrix.runner }}
     name: ${{ matrix.name }}
     strategy:
