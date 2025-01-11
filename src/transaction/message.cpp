@@ -90,6 +90,9 @@ void Message::create(const MergedAccountMetas &merged_meta_list, Variant &payer)
 
 void Message::create(const PackedByteArray &bytes) {
 	int64_t cursor = 0;
+	compiled_instructions.clear();
+	account_keys.clear();
+	meta_list.clear();
 
 	// blockhash + number of accounts + compiled instruction size
 	const unsigned int minimum_remaining_size = BLOCKHASH_LENGTH + 1 + 1;
@@ -122,7 +125,6 @@ void Message::create(const PackedByteArray &bytes) {
 	read_accounts_from_bytes(bytes, writable_unsigned_accounts, false, true, cursor);
 	read_accounts_from_bytes(bytes, num_readonly_unsigned_accounts, false, false, cursor);
 
-	meta_list.sort();
 	recalculate_headers();
 
 	latest_blockhash = Pubkey::string_from_variant(bytes.slice(cursor, cursor + static_cast<int64_t>(PUBKEY_LENGTH)));

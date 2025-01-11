@@ -19,6 +19,11 @@ public:
 	MergedAccountMetas() = default;
 
 	/**
+	 * @brief Resets the account meta list.
+	 */
+	void clear();
+
+	/**
 	 * @brief Adds an account meta into merged list.
 	 *
 	 * This method adds a new entry to its merged account meta list if address is

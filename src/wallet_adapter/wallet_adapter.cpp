@@ -53,6 +53,10 @@ bool WalletAdapter::is_idle() {
 	return wallet_state == State::IDLE;
 }
 
+bool WalletAdapter::did_transaction_change() const {
+	return dirty_transaction;
+}
+
 bool WalletAdapter::has_multiple_wallets() {
 	const Array available_wallets = get_available_wallets();
 	return available_wallets.size() > 1;
@@ -148,6 +152,10 @@ PackedByteArray WalletAdapter::get_message_signature() {
 	return message_signature;
 }
 
+PackedByteArray WalletAdapter::get_modified_transaction() {
+	return JavaScriptBridge::get_singleton()->eval("Module.tampered_serialized_message");
+}
+
 Array WalletAdapter::get_available_wallets() {
 	Array available_wallets;
 
@@ -209,6 +217,27 @@ void WalletAdapter::poll_connection() {
 #endif
 }
 
+bool WalletAdapter::is_message_tampered(const PackedByteArray &original_serialization, const PackedByteArray &new_serialization) {
+	const PackedByteArray original_message = strip_signatures(original_serialization);
+	const PackedByteArray new_message = strip_signatures(new_serialization);
+
+	if (original_message.size() != new_message.size()) {
+		return true;
+	}
+	for (unsigned int i = 0; i < original_message.size(); i++) {
+		if (original_message[i] != new_message[i]) {
+			return true;
+		}
+	}
+	return false;
+}
+
+PackedByteArray WalletAdapter::strip_signatures(const PackedByteArray &serialization) {
+	const uint8_t signature_size = serialization[0];
+	const uint32_t SIGNATURE_OFFSET = 1 + (signature_size * SIGNATURE_LENGTH);
+	return serialization.slice(SIGNATURE_OFFSET);
+}
+
 void WalletAdapter::poll_message_signing() {
 #ifdef WEB_ENABLED
 	const int wallet_signing_status = JavaScriptBridge::get_singleton()->eval("Module.wallet_status");
@@ -219,6 +248,11 @@ void WalletAdapter::poll_message_signing() {
 
 		case 1: {
 			clear_state();
+			const PackedByteArray old_serialized_message = JavaScriptBridge::get_singleton()->eval("Module.old_serialized_message");
+			const PackedByteArray new_serialized_message = JavaScriptBridge::get_singleton()->eval("Module.tampered_serialized_message");
+
+			dirty_transaction = is_message_tampered(old_serialized_message, new_serialized_message);
+
 			emit_signal("message_signed", get_message_signature());
 			break;
 		}

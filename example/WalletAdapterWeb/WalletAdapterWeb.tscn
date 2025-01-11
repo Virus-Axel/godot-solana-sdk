@@ -32,7 +32,7 @@ text = "Signature: "
 autowrap_mode = 1
 
 [node name="Timeout" type="Timer" parent="."]
-wait_time = 5.0
+wait_time = 10.0
 one_shot = true
 autostart = true
 

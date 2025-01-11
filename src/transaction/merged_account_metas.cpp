@@ -40,6 +40,10 @@ void MergedAccountMetas::merge_at(const AccountMeta *account_meta, int64_t index
 	existing_meta->set_writeable(existing_meta->get_writeable() || account_meta->get_writeable());
 }
 
+void MergedAccountMetas::clear() {
+	merged_metas.clear();
+}
+
 void MergedAccountMetas::add(const Variant &account_meta) {
 	const auto *account_meta_ptr = Object::cast_to<AccountMeta>(account_meta);
 	const int64_t index = find(*account_meta_ptr);

@@ -16,6 +16,7 @@
 #include <godot_cpp/variant/callable_method_pointer.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 #include <instructions/compute_budget.hpp>
 #include <merged_account_metas.hpp>
 #include <message.hpp>
@@ -67,6 +68,13 @@ void Transaction::_signer_signed(const PackedByteArray &signature) {
 	auto *controller = Object::cast_to<WalletAdapter>(payer);
 
 	const uint32_t index = controller->get_active_signer_index();
+	if (controller->did_transaction_change()) {
+		const PackedByteArray new_bytes = WalletAdapter::get_modified_transaction();
+		const Array temp_signers = signers;
+		from_bytes(new_bytes);
+		set_signers(temp_signers);
+		UtilityFunctions::print("Browser wallet altered transaction.");
+	}
 
 	signatures[index] = signature;
 	ready_signature_amount++;
@@ -370,7 +378,9 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "address_lookup_tables", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Instruction")));
 }
 
-Transaction::Transaction(const PackedByteArray &bytes) {
+void Transaction::from_bytes(const PackedByteArray &bytes) {
+	signatures.clear();
+	instructions.clear();
 	const unsigned int MINIMUM_MESSAGE_SIZE = 32 + 4 + 1;
 	const unsigned int MINIMUM_TRANSACTION_SIZE = MINIMUM_MESSAGE_SIZE + 1;
 	ERR_FAIL_COND_EDMSG_CUSTOM(bytes.size() < MINIMUM_TRANSACTION_SIZE, "Invalid transaction size");
@@ -397,7 +407,8 @@ Transaction::Transaction(const PackedByteArray &bytes) {
 }
 
 Variant Transaction::new_from_bytes(const PackedByteArray &bytes) {
-	const Transaction *result = memnew_custom(Transaction(bytes));
+	Transaction *result = memnew_custom(Transaction);
+	result->from_bytes(bytes);
 
 	return result;
 }
@@ -411,6 +422,9 @@ void Transaction::_ready() {
 	send_client->set_async_override(true);
 	blockhash_client->set_async_override(true);
 	subscribe_client->set_async_override(true);
+
+	send_client->set_url_override(url_override);
+	blockhash_client->set_url_override(url_override);
 }
 
 void Transaction::_process(double delta) {
@@ -466,8 +480,6 @@ Variant Transaction::get_payer() {
 
 void Transaction::set_url_override(const String &p_value) {
 	url_override = p_value;
-	send_client->set_url_override(url_override);
-	blockhash_client->set_url_override(url_override);
 }
 
 void Transaction::set_external_payer(bool p_value) {
