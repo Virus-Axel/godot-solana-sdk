@@ -1,3 +1,7 @@
+![Godot Version](https://img.shields.io/badge/Godot-v4.0%2B-blue?logo=godot-engine)
+![Platform](https://img.shields.io/badge/platform-Win%20%7C%20Linux%20%7C%20Mac%20%7C%20Web%20%7C%20Android%20%7C%20iOS-brightgreen)
+
+
 # Godot Solana SDK
 
 A GDExtention that gives Godot engine Solana support. This plugin provides the possibility to create Solana games for any platform supported by Godot. Utilize NFTs and Solana smart contracts in your game. The SDK has interface nodes for Anchor programs and instruction builders for Candy Machine, Candy Guard, System programs, SPL tokens and more.
