@@ -52,6 +52,7 @@ class WalletAdapter : public Node {
 	GDCLASS(WalletAdapter, Node)
 private:
 	bool connected = false;
+	bool dirty_transaction = false;
 	uint32_t active_signer_index = 0;
 	enum State {
 		IDLE = 0,
@@ -73,6 +74,8 @@ private:
 	static String get_sign_message_script();
 	String get_connect_script() const;
 	static bool is_wallet_installed(WalletType wallet_type);
+	static bool is_message_tampered(const PackedByteArray &original_serialization, const PackedByteArray &new_serialization);
+	static PackedByteArray strip_signatures(const PackedByteArray &serialization);
 	static Array get_all_wallets();
 
 protected:
@@ -88,12 +91,14 @@ public:
 
 	bool is_connected() const;
 	bool is_idle();
+	bool did_transaction_change() const;
 	static bool has_multiple_wallets();
 
 	void poll_connection();
 	void poll_message_signing();
 	Variant get_connected_key();
 	static PackedByteArray get_message_signature();
+	static PackedByteArray get_modified_transaction();
 
 	static Array get_available_wallets();
 

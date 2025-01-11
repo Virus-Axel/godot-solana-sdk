@@ -83,7 +83,7 @@ protected:
 
 public:
 	Transaction() = default;
-	Transaction(const PackedByteArray &bytes);
+	void from_bytes(const PackedByteArray &bytes);
 
 	static Variant new_from_bytes(const PackedByteArray &bytes);
 
