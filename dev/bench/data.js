@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1736629715133,
+  "lastUpdate": 1736636567653,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -173,6 +173,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.253424657534247,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5b956eb1c9045dcd2302f2e886def2e6a959c5b9",
+          "message": "Merge pull request #317 from Virus-Axel/bugfix/adapter_signature_failure\n\nFix signature verification failure for web wallets",
+          "timestamp": "2025-01-11T23:56:16+01:00",
+          "tree_id": "42795d8047c769d6743daac8d306a6a5cc28dce3",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/5b956eb1c9045dcd2302f2e886def2e6a959c5b9"
+        },
+        "date": 1736636566844,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.256849315068493,
             "unit": "Percent"
           }
         ]
