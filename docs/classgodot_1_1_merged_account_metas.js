@@ -1,6 +1,7 @@
 var classgodot_1_1_merged_account_metas =
 [
     [ "add", "classgodot_1_1_merged_account_metas.html#a8f356a298ac3b97a64f3dcbe10dd239d", null ],
+    [ "clear", "classgodot_1_1_merged_account_metas.html#a024f5221feea42a21c4583141983fff0", null ],
     [ "find", "classgodot_1_1_merged_account_metas.html#a61481fbf9c09c922d122164345c95801", null ],
     [ "from_instructions", "classgodot_1_1_merged_account_metas.html#aa95ec4d85eda2b5b1c5069e75791c0f4", null ],
     [ "get_list", "classgodot_1_1_merged_account_metas.html#aeb8425a3c3a5f87234dcf243dec8a253", null ],
