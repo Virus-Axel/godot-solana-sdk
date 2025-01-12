@@ -72,8 +72,6 @@ private:
 	void subscribe_to_signature(ConfirmationLevel confirmation_level);
 	void subscribe_to_signature();
 
-	static bool has_solflare_signer(const Array &signer_list);
-
 	void _emit_processed_callback(const Dictionary &params);
 	void _emit_confirmed_callback(const Dictionary &params);
 	void _emit_finalized_callback(const Dictionary &params);

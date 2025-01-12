@@ -118,16 +118,6 @@ void Transaction::create_message() {
 	}
 	merged_metas.from_instructions(instruction_list);
 
-	// Check minimum unit price for solflare.
-	const uint32_t MINIMUM_SOLFLARE_PRICE = 100000;
-	if (append_budget_instructions && has_solflare_signer(merged_metas.get_signers()) && unit_price < MINIMUM_SOLFLARE_PRICE) {
-		Array format_params;
-		format_params.append(unit_price);
-		format_params.append(MINIMUM_SOLFLARE_PRICE);
-		WARN_PRINT_ONCE_ED(String("Unit price adjusted by solflare from {0}, to {1}").format(format_params));
-		instruction_list[1] = ComputeBudget::set_compute_unit_price(unit_price);
-	}
-
 	message.create(merged_metas, payer);
 	message.compile_instructions(instruction_list);
 
@@ -225,22 +215,6 @@ void Transaction::subscribe_to_signature() {
 	if (finalized_connections != 0U) {
 		subscribe_to_signature(FINALIZED);
 	}
-}
-
-bool Transaction::has_solflare_signer(const Array &signer_list) {
-	for (unsigned int i = 0; i < signer_list.size(); i++) {
-		if (signer_list[i].get_type() != Variant::OBJECT) {
-			continue;
-		}
-		if ((static_cast<Object *>(signer_list[i]))->get_class() == "WalletAdapter") {
-			auto *controller = Object::cast_to<WalletAdapter>(signer_list[i]);
-			if (controller->get_wallet_type() == WalletType::SOLFLARE) {
-				return true;
-			}
-		}
-	}
-
-	return false;
 }
 
 void Transaction::_emit_processed_callback(const Dictionary &params) {
