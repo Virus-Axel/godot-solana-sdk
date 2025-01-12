@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1736636567653,
+  "lastUpdate": 1736677207574,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -202,6 +202,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.256849315068493,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "86443264076807ac86e9b48d6e9f8af9778ecad8",
+          "message": "Merge pull request #319 from Virus-Axel/bugfix/solflare_fee_adjustment\n\nRevert solflare priority fee correction",
+          "timestamp": "2025-01-12T11:13:17+01:00",
+          "tree_id": "990641a276017bd3789063378a35f84b99eb18bc",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/86443264076807ac86e9b48d6e9f8af9778ecad8"
+        },
+        "date": 1736677206297,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.26027397260274,
             "unit": "Percent"
           }
         ]
