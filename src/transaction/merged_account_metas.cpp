@@ -59,6 +59,8 @@ void MergedAccountMetas::add(const Variant &account_meta) {
 
 void MergedAccountMetas::from_instructions(const TypedArray<Instruction> &instructions) {
 	for (unsigned int i = 0; i < instructions.size(); i++) {
+		ERR_FAIL_COND_EDMSG_CUSTOM(instructions[i].get_type() != Variant::OBJECT, "Trying to add an instruction with invalid type.");
+		ERR_FAIL_COND_EDMSG_CUSTOM(Object::cast_to<Object>(instructions[i])->get_class() != "Instruction", "Trying to add an instruction with invalid type.");
 		auto *element = Object::cast_to<Instruction>(instructions[i]);
 
 		const TypedArray<AccountMeta> &account_metas = element->get_accounts();

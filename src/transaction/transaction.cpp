@@ -116,14 +116,20 @@ void Transaction::create_message() {
 		instruction_list.insert(0, ComputeBudget::set_compute_unit_limit(unit_limit));
 		instruction_list.insert(1, ComputeBudget::set_compute_unit_price(unit_price));
 	}
+	std::cout << "from instructions" << std::endl;
 	merged_metas.from_instructions(instruction_list);
 
+	std::cout << "create" << std::endl;
 	message.create(merged_metas, payer);
+	std::cout << "compile" << std::endl;
 	message.compile_instructions(instruction_list);
 
+	std::cout << "blockhash" << std::endl;
 	message.set_latest_blockhash(latest_blockhash_string);
+	std::cout << "lookup tables" << std::endl;
 	message.set_address_lookup_tables(address_lookup_tables);
 
+	std::cout << "amount_signers" << std::endl;
 	const int amount_of_signers = message.get_amount_signers();
 
 	if (signers.size() == amount_of_signers) {
