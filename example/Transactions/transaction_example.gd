@@ -4,7 +4,7 @@ extends VBoxContainer
 @onready var payer: Keypair = Keypair.new_from_file("res://payer.json")
 const LAMPORTS_PER_SOL = 1000000000
 
-const TOTAL_CASES := 12
+const TOTAL_CASES := 13
 var passed_test_mask := 0
 
 
@@ -191,11 +191,6 @@ func transaction_from_bytes():
 
 	add_child(tx)
 	
-	# A transaction can be sent after three steps:
-	# Set the payer.
-	# Add instruction(s).
-	# Set latest blockhash.
-	
 	tx.set_payer(payer)
 	
 	var ix: Instruction = SystemProgram.transfer(payer, receiver, LAMPORTS_PER_SOL / 10)
@@ -230,6 +225,30 @@ func transaction_from_bytes():
 	PASS(11)
 
 
+func string_as_account_input():
+	# Make sure compilation works with strings as account types.
+	var receiver: String = Pubkey.new_random().to_string()
+	var account_key = Pubkey.new_random().to_string()
+	var tx = Transaction.new()
+
+	add_child(tx)
+	
+	tx.set_payer(payer)
+	
+	var ix: Instruction = SystemProgram.transfer(payer, receiver, LAMPORTS_PER_SOL / 10)
+	tx.add_instruction(ix)
+	ix = SystemProgram.transfer(payer, account_key, LAMPORTS_PER_SOL / 10)
+	tx.add_instruction(ix)
+	ix = SystemProgram.create_account(payer, account_key, LAMPORTS_PER_SOL / 10, 400, SystemProgram.get_pid())
+	tx.add_instruction(ix)
+
+	tx.update_latest_blockhash()
+
+	tx.sign() # Will issue a warning about signer type
+	
+	PASS(12)
+
+
 func _ready():
 	# Use a local cluster for unlimited Solana airdrops.
 	# SolanaClient defaults to devnet cluster URL if not specified.
@@ -245,6 +264,7 @@ func _ready():
 	transaction_with_confirmation_2()
 	blockhash_before_instruction()
 	transaction_from_bytes()
+	string_as_account_input()
 
 
 func _on_timeout_timeout():

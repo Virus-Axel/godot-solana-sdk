@@ -155,7 +155,7 @@ void Transaction::reset_state() {
 void Transaction::sign_at_index(const uint32_t index) {
 	if (signers[index].get_type() != Variant::Type::OBJECT) {
 		Array params;
-		params.append(signers[index].get_type());
+		params.append(Variant::get_type_name(signers[index].get_type()));
 		WARN_PRINT_ONCE_ED(String("Signer is not an object. It is a {0}").format(params));
 	} else if (signers[index].has_method("verify_signature")) {
 		auto *signer_keypair = Object::cast_to<Keypair>(signers[index]);

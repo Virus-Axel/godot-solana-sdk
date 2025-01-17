@@ -280,6 +280,7 @@ public:
 	 * @return A new derived Pubkey resource.
 	 */
 	static Variant new_from_seed(Variant basePubkey, String seed, Variant owner_pubkey);
+
 	/**
 	 * @godot
 	 * @brief Creates a new Pubkey from string
@@ -291,6 +292,7 @@ public:
 	 * @return Variant
 	 */
 	static Variant new_from_string(const String &from);
+
 	/**
 	 * @godot
 	 * @brief Creates a new Pubkey resource from a PackedByteArray.
@@ -301,6 +303,18 @@ public:
 	 * @return A new Pubkey resource.
 	 */
 	static Variant new_from_bytes(const PackedByteArray &from);
+
+	/**
+	 * @brief Creates a new Pubkey from a Variant
+	 *
+	 * Checks the Varaint for any compatible type and creates a new object accordingly.
+	 *
+	 * @param from Variant to create the Pubkey from.
+	 * @return Variant containing the pubkey.
+	 * @return nullptr if Variant is not compatible.
+	 */
+	static Variant new_from_variant(const Variant &from);
+
 	/**
 	 * @godot
 	 * @brief Creates a new program derrived Pubkey resource.
@@ -313,6 +327,7 @@ public:
 	 * @return A new program derrived Pubkey resource.
 	 */
 	static Variant new_program_address(const PackedStringArray seeds, const Variant &program_id);
+
 	/**
 	 * @godot
 	 * @brief Creates a new associated token address.
@@ -324,6 +339,7 @@ public:
 	 * @return A new associated token account Pubkey resource.
 	 */
 	static Variant new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address);
+
 	/**
 	 * @godot
 	 * @brief Creates a new valid program derrived Pubkey resource.
@@ -337,6 +353,7 @@ public:
 	 * @return A new valid program derrived Pubkey resource. Null Variant if unsuccessful.
 	 */
 	static Variant new_pda(const PackedStringArray seeds, const Variant &program_id);
+
 	/**
 	 * @godot
 	 * @brief Same as new_pda but with a byte array of seeds.
@@ -350,6 +367,7 @@ public:
 	 * @return A new valid program derrived Pubkey resource. Null Variant if unsuccessful.
 	 */
 	static Variant new_pda_bytes(const Array seeds, const Variant &program_id);
+
 	/**
 	 * @godot
 	 * @brief Creates a new random Pubkey resource.
@@ -379,6 +397,7 @@ public:
 	 * @return PackedByteArray The public bytes of a key.
 	 */
 	static PackedByteArray bytes_from_variant(const Variant &other);
+
 	/**
 	 * @brief Same as bytes_from_variant but returns the base58 encoded string.
 	 *
@@ -399,6 +418,7 @@ public:
 	 * @return true if the constructed Pubkey is valid, false otherwise.
 	 */
 	bool create_program_address(const PackedStringArray seeds, const Variant &program_id);
+
 	/**
 	 * @brief Same as create_program_address but with an array of byte arrays seeds.
 	 *
@@ -410,6 +430,7 @@ public:
 	 * @return true if the constructed Pubkey is valid, false otherwise.
 	 */
 	bool create_program_address_bytes(const Array seeds, const Variant &program_id);
+
 	/**
 	 * @godot
 	 * @brief Constructs an associated token address.
