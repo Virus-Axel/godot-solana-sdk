@@ -218,6 +218,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a02a184a7ebde9ae6d4c9598f30737aee" id="r_a02a184a7ebde9ae6d4c9598f30737aee"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a02a184a7ebde9ae6d4c9598f30737aee">new_from_bytes</a> (const PackedByteArray &amp;from)</td></tr>
 <tr class="memdesc:a02a184a7ebde9ae6d4c9598f30737aee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> resource from a PackedByteArray.  <br /></td></tr>
 <tr class="separator:a02a184a7ebde9ae6d4c9598f30737aee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58669382f314ea379021a9c464c2038b" id="r_a58669382f314ea379021a9c464c2038b"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a58669382f314ea379021a9c464c2038b">new_from_variant</a> (const Variant &amp;from)</td></tr>
+<tr class="memdesc:a58669382f314ea379021a9c464c2038b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> from a Variant.  <br /></td></tr>
+<tr class="separator:a58669382f314ea379021a9c464c2038b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aacbd88cc1523cc97e7a659578c9af7bf" id="r_aacbd88cc1523cc97e7a659578c9af7bf"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aacbd88cc1523cc97e7a659578c9af7bf">new_program_address</a> (const PackedStringArray seeds, const Variant &amp;program_id)</td></tr>
 <tr class="memdesc:aacbd88cc1523cc97e7a659578c9af7bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a new program derrived <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> resource.  <br /></td></tr>
 <tr class="separator:aacbd88cc1523cc97e7a659578c9af7bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -912,6 +915,43 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 
 </div>
 </div>
+<a id="a58669382f314ea379021a9c464c2038b" name="a58669382f314ea379021a9c464c2038b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a58669382f314ea379021a9c464c2038b">&#9670;&#160;</a></span>new_from_variant()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::Pubkey::new_from_variant </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>from</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Creates a new <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> from a Variant. </p>
+<p>Checks the Varaint for any compatible type and creates a new object accordingly.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">from</td><td>Variant to create the <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a> from. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant containing the pubkey. </dd>
+<dd>
+nullptr if Variant is not compatible. </dd></dl>
+
+</div>
+</div>
 <a id="ac4ff39b4fc9eeb2f3a35d9658d33f849" name="ac4ff39b4fc9eeb2f3a35d9658d33f849"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac4ff39b4fc9eeb2f3a35d9658d33f849">&#9670;&#160;</a></span>new_pda()</h2>
 
@@ -1330,7 +1370,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_pubkey.html">Pubkey</a></li>
-    <li class="footer">Generated on Sun Jan 12 2025 10:14:35 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Fri Jan 17 2025 17:41:20 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>
