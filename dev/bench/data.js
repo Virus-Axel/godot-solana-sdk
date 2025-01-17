@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1736677207574,
+  "lastUpdate": 1737135990252,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -231,6 +231,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.26027397260274,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8fe1225e11fd28f17aabf1f28182c519c3ac7d23",
+          "message": "Merge pull request #320 from Virus-Axel/bugfix/string_account\n\nFix support for string typed accounts internaly",
+          "timestamp": "2025-01-17T18:39:56+01:00",
+          "tree_id": "2b25d34fc5ee0945e7baa183d7c8d2bd8b174ea2",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/8fe1225e11fd28f17aabf1f28182c519c3ac7d23"
+        },
+        "date": 1737135989670,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.256849315068493,
             "unit": "Percent"
           }
         ]
