@@ -13,8 +13,23 @@
 #include "solana_utils.hpp"
 
 Variant MergedAccountMetas::preferred_signer(const Variant &left, const Variant &right) {
-	const auto *left_object = static_cast<Object *>(left);
-	const auto *right_object = static_cast<Object *>(right);
+	Object *left_object = nullptr;
+	Object *right_object = nullptr;
+
+	if (left.get_type() == Variant::OBJECT) {
+		left_object = static_cast<Object *>(left);
+	} else {
+		const Variant left_pubkey = Pubkey::new_from_variant(left);
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(left_pubkey.get_type() != Variant::OBJECT, nullptr, "Invalid signer input type.");
+		left_object = static_cast<Object *>(left_pubkey);
+	}
+	if (right.get_type() == Variant::OBJECT) {
+		right_object = static_cast<Object *>(right);
+	} else {
+		const Variant right_pubkey = Pubkey::new_from_variant(right);
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(right_pubkey.get_type() != Variant::OBJECT, nullptr, "Invalid signer input type.");
+		right_object = static_cast<Object *>(right_pubkey);
+	}
 
 	// Keypair is prefferred over WalletAdapter since they can instantly sign.
 	if (left_object->is_class("Keypair")) {
@@ -35,7 +50,10 @@ Variant MergedAccountMetas::preferred_signer(const Variant &left, const Variant 
 
 void MergedAccountMetas::merge_at(const AccountMeta *account_meta, int64_t index) {
 	auto *existing_meta = Object::cast_to<AccountMeta>(merged_metas[index]);
-	existing_meta->set_key(preferred_signer(existing_meta->get_key(), account_meta->get_key()));
+	const Variant selected_signer = preferred_signer(existing_meta->get_key(), account_meta->get_key());
+	ERR_FAIL_COND_CUSTOM(selected_signer.get_type() == Variant::NIL);
+
+	existing_meta->set_key(selected_signer);
 	existing_meta->set_is_signer(existing_meta->get_is_signer() || account_meta->get_is_signer());
 	existing_meta->set_writeable(existing_meta->get_writeable() || account_meta->get_writeable());
 }
