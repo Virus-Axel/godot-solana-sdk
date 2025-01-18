@@ -3,7 +3,7 @@ extends Control
 const MINT_SIZE := 82
 const MINT_ACCOUNT_SIZE := 165
 
-const TOTAL_CASES := 4
+const TOTAL_CASES := 7
 var passed_test_mask := 0
 var payer: Keypair = await Keypair.new_from_file("payer.json")
 
@@ -11,6 +11,8 @@ var payer: Keypair = await Keypair.new_from_file("payer.json")
 var mint_keypair: Keypair = Keypair.new_random()
 var candy_machine_keypair: Keypair = Keypair.new_random()
 var mint_account_keypair: Keypair = Keypair.new_random()
+
+var guard_kp: Keypair = Keypair.new_random()
 
 
 func PASS(unique_identifier: int):
@@ -103,6 +105,7 @@ func add_config_line_demo():
 	
 	var config_lines = [
 		load("res://config_lines/1.tres"),
+		load("res://config_lines/2.tres"),
 	]
 	
 	var ix: Instruction = MplCandyMachine.add_config_lines(candy_machine_keypair, payer, config_lines, 0)
@@ -152,6 +155,47 @@ func fetch_candy_machine_account_demo():
 	PASS(4)
 
 
+func initialize_mint_with_mint_limit():
+	var tx := Transaction.new()
+	add_child(tx)
+
+	var ix: Instruction = MplCandyGuard.initialize(guard_kp, payer, payer, load("res://new_candy_guard_access_list.tres"))
+	tx.add_instruction(ix)
+	var guard_id = MplCandyGuard.new_associated_candy_guard_key(guard_kp)
+	ix = MplCandyGuard.wrap(guard_id, payer, candy_machine_keypair, payer)
+	tx.add_instruction(ix)
+	
+	tx.set_payer(payer)
+	tx.update_latest_blockhash()
+
+	tx.sign_and_send()
+	var result = await tx.transaction_response_received
+	assert(result.has("result"))
+
+	await tx.confirmed
+	PASS(5)
+
+func mint_with_guards():
+
+	var tx := Transaction.new()
+	add_child(tx)
+
+	var guard_id = MplCandyGuard.new_associated_candy_guard_key(guard_kp)
+	var mint_account = Keypair.new_random()
+
+	var ix: Instruction = MplCandyGuard.mint(candy_machine_keypair, guard_id, payer, payer, mint_account, payer, mint_keypair, payer, load("res://new_candy_guard_access_list.tres"), "default")
+	tx.add_instruction(ix)
+	
+	tx.set_payer(payer)
+	tx.update_latest_blockhash()
+
+	tx.sign_and_send()
+	var result = await tx.transaction_response_received
+	assert(result.has("result"))
+
+	await tx.confirmed
+	PASS(6)
+
 func _ready():
 	# Use created mint in upcoming transactions, so await it.
 	await initialize_mint_collection_demo()
@@ -159,6 +203,10 @@ func _ready():
 	await add_config_line_demo()
 	await mint_demo()
 	fetch_candy_machine_account_demo()
+	
+	# Candy Machine V3 tests
+	await initialize_mint_with_mint_limit()
+	mint_with_guards()
 	
 
 
