@@ -17,7 +17,7 @@ address = SubResource("Pubkey_s0f5r")
 share = 100
 
 [resource]
-items_available = 1
+items_available = 2
 symbol = "GSS"
 seller_fee_basis_points = 800
 creators = [SubResource("MetaDataCreator_hghpc")]

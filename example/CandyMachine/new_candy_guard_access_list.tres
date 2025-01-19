@@ -1,0 +1,14 @@
+[gd_resource type="CandyGuardAccessList" load_steps=2 format=3 uid="uid://3q12sp2n32n0"]
+
+[sub_resource type="Pubkey" id="Pubkey_3qtmd"]
+type = "CUSTOM"
+value = "HzgnFaratgGvuxBZZRKjDXFgXYXrd93U4GmkFN3MqxFt"
+bytes = PackedByteArray(252, 130, 19, 152, 223, 77, 88, 22, 16, 201, 240, 75, 121, 146, 182, 228, 127, 4, 19, 199, 205, 67, 182, 167, 25, 247, 176, 37, 217, 165, 43, 91)
+
+[resource]
+enable_mint_limit = true
+limit_id = 0
+mint_limit = 2
+enable_sol_payment = true
+sol_payment_lamports = 10000
+sol_payment_destination = SubResource("Pubkey_3qtmd")

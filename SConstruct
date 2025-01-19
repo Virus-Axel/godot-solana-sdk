@@ -194,6 +194,7 @@ env.Append(CPPPATH=["include/transaction"])
 env.Append(CPPPATH=["src/transaction"])
 env.Append(CPPPATH=["include/wallet_adapter/"])
 env.Append(CPPPATH=["src/wallet_adapter/"])
+env.Append(CPPPATH=["src/candy_machine/"])
 
 sources = Glob("src/*.cpp")
 
@@ -260,8 +261,12 @@ else:
         vite_config = f"{WALLET_ADAPTER_BRIDGE_DIR}/webpack.config.js"
         js_sources = Glob(f"{WALLET_ADAPTER_BRIDGE_DIR}/src/*.js")
 
-        NPM_INSTALL_COMMAND = f"npm install --prefix {WALLET_ADAPTER_BRIDGE_DIR} --no-audit --no-fund"
-        NPM_BUILD_COMMAND = f"npm run build --prefix {WALLET_ADAPTER_BRIDGE_DIR} -- --no-stats-warnings"
+        NPM_INSTALL_COMMAND = (
+            f"npm install --prefix {WALLET_ADAPTER_BRIDGE_DIR} --no-audit --no-fund"
+        )
+        NPM_BUILD_COMMAND = (
+            f"npm run build --prefix {WALLET_ADAPTER_BRIDGE_DIR} -- --no-stats-warnings"
+        )
 
         # Define targets for the package-lock.json (wallet adapter package).
         npm_install_target = env.Command(

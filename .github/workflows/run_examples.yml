@@ -90,6 +90,8 @@ jobs:
                 str="${str} --bpf-program CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR ${{matrix.dir}}test_accounts/CMV3.so"
                 solana program dump --url mainnet-beta metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s test_accounts/MPMD.so
                 str="${str} --bpf-program metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s ${{matrix.dir}}test_accounts/MPMD.so"
+                solana program dump --url mainnet-beta Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g test_accounts/MPCG.so
+                str="${str} --bpf-program Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g ${{matrix.dir}}test_accounts/MPCG.so"
                 echo "VALIDATOR_ARGS=${str}" >> "$GITHUB_OUTPUT"
 
             - name: Setup Local Validator
