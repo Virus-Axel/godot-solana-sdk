@@ -16,6 +16,7 @@ const char *SIGN_MESSAGE_SCRIPT = "\
       }\
     }\
     catch (err){\
+      console.error(error);\
       Module.wallet_status = -1;\
       return;\
     }\
@@ -33,8 +34,7 @@ const char *SIGN_TRANSACTION_SCRIPT = "\
       Module.old_serialized_message = new Uint8Array(Module.serialized_message);\
       var tx = Module.Transaction.from(Module.serialized_message);\
       var response = (await Module.wallet_handler.signTransaction(tx));\
-      Module.tampered_serialized_message = response.serialize();\
-      console.log(response);\
+      Module.tampered_serialized_message = response.serialize({ requireAllSignatures: false, verifySignatures: false });\
       Module.message_signature = response.signatures[{0}].signature;\
       if(Module.message_signature == null){\
         Module.wallet_status = -1;\
@@ -42,6 +42,7 @@ const char *SIGN_TRANSACTION_SCRIPT = "\
       }\
     }\
     catch (err){\
+      console.error(error);\
       Module.wallet_status = -1;\
       return;\
     }\
@@ -52,8 +53,6 @@ const char *SIGN_TRANSACTION_SCRIPT = "\
 ";
 
 const char *CONNECT_SCRIPT = "\
-    console.log(Module.solanaWeb3);\
-    console.log(Module.wallets);\
     Module.wallet_status = 0;\
     async function connectWallet() {\
     try{\
