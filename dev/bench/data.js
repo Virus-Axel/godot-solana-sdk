@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1737135990252,
+  "lastUpdate": 1737292348510,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -260,6 +260,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.256849315068493,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "733144b710dfe24fa8242ff8d882a2134c35efdb",
+          "message": "Merge pull request #321 from Virus-Axel/example/candy_guard\n\nAdd tests and small fixes for CandyGuards",
+          "timestamp": "2025-01-19T14:05:42+01:00",
+          "tree_id": "115618232e03e128661ff2bc2dc4190fb0c8676c",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/733144b710dfe24fa8242ff8d882a2134c35efdb"
+        },
+        "date": 1737292347290,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.25,
             "unit": "Percent"
           }
         ]
