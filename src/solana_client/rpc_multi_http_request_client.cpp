@@ -6,7 +6,7 @@ namespace godot{
 void RpcMultiHttpRequestClient::_bind_methods(){
 }
 
-void RpcMultiHttpRequestClient::process(float delta){
+void RpcMultiHttpRequestClient::process(double delta){
     unsigned int current_frame = Engine::get_singleton()->get_process_frames();
     if(current_frame == last_processed_frame){
         return;

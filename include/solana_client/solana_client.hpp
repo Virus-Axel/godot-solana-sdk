@@ -1,10 +1,10 @@
 #ifndef SOLANA_SDK_SOLANA_CLIENT_HPP
 #define SOLANA_SDK_SOLANA_CLIENT_HPP
 
-#include <queue>
+#include <godot_cpp/classes/http_client.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/web_socket_peer.hpp>
-#include <godot_cpp/classes/http_client.hpp>
+#include <queue>
 
 #include "rpc_multi_http_request_client.hpp"
 #include "rpc_single_ws_request_client.hpp"
@@ -14,285 +14,284 @@ namespace godot {
 /**
  * @class SolanaClient
  * @brief Manager for RPC HTTP API communication.
- * 
+ *
  * Interacts with an RPC node on a Solana cluster. This class
  * takes user requests and sends them sequentially or in parallel to an
  * RPC endpoints. The SolanaClient also manages the web socket interface.
  */
 class SolanaClient : public Node {
-    GDCLASS(SolanaClient, Node)
+	GDCLASS(SolanaClient, Node)
 
 private:
-    float timeout = 20.0;
+	float timeout = 20.0;
 
-    uint32_t http_port_override = 0;
-    uint32_t ws_port_override = 0;
+	uint32_t http_port_override = 0;
+	uint32_t ws_port_override = 0;
 
-    const std::string DEFAULT_URL = "https://api.devnet.solana.com";
-    const std::string DEFAULT_WS_URL = "wss://api.devnet.solana.com";
+	const std::string DEFAULT_URL = "https://api.devnet.solana.com";
+	const std::string DEFAULT_WS_URL = "wss://api.devnet.solana.com";
 
-    String url_override = "";
-    String ws_url = "";
-    
-    bool use_tls = true;
-    bool async_override = false;
-    bool pending_request = false;
+	String url_override = "";
+	String ws_url = "";
 
-    String commitment = "confirmed";
-    String encoding = "base64";
-    std::string transaction_detail;
-    std::string identity;
-    uint64_t min_context_slot = 0;
-    uint64_t filter_offset = 0;
-    uint64_t filter_length = 0;
-    uint64_t max_transaction_version = 0;
-    uint64_t first_slot = 0;
-    uint64_t last_slot = 0;
-    bool account_filter_enabled = false;
-    bool min_constext_slot_enabled = false;
-    bool max_transaction_version_enabled = false;
-    bool rewards = false;
-    bool slot_range_enabled = false;
+	bool use_tls = true;
+	bool async_override = false;
+	bool pending_request = false;
 
-    Callable ws_callback;
-    Callable rpc_callback = callable_mp(this, &SolanaClient::response_callback);
+	String commitment = "confirmed";
+	String encoding = "base64";
+	std::string transaction_detail;
+	std::string identity;
+	uint64_t min_context_slot = 0;
+	uint64_t filter_offset = 0;
+	uint64_t filter_length = 0;
+	uint64_t max_transaction_version = 0;
+	uint64_t first_slot = 0;
+	uint64_t last_slot = 0;
+	bool account_filter_enabled = false;
+	bool min_constext_slot_enabled = false;
+	bool max_transaction_version_enabled = false;
+	bool rewards = false;
+	bool slot_range_enabled = false;
 
-    String ws_from_http(const String& http_url);
-    String get_real_url();
-    uint32_t get_real_http_port();
-    uint32_t get_real_ws_port();
-    String get_real_ws_url();
+	Callable ws_callback;
+	Callable rpc_callback = callable_mp(this, &SolanaClient::response_callback);
 
-    RpcSingleWsRequestClient *get_current_ws_client();
-    RpcMultiHttpRequestClient *get_current_http_client();
+	String ws_from_http(const String &http_url);
+	String get_real_url();
+	uint32_t get_real_http_port() const;
+	uint32_t get_real_ws_port() const;
+	String get_real_ws_url();
 
-    void append_commitment(Array& options);
-    void append_min_context_slot(Array& options);
-    void append_encoding(Array& options);
-    void append_account_filter(Array& options);
-    void append_data_filter(Array& options, const Array& filters);
-    void append_transaction_detail(Array& options);
-    void append_max_transaction_version(Array& options);
-    void append_rewards(Array& options);
-    void append_identity(Array& options);
-    void append_slot_range(Array& options);
-    void append_limit(Array& options);
+	static RpcSingleWsRequestClient *get_current_ws_client();
+	static RpcMultiHttpRequestClient *get_current_http_client();
 
-    void add_to_param_dict(Array &options, const String& key, const Variant& value);
+	void append_commitment(Array &options);
+	void append_min_context_slot(Array &options) const;
+	void append_encoding(Array &options);
+	void append_account_filter(Array &options) const;
+	static void append_data_filter(Array &options, const Array &filters);
+	void append_transaction_detail(Array &options);
+	void append_max_transaction_version(Array &options) const;
+	void append_rewards(Array &options) const;
+	void append_identity(Array &options);
+	void append_slot_range(Array &options) const;
+	void append_limit(Array &options);
 
-    Dictionary make_rpc_param(const Variant& key, const Variant& value);
-    void quick_http_request(const Dictionary& request_body, const Callable& callback = Callable());
+	static void add_to_param_dict(Array &options, const String &key, const Variant &value);
 
-    void response_callback(const Dictionary &params);
-    void ws_response_callback(const Dictionary &params);
+	static Dictionary make_rpc_param(const Variant &key, const Variant &value);
+	void quick_http_request(const Dictionary &request_body);
+
+	void response_callback(const Dictionary &params);
+	void ws_response_callback(const Dictionary &params);
 
 protected:
-    static void _bind_methods();
+	static void _bind_methods();
 
 public:
+	/** Incrementing ID of the next request. */
+	static unsigned int global_rpc_id;
 
-    /** Incrementing ID of the next request. */
-    static unsigned int global_rpc_id;
+	SolanaClient();
 
-    SolanaClient();
+	/**
+	 * @brief Parses a URL string into its components
+	 *
+	 * Parses scheme, userinfo, host, port, path, query and fragment from a URL string.
+	 * If the information is missing, the field will not be present in the result dictionary.
+	 *
+	 * @param url URL Sting to parse the data from.
+	 * @return Dictionary with the parsed URL information.
+	 */
+	static Dictionary parse_url(const String &url);
 
-    /**
-     * @brief Parses a URL string into its components
-     * 
-     * Parses scheme, userinfo, host, port, path, query and fragment from a URL string.
-     * If the information is missing, the field will not be present in the result dictionary.
-     * 
-     * @param url URL Sting to parse the data from.
-     * @return Dictionary with the parsed URL information.
-     */
-    static Dictionary parse_url(const String& url);
+	/**
+	 * @brief Assembles a URL string from a dictionary of components.
+	 *
+	 * This is the reverse of parse_url. The method takes the a dictionary with the fields
+	 * scheme, userinfo, host, port, path, query and fragment. It extracts the fields and
+	 * creates a URL string.
+	 *
+	 * @param url_components A dictionary with URL data.
+	 * @return An assembled URL String.
+	 */
+	static String assemble_url(const Dictionary &url_components);
 
-    /**
-     * @brief Assembles a URL string from a dictionary of components.
-     * 
-     * This is the reverse of parse_url. The method takes the a dictionary with the fields
-     * scheme, userinfo, host, port, path, query and fragment. It extracts the fields and
-     * creates a URL string.
-     * 
-     * @param url_components A dictionary with URL data.
-     * @return An assembled URL String. 
-     */
-    static String assemble_url(const Dictionary& url_components);
+	/**
+	 * @brief Get the next request identifier.
+	 *
+	 * @return The request ID of the next request.
+	 */
+	static unsigned int get_next_request_identifier();
 
-    /**
-     * @brief Get the next request identifier.
-     * 
-     * @return The request ID of the next request.
-     */
-    static unsigned int get_next_request_identifier();
+	void _process(double delta) override;
+	void _ready() override;
 
-    void _process(double delta) override;
-    void _ready() override;
+	/**
+	 * @brief Builds a dictionary representing the RPC request body.
+	 *
+	 * Takes a RPC method and parameters and creates a RPC request body as a Dictionary.
+	 * The request body will contain a request identifier and the identifier will be
+	 * incremented.
+	 *
+	 * @param method Name of the RPC method.
+	 * @param params Array of parameters.
+	 * @return Dictionary representing the request body.
+	 */
+	static Dictionary make_rpc_dict(const String &method, const Array &params);
 
-    /**
-     * @brief Builds a dictionary representing the RPC request body.
-     * 
-     * Takes a RPC method and parameters and creates a RPC request body as a Dictionary.
-     * The request body will contain a request identifier and the identifier will be 
-     * incremented.
-     * 
-     * @param method Name of the RPC method.
-     * @param params Array of parameters.
-     * @return Dictionary representing the request body.
-     */
-    static Dictionary make_rpc_dict(const String& method, const Array& params);
+	/**
+	 * @brief Set the callback of the http requests.
+	 *
+	 * This method will set a custom callback to use when getting an http response.
+	 * The default method is response_callback.
+	 *
+	 * @param callback The callback to run when http respponse is received.
+	 */
+	void set_callback(const Callable &callback);
 
-    /**
-     * @brief Set the callback of the http requests.
-     * 
-     * This method will set a custom callback to use when getting an http response.
-     * The default method is response_callback.
-     * 
-     * @param callback The callback to run when http respponse is received.
-     */
-    void set_callback(Callable callback);
+	/**
+	 * @brief Set the url to use by this client instance.
+	 *
+	 * The SolanaClient uses the URL in project settings. However, this method overrides that URL.
+	 * By calling this method this instance will use the provided URL instead. Once the URL override
+	 * is set it cannot be unset.
+	 *
+	 * @param url
+	 */
 
-    /**
-     * @brief Set the url to use by this client instance.
-     * 
-     * The SolanaClient uses the URL in project settings. However, this method overrides that URL.
-     * By calling this method this instance will use the provided URL instead. Once the URL override
-     * is set it cannot be unset.
-     * 
-     * @param url 
-     */
+	void set_url_override(const String &url);
 
-    void set_url_override(const String& url);
+	/**
+	 * @brief Get the url override URL.
+	 *
+	 * @return Overridden URL String.
+	 */
+	String get_url_override();
 
-    /**
-     * @brief Get the url override URL.
-     * 
-     * @return Overridden URL String.
-     */
-    String get_url_override();
+	/**
+	 * @brief Set the timeout of requests
+	 *
+	 * Sets timeout to use when calling RPC endpoint. When a request takes longer that the timeout,
+	 * the SolanaClient will stop waiting and throw a timeout response instead. This will trigger
+	 * response signal too, but with a timeout error.
+	 *
+	 * @param timeout Timeout in seconds.
+	 */
+	void set_timeout(float timeout);
 
-    /**
-     * @brief Set the timeout of requests
-     * 
-     * Sets timeout to use when calling RPC endpoint. When a request takes longer that the timeout,
-     * the SolanaClient will stop waiting and throw a timeout response instead. This will trigger
-     * response signal too, but with a timeout error.
-     * 
-     * @param timeout Timeout in seconds.
-     */
-    void set_timeout(float timeout);
+	/**
+	 * @brief Get the current timeout.
+	 *
+	 * @return Current timeout in seconds.
+	 */
+	float get_timeout() const;
 
-    /**
-     * @brief Get the current timeout.
-     * 
-     * @return Current timeout in seconds. 
-     */
-    float get_timeout();
-    
-    void set_ws_url(const String& url);
-    String get_ws_url();
+	void set_ws_url(const String &url);
+	String get_ws_url();
 
-    void set_commitment(const String& commitment);
-    String get_commitment();
+	void set_commitment(const String &commitment);
+	String get_commitment();
 
-    void set_encoding(const String& encoding);
-    String get_encoding();
+	void set_encoding(const String &encoding);
+	String get_encoding();
 
-    void set_transaction_detail(const String& transaction_detail);
+	void set_transaction_detail(const String &transaction_detail);
 
-    void enable_min_context_slot(int slot);
-    void disable_min_context_slot();
+	void enable_min_context_slot(int slot);
+	void disable_min_context_slot();
 
-    void enable_account_filter(uint64_t offset, uint64_t length);
-    void disable_account_filter();
-    
-    void enable_max_transaction_version(uint64_t version);
-    void disable_max_transaction_version();
+	void enable_account_filter(uint64_t offset, uint64_t length);
+	void disable_account_filter();
 
-    void enable_rewards();
-    void disable_rewards();
+	void enable_max_transaction_version(uint64_t version);
+	void disable_max_transaction_version();
 
-    void enable_identity(const String& identity);
-    void disable_identity();
+	void enable_rewards();
+	void disable_rewards();
 
-    void enable_slot_range(uint64_t first, uint64_t last);
-    void disable_slot_range();
+	void enable_identity(const String &identity);
+	void disable_identity();
 
-    void set_async_override(bool use_async);
-    bool get_async_override();
-    bool is_ready();
+	void enable_slot_range(uint64_t first, uint64_t last);
+	void disable_slot_range();
 
-    void get_account_info(const String& account);
-    void get_balance(const String& account);
-    void get_block(uint64_t slot, const String& detail);
-    void get_block_height();
-    void get_latest_blockhash();
-    void get_block_production();
-    void get_block_commitment(uint64_t slot_number);
-    void get_blocks(uint64_t start_slot, const Variant& end_slot = Variant::NIL);
-    void get_blocks_with_limit(uint64_t start_slot, uint64_t end_slot);
-    void get_block_time(uint64_t slot);
-    void get_cluster_nodes();
-    void get_epoch_info();
-    void get_epoch_schedule();
-    void get_fee_for_message(const String& encoded_message);
-    void get_first_available_block();
-    void get_genesis_hash();
-    void get_health();
-    void get_highest_snapshot_slot();
-    void get_identity();
-    void get_inflation_governor();
-    void get_inflation_rate();
-    void get_inflation_reward(const PackedStringArray accounts, const Variant& epoch = Variant::NIL);
-    void get_largest_accounts(const String& filter = "");
-    void get_leader_schedule(const Variant& slot = Variant::NIL);
-    void get_max_retransmit_slot();
-    void get_max_shred_insert_slot();
-    void get_minimum_balance_for_rent_extemption(uint64_t data_size);
-    void get_multiple_accounts(const PackedStringArray accounts);
-    void get_program_accounts(const String& program_address, const Array& filters = Array(), bool with_context = false);
-    void get_recent_performance_samples();
-    void get_recent_prioritization_fees(PackedStringArray account_addresses);
-    void get_signature_for_address(const String& address, const String& before = "", const String& until = "");
-    void get_signature_statuses(const PackedStringArray signatures, bool search_transaction_history = false);
-    void get_slot();
-    void get_slot_leader();
-    void get_slot_leaders(const Variant& start_slot = Variant(), const Variant& slot_limit = Variant());
-    void get_stake_activation(const String& account);
-    void get_stake_minimum_delegation();
-    void get_supply(bool exclude_non_circulating = false);
-    void get_token_account_balance(const String& token_account);
-    void get_token_accounts_by_delegate(const String& account_delegate, const String &mint = "", const String& program_id = "");
-    void get_token_accounts_by_owner(const String& owner, const String &mint = "", const String& program_id = "");
-    void get_token_largest_account(const String& token_mint);
-    void get_token_supply(const String& token_mint);
-    void get_transaction(const String& signature);
-    void get_transaction_count();
-    void get_version();
-    void get_vote_accounts(const String& vote_pubkey = "", bool keep_unstaked_delinquents = false);
-    void is_blockhash_valid(const String& blockhash);
-    void minimum_ledger_slot();
-    void request_airdrop(const String& address, uint64_t lamports);
-    void send_transaction(const String& encoded_transaction, uint64_t max_retries = UINT64_MAX, bool skip_preflight = false);
-    void simulate_transaction(const String& encoded_transaction, bool sig_verify = false, bool replace_blockhash = false, Array account_addresses = Array(), const String& account_encoding = "base64");
+	void set_async_override(bool use_async);
+	bool get_async_override() const;
+	bool is_ready() const;
 
-    void get_asset(const Variant &id);
-    void get_asset_proof(const Variant &id);
-    void get_assets_by_authority(const Variant &authority, uint32_t page=1, uint32_t limit=10);
-    void get_assets_by_creator_address(const Variant &creator_address, bool only_verified=false, uint32_t page=1, uint32_t limit=10);
-    void get_assets_by_group(const String group_key, const Variant &group_value, uint32_t page=1, uint32_t limit=10);
-    void get_assets_by_owner(const Variant &owner, uint32_t page=1, uint32_t limit=10);
+	void get_account_info(const String &account);
+	void get_balance(const String &account);
+	void get_block(uint64_t slot);
+	void get_block_height();
+	void get_latest_blockhash();
+	void get_block_production();
+	void get_block_commitment(uint64_t slot_number);
+	void get_blocks(uint64_t start_slot, const Variant &end_slot = Variant::NIL);
+	void get_blocks_with_limit(uint64_t start_slot, uint64_t end_slot);
+	void get_block_time(uint64_t slot);
+	void get_cluster_nodes();
+	void get_epoch_info();
+	void get_epoch_schedule();
+	void get_fee_for_message(const String &encoded_message);
+	void get_first_available_block();
+	void get_genesis_hash();
+	void get_health();
+	void get_highest_snapshot_slot();
+	void get_identity();
+	void get_inflation_governor();
+	void get_inflation_rate();
+	void get_inflation_reward(const PackedStringArray &accounts, const Variant &epoch = Variant::NIL);
+	void get_largest_accounts(const String &filter = "");
+	void get_leader_schedule(const Variant &slot = Variant::NIL);
+	void get_max_retransmit_slot();
+	void get_max_shred_insert_slot();
+	void get_minimum_balance_for_rent_extemption(uint64_t data_size);
+	void get_multiple_accounts(const PackedStringArray &accounts);
+	void get_program_accounts(const String &program_address, const Array &filters = Array(), bool with_context = false);
+	void get_recent_performance_samples();
+	void get_recent_prioritization_fees(const PackedStringArray &account_addresses);
+	void get_signature_for_address(const String &address, const String &before = "", const String &until = "");
+	void get_signature_statuses(const PackedStringArray &signatures, bool search_transaction_history = false);
+	void get_slot();
+	void get_slot_leader();
+	void get_slot_leaders(const Variant &start_slot = Variant(), const Variant &slot_limit = Variant());
+	void get_stake_activation(const String &account);
+	void get_stake_minimum_delegation();
+	void get_supply(bool exclude_non_circulating = false);
+	void get_token_account_balance(const String &token_account);
+	void get_token_accounts_by_delegate(const String &account_delegate, const String &mint = "", const String &program_id = "");
+	void get_token_accounts_by_owner(const String &owner, const String &mint = "", const String &program_id = "");
+	void get_token_largest_account(const String &token_mint);
+	void get_token_supply(const String &token_mint);
+	void get_transaction(const String &signature);
+	void get_transaction_count();
+	void get_version();
+	void get_vote_accounts(const String &vote_pubkey = "", bool keep_unstaked_delinquents = false);
+	void is_blockhash_valid(const String &blockhash);
+	void minimum_ledger_slot();
+	void request_airdrop(const String &address, uint64_t lamports);
+	void send_transaction(const String &encoded_transaction, uint64_t max_retries = UINT64_MAX, bool skip_preflight = false);
+	void simulate_transaction(const String &encoded_transaction, bool sig_verify = false, bool replace_blockhash = false, const Array &account_addresses = Array(), const String &account_encoding = "base64");
 
-    void account_subscribe(const Variant &account_key, const Callable &callback);
-    void signature_subscribe(const String &signature, const Callable &callback, const String &commitment);
-    void program_subscribe(const String &program_id, const Callable &callback);
-    void root_subscribe(const Callable &callback);
-    void slot_subscribe(const Callable &callback);
+	void get_asset(const Variant &asset_id);
+	void get_asset_proof(const Variant &asset_id);
+	void get_assets_by_authority(const Variant &authority, uint32_t page = 1, uint32_t limit = 10);
+	void get_assets_by_creator_address(const Variant &creator_address, bool only_verified = false, uint32_t page = 1, uint32_t limit = 10);
+	void get_assets_by_group(const String &group_key, const Variant &group_value, uint32_t page = 1, uint32_t limit = 10);
+	void get_assets_by_owner(const Variant &owner, uint32_t page = 1, uint32_t limit = 10);
 
-    void unsubscribe_all(const Callable &callback);
+	void account_subscribe(const Variant &account_key, const Callable &callback);
+	void signature_subscribe(const String &signature, const Callable &callback, const String &commitment);
+	void program_subscribe(const String &program_id, const Callable &callback);
+	void root_subscribe(const Callable &callback);
+	void slot_subscribe(const Callable &callback);
 
-    ~SolanaClient();
+	void unsubscribe_all(const Callable &callback);
+
+	~SolanaClient() = default;
 };
-}
+} //namespace godot
 
 #endif

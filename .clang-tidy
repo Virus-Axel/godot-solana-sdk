@@ -16,7 +16,10 @@ Checks: '
     -altera-unroll-loops,
     -altera-id-dependent-backward-branch,
     -boost-use-ranges,
-    -readability-use-anyofallof
+    -readability-use-anyofallof,
+    -abseil-*,
+    -android-*,
+    -altera-*
   '
 HeaderFileExtensions: ['', h, hh, hpp, hxx, inc, glsl]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]

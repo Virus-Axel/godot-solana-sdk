@@ -17,7 +17,7 @@ bool RpcSingleWsRequestClient::is_pending() {
 	return pending_request;
 }
 
-void RpcSingleWsRequestClient::process(float delta) {
+void RpcSingleWsRequestClient::process(double delta) {
 	unsigned int current_frame = Engine::get_singleton()->get_process_frames();
 	if (current_frame == last_processed_frame) {
 		return;

@@ -1,22 +1,28 @@
 #include "solana_client.hpp"
 
-#include <godot_cpp/classes/http_request.hpp>
-#include <godot_cpp/classes/java_script_bridge.hpp>
-#include <godot_cpp/classes/json.hpp>
-#include <godot_cpp/classes/os.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/classes/tls_options.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/godot.hpp>
+#include <cstdint>
 
-#include <godot_cpp/classes/engine.hpp>
-#include <pubkey.hpp>
+#include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/classes/java_script_bridge.hpp"
+#include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/classes/project_settings.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/object.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/callable_method_pointer.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+
+#include "pubkey.hpp"
+#include "rpc_multi_http_request_client.hpp"
+#include "rpc_single_ws_request_client.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 
 unsigned int SolanaClient::global_rpc_id = 1;
-
-using internal::gdextension_interface_print_warning;
 
 String SolanaClient::ws_from_http(const String &http_url) {
 	Dictionary parsed_url = parse_url(http_url);
@@ -40,33 +46,29 @@ String SolanaClient::ws_from_http(const String &http_url) {
 String SolanaClient::get_real_url() {
 	if (url_override.is_empty()) {
 		return ProjectSettings::get_singleton()->get_setting("solana_sdk/client/default_url");
-	} else {
-		return url_override;
 	}
+	return url_override;
 }
 
-uint32_t SolanaClient::get_real_http_port() {
+uint32_t SolanaClient::get_real_http_port() const {
 	if (http_port_override == 0) {
 		return ProjectSettings::get_singleton()->get_setting("solana_sdk/client/default_http_port");
-	} else {
-		return http_port_override;
 	}
+	return http_port_override;
 }
 
-uint32_t SolanaClient::get_real_ws_port() {
+uint32_t SolanaClient::get_real_ws_port() const {
 	if (ws_port_override == 0) {
 		return ProjectSettings::get_singleton()->get_setting("solana_sdk/client/default_ws_port");
-	} else {
-		return ws_port_override;
 	}
+	return ws_port_override;
 }
 
 String SolanaClient::get_real_ws_url() {
 	if (ws_url.is_empty()) {
 		return ws_from_http(get_real_url());
-	} else {
-		return ws_url;
 	}
+	return ws_url;
 }
 
 RpcSingleWsRequestClient *SolanaClient::get_current_ws_client() {
@@ -85,7 +87,7 @@ void SolanaClient::append_commitment(Array &options) {
 	}
 }
 
-void SolanaClient::append_min_context_slot(Array &options) {
+void SolanaClient::append_min_context_slot(Array &options) const {
 	if (min_constext_slot_enabled) {
 		add_to_param_dict(options, "minContextSlot", min_context_slot);
 	}
@@ -101,7 +103,7 @@ void SolanaClient::append_transaction_detail(Array &options) {
 	add_to_param_dict(options, "transactionDetails", String(SolanaClient::transaction_detail.c_str()));
 }
 
-void SolanaClient::append_account_filter(Array &options) {
+void SolanaClient::append_account_filter(Array &options) const{
 	if (account_filter_enabled) {
 		Dictionary filter;
 		filter["offset"] = filter_offset;
@@ -116,13 +118,13 @@ void SolanaClient::append_data_filter(Array &options, const Array &filters) {
 	}
 }
 
-void SolanaClient::append_max_transaction_version(Array &options) {
+void SolanaClient::append_max_transaction_version(Array &options) const {
 	if (max_transaction_version_enabled) {
 		add_to_param_dict(options, "maxSupportedTransactionVersion", max_transaction_version);
 	}
 }
 
-void SolanaClient::append_rewards(Array &options) {
+void SolanaClient::append_rewards(Array &options) const {
 	add_to_param_dict(options, "rewards", rewards);
 }
 
@@ -132,7 +134,7 @@ void SolanaClient::append_identity(Array &options) {
 	}
 }
 
-void SolanaClient::append_slot_range(Array &options) {
+void SolanaClient::append_slot_range(Array &options) const {
 	if (slot_range_enabled) {
 		Dictionary range;
 		range["first"] = first_slot;
@@ -176,13 +178,13 @@ Dictionary SolanaClient::make_rpc_param(const Variant &key, const Variant &value
 	return result;
 }
 
-void SolanaClient::quick_http_request(const Dictionary &request_body, const Callable &callback) {
+void SolanaClient::quick_http_request(const Dictionary &request_body) {
 	Dictionary parsed_url = parse_url(get_real_url());
 	const uint32_t real_port = get_real_http_port();
 	// Check if port is set in URL.
 	if (parsed_url.has("port")) {
-		if (real_port != (uint32_t)parsed_url["port"]) {
-			WARN_PRINT_ONCE_ED("Port is specified in URL and is not the same as port setting, ignoring port setting.");
+		if (real_port != static_cast<uint32_t>(parsed_url["port"])) {
+			WARN_PRINT_ONCE_ED_CUSTOM("Port is specified in URL and is not the same as port setting, ignoring port setting.");
 		}
 	} else {
 		parsed_url["port"] = real_port;
@@ -191,7 +193,7 @@ void SolanaClient::quick_http_request(const Dictionary &request_body, const Call
 	if (is_inside_tree() || async_override) {
 		get_current_http_client()->asynchronous_request(request_body, parsed_url, rpc_callback);
 	} else {
-		ERR_FAIL_EDMSG("SolanaClient must be in scene tree.");
+		ERR_FAIL_EDMSG_CUSTOM("SolanaClient must be in scene tree.");
 	}
 }
 
@@ -208,7 +210,7 @@ void SolanaClient::get_latest_blockhash() {
 	Array params;
 	append_commitment(params);
 
-	return quick_http_request(make_rpc_dict("getLatestBlockhash", params));
+	quick_http_request(make_rpc_dict("getLatestBlockhash", params));
 }
 
 void SolanaClient::get_block_production() {
@@ -217,7 +219,7 @@ void SolanaClient::get_block_production() {
 	append_identity(params);
 	append_slot_range(params);
 
-	return quick_http_request(make_rpc_dict("getBlockProduction", params));
+	quick_http_request(make_rpc_dict("getBlockProduction", params));
 }
 
 void SolanaClient::get_account_info(const String &account) {
@@ -228,7 +230,7 @@ void SolanaClient::get_account_info(const String &account) {
 	append_min_context_slot(params);
 	append_account_filter(params);
 
-	return quick_http_request(make_rpc_dict("getAccountInfo", params));
+	quick_http_request(make_rpc_dict("getAccountInfo", params));
 }
 
 void SolanaClient::get_balance(const String &account) {
@@ -239,10 +241,10 @@ void SolanaClient::get_balance(const String &account) {
 	append_min_context_slot(params);
 	append_account_filter(params);
 
-	return quick_http_request(make_rpc_dict("getBalance", params));
+	quick_http_request(make_rpc_dict("getBalance", params));
 }
 
-void SolanaClient::get_block(uint64_t slot, const String &detail) {
+void SolanaClient::get_block(uint64_t slot) {
 	Array params;
 	params.append(slot);
 	append_commitment(params);
@@ -251,7 +253,7 @@ void SolanaClient::get_block(uint64_t slot, const String &detail) {
 	append_max_transaction_version(params);
 	append_rewards(params);
 
-	return quick_http_request(make_rpc_dict("getBlock", params));
+	quick_http_request(make_rpc_dict("getBlock", params));
 }
 
 void SolanaClient::get_block_height() {
@@ -259,17 +261,17 @@ void SolanaClient::get_block_height() {
 	append_commitment(params);
 	append_min_context_slot(params);
 
-	return quick_http_request(make_rpc_dict("getBlockHeight", params));
+	quick_http_request(make_rpc_dict("getBlockHeight", params));
 }
 
 void SolanaClient::get_block_commitment(uint64_t slot_number) {
 	Array params;
 	params.append(slot_number);
 
-	return quick_http_request(make_rpc_dict("getBlockCommitment", params));
+	quick_http_request(make_rpc_dict("getBlockCommitment", params));
 }
 
-void SolanaClient::get_blocks(uint64_t start_slot, const Variant &end_slot) {
+void SolanaClient::get_blocks(uint64_t start_slot, const Variant &end_slot) { // NOLINT(bugprone-easily-swappable-parameters)
 	Array params;
 	params.append(start_slot);
 	if (end_slot.get_type() == Variant::INT) {
@@ -277,27 +279,27 @@ void SolanaClient::get_blocks(uint64_t start_slot, const Variant &end_slot) {
 	}
 	append_commitment(params);
 
-	return quick_http_request(make_rpc_dict("getBlocks", params));
+	quick_http_request(make_rpc_dict("getBlocks", params));
 }
 
-void SolanaClient::get_blocks_with_limit(uint64_t start_slot, uint64_t end_slot) {
+void SolanaClient::get_blocks_with_limit(uint64_t start_slot, uint64_t end_slot) { // NOLINT(bugprone-easily-swappable-parameters)
 	Array params;
 	params.append(start_slot);
 	params.append(end_slot);
 	append_commitment(params);
 
-	return quick_http_request(make_rpc_dict("getBlocksWithLimit", params));
+	quick_http_request(make_rpc_dict("getBlocksWithLimit", params));
 }
 
 void SolanaClient::get_block_time(uint64_t slot) {
 	Array params;
 	params.append(slot);
 
-	return quick_http_request(make_rpc_dict("getBlockTime", params));
+	quick_http_request(make_rpc_dict("getBlockTime", params));
 }
 
 void SolanaClient::get_cluster_nodes() {
-	return quick_http_request(make_rpc_dict("getClusterNodes", Array()));
+	quick_http_request(make_rpc_dict("getClusterNodes", Array()));
 }
 
 void SolanaClient::get_epoch_info() {
@@ -305,11 +307,11 @@ void SolanaClient::get_epoch_info() {
 	append_commitment(params);
 	append_min_context_slot(params);
 
-	return quick_http_request(make_rpc_dict("getEpochInfo", params));
+	quick_http_request(make_rpc_dict("getEpochInfo", params));
 }
 
 void SolanaClient::get_epoch_schedule() {
-	return quick_http_request(make_rpc_dict("getEpochSchedule", Array()));
+	quick_http_request(make_rpc_dict("getEpochSchedule", Array()));
 }
 
 void SolanaClient::get_fee_for_message(const String &encoded_message) {
@@ -318,41 +320,41 @@ void SolanaClient::get_fee_for_message(const String &encoded_message) {
 	append_commitment(params);
 	append_min_context_slot(params);
 
-	return quick_http_request(make_rpc_dict("getFeeForMessage", params));
+	quick_http_request(make_rpc_dict("getFeeForMessage", params));
 }
 
 void SolanaClient::get_first_available_block() {
-	return quick_http_request(make_rpc_dict("getFirstAvailableBlock", Array()));
+	quick_http_request(make_rpc_dict("getFirstAvailableBlock", Array()));
 }
 
 void SolanaClient::get_genesis_hash() {
-	return quick_http_request(make_rpc_dict("getGenesisHash", Array()));
+	quick_http_request(make_rpc_dict("getGenesisHash", Array()));
 }
 
 void SolanaClient::get_health() {
-	return quick_http_request(make_rpc_dict("getHealth", Array()));
+	quick_http_request(make_rpc_dict("getHealth", Array()));
 }
 
 void SolanaClient::get_highest_snapshot_slot() {
-	return quick_http_request(make_rpc_dict("getHighestSnapshotSlot", Array()));
+	quick_http_request(make_rpc_dict("getHighestSnapshotSlot", Array()));
 }
 
 void SolanaClient::get_identity() {
-	return quick_http_request(make_rpc_dict("getIdentity", Array()));
+	quick_http_request(make_rpc_dict("getIdentity", Array()));
 }
 
 void SolanaClient::get_inflation_governor() {
 	Array params;
 	append_commitment(params);
 
-	return quick_http_request(make_rpc_dict("getInflationGovernor", params));
+	quick_http_request(make_rpc_dict("getInflationGovernor", params));
 }
 
 void SolanaClient::get_inflation_rate() {
-	return quick_http_request(make_rpc_dict("getInflationRate", Array()));
+	quick_http_request(make_rpc_dict("getInflationRate", Array()));
 }
 
-void SolanaClient::get_inflation_reward(const PackedStringArray accounts, const Variant &epoch) {
+void SolanaClient::get_inflation_reward(const PackedStringArray &accounts, const Variant &epoch) { // NOLINT(bugprone-easily-swappable-parameters)
 	Array params;
 	params.append(accounts);
 	append_commitment(params);
@@ -361,7 +363,7 @@ void SolanaClient::get_inflation_reward(const PackedStringArray accounts, const 
 	}
 	append_min_context_slot(params);
 
-	return quick_http_request(make_rpc_dict("getInflationReward", params));
+	quick_http_request(make_rpc_dict("getInflationReward", params));
 }
 
 void SolanaClient::get_largest_accounts(const String &filter) {
@@ -371,7 +373,7 @@ void SolanaClient::get_largest_accounts(const String &filter) {
 		add_to_param_dict(params, "filter", filter);
 	}
 
-	return quick_http_request(make_rpc_dict("getLargestAccounts", params));
+	quick_http_request(make_rpc_dict("getLargestAccounts", params));
 }
 
 void SolanaClient::get_leader_schedule(const Variant &slot) {
@@ -380,15 +382,15 @@ void SolanaClient::get_leader_schedule(const Variant &slot) {
 	append_commitment(params);
 	append_identity(params);
 
-	return quick_http_request(make_rpc_dict("getLeaderSchedule", params));
+	quick_http_request(make_rpc_dict("getLeaderSchedule", params));
 }
 
 void SolanaClient::get_max_retransmit_slot() {
-	return quick_http_request(make_rpc_dict("getMaxRetransmitSlot", Array()));
+	quick_http_request(make_rpc_dict("getMaxRetransmitSlot", Array()));
 }
 
 void SolanaClient::get_max_shred_insert_slot() {
-	return quick_http_request(make_rpc_dict("getMaxShredInsertSlot", Array()));
+	quick_http_request(make_rpc_dict("getMaxShredInsertSlot", Array()));
 }
 
 void SolanaClient::get_minimum_balance_for_rent_extemption(uint64_t data_size) {
@@ -396,10 +398,10 @@ void SolanaClient::get_minimum_balance_for_rent_extemption(uint64_t data_size) {
 	params.append(data_size);
 	append_commitment(params);
 
-	return quick_http_request(make_rpc_dict("getMinimumBalanceForRentExemption", params));
+	quick_http_request(make_rpc_dict("getMinimumBalanceForRentExemption", params));
 }
 
-void SolanaClient::get_multiple_accounts(const PackedStringArray accounts) {
+void SolanaClient::get_multiple_accounts(const PackedStringArray &accounts) {
 	Array params;
 	params.append(accounts);
 	append_commitment(params);
@@ -407,7 +409,7 @@ void SolanaClient::get_multiple_accounts(const PackedStringArray accounts) {
 	append_account_filter(params);
 	append_encoding(params);
 
-	return quick_http_request(make_rpc_dict("getMultipleAccounts", params));
+	quick_http_request(make_rpc_dict("getMultipleAccounts", params));
 }
 
 void SolanaClient::get_program_accounts(const String &program_address, const Array &filters, bool with_context) {
@@ -419,26 +421,26 @@ void SolanaClient::get_program_accounts(const String &program_address, const Arr
 	append_encoding(params);
 	append_account_filter(params);
 	append_data_filter(params, filters);
-	return quick_http_request(make_rpc_dict("getProgramAccounts", params));
+	quick_http_request(make_rpc_dict("getProgramAccounts", params));
 }
 
 void SolanaClient::get_recent_performance_samples() {
 	Array params;
 	append_limit(params);
 
-	return quick_http_request(make_rpc_dict("getRecentPerformanceSamples", params));
+	quick_http_request(make_rpc_dict("getRecentPerformanceSamples", params));
 }
 
-void SolanaClient::get_recent_prioritization_fees(PackedStringArray account_addresses) {
+void SolanaClient::get_recent_prioritization_fees(const PackedStringArray &account_addresses) {
 	Array params;
 	if (!account_addresses.is_empty()) {
 		params.append(account_addresses);
 	}
 
-	return quick_http_request(make_rpc_dict("getRecentPrioritizationFees", params));
+	quick_http_request(make_rpc_dict("getRecentPrioritizationFees", params));
 }
 
-void SolanaClient::get_signature_for_address(const String &address, const String &before, const String &until) {
+void SolanaClient::get_signature_for_address(const String &address, const String &before, const String &until) { // NOLINT(bugprone-easily-swappable-parameters)
 	Array params;
 	params.append(address);
 	append_commitment(params);
@@ -451,16 +453,16 @@ void SolanaClient::get_signature_for_address(const String &address, const String
 		add_to_param_dict(params, "until", until);
 	}
 
-	return quick_http_request(make_rpc_dict("getSignaturesForAddress", params));
+	quick_http_request(make_rpc_dict("getSignaturesForAddress", params));
 }
 
-void SolanaClient::get_signature_statuses(const PackedStringArray signatures, bool search_transaction_history) {
+void SolanaClient::get_signature_statuses(const PackedStringArray &signatures, bool search_transaction_history) {
 	Array params;
 
 	params.append(signatures);
 	add_to_param_dict(params, "searchTransactionHistory", search_transaction_history);
 
-	return quick_http_request(make_rpc_dict("getSignatureStatuses", params));
+	quick_http_request(make_rpc_dict("getSignatureStatuses", params));
 }
 
 void SolanaClient::get_slot() {
@@ -469,7 +471,7 @@ void SolanaClient::get_slot() {
 	append_commitment(params);
 	append_min_context_slot(params);
 
-	return quick_http_request(make_rpc_dict("getSlot", params));
+	quick_http_request(make_rpc_dict("getSlot", params));
 }
 
 void SolanaClient::get_slot_leader() {
@@ -478,7 +480,7 @@ void SolanaClient::get_slot_leader() {
 	append_commitment(params);
 	append_min_context_slot(params);
 
-	return quick_http_request(make_rpc_dict("getSlotLeader", params));
+	quick_http_request(make_rpc_dict("getSlotLeader", params));
 }
 
 void SolanaClient::get_slot_leaders(const Variant &start_slot, const Variant &slot_limit) {
@@ -491,7 +493,7 @@ void SolanaClient::get_slot_leaders(const Variant &start_slot, const Variant &sl
 		params.append(slot_limit);
 	}
 
-	return quick_http_request(make_rpc_dict("getSlotLeaders", params));
+	quick_http_request(make_rpc_dict("getSlotLeaders", params));
 }
 
 void SolanaClient::get_stake_activation(const String &account) {
@@ -501,7 +503,7 @@ void SolanaClient::get_stake_activation(const String &account) {
 	append_commitment(params);
 	append_min_context_slot(params);
 
-	return quick_http_request(make_rpc_dict("getStakeActivation", params));
+	quick_http_request(make_rpc_dict("getStakeActivation", params));
 }
 
 void SolanaClient::get_stake_minimum_delegation() {
@@ -509,7 +511,7 @@ void SolanaClient::get_stake_minimum_delegation() {
 
 	append_commitment(params);
 
-	return quick_http_request(make_rpc_dict("getStakeMinimumDelegation", params));
+	quick_http_request(make_rpc_dict("getStakeMinimumDelegation", params));
 }
 
 void SolanaClient::get_supply(bool exclude_non_circulating) {
@@ -518,7 +520,7 @@ void SolanaClient::get_supply(bool exclude_non_circulating) {
 	append_commitment(params);
 	add_to_param_dict(params, "excludeNonCirculatingAccountsList", exclude_non_circulating);
 
-	return quick_http_request(make_rpc_dict("getSupply", params));
+	quick_http_request(make_rpc_dict("getSupply", params));
 }
 
 void SolanaClient::get_token_account_balance(const String &token_account) {
@@ -527,11 +529,12 @@ void SolanaClient::get_token_account_balance(const String &token_account) {
 	params.append(token_account);
 	append_commitment(params);
 
-	return quick_http_request(make_rpc_dict("getTokenAccountBalance", params));
+	quick_http_request(make_rpc_dict("getTokenAccountBalance", params));
 }
 
-void SolanaClient::get_token_accounts_by_delegate(const String &account_delegate, const String &mint, const String &program_id) {
+void SolanaClient::get_token_accounts_by_delegate(const String &account_delegate, const String &mint, const String &program_id) { // NOLINT(bugprone-easily-swappable-parameters)
 	Array params;
+	params.append(account_delegate);
 
 	Dictionary dict_argument;
 
@@ -550,10 +553,10 @@ void SolanaClient::get_token_accounts_by_delegate(const String &account_delegate
 		params.insert(0, dict_argument);
 	}
 
-	return quick_http_request(make_rpc_dict("getTokenAccountsByDelegate", params));
+	quick_http_request(make_rpc_dict("getTokenAccountsByDelegate", params));
 }
 
-void SolanaClient::get_token_accounts_by_owner(const String &owner, const String &mint, const String &program_id) {
+void SolanaClient::get_token_accounts_by_owner(const String &owner, const String &mint, const String &program_id) { // NOLINT(bugprone-easily-swappable-parameters)
 	Array params;
 	Dictionary dict_argument;
 
@@ -574,7 +577,7 @@ void SolanaClient::get_token_accounts_by_owner(const String &owner, const String
 		params.insert(1, dict_argument);
 	}
 
-	return quick_http_request(make_rpc_dict("getTokenAccountsByOwner", params));
+	quick_http_request(make_rpc_dict("getTokenAccountsByOwner", params));
 }
 
 void SolanaClient::get_token_largest_account(const String &token_mint) {
@@ -583,7 +586,7 @@ void SolanaClient::get_token_largest_account(const String &token_mint) {
 	params.append(token_mint);
 	append_commitment(params);
 
-	return quick_http_request(make_rpc_dict("getTokenLargestAccounts", params));
+	quick_http_request(make_rpc_dict("getTokenLargestAccounts", params));
 }
 
 void SolanaClient::get_token_supply(const String &token_mint) {
@@ -592,7 +595,7 @@ void SolanaClient::get_token_supply(const String &token_mint) {
 	params.append(token_mint);
 	append_commitment(params);
 
-	return quick_http_request(make_rpc_dict("getTokenSupply", params));
+	quick_http_request(make_rpc_dict("getTokenSupply", params));
 }
 
 void SolanaClient::get_transaction(const String &signature) {
@@ -603,7 +606,7 @@ void SolanaClient::get_transaction(const String &signature) {
 	append_max_transaction_version(params);
 	append_encoding(params);
 
-	return quick_http_request(make_rpc_dict("getTransaction", params));
+	quick_http_request(make_rpc_dict("getTransaction", params));
 }
 
 void SolanaClient::get_transaction_count() {
@@ -612,11 +615,11 @@ void SolanaClient::get_transaction_count() {
 	append_commitment(params);
 	append_min_context_slot(params);
 
-	return quick_http_request(make_rpc_dict("getTransactionCount", params));
+	quick_http_request(make_rpc_dict("getTransactionCount", params));
 }
 
 void SolanaClient::get_version() {
-	return quick_http_request(make_rpc_dict("getVersion", Array()));
+	quick_http_request(make_rpc_dict("getVersion", Array()));
 }
 
 void SolanaClient::get_vote_accounts(const String &vote_pubkey, bool keep_unstaked_delinquents) {
@@ -628,7 +631,7 @@ void SolanaClient::get_vote_accounts(const String &vote_pubkey, bool keep_unstak
 	}
 	add_to_param_dict(params, "keepUnstakedDelinquents", keep_unstaked_delinquents);
 
-	return quick_http_request(make_rpc_dict("getVoteAccounts", params));
+	quick_http_request(make_rpc_dict("getVoteAccounts", params));
 }
 
 void SolanaClient::is_blockhash_valid(const String &blockhash) {
@@ -638,11 +641,11 @@ void SolanaClient::is_blockhash_valid(const String &blockhash) {
 	append_commitment(params);
 	append_min_context_slot(params);
 
-	return quick_http_request(make_rpc_dict("isBlockhashValid", params));
+	quick_http_request(make_rpc_dict("isBlockhashValid", params));
 }
 
 void SolanaClient::minimum_ledger_slot() {
-	return quick_http_request(make_rpc_dict("minimumLedgerSlot", Array()));
+	quick_http_request(make_rpc_dict("minimumLedgerSlot", Array()));
 }
 
 void SolanaClient::request_airdrop(const String &address, uint64_t lamports) {
@@ -652,7 +655,7 @@ void SolanaClient::request_airdrop(const String &address, uint64_t lamports) {
 	params.append(lamports);
 	append_commitment(params);
 
-	return quick_http_request(make_rpc_dict("requestAirdrop", params));
+	quick_http_request(make_rpc_dict("requestAirdrop", params));
 }
 
 void SolanaClient::send_transaction(const String &encoded_transaction, uint64_t max_retries, bool skip_preflight) {
@@ -667,10 +670,10 @@ void SolanaClient::send_transaction(const String &encoded_transaction, uint64_t 
 	}
 	append_min_context_slot(params);
 
-	return quick_http_request(make_rpc_dict("sendTransaction", params));
+	quick_http_request(make_rpc_dict("sendTransaction", params));
 }
 
-void SolanaClient::simulate_transaction(const String &encoded_transaction, bool sig_verify, bool replace_blockhash, Array account_addresses, const String &account_encoding) {
+void SolanaClient::simulate_transaction(const String &encoded_transaction, bool sig_verify, bool replace_blockhash, const Array &account_addresses, const String &account_encoding) {
 	Array params;
 
 	params.append(encoded_transaction);
@@ -688,81 +691,72 @@ void SolanaClient::simulate_transaction(const String &encoded_transaction, bool 
 		add_to_param_dict(params, "accounts", accounts);
 	}
 
-	return quick_http_request(make_rpc_dict("simulateTransaction", params));
+	quick_http_request(make_rpc_dict("simulateTransaction", params));
 }
 
-void SolanaClient::get_asset(const Variant &id) {
+void SolanaClient::get_asset(const Variant &asset_id) {
 	Array params;
 
-	params.append(Pubkey::string_from_variant(id));
+	params.append(Pubkey::string_from_variant(asset_id));
 
-	return quick_http_request(make_rpc_dict("getAsset", params));
+	quick_http_request(make_rpc_dict("getAsset", params));
 }
 
-void SolanaClient::get_asset_proof(const Variant &id) {
+void SolanaClient::get_asset_proof(const Variant &asset_id) {
 	Array params;
+	params.append(Pubkey::string_from_variant(asset_id));
 
-	params.append(Pubkey::string_from_variant(id));
-
-	return quick_http_request(make_rpc_dict("getAssetProof", params));
+	quick_http_request(make_rpc_dict("getAssetProof", params));
 }
 
-void SolanaClient::get_assets_by_authority(const Variant &authority, uint32_t page, uint32_t limit) {
-	Array params;
-
+void SolanaClient::get_assets_by_authority(const Variant &authority, uint32_t page, uint32_t limit) { // NOLINT(bugprone-easily-swappable-parameters)
 	Dictionary param_dict;
 	param_dict["authorityAddress"] = Pubkey::string_from_variant(authority);
 	param_dict["page"] = page;
 	param_dict["limit"] = limit;
 
-	Dictionary rpc_dict = make_rpc_dict("getAssetsByAuthority", params);
+	Dictionary rpc_dict = make_rpc_dict("getAssetsByAuthority", Array());
 	rpc_dict["params"] = param_dict;
 
-	return quick_http_request(rpc_dict);
+	quick_http_request(rpc_dict);
 }
 
-void SolanaClient::get_assets_by_creator_address(const Variant &creator_address, bool only_verified, uint32_t page, uint32_t limit) {
-	Array params;
-
+void SolanaClient::get_assets_by_creator_address(const Variant &creator_address, bool only_verified, uint32_t page, uint32_t limit) { // NOLINT(bugprone-easily-swappable-parameters)
 	Dictionary params_dict;
 	params_dict["creatorAddress"] = Pubkey::string_from_variant(creator_address);
 	params_dict["onlyVerified"] = only_verified;
 	params_dict["page"] = page;
 	params_dict["limit"] = limit;
 
-	Dictionary rpc_dict = make_rpc_dict("getAssetsByCreator", params);
+	Dictionary rpc_dict = make_rpc_dict("getAssetsByCreator", Array());
 	rpc_dict["params"] = params_dict;
-	return quick_http_request(rpc_dict);
+	quick_http_request(rpc_dict);
 }
 
-void SolanaClient::get_assets_by_group(const String group_key, const Variant &group_value, uint32_t page, uint32_t limit) {
-	Array params;
-
+void SolanaClient::get_assets_by_group(const String &group_key, const Variant &group_value, uint32_t page, uint32_t limit) { // NOLINT(bugprone-easily-swappable-parameters)
 	Dictionary params_dict;
 	params_dict["groupKey"] = group_key;
 	params_dict["groupValue"] = Pubkey::string_from_variant(group_value);
 	params_dict["page"] = page;
 	params_dict["limit"] = limit;
 
-	Dictionary rpc_dict = make_rpc_dict("getAssetsByGroup", params);
+	Dictionary rpc_dict = make_rpc_dict("getAssetsByGroup", Array());
 	rpc_dict["params"] = params_dict;
-	return quick_http_request(rpc_dict);
+	quick_http_request(rpc_dict);
 }
 
-void SolanaClient::get_assets_by_owner(const Variant &owner, uint32_t page, uint32_t limit) {
-	Array params;
-
+void SolanaClient::get_assets_by_owner(const Variant &owner, uint32_t page, uint32_t limit) { // NOLINT(bugprone-easily-swappable-parameters)
 	Dictionary param_dict;
 	param_dict["ownerAddress"] = Pubkey::string_from_variant(owner);
 	param_dict["page"] = page;
 	param_dict["limit"] = limit;
 
-	Dictionary rpc_dict = make_rpc_dict("getAssetsByOwner", params);
+	Dictionary rpc_dict = make_rpc_dict("getAssetsByOwner", Array());
 	rpc_dict["params"] = param_dict;
-	return quick_http_request(rpc_dict);
+	quick_http_request(rpc_dict);
 }
 
-void SolanaClient::account_subscribe(const Variant &account_key, const Callable &callback) {
+void SolanaClient::account_subscribe(const Variant &account_key, const Callable &callback) { // NOLINT(bugprone-easily-swappable-parameters)
 	Array params;
 	params.append(Pubkey::string_from_variant(account_key));
 	add_to_param_dict(params, "encoding", encoding);
@@ -921,11 +915,9 @@ void SolanaClient::_process(double delta) {
 void SolanaClient::_ready() {
 }
 
-SolanaClient::SolanaClient() {
-	transaction_detail = "full";
+SolanaClient::SolanaClient() :
+		transaction_detail("full") {
 	ws_callback = callable_mp(this, &SolanaClient::ws_response_callback);
-	//create_ws_call();
-	//create_http_call();
 }
 
 Dictionary SolanaClient::parse_url(const String &url) {
@@ -952,7 +944,7 @@ Dictionary SolanaClient::parse_url(const String &url) {
 	}
 
 	// Get path and host.
-	const int path_location = sliced_url.find("/");
+	const int64_t path_location = sliced_url.find("/");
 	if (path_location > 0) {
 		const String path = sliced_url.substr(path_location);
 		if (path.length() > 1) {
@@ -982,25 +974,25 @@ String SolanaClient::assemble_url(const Dictionary &url_components) {
 	String result = "";
 
 	if (url_components.has("scheme")) {
-		result += (String)url_components["scheme"] + "://";
+		result += static_cast<String>(url_components["scheme"]) + "://";
 	}
 	if (url_components.has("userinfo")) {
-		result += (String)url_components["userinfo"] + "@";
+		result += static_cast<String>(url_components["userinfo"]) + "@";
 	}
 	if (url_components.has("host")) {
-		result += (String)url_components["host"];
+		result += static_cast<String>(url_components["host"]);
 	}
 	if (url_components.has("port")) {
 		result += ":" + String::num_uint64(url_components["port"]);
 	}
 	if (url_components.has("path")) {
-		result += (String)url_components["path"];
+		result += static_cast<String>(url_components["path"]);
 	}
 	if (url_components.has("query")) {
-		result += "?" + (String)url_components["query"];
+		result += "?" + static_cast<String>(url_components["query"]);
 	}
 	if (url_components.has("fragment")) {
-		result += "#" + (String)url_components["fragment"];
+		result += "#" + static_cast<String>(url_components["fragment"]);
 	}
 
 	return result;
@@ -1016,11 +1008,11 @@ void SolanaClient::set_url_override(const String &url_override) {
 	// See if tls should be used.
 	use_tls = true;
 	if (!parsed_url.has("scheme")) {
-		gdextension_interface_print_warning("No scheme specified, enabling tls by default.", "set_url", __FILE__, __LINE__, false);
+		WARN_PRINT_ONCE_ED_CUSTOM("No scheme specified, enabling tls by default.");
 	} else if (parsed_url["scheme"] == "http") {
 		use_tls = false;
 	} else if (parsed_url["scheme"] != "https") {
-		gdextension_interface_print_warning("Unknown scheme, enabling tls by default.", "set_url", __FILE__, __LINE__, false);
+		WARN_PRINT_ONCE_ED_CUSTOM("Unknown scheme, enabling tls by default.");
 	}
 
 	if (parsed_url.has("port")) {
@@ -1039,7 +1031,7 @@ void SolanaClient::set_url_override(const String &url_override) {
 }
 
 void SolanaClient::set_ws_url(const String &url) {
-	Dictionary parsed_url = parse_url(url);
+	const Dictionary parsed_url = parse_url(url);
 
 	ws_url = assemble_url(parsed_url).ascii();
 }
@@ -1048,7 +1040,7 @@ String SolanaClient::get_ws_url() {
 	return ws_url;
 }
 
-void SolanaClient::set_callback(Callable callback) {
+void SolanaClient::set_callback(const Callable &callback) {
 	rpc_callback = callback;
 }
 
@@ -1086,7 +1078,7 @@ void SolanaClient::disable_min_context_slot() {
 	SolanaClient::min_context_slot = 0;
 }
 
-void SolanaClient::enable_account_filter(uint64_t offset, uint64_t length) {
+void SolanaClient::enable_account_filter(uint64_t offset, uint64_t length) { // NOLINT(bugprone-easily-swappable-parameters)
 	SolanaClient::account_filter_enabled = true;
 	SolanaClient::filter_offset = offset;
 	SolanaClient::filter_length = length;
@@ -1140,7 +1132,7 @@ void SolanaClient::set_async_override(bool use_async) {
 	async_override = use_async;
 }
 
-bool SolanaClient::get_async_override() {
+bool SolanaClient::get_async_override() const {
 	return async_override;
 }
 
@@ -1148,15 +1140,12 @@ void SolanaClient::set_timeout(float timeout) {
 	this->timeout = timeout;
 }
 
-float SolanaClient::get_timeout() {
+float SolanaClient::get_timeout() const {
 	return timeout;
 }
 
-bool SolanaClient::is_ready() {
+bool SolanaClient::is_ready() const {
 	return !pending_request;
-}
-
-SolanaClient::~SolanaClient() {
 }
 
 } //namespace godot

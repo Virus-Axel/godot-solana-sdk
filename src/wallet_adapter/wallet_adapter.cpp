@@ -65,7 +65,7 @@ String WalletAdapter::wallet_name_from_type(WalletType wallet_type) {
 
 String WalletAdapter::get_sign_transaction_script(uint32_t signer_index) {
 #ifdef WEB_ENABLED
-	Array params = build_array(signer_index);
+	const Array params = build_array(signer_index);
 	const String result = String::utf8("Module.bridge.signTransactionProcedure({0})");
 	return result.format(params);
 #endif

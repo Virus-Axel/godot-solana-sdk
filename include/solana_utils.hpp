@@ -27,6 +27,16 @@ namespace godot {
 	ERR_FAIL_COND(m_cond)                                                  \
 	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
 
+#define ERR_FAIL_EDMSG_CUSTOM(m_msg)                                       \
+	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
+	ERR_FAIL_EDMSG(m_msg)                                                  \
+	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
+
+#define WARN_PRINT_ONCE_ED_CUSTOM(m_msg)                                   \
+	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
+	WARN_PRINT_ONCE_ED(m_msg)                                              \
+	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
+
 template <typename T>
 inline void append_array(Array &arr, T arg) {
 	arr.push_back(arg);
@@ -72,7 +82,7 @@ public:
 	static PackedByteArray short_u16_encode(unsigned int value);
 	static unsigned int short_u16_decode(const PackedByteArray &bytes, int *cursor);
 
-	~SolanaUtils();
+	~SolanaUtils() = default;
 };
 } //namespace godot
 
