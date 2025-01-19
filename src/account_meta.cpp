@@ -112,7 +112,7 @@ AccountMeta::AccountMeta(const Variant &other) {
 		if (Object::cast_to<AccountMeta>(other)->get_is_signer()) {
 			this->key = meta_ptr->get_signer();
 		} else {
-			this->key = meta_ptr->get_pubkey();
+			this->key = meta_ptr->get_key();
 		}
 		this->is_signer = meta_ptr->get_is_signer();
 		this->writeable = meta_ptr->get_writeable();

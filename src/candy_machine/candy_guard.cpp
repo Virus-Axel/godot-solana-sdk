@@ -152,14 +152,12 @@ Variant MplCandyGuard::mint(
 	const Variant MINT_MASTER_EDITION = MplTokenMetadata::new_associated_metadata_pubkey_master_edition(mint);
 	result->append_meta(*memnew(AccountMeta(MINT_METADATA, false, true)));
 	result->append_meta(*memnew(AccountMeta(MINT_MASTER_EDITION, false, true)));
-
 	result->append_meta(*memnew(AccountMeta(associated_token_account, false, true)));
 	const Variant TOKEN_RECORD = TokenProgram::new_token_record_address(associated_token_account, mint);
 	result->append_meta(*memnew(AccountMeta(TOKEN_RECORD, false, true)));
 
 	const Variant DELEGATE_RECORD = TokenProgram::new_delegate_record_address(collection_update_authority, collection_mint, candy_machine_creator, TokenProgram::MetaDataDelegateRole::COLLECTION);
 	result->append_meta(*memnew(AccountMeta(DELEGATE_RECORD, false, false)));
-
 	result->append_meta(*memnew(AccountMeta(collection_mint, false, false)));
 
 	const Variant COLLECTION_METADATA = MplTokenMetadata::new_associated_metadata_pubkey(collection_mint);
@@ -184,7 +182,6 @@ Variant MplCandyGuard::mint(
 	result->append_meta(*memnew(AccountMeta(new_pid, false, false)));
 
 	TypedArray<AccountMeta> mint_arg_accounts = Object::cast_to<CandyGuardAccessList>(candy_guard_acl)->get_group(label).get_mint_arg_accounts(receiver, candy_machine_id, guard_account_id);
-
 	for (unsigned int i = 0; i < mint_arg_accounts.size(); i++) {
 		result->append_meta(*memnew(AccountMeta(mint_arg_accounts[i])));
 	}
