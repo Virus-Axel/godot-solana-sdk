@@ -98,6 +98,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	String get_label() const;
+
 	PackedByteArray serialize() const;
 	PackedByteArray serialize_mint_settings() const;
 	PackedByteArray serialize_groups() const;

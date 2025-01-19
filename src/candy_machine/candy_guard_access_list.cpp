@@ -13,6 +13,10 @@ namespace godot {
 void CandyGuardAccessList::_bind_methods() {
 }
 
+String CandyGuardAccessList::get_label() const{
+	return label;
+}
+
 PackedByteArray CandyGuardAccessList::serialize() const {
 	PackedByteArray result;
 	PackedByteArray result_data;
@@ -35,7 +39,7 @@ PackedByteArray CandyGuardAccessList::serialize_groups() const {
 
 	for (unsigned int i = 0; i < groups.size(); i++) {
 		CandyGuardAccessList *group = Object::cast_to<CandyGuardAccessList>(groups[i]);
-		PackedByteArray fix_size_label = label.to_ascii_buffer();
+		PackedByteArray fix_size_label = group->get_label().to_ascii_buffer();
 
 		const int MAX_LABEL_SIZE = 6;
 		fix_size_label.resize(MAX_LABEL_SIZE);
@@ -278,7 +282,7 @@ PackedByteArray CandyGuardAccessList::serialize_mint_settings() const {
 	if (enable_mint_limit) {
 		result.append(limit_id);
 	}
-	if (enable_sol_payment){
+	if (enable_sol_payment) {
 		result.append_array(Pubkey::bytes_from_variant(sol_payment_destination));
 	}
 

@@ -72,7 +72,7 @@ public:
 	static PackedByteArray short_u16_encode(unsigned int value);
 	static unsigned int short_u16_decode(const PackedByteArray &bytes, int *cursor);
 
-	~SolanaUtils();
+	~SolanaUtils() = default;
 };
 } //namespace godot
 
