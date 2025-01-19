@@ -1,9 +1,9 @@
 extends Control
 
 
-const TOTAL_CASES := 2
+const TOTAL_CASES := 3
 var passed_test_mask := 0
-		
+var payer: Keypair = await Keypair.new_from_file("res://payer.json")
 
 func PASS(unique_identifier: int):
 	passed_test_mask += (1 << unique_identifier)
@@ -43,9 +43,27 @@ func wallet_adapter_sign(wallet_type, test_id):
 	PASS(test_id)
 
 
+func wallet_adapter_as_account():
+	$WalletAdapter.connect_wallet()
+	await $WalletAdapter.connection_established
+	var tx = Transaction.new()
+	$Transaction.set_payer($WalletAdapter)
+	
+	var ix = SystemProgram.transfer(payer, $WalletAdapter, 1000000)
+	$Transaction.add_instruction(ix)
+	$Transaction.update_latest_blockhash()
+	
+	$Transaction.sign_and_send()
+	var result = await $Transaction.transaction_response_received
+	assert(result.has("result"))
+	
+	PASS(2)
+
+
 func _ready():
 	await wallet_adapter_sign(20, 0)
 	await wallet_adapter_sign(36, 1)
+	wallet_adapter_as_account()
 
 
 func _on_timeout_timeout():
