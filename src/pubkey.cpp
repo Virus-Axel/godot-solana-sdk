@@ -1,6 +1,7 @@
 #include "pubkey.hpp"
 #include "utils.hpp"
 
+#include "godot_cpp/variant/utility_functions.hpp"
 #include "sha256.hpp"
 #include <godot_cpp/classes/random_number_generator.hpp>
 #include <godot_cpp/core/class_db.hpp>
@@ -385,7 +386,7 @@ PackedByteArray Pubkey::bytes_from_variant(const Variant &other) {
 	} else if (Keypair::is_keypair(other)) {
 		return Object::cast_to<Keypair>(other)->get_public_bytes();
 	} else if (AccountMeta::is_account_meta(other)) {
-		return Pubkey::bytes_from_variant(Object::cast_to<AccountMeta>(other)->get_pubkey());
+		return Pubkey::bytes_from_variant(Object::cast_to<AccountMeta>(other)->get_key());
 	} else if (WalletAdapter::is_wallet_adapter(other)) {
 		WalletAdapter *phantom_controller = Object::cast_to<WalletAdapter>(other);
 		if (phantom_controller->is_connected()) {
@@ -417,7 +418,7 @@ String Pubkey::string_from_variant(const Variant &other) {
 	} else if (Keypair::is_keypair(other)) {
 		return Object::cast_to<Keypair>(other)->get_public_string();
 	} else if (AccountMeta::is_account_meta(other)) {
-		return Pubkey::string_from_variant(Object::cast_to<AccountMeta>(other)->get_pubkey());
+		return Pubkey::string_from_variant(Object::cast_to<AccountMeta>(other)->get_key());
 	} else if (WalletAdapter::is_wallet_adapter(other)) {
 		WalletAdapter *phantom_controller = Object::cast_to<WalletAdapter>(other);
 		if (phantom_controller->is_connected()) {
