@@ -33,7 +33,7 @@ const char *SIGN_TRANSACTION_SCRIPT = "\
       Module.old_serialized_message = new Uint8Array(Module.serialized_message);\
       var tx = Module.Transaction.from(Module.serialized_message);\
       var response = (await Module.wallet_handler.signTransaction(tx));\
-      Module.tampered_serialized_message = response.serialize();\
+      Module.tampered_serialized_message = response.serialize({ requireAllSignatures: false, verifySignatures: false });\
       console.log(response);\
       Module.message_signature = response.signatures[{0}].signature;\
       if(Module.message_signature == null){\
