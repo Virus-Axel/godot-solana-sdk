@@ -496,6 +496,7 @@ Array Transaction::get_signers() {
 
 void Transaction::set_unit_limit(const uint32_t value) {
 	unit_limit = value;
+	create_message();
 }
 
 uint32_t Transaction::get_unit_limit() const {
@@ -504,6 +505,7 @@ uint32_t Transaction::get_unit_limit() const {
 
 void Transaction::set_unit_price(const uint32_t value) {
 	unit_price = value;
+	create_message();
 }
 
 uint32_t Transaction::get_unit_price() const {
