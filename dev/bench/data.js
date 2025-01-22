@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1737485386845,
+  "lastUpdate": 1737579183091,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -318,6 +318,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.253424657534247,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3b7447402a7ae2781164af6606f3c7b45646adf8",
+          "message": "Merge pull request #323 from Virus-Axel/bugfix/compute_budget_fix\n\nFix compute budget not updating message",
+          "timestamp": "2025-01-22T21:38:36+01:00",
+          "tree_id": "297796c8af35a384bf152bf1dd2d1f478304ea85",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/3b7447402a7ae2781164af6606f3c7b45646adf8"
+        },
+        "date": 1737579182512,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.256849315068493,
             "unit": "Percent"
           }
         ]
