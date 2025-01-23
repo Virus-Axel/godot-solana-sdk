@@ -84,7 +84,6 @@ void Message::create(const MergedAccountMetas &merged_meta_list, Variant &payer)
 	meta_list.sort();
 
 	payer_index = meta_list.find(*(Object::cast_to<AccountMeta>(payer_meta)));
-
 	recalculate_headers();
 }
 

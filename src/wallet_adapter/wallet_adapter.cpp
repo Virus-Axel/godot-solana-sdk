@@ -1,38 +1,30 @@
 #include "wallet_adapter.hpp"
 
 #include <cstdint>
-#include <godot_cpp/classes/global_constants.hpp>
-#include <godot_cpp/classes/java_script_bridge.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/core/object.hpp>
-#include <godot_cpp/variant/array.hpp>
-#include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/variant/variant.hpp>
-#include <keypair.hpp>
-#include <pubkey.hpp>
-#include <solana_utils.hpp>
 
+#include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/classes/java_script_bridge.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/object.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "keypair.hpp"
+#include "pubkey.hpp"
+#include "solana_utils.hpp"
 #ifdef WEB_ENABLED
-#include <script_builder.hpp>
-#include <wallet_adapter_generated.hpp>
+#include "wallet_adapter_generated.hpp"
 #endif
 
 namespace godot {
 
 bool WalletAdapter::is_wallet_installed(WalletType wallet_type) {
 #ifdef WEB_ENABLED
-	const String CHECK_SCRIPT = "\
-		try{\
-			adapter = new Module.wallets.{0}WalletAdapter;\
-        	adapter.readyState\
-		}\
-		catch (_error){\
-			'Error'\
-		}";
-
 	const Array params = build_array(wallet_name_from_type(wallet_type));
-	const String ready_state = JavaScriptBridge::get_singleton()->eval(CHECK_SCRIPT.format(params));
-	return ready_state == "Installed";
+	const String script = String("Module.bridge.isWalletInstalled('{0}')").format(params);
+	const Variant ready_state = JavaScriptBridge::get_singleton()->eval(script);
+	return static_cast<bool>(ready_state);
 #endif
 	return false;
 }
@@ -45,7 +37,7 @@ void WalletAdapter::clear_state() {
 	wallet_state = State::IDLE;
 
 #ifdef WEB_ENABLED
-	JavaScriptBridge::get_singleton()->eval("Module.wallet_status = 0;");
+	JavaScriptBridge::get_singleton()->eval("Module.bridge.clear_state()");
 #endif
 }
 
@@ -62,18 +54,6 @@ bool WalletAdapter::has_multiple_wallets() {
 	return available_wallets.size() > 1;
 }
 
-void WalletAdapter::store_encoded_message(const PackedByteArray &serialized_message) {
-#ifdef WEB_ENABLED
-
-	String script = "Module.encoded_message = '";
-	script += SolanaUtils::bs58_encode(serialized_message);
-	script += "';";
-
-	JavaScriptBridge::get_singleton()->eval(script);
-
-#endif
-}
-
 String WalletAdapter::wallet_name_from_type(WalletType wallet_type) {
 	const Array WALLET_NAMES = get_all_wallets();
 	if (wallet_type >= WALLET_NAMES.size()) {
@@ -83,36 +63,26 @@ String WalletAdapter::wallet_name_from_type(WalletType wallet_type) {
 	return WALLET_NAMES[wallet_type];
 }
 
-String WalletAdapter::wallet_check_name_from_type(WalletType wallet_type) {
-	if (wallet_type >= WalletType::MAX_TYPES) {
-		return "";
-	}
-
-	const Array WALLET_CHECK_NAMES = build_array(
-			"isPhantom",
-			"isSolflare",
-			"isBackpack");
-
-	return String(WALLET_CHECK_NAMES[wallet_type]);
-}
-
-String WalletAdapter::get_sign_transaction_script() {
+String WalletAdapter::get_sign_transaction_script(uint32_t signer_index) {
 #ifdef WEB_ENABLED
-	return String::utf8(script_builder::SIGN_TRANSACTION_SCRIPT);
+	Array params = build_array(signer_index);
+	const String result = String::utf8("Module.bridge.signTransactionProcedure({0})");
+	return result.format(params);
 #endif
 	return "";
 }
 
-String WalletAdapter::get_sign_message_script() {
+String WalletAdapter::get_sign_message_script(const String &message) {
 #ifdef WEB_ENABLED
-	String::utf8(script_builder::SIGN_MESSAGE_SCRIPT);
+	const String result = String::utf8("Module.bridge.signMessageProcedure('{0}')");
+	return result.format(build_array(message));
 #endif
 	return "";
 }
 
 String WalletAdapter::get_connect_script() const {
 #ifdef WEB_ENABLED
-	const String result = String::utf8(script_builder::CONNECT_SCRIPT);
+	const String result = String::utf8("Module.bridge.connectWalletProcedure('{0}')");
 
 	const String wallet_name = wallet_name_from_type(wallet_type);
 	return result.format(build_array(wallet_name));
@@ -164,20 +134,6 @@ Array WalletAdapter::get_available_wallets() {
 	for (int i = 0; i < WalletType::MAX_TYPES; i++) {
 		Array params;
 		params.append(wallet_name_from_type(static_cast<WalletType>(i)));
-		//params.append(wallet_check_name_from_type(static_cast<WalletType>(i)));
-
-		const String CHECK_SCRIPT = "\
-        const {{0}} = window;\
-        if({0}){\
-            if({0}.{1}){\
-                1\
-            }else{\
-              0\
-            }\
-        }\
-        else{\
-          0\
-        }";
 
 		if (is_wallet_installed(static_cast<WalletType>(i))) {
 			available_wallets.append(i);
@@ -247,11 +203,11 @@ void WalletAdapter::poll_message_signing() {
 			break;
 
 		case 1: {
-			clear_state();
 			const PackedByteArray old_serialized_message = JavaScriptBridge::get_singleton()->eval("Module.old_serialized_message");
 			const PackedByteArray new_serialized_message = JavaScriptBridge::get_singleton()->eval("Module.tampered_serialized_message");
 
 			dirty_transaction = is_message_tampered(old_serialized_message, new_serialized_message);
+			clear_state();
 
 			emit_signal("message_signed", get_message_signature());
 			break;
@@ -331,27 +287,23 @@ int WalletAdapter::get_wallet_type() {
 void WalletAdapter::sign_message(const PackedByteArray &serialized_message, const uint32_t index) {
 #ifdef WEB_ENABLED
 	active_signer_index = index;
+	dirty_transaction = false;
 
 	wallet_state = State::SIGNING;
 	store_serialized_message(serialized_message);
-	store_encoded_message(serialized_message);
 
-	Array params;
-	params.append(active_signer_index);
-	JavaScriptBridge::get_singleton()->eval(get_sign_transaction_script().format(params));
+	JavaScriptBridge::get_singleton()->eval(get_sign_transaction_script(active_signer_index));
 
 #endif
 }
 
 void WalletAdapter::sign_text_message(const String &message) {
 #ifdef WEB_ENABLED
-
+	dirty_transaction = false;
 	active_signer_index = 0;
 
 	wallet_state = State::SIGNING;
-	Array params;
-	params.append(message);
-	JavaScriptBridge::get_singleton()->eval(get_sign_message_script().format(params));
+	JavaScriptBridge::get_singleton()->eval(get_sign_message_script(message));
 
 #endif
 }

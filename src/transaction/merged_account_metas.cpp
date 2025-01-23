@@ -48,14 +48,18 @@ Variant MergedAccountMetas::preferred_signer(const Variant &left, const Variant 
 	return left;
 }
 
-void MergedAccountMetas::merge_at(const AccountMeta *account_meta, int64_t index) {
+void MergedAccountMetas::merge_at(const Variant &account_meta, int64_t index) {
+	ERR_FAIL_COND_EDMSG_CUSTOM(account_meta.get_type() != Variant::OBJECT, "FAIL");
+	ERR_FAIL_COND_EDMSG_CUSTOM(static_cast<Object *>(account_meta)->get_class() != "AccountMeta", "FAIL");
 	auto *existing_meta = Object::cast_to<AccountMeta>(merged_metas[index]);
-	const Variant selected_signer = preferred_signer(existing_meta->get_key(), account_meta->get_key());
-	ERR_FAIL_COND_CUSTOM(selected_signer.get_type() == Variant::NIL);
+	const Variant left = existing_meta->get_key();
+	const Variant right = Object::cast_to<AccountMeta>(account_meta)->get_key();
+	const Variant selected_signer = preferred_signer(left, right);
+	ERR_FAIL_COND_EDMSG_CUSTOM(selected_signer.get_type() == Variant::NIL, "Preferred signer could not be determined");
 
 	existing_meta->set_key(selected_signer);
-	existing_meta->set_is_signer(existing_meta->get_is_signer() || account_meta->get_is_signer());
-	existing_meta->set_writeable(existing_meta->get_writeable() || account_meta->get_writeable());
+	existing_meta->set_is_signer(existing_meta->get_is_signer() || Object::cast_to<AccountMeta>(account_meta)->get_is_signer());
+	existing_meta->set_writeable(existing_meta->get_writeable() || Object::cast_to<AccountMeta>(account_meta)->get_writeable());
 }
 
 void MergedAccountMetas::clear() {
@@ -63,12 +67,14 @@ void MergedAccountMetas::clear() {
 }
 
 void MergedAccountMetas::add(const Variant &account_meta) {
+	ERR_FAIL_COND_EDMSG_CUSTOM(account_meta.get_type() != Variant::OBJECT, "Provided account meta is not an object.");
+	ERR_FAIL_COND_EDMSG_CUSTOM(static_cast<Object *>(account_meta)->get_class() != "AccountMeta", "Object is not an AccountMeta.");
 	const auto *account_meta_ptr = Object::cast_to<AccountMeta>(account_meta);
 	const int64_t index = find(*account_meta_ptr);
 
 	// Merge attributes if address is already in list.
 	if (index != -1) {
-		merge_at(account_meta_ptr, index);
+		merge_at(account_meta, index);
 	} else {
 		// Create a new entry.
 		merged_metas.append(account_meta);
@@ -85,7 +91,6 @@ void MergedAccountMetas::from_instructions(const TypedArray<Instruction> &instru
 
 		for (unsigned int j = 0; j < account_metas.size(); j++) {
 			auto *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
-
 			add(account_meta);
 		}
 	}
@@ -157,7 +162,7 @@ void MergedAccountMetas::supply_signers(const Array &signers) {
 		const Variant signer_meta = AccountMeta::new_account_meta(signers[i], true, false);
 		const int64_t index = find(*Object::cast_to<AccountMeta>(signer_meta));
 		if (index != -1) {
-			merge_at(Object::cast_to<AccountMeta>(signer_meta), index);
+			merge_at(signer_meta, index);
 		} else {
 			WARN_PRINT_ONCE_ED("A supplied signer is not relevant to this transaction");
 		}

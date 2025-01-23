@@ -749,6 +749,12 @@ void AnchorProgram::set_try_from_json_file(const bool try_from_json_file){
     if(json_file.get_type() == Variant::OBJECT){
         const JSON *json_file = Object::cast_to<JSON>(this->json_file);
         idl = json_file->get_data();
+        if(idl.has("address")){
+            set_pid(idl["address"]);
+        }
+        else{
+            WARN_PRINT_ONCE("Could not find Program ID from IDL.");
+        }
     }
     else{
         idl = Dictionary();
@@ -862,6 +868,9 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
 
     PackedByteArray data = discriminator_by_name(name.to_snake_case(), global_prefix);
 
+    if (idl.has("address") && pid.length() != PUBKEY_LENGTH){
+        pid = idl["address"];
+    }
     result->set_program_id(Pubkey::new_from_string(pid));
     data.append_array(serialize_variant(arguments));
     result->set_data(data);

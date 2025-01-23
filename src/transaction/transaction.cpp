@@ -66,6 +66,7 @@ void Transaction::_bind_methods() {
 
 void Transaction::_signer_signed(const PackedByteArray &signature) {
 	auto *controller = Object::cast_to<WalletAdapter>(payer);
+	controller->disconnect("signing_failed", callable_mp(this, &Transaction::_signer_failed));
 
 	const uint32_t index = controller->get_active_signer_index();
 	if (controller->did_transaction_change()) {
@@ -85,6 +86,7 @@ void Transaction::_signer_signed(const PackedByteArray &signature) {
 
 void Transaction::_signer_failed() {
 	auto *controller = Object::cast_to<WalletAdapter>(payer);
+	controller->disconnect("message_signed", callable_mp(this, &Transaction::_signer_signed));
 
 	emit_signal("signing_failed", controller->get_active_signer_index());
 }
@@ -117,7 +119,6 @@ void Transaction::create_message() {
 		instruction_list.insert(1, ComputeBudget::set_compute_unit_price(unit_price));
 	}
 	merged_metas.from_instructions(instruction_list);
-
 	message.create(merged_metas, payer);
 	message.compile_instructions(instruction_list);
 
