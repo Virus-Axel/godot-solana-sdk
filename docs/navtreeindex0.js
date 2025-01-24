@@ -163,7 +163,6 @@ var NAVTREEINDEX0 =
 "rpc__multi__http__request__client_8hpp_source.html":[2,0,0,3,0],
 "rpc__single__http__request__client_8hpp_source.html":[2,0,0,3,1],
 "rpc__single__ws__request__client_8hpp_source.html":[2,0,0,3,2],
-"script__builder_8hpp_source.html":[2,0,0,5,0],
 "shdwdrive_8hpp_source.html":[2,0,0,16],
 "solana__client_8hpp_source.html":[2,0,0,3,3],
 "solana__utils_8hpp_source.html":[2,0,0,17],
@@ -176,5 +175,5 @@ var NAVTREEINDEX0 =
 "transaction_8hpp_source.html":[2,0,0,4,4],
 "uses_8hpp_source.html":[2,0,0,2,4],
 "utils_8hpp_source.html":[2,0,0,18],
-"wallet__adapter_8hpp_source.html":[2,0,0,5,1]
+"wallet__adapter_8hpp_source.html":[2,0,0,5,0]
 };
