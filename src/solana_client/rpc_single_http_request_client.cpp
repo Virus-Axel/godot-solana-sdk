@@ -183,7 +183,7 @@ void RpcSingleHttpRequestClient::process(const float delta) {
 void RpcSingleHttpRequestClient::_bind_methods() {
 }
 
-void RpcSingleHttpRequestClient::asynchronous_request(const Dictionary &request_body, Dictionary parsed_url, const Callable &callback, float timeout) {
+void RpcSingleHttpRequestClient::asynchronous_request(const Dictionary &request_body, const Dictionary &parsed_url, const Callable &callback, float timeout) {
 	RequestData data;
 	if (skip_id) {
 		data = { request_body, parsed_url, timeout, 0, callback };

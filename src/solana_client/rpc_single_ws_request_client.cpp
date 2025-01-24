@@ -1,9 +1,17 @@
 #include "rpc_single_ws_request_client.hpp"
 
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/json.hpp>
-#include <solana_client.hpp>
-#include <solana_utils.hpp>
+#include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/classes/json.hpp"
+#include "godot_cpp/classes/web_socket_peer.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/callable.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+
+#include "solana_client.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -13,19 +21,19 @@ void RpcSingleWsRequestClient::enqueue_ws_request(const Dictionary &request_body
 
 void RpcSingleWsRequestClient::_bind_methods() {}
 
-bool RpcSingleWsRequestClient::is_pending() {
+bool RpcSingleWsRequestClient::is_pending() const {
 	return pending_request;
 }
 
 void RpcSingleWsRequestClient::process(double delta) {
-	unsigned int current_frame = Engine::get_singleton()->get_process_frames();
+	const unsigned int current_frame = Engine::get_singleton()->get_process_frames();
 	if (current_frame == last_processed_frame) {
 		return;
 	}
 	last_processed_frame = current_frame;
 
 	WebSocketPeer::poll();
-	WebSocketPeer::State state = get_ready_state();
+	const WebSocketPeer::State state = get_ready_state();
 	switch (state) {
 		case WebSocketPeer::STATE_OPEN:
 			if (!request_queue.empty() && !is_pending()) {
@@ -36,7 +44,7 @@ void RpcSingleWsRequestClient::process(double delta) {
 				process_timeouts(delta);
 			}
 
-			while (get_available_packet_count()) {
+			while (get_available_packet_count() != 0) {
 				const PackedByteArray packet_data = get_packet();
 				process_package(packet_data);
 			}
@@ -63,36 +71,36 @@ void RpcSingleWsRequestClient::process_package(const PackedByteArray &packet_dat
 
 	// Subscription trigger.
 	if (json.has("method")) {
-		int subscription_id = ((Dictionary)((Dictionary)json)["params"])["subscription"];
-		call_subscription_callback(subscription_id, ((Dictionary)json)["params"]);
+		const int subscription_id = static_cast<Dictionary>(static_cast<Dictionary>(json)["params"])["subscription"];
+		call_subscription_callback(subscription_id, static_cast<Dictionary>(json)["params"]);
 
 		return;
 	}
 
 	// Unsubscribe confirmation.
-	else if (result.get_type() == Variant::BOOL) {
+	if (result.get_type() == Variant::BOOL) {
 		return;
 	}
 
 	// Check for subscribe confirmations.
 	if (result.get_type() == Variant::FLOAT) {
-		unsigned int rpc_id = ((Dictionary)json)["id"];
-		unsigned int subscription_id = result;
+		const unsigned int rpc_id = static_cast<Dictionary>(json)["id"];
+		const unsigned int subscription_id = result;
 
-		add_subscription(rpc_id, subscription_id);
+		add_subscription({ .query_id = rpc_id, .queue_id = subscription_id });
 		finalize_request(rpc_id, json);
 	} else {
 		finalize_request(json["id"], Dictionary());
-		ERR_FAIL_EDMSG("Web socket failed");
+		ERR_FAIL_EDMSG_CUSTOM("Web socket failed");
 	}
 }
 
 void RpcSingleWsRequestClient::unsubscribe_all(const Callable &callback, const Dictionary &url, float timeout) {
 	for (unsigned int i = 0; i < subscriptions.size(); i++) {
 		if (subscriptions[i].callback == callback) {
-			String unsubscribe_method_name = subscriptions[i].method_name.replace("Subscribe", "Unsubscribe");
+			const String unsubscribe_method_name = subscriptions[i].method_name.replace("Subscribe", "Unsubscribe");
 
-			Array params = build_array(subscriptions[i].identifier);
+			const Array params = build_array(subscriptions[i].identifier);
 			Dictionary request_body = SolanaClient::make_rpc_dict(unsubscribe_method_name, params);
 
 			request_queue.push_back(WsRequestData{ request_body, url, timeout, request_body["id"], Callable(), Callable() });
@@ -105,49 +113,49 @@ void RpcSingleWsRequestClient::unsubscribe_all(const Callable &callback, const D
 
 void RpcSingleWsRequestClient::connect_ws(const String &url) {
 	if (get_ready_state() == WebSocketPeer::STATE_CLOSED && !connecting) {
-		Error err = connect_to_url(url);
-		if (err != OK) {
+		const Error err = connect_to_url(url);
+		if (err != Error::OK) {
 			finalize_request(0, Dictionary());
-			ERR_FAIL_EDMSG("Ws failed to connect");
+			ERR_FAIL_EDMSG_CUSTOM("Ws failed to connect");
 		}
 		connecting = true;
 	}
 }
 
-void RpcSingleWsRequestClient::add_subscription(unsigned int id, unsigned int sub_id) {
-	unsigned int request_index = request_index_from_id(id);
+void RpcSingleWsRequestClient::add_subscription(const SubItemId &identifiers) {
+	const unsigned int request_index = request_index_from_id(identifiers.query_id);
 	if (request_index == request_queue.size()) {
 		return;
 	}
 	const Dictionary &request_body = request_queue[request_index].request;
-	subscriptions.push_back(SubscriptionData{ sub_id, request_body["method"], request_queue.front().parsed_url, request_queue.front().callback });
+	subscriptions.push_back(SubscriptionData{ identifiers.queue_id, request_body["method"], request_queue.front().parsed_url, request_queue.front().callback });
 }
 
 void RpcSingleWsRequestClient::remove_subscription(unsigned int index) {
 	subscriptions.erase(subscriptions.begin() + index);
 }
 
-void RpcSingleWsRequestClient::call_subscription_callback(unsigned int id, const Dictionary &params) {
-	for (unsigned int i = 0; i < subscriptions.size(); i++) {
-		if (subscriptions[i].identifier == id) {
-			Array args = build_array(params);
-			subscriptions[i].callback.callv(args);
+void RpcSingleWsRequestClient::call_subscription_callback(unsigned int query_id, const Dictionary &params) {
+	for (auto &subscription : subscriptions) {
+		if (subscription.identifier == query_id) {
+			const Array args = build_array(params);
+			subscription.callback.callv(args);
 		}
 	}
 }
 
 void RpcSingleWsRequestClient::call_confirmation_callback(unsigned int index, const Dictionary &params) {
-	Array args = build_array(params);
+	const Array args = build_array(params);
 	if (request_queue[index].confirmation_callback.is_valid()) {
 		request_queue[index].confirmation_callback.callv(args);
 	}
 }
 
-void RpcSingleWsRequestClient::finalize_request(unsigned int id, const Dictionary &result) {
-	unsigned int index = request_index_from_id(id);
+void RpcSingleWsRequestClient::finalize_request(unsigned int query_id, const Dictionary &result) {
+	const unsigned int index = request_index_from_id(query_id);
 
 	if (index >= request_queue.size()) {
-		ERR_PRINT_ONCE_ED("Internal error, please report");
+		ERR_PRINT_ONCE_ED_CUSTOM("Internal error, please report");
 	} else {
 		call_confirmation_callback(index, result);
 		remove_request(index);
@@ -158,7 +166,7 @@ void RpcSingleWsRequestClient::finalize_request(unsigned int id, const Dictionar
 }
 
 void RpcSingleWsRequestClient::close_if_done() {
-	if (subscriptions.size() == 0) {
+	if (subscriptions.empty()) {
 		close();
 	}
 }
@@ -167,21 +175,21 @@ void RpcSingleWsRequestClient::remove_request(unsigned int index) {
 	request_queue.erase(request_queue.begin() + index);
 }
 
-void RpcSingleWsRequestClient::process_timeouts(float delta) {
-	for (unsigned int i = 0; i < request_queue.size(); i++) {
-		request_queue[i].timeout -= delta;
+void RpcSingleWsRequestClient::process_timeouts(double delta) {
+	for (auto &queue_item : request_queue) {
+		queue_item.timeout -= delta;
 
-		if (request_queue[i].timeout < 0.0F) {
+		if (queue_item.timeout < 0.0F) {
 			connecting = false;
-			finalize_request(request_queue[i].request_identifier, Dictionary());
-			ERR_FAIL_EDMSG("Ws request timed out.");
+			finalize_request(queue_item.request_identifier, Dictionary());
+			ERR_FAIL_EDMSG_CUSTOM("Ws request timed out.");
 		}
 	}
 }
 
-unsigned int RpcSingleWsRequestClient::request_index_from_id(unsigned int id) {
+unsigned int RpcSingleWsRequestClient::request_index_from_id(unsigned int query_id) {
 	for (unsigned int i = 0; i < request_queue.size(); i++) {
-		if (request_queue[i].request_identifier == id) {
+		if (request_queue[i].request_identifier == query_id) {
 			return i;
 		}
 	}
