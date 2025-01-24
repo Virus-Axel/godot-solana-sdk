@@ -1,14 +1,67 @@
 #include "rpc_single_http_request_client.hpp"
-#include "solana_client.hpp"
 
-#include <godot_cpp/classes/java_script_bridge.hpp>
-#include <godot_cpp/classes/json.hpp>
-#include <godot_cpp/classes/os.hpp>
-#include <solana_utils.hpp>
+#include <cstdint>
+
+#include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/classes/http_client.hpp"
+#include "godot_cpp/classes/java_script_bridge.hpp"
+#include "godot_cpp/classes/json.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "solana_utils.hpp"
 
 namespace godot {
 
 const int32_t POLL_DELAY_MSEC = 100;
+
+void RpcSingleHttpRequestClient::process_message_sending() {
+	const Error err = send_next_request();
+
+	if (err != Error::OK) {
+		finalize_faulty();
+		ERR_FAIL_EDMSG_CUSTOM("Error sending request.");
+	}
+}
+
+void RpcSingleHttpRequestClient::process_body() {
+	// Collect the response body.
+	response_data.append_array(read_response_body_chunk());
+	const godot::HTTPClient::Status status = get_status();
+
+	// If there is more data, return and read it next frame.
+	if (status == HTTPClient::STATUS_BODY) {
+		return;
+	}
+
+	// Parse the result json.
+	const Variant json_data = JSON::parse_string(response_data.get_string_from_utf8());
+
+	if (json_data.get_type() != Variant::DICTIONARY) {
+		finalize_faulty();
+		ERR_FAIL_EDMSG_CUSTOM("Error getting response data.");
+	}
+
+	if (!is_response_valid(json_data)) {
+		// Request could be from another solana client. Keep processing request.
+		response_data.clear();
+
+		return;
+	}
+
+	finalize_request(json_data);
+}
+
+void RpcSingleHttpRequestClient::initiate_connection() {
+	const Error err = connect_to();
+	if (err != Error::OK) {
+		finalize_faulty();
+		ERR_FAIL_EDMSG_CUSTOM("Failed to connect to RPC node.");
+	}
+}
 
 void RpcSingleHttpRequestClient::update_timeouts(const float delta) {
 	request_queue.front().timeout -= delta;
@@ -16,7 +69,7 @@ void RpcSingleHttpRequestClient::update_timeouts(const float delta) {
 	// Remove timed out requests.
 	if (request_queue.front().timeout < 0.0) {
 		finalize_faulty();
-		ERR_FAIL_EDMSG("Request timed out.");
+		ERR_FAIL_EDMSG_CUSTOM("Request timed out.");
 	}
 }
 
@@ -25,7 +78,7 @@ bool RpcSingleHttpRequestClient::is_pending() const {
 }
 
 bool RpcSingleHttpRequestClient::has_request() const {
-	return request_queue.size();
+	return !request_queue.empty();
 }
 
 bool RpcSingleHttpRequestClient::is_completed() const {
@@ -45,7 +98,7 @@ bool RpcSingleHttpRequestClient::is_response_valid(const Dictionary &response) c
 	if (!response.has("id")) {
 		return false;
 	}
-	if ((unsigned int)response["id"] != request_queue.front().request_identifier) {
+	if (static_cast<unsigned int>(response["id"]) != request_queue.front().request_identifier) {
 		return false;
 	}
 
@@ -55,13 +108,13 @@ bool RpcSingleHttpRequestClient::is_response_valid(const Dictionary &response) c
 Error RpcSingleHttpRequestClient::connect_to() {
 	// Do nothing if already connected.
 	if (get_status() != Status::STATUS_DISCONNECTED) {
-		return OK;
+		return Error::OK;
 	}
 
 	Dictionary url = request_queue.front().parsed_url;
 
 	// Save port and remove it from URL.
-	int32_t port = url["port"];
+	const int32_t port = url["port"];
 	url.erase("port");
 
 	// Format URL string
@@ -69,7 +122,7 @@ Error RpcSingleHttpRequestClient::connect_to() {
 	if (url.has("scheme")) {
 		connect_url = url["scheme"];
 	}
-	connect_url += "://" + (String)url["host"];
+	connect_url += "://" + static_cast<String>(url["host"]);
 
 	return connect_to_host(connect_url, port);
 }
@@ -89,10 +142,10 @@ Error RpcSingleHttpRequestClient::send_next_request() {
 		path = url["path"];
 	}
 	if (url.has("query")) {
-		path += String("?") + (String)url["query"];
+		path += String("?") + static_cast<String>(url["query"]);
 	}
 	if (url.has("fragment")) {
-		path += String("#") + (String)url["fragment"];
+		path += String("#") + static_cast<String>(url["fragment"]);
 	}
 
 	// Make a POST request.
@@ -109,7 +162,7 @@ void RpcSingleHttpRequestClient::finalize_request(const Dictionary &response) {
 	HTTPClient::close();
 
 	if (request_queue.front().callback.is_valid()) {
-		Array params = build_array(response);
+		const Array params = build_array(response);
 		request_queue.front().callback.callv(params);
 	}
 
@@ -123,60 +176,33 @@ void RpcSingleHttpRequestClient::process(const float delta) {
 
 	// Make new connection if queue is not empty
 	if (!is_pending()) {
-		Error err = connect_to();
-		if (err != Error::OK) {
-			finalize_faulty();
-			ERR_FAIL_EDMSG("Failed to connect to RPC node.");
-		}
+		initiate_connection();
 	} else {
 		update_timeouts(delta);
 	}
 
 	poll();
-	godot::HTTPClient::Status status = get_status();
+	const godot::HTTPClient::Status status = get_status();
 
-	// Wait until a connection is established.
-	if (status == HTTPClient::STATUS_CONNECTING || status == HTTPClient::STATUS_RESOLVING) {
-		return;
-	} else if (status == HTTPClient::STATUS_CONNECTED) {
-		Error err = send_next_request();
-
-		if (err != Error::OK) {
-			finalize_faulty();
-			ERR_FAIL_EDMSG("Error sending request.");
-		}
-	} else if (status == HTTPClient::STATUS_REQUESTING) {
-		return;
-	} else if (status == HTTPClient::STATUS_BODY) {
-		// Collect the response body.
-		response_data.append_array(read_response_body_chunk());
-		status = get_status();
-
-		// If there is more data, return and read it next frame.
-		if (status == HTTPClient::STATUS_BODY) {
+	switch (status) {
+		// Wait until a connection is established.
+		case HTTPClient::STATUS_CONNECTING:
+		case HTTPClient::STATUS_RESOLVING:
+		case HTTPClient::STATUS_REQUESTING:
 			return;
-		}
+			break;
 
-		// Parse the result json.
-		Variant json_data = JSON::parse_string(response_data.get_string_from_utf8());
-
-		if (json_data.get_type() != Variant::DICTIONARY) {
+		case HTTPClient::STATUS_CONNECTED:
+			process_message_sending();
+			break;
+		case HTTPClient::STATUS_BODY:
+			process_body();
+			break;
+		default:
 			finalize_faulty();
-			ERR_FAIL_EDMSG("Error getting response data.");
-		}
-
-		if (!is_response_valid(json_data)) {
-			// Request could be from another solana client. Keep processing request.
-			response_data.clear();
-
+			ERR_PRINT_ONCE_ED_CUSTOM("Cannot connect");
 			return;
-		}
-
-		finalize_request(json_data);
-	} else {
-		finalize_faulty();
-		ERR_PRINT_ONCE_ED("Cannot connect");
-		return;
+			break;
 	}
 }
 

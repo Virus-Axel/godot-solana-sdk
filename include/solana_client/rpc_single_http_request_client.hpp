@@ -24,6 +24,9 @@ private:
 	std::queue<RequestData> request_queue;
 	PackedByteArray response_data;
 
+	void process_message_sending();
+	void process_body();
+	void initiate_connection();
 	void update_timeouts(const float delta);
 	bool is_pending() const;
 	bool has_request() const;
