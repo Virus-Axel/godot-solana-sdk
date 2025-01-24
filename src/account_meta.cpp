@@ -55,8 +55,7 @@ void AccountMeta::set_pubkey(const Variant &p_value) {
 
 Variant AccountMeta::get_pubkey() const {
 	//return key.duplicate(true);
-	const PackedByteArray key_bytes = Pubkey::bytes_from_variant(key);
-	return Pubkey::new_from_bytes(key_bytes);
+	return Pubkey::new_from_variant(key);
 }
 
 Variant AccountMeta::get_signer() const {
@@ -112,7 +111,7 @@ AccountMeta::AccountMeta(const Variant &other) {
 		if (Object::cast_to<AccountMeta>(other)->get_is_signer()) {
 			this->key = meta_ptr->get_signer();
 		} else {
-			this->key = meta_ptr->get_pubkey();
+			this->key = meta_ptr->get_key();
 		}
 		this->is_signer = meta_ptr->get_is_signer();
 		this->writeable = meta_ptr->get_writeable();

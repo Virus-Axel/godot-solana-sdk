@@ -121,6 +121,7 @@ void CompiledInstruction::compile(const Instruction *instruction, const MergedAc
 	data = instruction->get_data();
 	AccountMeta *pid_meta = memnew(AccountMeta(instruction->get_program_id(), false, false));
 	program_id_index = merged_metas.find(*pid_meta);
+
 	memfree(pid_meta);
 
 	for (unsigned int j = 0; j < account_metas.size(); j++) {

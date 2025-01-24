@@ -277,13 +277,13 @@ Variant Pubkey::new_from_variant(const Variant &from) {
 	}
 
 	if (Pubkey::is_pubkey(from)) {
-		return from;
+		return from.duplicate(true);
 	}
 	if (Keypair::is_keypair(from)) {
 		return new_from_bytes(Object::cast_to<Keypair>(from)->get_public_bytes());
 	}
 	if (AccountMeta::is_account_meta(from)) {
-		return Object::cast_to<AccountMeta>(from)->get_pubkey();
+		return Object::cast_to<AccountMeta>(from)->get_key();
 	}
 	if (WalletAdapter::is_wallet_adapter(from)) {
 		WalletAdapter *phantom_controller = Object::cast_to<WalletAdapter>(from);
@@ -377,7 +377,8 @@ PackedByteArray Pubkey::bytes_from_variant(const Variant &other) {
 	} else if (other.get_type() == Variant::PACKED_BYTE_ARRAY) {
 		return other;
 	} else if (other.get_type() != Variant::Type::OBJECT) {
-		ERR_FAIL_V_EDMSG(PackedByteArray(), "Bug: Unknown object. Please report.");
+		const Array params = build_array(Variant::get_type_name(other.get_type()));
+		ERR_FAIL_V_EDMSG(PackedByteArray(), String("Bug: Unknown object: {0}. Please report.").format(params));
 	}
 
 	if (Pubkey::is_pubkey(other)) {
@@ -385,7 +386,7 @@ PackedByteArray Pubkey::bytes_from_variant(const Variant &other) {
 	} else if (Keypair::is_keypair(other)) {
 		return Object::cast_to<Keypair>(other)->get_public_bytes();
 	} else if (AccountMeta::is_account_meta(other)) {
-		return Pubkey::bytes_from_variant(Object::cast_to<AccountMeta>(other)->get_pubkey());
+		return Pubkey::bytes_from_variant(Object::cast_to<AccountMeta>(other)->get_key());
 	} else if (WalletAdapter::is_wallet_adapter(other)) {
 		WalletAdapter *phantom_controller = Object::cast_to<WalletAdapter>(other);
 		if (phantom_controller->is_connected()) {
@@ -397,7 +398,8 @@ PackedByteArray Pubkey::bytes_from_variant(const Variant &other) {
 			return bytes;
 		}
 	} else {
-		ERR_FAIL_V_EDMSG(PackedByteArray(), "Bug: Unknown object. Please report.");
+		const Array params = build_array(static_cast<Object*>(other)->get_class());
+		ERR_FAIL_V_EDMSG(PackedByteArray(), String("Bug: Unknown object {0}. Please report.").format(params));
 	}
 }
 
@@ -417,7 +419,7 @@ String Pubkey::string_from_variant(const Variant &other) {
 	} else if (Keypair::is_keypair(other)) {
 		return Object::cast_to<Keypair>(other)->get_public_string();
 	} else if (AccountMeta::is_account_meta(other)) {
-		return Pubkey::string_from_variant(Object::cast_to<AccountMeta>(other)->get_pubkey());
+		return Pubkey::string_from_variant(Object::cast_to<AccountMeta>(other)->get_key());
 	} else if (WalletAdapter::is_wallet_adapter(other)) {
 		WalletAdapter *phantom_controller = Object::cast_to<WalletAdapter>(other);
 		if (phantom_controller->is_connected()) {

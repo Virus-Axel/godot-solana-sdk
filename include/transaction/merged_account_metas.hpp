@@ -12,7 +12,7 @@ private:
 
 	static Variant preferred_signer(const Variant &left, const Variant &right);
 
-	void merge_at(const AccountMeta *account_meta, int64_t index);
+	void merge_at(const Variant &account_meta, int64_t index);
 
 protected:
 public:
