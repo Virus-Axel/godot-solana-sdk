@@ -63,7 +63,7 @@ void RpcSingleHttpRequestClient::initiate_connection() {
 	}
 }
 
-void RpcSingleHttpRequestClient::update_timeouts(const float delta) {
+void RpcSingleHttpRequestClient::update_timeouts(const double delta) {
 	request_queue.front().timeout -= delta;
 
 	// Remove timed out requests.
@@ -169,7 +169,7 @@ void RpcSingleHttpRequestClient::finalize_request(const Dictionary &response) {
 	request_queue.pop();
 }
 
-void RpcSingleHttpRequestClient::process(const float delta) {
+void RpcSingleHttpRequestClient::process(const double delta) {
 	if (is_completed()) {
 		return;
 	}
