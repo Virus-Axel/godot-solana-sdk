@@ -16,7 +16,7 @@ typedef struct {
 typedef struct {
 	Dictionary request;
 	Dictionary parsed_url;
-	float timeout;
+	double timeout;
 	int request_identifier;
 	Callable callback;
 	Callable confirmation_callback;
