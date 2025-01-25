@@ -48,7 +48,7 @@ Variant MergedAccountMetas::preferred_signer(const Variant &left, const Variant 
 	return left;
 }
 
-void MergedAccountMetas::merge_at(const Variant &account_meta, int64_t index) {
+void MergedAccountMetas::merge_at(const Variant &account_meta, int64_t index) { // NOLINT(bugprone-easily-swappable-parameters)
 	ERR_FAIL_COND_EDMSG_CUSTOM(account_meta.get_type() != Variant::OBJECT, "FAIL");
 	ERR_FAIL_COND_EDMSG_CUSTOM(static_cast<Object *>(account_meta)->get_class() != "AccountMeta", "FAIL");
 	auto *existing_meta = Object::cast_to<AccountMeta>(merged_metas[index]);

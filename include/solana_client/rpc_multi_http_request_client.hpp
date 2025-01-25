@@ -22,7 +22,7 @@ protected:
     static void _bind_methods();
 public:
 
-    void process(float delta);
+    void process(double delta);
     void asynchronous_request(const Dictionary& request_body, Dictionary parsed_url, const Callable &callback, float timeout = 20.0F);
 
 };
