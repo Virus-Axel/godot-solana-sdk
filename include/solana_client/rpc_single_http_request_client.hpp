@@ -11,7 +11,7 @@ namespace godot {
 typedef struct {
 	Dictionary request;
 	Dictionary parsed_url;
-	float timeout;
+	double timeout;
 	int request_identifier;
 	Callable callback;
 } RequestData;
@@ -27,7 +27,7 @@ private:
 	void process_message_sending();
 	void process_body();
 	void initiate_connection();
-	void update_timeouts(const float delta);
+	void update_timeouts(const double delta);
 	bool is_pending() const;
 	bool has_request() const;
 	bool is_response_valid(const Dictionary &response) const;
@@ -44,7 +44,7 @@ public:
 	bool is_completed() const;
 	void set_skip_id(bool skip_id);
 
-	void process(const float delta);
+	void process(const double delta);
 	void asynchronous_request(const Dictionary &request_body, const Dictionary &parsed_url, const Callable &callback, float timeout = 20.0F);
 };
 
