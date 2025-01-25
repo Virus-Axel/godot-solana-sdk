@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1737809716907,
+  "lastUpdate": 1737825526608,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -492,6 +492,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.417808219178082,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "67e30ce5382b227e009ea5fc40b70c3fb75c56db",
+          "message": "Merge pull request #328 from Virus-Axel/refactor/fix_clang_warnings\n\nFix clang warnings in multi HTTP client",
+          "timestamp": "2025-01-25T18:12:07+01:00",
+          "tree_id": "ec739b49e6307ec451cb0b438a888ed051ec617f",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/67e30ce5382b227e009ea5fc40b70c3fb75c56db"
+        },
+        "date": 1737825525914,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.424657534246575,
             "unit": "Percent"
           }
         ]
