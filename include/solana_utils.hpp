@@ -12,6 +12,11 @@ namespace godot {
 	/* NOLINTBEGIN(cppcoreguidelines-owning-memory)*/ \
 	memnew(__VA_ARGS__) /* NOLINTEND(cppcoreguidelines-owning-memory) */
 
+#define ERR_PRINT_ONCE_ED_CUSTOM(m_msg)                                    \
+	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
+	ERR_PRINT_ONCE_ED(m_msg)                                               \
+	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
+
 #define ERR_FAIL_COND_V_EDMSG_CUSTOM(m_cond, m_retval, m_msg)              \
 	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
 	ERR_FAIL_COND_V_EDMSG(m_cond, m_retval, m_msg)                         \
