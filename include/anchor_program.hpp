@@ -7,6 +7,8 @@
 
 namespace godot{
 
+const int DISCRIMINATOR_LENGTH = 8;
+
 class AnchorProgram : public Node{
     GDCLASS(AnchorProgram, Node)
 private:

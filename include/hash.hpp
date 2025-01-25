@@ -4,6 +4,7 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/resource.hpp>
 
+const int HASH_LENGTH = 32;
 
 namespace godot{
 
@@ -11,8 +12,6 @@ class Hash : public Resource {
     GDCLASS(Hash, Resource)
 
 private:
-    const int HASH_LENGTH = 32;
-
     bool unique = true;
     String value = "";
     PackedByteArray bytes;

@@ -352,8 +352,6 @@ PackedByteArray AnchorProgram::discriminator_by_name(const String &name, const S
     uint8_t *hash = hasher.digest();
     PackedByteArray discriminator;
 
-    const int DISCRIMINATOR_LENGTH = 8;
-
     discriminator.resize(DISCRIMINATOR_LENGTH);
 
     for(unsigned int i = 0; i < DISCRIMINATOR_LENGTH; i++){

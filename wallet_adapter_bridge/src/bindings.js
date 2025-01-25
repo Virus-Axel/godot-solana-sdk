@@ -52,8 +52,8 @@ export async function signTransactionProcedure(signer_index) {
             var tx = Module.Transaction.from(Module.serialized_message);
             var response = (await Module.wallet_handler.signTransaction(tx));
             Module.tampered_serialized_message = response.serialize({ requireAllSignatures: false, verifySignatures: false });
-            console.log(response);
             Module.message_signature = response.signatures[signer_index].signature;
+
             if (Module.message_signature == null) {
                 Module.wallet_status = -1;
                 Module.serialized_message = [];
@@ -75,6 +75,10 @@ export async function signTransactionProcedure(signer_index) {
 export async function connectWalletProcedure(walletName) {
     if (Module.wallet_status == -1) {
         console.warn("Wallet Adapter is busy.");
+        return;
+    }
+    if (!isWalletInstalled(walletName)) {
+        console.warn("Wallet is not installed.");
         return;
     }
 
@@ -100,7 +104,6 @@ export function isWalletInstalled(walletName) {
         return adapter.readyState == "Installed";
     }
     catch (err) {
-        console.error(err);
         return false;
     }
 }

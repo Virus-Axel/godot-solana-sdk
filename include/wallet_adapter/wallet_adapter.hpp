@@ -67,7 +67,6 @@ private:
 	void clear_state();
 	static void store_serialized_message(const PackedByteArray &serialized_message);
 	static String wallet_name_from_type(WalletType wallet_type);
-	static String wallet_check_name_from_type(WalletType wallet_type);
 
 	static String get_sign_transaction_script(uint32_t signer_index);
 	static String get_sign_message_script(const String &message);
