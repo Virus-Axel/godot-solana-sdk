@@ -55,6 +55,7 @@ var hierarchy =
       [ "godot::UserInfo", "classgodot_1_1_user_info.html", null ],
       [ "godot::UserInfoInput", "classgodot_1_1_user_info_input.html", null ]
     ] ],
+    [ "godot::SubItemId", "structgodot_1_1_sub_item_id.html", null ],
     [ "godot::SubscriptionData", "structgodot_1_1_subscription_data.html", null ],
     [ "WebSocketPeer", null, [
       [ "godot::RpcSingleWsRequestClient", "classgodot_1_1_rpc_single_ws_request_client.html", null ]

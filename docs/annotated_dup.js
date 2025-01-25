@@ -38,6 +38,7 @@ var annotated_dup =
       [ "SolanaClient", "classgodot_1_1_solana_client.html", "classgodot_1_1_solana_client" ],
       [ "SolanaUtils", "classgodot_1_1_solana_utils.html", null ],
       [ "StorageAccountV2", "classgodot_1_1_storage_account_v2.html", null ],
+      [ "SubItemId", "structgodot_1_1_sub_item_id.html", null ],
       [ "SubscriptionData", "structgodot_1_1_subscription_data.html", null ],
       [ "SystemProgram", "classgodot_1_1_system_program.html", null ],
       [ "TokenProgram", "classgodot_1_1_token_program.html", null ],
