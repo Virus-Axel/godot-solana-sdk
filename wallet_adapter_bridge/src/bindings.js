@@ -94,12 +94,12 @@ export async function connectWalletProcedure(walletName) {
     connectWallet();
 }
 
-export function isWalletInstalled(walletName){
-    try{
-        adapter = new Module.wallets[`${walletName}WalletAdapter`];
+export function isWalletInstalled(walletName) {
+    try {
+        var adapter = new Module.wallets[`${walletName}WalletAdapter`];
         return adapter.readyState == "Installed";
     }
-    catch (err){
+    catch (err) {
         console.error(err);
         return false;
     }
