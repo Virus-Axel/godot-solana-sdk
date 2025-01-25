@@ -6,7 +6,7 @@ var searchData=
   ['serialize_5flookup_5ftables_3',['serialize_lookup_tables',['../classgodot_1_1_message.html#ade9a9550908ade83c1342967ab2bc22a',1,'godot::Message']]],
   ['set_5faddress_5flookup_5ftables_4',['set_address_lookup_tables',['../classgodot_1_1_message.html#ae1a09013c2301a805952070dac6b3550',1,'godot::Message']]],
   ['set_5fbase_5',['set_base',['../classgodot_1_1_pubkey.html#affea02c8f66a30d681b04c9df42a5812',1,'godot::Pubkey']]],
-  ['set_5fcallback_6',['set_callback',['../classgodot_1_1_solana_client.html#abbdb1f47e90096d7a4cf614bfbb02295',1,'godot::SolanaClient']]],
+  ['set_5fcallback_6',['set_callback',['../classgodot_1_1_solana_client.html#ad05fe310b293c989aba341e3543f5715',1,'godot::SolanaClient']]],
   ['set_5flatest_5fblockhash_7',['set_latest_blockhash',['../classgodot_1_1_message.html#ae79e65f3d540664172a6b26e25099fa0',1,'godot::Message']]],
   ['set_5fowner_8',['set_owner',['../classgodot_1_1_pubkey.html#a456511ed483d257fb5e00dfaa66c184d',1,'godot::Pubkey']]],
   ['set_5fprivate_5fbytes_9',['set_private_bytes',['../classgodot_1_1_keypair.html#a5dbc438db0b95a561f9cc2e0f88711e5',1,'godot::Keypair']]],

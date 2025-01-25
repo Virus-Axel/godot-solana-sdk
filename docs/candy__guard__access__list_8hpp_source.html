@@ -203,19 +203,21 @@ $(function(){initNavTree('candy__guard__access__list_8hpp_source.html',''); init
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span> </div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    PackedByteArray serialize() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    PackedByteArray serialize_mint_settings() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    PackedByteArray serialize_groups() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    PackedByteArray serialize_guard_settings() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    <a class="code hl_class" href="classgodot_1_1_candy_guard_access_list.html">CandyGuardAccessList</a> &amp;get_group(<span class="keyword">const</span> String &amp;label);</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    TypedArray&lt;AccountMeta&gt; get_mint_arg_accounts(<span class="keyword">const</span> Variant &amp;payer, <span class="keyword">const</span> Variant &amp;machine_key, <span class="keyword">const</span> Variant &amp;guard_key);</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>};</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    String get_label() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    PackedByteArray serialize() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    PackedByteArray serialize_mint_settings() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    PackedByteArray serialize_groups() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    PackedByteArray serialize_guard_settings() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span> </div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    <a class="code hl_class" href="classgodot_1_1_candy_guard_access_list.html">CandyGuardAccessList</a> &amp;get_group(<span class="keyword">const</span> String &amp;label);</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>    TypedArray&lt;AccountMeta&gt; get_mint_arg_accounts(<span class="keyword">const</span> Variant &amp;payer, <span class="keyword">const</span> Variant &amp;machine_key, <span class="keyword">const</span> Variant &amp;guard_key);</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>};</div>
 </div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span> </div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>} <span class="comment">//namespace godot</span></div>
 <div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span> </div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>} <span class="comment">//namespace godot</span></div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span> </div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassgodot_1_1_candy_guard_access_list_html"><div class="ttname"><a href="classgodot_1_1_candy_guard_access_list.html">godot::CandyGuardAccessList</a></div><div class="ttdef"><b>Definition</b> candy_guard_access_list.hpp:12</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
@@ -223,7 +225,7 @@ $(function(){initNavTree('candy__guard__access__list_8hpp_source.html',''); init
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_5f627655c57e0213242e4f793928fa51.html">candy_machine</a></li><li class="navelem"><b>candy_guard_access_list.hpp</b></li>
-    <li class="footer">Generated on Fri Jan 24 2025 20:01:14 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Jan 25 2025 09:16:44 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>
