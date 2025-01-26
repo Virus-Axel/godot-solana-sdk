@@ -11,6 +11,9 @@
 
 namespace godot {
 
+const uint32_t HTTPS_PORT = 443;
+const uint32_t WSS_PORT = 443;
+
 /**
  * @class SolanaClient
  * @brief Manager for RPC HTTP API communication.

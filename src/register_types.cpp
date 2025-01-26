@@ -1,5 +1,15 @@
 #include "register_types.hpp"
 
+#include "gdextension_interface.h"
+#include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/classes/project_settings.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/defs.hpp"
+#include "godot_cpp/godot.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
 #include "account.hpp"
 #include "account_meta.hpp"
 #include "address_lookup_table.hpp"
@@ -10,12 +20,13 @@
 #include "candy_machine/candy_machine.hpp"
 #include "candy_machine/candy_machine_data.hpp"
 #include "candy_machine/config_line.hpp"
+#include "compiled_instruction.hpp"
 #include "compute_budget.hpp"
+#include "doc_data_godot-solana-sdk.gen.h"
 #include "hash.hpp"
 #include "honeycomb.hpp"
 #include "instruction.hpp"
 #include "keypair.hpp"
-#include "message.hpp"
 #include "meta_data/collection.hpp"
 #include "meta_data/create_metadata_args.hpp"
 #include "meta_data/creator.hpp"
@@ -25,6 +36,7 @@
 #include "pubkey.hpp"
 #include "rpc_multi_http_request_client.hpp"
 #include "rpc_single_http_request_client.hpp"
+#include "rpc_single_ws_request_client.hpp"
 #include "shdwdrive.hpp"
 #include "solana_client.hpp"
 #include "solana_utils.hpp"
@@ -32,21 +44,11 @@
 #include "spl_token_2022.hpp"
 #include "system_program.hpp"
 #include "transaction.hpp"
-#include "utils.hpp"
 #include "wallet_adapter.hpp"
 
-#include <gdextension_interface.h>
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/core/defs.hpp>
-#include <godot_cpp/godot.hpp>
-
-#include "doc_data_godot-solana-sdk.gen.h"
-
-using namespace godot;
-
-void add_setting(const String &name, Variant::Type type, Variant default_value, PropertyHint hint = PropertyHint::PROPERTY_HINT_NONE, const String &hint_string = "") {
+namespace godot {
+namespace {
+void add_setting(const String &name, Variant::Type type, const Variant &default_value, PropertyHint hint = PropertyHint::PROPERTY_HINT_NONE, const String &hint_string = "") {
 	if (!ProjectSettings::get_singleton()->has_setting(name)) {
 		ProjectSettings::get_singleton()->set(name, default_value);
 
@@ -65,8 +67,8 @@ void add_setting(const String &name, Variant::Type type, Variant default_value, 
 
 void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen editor_help_load_xml_from_utf8_chars_and_len = (GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen)internal::gdextension_interface_get_proc_address("editor_help_load_xml_from_utf8_chars_and_len");
-		editor_help_load_xml_from_utf8_chars_and_len(_doc_data, _doc_data_size);
+		auto editor_help_load_xml_from_utf8_chars_and_len = reinterpret_cast<GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen>(internal::gdextension_interface_get_proc_address("editor_help_load_xml_from_utf8_chars_and_len")); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		editor_help_load_xml_from_utf8_chars_and_len(static_cast<const char *>(_doc_data), _doc_data_size);
 	}
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
@@ -111,23 +113,28 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<HoneyComb>();
 
 	add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
-	add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, 443);
-	add_setting("solana_sdk/client/default_ws_port", Variant::Type::INT, 443);
+	add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, HTTPS_PORT);
+	add_setting("solana_sdk/client/default_ws_port", Variant::Type::INT, WSS_PORT);
 
-	Engine::get_singleton()->register_singleton("http_client", memnew(RpcMultiHttpRequestClient));
-	Engine::get_singleton()->register_singleton("ws_client", memnew(RpcSingleWsRequestClient));
+	// Leave memory allocated and free in unregister_singleton.
+	Engine::get_singleton()->register_singleton("http_client", memnew_custom(RpcMultiHttpRequestClient)); // NOLINT (cppcoreguidelines-owning-memory)
+	Engine::get_singleton()->register_singleton("ws_client", memnew_custom(RpcSingleWsRequestClient)); // NOLINT (cppcoreguidelines-owning-memory)
 }
 
 void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+
+	Engine::get_singleton()->unregister_singleton("http_client");
+	Engine::get_singleton()->unregister_singleton("ws_client");
 }
+} //namespace
 
 extern "C" {
 // Initialization.
-GDExtensionBool GDE_EXPORT solana_sdk_library_init(const GDExtensionInterfaceGetProcAddress interface, const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
-	godot::GDExtensionBinding::InitObject init_obj(interface, p_library, r_initialization);
+GDExtensionBool GDE_EXPORT solana_sdk_library_init(const GDExtensionInterfaceGetProcAddress interface, GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
+	const godot::GDExtensionBinding::InitObject init_obj(interface, p_library, r_initialization);
 
 	init_obj.register_initializer(initialize_solana_sdk_module);
 	init_obj.register_terminator(uninitialize_solana_sdk_module);
@@ -136,3 +143,4 @@ GDExtensionBool GDE_EXPORT solana_sdk_library_init(const GDExtensionInterfaceGet
 	return init_obj.init();
 }
 }
+} //namespace godot
