@@ -12,9 +12,19 @@ namespace godot {
 	/* NOLINTBEGIN(cppcoreguidelines-owning-memory)*/ \
 	memnew(__VA_ARGS__) /* NOLINTEND(cppcoreguidelines-owning-memory) */
 
+#define ERR_PRINT_ED_CUSTOM(m_msg)                                         \
+	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
+	ERR_PRINT_ED(m_msg)                                                    \
+	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
+
 #define ERR_PRINT_ONCE_ED_CUSTOM(m_msg)                                    \
 	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
 	ERR_PRINT_ONCE_ED(m_msg)                                               \
+	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
+
+#define ERR_FAIL_V_EDMSG_CUSTOM(m_retval, m_msg)                           \
+	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
+	ERR_FAIL_V_EDMSG(m_retval, m_msg)                                      \
 	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
 
 #define ERR_FAIL_COND_V_EDMSG_CUSTOM(m_cond, m_retval, m_msg)              \
@@ -27,10 +37,10 @@ namespace godot {
 	ERR_FAIL_COND_EDMSG(m_cond, m_msg)                                     \
 	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
 
-#define ERR_FAIL_COND_CUSTOM(m_cond)                                       \
-	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
-	ERR_FAIL_COND(m_cond)                                                  \
-	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
+#define ERR_FAIL_COND_CUSTOM(m_cond)                                                                         \
+	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return,readability-simplify-boolean-expr)*/ \
+	ERR_FAIL_COND(m_cond)                                                                                    \
+	/* NOLINTEND(llvm-else-after-return,readability-else-after-return,readability-simplify-boolean-expr) */
 
 #define ERR_FAIL_EDMSG_CUSTOM(m_msg)                                       \
 	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
