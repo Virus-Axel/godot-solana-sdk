@@ -5,6 +5,7 @@ var hierarchy =
       [ "godot::RpcMultiHttpRequestClient", "classgodot_1_1_rpc_multi_http_request_client.html", null ],
       [ "godot::RpcSingleHttpRequestClient", "classgodot_1_1_rpc_single_http_request_client.html", null ]
     ] ],
+    [ "godot::InitParams", "structgodot_1_1_init_params.html", null ],
     [ "godot::MergedAccountMetas", "classgodot_1_1_merged_account_metas.html", null ],
     [ "godot::Message", "classgodot_1_1_message.html", null ],
     [ "Node", null, [
@@ -57,6 +58,7 @@ var hierarchy =
     ] ],
     [ "godot::SubItemId", "structgodot_1_1_sub_item_id.html", null ],
     [ "godot::SubscriptionData", "structgodot_1_1_subscription_data.html", null ],
+    [ "godot::UploadParams", "structgodot_1_1_upload_params.html", null ],
     [ "WebSocketPeer", null, [
       [ "godot::RpcSingleWsRequestClient", "classgodot_1_1_rpc_single_ws_request_client.html", null ]
     ] ],
