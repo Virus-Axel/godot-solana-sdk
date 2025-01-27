@@ -1,11 +1,13 @@
 #include "register_types.hpp"
 
 #include "gdextension_interface.h"
+#include "godot_cpp/classes/editor_interface.hpp"
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
+#include "godot_cpp/variant/callable_method_pointer.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
@@ -13,6 +15,8 @@
 #include "account.hpp"
 #include "account_meta.hpp"
 #include "address_lookup_table.hpp"
+#include "anchor/generic_anchor_node.hpp"
+#include "anchor/generic_anchor_resource.hpp"
 #include "anchor_program.hpp"
 #include "associated_token_account.hpp"
 #include "candy_machine/candy_guard.hpp"
@@ -22,6 +26,8 @@
 #include "candy_machine/config_line.hpp"
 #include "compiled_instruction.hpp"
 #include "compute_budget.hpp"
+#include "dialogs/add_custom_idl.hpp"
+#include "dialogs/menubar_helper.hpp"
 #include "doc_data_godot-solana-sdk.gen.h"
 #include "hash.hpp"
 #include "honeycomb.hpp"
@@ -45,6 +51,7 @@
 #include "system_program.hpp"
 #include "transaction.hpp"
 #include "wallet_adapter.hpp"
+#include "dialogs/add_custom_idl.hpp"
 
 namespace godot {
 namespace {
@@ -62,6 +69,15 @@ void add_setting(const String &name, Variant::Type type, const Variant &default_
 		property_info["hint_string"] = hint_string;
 
 		ProjectSettings::get_singleton()->add_property_info(property_info);
+	}
+}
+
+void load_user_programs(){
+	Variant idl_locations = ProjectSettings::get_singleton()->get_setting(String(CUSTOM_IDL_LOCATION_SETTING.c_str()));
+	ERR_FAIL_COND_EDMSG_CUSTOM(idl_locations.get_type() != Variant::PACKED_STRING_ARRAY, "Could not find setting for idl locations");
+	const PackedStringArray idl_filenames = static_cast<PackedStringArray>(idl_locations);
+	for (const auto idl_filename: idl_filenames){
+		AddCustomIdlDialog::load_idl(idl_filename);
 	}
 }
 
@@ -111,10 +127,33 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<RpcSingleHttpRequestClient>();
 	ClassDB::register_class<RpcMultiHttpRequestClient>();
 	ClassDB::register_class<HoneyComb>();
+	ClassDB::register_class<MenuBarHelper>();
+	ClassDB::register_class<AddCustomIdlDialog>();
+	//ClassDB::register_class<GenericAnchorNode>();
+	//ClassDB::register_class<GenericAnchorResource>();
+	GenericAnchorResource::set_class_name("GenericAnchorResource");
+	ClassDB::register_class<GenericAnchorResource>();
+	StringName* abc = memnew(StringName("GenericAnchorResource")); 
+
+	//internal::gdextension_interface_classdb_unregister_extension_class(internal::library, abc->_native_ptr());
+
+	//AddCustomIdlDialog::load_idl("res://testidl.json");
+	
+
+	Dictionary reso;
+	Dictionary struct_info;
+	reso["name"] = "GenericAnchorResource";
+	struct_info["fields"] = Array();
+	reso["type"] = struct_info;
+	//GenericAnchorResource::bind_anchor_resource(reso);
+	GenericAnchorResource::set_class_name("aaa");
 
 	add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
 	add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, HTTPS_PORT);
 	add_setting("solana_sdk/client/default_ws_port", Variant::Type::INT, WSS_PORT);
+	add_setting("solana_sdk/anchor/custom_anchor_programs", Variant::Type::PACKED_STRING_ARRAY, PackedStringArray());
+
+	load_user_programs();
 
 	// Leave memory allocated and free in unregister_singleton.
 	Engine::get_singleton()->register_singleton("http_client", memnew_custom(RpcMultiHttpRequestClient)); // NOLINT (cppcoreguidelines-owning-memory)
@@ -128,6 +167,7 @@ void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 
 	Engine::get_singleton()->unregister_singleton("http_client");
 	Engine::get_singleton()->unregister_singleton("ws_client");
+	MenuBarHelper::deinitialize_dialogs();
 }
 } //namespace
 

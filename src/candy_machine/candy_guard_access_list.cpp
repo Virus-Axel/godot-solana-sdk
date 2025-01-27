@@ -26,7 +26,6 @@ PackedByteArray CandyGuardAccessList::serialize() const {
 	result.resize(4);
 	result.encode_u32(0, result_data.size());
 	result.append_array(result_data);
-	UtilityFunctions::print(result_data);
 
 	return result;
 }
@@ -193,7 +192,6 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const {
 	}
 
 	result.encode_u64(0, enabled_guards);
-	UtilityFunctions::print(result);
 
 	return result;
 }
