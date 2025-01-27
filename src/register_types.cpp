@@ -1,11 +1,13 @@
 #include "register_types.hpp"
 
 #include "gdextension_interface.h"
+#include "godot_cpp/classes/editor_interface.hpp"
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
+#include "godot_cpp/variant/callable_method_pointer.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
@@ -22,6 +24,8 @@
 #include "candy_machine/config_line.hpp"
 #include "compiled_instruction.hpp"
 #include "compute_budget.hpp"
+#include "dialogs/add_custom_idl.hpp"
+#include "dialogs/menubar_helper.hpp"
 #include "doc_data_godot-solana-sdk.gen.h"
 #include "hash.hpp"
 #include "honeycomb.hpp"
@@ -111,6 +115,8 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<RpcSingleHttpRequestClient>();
 	ClassDB::register_class<RpcMultiHttpRequestClient>();
 	ClassDB::register_class<HoneyComb>();
+	ClassDB::register_class<MenuBarHelper>();
+	ClassDB::register_class<AddCustomIdlDialog>();
 
 	add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
 	add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, HTTPS_PORT);
