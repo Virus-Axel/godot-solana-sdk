@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1737901265355,
+  "lastUpdate": 1738090628134,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -579,6 +579,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.417808219178082,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a4e768ac5e63c91635873165ba71b1fcacf08dce",
+          "message": "Merge pull request #331 from Virus-Axel/bugfix/remove_clear_transaction\n\nFix clear state removing transaction",
+          "timestamp": "2025-01-28T19:40:09+01:00",
+          "tree_id": "9ef31e78b7fd600526dea3996e98814ba8d2998d",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/a4e768ac5e63c91635873165ba71b1fcacf08dce"
+        },
+        "date": 1738090627418,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.424657534246575,
             "unit": "Percent"
           }
         ]
