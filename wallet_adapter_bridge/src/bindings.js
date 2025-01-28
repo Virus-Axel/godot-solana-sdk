@@ -1,7 +1,6 @@
 export function clear_state() {
     Module.wallet_status = 0;
     Module.old_serialized_message = new Uint8Array();
-    Module.tampered_serialized_message = new Uint8Array();
 }
 
 export async function signMessageProcedure(buffer_message) {
