@@ -16,17 +16,17 @@ Variant MergedAccountMetas::preferred_signer(const Variant &left, const Variant 
 	Object *left_object = nullptr;
 	Object *right_object = nullptr;
 
+	const Variant left_pubkey = Pubkey::new_from_variant(left);
 	if (left.get_type() == Variant::OBJECT) {
 		left_object = static_cast<Object *>(left);
 	} else {
-		const Variant left_pubkey = Pubkey::new_from_variant(left);
 		ERR_FAIL_COND_V_EDMSG_CUSTOM(left_pubkey.get_type() != Variant::OBJECT, nullptr, "Invalid signer input type.");
 		left_object = static_cast<Object *>(left_pubkey);
 	}
+	const Variant right_pubkey = Pubkey::new_from_variant(right);
 	if (right.get_type() == Variant::OBJECT) {
 		right_object = static_cast<Object *>(right);
 	} else {
-		const Variant right_pubkey = Pubkey::new_from_variant(right);
 		ERR_FAIL_COND_V_EDMSG_CUSTOM(right_pubkey.get_type() != Variant::OBJECT, nullptr, "Invalid signer input type.");
 		right_object = static_cast<Object *>(right_pubkey);
 	}
@@ -85,7 +85,7 @@ void MergedAccountMetas::from_instructions(const TypedArray<Instruction> &instru
 	for (unsigned int i = 0; i < instructions.size(); i++) {
 		auto *element = Object::cast_to<Instruction>(instructions[i]);
 
-		const TypedArray<AccountMeta> &account_metas = element->get_accounts();
+		const TypedArray<AccountMeta> account_metas = element->get_accounts();
 		const AccountMeta *pid_meta = memnew_custom(AccountMeta(element->get_program_id(), false, false));
 		add(pid_meta);
 

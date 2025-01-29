@@ -1,7 +1,7 @@
 extends Control
 
 
-const TOTAL_CASES := 2
+const TOTAL_CASES := 3
 var passed_test_mask := 0
 		
 
@@ -43,9 +43,39 @@ func wallet_adapter_sign(wallet_type, test_id):
 	PASS(test_id)
 
 
+func wallet_adapter_in_deserialized_transaction():
+	$WalletAdapter.connect_wallet()
+	await $WalletAdapter.connection_established
+	
+	var payer: Keypair = Keypair.new_random()
+	var receiver: Pubkey = Pubkey.new_random()
+	var tx: Transaction = Transaction.new()
+	add_child(tx)
+	
+	tx.set_payer(payer)
+	
+	var ix: Instruction = SystemProgram.transfer($WalletAdapter, receiver, 1000)
+	tx.add_instruction(ix)
+	
+	tx.update_latest_blockhash()
+	await tx.blockhash_updated
+	
+	var serialized_transaction = tx.serialize()
+	
+	var reconstructed_transaction = Transaction.new_from_bytes(serialized_transaction)
+	add_child(reconstructed_transaction)
+	reconstructed_transaction.set_signers([payer, $WalletAdapter])
+	
+	reconstructed_transaction.sign()
+	await reconstructed_transaction.fully_signed
+
+	PASS(2)
+
+
 func _ready():
 	await wallet_adapter_sign(20, 0)
 	await wallet_adapter_sign(36, 1)
+	await wallet_adapter_in_deserialized_transaction()
 
 
 func _on_timeout_timeout():

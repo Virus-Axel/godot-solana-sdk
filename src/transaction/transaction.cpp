@@ -64,16 +64,15 @@ void Transaction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("partially_sign", "latest_blockhash"), &Transaction::partially_sign);
 }
 
-void Transaction::_signer_signed(const PackedByteArray &signature) {
-	auto *controller = Object::cast_to<WalletAdapter>(payer);
+void Transaction::_signer_signed(const PackedByteArray &signature, const int32_t index) {
+	auto *controller = Object::cast_to<WalletAdapter>(signers[index]);
 	controller->disconnect("signing_failed", callable_mp(this, &Transaction::_signer_failed));
 
-	const uint32_t index = controller->get_active_signer_index();
 	if (controller->did_transaction_change()) {
 		const PackedByteArray new_bytes = WalletAdapter::get_modified_transaction();
 		const Array temp_signers = signers;
 		from_bytes(new_bytes);
-		set_signers(temp_signers);
+		signers = temp_signers;
 		UtilityFunctions::print("Browser wallet altered transaction.");
 	}
 
@@ -93,6 +92,11 @@ void Transaction::_signer_failed() {
 
 bool Transaction::is_phantom_payer() const {
 	return payer.has_method("get_connected_key");
+}
+
+bool Transaction::has_valid_payer() const {
+	// TODO(Virax): Check for signing class as well.
+	return (payer.get_type() == Variant::OBJECT);
 }
 
 void Transaction::create_message() {
@@ -118,6 +122,10 @@ void Transaction::create_message() {
 		instruction_list.insert(0, ComputeBudget::set_compute_unit_limit(unit_limit));
 		instruction_list.insert(1, ComputeBudget::set_compute_unit_price(unit_price));
 	}
+	if (has_valid_payer()) {
+		const Variant payer_meta = AccountMeta::new_account_meta(payer, true, true);
+		merged_metas.add(payer_meta);
+	}
 	merged_metas.from_instructions(instruction_list);
 	message.create(merged_metas, payer);
 	message.compile_instructions(instruction_list);
@@ -141,7 +149,7 @@ void Transaction::create_message() {
 }
 
 void Transaction::check_fully_signed() {
-	if (ready_signature_amount == signers.size()) {
+	if (ready_signature_amount == signatures.size()) {
 		emit_signal("fully_signed");
 	}
 }
@@ -169,7 +177,7 @@ void Transaction::sign_at_index(const uint32_t index) {
 	} else if (signers[index].has_method("sign_message")) {
 		auto *controller = Object::cast_to<WalletAdapter>(signers[index]);
 
-		controller->connect("message_signed", callable_mp(this, &Transaction::_signer_signed), CONNECT_ONE_SHOT);
+		controller->connect("message_signed", callable_mp(this, &Transaction::_signer_signed).bindv(build_array(index)), CONNECT_ONE_SHOT);
 		controller->connect("signing_failed", callable_mp(this, &Transaction::_signer_failed), CONNECT_ONE_SHOT);
 		controller->sign_message(serialize(), index);
 	} else {
@@ -388,7 +396,7 @@ Variant Transaction::new_from_bytes(const PackedByteArray &bytes) {
 	return result;
 }
 
-void Transaction::_ready() {
+Transaction::Transaction() {
 	send_client = memnew_custom(SolanaClient);
 	blockhash_client = memnew_custom(SolanaClient);
 	subscribe_client = memnew_custom(SolanaClient);
@@ -400,6 +408,9 @@ void Transaction::_ready() {
 
 	send_client->set_url_override(url_override);
 	blockhash_client->set_url_override(url_override);
+}
+
+void Transaction::_ready() {
 }
 
 void Transaction::_process(double delta) {
@@ -471,7 +482,6 @@ void Transaction::update_latest_blockhash(const String &custom_hash) {
 
 	if (custom_hash.is_empty()) {
 		pending_blockhash = true;
-
 		blockhash_client->connect("http_response_received", callable_mp(this, &Transaction::blockhash_callback), CONNECT_ONE_SHOT);
 		blockhash_client->get_latest_blockhash();
 	} else {

@@ -59,10 +59,11 @@ private:
 	static bool are_all_bytes_zeroes(const PackedByteArray &bytes);
 
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	void _signer_signed(const PackedByteArray &signature);
+	void _signer_signed(const PackedByteArray &signature, const int32_t index);
 	void _signer_failed();
 
 	bool is_phantom_payer() const;
+	bool has_valid_payer() const;
 	void create_message();
 	void check_fully_signed();
 	void reset_state();
@@ -80,7 +81,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Transaction() = default;
+	Transaction();
 	void from_bytes(const PackedByteArray &bytes);
 
 	static Variant new_from_bytes(const PackedByteArray &bytes);
