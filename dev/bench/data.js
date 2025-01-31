@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1738090628134,
+  "lastUpdate": 1738322283177,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -608,6 +608,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.424657534246575,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9d54939cc3edf880c9cbe251f6828339a045fe7d",
+          "message": "Merge pull request #333 from Virus-Axel/bugfix/remove_clear_transaction\n\nFix wallet adapter signing on deserialized transaction",
+          "timestamp": "2025-01-31T12:02:53+01:00",
+          "tree_id": "82d6876630dce1d2d565b34d9f34ec34834ac3e7",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/9d54939cc3edf880c9cbe251f6828339a045fe7d"
+        },
+        "date": 1738322282252,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.352739726027397,
             "unit": "Percent"
           }
         ]
