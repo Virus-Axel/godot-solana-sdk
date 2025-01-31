@@ -184,7 +184,6 @@ Variant MplCandyGuard::mint(
 	result->append_meta(*memnew(AccountMeta(new_pid, false, false)));
 
 	TypedArray<AccountMeta> mint_arg_accounts = Object::cast_to<CandyGuardAccessList>(candy_guard_acl)->get_group(label).get_mint_arg_accounts(receiver, candy_machine_id, guard_account_id);
-	std::cout << "SIIZE " << mint_arg_accounts.size() << std::endl;
 	for (unsigned int i = 0; i < mint_arg_accounts.size(); i++) {
 		result->append_meta(*memnew(AccountMeta(mint_arg_accounts[i])));
 	}
