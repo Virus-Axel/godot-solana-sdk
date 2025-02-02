@@ -196,6 +196,7 @@ env.Append(CPPPATH=["include/wallet_adapter/"])
 env.Append(CPPPATH=["src/wallet_adapter/"])
 env.Append(CPPPATH=["src/candy_machine/"])
 env.Append(CPPPATH=["src/dialogs/"])
+env.Append(CPPPATH=["src/anchor/"])
 
 sources = Glob("src/*.cpp")
 

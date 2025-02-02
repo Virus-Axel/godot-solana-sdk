@@ -12,6 +12,7 @@
 namespace godot {
 
 AddCustomIdlDialog *MenuBarHelper::add_custom_idl_dialog = nullptr;
+PopupMenu *MenuBarHelper::solana_menu_group = nullptr;
 
 static Node *find_menu_bar(const Node *tree) {
 	for (unsigned int j = 0; j < tree->get_child_count(); j++) {
@@ -58,15 +59,20 @@ void MenuBarHelper::ready_callback() {
 	Control *root = EditorInterface::get_singleton()->get_base_control();
 	Node *menu = find_menu_bar(root);
 
-	PopupMenu *new_group = memnew(PopupMenu);
-	ERR_FAIL_COND_EDMSG(new_group == nullptr, "Failed to initialize Solana menu");
+	solana_menu_group = memnew(PopupMenu);
+	ERR_FAIL_COND_EDMSG(solana_menu_group == nullptr, "Failed to initialize Solana menu");
 
 	initialize_dialogs(root);
 
-	new_group->add_item("Add Node from IDL", MenuID::IDL_TO_NODE);
-	new_group->connect("id_pressed", callable_mp_static(&MenuBarHelper::menu_pressed_callback));
-	new_group->set_name("Solana");
-	menu->add_child(new_group);
+	solana_menu_group->add_item("Add Node from IDL", MenuID::IDL_TO_NODE);
+	solana_menu_group->connect("id_pressed", callable_mp_static(&MenuBarHelper::menu_pressed_callback));
+	solana_menu_group->set_name("Solana");
+	menu->add_child(solana_menu_group);
+}
+
+void MenuBarHelper::deinitialize_dialogs() {
+	//Variant deinit(add_custom_idl_dialog);
+	//Variant deinit2(solana_menu_group);
 }
 
 } //namespace godot

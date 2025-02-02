@@ -1,10 +1,10 @@
 #ifndef GODOT_SOLANA_SDK_ADD_CUSTOM_IDL_HPP
 #define GODOT_SOLANA_SDK_ADD_CUSTOM_IDL_HPP
 
+#include "godot_cpp/classes/file_dialog.hpp"
 #include "godot_cpp/classes/label.hpp"
 #include "godot_cpp/classes/node.hpp"
 #include "godot_cpp/classes/window.hpp"
-#include "godot_cpp/classes/h_box_container.hpp"
 
 namespace godot {
 
@@ -13,15 +13,15 @@ class AddCustomIdlDialog : public Window {
 private:
 	const char *SELECT_IDL_TEXT = "Select IDL";
 	Label *select_idl_label = nullptr;
-	HBoxContainer *parent_window = nullptr;
-
-	void clear();
+	Variant parent_window = nullptr;
 
 protected:
 	static void _bind_methods();
 
 public:
 	AddCustomIdlDialog();
+	void clear();
+	static void load_idl(const String &filename);
 	~AddCustomIdlDialog() = default;
 };
 } //namespace godot

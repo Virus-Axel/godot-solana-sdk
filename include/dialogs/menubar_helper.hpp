@@ -18,6 +18,7 @@ class MenuBarHelper : public Node {
 	GDCLASS(MenuBarHelper, Node);
 
 private:
+	static PopupMenu *solana_menu_group;
 	static AddCustomIdlDialog *add_custom_idl_dialog;
 	static void initialize_dialogs(Node *parent);
 
@@ -29,6 +30,7 @@ public:
 	void _notification(int32_t p_what, bool p_reversed = false);
 	MenuBarHelper() = default;
 	static void ready_callback();
+	static void deinitialize_dialogs();
 	~MenuBarHelper() = default;
 };
 
