@@ -14,10 +14,11 @@ private:
 	static Array *loaded_idls;
 	static std::string class_name;
 	static std::vector<std::function<const StringName &()>> class_name_func;
+    static std::function<void *(void *)> stored_func;
 
 	Variant anchor_program = memnew(AnchorProgram);
 
-	static GDExtensionObjectPtr _create_instance_func(void *data);
+	static GDExtensionObjectPtr _create_instance_trampoline(void *data);
     static GDExtensionObjectPtr _create_instance_func2(void *data, int32_t index);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
 

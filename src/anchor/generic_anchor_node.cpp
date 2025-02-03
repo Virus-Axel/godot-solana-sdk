@@ -11,13 +11,13 @@ namespace godot {
 Array *GenericAnchorNode::loaded_idls = nullptr;
 std::string GenericAnchorNode::class_name = "GenericAnchorNode";
 std::vector<std::function<const StringName &()>> GenericAnchorNode::class_name_func;
-std::function<void *(void *)> stored_func;
-bool bla = false;
+std::function<void *(void *)> GenericAnchorNode::stored_func;
 
-GDExtensionObjectPtr GenericAnchorNode::_create_instance_func(void *data) {
+GDExtensionObjectPtr GenericAnchorNode::_create_instance_trampoline(void *data) {
 	std::cout << "BBBBBBBBBBBB" << std::endl;
-	const static auto perm_func = stored_func;
-	return perm_func(data);
+	std::function<const StringName &()> ud = *(std::function<const godot::StringName &()>*)data;
+	std::cout << "CC " << String(ud()).ascii() << std::endl;
+	return stored_func(data);
 }
 
 GDExtensionObjectPtr GenericAnchorNode::_create_instance_func2(void *data, int32_t index) {
@@ -49,23 +49,19 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 	if (loaded_idls == nullptr) {
 		loaded_idls = memnew(Array);
 	}
+	const int64_t index = loaded_idls->size();
 	loaded_idls->append(idl);
-	class_name = "ABC";
+	class_name = "ABC" + std::to_string(index);
 
-	std::function<const StringName &()> aaa = std::bind(&GenericAnchorNode::get_class_static2, "ABC");
-	class_name_func.push_back(std::bind(&GenericAnchorNode::get_class_static2, "ABC"));
+	std::function<const StringName &()> aaa = std::bind(&GenericAnchorNode::get_class_static2, String(class_name.c_str()));
+	class_name_func.push_back(std::bind(&GenericAnchorNode::get_class_static2, String(class_name.c_str())));
 	//class_name_func.push_back([&]() { GenericAnchorNode::get_class_static2("HI")};);
 
-	int32_t a = 12;
-	if (bla) {
-		a = 23;
-	}
-	bla = true;
-
 	//auto inst_func = &_create_instance_func;
-	stored_func = std::bind(&GenericAnchorNode::_create_instance_func2, std::placeholders::_1, a);
+	stored_func = std::bind(&GenericAnchorNode::_create_instance_func2, std::placeholders::_1, index);
 
-	auto *inst_func = &_create_instance_func;
+	auto *inst_func = &_create_instance_trampoline;
+    auto aab = class_name_func[0];
 
 	// Register this class with Godot
 	GDExtensionClassCreationInfo3 class_info = {
@@ -94,7 +90,7 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 		(void *)&class_name_func[0], // void *class_userdata;
 	};
 
-	StringName name = "ABC";
+	StringName name = String(class_name.c_str());
 	StringName parent_name = "Node";
 	internal::gdextension_interface_classdb_register_extension_class3(internal::library, name._native_ptr(), parent_name._native_ptr(), &class_info);
 
