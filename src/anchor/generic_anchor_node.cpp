@@ -13,20 +13,24 @@ std::string GenericAnchorNode::class_name = "GenericAnchorNode";
 std::vector<std::function<const StringName &()>> GenericAnchorNode::class_name_func;
 std::function<void *(void *)> GenericAnchorNode::stored_func;
 
-GDExtensionObjectPtr GenericAnchorNode::_create_instance_trampoline(void *data) {
-	std::cout << "BBBBBBBBBBBB" << std::endl;
-	std::function<const StringName &()> ud = *(std::function<const godot::StringName &()>*)data;
-	std::cout << "CC " << String(ud()).ascii() << std::endl;
-	return stored_func(data);
-}
+std::vector<StringName> GenericAnchorNode::names;
 
-GDExtensionObjectPtr GenericAnchorNode::_create_instance_func2(void *data, int32_t index) {
-	std::cout << "AAAAAAAAAAAAAAAAAAAA " << index << std::endl;
+GDExtensionObjectPtr GenericAnchorNode::_create_instance_trampoline(void *data) {
+	std::cout << "INST" << std::endl;
+	String abc = *(String *)data;
+	std::cout << "AAAAAa " << abc.ascii() << std::endl;
+	//std::cout << String(names[1]).ascii() << std::endl;
 	GenericAnchorNode *new_object = memnew(GenericAnchorNode);
 	return new_object->_owner;
+	/*std::function<const StringName &()> ud = *(std::function<const godot::StringName &()> *)data;
+	std::cout << "TRYYYYYYY" << std::endl;
+	std::cout << "CC " << String(ud()).ascii() << std::endl;
+	GenericAnchorNode *new_object = memnew(GenericAnchorNode);
+	return new_object->_owner;*/
 }
 
 GDExtensionClassInstancePtr GenericAnchorNode::_recreate_instance_func(void *data, GDExtensionObjectPtr obj) {
+	std::cout << "RECREATE" << std::endl;
 }
 
 const StringName &GenericAnchorNode::get_class_static() {
@@ -37,7 +41,6 @@ const StringName &GenericAnchorNode::get_class_static() {
 
 const StringName &GenericAnchorNode::get_class_static2(const String &override_name) {
 	static StringName string_name = StringName(override_name);
-	string_name = StringName(override_name);
 	return string_name;
 }
 
@@ -53,15 +56,18 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 	loaded_idls->append(idl);
 	class_name = "ABC" + std::to_string(index);
 
-	std::function<const StringName &()> aaa = std::bind(&GenericAnchorNode::get_class_static2, String(class_name.c_str()));
-	class_name_func.push_back(std::bind(&GenericAnchorNode::get_class_static2, String(class_name.c_str())));
+	names.push_back(StringName(class_name.c_str()));
+
+	//class_name_func.push_back(std::bind(&GenericAnchorNode::get_class_static2, "ABC0"));
+
+	class_name_func.push_back([&]() -> const godot::StringName & { static const int iii = 0; std::cout << "LAMBDA!!!" << std::endl; return GenericAnchorNode::names[iii]; });
+
+	std::cout << "REG " << String(class_name_func[index]()).ascii() << std::endl;
+
 	//class_name_func.push_back([&]() { GenericAnchorNode::get_class_static2("HI")};);
 
-	//auto inst_func = &_create_instance_func;
-	stored_func = std::bind(&GenericAnchorNode::_create_instance_func2, std::placeholders::_1, index);
-
-	auto *inst_func = &_create_instance_trampoline;
-    auto aab = class_name_func[0];
+    String* name_ptr = memnew(String);
+    *name_ptr = String(names[names.size() - 1]);
 
 	// Register this class with Godot
 	GDExtensionClassCreationInfo3 class_info = {
@@ -80,14 +86,14 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 		to_string_bind, // GDExtensionClassToString to_string_func;
 		nullptr, // GDExtensionClassReference reference_func;
 		nullptr, // GDExtensionClassUnreference unreference_func;
-		inst_func, // GDExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
+		&_create_instance_trampoline, // GDExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
 		free, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
 		&_recreate_instance_func, // GDExtensionClassRecreateInstance recreate_instance_func;
 		&ClassDB::get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
 		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
 		nullptr, // GDExtensionClassCallVirtualWithData call_virtual_func;
 		nullptr, // GDExtensionClassGetRID get_rid;
-		(void *)&class_name_func[0], // void *class_userdata;
+		(void *)name_ptr, // void *class_userdata;
 	};
 
 	StringName name = String(class_name.c_str());
