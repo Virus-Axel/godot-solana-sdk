@@ -45,6 +45,47 @@ void (Wrapped::*GenericAnchorNode::_get_notification())(int) {
 	return (void(::godot::Wrapped::*)(int)) & GenericAnchorNode::_notification;
 }
 
+bool (Wrapped::*GenericAnchorNode::_get_set())(const StringName &p_name, const Variant &p_property) {
+	return (bool(Wrapped::*)(const StringName &p_name, const Variant &p_property)) & GenericAnchorNode::_set;
+}
+
+bool (Wrapped::*GenericAnchorNode::_get_get())(const StringName &p_name, Variant &r_ret) const {
+	return (bool(Wrapped::*)(const StringName &p_name, Variant &r_ret) const) & GenericAnchorNode::_get;
+}
+
+void (Wrapped::*GenericAnchorNode::_get_get_property_list())(List<PropertyInfo> *p_list) const {
+	return (void(Wrapped::*)(List<PropertyInfo> * p_list) const) & GenericAnchorNode::_get_property_list;
+}
+
+bool (Wrapped::*GenericAnchorNode::_get_property_can_revert())(const StringName &p_name) const {
+	return (bool(Wrapped::*)(const StringName &p_name) const) & GenericAnchorNode::_property_can_revert;
+}
+
+bool (Wrapped::*GenericAnchorNode::_get_property_get_revert())(const StringName &p_name, Variant &) const {
+	return (bool(Wrapped::*)(const StringName &p_name, Variant &) const) & GenericAnchorNode::_property_get_revert;
+}
+
+void (Wrapped::*GenericAnchorNode::_get_validate_property())(PropertyInfo &p_property) const {
+	return (void(Wrapped::*)(PropertyInfo & p_property) const) & GenericAnchorNode::_validate_property;
+}
+
+String (Wrapped::*GenericAnchorNode::_get_to_string())() const {
+	return (String(Wrapped::*)() const)&GenericAnchorNode::_to_string;
+}
+
+void GenericAnchorNode::initialize_class() {
+	static bool initialized = false;
+	if (initialized) {
+		return;
+	}
+	Node::initialize_class();
+	if (GenericAnchorNode::_get_bind_methods() != Node::_get_bind_methods()) {
+		_bind_methods();
+		Node::register_virtuals<GenericAnchorNode, Node>();
+	}
+	initialized = true;
+}
+
 GDExtensionClassInstancePtr GenericAnchorNode::_recreate_instance_func(void *data, GDExtensionObjectPtr obj) {
 #ifdef HOT_RELOAD_ENABLED
 	GenericAnchorNode *new_instance = (GenericAnchorNode *)memalloc(sizeof(GenericAnchorNode));
@@ -60,6 +101,150 @@ GDExtensionClassInstancePtr GenericAnchorNode::_recreate_instance_func(void *dat
 const StringName &GenericAnchorNode::get_class_static() {
 	static StringName string_name = "GenericAnchorNode";
 	return string_name;
+}
+
+const StringName &GenericAnchorNode::get_parent_class_static() {
+	return Node::get_class_static();
+}
+
+void GenericAnchorNode::notification_bind(GDExtensionClassInstancePtr p_instance, int32_t p_what, GDExtensionBool p_reversed) {
+	if (p_instance && GenericAnchorNode::_get_notification()) {
+		if (!p_reversed) {
+			Node::notification_bind(p_instance, p_what, p_reversed);
+		}
+		if (GenericAnchorNode::_get_notification() != Node::_get_notification()) {
+			GenericAnchorNode *cls = reinterpret_cast<GenericAnchorNode *>(p_instance);
+			cls->_notification(p_what);
+		}
+		if (p_reversed) {
+			Node::notification_bind(p_instance, p_what, p_reversed);
+		}
+	}
+}
+
+GDExtensionBool GenericAnchorNode::set_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value) {
+	if (p_instance) {
+		if (Node::set_bind(p_instance, p_name, p_value)) {
+			return true;
+		}
+		if (GenericAnchorNode::_get_set() != Node::_get_set()) {
+			GenericAnchorNode *cls = reinterpret_cast<GenericAnchorNode *>(p_instance);
+			return cls->_set(*reinterpret_cast<const StringName *>(p_name), *reinterpret_cast<const Variant *>(p_value));
+		}
+	}
+	return false;
+}
+
+GDExtensionBool GenericAnchorNode::get_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret) {
+	if (p_instance) {
+		if (Node::get_bind(p_instance, p_name, r_ret)) {
+			return true;
+		}
+		if (GenericAnchorNode::_get_get() != Node::_get_get()) {
+			GenericAnchorNode *cls = reinterpret_cast<GenericAnchorNode *>(p_instance);
+			return cls->_get(*reinterpret_cast<const StringName *>(p_name), *reinterpret_cast<Variant *>(r_ret));
+		}
+	}
+	return false;
+}
+
+inline bool GenericAnchorNode::has_get_property_list() {
+	return GenericAnchorNode::_get_get_property_list() && GenericAnchorNode::_get_get_property_list() != Node::_get_get_property_list();
+}
+
+const GDExtensionPropertyInfo *GenericAnchorNode::get_property_list_bind(GDExtensionClassInstancePtr p_instance, uint32_t *r_count) {
+	if (!p_instance) {
+		if (r_count)
+			*r_count = 0;
+		return nullptr;
+	}
+	GenericAnchorNode *cls = reinterpret_cast<GenericAnchorNode *>(p_instance);
+	List<PropertyInfo> &plist_cpp = cls->plist_owned;
+	ERR_FAIL_COND_V_MSG(!plist_cpp.is_empty(), nullptr, "Internal error, property list was not freed by engine!");
+	cls->_get_property_list(&plist_cpp);
+	return internal::create_c_property_list(plist_cpp, r_count);
+}
+
+void GenericAnchorNode::free_property_list_bind(GDExtensionClassInstancePtr p_instance, const GDExtensionPropertyInfo *p_list, uint32_t /*p_count*/) {
+	if (p_instance) {
+		GenericAnchorNode *cls = reinterpret_cast<GenericAnchorNode *>(p_instance);
+		cls->plist_owned.clear();
+		internal::free_c_property_list(const_cast<GDExtensionPropertyInfo *>(p_list));
+	}
+}
+
+GDExtensionBool GenericAnchorNode::property_can_revert_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name) {
+	if (p_instance && GenericAnchorNode::_get_property_can_revert()) {
+		if (GenericAnchorNode::_get_property_can_revert() != Node::_get_property_can_revert()) {
+			GenericAnchorNode *cls = reinterpret_cast<GenericAnchorNode *>(p_instance);
+			return cls->_property_can_revert(*reinterpret_cast<const StringName *>(p_name));
+		}
+		return Node::property_can_revert_bind(p_instance, p_name);
+	}
+	return false;
+}
+
+GDExtensionBool GenericAnchorNode::property_get_revert_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret) {
+	if (p_instance && GenericAnchorNode::_get_property_get_revert()) {
+		if (GenericAnchorNode::_get_property_get_revert() != Node::_get_property_get_revert()) {
+			GenericAnchorNode *cls = reinterpret_cast<GenericAnchorNode *>(p_instance);
+			return cls->_property_get_revert(*reinterpret_cast<const StringName *>(p_name), *reinterpret_cast<Variant *>(r_ret));
+		}
+		return Node::property_get_revert_bind(p_instance, p_name, r_ret);
+	}
+	return false;
+}
+
+GDExtensionBool GenericAnchorNode::validate_property_bind(GDExtensionClassInstancePtr p_instance, GDExtensionPropertyInfo *p_property) {
+	bool ret = false;
+	if (p_instance && GenericAnchorNode::_get_validate_property()) {
+		ret = Node::validate_property_bind(p_instance, p_property);
+		if (GenericAnchorNode::_get_validate_property() != Node::_get_validate_property()) {
+			GenericAnchorNode *cls = reinterpret_cast<GenericAnchorNode *>(p_instance);
+			PropertyInfo info(p_property);
+			cls->_validate_property(info);
+			info._update(p_property);
+			return true;
+		}
+	}
+	return ret;
+}
+
+void GenericAnchorNode::to_string_bind(GDExtensionClassInstancePtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr r_out) {
+	if (p_instance && GenericAnchorNode::_get_to_string()) {
+		if (GenericAnchorNode::_get_to_string() != Node::_get_to_string()) {
+			GenericAnchorNode *cls = reinterpret_cast<GenericAnchorNode *>(p_instance);
+			*reinterpret_cast<String *>(r_out) = cls->_to_string();
+			*r_is_valid = true;
+			return;
+		}
+		Node::to_string_bind(p_instance, r_is_valid, r_out);
+	}
+}
+
+void GenericAnchorNode::free(void * /*data*/, GDExtensionClassInstancePtr ptr) {
+	if (ptr) {
+		GenericAnchorNode *cls = reinterpret_cast<GenericAnchorNode *>(ptr);
+		cls->~GenericAnchorNode();
+		Memory::free_static(cls);
+	}
+}
+
+void *GenericAnchorNode::_gde_binding_create_callback(void * /*p_token*/, void * /*p_instance*/) {
+	return nullptr;
+}
+
+void GenericAnchorNode::_gde_binding_free_callback(void * /*p_token*/, void * /*p_instance*/, void * /*p_binding*/) {}
+
+GDExtensionBool GenericAnchorNode::_gde_binding_reference_callback(void * /*p_token*/, void * /*p_instance*/, GDExtensionBool /*p_reference*/) {
+	return true;
+}
+
+void GenericAnchorNode::_notificationv(int32_t p_what, bool p_reversed = false) {
+	GenericAnchorNode::notification_bind(this, p_what, p_reversed);
+}
+
+void GenericAnchorNode::_bind_methods() {
 }
 
 void GenericAnchorNode::_ready() {
