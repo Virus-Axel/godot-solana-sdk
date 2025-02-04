@@ -8,33 +8,14 @@
 
 #include "anchor_program.hpp"
 
-#define NEW_INSTANCE_FUNC(num)                                     \
-	GDExtensionObjectPtr _create_instance_func##num(void *data) {  \
-		GenericAnchorNode *new_object = memnew(GenericAnchorNode); \
-		return new_object->_owner;                                 \
-	}
-
 namespace godot {
 class GenericAnchorNode : public Node {
 private:
 	static Array *loaded_idls;
 	static std::string class_name;
-	static std::vector<std::function<const StringName &()>> class_name_func;
-	static std::function<void *(void *)> stored_func;
-	static std::vector<StringName> names;
+	static std::vector<String*> names;
 
 	Variant anchor_program = memnew(AnchorProgram);
-
-	NEW_INSTANCE_FUNC(0)
-	NEW_INSTANCE_FUNC(1)
-	NEW_INSTANCE_FUNC(2)
-	NEW_INSTANCE_FUNC(3)
-	NEW_INSTANCE_FUNC(4)
-	NEW_INSTANCE_FUNC(5)
-	NEW_INSTANCE_FUNC(6)
-	NEW_INSTANCE_FUNC(7)
-	NEW_INSTANCE_FUNC(8)
-	NEW_INSTANCE_FUNC(9)
 
 	static GDExtensionObjectPtr _create_instance_trampoline(void *data);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
@@ -110,7 +91,6 @@ public:
 	}
 
 	static const ::godot::StringName &get_class_static();
-	static const ::godot::StringName &get_class_static2(const String &override_name);
 
 	static const ::godot::StringName &get_parent_class_static() {
 		return Node::get_class_static();

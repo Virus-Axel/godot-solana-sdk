@@ -10,23 +10,15 @@ namespace godot {
 // TODO(Virax): Delete this memory as well.
 Array *GenericAnchorNode::loaded_idls = nullptr;
 std::string GenericAnchorNode::class_name = "GenericAnchorNode";
-std::vector<std::function<const StringName &()>> GenericAnchorNode::class_name_func;
-std::function<void *(void *)> GenericAnchorNode::stored_func;
 
-std::vector<StringName> GenericAnchorNode::names;
+std::vector<String *> GenericAnchorNode::names;
 
 GDExtensionObjectPtr GenericAnchorNode::_create_instance_trampoline(void *data) {
 	std::cout << "INST" << std::endl;
-	String abc = *(String *)data;
-	std::cout << "AAAAAa " << abc.ascii() << std::endl;
-	//std::cout << String(names[1]).ascii() << std::endl;
+	const String instance_class = *(String *)data;
+	std::cout << "AAAAAa " << instance_class.ascii() << std::endl;
 	GenericAnchorNode *new_object = memnew(GenericAnchorNode);
 	return new_object->_owner;
-	/*std::function<const StringName &()> ud = *(std::function<const godot::StringName &()> *)data;
-	std::cout << "TRYYYYYYY" << std::endl;
-	std::cout << "CC " << String(ud()).ascii() << std::endl;
-	GenericAnchorNode *new_object = memnew(GenericAnchorNode);
-	return new_object->_owner;*/
 }
 
 GDExtensionClassInstancePtr GenericAnchorNode::_recreate_instance_func(void *data, GDExtensionObjectPtr obj) {
@@ -34,13 +26,7 @@ GDExtensionClassInstancePtr GenericAnchorNode::_recreate_instance_func(void *dat
 }
 
 const StringName &GenericAnchorNode::get_class_static() {
-	static StringName string_name = StringName(class_name.c_str());
-	string_name = StringName(class_name.c_str());
-	return string_name;
-}
-
-const StringName &GenericAnchorNode::get_class_static2(const String &override_name) {
-	static StringName string_name = StringName(override_name);
+	static StringName string_name = "GenericAnchorNode";
 	return string_name;
 }
 
@@ -56,18 +42,7 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 	loaded_idls->append(idl);
 	class_name = "ABC" + std::to_string(index);
 
-	names.push_back(StringName(class_name.c_str()));
-
-	//class_name_func.push_back(std::bind(&GenericAnchorNode::get_class_static2, "ABC0"));
-
-	class_name_func.push_back([&]() -> const godot::StringName & { static const int iii = 0; std::cout << "LAMBDA!!!" << std::endl; return GenericAnchorNode::names[iii]; });
-
-	std::cout << "REG " << String(class_name_func[index]()).ascii() << std::endl;
-
-	//class_name_func.push_back([&]() { GenericAnchorNode::get_class_static2("HI")};);
-
-    String* name_ptr = memnew(String);
-    *name_ptr = String(names[names.size() - 1]);
+	names.push_back(memnew(String(class_name.c_str())));
 
 	// Register this class with Godot
 	GDExtensionClassCreationInfo3 class_info = {
@@ -93,7 +68,7 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
 		nullptr, // GDExtensionClassCallVirtualWithData call_virtual_func;
 		nullptr, // GDExtensionClassGetRID get_rid;
-		(void *)name_ptr, // void *class_userdata;
+		(void *)names[names.size() - 1], // void *class_userdata;
 	};
 
 	StringName name = String(class_name.c_str());
