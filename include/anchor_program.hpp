@@ -66,6 +66,7 @@ public:
 
     void _process(double delta) override;
 
+    static Variant get_address_from_idl(const Dictionary& idl);
     static PackedByteArray serialize_variant(const Variant &var);
 
     void set_idl(const Dictionary& idl);

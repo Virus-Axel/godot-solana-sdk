@@ -12,10 +12,11 @@ namespace godot {
 class GenericAnchorNode : public Node {
 private:
 	static Array *loaded_idls;
-	static std::string class_name;
 	static std::vector<String*> names;
 
 	Variant anchor_program = memnew(AnchorProgram);
+
+    static void bind_resources(const Array& resources, const String& class_name);
 
 	static GDExtensionObjectPtr _create_instance_trampoline(void *data);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
@@ -25,20 +26,12 @@ private:
 	friend class ::godot::Wrapped;
 
 protected:
-	virtual bool _is_extension_class() const override { return true; }
+	virtual bool _is_extension_class() const override;
+	static const StringName *_get_extension_class_name();
 
-	static const ::godot::StringName *_get_extension_class_name() {
-		const ::godot::StringName &string_name = get_class_static();
-		return &string_name;
-	}
+	static void (*_get_bind_methods())();
 
-	static void (*_get_bind_methods())() {
-		return &GenericAnchorNode::_bind_methods;
-	}
-
-	static void (::godot::Wrapped::*_get_notification())(int) {
-		return (void(::godot::Wrapped::*)(int)) & GenericAnchorNode::_notification;
-	}
+	static void (Wrapped::*_get_notification())(int);
 
 	static bool (::godot::Wrapped::*_get_set())(const ::godot::StringName &p_name, const ::godot::Variant &p_property) {
 		return (bool(::godot::Wrapped::*)(const ::godot::StringName &p_name, const ::godot::Variant &p_property)) & GenericAnchorNode::_set;

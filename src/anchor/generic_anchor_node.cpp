@@ -2,16 +2,23 @@
 
 #include <functional>
 
+#include "godot_cpp/classes/json.hpp"
+#include "godot_cpp/classes/wrapped.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/string_name.hpp"
+
+#include "pubkey.hpp"
 
 namespace godot {
 
 // TODO(Virax): Delete this memory as well.
 Array *GenericAnchorNode::loaded_idls = nullptr;
-std::string GenericAnchorNode::class_name = "GenericAnchorNode";
-
 std::vector<String *> GenericAnchorNode::names;
+
+void GenericAnchorNode::bind_resources(const Array &resources, const String &class_name) {
+	for (uint32_t i = 0; i < resources.size(); i++) {
+	}
+}
 
 GDExtensionObjectPtr GenericAnchorNode::_create_instance_trampoline(void *data) {
 	std::cout << "INST" << std::endl;
@@ -21,8 +28,33 @@ GDExtensionObjectPtr GenericAnchorNode::_create_instance_trampoline(void *data) 
 	return new_object->_owner;
 }
 
+bool GenericAnchorNode::_is_extension_class() const {
+	return true;
+}
+
+const StringName *GenericAnchorNode::_get_extension_class_name() {
+	const StringName &string_name = get_class_static();
+	return &string_name;
+}
+
+void (*GenericAnchorNode::_get_bind_methods())() {
+	return &GenericAnchorNode::_bind_methods;
+}
+
+void (Wrapped::*GenericAnchorNode::_get_notification())(int) {
+	return (void(::godot::Wrapped::*)(int)) & GenericAnchorNode::_notification;
+}
+
 GDExtensionClassInstancePtr GenericAnchorNode::_recreate_instance_func(void *data, GDExtensionObjectPtr obj) {
-	std::cout << "RECREATE" << std::endl;
+#ifdef HOT_RELOAD_ENABLED
+	GenericAnchorNode *new_instance = (GenericAnchorNode *)memalloc(sizeof(GenericAnchorNode));
+	Wrapped::RecreateInstance recreate_data = { new_instance, obj, Wrapped::recreate_instance };
+	Wrapped::recreate_instance = &recreate_data;
+	memnew_placement(new_instance, GenericAnchorNode);
+	return new_instance;
+#else
+	return nullptr;
+#endif
 }
 
 const StringName &GenericAnchorNode::get_class_static() {
@@ -35,14 +67,23 @@ void GenericAnchorNode::_ready() {
 }
 
 void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
+	ERR_FAIL_COND_EDMSG(!idl.has("name"), "IDL does not contain a name.");
+
+	const Variant custom_pid = AnchorProgram::get_address_from_idl(idl);
+
+	ERR_FAIL_COND_EDMSG(custom_pid.get_type() != Variant::OBJECT, "IDL does not contain a PID.");
+	const Variant parsed_program = memnew(AnchorProgram);
+	Object::cast_to<AnchorProgram>(parsed_program)->set_idl(idl);
+	Object::cast_to<AnchorProgram>(parsed_program)->set_pid(Object::cast_to<Pubkey>(custom_pid)->to_string());
+
 	if (loaded_idls == nullptr) {
 		loaded_idls = memnew(Array);
 	}
 	const int64_t index = loaded_idls->size();
 	loaded_idls->append(idl);
-	class_name = "ABC" + std::to_string(index);
+	const String class_name = idl["name"];
 
-	names.push_back(memnew(String(class_name.c_str())));
+	names.push_back(memnew(String(class_name)));
 
 	// Register this class with Godot
 	GDExtensionClassCreationInfo3 class_info = {
@@ -71,13 +112,12 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 		(void *)names[names.size() - 1], // void *class_userdata;
 	};
 
-	StringName name = String(class_name.c_str());
+	StringName name = String(class_name);
 	StringName parent_name = "Node";
 	internal::gdextension_interface_classdb_register_extension_class3(internal::library, name._native_ptr(), parent_name._native_ptr(), &class_info);
 
 	// call bind_methods etc. to register all members of the class
 	initialize_class();
-	class_name = "GenericAnchorNode";
 }
 
 } //namespace godot
