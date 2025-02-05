@@ -4,8 +4,6 @@
 #include "godot_cpp/classes/node.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
-#include <functional>
-
 #include "anchor_program.hpp"
 
 namespace godot {
@@ -14,7 +12,7 @@ private:
 	static Array *loaded_idls;
 	static std::vector<String *> names;
 
-	Variant anchor_program = memnew(AnchorProgram);
+	Variant anchor_program = nullptr;//memnew(AnchorProgram);
 
 	static void bind_resources(const Array &resources, const String &class_name);
 
@@ -58,7 +56,7 @@ public:
 	static GDExtensionBool set_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value);
 	static GDExtensionBool get_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
 
-	static inline bool has_get_property_list();
+	static bool has_get_property_list();
 	static const GDExtensionPropertyInfo *get_property_list_bind(GDExtensionClassInstancePtr p_instance, uint32_t *r_count);
 	static void free_property_list_bind(GDExtensionClassInstancePtr p_instance, const GDExtensionPropertyInfo *p_list, uint32_t /*p_count*/);
 

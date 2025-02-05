@@ -8,48 +8,61 @@
 #include "godot_cpp/variant/string_name.hpp"
 
 #include "pubkey.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 
 const String OPTIONAL_PROPERTY_PREFIX = "enable_";
 
 // TODO(Virax): Delete this memory as well.
-Array *GenericAnchorResource::loaded_idls = nullptr;
 std::vector<String *> GenericAnchorResource::names;
-
 
 bool GenericAnchorResource::_set(const StringName &p_name, const Variant &p_value) { // NOLINT(bugprone-easily-swappable-parameters)
 	const String name = p_name;
-	
-    for (unsigned int i = 0; i < properties.size(); i++){
-        if(properties[i].property_info.name == name){
 
-        }
-    }
+	for (auto &property : properties) {
+		if (property.property_info.name == name) {
+			property.value = p_value;
+			return true;
+		}
+	}
 
-    // Not a property so a enable checkbox is being set.
-    ERR_FAIL_COND_V_EDMSG(name.begins_with(OPTIONAL_PROPERTY_PREFIX), false, "Could not find property");
+	// Not a property so a enable checkbox is being set.
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(name.begins_with(OPTIONAL_PROPERTY_PREFIX), false, "Could not find property");
 
-    const String property_to_toggle = name.lstrip(OPTIONAL_PROPERTY_PREFIX);
+	const String property_to_toggle = name.lstrip(OPTIONAL_PROPERTY_PREFIX);
+	for (auto &property : properties) {
+		if (property.property_info.name == property_to_toggle) {
+			property.enabled = !property.enabled;
+			return true;
+		}
+	}
 
 	return false;
 }
 
 bool GenericAnchorResource::_get(const StringName &p_name, Variant &r_ret) const {
 	const String name = p_name;
-	
+
+    for (const auto &property : properties) {
+		if (property.property_info.name == name) {
+			r_ret = property.value;
+			return true;
+		}
+	}
+
 	return false;
 }
 
 void GenericAnchorResource::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const auto & property : properties){
-        if(property.optional){
-            p_list->push_back(PropertyInfo(Variant::BOOL, OPTIONAL_PROPERTY_PREFIX + property.property_info.name));
-        }
-        if(property.enabled){
-		    p_list->push_back(property.property_info);
-        }
-    }
+	for (const auto &property : properties) {
+		if (property.optional) {
+			p_list->push_back(PropertyInfo(Variant::BOOL, OPTIONAL_PROPERTY_PREFIX + property.property_info.name));
+		}
+		if (property.enabled) {
+			p_list->push_back(property.property_info);
+		}
+	}
 }
 
 GDExtensionObjectPtr GenericAnchorResource::_create_instance_func(void *data) {
@@ -272,7 +285,7 @@ GDExtensionBool GenericAnchorResource::_gde_binding_reference_callback(void * /*
 	return true;
 }
 
-void GenericAnchorResource::_notificationv(int32_t p_what, bool p_reversed = false) {
+void GenericAnchorResource::_notificationv(int32_t p_what, bool p_reversed) {
 	GenericAnchorResource::notification_bind(this, p_what, p_reversed);
 }
 
@@ -283,22 +296,10 @@ void GenericAnchorResource::_ready() {
 	std::cout << String(get_name()).ascii() << std::endl;
 }
 
-void GenericAnchorResource::bind_anchor_node(const Dictionary &idl) {
-	ERR_FAIL_COND_EDMSG(!idl.has("name"), "IDL does not contain a name.");
+void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
+	ERR_FAIL_COND_EDMSG_CUSTOM(!resource.has("name"), "Resource struct does not contain a name.");
 
-	const Variant custom_pid = AnchorProgram::get_address_from_idl(idl);
-
-	ERR_FAIL_COND_EDMSG(custom_pid.get_type() != Variant::OBJECT, "IDL does not contain a PID.");
-	const Variant parsed_program = memnew(AnchorProgram);
-	Object::cast_to<AnchorProgram>(parsed_program)->set_idl(idl);
-	Object::cast_to<AnchorProgram>(parsed_program)->set_pid(Object::cast_to<Pubkey>(custom_pid)->to_string());
-
-	if (loaded_idls == nullptr) {
-		loaded_idls = memnew(Array);
-	}
-	const int64_t index = loaded_idls->size();
-	loaded_idls->append(idl);
-	const String class_name = idl["name"];
+	const String class_name = resource["name"];
 
 	names.push_back(memnew(String(class_name)));
 
@@ -326,15 +327,19 @@ void GenericAnchorResource::bind_anchor_node(const Dictionary &idl) {
 		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
 		nullptr, // GDExtensionClassCallVirtualWithData call_virtual_func;
 		nullptr, // GDExtensionClassGetRID get_rid;
-		(void *)names[names.size() - 1], // void *class_userdata;
+		static_cast<void *>(names[names.size() - 1]), // void *class_userdata;
 	};
 
-	StringName name = String(class_name);
-	StringName parent_name = "Node";
+	const StringName name = String(class_name);
+	const StringName parent_name = "Node";
 	internal::gdextension_interface_classdb_register_extension_class3(internal::library, name._native_ptr(), parent_name._native_ptr(), &class_info);
 
 	// call bind_methods etc. to register all members of the class
 	initialize_class();
+}
+
+void GenericAnchorResource::add_property(const ResourcePropertyInfo& property){
+    properties.push_back(property);
 }
 
 PackedByteArray GenericAnchorResource::serialize() {

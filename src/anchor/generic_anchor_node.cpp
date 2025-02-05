@@ -7,6 +7,7 @@
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/string_name.hpp"
 
+#include "anchor/generic_anchor_resource.hpp"
 #include "pubkey.hpp"
 
 namespace godot {
@@ -148,7 +149,7 @@ GDExtensionBool GenericAnchorNode::get_bind(GDExtensionClassInstancePtr p_instan
 	return false;
 }
 
-inline bool GenericAnchorNode::has_get_property_list() {
+bool GenericAnchorNode::has_get_property_list() {
 	return GenericAnchorNode::_get_get_property_list() && GenericAnchorNode::_get_get_property_list() != Node::_get_get_property_list();
 }
 
@@ -240,7 +241,7 @@ GDExtensionBool GenericAnchorNode::_gde_binding_reference_callback(void * /*p_to
 	return true;
 }
 
-void GenericAnchorNode::_notificationv(int32_t p_what, bool p_reversed = false) {
+void GenericAnchorNode::_notificationv(int32_t p_what, bool p_reversed) {
 	GenericAnchorNode::notification_bind(this, p_what, p_reversed);
 }
 
@@ -260,6 +261,13 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 	const Variant parsed_program = memnew(AnchorProgram);
 	Object::cast_to<AnchorProgram>(parsed_program)->set_idl(idl);
 	Object::cast_to<AnchorProgram>(parsed_program)->set_pid(Object::cast_to<Pubkey>(custom_pid)->to_string());
+
+	if (idl.has("types")) {
+		const Array types = idl["types"];
+		for (unsigned int i = 0; i < types.size(); i++) {
+			GenericAnchorResource::bind_anchor_resource(types[i]);
+		}
+	}
 
 	if (loaded_idls == nullptr) {
 		loaded_idls = memnew(Array);

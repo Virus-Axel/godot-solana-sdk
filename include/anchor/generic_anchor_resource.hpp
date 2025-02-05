@@ -17,7 +17,6 @@ typedef struct{
 
 class GenericAnchorResource : public Node {
 private:
-	static Array *loaded_idls;
 	static std::vector<String *> names;
 
     std::vector<ResourcePropertyInfo> properties;
@@ -25,6 +24,7 @@ private:
     bool _set(const StringName &p_name, const Variant &p_value);
     bool _get(const StringName &p_name, Variant &r_ret) const;
     void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	static GDExtensionObjectPtr _create_instance_func(void *data);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
 
@@ -96,7 +96,8 @@ protected:
 public:
 	void _ready() override;
 	GenericAnchorResource() = default;
-	static void bind_anchor_node(const Dictionary &idl);
+	static void bind_anchor_resource(const Dictionary &resource);
+    void add_property(const ResourcePropertyInfo& property);
     PackedByteArray serialize();
 	~GenericAnchorResource() = default;
 };
