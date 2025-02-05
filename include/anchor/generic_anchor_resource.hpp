@@ -17,6 +17,8 @@ typedef struct{
 
 class GenericAnchorResource : public Node {
 private:
+    const String OPTIONAL_PROPERTY_PREFIX = "enable_";
+
 	static std::vector<String *> names;
 
     std::vector<ResourcePropertyInfo> properties;

@@ -16,6 +16,7 @@
 #include "account_meta.hpp"
 #include "address_lookup_table.hpp"
 #include "anchor/generic_anchor_node.hpp"
+#include "anchor/generic_anchor_resource.hpp"
 #include "anchor_program.hpp"
 #include "associated_token_account.hpp"
 #include "candy_machine/candy_guard.hpp"
@@ -119,6 +120,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<MenuBarHelper>();
 	ClassDB::register_class<AddCustomIdlDialog>();
 	ClassDB::register_class<GenericAnchorNode>();
+	ClassDB::register_class<GenericAnchorResource>();
 
 	add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
 	add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, HTTPS_PORT);

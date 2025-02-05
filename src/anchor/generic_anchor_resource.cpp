@@ -12,8 +12,6 @@
 
 namespace godot {
 
-const String OPTIONAL_PROPERTY_PREFIX = "enable_";
-
 // TODO(Virax): Delete this memory as well.
 std::vector<String *> GenericAnchorResource::names;
 
