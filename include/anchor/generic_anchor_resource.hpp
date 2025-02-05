@@ -4,18 +4,26 @@
 #include "godot_cpp/classes/node.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
-#include <functional>
-
 #include "anchor_program.hpp"
 
 namespace godot {
+
+typedef struct{
+    PropertyInfo property_info;
+    Variant value;
+    bool optional;
+    bool enabled;
+} ResourcePropertyInfo;
+
 class GenericAnchorResource : public Node {
 private:
 	static Array *loaded_idls;
 	static std::vector<String *> names;
 
-    std::vector<std::pair<PropertyInfo, Variant>> properties;
+    std::vector<ResourcePropertyInfo> properties;
 
+    bool _set(const StringName &p_name, const Variant &p_value);
+    bool _get(const StringName &p_name, Variant &r_ret) const;
     void _get_property_list(List<PropertyInfo> *p_list) const;
 	static GDExtensionObjectPtr _create_instance_func(void *data);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);

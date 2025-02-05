@@ -11,13 +11,44 @@
 
 namespace godot {
 
+const String OPTIONAL_PROPERTY_PREFIX = "enable_";
+
 // TODO(Virax): Delete this memory as well.
 Array *GenericAnchorResource::loaded_idls = nullptr;
 std::vector<String *> GenericAnchorResource::names;
 
+
+bool GenericAnchorResource::_set(const StringName &p_name, const Variant &p_value) { // NOLINT(bugprone-easily-swappable-parameters)
+	const String name = p_name;
+	
+    for (unsigned int i = 0; i < properties.size(); i++){
+        if(properties[i].property_info.name == name){
+
+        }
+    }
+
+    // Not a property so a enable checkbox is being set.
+    ERR_FAIL_COND_V_EDMSG(name.begins_with(OPTIONAL_PROPERTY_PREFIX), false, "Could not find property");
+
+    const String property_to_toggle = name.lstrip(OPTIONAL_PROPERTY_PREFIX);
+
+	return false;
+}
+
+bool GenericAnchorResource::_get(const StringName &p_name, Variant &r_ret) const {
+	const String name = p_name;
+	
+	return false;
+}
+
 void GenericAnchorResource::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (unsigned int i = 0; i < properties.size(); i++){
-		p_list->push_back(properties[i].first);
+	for (const auto & property : properties){
+        if(property.optional){
+            p_list->push_back(PropertyInfo(Variant::BOOL, OPTIONAL_PROPERTY_PREFIX + property.property_info.name));
+        }
+        if(property.enabled){
+		    p_list->push_back(property.property_info);
+        }
     }
 }
 
