@@ -20,7 +20,7 @@ void GenericAnchorNode::bind_resources(const Array &resources, const String &cla
 	}
 }
 
-GDExtensionObjectPtr GenericAnchorNode::_create_instance_trampoline(void *data) {
+GDExtensionObjectPtr GenericAnchorNode::_create_instance_func(void *data) {
 	std::cout << "INST" << std::endl;
 	const String instance_class = *(String *)data;
 	std::cout << "AAAAAa " << instance_class.ascii() << std::endl;
@@ -287,7 +287,7 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 		to_string_bind, // GDExtensionClassToString to_string_func;
 		nullptr, // GDExtensionClassReference reference_func;
 		nullptr, // GDExtensionClassUnreference unreference_func;
-		&_create_instance_trampoline, // GDExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
+		&_create_instance_func, // GDExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
 		free, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
 		&_recreate_instance_func, // GDExtensionClassRecreateInstance recreate_instance_func;
 		&ClassDB::get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;

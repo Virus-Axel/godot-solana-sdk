@@ -18,7 +18,7 @@ private:
 
 	static void bind_resources(const Array &resources, const String &class_name);
 
-	static GDExtensionObjectPtr _create_instance_trampoline(void *data);
+	static GDExtensionObjectPtr _create_instance_func(void *data);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
 
 	void operator=(const GenericAnchorNode & /*p_rval*/) {}
