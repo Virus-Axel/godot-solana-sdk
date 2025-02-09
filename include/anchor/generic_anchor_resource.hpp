@@ -32,6 +32,10 @@ private:
 	static GDExtensionObjectPtr _create_instance_func(void *data);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
 
+	static void bind_resource_class(const StringName &p_class_name, const StringName &parent_name);
+	static void bind_resource_method(const StringName &p_class_name,  const MethodDefinition &method_prototype , MethodBind *p_method);
+	static void bind_resource_property(const StringName &p_class_name, const PropertyInfo& property_info,  const StringName &setter_name = "", const StringName &getter_name = "");
+
 	void operator=(const GenericAnchorResource & /*p_rval*/) {}
 	friend class ClassDB;
 	friend class Wrapped;

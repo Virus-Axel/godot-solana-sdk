@@ -2,9 +2,10 @@
 
 #include <functional>
 
+#include "gdextension_interface.h"
 #include "godot_cpp/classes/json.hpp"
 #include "godot_cpp/classes/wrapped.hpp"
-#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/godot.hpp"
 #include "godot_cpp/variant/string_name.hpp"
 #include "godot_cpp/variant/utility_functions.hpp"
 
@@ -74,7 +75,7 @@ GDExtensionObjectPtr GenericAnchorResource::_create_instance_func(void *data) {
 	std::cout << "INST" << std::endl;
 	const String instance_class = *(String *)data;
 	ResourcePropertyInfo info{
-		.property_info = PropertyInfo(Variant::STRING ,instance_class),
+		.property_info = PropertyInfo(Variant::STRING, instance_class),
 		.value = "nullptr",
 		.optional = false,
 		.enabled = true,
@@ -159,6 +160,108 @@ GDExtensionClassInstancePtr GenericAnchorResource::_recreate_instance_func(void 
 #endif
 }
 
+void GenericAnchorResource::bind_resource_class(const StringName &p_class_name, const StringName &parent_name){
+	GDExtensionClassCreationInfo3 class_info = {
+		false, // GDExtensionBool is_virtual;
+		false, // GDExtensionBool is_abstract;
+		true, // GDExtensionBool is_exposed;
+		false, // GDExtensionBool is_runtime;
+		GenericAnchorResource::set_bind, // GDExtensionClassSet set_func;
+		GenericAnchorResource::get_bind, // GDExtensionClassGet get_func;
+		GenericAnchorResource::get_property_list_bind, // GDExtensionClassGetPropertyList get_property_list_func;
+		GenericAnchorResource::free_property_list_bind, // GDExtensionClassFreePropertyList2 free_property_list_func;
+		GenericAnchorResource::property_can_revert_bind, // GDExtensionClassPropertyCanRevert property_can_revert_func;
+		GenericAnchorResource::property_get_revert_bind, // GDExtensionClassPropertyGetRevert property_get_revert_func;
+		GenericAnchorResource::validate_property_bind, // GDExtensionClassValidateProperty validate_property_func;
+		GenericAnchorResource::notification_bind, // GDExtensionClassNotification2 notification_func;
+		GenericAnchorResource::to_string_bind, // GDExtensionClassToString to_string_func;
+		nullptr, // GDExtensionClassReference reference_func;
+		nullptr, // GDExtensionClassUnreference unreference_func;
+		&GenericAnchorResource::_create_instance_func, // GDExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
+		GenericAnchorResource::free, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
+		&GenericAnchorResource::_recreate_instance_func, // GDExtensionClassRecreateInstance recreate_instance_func;
+		&GenericAnchorResource::get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
+		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
+		nullptr, // GDExtensionClassCallVirtualWithData call_virtual_func;
+		nullptr, // GDExtensionClassGetRID get_rid;
+		//(void*)&GenericAnchorResource::get_class_static(),
+		static_cast<void *>(names[names.size() - 1]), // void *class_userdata;
+	};
+
+	internal::gdextension_interface_classdb_register_extension_class3(internal::library, p_class_name._native_ptr(), parent_name._native_ptr(), &class_info);
+}
+
+void GenericAnchorResource::bind_resource_method(const StringName &p_class_name, const MethodDefinition &method_prototype ,MethodBind *p_method) {
+	p_method->set_name(method_prototype.name);
+
+	std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
+
+	p_method->set_argument_names(args);
+
+	const std::vector<PropertyInfo> return_value_and_arguments_info = p_method->get_arguments_info_list();
+	std::vector<GDExtensionPropertyInfo> return_value_and_arguments_gdextension_info;
+	return_value_and_arguments_gdextension_info.reserve(return_value_and_arguments_info.size());
+	for (const auto &argument_info : return_value_and_arguments_info) {
+		return_value_and_arguments_gdextension_info.push_back(
+			GDExtensionPropertyInfo{
+				static_cast<GDExtensionVariantType>(argument_info.type),
+				argument_info.name._native_ptr(),
+				argument_info.class_name._native_ptr(),
+				argument_info.hint,
+				argument_info.hint_string._native_ptr(),
+				argument_info.usage,
+			});
+	}
+
+	GDExtensionPropertyInfo *return_value_info = return_value_and_arguments_gdextension_info.data();
+
+	std::vector<GDExtensionClassMethodArgumentMetadata> return_value_and_arguments_metadata = p_method->get_arguments_metadata_list();
+	GDExtensionClassMethodArgumentMetadata *return_value_metadata = return_value_and_arguments_metadata.data();
+	GDExtensionPropertyInfo *arguments_info = return_value_and_arguments_gdextension_info.data() + 1;
+	GDExtensionClassMethodArgumentMetadata *arguments_metadata = return_value_and_arguments_metadata.data() + 1;
+
+	std::vector<GDExtensionVariantPtr> def_args;
+	const std::vector<Variant> &def_args_val = p_method->get_default_arguments();
+	def_args.resize(def_args_val.size());
+	for (size_t i = 0; i < def_args_val.size(); i++) {
+		def_args[i] = (GDExtensionVariantPtr)&def_args_val[i];
+	}
+
+	const StringName name = p_method->get_name();
+	const GDExtensionClassMethodInfo method_info = {
+		name._native_ptr(),
+		p_method,
+		MethodBind::bind_call,
+		MethodBind::bind_ptrcall,
+		p_method->get_hint_flags(),
+		static_cast<GDExtensionBool>(p_method->has_return()),
+		return_value_info,
+		*return_value_metadata,
+		static_cast<uint32_t>(p_method->get_argument_count()),
+		arguments_info,
+		arguments_metadata,
+		static_cast<uint32_t>(p_method->get_default_argument_count()),
+		def_args.data(),
+	};
+	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, p_class_name._native_ptr(), &method_info);
+}
+
+void GenericAnchorResource::bind_resource_property(const StringName &p_class_name, const PropertyInfo& property_info, const StringName &setter_name, const StringName &getter_name){
+	const StringName new_setter_name = (setter_name.is_empty()) ? StringName("set_" + property_info.name)  : setter_name;
+	const StringName new_getter_name = (getter_name.is_empty()) ? StringName("get_" + property_info.name)  : getter_name;
+
+	const GDExtensionPropertyInfo prop_info = {
+		static_cast<GDExtensionVariantType>(Variant::BOOL), // GDExtensionVariantType type;
+		property_info.name._native_ptr(), // GDExtensionStringNamePtr name;
+		p_class_name._native_ptr(), // GDExtensionStringNamePtr class_name;
+		property_info.hint, // NONE //uint32_t hint;
+		property_info.hint_string._native_ptr(), // GDExtensionStringPtr hint_string;
+		property_info.usage, // DEFAULT //uint32_t usage;
+	};
+	
+	internal::gdextension_interface_classdb_register_extension_class_property_indexed(internal::library, p_class_name._native_ptr(), &prop_info, new_setter_name._native_ptr(), new_getter_name._native_ptr(), -1);
+}
+
 const StringName &GenericAnchorResource::get_class_static() {
 	static StringName string_name_gd = "GenericAnchorResource";
 	string_name_gd = *memnew(String(string_name.c_str()));
@@ -226,8 +329,8 @@ const GDExtensionPropertyInfo *GenericAnchorResource::get_property_list_bind(GDE
 	ERR_FAIL_COND_V_MSG(!plist_cpp.is_empty(), nullptr, "Internal error, property list was not freed by engine!");
 	cls->_get_property_list(&plist_cpp);
 	std::cout << "LIST size " << plist_cpp.size() << std::endl;
-	for(unsigned int i = 0; i < plist_cpp.size(); i++){
-		std::cout << "naamaa " << String(plist_cpp[i].name).ascii() <<" - " << String(plist_cpp[i].class_name).ascii() << std::endl;
+	for (unsigned int i = 0; i < plist_cpp.size(); i++) {
+		std::cout << "naamaa " << String(plist_cpp[i].name).ascii() << " - " << String(plist_cpp[i].class_name).ascii() << std::endl;
 	}
 	return internal::create_c_property_list(plist_cpp, r_count);
 }
@@ -319,7 +422,6 @@ void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
 	ERR_FAIL_COND_CUSTOM(resource.has("vec"));
 	ERR_FAIL_COND_CUSTOM(resource.has("array"));
 
-	StringName *namn = memnew(StringName("GenericAnchorResource"));
 	const String class_name = resource["name"];
 	//const String class_name = "GenericAnchorResource";
 
@@ -334,175 +436,20 @@ void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
 		//add_property(fields[i]);
 	}
 
-	//std::cout << "HAAAS " << (int)GenericAnchorResource::has_get_property_list() << std::endl;
-
-	// Register this class with Godot
-	GDExtensionClassCreationInfo3 class_info = {
-		false, // GDExtensionBool is_virtual;
-		false, // GDExtensionBool is_abstract;
-		true, // GDExtensionBool is_exposed;
-		false, // GDExtensionBool is_runtime;
-		GenericAnchorResource::set_bind, // GDExtensionClassSet set_func;
-		GenericAnchorResource::get_bind, // GDExtensionClassGet get_func;
-		GenericAnchorResource::get_property_list_bind, // GDExtensionClassGetPropertyList get_property_list_func;
-		GenericAnchorResource::free_property_list_bind, // GDExtensionClassFreePropertyList2 free_property_list_func;
-		GenericAnchorResource::property_can_revert_bind, // GDExtensionClassPropertyCanRevert property_can_revert_func;
-		GenericAnchorResource::property_get_revert_bind, // GDExtensionClassPropertyGetRevert property_get_revert_func;
-		GenericAnchorResource::validate_property_bind, // GDExtensionClassValidateProperty validate_property_func;
-		GenericAnchorResource::notification_bind, // GDExtensionClassNotification2 notification_func;
-		GenericAnchorResource::to_string_bind, // GDExtensionClassToString to_string_func;
-		nullptr, // GDExtensionClassReference reference_func;
-		nullptr, // GDExtensionClassUnreference unreference_func;
-		&GenericAnchorResource::_create_instance_func, // GDExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
-		GenericAnchorResource::free, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
-		&GenericAnchorResource::_recreate_instance_func, // GDExtensionClassRecreateInstance recreate_instance_func;
-		&GenericAnchorResource::get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
-		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
-		nullptr, // GDExtensionClassCallVirtualWithData call_virtual_func;
-		nullptr, // GDExtensionClassGetRID get_rid;
-		//(void*)&GenericAnchorResource::get_class_static(),
-		static_cast<void *>(names[names.size() - 1]), // void *class_userdata;
-	};
-
-	StringName* sname = memnew(StringName("aaaaaaaaaaaaaaaa"));
-	StringName* class_nam = memnew(StringName("GenericAnchorResource"));
-	StringName* snone = memnew(StringName(""));
-	StringName* setter = memnew(StringName("say_hii"));
-	StringName* getter = memnew(StringName("say_hi"));
-
-	GDExtensionPropertyInfo prop_info = {
-		static_cast<GDExtensionVariantType>(Variant::BOOL), // GDExtensionVariantType type;
-		sname->_native_ptr(), // GDExtensionStringNamePtr name;
-		class_nam->_native_ptr(), // GDExtensionStringNamePtr class_name;
-		godot::PROPERTY_HINT_NONE, // NONE //uint32_t hint;
-		snone->_native_ptr(), // GDExtensionStringPtr hint_string;
-		6U, // DEFAULT //uint32_t usage;
-	};
-
+	StringName *setter = memnew(StringName("set_aaa"));
+	StringName *getter = memnew(StringName("get_aaa"));
 
 	MethodBind *getter_bind = create_method_bind(&GenericAnchorResource::say_hi);
 	MethodBind *setter_bind = create_method_bind(&GenericAnchorResource::say_hii);
-	getter_bind->set_instance_class(*namn);
-	getter_bind->set_name(*getter);
-	std::cout << String(getter_bind->get_name()).ascii() << std::endl;
-	std::cout << String(setter_bind->get_name()).ascii() << std::endl;
 
+	bind_resource_class(*names[names.size() - 1], "Node");
 
-	/*	 This is what needs to happen I think.
-	BIND_VIRTUAL_METHOD(T, _process);
-	BIND_VIRTUAL_METHOD(T, _physics_process);
-	BIND_VIRTUAL_METHOD(T, _enter_tree);
-	BIND_VIRTUAL_METHOD(T, _exit_tree);
-	BIND_VIRTUAL_METHOD(T, _ready);
-	BIND_VIRTUAL_METHOD(T, _get_configuration_warnings);
-	BIND_VIRTUAL_METHOD(T, _input);
-	BIND_VIRTUAL_METHOD(T, _shortcut_input);
-	BIND_VIRTUAL_METHOD(T, _unhandled_input);
-	BIND_VIRTUAL_METHOD(T, _unhandled_key_input);
-	*/
-
-	const StringName name = String(class_name);
-	const StringName parent_name = "Node";
-	std::cout << "AH" << std::endl;
-	internal::gdextension_interface_classdb_register_extension_class3(internal::library, name._native_ptr(), parent_name._native_ptr(), &class_info);
-	std::cout << "aAH" << std::endl;
-
-	// call bind_methods etc. to register all members of the class
 	initialize_class();
 
-	std::vector<PropertyInfo> return_value_and_arguments_info = getter_bind->get_arguments_info_list();
-	std::vector<GDExtensionPropertyInfo> return_value_and_arguments_gdextension_info;
-	return_value_and_arguments_gdextension_info.reserve(return_value_and_arguments_info.size());
-	for (std::vector<PropertyInfo>::iterator it = return_value_and_arguments_info.begin(); it != return_value_and_arguments_info.end(); it++) {
-		return_value_and_arguments_gdextension_info.push_back(
-			GDExtensionPropertyInfo{
-				static_cast<GDExtensionVariantType>(it->type), // GDExtensionVariantType type;
-				it->name._native_ptr(), // GDExtensionStringNamePtr name;
-				it->class_name._native_ptr(), // GDExtensionStringNamePtr class_name;
-				it->hint, // uint32_t hint;
-				it->hint_string._native_ptr(), // GDExtensionStringPtr hint_string;
-				it->usage, // uint32_t usage;
-			});
-	}
+	bind_resource_method(*names[names.size() - 1], D_METHOD("set_aaa", "value"), setter_bind);
+	bind_resource_method(*names[names.size() - 1], D_METHOD("get_aaa"), getter_bind);
 
-	std::vector<PropertyInfo> return_value_and_arguments_info2 = setter_bind->get_arguments_info_list();
-	std::vector<GDExtensionPropertyInfo> return_value_and_arguments_gdextension_info2;
-	return_value_and_arguments_gdextension_info2.reserve(return_value_and_arguments_info2.size());
-	for (std::vector<PropertyInfo>::iterator it = return_value_and_arguments_info2.begin(); it != return_value_and_arguments_info2.end(); it++) {
-		return_value_and_arguments_gdextension_info2.push_back(
-			GDExtensionPropertyInfo{
-				static_cast<GDExtensionVariantType>(it->type), // GDExtensionVariantType type;
-				it->name._native_ptr(), // GDExtensionStringNamePtr name;
-				it->class_name._native_ptr(), // GDExtensionStringNamePtr class_name;
-				it->hint, // uint32_t hint;
-				it->hint_string._native_ptr(), // GDExtensionStringPtr hint_string;
-				it->usage, // uint32_t usage;
-			});
-	}
-
-	GDExtensionPropertyInfo *return_value_info = return_value_and_arguments_gdextension_info.data();
-	GDExtensionPropertyInfo *return_value_info2 = return_value_and_arguments_gdextension_info2.data();
-
-	std::vector<GDExtensionClassMethodArgumentMetadata> return_value_and_arguments_metadata = getter_bind->get_arguments_metadata_list();
-	std::vector<GDExtensionClassMethodArgumentMetadata> return_value_and_arguments_metadata2 = setter_bind->get_arguments_metadata_list();
-	GDExtensionClassMethodArgumentMetadata *return_value_metadata = return_value_and_arguments_metadata.data();
-	GDExtensionClassMethodArgumentMetadata *return_value_metadata2 = return_value_and_arguments_metadata2.data();
-	GDExtensionPropertyInfo *arguments_info = return_value_and_arguments_gdextension_info.data() + 1;
-	GDExtensionPropertyInfo *arguments_info2 = return_value_and_arguments_gdextension_info2.data() + 1;
-	GDExtensionClassMethodArgumentMetadata *arguments_metadata = return_value_and_arguments_metadata.data() + 1;
-	GDExtensionClassMethodArgumentMetadata *arguments_metadata2 = return_value_and_arguments_metadata2.data() + 1;
-
-	std::vector<GDExtensionVariantPtr> def_args;
-	const std::vector<Variant> &def_args_val = getter_bind->get_default_arguments();
-	def_args.resize(def_args_val.size());
-	for (size_t i = 0; i < def_args_val.size(); i++) {
-		def_args[i] = (GDExtensionVariantPtr)&def_args_val[i];
-	}
-	std::vector<GDExtensionVariantPtr> def_args2;
-	const std::vector<Variant> &def_args_val2 = setter_bind->get_default_arguments();
-	def_args2.resize(def_args_val2.size());
-	for (size_t i = 0; i < def_args_val2.size(); i++) {
-		def_args2[i] = (GDExtensionVariantPtr)&def_args_val2[i];
-	}
-
-	GDExtensionClassMethodInfo method_info = {
-		getter->_native_ptr(), // GDExtensionStringNamePtr;
-		getter_bind, // void *method_userdata;
-		MethodBind::bind_call, // GDExtensionClassMethodCall call_func;
-		MethodBind::bind_ptrcall, // GDExtensionClassMethodPtrCall ptrcall_func;
-		getter_bind->get_hint_flags(), // uint32_t method_flags; /* GDExtensionClassMethodFlags */
-		(GDExtensionBool)getter_bind->has_return(), // GDExtensionBool has_return_value;
-		return_value_info, // GDExtensionPropertyInfo *
-		*return_value_metadata, // GDExtensionClassMethodArgumentMetadata *
-		(uint32_t)getter_bind->get_argument_count(), // uint32_t argument_count;
-		arguments_info, // GDExtensionPropertyInfo *
-		arguments_metadata, // GDExtensionClassMethodArgumentMetadata *
-		(uint32_t)getter_bind->get_default_argument_count(), // uint32_t default_argument_count;
-		def_args.data(), // GDExtensionVariantPtr *default_arguments;
-	};
-	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, class_nam->_native_ptr(), &method_info);
-
-	GDExtensionClassMethodInfo method_info2 = {
-		setter->_native_ptr(), // GDExtensionStringNamePtr;
-		setter_bind, // void *method_userdata;
-		MethodBind::bind_call, // GDExtensionClassMethodCall call_func;
-		MethodBind::bind_ptrcall, // GDExtensionClassMethodPtrCall ptrcall_func;
-		setter_bind->get_hint_flags(), // uint32_t method_flags; /* GDExtensionClassMethodFlags */
-		(GDExtensionBool)setter_bind->has_return(), // GDExtensionBool has_return_value;
-		return_value_info2, // GDExtensionPropertyInfo *
-		*return_value_metadata2, // GDExtensionClassMethodArgumentMetadata *
-		(uint32_t)setter_bind->get_argument_count(), // uint32_t argument_count;
-		arguments_info2, // GDExtensionPropertyInfo *
-		arguments_metadata2, // GDExtensionClassMethodArgumentMetadata *
-		(uint32_t)setter_bind->get_default_argument_count(), // uint32_t default_argument_count;
-		def_args2.data(), // GDExtensionVariantPtr *default_arguments;
-	};
-	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, class_nam->_native_ptr(), &method_info2);
-	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, class_nam->_native_ptr(), &method_info2);
-	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, class_nam->_native_ptr(), &method_info);
-	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, class_nam->_native_ptr(), &method_info);
-
-	internal::gdextension_interface_classdb_register_extension_class_property_indexed(internal::library, class_nam->_native_ptr(), &prop_info, setter->_native_ptr(), getter->_native_ptr(), -1);
+	bind_resource_property("GenericAnchorResource", PropertyInfo(Variant::STRING, "aaa", PROPERTY_HINT_NONE));
 }
 
 GDExtensionClassCallVirtual GenericAnchorResource::get_virtual_func(void *p_userdata, GDExtensionConstStringNamePtr p_name) {
@@ -511,17 +458,17 @@ GDExtensionClassCallVirtual GenericAnchorResource::get_virtual_func(void *p_user
 	// It should be ok not using any mutex as long as we only READ data.
 	const StringName *class_name = reinterpret_cast<const StringName *>(p_userdata);
 	const StringName *name = reinterpret_cast<const StringName *>(p_name);
-/*
-	if constexpr (!std::is_same_v<decltype(&GenericAnchorResource::_process),decltype(&Node::_process)>) {
-		auto _call_process = [](GDExtensionObjectPtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr p_ret) -> void {
-			call_with_ptr_args(reinterpret_cast<GenericAnchorResource *>(p_instance), &GenericAnchorResource::_process, p_args, p_ret);
-		};
+	/*
+		if constexpr (!std::is_same_v<decltype(&GenericAnchorResource::_process),decltype(&Node::_process)>) {
+			auto _call_process = [](GDExtensionObjectPtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr p_ret) -> void {
+				call_with_ptr_args(reinterpret_cast<GenericAnchorResource *>(p_instance), &GenericAnchorResource::_process, p_args, p_ret);
+			};
 
-		if((*name) == String("_process")){
-			return _call_process;
-		}
-	}*/
-	std::cout << "AAAAAAAAAAAAAAAAAfix " <<  String((*name)).ascii() << std::endl;
+			if((*name) == String("_process")){
+				return _call_process;
+			}
+		}*/
+	std::cout << "AAAAAAAAAAAAAAAAAfix " << String((*name)).ascii() << std::endl;
 	return nullptr;
 }
 
