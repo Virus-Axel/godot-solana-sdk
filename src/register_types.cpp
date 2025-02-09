@@ -120,7 +120,18 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<MenuBarHelper>();
 	ClassDB::register_class<AddCustomIdlDialog>();
 	ClassDB::register_class<GenericAnchorNode>();
-	ClassDB::register_class<GenericAnchorResource>();
+	//ClassDB::register_class<GenericAnchorResource>();
+	GenericAnchorResource::set_class_name("GenericAnchorResource");
+	//ClassDB::register_class<GenericAnchorResource>();
+	StringName* abc = memnew(StringName("GenericAnchorResource")); 
+	//internal::gdextension_interface_classdb_unregister_extension_class(internal::library, abc->_native_ptr());
+
+	Dictionary reso;
+	Dictionary struct_info;
+	reso["name"] = "GenericAnchorResource";
+	struct_info["fields"] = Array();
+	reso["type"] = struct_info;
+	GenericAnchorResource::bind_anchor_resource(reso);
 
 	add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
 	add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, HTTPS_PORT);

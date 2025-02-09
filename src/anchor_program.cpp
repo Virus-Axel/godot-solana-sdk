@@ -805,6 +805,44 @@ Dictionary AnchorProgram::option(const Variant &val) {
 	return res;
 }
 
+Variant::Type AnchorProgram::get_godot_type(const Variant &anchor_type) {
+	if (anchor_type.get_type() == Variant::DICTIONARY) {
+		const Dictionary anchor_type_dict = anchor_type;
+		if (anchor_type_dict.has("option")) {
+			return AnchorProgram::get_godot_type(anchor_type_dict["option"]);
+		}
+		if (anchor_type_dict.has("kind") || anchor_type_dict.has("defined")) {
+			return Variant::OBJECT;
+		}
+		if (anchor_type_dict.has("array") || anchor_type_dict.has("vec")) {
+			return Variant::ARRAY;
+		}
+	} else if (anchor_type.get_type() == Variant::STRING) {
+		const String type_string = anchor_type;
+		if (type_string == "publicKey") {
+			return Variant::OBJECT;
+		}
+		if (type_string == "string") {
+			return Variant::STRING;
+		}
+		if (type_string == "u8" || type_string == "u16" || type_string == "u32" || type_string == "u64" ||
+				type_string == "i8" || type_string == "i16" || type_string == "i32" || type_string == "i64") {
+                    return Variant::INT;
+		}
+        if(type_string == "f32" || type_string == "f64"){
+            return Variant::FLOAT;
+        }
+        if(type_string == "bool"){
+            return Variant::BOOL;
+        }
+        if(type_string == "bytes"){
+            return Variant::PACKED_BYTE_ARRAY;
+        }
+	}
+    WARN_PRINT_ONCE_ED("Unknown anchor type");
+    return Variant::NIL;
+}
+
 Variant AnchorProgram::build_instruction(String name, Array accounts, Variant arguments) {
 	ERR_FAIL_COND_V_EDMSG(idl.is_empty(), nullptr, "IDL is empty, try loading from PID or JSON file.");
 	Instruction *result = memnew(Instruction);

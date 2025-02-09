@@ -95,6 +95,7 @@ public:
     static Dictionary u64(uint64_t val);
     static Dictionary option(const Variant &val);
 
+    static Variant::Type get_godot_type(const Variant &anchor_type);
 
     const String global_prefix = "global:";
     const String account_prefix = "account:";

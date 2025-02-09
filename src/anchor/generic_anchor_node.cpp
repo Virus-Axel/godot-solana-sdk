@@ -262,6 +262,8 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 	Object::cast_to<AnchorProgram>(parsed_program)->set_idl(idl);
 	Object::cast_to<AnchorProgram>(parsed_program)->set_pid(Object::cast_to<Pubkey>(custom_pid)->to_string());
 
+	//ClassDB::register_class<GenericAnchorResource>();
+
 	if (idl.has("types")) {
 		const Array types = idl["types"];
 		for (unsigned int i = 0; i < types.size(); i++) {

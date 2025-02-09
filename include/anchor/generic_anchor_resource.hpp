@@ -20,6 +20,8 @@ private:
     const String OPTIONAL_PROPERTY_PREFIX = "enable_";
 
 	static std::vector<String *> names;
+	static std::vector<Callable> static_class_names;
+	static std::string string_name;
 
     std::vector<ResourcePropertyInfo> properties;
 
@@ -67,7 +69,7 @@ public:
 	static GDExtensionBool set_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value);
 	static GDExtensionBool get_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
 
-	static inline bool has_get_property_list();
+	static bool has_get_property_list();
 	static const GDExtensionPropertyInfo *get_property_list_bind(GDExtensionClassInstancePtr p_instance, uint32_t *r_count);
 	static void free_property_list_bind(GDExtensionClassInstancePtr p_instance, const GDExtensionPropertyInfo *p_list, uint32_t /*p_count*/);
 
@@ -96,11 +98,20 @@ protected:
 	static void _bind_methods();
 
 public:
-	void _ready() override;
 	GenericAnchorResource() = default;
 	static void bind_anchor_resource(const Dictionary &resource);
-    void add_property(const ResourcePropertyInfo& property);
+	static void set_class_name(const String& name){
+		string_name = name.ascii();
+	}
+	static GDExtensionClassCallVirtual get_virtual_func(void *p_userdata, GDExtensionConstStringNamePtr p_name);
+    void add_property(const Dictionary& property_data);
     PackedByteArray serialize();
+	void say_hi(){
+		std::cout << "HI" << std::endl;
+	}
+	void say_hii(const Variant& other){
+		std::cout << "HI" << std::endl;
+	}
 	~GenericAnchorResource() = default;
 };
 } //namespace godot
