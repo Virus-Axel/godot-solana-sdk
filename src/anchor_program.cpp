@@ -849,7 +849,10 @@ String AnchorProgram::get_godot_class_hint(const Variant &anchor_type) {
 		if (anchor_type_dict.has("option")) {
 			return AnchorProgram::get_godot_class_hint(anchor_type_dict["option"]);
 		}
-		if (anchor_type_dict.has("kind") || anchor_type_dict.has("defined")) {
+		if (anchor_type_dict.has("kind")){
+			return "";
+		}
+		if (anchor_type_dict.has("defined")) {
 			return anchor_type_dict["defined"];
 		}
 		if (anchor_type_dict.has("array")) {
@@ -859,10 +862,40 @@ String AnchorProgram::get_godot_class_hint(const Variant &anchor_type) {
 			return AnchorProgram::get_godot_class_hint(anchor_type_dict["vec"]);
 		}
 	} else if (anchor_type.get_type() == Variant::STRING) {
+		const String type_string = anchor_type;
+		if (type_string == "publicKey") {
+			return "Pubkey";
+		}
 		return "";
 	}
     WARN_PRINT_ONCE_ED("Unknown anchor type");
     return "";
+}
+
+PropertyHint AnchorProgram::get_godot_hint(const Variant &anchor_type){
+	if (anchor_type.get_type() == Variant::DICTIONARY) {
+		const Dictionary anchor_type_dict = anchor_type;
+		if (anchor_type_dict.has("option")) {
+			return AnchorProgram::get_godot_hint(anchor_type_dict["option"]);
+		}
+		if (anchor_type_dict.has("kind") || anchor_type_dict.has("defined")) {
+			return PROPERTY_HINT_RESOURCE_TYPE;
+		}
+		if (anchor_type_dict.has("array")) {
+			return PROPERTY_HINT_ARRAY_TYPE;
+		}
+		if (anchor_type_dict.has("vec")){
+			return PROPERTY_HINT_ARRAY_TYPE;
+		}
+	} else if (anchor_type.get_type() == Variant::STRING) {
+		const String type_string = anchor_type;
+		if (type_string == "publicKey") {
+			return PROPERTY_HINT_RESOURCE_TYPE;
+		}
+		return PROPERTY_HINT_NONE;
+	}
+    WARN_PRINT_ONCE_ED("Unknown anchor type");
+    return PROPERTY_HINT_NONE;
 }
 
 Variant AnchorProgram::build_instruction(String name, Array accounts, Variant arguments) {

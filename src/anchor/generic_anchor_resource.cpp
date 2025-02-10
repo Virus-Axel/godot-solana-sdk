@@ -651,7 +651,9 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) {
 
 	std::cout << "Binding prop" << std::endl;
 	const String hint_string = AnchorProgram::get_godot_class_hint(property_data["type"]);
-	bind_resource_property(get_class_static(), PropertyInfo(AnchorProgram::get_godot_type(property_data["type"]), property_name, PROPERTY_HINT_NONE, hint_string));
+	const PropertyHint hint = AnchorProgram::get_godot_hint(property_data["type"]);
+
+	bind_resource_property(get_class_static(), PropertyInfo(AnchorProgram::get_godot_type(property_data["type"]), property_name, hint, hint_string));
 	std::cout << "Bound prop" << std::endl;
 	//properties.push_back(abc);
 }

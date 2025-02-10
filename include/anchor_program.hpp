@@ -97,6 +97,7 @@ public:
 
     static Variant::Type get_godot_type(const Variant &anchor_type);
     static String get_godot_class_hint(const Variant &anchor_type);
+    static PropertyHint get_godot_hint(const Variant &anchor_type);
 
     const String global_prefix = "global:";
     const String account_prefix = "account:";
