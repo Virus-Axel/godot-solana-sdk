@@ -843,6 +843,28 @@ Variant::Type AnchorProgram::get_godot_type(const Variant &anchor_type) {
     return Variant::NIL;
 }
 
+String AnchorProgram::get_godot_class_hint(const Variant &anchor_type) {
+	if (anchor_type.get_type() == Variant::DICTIONARY) {
+		const Dictionary anchor_type_dict = anchor_type;
+		if (anchor_type_dict.has("option")) {
+			return AnchorProgram::get_godot_class_hint(anchor_type_dict["option"]);
+		}
+		if (anchor_type_dict.has("kind") || anchor_type_dict.has("defined")) {
+			return anchor_type_dict["defined"];
+		}
+		if (anchor_type_dict.has("array")) {
+			return AnchorProgram::get_godot_class_hint(anchor_type_dict["array"]);
+		}
+		if (anchor_type_dict.has("vec")){
+			return AnchorProgram::get_godot_class_hint(anchor_type_dict["vec"]);
+		}
+	} else if (anchor_type.get_type() == Variant::STRING) {
+		return "";
+	}
+    WARN_PRINT_ONCE_ED("Unknown anchor type");
+    return "";
+}
+
 Variant AnchorProgram::build_instruction(String name, Array accounts, Variant arguments) {
 	ERR_FAIL_COND_V_EDMSG(idl.is_empty(), nullptr, "IDL is empty, try loading from PID or JSON file.");
 	Instruction *result = memnew(Instruction);

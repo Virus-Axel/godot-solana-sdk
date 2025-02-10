@@ -15,13 +15,14 @@ typedef struct{
     bool enabled;
 } ResourcePropertyInfo;
 
-class GenericAnchorResource : public Node {
+class GenericAnchorResource : public Resource {
 private:
     const String OPTIONAL_PROPERTY_PREFIX = "enable_";
 
 	static std::vector<String *> names;
 	static std::vector<Callable> static_class_names;
 	static std::string string_name;
+	static std::unordered_map<StringName, std::unordered_map<StringName, ResourcePropertyInfo>> property_database;
 
     std::vector<ResourcePropertyInfo> properties;
 
@@ -110,7 +111,7 @@ public:
 		string_name = name.ascii();
 	}
 	static GDExtensionClassCallVirtual get_virtual_func(void *p_userdata, GDExtensionConstStringNamePtr p_name);
-    void add_property(const Dictionary& property_data);
+    static void add_property(const Dictionary& property_data);
     PackedByteArray serialize();
 	void say_hi(){
 		std::cout << "HI" << std::endl;

@@ -131,7 +131,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	reso["name"] = "GenericAnchorResource";
 	struct_info["fields"] = Array();
 	reso["type"] = struct_info;
-	GenericAnchorResource::bind_anchor_resource(reso);
+	//GenericAnchorResource::bind_anchor_resource(reso);
 
 	add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
 	add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, HTTPS_PORT);

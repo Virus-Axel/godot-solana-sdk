@@ -17,12 +17,15 @@ namespace godot {
 // TODO(Virax): Delete this memory as well.
 std::vector<String *> GenericAnchorResource::names;
 std::string GenericAnchorResource::string_name = "GenericAnchorResourceaa";
+std::unordered_map<StringName, std::unordered_map<StringName, ResourcePropertyInfo>> GenericAnchorResource::property_database;
 std::string prop_name = "aaa";
 
 bool GenericAnchorResource::_set(const StringName &p_name, const Variant &p_value) { // NOLINT(bugprone-easily-swappable-parameters)
 	const String name = p_name;
 	std::cout << "Setting " << String(p_name).ascii() << std::endl;
 
+	property_database[get_class_static()][p_name].value = p_value;
+	return true;
 	for (auto &property : properties) {
 		if (property.property_info.name == name) {
 			property.value = p_value;
@@ -47,7 +50,9 @@ bool GenericAnchorResource::_set(const StringName &p_name, const Variant &p_valu
 bool GenericAnchorResource::_get(const StringName &p_name, Variant &r_ret) const {
 	const String name = p_name;
 
-	r_ret = false;
+	//r_ret = false;
+	r_ret = property_database[get_class_static()][p_name].value;
+	return true;
 
 	for (const auto &property : properties) {
 		if (property.property_info.name == name) {
@@ -84,10 +89,12 @@ GDExtensionObjectPtr GenericAnchorResource::_create_instance_func(void *data) {
 		.enabled = true,
 	};
 	std::cout << "AAAAAa " << instance_class.ascii() << std::endl;
+	set_class_name(instance_class);
 	GenericAnchorResource *new_object = memnew(GenericAnchorResource);
-	new_object->properties.push_back(info);
-	new_object->notify_property_list_changed();
+	//new_object->properties.push_back(info);
+	//new_object->notify_property_list_changed();
 	//new_object->_bind_methods();
+	std::cout << "GOING OUT" << std::endl;
 	return new_object->_owner;
 }
 
@@ -141,17 +148,18 @@ void GenericAnchorResource::initialize_class() {
 	if (initialized) {
 		return;
 	}
-	Node::initialize_class();
-	if (GenericAnchorResource::_get_bind_methods() != Node::_get_bind_methods()) {
+	Resource::initialize_class();
+	if (GenericAnchorResource::_get_bind_methods() != Resource::_get_bind_methods()) {
 		_bind_methods();
 		std::cout << "virt" << std::endl;
-		Node::register_virtuals<GenericAnchorResource, Node>();
+		Resource::register_virtuals<GenericAnchorResource, Resource>();
 		std::cout << "uals" << std::endl;
 	}
 	initialized = true;
 }
 
 GDExtensionClassInstancePtr GenericAnchorResource::_recreate_instance_func(void *data, GDExtensionObjectPtr obj) {
+	std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
 #ifdef HOT_RELOAD_ENABLED
 	GenericAnchorResource *new_instance = (GenericAnchorResource *)memalloc(sizeof(GenericAnchorResource));
 	Wrapped::RecreateInstance recreate_data = { new_instance, obj, Wrapped::recreate_instance };
@@ -171,7 +179,7 @@ void GenericAnchorResource::bind_resource_class(const StringName &p_class_name, 
 		false, // GDExtensionBool is_runtime;
 		GenericAnchorResource::set_bind, // GDExtensionClassSet set_func;
 		GenericAnchorResource::get_bind, // GDExtensionClassGet get_func;
-		GenericAnchorResource::get_property_list_bind, // GDExtensionClassGetPropertyList get_property_list_func;
+		GenericAnchorResource::has_get_property_list() ? GenericAnchorResource::get_property_list_bind : nullptr, // GDExtensionClassGetPropertyList get_property_list_func;
 		GenericAnchorResource::free_property_list_bind, // GDExtensionClassFreePropertyList2 free_property_list_func;
 		GenericAnchorResource::property_can_revert_bind, // GDExtensionClassPropertyCanRevert property_can_revert_func;
 		GenericAnchorResource::property_get_revert_bind, // GDExtensionClassPropertyGetRevert property_get_revert_func;
@@ -287,30 +295,32 @@ void GenericAnchorResource::bind_resource_getter(const StringName &p_class_name,
 	}
 
 	prop_name = String(property_name).ascii();
-	auto lambda = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error){
+	auto *lambda = new auto([](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error){
 		std::cout << "KILLME" << std::endl;
 		static String abc = String(prop_name.c_str());
+		static const String cla = GenericAnchorResource::get_class_static();
 		if(p_instance == nullptr){
 			return;
 		}
 		Variant ret;
+		GenericAnchorResource::set_class_name(cla);
 		bool status = static_cast<GenericAnchorResource*>(p_instance)->_get(abc, ret);
 		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
-	};
-	lambda(nullptr, nullptr, nullptr, 0, nullptr, nullptr);
+	});
+	(*lambda)(nullptr, nullptr, nullptr, 0, nullptr, nullptr);
 
-	auto lambda2 = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_return){
+	auto *lambda2 = new auto([](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_return){
 		std::cout << "KILLME" << std::endl;
 		Variant ret = {};
 		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
-	};
+	});
 
 	const StringName name = getter_bind->get_name();
 	const GDExtensionClassMethodInfo method_info = {
 		name._native_ptr(),
 		getter_bind,
-		lambda,
-		lambda2,
+		*lambda,
+		*lambda2,
 		getter_bind->get_hint_flags(),
 		static_cast<GDExtensionBool>(getter_bind->has_return()),
 		return_value_info,
@@ -362,9 +372,10 @@ void GenericAnchorResource::bind_resource_setter(const StringName &p_class_name,
 	}
 
 	prop_name = String(property_name).ascii();
-	auto lambda = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error){
+	auto *lambda = new auto([](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error){
 		std::cout << "KILLME" << std::endl;
 		static String abc = String(prop_name.c_str());
+		static const String cla = GenericAnchorResource::get_class_static();
 		if(p_instance == nullptr){
 			return;
 		}
@@ -373,23 +384,24 @@ void GenericAnchorResource::bind_resource_setter(const StringName &p_class_name,
 		std::cout << p_argument_count << std::endl;
 		std::cout <<"the prop is " << abc.ascii() << std::endl;
 		std::cout <<"actually " << prop_name << std::endl;
+		GenericAnchorResource::set_class_name(cla);
 		static_cast<GenericAnchorResource *>(p_instance)->_set(abc, arg);
 		Variant ret = {};
 		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
-	};
-	lambda(nullptr, nullptr, nullptr, 0, nullptr, nullptr);
-	auto lambda2 = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_return){
+	});
+	(*lambda)(nullptr, nullptr, nullptr, 0, nullptr, nullptr);
+	auto *lambda2 = new auto([](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_return){
 		std::cout << "KILLME" << std::endl;
 		Variant ret = {};
 		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
-	};
+	});
 
 	const StringName name = setter_bind->get_name();
 	const GDExtensionClassMethodInfo method_info = {
 		name._native_ptr(),
 		setter_bind,
-		lambda,
-		lambda2,
+		*lambda,
+		*lambda2,
 		setter_bind->get_hint_flags(),
 		static_cast<GDExtensionBool>(setter_bind->has_return()),
 		return_value_info,
@@ -408,7 +420,7 @@ void GenericAnchorResource::bind_resource_property(const StringName &p_class_nam
 	const StringName new_getter_name = (getter_name.is_empty()) ? StringName("get_" + property_info.name)  : getter_name;
 
 	const GDExtensionPropertyInfo prop_info = {
-		static_cast<GDExtensionVariantType>(Variant::BOOL), // GDExtensionVariantType type;
+		static_cast<GDExtensionVariantType>(property_info.type), // GDExtensionVariantType type;
 		property_info.name._native_ptr(), // GDExtensionStringNamePtr name;
 		p_class_name._native_ptr(), // GDExtensionStringNamePtr class_name;
 		property_info.hint, // NONE //uint32_t hint;
@@ -426,30 +438,30 @@ const StringName &GenericAnchorResource::get_class_static() {
 }
 
 const StringName &GenericAnchorResource::get_parent_class_static() {
-	return Node::get_class_static();
+	return Resource::get_class_static();
 }
 
 void GenericAnchorResource::notification_bind(GDExtensionClassInstancePtr p_instance, int32_t p_what, GDExtensionBool p_reversed) {
 	if (p_instance && GenericAnchorResource::_get_notification()) {
 		if (!p_reversed) {
-			Node::notification_bind(p_instance, p_what, p_reversed);
+			Resource::notification_bind(p_instance, p_what, p_reversed);
 		}
-		if (GenericAnchorResource::_get_notification() != Node::_get_notification()) {
+		if (GenericAnchorResource::_get_notification() != Resource::_get_notification()) {
 			GenericAnchorResource *cls = reinterpret_cast<GenericAnchorResource *>(p_instance);
 			cls->_notification(p_what);
 		}
 		if (p_reversed) {
-			Node::notification_bind(p_instance, p_what, p_reversed);
+			Resource::notification_bind(p_instance, p_what, p_reversed);
 		}
 	}
 }
 
 GDExtensionBool GenericAnchorResource::set_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value) {
 	if (p_instance) {
-		if (Node::set_bind(p_instance, p_name, p_value)) {
+		if (Resource::set_bind(p_instance, p_name, p_value)) {
 			return true;
 		}
-		if (GenericAnchorResource::_get_set() != Node::_get_set()) {
+		if (GenericAnchorResource::_get_set() != Resource::_get_set()) {
 			GenericAnchorResource *cls = reinterpret_cast<GenericAnchorResource *>(p_instance);
 			return cls->_set(*reinterpret_cast<const StringName *>(p_name), *reinterpret_cast<const Variant *>(p_value));
 		}
@@ -459,10 +471,10 @@ GDExtensionBool GenericAnchorResource::set_bind(GDExtensionClassInstancePtr p_in
 
 GDExtensionBool GenericAnchorResource::get_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret) {
 	if (p_instance) {
-		if (Node::get_bind(p_instance, p_name, r_ret)) {
+		if (Resource::get_bind(p_instance, p_name, r_ret)) {
 			return true;
 		}
-		if (GenericAnchorResource::_get_get() != Node::_get_get()) {
+		if (GenericAnchorResource::_get_get() != Resource::_get_get()) {
 			GenericAnchorResource *cls = reinterpret_cast<GenericAnchorResource *>(p_instance);
 			return cls->_get(*reinterpret_cast<const StringName *>(p_name), *reinterpret_cast<Variant *>(r_ret));
 		}
@@ -471,7 +483,7 @@ GDExtensionBool GenericAnchorResource::get_bind(GDExtensionClassInstancePtr p_in
 }
 
 bool GenericAnchorResource::has_get_property_list() {
-	return GenericAnchorResource::_get_get_property_list() && GenericAnchorResource::_get_get_property_list() != Node::_get_get_property_list();
+	return GenericAnchorResource::_get_get_property_list() && GenericAnchorResource::_get_get_property_list() != Resource::_get_get_property_list();
 }
 
 const GDExtensionPropertyInfo *GenericAnchorResource::get_property_list_bind(GDExtensionClassInstancePtr p_instance, uint32_t *r_count) {
@@ -502,22 +514,22 @@ void GenericAnchorResource::free_property_list_bind(GDExtensionClassInstancePtr 
 
 GDExtensionBool GenericAnchorResource::property_can_revert_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name) {
 	if (p_instance && GenericAnchorResource::_get_property_can_revert()) {
-		if (GenericAnchorResource::_get_property_can_revert() != Node::_get_property_can_revert()) {
+		if (GenericAnchorResource::_get_property_can_revert() != Resource::_get_property_can_revert()) {
 			GenericAnchorResource *cls = reinterpret_cast<GenericAnchorResource *>(p_instance);
 			return cls->_property_can_revert(*reinterpret_cast<const StringName *>(p_name));
 		}
-		return Node::property_can_revert_bind(p_instance, p_name);
+		return Resource::property_can_revert_bind(p_instance, p_name);
 	}
 	return false;
 }
 
 GDExtensionBool GenericAnchorResource::property_get_revert_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret) {
 	if (p_instance && GenericAnchorResource::_get_property_get_revert()) {
-		if (GenericAnchorResource::_get_property_get_revert() != Node::_get_property_get_revert()) {
+		if (GenericAnchorResource::_get_property_get_revert() != Resource::_get_property_get_revert()) {
 			GenericAnchorResource *cls = reinterpret_cast<GenericAnchorResource *>(p_instance);
 			return cls->_property_get_revert(*reinterpret_cast<const StringName *>(p_name), *reinterpret_cast<Variant *>(r_ret));
 		}
-		return Node::property_get_revert_bind(p_instance, p_name, r_ret);
+		return Resource::property_get_revert_bind(p_instance, p_name, r_ret);
 	}
 	return false;
 }
@@ -525,8 +537,8 @@ GDExtensionBool GenericAnchorResource::property_get_revert_bind(GDExtensionClass
 GDExtensionBool GenericAnchorResource::validate_property_bind(GDExtensionClassInstancePtr p_instance, GDExtensionPropertyInfo *p_property) {
 	bool ret = false;
 	if (p_instance && GenericAnchorResource::_get_validate_property()) {
-		ret = Node::validate_property_bind(p_instance, p_property);
-		if (GenericAnchorResource::_get_validate_property() != Node::_get_validate_property()) {
+		ret = Resource::validate_property_bind(p_instance, p_property);
+		if (GenericAnchorResource::_get_validate_property() != Resource::_get_validate_property()) {
 			GenericAnchorResource *cls = reinterpret_cast<GenericAnchorResource *>(p_instance);
 			PropertyInfo info(p_property);
 			cls->_validate_property(info);
@@ -539,13 +551,13 @@ GDExtensionBool GenericAnchorResource::validate_property_bind(GDExtensionClassIn
 
 void GenericAnchorResource::to_string_bind(GDExtensionClassInstancePtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr r_out) {
 	if (p_instance && GenericAnchorResource::_get_to_string()) {
-		if (GenericAnchorResource::_get_to_string() != Node::_get_to_string()) {
+		if (GenericAnchorResource::_get_to_string() != Resource::_get_to_string()) {
 			GenericAnchorResource *cls = reinterpret_cast<GenericAnchorResource *>(p_instance);
 			*reinterpret_cast<String *>(r_out) = cls->_to_string();
 			*r_is_valid = true;
 			return;
 		}
-		Node::to_string_bind(p_instance, r_is_valid, r_out);
+		Resource::to_string_bind(p_instance, r_is_valid, r_out);
 	}
 }
 
@@ -580,6 +592,7 @@ void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
 	ERR_FAIL_COND_CUSTOM(resource.has("array"));
 
 	const String class_name = resource["name"];
+	set_class_name(class_name);
 	//const String class_name = "GenericAnchorResource";
 
 	names.push_back(memnew(String(class_name)));
@@ -589,19 +602,14 @@ void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
 	ERR_FAIL_COND_EDMSG_CUSTOM(!struct_info.has("fields"), "Resource struct does not contain any fields");
 
 	const Array fields = struct_info["fields"];
-	for (unsigned int i = 0; i < fields.size(); i++) {
-		//add_property(fields[i]);
-	}
-
-	bind_resource_class(*names[names.size() - 1], "Node");
-
+	bind_resource_class(*names[names.size() - 1], "Resource");
 	initialize_class();
 
-	bind_resource_setter(*names[names.size() - 1], D_METHOD("set_aaa", "value"), "aaa");
-	bind_resource_getter(*names[names.size() - 1], D_METHOD("get_aaa"), "aaa");
-	prop_name = "abc";
-
-	bind_resource_property("GenericAnchorResource", PropertyInfo(Variant::STRING, "aaa", PROPERTY_HINT_NONE));
+	for (unsigned int i = 0; i < fields.size(); i++) {
+		std::cout << "ADDING PROP" << std::endl;
+		add_property(fields[i]);
+	}
+	std::cout << "Done it" << std::endl;
 }
 
 GDExtensionClassCallVirtual GenericAnchorResource::get_virtual_func(void *p_userdata, GDExtensionConstStringNamePtr p_name) {
@@ -629,7 +637,22 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) {
 
 	const String property_name = property_data["name"];
 	std::cout << "TYPE " << AnchorProgram::get_godot_type(property_data["type"]);
-	ResourcePropertyInfo abc = { 0 };
+
+	ResourcePropertyInfo prop_info = ResourcePropertyInfo {
+		.property_info = PropertyInfo(AnchorProgram::get_godot_type(property_data["type"]), property_name, PROPERTY_HINT_NONE),
+		.value = Variant(),
+		.optional = false,
+		.enabled = true,
+	};
+	property_database[get_class_static()][property_name] = prop_info;
+
+	bind_resource_setter(*names[names.size() - 1], D_METHOD("set_" + property_name, "value"), property_name);
+	bind_resource_getter(*names[names.size() - 1], D_METHOD("get_" + property_name), property_name);
+
+	std::cout << "Binding prop" << std::endl;
+	const String hint_string = AnchorProgram::get_godot_class_hint(property_data["type"]);
+	bind_resource_property(get_class_static(), PropertyInfo(AnchorProgram::get_godot_type(property_data["type"]), property_name, PROPERTY_HINT_NONE, hint_string));
+	std::cout << "Bound prop" << std::endl;
 	//properties.push_back(abc);
 }
 

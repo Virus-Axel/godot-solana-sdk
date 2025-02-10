@@ -267,6 +267,7 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 	if (idl.has("types")) {
 		const Array types = idl["types"];
 		for (unsigned int i = 0; i < types.size(); i++) {
+			std::cout << "BINDING RE" << std::endl;
 			GenericAnchorResource::bind_anchor_resource(types[i]);
 		}
 	}
