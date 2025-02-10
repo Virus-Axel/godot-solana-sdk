@@ -34,6 +34,8 @@ private:
 
 	static void bind_resource_class(const StringName &p_class_name, const StringName &parent_name);
 	static void bind_resource_method(const StringName &p_class_name,  const MethodDefinition &method_prototype , MethodBind *p_method);
+	static void bind_resource_getter(const StringName &p_class_name, const MethodDefinition &method_prototype, const StringName& property_name);
+	static void bind_resource_setter(const StringName &p_class_name, const MethodDefinition &method_prototype, const StringName& property_name);
 	static void bind_resource_property(const StringName &p_class_name, const PropertyInfo& property_info,  const StringName &setter_name = "", const StringName &getter_name = "");
 
 	void operator=(const GenericAnchorResource & /*p_rval*/) {}
@@ -116,6 +118,16 @@ public:
 	void say_hii(const Variant& other){
 		std::cout << "HI" << std::endl;
 	}
+
+	// TODO(Virax): Add support for generic getters and setters.
+	Variant no_get(){
+		WARN_PRINT_ED("Getter is undefined, read property directly instead");
+		return nullptr;
+	}
+	void no_set(const Variant& value){
+		WARN_PRINT_ED("Setter is undefined, assign property directly instead");
+	}
+
 	~GenericAnchorResource() = default;
 };
 } //namespace godot
