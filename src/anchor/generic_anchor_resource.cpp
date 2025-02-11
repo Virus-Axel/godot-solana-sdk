@@ -19,6 +19,7 @@ std::vector<String *> GenericAnchorResource::names;
 std::string GenericAnchorResource::string_name = "GenericAnchorResourceaa";
 std::unordered_map<StringName, std::unordered_map<StringName, ResourcePropertyInfo>> GenericAnchorResource::property_database;
 std::string prop_name = "aaa";
+std::string instruction_name = "";
 
 bool GenericAnchorResource::_set(const StringName &p_name, const Variant &p_value) { // NOLINT(bugprone-easily-swappable-parameters)
 	const String name = p_name;
@@ -63,7 +64,7 @@ bool GenericAnchorResource::_get(const StringName &p_name, Variant &r_ret) const
 
 	return true;
 }
-
+/*
 void GenericAnchorResource::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::BOOL, "HIIIIIIIIIIIIIIIIIIIII"));
 	std::cout << "Searching props" << std::endl;
@@ -78,7 +79,7 @@ void GenericAnchorResource::_get_property_list(List<PropertyInfo> *p_list) const
 		}
 	}
 }
-
+*/
 GDExtensionObjectPtr GenericAnchorResource::_create_instance_func(void *data) {
 	std::cout << "INST" << std::endl;
 	const String instance_class = *(String *)data;
@@ -609,7 +610,9 @@ void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
 		std::cout << "ADDING PROP" << std::endl;
 		add_property(fields[i]);
 	}
-	std::cout << "Done it" << std::endl;
+
+	MethodBind *method_bind = create_method_bind(&GenericAnchorResource::serialize);
+	bind_resource_method(get_class_static(), D_METHOD("serialize"), method_bind);
 }
 
 GDExtensionClassCallVirtual GenericAnchorResource::get_virtual_func(void *p_userdata, GDExtensionConstStringNamePtr p_name) {
@@ -659,6 +662,7 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) {
 }
 
 PackedByteArray GenericAnchorResource::serialize() {
+	return PackedByteArray();
 }
 
 } //namespace godot

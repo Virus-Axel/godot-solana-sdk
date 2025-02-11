@@ -28,7 +28,7 @@ private:
 
     bool _set(const StringName &p_name, const Variant &p_value);
     bool _get(const StringName &p_name, Variant &r_ret) const;
-    void _get_property_list(List<PropertyInfo> *p_list) const;
+    //void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	static GDExtensionObjectPtr _create_instance_func(void *data);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
@@ -60,12 +60,12 @@ protected:
 
 	template <typename T, typename B>
 	static void register_virtuals() {
-		Node::register_virtuals<T, B>();
+		Resource::register_virtuals<T, B>();
 	}
 
 public:
 	typedef GenericAnchorResource self_type;
-	typedef Node parent_type;
+	typedef Resource parent_type;
 
 	static void initialize_class();
 	static const StringName &get_class_static();

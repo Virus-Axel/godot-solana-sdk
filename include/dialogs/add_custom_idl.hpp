@@ -8,6 +8,8 @@
 
 namespace godot {
 
+const std::string CUSTOM_IDL_LOCATION_SETTING = "solana_sdk/anchor/custom_anchor_programs";
+
 class AddCustomIdlDialog : public Window {
 	GDCLASS(AddCustomIdlDialog, Window)
 private:

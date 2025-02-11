@@ -51,6 +51,7 @@
 #include "system_program.hpp"
 #include "transaction.hpp"
 #include "wallet_adapter.hpp"
+#include "dialogs/add_custom_idl.hpp"
 
 namespace godot {
 namespace {
@@ -68,6 +69,16 @@ void add_setting(const String &name, Variant::Type type, const Variant &default_
 		property_info["hint_string"] = hint_string;
 
 		ProjectSettings::get_singleton()->add_property_info(property_info);
+	}
+}
+
+void load_user_programs(){
+	Variant idl_locations = ProjectSettings::get_singleton()->get_setting(String(CUSTOM_IDL_LOCATION_SETTING.c_str()));
+	ERR_FAIL_COND_EDMSG_CUSTOM(idl_locations.get_type() != Variant::PACKED_STRING_ARRAY, "Could not find setting for idl locations");
+	const PackedStringArray idl_filenames = static_cast<PackedStringArray>(idl_locations);
+	for (const auto idl_filename: idl_filenames){
+		std::cout << "loading form file " << idl_filename.ascii() << std::endl;
+		AddCustomIdlDialog::load_idl(idl_filename);
 	}
 }
 
@@ -126,16 +137,23 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	StringName* abc = memnew(StringName("GenericAnchorResource")); 
 	//internal::gdextension_interface_classdb_unregister_extension_class(internal::library, abc->_native_ptr());
 
+	//AddCustomIdlDialog::load_idl("res://testidl.json");
+	
+
 	Dictionary reso;
 	Dictionary struct_info;
 	reso["name"] = "GenericAnchorResource";
 	struct_info["fields"] = Array();
 	reso["type"] = struct_info;
 	//GenericAnchorResource::bind_anchor_resource(reso);
+	GenericAnchorResource::set_class_name("aaa");
 
 	add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
 	add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, HTTPS_PORT);
 	add_setting("solana_sdk/client/default_ws_port", Variant::Type::INT, WSS_PORT);
+	add_setting("solana_sdk/anchor/custom_anchor_programs", Variant::Type::PACKED_STRING_ARRAY, PackedStringArray());
+
+	load_user_programs();
 
 	// Leave memory allocated and free in unregister_singleton.
 	Engine::get_singleton()->register_singleton("http_client", memnew_custom(RpcMultiHttpRequestClient)); // NOLINT (cppcoreguidelines-owning-memory)
