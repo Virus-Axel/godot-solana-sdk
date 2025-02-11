@@ -17,6 +17,8 @@ private:
 	Label *select_idl_label = nullptr;
 	Variant parent_window = nullptr;
 
+	static void idl_selected_callback(const String &filename);
+
 protected:
 	static void _bind_methods();
 

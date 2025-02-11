@@ -8,6 +8,7 @@
 #include "godot_cpp/classes/line_edit.hpp"
 #include "godot_cpp/classes/v_box_container.hpp"
 #include "godot_cpp/variant/utility_functions.hpp"
+#include "godot_cpp/classes/project_settings.hpp"
 
 #include "anchor/generic_anchor_node.hpp"
 #include "solana_utils.hpp"
@@ -31,9 +32,9 @@ void AddCustomIdlDialog::clear() {
 	parent_ptr->add_child(file_section);
 	FileDialog *file_selector = memnew(FileDialog);
 
-	Callable load_idl_callable = callable_mp_static(&AddCustomIdlDialog::load_idl);
+	Callable load_idl_callable = callable_mp_static(&AddCustomIdlDialog::idl_selected_callback);
 	file_selector->connect("file_selected", load_idl_callable);
-	file_selector->set_access(FileDialog::Access::ACCESS_FILESYSTEM);
+	file_selector->set_access(FileDialog::Access::ACCESS_RESOURCES);
 	file_selector->set_file_mode(FileDialog::FileMode::FILE_MODE_OPEN_FILE);
 	parent_ptr->add_child(file_selector);
 
@@ -49,6 +50,18 @@ void AddCustomIdlDialog::load_idl(const String &filename) {
 	const Dictionary content = JSON::parse_string(file->get_as_text());
 	UtilityFunctions::print(content);
 	GenericAnchorNode::bind_anchor_node(content);
+}
+
+void AddCustomIdlDialog::idl_selected_callback(const String &filename){
+	Variant idl_locations = ProjectSettings::get_singleton()->get_setting(String(CUSTOM_IDL_LOCATION_SETTING.c_str()));
+	ERR_FAIL_COND_EDMSG_CUSTOM(idl_locations.get_type() != Variant::PACKED_STRING_ARRAY, "Could not find setting for idl locations");
+	PackedStringArray idl_filenames = static_cast<PackedStringArray>(idl_locations);
+	idl_filenames.append(filename);
+	ProjectSettings::get_singleton()->set_setting(String(CUSTOM_IDL_LOCATION_SETTING.c_str()), idl_filenames);
+	ProjectSettings::get_singleton()->save();
+
+	UtilityFunctions::print("Reloading editor is required.");
+	//load_idl(filename);
 }
 
 void AddCustomIdlDialog::_bind_methods() {
