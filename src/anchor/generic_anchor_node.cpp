@@ -13,7 +13,7 @@
 namespace godot {
 
 // TODO(Virax): Delete this memory as well.
-Array *GenericAnchorNode::loaded_idls = nullptr;
+std::unordered_map<StringName, Dictionary> GenericAnchorNode::loaded_idls;
 std::vector<String *> GenericAnchorNode::names;
 
 void GenericAnchorNode::bind_resources(const Array &resources, const String &class_name) {
@@ -22,10 +22,12 @@ void GenericAnchorNode::bind_resources(const Array &resources, const String &cla
 }
 
 GDExtensionObjectPtr GenericAnchorNode::_create_instance_func(void *data) {
-	std::cout << "INST" << std::endl;
 	const String instance_class = *(String *)data;
-	std::cout << "AAAAAa " << instance_class.ascii() << std::endl;
 	GenericAnchorNode *new_object = memnew(GenericAnchorNode);
+	new_object->anchor_program = memnew(AnchorProgram);
+	const Variant custom_pid = AnchorProgram::get_address_from_idl(loaded_idls[instance_class]);
+	Object::cast_to<AnchorProgram>(new_object->anchor_program)->set_idl(loaded_idls[instance_class]);
+	Object::cast_to<AnchorProgram>(new_object)->set_pid(Object::cast_to<Pubkey>(custom_pid)->to_string());
 	return new_object->_owner;
 }
 
@@ -258,25 +260,31 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 	const Variant custom_pid = AnchorProgram::get_address_from_idl(idl);
 
 	ERR_FAIL_COND_EDMSG(custom_pid.get_type() != Variant::OBJECT, "IDL does not contain a PID.");
-	const Variant parsed_program = memnew(AnchorProgram);
-	Object::cast_to<AnchorProgram>(parsed_program)->set_idl(idl);
-	Object::cast_to<AnchorProgram>(parsed_program)->set_pid(Object::cast_to<Pubkey>(custom_pid)->to_string());
 
 	//ClassDB::register_class<GenericAnchorResource>();
 
 	if (idl.has("types")) {
 		const Array types = idl["types"];
+		// Bind enum constants first.
 		for (unsigned int i = 0; i < types.size(); i++) {
-			std::cout << "BINDING RE" << std::endl;
-			GenericAnchorResource::bind_anchor_resource(types[i]);
+			if(AnchorProgram::is_enum(types[i])){
+				GenericAnchorResource::bind_anchor_enum(types[i]);
+			}
+		}
+		for (unsigned int i = 0; i < types.size(); i++) {
+			if(!AnchorProgram::is_enum(types[i])){
+				GenericAnchorResource::bind_anchor_resource(types[i]);
+			}
+		}
+	}
+	if (idl.has("instructions")) {
+		const Array instructions = idl["instructions"];
+		for(unsigned int i = 0; i < instructions.size(); i++){
+
 		}
 	}
 
-	if (loaded_idls == nullptr) {
-		loaded_idls = memnew(Array);
-	}
-	const int64_t index = loaded_idls->size();
-	loaded_idls->append(idl);
+	loaded_idls[idl["name"]] = idl;
 	const String class_name = idl["name"];
 
 	names.push_back(memnew(String(class_name)));

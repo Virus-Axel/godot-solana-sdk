@@ -23,6 +23,7 @@ private:
 	static std::vector<Callable> static_class_names;
 	static std::string string_name;
 	static std::unordered_map<StringName, std::unordered_map<StringName, ResourcePropertyInfo>> property_database;
+	static std::unordered_map<StringName, Array> enum_field_map;
 
     std::vector<ResourcePropertyInfo> properties;
 
@@ -106,12 +107,14 @@ protected:
 
 public:
 	GenericAnchorResource() = default;
+	static void bind_anchor_enum(const Dictionary &enum_data);
 	static void bind_anchor_resource(const Dictionary &resource);
 	static void set_class_name(const String& name){
 		string_name = name.ascii();
 	}
 	static GDExtensionClassCallVirtual get_virtual_func(void *p_userdata, GDExtensionConstStringNamePtr p_name);
-    static void add_property(const Dictionary& property_data);
+    static void add_enum_properties(const Dictionary &property_data);
+	static void add_property(const Dictionary& property_data);
     PackedByteArray serialize();
 	void say_hi(){
 		std::cout << "HI" << std::endl;

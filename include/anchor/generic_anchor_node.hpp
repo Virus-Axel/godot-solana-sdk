@@ -9,7 +9,7 @@
 namespace godot {
 class GenericAnchorNode : public Node {
 private:
-	static Array *loaded_idls;
+	static std::unordered_map<StringName, Dictionary> loaded_idls;
 	static std::vector<String *> names;
 
 	Variant anchor_program = nullptr;//memnew(AnchorProgram);

@@ -133,8 +133,9 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<GenericAnchorNode>();
 	//ClassDB::register_class<GenericAnchorResource>();
 	GenericAnchorResource::set_class_name("GenericAnchorResource");
-	//ClassDB::register_class<GenericAnchorResource>();
+	ClassDB::register_class<GenericAnchorResource>();
 	StringName* abc = memnew(StringName("GenericAnchorResource")); 
+
 	//internal::gdextension_interface_classdb_unregister_extension_class(internal::library, abc->_native_ptr());
 
 	//AddCustomIdlDialog::load_idl("res://testidl.json");

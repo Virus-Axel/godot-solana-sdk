@@ -805,13 +805,48 @@ Dictionary AnchorProgram::option(const Variant &val) {
 	return res;
 }
 
+bool AnchorProgram::is_enum(const Variant &anchor_type){
+	if (anchor_type.get_type() == Variant::DICTIONARY) {
+		const Dictionary anchor_type_dict = anchor_type;
+		if (anchor_type_dict.has("kind")){
+			return(anchor_type_dict["kind"] == "enum");
+		}
+		if (anchor_type_dict.has("type")){
+			return is_enum(anchor_type_dict["type"]);
+		}
+	}
+	return false;
+}
+
+String AnchorProgram::get_object_name(const Variant &anchor_type){
+	if (anchor_type.get_type() == Variant::DICTIONARY) {
+		const Dictionary anchor_type_dict = anchor_type;
+		if (anchor_type_dict.has("option")) {
+			return AnchorProgram::get_object_name(anchor_type_dict["option"]);
+		}
+		if (anchor_type_dict.has("defined")) {
+			return anchor_type_dict["defined"];
+		}
+	}
+
+	return "";
+}
+
 Variant::Type AnchorProgram::get_godot_type(const Variant &anchor_type) {
 	if (anchor_type.get_type() == Variant::DICTIONARY) {
 		const Dictionary anchor_type_dict = anchor_type;
 		if (anchor_type_dict.has("option")) {
 			return AnchorProgram::get_godot_type(anchor_type_dict["option"]);
 		}
-		if (anchor_type_dict.has("kind") || anchor_type_dict.has("defined")) {
+		if (anchor_type_dict.has("kind")){
+			if(anchor_type_dict["kind"] == "enum"){
+				return Variant::INT;
+			}
+			else{
+				return Variant::OBJECT;
+			}
+		}
+		if (anchor_type_dict.has("defined")) {
 			return Variant::OBJECT;
 		}
 		if (anchor_type_dict.has("array") || anchor_type_dict.has("vec")) {

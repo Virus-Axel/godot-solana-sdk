@@ -95,6 +95,8 @@ public:
     static Dictionary u64(uint64_t val);
     static Dictionary option(const Variant &val);
 
+    static bool is_enum(const Variant &anchor_type);
+    static String get_object_name(const Variant &anchor_type);
     static Variant::Type get_godot_type(const Variant &anchor_type);
     static String get_godot_class_hint(const Variant &anchor_type);
     static PropertyHint get_godot_hint(const Variant &anchor_type);
