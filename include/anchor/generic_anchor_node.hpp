@@ -7,12 +7,19 @@
 #include "anchor_program.hpp"
 
 namespace godot {
+
+class MethodBindHack : public MethodBind{
+	public:
+	void set_arg_count(unsigned int count){
+		set_argument_count(count);
+	}
+};
+
 class GenericAnchorNode : public Node {
 private:
 	static std::unordered_map<StringName, Dictionary> loaded_idls;
 	static std::vector<String *> names;
-
-	Variant anchor_program = nullptr;//memnew(AnchorProgram);
+	static std::string string_name;
 
 	static void bind_resources(const Array &resources, const String &class_name);
 
@@ -49,6 +56,9 @@ public:
 
 	static void initialize_class();
 	static const StringName &get_class_static();
+	static void set_class_name(const String& name){
+		string_name = name.ascii();
+	}
 	static const StringName &get_parent_class_static();
 
 	static void notification_bind(GDExtensionClassInstancePtr p_instance, int32_t p_what, GDExtensionBool p_reversed);
@@ -85,9 +95,18 @@ protected:
 	static void _bind_methods();
 
 public:
+	Variant anchor_program = nullptr;//memnew(AnchorProgram);
+
 	void _ready() override;
 	GenericAnchorNode() = default;
+	Array split_accounts(const Array& args, const StringName& instruction_name);
+	Array split_args(const Array& args, const StringName& instruction_name);
 	static void bind_anchor_node(const Dictionary &idl);
+	static void bind_instruction_caller(const StringName &p_class_name, const Dictionary& anchor_instruction);
+
+    Variant generic_instruction_bind() {
+		return Variant();
+    }
 	~GenericAnchorNode() = default;
 };
 } //namespace godot

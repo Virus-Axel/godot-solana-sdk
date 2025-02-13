@@ -8,10 +8,11 @@
 
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/stream_peer_gzip.hpp>
+#include "godot_cpp/variant/utility_functions.hpp"
 
 namespace godot {
 
-bool AnchorProgram::detect_writable(const Dictionary &account) {
+bool AnchorProgram::detect_writable(const Dictionary &account) const{
 	if (account.has("isMut")) {
 		return account["isMut"];
 	} else if (account.has("writable")) {
@@ -21,7 +22,7 @@ bool AnchorProgram::detect_writable(const Dictionary &account) {
 	}
 }
 
-bool AnchorProgram::detect_is_signer(const Dictionary &account) {
+bool AnchorProgram::detect_is_signer(const Dictionary &account) const {
 	if (account.has("isSigner")) {
 		return account["isSigner"];
 	} else if (account.has("signer")) {
@@ -31,7 +32,7 @@ bool AnchorProgram::detect_is_signer(const Dictionary &account) {
 	}
 }
 
-bool AnchorProgram::detect_optional(const Dictionary &account) {
+bool AnchorProgram::detect_optional(const Dictionary &account) const {
 	if (account.has("isOptional")) {
 		return account["isOptional"];
 	} else if (account.has("optional")) {
@@ -218,6 +219,48 @@ Variant AnchorProgram::deserialize_variant(const PackedByteArray &bytes, const V
 	}
 }
 
+Variant AnchorProgram::decorate_instruction_argument(const Variant &anchor_type, const Variant& argument){
+	if(is_option(anchor_type)){
+		return option(argument);
+	}
+	const Variant::Type godot_type = get_godot_type(anchor_type);
+	if(godot_type == Variant::INT){
+		if(anchor_type == "u8"){
+			return u8(argument);
+		}
+		if(anchor_type == "u16"){
+			return u16(argument);
+		}
+		if(anchor_type == "u32"){
+			return u32(argument);
+		}
+		if(anchor_type == "u64"){
+			return u64(argument);
+		}
+		if(anchor_type == "s8"){
+			return s8(argument);
+		}
+		if(anchor_type == "s16"){
+			return s16(argument);
+		}
+		if(anchor_type == "s32"){
+			return s32(argument);
+		}
+		if(anchor_type == "s64"){
+			return s64(argument);
+		}
+	}
+	else if(godot_type == Variant::FLOAT){
+		if(anchor_type == "f32"){
+			return f32(argument);
+		}
+		if(anchor_type == "f64"){
+			return f64(argument);
+		}
+	}
+	return argument;
+}
+
 AnchorProgram::AnchorProgram() {
 	idl_client = memnew(SolanaClient);
 	fetch_client = memnew(SolanaClient);
@@ -314,7 +357,7 @@ PackedByteArray AnchorProgram::serialize_variant(const Variant &var) {
 void AnchorProgram::register_instruction_builders() {
 }
 
-PackedByteArray AnchorProgram::discriminator_by_name(const String &name, const String &namespace_string) {
+PackedByteArray AnchorProgram::discriminator_by_name(const String &name, const String &namespace_string) const {
 	SHA256 hasher;
 	hasher.update(namespace_string.to_ascii_buffer().ptr(), namespace_string.length());
 	hasher.update(name.to_ascii_buffer().ptr(), name.length());
@@ -331,7 +374,7 @@ PackedByteArray AnchorProgram::discriminator_by_name(const String &name, const S
 	return discriminator;
 }
 
-Dictionary AnchorProgram::find_idl_instruction(const String &name) {
+Dictionary AnchorProgram::find_idl_instruction(const String &name) const{
 	if (!((Dictionary)idl).has("instructions")) {
 		internal::gdextension_interface_print_warning("IDL does not contain \"instructions\" key", "find_idl_instruction", __FILE__, __LINE__, false);
 		return Dictionary();
@@ -658,7 +701,7 @@ void AnchorProgram::set_url_override(const String &url_override) {
 	idl_client->set_url_override(url_override);
 }
 
-Dictionary AnchorProgram::get_idl() {
+Dictionary AnchorProgram::get_idl() const{
 	return idl;
 }
 
@@ -715,6 +758,10 @@ void AnchorProgram::set_pid(const String &pid) {
 
 String AnchorProgram::get_pid() {
 	return pid;
+}
+
+String AnchorProgram::get_idl_name() const{
+	return idl["name"];
 }
 
 void AnchorProgram::set_json_file(const Variant &json_file) {
@@ -933,16 +980,36 @@ PropertyHint AnchorProgram::get_godot_hint(const Variant &anchor_type){
     return PROPERTY_HINT_NONE;
 }
 
-Variant AnchorProgram::build_instruction(String name, Array accounts, Variant arguments) {
+Variant AnchorProgram::build_argument_dictionary(const Array& arguments, const StringName& instruction_name) const{
+	const Dictionary instruction = find_idl_instruction(instruction_name);
+	const Array anchor_arguments = instruction["args"];
+
+	Dictionary result;
+	std::cout << arguments.size() << " - " << anchor_arguments.size() << std::endl;
+	UtilityFunctions::print(arguments);
+	UtilityFunctions::print(anchor_arguments);
+
+	ERR_FAIL_COND_V(arguments.size() != anchor_arguments.size(), nullptr);
+	for(unsigned int i = 0; i < anchor_arguments.size(); i++){
+		const Dictionary anchor_argument = anchor_arguments[i];
+		result[anchor_argument["name"]] = decorate_instruction_argument(anchor_argument["type"], arguments[i]);
+	}
+
+	return result;
+}
+
+Variant AnchorProgram::build_instruction(String name, Array accounts, Variant arguments) const {
 	ERR_FAIL_COND_V_EDMSG(idl.is_empty(), nullptr, "IDL is empty, try loading from PID or JSON file.");
 	Instruction *result = memnew(Instruction);
 
 	PackedByteArray data = discriminator_by_name(name.to_snake_case(), global_prefix);
 
+	String use_pid = pid;
+
 	if (idl.has("address") && pid.length() != PUBKEY_LENGTH) {
-		pid = idl["address"];
+		use_pid = idl["address"];
 	}
-	result->set_program_id(Pubkey::new_from_string(pid));
+	result->set_program_id(Pubkey::new_from_string(use_pid));
 	data.append_array(serialize_variant(arguments));
 	result->set_data(data);
 
@@ -960,7 +1027,7 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
 		const bool is_signer = detect_is_signer(ref_accounts[i]);
 		if (is_optional && accounts[i].get_type() == Variant::NIL) {
 			// optional accounts are passed in as pid, no signer, immutable
-			const Variant pid_key = Pubkey::new_from_string(pid);
+			const Variant pid_key = Pubkey::new_from_string(use_pid);
 			result->append_meta(*memnew(AccountMeta(pid_key, false, false)));
 			continue;
 		}
