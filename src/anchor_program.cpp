@@ -985,7 +985,6 @@ Variant AnchorProgram::build_argument_dictionary(const Array& arguments, const S
 	const Array anchor_arguments = instruction["args"];
 
 	Dictionary result;
-	std::cout << arguments.size() << " - " << anchor_arguments.size() << std::endl;
 	UtilityFunctions::print(arguments);
 	UtilityFunctions::print(anchor_arguments);
 

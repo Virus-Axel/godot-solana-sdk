@@ -282,11 +282,9 @@ Array GenericAnchorNode::split_args(const Array& args, const StringName& instruc
 	ERR_FAIL_COND_V(!idl.has("instructions"), Array());
 	const Array instructions = idl["instructions"];
 
-	std::cout << String(instruction_name).ascii() << std::endl;
 	const Dictionary instruction = program->find_idl_instruction(instruction_name);
 	ERR_FAIL_COND_V(!instruction.has("accounts"), Array());
 	const Array accounts = instruction["accounts"];
-	std::cout << "SSSIISISISIS " << accounts.size() << std::endl;
 	return args.slice(accounts.size());
 }
 
@@ -419,21 +417,18 @@ void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, 
 	}
 
 	bound_instruction_name = String(instruction_name).ascii();
-	std::cout << "IIII " << bound_instruction_name << std::endl;
 	auto *lambda = new auto([](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error) {
 		if (p_instance == nullptr) {
 			return;
 		}
 		MethodBind * va = (MethodBind*)p_method_userdata;
 		const String stored_instruction_name = va->get_name();
-		std::cout << "KILLME " << String(va->get_name()).ascii() <<std::endl;
 		const AnchorProgram* program = Object::cast_to<AnchorProgram>(static_cast<GenericAnchorNode *>(p_instance)->anchor_program);
 		Array accounts_and_args;
 		for(unsigned int i = 0; i < p_argument_count; i++){
 			const Variant *var = reinterpret_cast<const Variant*>(p_args[i]);
 			accounts_and_args.append(*var);
 		}
-		//std::cout << p_argument_count << "atype "<< arg->get_type() << String(np.get_name(0)).ascii() <<  std::endl;
 		const Array accounts = static_cast<GenericAnchorNode *>(p_instance)->split_accounts(accounts_and_args, stored_instruction_name);
 		const Array args = static_cast<GenericAnchorNode *>(p_instance)->split_args(accounts_and_args, stored_instruction_name);
 		const Dictionary decorated_args = program->build_argument_dictionary(args, stored_instruction_name);
@@ -463,7 +458,6 @@ void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, 
 		static_cast<uint32_t>(method_bind->get_default_argument_count()),
 		def_args.data(),
 	};
-	std::cout << " bind class method "<< String(name).ascii() << std::endl;
 	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, p_class_name._native_ptr(), &method_info);
 }
 

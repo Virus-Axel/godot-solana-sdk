@@ -41,7 +41,7 @@ void MenuBarHelper::_bind_methods() {
 void MenuBarHelper::menu_pressed_callback(int64_t menu_id) {
 	switch (menu_id) {
 		case MenuID::IDL_TO_NODE:
-			add_custom_idl_dialog->popup_centered();
+			add_custom_idl_dialog->popup_centered(Vector2i(400, 300));
 			break;
 		default:
 			ERR_FAIL_EDMSG("Unknown menu item");

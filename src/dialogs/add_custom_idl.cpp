@@ -45,10 +45,8 @@ void AddCustomIdlDialog::clear() {
 }
 
 void AddCustomIdlDialog::load_idl(const String &filename) {
-	UtilityFunctions::print(filename);
 	Ref<FileAccess> file = FileAccess::open(filename, FileAccess::ModeFlags::READ);
 	const Dictionary content = JSON::parse_string(file->get_as_text());
-	UtilityFunctions::print(content);
 	GenericAnchorNode::bind_anchor_node(content);
 }
 

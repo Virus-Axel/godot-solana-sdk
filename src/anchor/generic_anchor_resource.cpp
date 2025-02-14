@@ -733,7 +733,6 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) {
 				};
 				property_database[get_class_static()][enum_value_name] = enum_value_info;
 		
-				std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< " << enum_value_name.ascii() << std::endl;
 				bind_resource_setter(get_class_static(), D_METHOD("set_" + enum_value_name, "value"), enum_value_name);
 				bind_resource_getter(get_class_static(), D_METHOD("get_" + enum_value_name), enum_value_name);
 		
