@@ -24,7 +24,6 @@
 #include "compute_budget.hpp"
 #include "doc_data_godot-solana-sdk.gen.h"
 #include "hash.hpp"
-#include "honeycomb.hpp"
 #include "instruction.hpp"
 #include "keypair.hpp"
 #include "meta_data/collection.hpp"
@@ -45,6 +44,10 @@
 #include "system_program.hpp"
 #include "transaction.hpp"
 #include "wallet_adapter.hpp"
+#include "honeycomb/honeycomb.hpp"
+#include "honeycomb/honeycomb_generated.hpp"
+#include "honeycomb/types/index.hpp"
+#include "honeycomb/enums.hpp"
 
 namespace godot {
 namespace {
@@ -111,6 +114,8 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<RpcSingleHttpRequestClient>();
 	ClassDB::register_class<RpcMultiHttpRequestClient>();
 	ClassDB::register_class<HoneyComb>();
+	REGISTER_HONEYCOMB_TYPES
+    REGISTER_HONEYCOMB_ENUM
 
 	add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
 	add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, HTTPS_PORT);
