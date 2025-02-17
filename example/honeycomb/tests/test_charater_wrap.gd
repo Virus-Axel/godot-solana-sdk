@@ -192,7 +192,7 @@ func unwrap_character():
 	var character_obj = character_result["character"][0] if character_result.has("character") else null
 
 	assert(character_obj != null, "Character retrieval failed!")
-	#print("Character Successfully Unwrapped: ", character)
+	print("Character Successfully Unwrapped: ", character)
 
 	utils.PASS(3)  # Mark test as passed
 	#print("=============================Finished==========================")
