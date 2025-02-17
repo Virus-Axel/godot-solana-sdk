@@ -1,0 +1,6 @@
+[gd_resource type="AdvancedTreeConfig" format=3 uid="uid://btt52w2d0pp0k"]
+
+[resource]
+maxDepth = 3
+maxBufferSize = 8
+canopyDepth = 3

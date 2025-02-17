@@ -1,0 +1,8 @@
+[gd_resource type="ConfigLineSetting" format=3 uid="uid://bsh6bjftlfmtf"]
+
+[resource]
+prefix_name = "test_prefix#"
+name_length = 15
+prefix_uri = "abc"
+uri_length = 22
+is_sequential = true

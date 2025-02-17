@@ -1,0 +1,6 @@
+[gd_resource type="CreateMetaDataArgs" format=3 uid="uid://22wyr4cijrw1"]
+
+[resource]
+name = "My Collection"
+symbol = "COLL"
+uri = "https://example.com/my-collection.json"
