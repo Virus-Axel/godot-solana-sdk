@@ -11,8 +11,7 @@ class ServiceDelegationInput : public Resource{
 GDCLASS(ServiceDelegationInput, Resource)
 private:
 Array HiveControl;
-Array AssetAssembler;
-Array AssetManager;
+Array CharacterManager;
 Array ResourceManager;
 Array NectarStaking;
 Array NectarMissions;
@@ -23,10 +22,8 @@ public:
 Dictionary to_dict();
 void set_HiveControl(const Array& val);
 Array get_HiveControl() const;
-void set_AssetAssembler(const Array& val);
-Array get_AssetAssembler() const;
-void set_AssetManager(const Array& val);
-Array get_AssetManager() const;
+void set_CharacterManager(const Array& val);
+Array get_CharacterManager() const;
 void set_ResourceManager(const Array& val);
 Array get_ResourceManager() const;
 void set_NectarStaking(const Array& val);

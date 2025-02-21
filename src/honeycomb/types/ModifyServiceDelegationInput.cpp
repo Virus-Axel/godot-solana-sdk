@@ -1,8 +1,7 @@
 #include "honeycomb/types/ModifyServiceDelegationInput.hpp"
 
 #include "honeycomb/types/ServiceDelegationHiveControl.hpp"
-#include "honeycomb/types/ServiceDelegationAssetAssembler.hpp"
-#include "honeycomb/types/ServiceDelegationAssetManager.hpp"
+#include "honeycomb/types/ServiceDelegationCharacterManager.hpp"
 #include "honeycomb/types/ServiceDelegationResourceManager.hpp"
 #include "honeycomb/types/ServiceDelegationNectarStaking.hpp"
 #include "honeycomb/types/ServiceDelegationNectarMissions.hpp"
@@ -19,20 +18,12 @@ Variant ModifyServiceDelegationInput::get_HiveControl() const {
 return this->HiveControl;
 }
 
-void ModifyServiceDelegationInput::set_AssetAssembler(const Variant& val) {
-this->AssetAssembler = val;
+void ModifyServiceDelegationInput::set_CharacterManager(const Variant& val) {
+this->CharacterManager = val;
 }
 
-Variant ModifyServiceDelegationInput::get_AssetAssembler() const {
-return this->AssetAssembler;
-}
-
-void ModifyServiceDelegationInput::set_AssetManager(const Variant& val) {
-this->AssetManager = val;
-}
-
-Variant ModifyServiceDelegationInput::get_AssetManager() const {
-return this->AssetManager;
+Variant ModifyServiceDelegationInput::get_CharacterManager() const {
+return this->CharacterManager;
 }
 
 void ModifyServiceDelegationInput::set_ResourceManager(const Variant& val) {
@@ -71,12 +62,9 @@ void ModifyServiceDelegationInput::_bind_methods() {
 ClassDB::bind_method(D_METHOD("get_HiveControl"), &ModifyServiceDelegationInput::get_HiveControl);
 ClassDB::bind_method(D_METHOD("set_HiveControl", "value"), &ModifyServiceDelegationInput::set_HiveControl);
 ClassDB::add_property("ModifyServiceDelegationInput", PropertyInfo(Variant::Type::OBJECT, "HiveControl"), "set_HiveControl", "get_HiveControl");
-ClassDB::bind_method(D_METHOD("get_AssetAssembler"), &ModifyServiceDelegationInput::get_AssetAssembler);
-ClassDB::bind_method(D_METHOD("set_AssetAssembler", "value"), &ModifyServiceDelegationInput::set_AssetAssembler);
-ClassDB::add_property("ModifyServiceDelegationInput", PropertyInfo(Variant::Type::OBJECT, "AssetAssembler"), "set_AssetAssembler", "get_AssetAssembler");
-ClassDB::bind_method(D_METHOD("get_AssetManager"), &ModifyServiceDelegationInput::get_AssetManager);
-ClassDB::bind_method(D_METHOD("set_AssetManager", "value"), &ModifyServiceDelegationInput::set_AssetManager);
-ClassDB::add_property("ModifyServiceDelegationInput", PropertyInfo(Variant::Type::OBJECT, "AssetManager"), "set_AssetManager", "get_AssetManager");
+ClassDB::bind_method(D_METHOD("get_CharacterManager"), &ModifyServiceDelegationInput::get_CharacterManager);
+ClassDB::bind_method(D_METHOD("set_CharacterManager", "value"), &ModifyServiceDelegationInput::set_CharacterManager);
+ClassDB::add_property("ModifyServiceDelegationInput", PropertyInfo(Variant::Type::OBJECT, "CharacterManager"), "set_CharacterManager", "get_CharacterManager");
 ClassDB::bind_method(D_METHOD("get_ResourceManager"), &ModifyServiceDelegationInput::get_ResourceManager);
 ClassDB::bind_method(D_METHOD("set_ResourceManager", "value"), &ModifyServiceDelegationInput::set_ResourceManager);
 ClassDB::add_property("ModifyServiceDelegationInput", PropertyInfo(Variant::Type::OBJECT, "ResourceManager"), "set_ResourceManager", "get_ResourceManager");
@@ -101,17 +89,10 @@ Dictionary res;
               }
           }
 
-          if (AssetAssembler.get_type() != Variant::NIL) {
-              auto* ptr = Object::cast_to<godot::honeycomb_resource::ServiceDelegationAssetAssembler>(AssetAssembler);
+          if (CharacterManager.get_type() != Variant::NIL) {
+              auto* ptr = Object::cast_to<godot::honeycomb_resource::ServiceDelegationCharacterManager>(CharacterManager);
               if (ptr) {
-                  res["AssetAssembler"] = ptr->to_dict();
-              }
-          }
-
-          if (AssetManager.get_type() != Variant::NIL) {
-              auto* ptr = Object::cast_to<godot::honeycomb_resource::ServiceDelegationAssetManager>(AssetManager);
-              if (ptr) {
-                  res["AssetManager"] = ptr->to_dict();
+                  res["CharacterManager"] = ptr->to_dict();
               }
           }
 

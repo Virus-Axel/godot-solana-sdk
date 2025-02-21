@@ -105,8 +105,8 @@ func PASS(unique_identifier: int):
 	print("[OK]: ", unique_identifier)
 
 # Utility function to process a transaction
-func process_transaction(encoded_transaction: String, signers: Array[Keypair]):
-	var tx = await send_transaction_func(encoded_transaction, signers)
+func process_transaction(encoded_transaction: String, signers: Array[Keypair],skip_preflight: bool = false):
+	var tx = await send_transaction_func(encoded_transaction, signers, skip_preflight)
 	if not tx:
 		print("Failed to create transaction")
 		return
@@ -123,7 +123,7 @@ func process_transaction(encoded_transaction: String, signers: Array[Keypair]):
 	return response
 
 # Utility function to send a transaction
-func send_transaction_func(encoded_transaction: String, signers: Array[Keypair]):
+func send_transaction_func(encoded_transaction: String, signers: Array[Keypair], skip_preflight: bool = false):
 	var decoded_tx = SolanaUtils.bs58_decode(encoded_transaction)
 	var transaction: Transaction= Transaction.new_from_bytes(decoded_tx)
 	add_child(transaction)
@@ -131,7 +131,7 @@ func send_transaction_func(encoded_transaction: String, signers: Array[Keypair])
 	transaction.set_signers(signers)
 	print("Signing transaction...")
 	transaction.partially_sign(signers)
-	transaction.skip_preflight = true
+	transaction.skip_preflight = skip_preflight
 	transaction.send()
 	return transaction
 
@@ -246,11 +246,11 @@ func create_keypair_and_airdrop(filename: String, amount: int):
 	# Generate and save keypair
 	var keypair: Keypair = Keypair.new_from_file(filename)
 	#var keypair: Keypair = Keypair.new_random()
-#
+##
 	#if not save_keypair(keypair, filename):
 		#return null
-		#
-	 ##Request airdrop
+		
+	 #Request airdrop
 	if not await request_airdrop_func(keypair.get_public_string(), amount):
 		return null
 		

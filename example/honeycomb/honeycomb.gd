@@ -9,7 +9,7 @@ func _ready():
 	await run_project_tests()
 	await run_user_tests()
 	await run_character_wrap_tests()
-	# await run_mission_tests()
+	await run_mission_tests()
 	 
 
 func before_all():

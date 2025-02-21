@@ -224,8 +224,7 @@ ClassDB::register_class<honeycomb_resource::CustomDataInput>(); \
 ClassDB::register_class<honeycomb_resource::PlatformDataInput>(); \
 ClassDB::register_class<honeycomb_resource::ServiceDelegationInput>(); \
 ClassDB::register_class<honeycomb_resource::ServiceDelegationHiveControl>(); \
-ClassDB::register_class<honeycomb_resource::ServiceDelegationAssetAssembler>(); \
-ClassDB::register_class<honeycomb_resource::ServiceDelegationAssetManager>(); \
+ClassDB::register_class<honeycomb_resource::ServiceDelegationCharacterManager>(); \
 ClassDB::register_class<honeycomb_resource::ServiceDelegationResourceManager>(); \
 ClassDB::register_class<honeycomb_resource::ServiceDelegationNectarStaking>(); \
 ClassDB::register_class<honeycomb_resource::ServiceDelegationNectarMissions>(); \

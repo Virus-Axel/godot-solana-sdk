@@ -149,14 +149,14 @@ class HiveControlPermissionInput : public Object {
 public:
     static String get_managecriterias() { return "ManageCriterias"; }
     static String get_manageservices() { return "ManageServices"; }
-    static String get_manageindexing() { return "ManageIndexing"; }
-    static String get_manageprofiles() { return "ManageProfiles"; }
+    static String get_manageprojectdriver() { return "ManageProjectDriver"; }
+    static String get_updateplatformdata() { return "UpdatePlatformData"; }
 
   static void _bind_methods() {
         ClassDB::bind_static_method("HiveControlPermissionInput", D_METHOD("get_managecriterias"), &HiveControlPermissionInput::get_managecriterias);
         ClassDB::bind_static_method("HiveControlPermissionInput", D_METHOD("get_manageservices"), &HiveControlPermissionInput::get_manageservices);
-        ClassDB::bind_static_method("HiveControlPermissionInput", D_METHOD("get_manageindexing"), &HiveControlPermissionInput::get_manageindexing);
-        ClassDB::bind_static_method("HiveControlPermissionInput", D_METHOD("get_manageprofiles"), &HiveControlPermissionInput::get_manageprofiles);
+        ClassDB::bind_static_method("HiveControlPermissionInput", D_METHOD("get_manageprojectdriver"), &HiveControlPermissionInput::get_manageprojectdriver);
+        ClassDB::bind_static_method("HiveControlPermissionInput", D_METHOD("get_updateplatformdata"), &HiveControlPermissionInput::get_updateplatformdata);
     }
 };
 
@@ -164,37 +164,18 @@ public:
 
 namespace godot {
 
-class AssetAssemblerPermissionInput : public Object {
-    GDCLASS(AssetAssemblerPermissionInput, Object);
+class CharacterManagerPermissionInput : public Object {
+    GDCLASS(CharacterManagerPermissionInput, Object);
 
 public:
-    static String get_manageassembler() { return "ManageAssembler"; }
-    static String get_updateblock() { return "UpdateBlock"; }
-    static String get_updateblockdefinition() { return "UpdateBlockDefinition"; }
-    static String get_updatenft() { return "UpdateNFT"; }
-    static String get_initialartgeneration() { return "InitialArtGeneration"; }
+    static String get_manageassemblerconfig() { return "ManageAssemblerConfig"; }
+    static String get_managecharactermodels() { return "ManageCharacterModels"; }
+    static String get_assigncharactertraits() { return "AssignCharacterTraits"; }
 
   static void _bind_methods() {
-        ClassDB::bind_static_method("AssetAssemblerPermissionInput", D_METHOD("get_manageassembler"), &AssetAssemblerPermissionInput::get_manageassembler);
-        ClassDB::bind_static_method("AssetAssemblerPermissionInput", D_METHOD("get_updateblock"), &AssetAssemblerPermissionInput::get_updateblock);
-        ClassDB::bind_static_method("AssetAssemblerPermissionInput", D_METHOD("get_updateblockdefinition"), &AssetAssemblerPermissionInput::get_updateblockdefinition);
-        ClassDB::bind_static_method("AssetAssemblerPermissionInput", D_METHOD("get_updatenft"), &AssetAssemblerPermissionInput::get_updatenft);
-        ClassDB::bind_static_method("AssetAssemblerPermissionInput", D_METHOD("get_initialartgeneration"), &AssetAssemblerPermissionInput::get_initialartgeneration);
-    }
-};
-
-} // namespace godot
-
-namespace godot {
-
-class AssetManagerPermissionInput : public Object {
-    GDCLASS(AssetManagerPermissionInput, Object);
-
-public:
-    static String get_manageassets() { return "ManageAssets"; }
-
-  static void _bind_methods() {
-        ClassDB::bind_static_method("AssetManagerPermissionInput", D_METHOD("get_manageassets"), &AssetManagerPermissionInput::get_manageassets);
+        ClassDB::bind_static_method("CharacterManagerPermissionInput", D_METHOD("get_manageassemblerconfig"), &CharacterManagerPermissionInput::get_manageassemblerconfig);
+        ClassDB::bind_static_method("CharacterManagerPermissionInput", D_METHOD("get_managecharactermodels"), &CharacterManagerPermissionInput::get_managecharactermodels);
+        ClassDB::bind_static_method("CharacterManagerPermissionInput", D_METHOD("get_assigncharactertraits"), &CharacterManagerPermissionInput::get_assigncharactertraits);
     }
 };
 
@@ -351,8 +332,7 @@ public:
     ClassDB::register_class<godot::BadgesCondition>(); \
     ClassDB::register_class<godot::RemoveSocialsInput>(); \
     ClassDB::register_class<godot::HiveControlPermissionInput>(); \
-    ClassDB::register_class<godot::AssetAssemblerPermissionInput>(); \
-    ClassDB::register_class<godot::AssetManagerPermissionInput>(); \
+    ClassDB::register_class<godot::CharacterManagerPermissionInput>(); \
     ClassDB::register_class<godot::ResourceManagerPermissionInput>(); \
     ClassDB::register_class<godot::NectarStakingPermissionInput>(); \
     ClassDB::register_class<godot::NectarMissionsPermissionInput>(); \

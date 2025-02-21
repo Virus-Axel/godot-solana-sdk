@@ -7,7 +7,7 @@ var utils = load("res://common/utils.gd").new()
 # Function to create assembler config
 func create_assembler_config(
 	client: HoneyComb,
-	 project_obj: Dictionary,
+	 project_address: String,
 	 order: Array,
 	 traits_arr: Array,
 	 authority: String,
@@ -23,7 +23,7 @@ func create_assembler_config(
 	# Step 1: Create Assembler Config Transaction
 	client.create_create_assembler_config_transaction(
 		utils.make_id(5),
-		project_obj.address,
+		project_address,
 		authority,
 		tree_config,
 		order,
@@ -85,7 +85,7 @@ func create_assembler_config(
 
 
 # Function to create a Character Model
-func create_character_model_raw(client: HoneyComb, project_obj: Dictionary,assembler_config_address: String,nft_creator_address: String, authority: String, payer_keypair: Keypair):
+func create_character_model_raw(client: HoneyComb, project_address: String,assembler_config_address: String,nft_creator_address: String, authority: String, payer_keypair: Keypair):
 	print("Creating Character Model Raw...")
 	
 	if !is_inside_tree() or !utils.is_inside_tree():
@@ -117,7 +117,7 @@ func create_character_model_raw(client: HoneyComb, project_obj: Dictionary,assem
 	# Step 1: Create Character Model Transaction
 	client.create_create_character_model_transaction(
 		character_config,
-		project_obj["address"],
+		project_address,
 		authority,
 		[],
 		mint_as_input,
@@ -148,7 +148,7 @@ func create_character_model_raw(client: HoneyComb, project_obj: Dictionary,assem
 	# Step 1: Create Characters Tree Transaction
 	client.create_create_characters_tree_transaction(
 		tree_setup_config,
-		project_obj["address"],
+		project_address,
 		character_model_address,
 		authority,
 		payer_keypair.get_public_string(),
