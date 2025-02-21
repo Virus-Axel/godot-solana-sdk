@@ -195,6 +195,8 @@ env.Append(CPPPATH=["src/transaction"])
 env.Append(CPPPATH=["include/wallet_adapter/"])
 env.Append(CPPPATH=["src/wallet_adapter/"])
 env.Append(CPPPATH=["src/candy_machine/"])
+env.Append(CPPPATH=["src/honeycomb"])
+env.Append(CPPPATH=["src/honeycomb/types"])
 
 sources = Glob("src/*.cpp")
 
@@ -204,6 +206,8 @@ ed25519_sources = Glob("ed25519/src/*.c")
 wallet_sources = Glob("wallet_adapter/*.cpp")
 instruction_sources = Glob("instructions/src/*.cpp")
 other_sources = Glob("src/*/*.cpp")
+honey_sources = Glob("src/honeycomb/types/*.cpp")
+
 
 # Handle the container build
 if env.GetOption("container_build"):
@@ -302,7 +306,8 @@ else:
             + ed25519_sources
             + wallet_sources
             + instruction_sources
-            + other_sources,
+            + other_sources
+            + honey_sources,
         )
     else:
         library = env.SharedLibrary(
@@ -312,7 +317,8 @@ else:
             + ed25519_sources
             + wallet_sources
             + instruction_sources
-            + other_sources,
+            + other_sources
+            + honey_sources, 
         )
 
     Default(library)
@@ -332,7 +338,7 @@ else:
     lint_filenames = [str(f) for f in lint_sources]
     build_defines = ["-DWEB_ENABLED"]
     extra_arg = f'--extra-arg {" ".join(build_defines)}' if build_defines else ""
-    tidy_command = f'{lint_env['CLANG_TIDY']} -p compile_commands.json {extra_arg} {" ".join(lint_filenames)}'
+    tidy_command = f'{lint_env["CLANG_TIDY"]} -p compile_commands.json {extra_arg} {" ".join(lint_filenames)}'
     clang_tidy_action = lint_env.Action([tidy_command])
     clang_tidy_command = lint_env.Command(
         "lint", "compile_commands.json", clang_tidy_action

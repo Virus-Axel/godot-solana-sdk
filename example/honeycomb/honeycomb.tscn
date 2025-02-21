@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3 uid="uid://cecmsfwj7x417"]
+
+[ext_resource type="Script" path="res://honeycomb.gd" id="1_forsj"]
+
+[node name="HoneyComb" type="HoneyComb"]
+script = ExtResource("1_forsj")
+
+[node name="SolanaClient" type="SolanaClient" parent="."]
+
+[node name="SolanaUtils" type="SolanaUtils" parent="."]
+
+[node name="Transaction" type="Transaction" parent="."]
+
+[node name="SystemProgram" type="SystemProgram" parent="."]
+
+[node name="SolanaUtils" type="SolanaUtils" parent="SystemProgram"]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0

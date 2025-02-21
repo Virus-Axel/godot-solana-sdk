@@ -1,0 +1,5 @@
+[gd_resource type="ServiceDelegation" format=3 uid="uid://d0ai5vdjiy4we"]
+
+[resource]
+index = 0
+permission = "ManageServices"

@@ -1,0 +1,5 @@
+[gd_resource type="PlatformDataInput" format=3 uid="uid://bjmcjippo7u1j"]
+
+[resource]
+addXp = 100
+addAchievements = PackedInt32Array(1)
