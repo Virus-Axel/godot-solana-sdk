@@ -3,12 +3,22 @@
 
 #include "godot_cpp/classes/input_event.hpp"
 #include "godot_cpp/classes/node.hpp"
-#include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/variant/utility_functions.hpp"
+#include "godot_cpp/variant/variant.hpp"
 
 #include "anchor_program.hpp"
 
 namespace godot {
+
+typedef void (*BindMethodFunc)();
+using NotificationMethod = void (Wrapped::*)(int);
+typedef bool (Wrapped::*SetMethod)(const StringName &p_name, const Variant &p_property);
+typedef bool (Wrapped::*GetMethod)(const StringName &p_name, Variant &r_ret) const;
+typedef void (Wrapped::*GetPropertyListMethod)(List<PropertyInfo> *p_list) const;
+typedef bool (Wrapped::*PropertyCanRevertMethod)(const StringName &p_name) const;
+typedef bool (Wrapped::*PropertyGetRevertMethod)(const StringName &p_name, Variant &) const;
+typedef void (Wrapped::*ValidatePropertyMethod)(PropertyInfo &p_property) const;
+typedef String (Wrapped::*ToStringMethod)() const;
 
 #define GET_VIRTUAL_METHOD(m_class, m_method)                                                                      \
 	[](GDExtensionObjectPtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr p_ret) -> void { \
@@ -37,7 +47,7 @@ private:
 	static GDExtensionObjectPtr _create_instance_func(void *data);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
 
-	static StringName get_fetcher_name(const StringName& account_name);
+	static StringName get_fetcher_name(const StringName &account_name);
 
 	void operator=(const GenericAnchorNode & /*p_rval*/) {}
 	friend class ClassDB;
@@ -60,17 +70,17 @@ protected:
 	virtual bool _is_extension_class() const override;
 	static const StringName *_get_extension_class_name();
 
-	static void (*_get_bind_methods())();
 	static GDExtensionClassCallVirtual get_virtual_func(void *p_userdata, GDExtensionConstStringNamePtr p_name);
 
-	static void (Wrapped::*_get_notification())(int);
-	static bool (Wrapped::*_get_set())(const StringName &p_name, const Variant &p_property);
-	static bool (Wrapped::*_get_get())(const StringName &p_name, Variant &r_ret) const;
-	static void (Wrapped::*_get_get_property_list())(List<PropertyInfo> *p_list) const;
-	static bool (Wrapped::*_get_property_can_revert())(const StringName &p_name) const;
-	static bool (Wrapped::*_get_property_get_revert())(const StringName &p_name, Variant &) const;
-	static void (Wrapped::*_get_validate_property())(PropertyInfo &p_property) const;
-	static String (Wrapped::*_get_to_string())() const;
+	static BindMethodFunc _get_bind_methods();
+	static NotificationMethod _get_notification();
+	static SetMethod _get_set();
+	static GetMethod _get_get();
+	static GetPropertyListMethod _get_get_property_list();
+	static PropertyCanRevertMethod _get_property_can_revert();
+	static PropertyGetRevertMethod _get_property_get_revert();
+	static ValidatePropertyMethod _get_validate_property();
+	static ToStringMethod _get_to_string();
 
 	template <typename T, typename B>
 	static void register_virtuals() {
@@ -134,10 +144,10 @@ public:
 	Variant generic_instruction_bind() {
 		return Variant();
 	}
-	Error generic_fetch_account_bind(const Variant& account_key) {
+	Error generic_fetch_account_bind(const Variant &account_key) {
 		return Error::OK;
 	}
-	void emit_account_data(const PackedByteArray& account_data) {
+	void emit_account_data(const PackedByteArray &account_data) {
 		const Dictionary fetch_account = Object::cast_to<AnchorProgram>(anchor_program)->find_idl_account(pending_fetch_account);
 		int consumed_bytes = 0;
 		emit_signal("account_fetched", Object::cast_to<AnchorProgram>(anchor_program)->deserialize_dict(account_data, fetch_account["type"], consumed_bytes));

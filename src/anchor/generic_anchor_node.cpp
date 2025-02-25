@@ -20,6 +20,17 @@
 
 namespace godot {
 
+typedef void (*BindMethodFunc)();
+using NotificationMethod = void (Wrapped::*)(int);
+typedef bool (Wrapped::*SetMethod)(const StringName &p_name, const Variant &p_property);
+typedef bool (Wrapped::*GetMethod)(const StringName &p_name, Variant &r_ret) const;
+typedef void (Wrapped::*GetPropertyListMethod)(List<PropertyInfo> *p_list) const;
+typedef bool (Wrapped::*PropertyCanRevertMethod)(const StringName &p_name) const;
+typedef bool (Wrapped::*PropertyGetRevertMethod)(const StringName &p_name, Variant &) const;
+typedef void (Wrapped::*ValidatePropertyMethod)(PropertyInfo &p_property) const;
+typedef String (Wrapped::*ToStringMethod)() const;
+
+
 // TODO(Virax): Delete this memory as well.
 std::unordered_map<StringName, Dictionary> GenericAnchorNode::loaded_idls;
 std::vector<StringName *> GenericAnchorNode::names;
@@ -65,39 +76,39 @@ const StringName *GenericAnchorNode::_get_extension_class_name() {
 	return &string_name;
 }
 
-void (*GenericAnchorNode::_get_bind_methods())() {
+BindMethodFunc GenericAnchorNode::_get_bind_methods() {
 	return &GenericAnchorNode::_bind_methods;
 }
 
-void (Wrapped::*GenericAnchorNode::_get_notification())(int) {
+NotificationMethod GenericAnchorNode::_get_notification() {
 	return static_cast<void (::godot::Wrapped::*)(int)>(&GenericAnchorNode::_notification);
 }
 
-bool (Wrapped::*GenericAnchorNode::_get_set())(const StringName &p_name, const Variant &p_property) {
+SetMethod GenericAnchorNode::_get_set() {
 	return static_cast<bool (Wrapped::*)(const StringName &p_name, const Variant &p_property)>(&GenericAnchorNode::_set);
 }
 
-bool (Wrapped::*GenericAnchorNode::_get_get())(const StringName &p_name, Variant &r_ret) const {
+GetMethod GenericAnchorNode::_get_get() {
 	return static_cast<bool (Wrapped::*)(const StringName &p_name, Variant &r_ret) const>(&GenericAnchorNode::_get);
 }
 
-void (Wrapped::*GenericAnchorNode::_get_get_property_list())(List<PropertyInfo> *p_list) const {
+GetPropertyListMethod GenericAnchorNode::_get_get_property_list() {
 	return static_cast<void (Wrapped::*)(List<PropertyInfo> *p_list) const>(&GenericAnchorNode::_get_property_list);
 }
 
-bool (Wrapped::*GenericAnchorNode::_get_property_can_revert())(const StringName &p_name) const {
+PropertyCanRevertMethod GenericAnchorNode::_get_property_can_revert() {
 	return static_cast<bool (Wrapped::*)(const StringName &p_name) const>(&GenericAnchorNode::_property_can_revert);
 }
 
-bool (Wrapped::*GenericAnchorNode::_get_property_get_revert())(const StringName &p_name, Variant &) const {
+PropertyGetRevertMethod GenericAnchorNode::_get_property_get_revert(){
 	return static_cast<bool (Wrapped::*)(const StringName &p_name, Variant &) const>(&GenericAnchorNode::_property_get_revert);
 }
 
-void (Wrapped::*GenericAnchorNode::_get_validate_property())(PropertyInfo &p_property) const {
+ValidatePropertyMethod GenericAnchorNode::_get_validate_property() {
 	return static_cast<void (Wrapped::*)(PropertyInfo &p_property) const>(&GenericAnchorNode::_validate_property);
 }
 
-String (Wrapped::*GenericAnchorNode::_get_to_string())() const {
+ToStringMethod GenericAnchorNode::_get_to_string() {
 	return static_cast<String (Wrapped::*)() const>(&GenericAnchorNode::_to_string);
 }
 

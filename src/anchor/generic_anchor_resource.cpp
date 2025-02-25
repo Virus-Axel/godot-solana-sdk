@@ -144,39 +144,39 @@ const StringName *GenericAnchorResource::_get_extension_class_name() {
 	return &string_name;
 }
 
-void (*GenericAnchorResource::_get_bind_methods())() {
+BindMethodFunc GenericAnchorResource::_get_bind_methods() {
 	return &GenericAnchorResource::_bind_methods;
 }
 
-void (Wrapped::*GenericAnchorResource::_get_notification())(int) {
+NotificationMethod GenericAnchorResource::_get_notification() {
 	return (void(::godot::Wrapped::*)(int)) & GenericAnchorResource::_notification;
 }
 
-bool (Wrapped::*GenericAnchorResource::_get_set())(const StringName &p_name, const Variant &p_property) {
+SetMethod GenericAnchorResource::_get_set() {
 	return (bool(Wrapped::*)(const StringName &p_name, const Variant &p_property)) & GenericAnchorResource::_set;
 }
 
-bool (Wrapped::*GenericAnchorResource::_get_get())(const StringName &p_name, Variant &r_ret) const {
+GetMethod GenericAnchorResource::_get_get() {
 	return (bool(Wrapped::*)(const StringName &p_name, Variant &r_ret) const) & GenericAnchorResource::_get;
 }
 
-void (Wrapped::*GenericAnchorResource::_get_get_property_list())(List<PropertyInfo> *p_list) const {
+GetPropertyListMethod GenericAnchorResource::_get_get_property_list() {
 	return (void(Wrapped::*)(List<PropertyInfo> * p_list) const) & GenericAnchorResource::_get_property_list;
 }
 
-bool (Wrapped::*GenericAnchorResource::_get_property_can_revert())(const StringName &p_name) const {
+PropertyCanRevertMethod GenericAnchorResource::_get_property_can_revert() {
 	return (bool(Wrapped::*)(const StringName &p_name) const) & GenericAnchorResource::_property_can_revert;
 }
 
-bool (Wrapped::*GenericAnchorResource::_get_property_get_revert())(const StringName &p_name, Variant &) const {
+PropertyGetRevertMethod GenericAnchorResource::_get_property_get_revert(){
 	return (bool(Wrapped::*)(const StringName &p_name, Variant &) const) & GenericAnchorResource::_property_get_revert;
 }
 
-void (Wrapped::*GenericAnchorResource::_get_validate_property())(PropertyInfo &p_property) const {
+ValidatePropertyMethod GenericAnchorResource::_get_validate_property() {
 	return (void(Wrapped::*)(PropertyInfo & p_property) const) & GenericAnchorResource::_validate_property;
 }
 
-String (Wrapped::*GenericAnchorResource::_get_to_string())() const {
+ToStringMethod GenericAnchorResource::_get_to_string() {
 	return (String(Wrapped::*)() const)&GenericAnchorResource::_to_string;
 }
 
