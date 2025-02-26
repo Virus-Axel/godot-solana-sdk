@@ -14,5 +14,6 @@ var searchData=
   ['create_5ffrom_5fstring_11',['create_from_string',['../classgodot_1_1_pubkey.html#af377184a1e23b7e2728eeb6fe38760d8',1,'godot::Pubkey']]],
   ['create_5fprogram_5faddress_12',['create_program_address',['../classgodot_1_1_pubkey.html#abd5053ef9b93f981deadbd0ca842bbab',1,'godot::Pubkey']]],
   ['create_5fprogram_5faddress_5fbytes_13',['create_program_address_bytes',['../classgodot_1_1_pubkey.html#a81d78236b76c96746e2408710e998e0e',1,'godot::Pubkey']]],
-  ['createmetadataargs_14',['CreateMetaDataArgs',['../classgodot_1_1_create_meta_data_args.html',1,'godot']]]
+  ['createmetadataargs_14',['CreateMetaDataArgs',['../classgodot_1_1_create_meta_data_args.html',1,'godot']]],
+  ['customclassmanager_15',['CustomClassManager',['../class_custom_class_manager.html',1,'']]]
 ];

@@ -123,9 +123,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>_process</b> (double 
 <tr class="memitem:a631836edd7832b75cfdef8e0ee4d95ed" id="r_a631836edd7832b75cfdef8e0ee4d95ed"><td class="memItemLeft" align="right" valign="top"><a id="a631836edd7832b75cfdef8e0ee4d95ed" name="a631836edd7832b75cfdef8e0ee4d95ed"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_idl</b> (const Dictionary &amp;idl)</td></tr>
 <tr class="separator:a631836edd7832b75cfdef8e0ee4d95ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5955e04d839856e8dbab36fb475b5f1a" id="r_a5955e04d839856e8dbab36fb475b5f1a"><td class="memItemLeft" align="right" valign="top"><a id="a5955e04d839856e8dbab36fb475b5f1a" name="a5955e04d839856e8dbab36fb475b5f1a"></a>
-Dictionary&#160;</td><td class="memItemRight" valign="bottom"><b>get_idl</b> ()</td></tr>
-<tr class="separator:a5955e04d839856e8dbab36fb475b5f1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17623fd672db2c36f67a086ebde55859" id="r_a17623fd672db2c36f67a086ebde55859"><td class="memItemLeft" align="right" valign="top"><a id="a17623fd672db2c36f67a086ebde55859" name="a17623fd672db2c36f67a086ebde55859"></a>
+Dictionary&#160;</td><td class="memItemRight" valign="bottom"><b>get_idl</b> () const</td></tr>
+<tr class="separator:a17623fd672db2c36f67a086ebde55859"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa3f98b7ad89b4dad4619daa9fd9002bd" id="r_aa3f98b7ad89b4dad4619daa9fd9002bd"><td class="memItemLeft" align="right" valign="top"><a id="aa3f98b7ad89b4dad4619daa9fd9002bd" name="aa3f98b7ad89b4dad4619daa9fd9002bd"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_try_from_pid</b> (const bool try_from_pid)</td></tr>
 <tr class="separator:aa3f98b7ad89b4dad4619daa9fd9002bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -147,15 +147,30 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>set_pid</b> (const St
 <tr class="memitem:a4ac1310a222a26bbec4f08c6eee350a6" id="r_a4ac1310a222a26bbec4f08c6eee350a6"><td class="memItemLeft" align="right" valign="top"><a id="a4ac1310a222a26bbec4f08c6eee350a6" name="a4ac1310a222a26bbec4f08c6eee350a6"></a>
 String&#160;</td><td class="memItemRight" valign="bottom"><b>get_pid</b> ()</td></tr>
 <tr class="separator:a4ac1310a222a26bbec4f08c6eee350a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef4fa900b166e708651dd09d15cb5127" id="r_aef4fa900b166e708651dd09d15cb5127"><td class="memItemLeft" align="right" valign="top"><a id="aef4fa900b166e708651dd09d15cb5127" name="aef4fa900b166e708651dd09d15cb5127"></a>
+String&#160;</td><td class="memItemRight" valign="bottom"><b>get_idl_name</b> () const</td></tr>
+<tr class="separator:aef4fa900b166e708651dd09d15cb5127"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a117d96f2bc6c28fb476bc86f3ad0a7b7" id="r_a117d96f2bc6c28fb476bc86f3ad0a7b7"><td class="memItemLeft" align="right" valign="top"><a id="a117d96f2bc6c28fb476bc86f3ad0a7b7" name="a117d96f2bc6c28fb476bc86f3ad0a7b7"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_json_file</b> (const Variant &amp;try_from_json_file)</td></tr>
 <tr class="separator:a117d96f2bc6c28fb476bc86f3ad0a7b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a139732e48f18ffd9ffee6ed801248f26" id="r_a139732e48f18ffd9ffee6ed801248f26"><td class="memItemLeft" align="right" valign="top"><a id="a139732e48f18ffd9ffee6ed801248f26" name="a139732e48f18ffd9ffee6ed801248f26"></a>
 Variant&#160;</td><td class="memItemRight" valign="bottom"><b>get_json_file</b> ()</td></tr>
 <tr class="separator:a139732e48f18ffd9ffee6ed801248f26"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a009ef2db67966ffd560272456c8effef" id="r_a009ef2db67966ffd560272456c8effef"><td class="memItemLeft" align="right" valign="top"><a id="a009ef2db67966ffd560272456c8effef" name="a009ef2db67966ffd560272456c8effef"></a>
-Variant&#160;</td><td class="memItemRight" valign="bottom"><b>build_instruction</b> (String name, Array accounts, Variant arguments)</td></tr>
-<tr class="separator:a009ef2db67966ffd560272456c8effef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a3a6352ca0e3ce4af240b6ac55bf7f6" id="r_a8a3a6352ca0e3ce4af240b6ac55bf7f6"><td class="memItemLeft" align="right" valign="top"><a id="a8a3a6352ca0e3ce4af240b6ac55bf7f6" name="a8a3a6352ca0e3ce4af240b6ac55bf7f6"></a>
+Variant&#160;</td><td class="memItemRight" valign="bottom"><b>deserialize_dict</b> (const PackedByteArray &amp;bytes, const Dictionary &amp;type, int &amp;consumed_bytes)</td></tr>
+<tr class="separator:a8a3a6352ca0e3ce4af240b6ac55bf7f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf40b9e1348f58eb040b274def1f1a72" id="r_aaf40b9e1348f58eb040b274def1f1a72"><td class="memItemLeft" align="right" valign="top"><a id="aaf40b9e1348f58eb040b274def1f1a72" name="aaf40b9e1348f58eb040b274def1f1a72"></a>
+Dictionary&#160;</td><td class="memItemRight" valign="bottom"><b>find_idl_account</b> (const String &amp;name)</td></tr>
+<tr class="separator:aaf40b9e1348f58eb040b274def1f1a72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a762028366c57d9b19ac146158ad26afb" id="r_a762028366c57d9b19ac146158ad26afb"><td class="memItemLeft" align="right" valign="top"><a id="a762028366c57d9b19ac146158ad26afb" name="a762028366c57d9b19ac146158ad26afb"></a>
+Dictionary&#160;</td><td class="memItemRight" valign="bottom"><b>find_idl_instruction</b> (const String &amp;name) const</td></tr>
+<tr class="separator:a762028366c57d9b19ac146158ad26afb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab210d6b8f1c59ec3fd718ea7b903108b" id="r_ab210d6b8f1c59ec3fd718ea7b903108b"><td class="memItemLeft" align="right" valign="top"><a id="ab210d6b8f1c59ec3fd718ea7b903108b" name="ab210d6b8f1c59ec3fd718ea7b903108b"></a>
+Variant&#160;</td><td class="memItemRight" valign="bottom"><b>build_argument_dictionary</b> (const Array &amp;arguments, const StringName &amp;instruction_name) const</td></tr>
+<tr class="separator:ab210d6b8f1c59ec3fd718ea7b903108b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a612d7859d1f2020bc4e458d83de07be8" id="r_a612d7859d1f2020bc4e458d83de07be8"><td class="memItemLeft" align="right" valign="top"><a id="a612d7859d1f2020bc4e458d83de07be8" name="a612d7859d1f2020bc4e458d83de07be8"></a>
+Variant&#160;</td><td class="memItemRight" valign="bottom"><b>build_instruction</b> (String name, Array accounts, Variant arguments) const</td></tr>
+<tr class="separator:a612d7859d1f2020bc4e458d83de07be8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3cce14fb37175c0ffe7ec1d091e1b2f8" id="r_a3cce14fb37175c0ffe7ec1d091e1b2f8"><td class="memItemLeft" align="right" valign="top"><a id="a3cce14fb37175c0ffe7ec1d091e1b2f8" name="a3cce14fb37175c0ffe7ec1d091e1b2f8"></a>
 Error&#160;</td><td class="memItemRight" valign="bottom"><b>fetch_account</b> (const String name, const Variant &amp;account)</td></tr>
 <tr class="separator:a3cce14fb37175c0ffe7ec1d091e1b2f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -165,6 +180,9 @@ Error&#160;</td><td class="memItemRight" valign="bottom"><b>fetch_all_accounts</
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
+<tr class="memitem:adb363fc85affe11a9b2baa29b635cc60" id="r_adb363fc85affe11a9b2baa29b635cc60"><td class="memItemLeft" align="right" valign="top"><a id="adb363fc85affe11a9b2baa29b635cc60" name="adb363fc85affe11a9b2baa29b635cc60"></a>
+static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>get_address_from_idl</b> (const Dictionary &amp;idl)</td></tr>
+<tr class="separator:adb363fc85affe11a9b2baa29b635cc60"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f8c853627b72fab7b0faf54b62e7bbd" id="r_a2f8c853627b72fab7b0faf54b62e7bbd"><td class="memItemLeft" align="right" valign="top"><a id="a2f8c853627b72fab7b0faf54b62e7bbd" name="a2f8c853627b72fab7b0faf54b62e7bbd"></a>
 static PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><b>serialize_variant</b> (const Variant &amp;var)</td></tr>
 <tr class="separator:a2f8c853627b72fab7b0faf54b62e7bbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -201,6 +219,27 @@ static Dictionary&#160;</td><td class="memItemRight" valign="bottom"><b>u64</b> 
 <tr class="memitem:af0a09ddc9a0de113829c7b00bd4ec180" id="r_af0a09ddc9a0de113829c7b00bd4ec180"><td class="memItemLeft" align="right" valign="top"><a id="af0a09ddc9a0de113829c7b00bd4ec180" name="af0a09ddc9a0de113829c7b00bd4ec180"></a>
 static Dictionary&#160;</td><td class="memItemRight" valign="bottom"><b>option</b> (const Variant &amp;val)</td></tr>
 <tr class="separator:af0a09ddc9a0de113829c7b00bd4ec180"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef2c950c8057ed8f4922d4779b7653f3" id="r_aef2c950c8057ed8f4922d4779b7653f3"><td class="memItemLeft" align="right" valign="top"><a id="aef2c950c8057ed8f4922d4779b7653f3" name="aef2c950c8057ed8f4922d4779b7653f3"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_enum</b> (const Variant &amp;anchor_type)</td></tr>
+<tr class="separator:aef2c950c8057ed8f4922d4779b7653f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86847aa37afa60360ccc98c89842e5a8" id="r_a86847aa37afa60360ccc98c89842e5a8"><td class="memItemLeft" align="right" valign="top"><a id="a86847aa37afa60360ccc98c89842e5a8" name="a86847aa37afa60360ccc98c89842e5a8"></a>
+static String&#160;</td><td class="memItemRight" valign="bottom"><b>get_object_name</b> (const Variant &amp;anchor_type)</td></tr>
+<tr class="separator:a86847aa37afa60360ccc98c89842e5a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae4b0a34538464491801655f385a4cd1" id="r_aae4b0a34538464491801655f385a4cd1"><td class="memItemLeft" align="right" valign="top"><a id="aae4b0a34538464491801655f385a4cd1" name="aae4b0a34538464491801655f385a4cd1"></a>
+static bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_vec_type</b> (const Variant &amp;anchor_type)</td></tr>
+<tr class="separator:aae4b0a34538464491801655f385a4cd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7bcb187cceaae65b4c97e3bfe43445b" id="r_ab7bcb187cceaae65b4c97e3bfe43445b"><td class="memItemLeft" align="right" valign="top"><a id="ab7bcb187cceaae65b4c97e3bfe43445b" name="ab7bcb187cceaae65b4c97e3bfe43445b"></a>
+static String&#160;</td><td class="memItemRight" valign="bottom"><b>get_int_type_info</b> (const Variant &amp;anchor_type)</td></tr>
+<tr class="separator:ab7bcb187cceaae65b4c97e3bfe43445b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15726171410ac497a17eab9e7ec79c47" id="r_a15726171410ac497a17eab9e7ec79c47"><td class="memItemLeft" align="right" valign="top"><a id="a15726171410ac497a17eab9e7ec79c47" name="a15726171410ac497a17eab9e7ec79c47"></a>
+static Variant::Type&#160;</td><td class="memItemRight" valign="bottom"><b>get_godot_type</b> (const Variant &amp;anchor_type)</td></tr>
+<tr class="separator:a15726171410ac497a17eab9e7ec79c47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b715ec89c4653c5c5419aa7cc677d31" id="r_a1b715ec89c4653c5c5419aa7cc677d31"><td class="memItemLeft" align="right" valign="top"><a id="a1b715ec89c4653c5c5419aa7cc677d31" name="a1b715ec89c4653c5c5419aa7cc677d31"></a>
+static String&#160;</td><td class="memItemRight" valign="bottom"><b>get_godot_class_hint</b> (const Variant &amp;anchor_type)</td></tr>
+<tr class="separator:a1b715ec89c4653c5c5419aa7cc677d31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71fad36cf847e1e9ac4dc364a04b0bd4" id="r_a71fad36cf847e1e9ac4dc364a04b0bd4"><td class="memItemLeft" align="right" valign="top"><a id="a71fad36cf847e1e9ac4dc364a04b0bd4" name="a71fad36cf847e1e9ac4dc364a04b0bd4"></a>
+static PropertyHint&#160;</td><td class="memItemRight" valign="bottom"><b>get_godot_hint</b> (const Variant &amp;anchor_type)</td></tr>
+<tr class="separator:a71fad36cf847e1e9ac4dc364a04b0bd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -227,7 +266,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_anchor_program.html">AnchorProgram</a></li>
-    <li class="footer">Generated on Fri Jan 31 2025 11:13:47 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Wed Feb 26 2025 19:11:14 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>
