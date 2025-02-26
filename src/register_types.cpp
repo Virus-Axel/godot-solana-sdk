@@ -3,6 +3,7 @@
 #include "gdextension_interface.h"
 #include "godot_cpp/classes/editor_interface.hpp"
 #include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/classes/json.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/defs.hpp"
@@ -15,6 +16,9 @@
 #include "account.hpp"
 #include "account_meta.hpp"
 #include "address_lookup_table.hpp"
+#include "anchor/generated/candy_guard.hpp"
+#include "anchor/generated/candy_machine_core.hpp"
+#include "anchor/generated/mpl_core.hpp"
 #include "anchor/generic_anchor_node.hpp"
 #include "anchor/generic_anchor_resource.hpp"
 #include "anchor_program.hpp"
@@ -51,7 +55,6 @@
 #include "system_program.hpp"
 #include "transaction.hpp"
 #include "wallet_adapter.hpp"
-#include "dialogs/add_custom_idl.hpp"
 
 namespace godot {
 namespace {
@@ -72,13 +75,18 @@ void add_setting(const String &name, Variant::Type type, const Variant &default_
 	}
 }
 
-void load_user_programs(){
+void load_user_programs() {
 	Variant idl_locations = ProjectSettings::get_singleton()->get_setting(String(CUSTOM_IDL_LOCATION_SETTING.c_str()));
 	ERR_FAIL_COND_EDMSG_CUSTOM(idl_locations.get_type() != Variant::PACKED_STRING_ARRAY, "Could not find setting for idl locations");
 	const PackedStringArray idl_filenames = static_cast<PackedStringArray>(idl_locations);
-	for (const auto idl_filename: idl_filenames){
+	for (const auto idl_filename : idl_filenames) {
 		AddCustomIdlDialog::load_idl(idl_filename);
 	}
+}
+
+void load_idl_from_string(const String &json_content) {
+	const Dictionary content = JSON::parse_string(json_content);
+	GenericAnchorNode::bind_anchor_node(content);
 }
 
 void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
@@ -133,12 +141,11 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	//ClassDB::register_class<GenericAnchorResource>();
 	GenericAnchorResource::set_class_name("GenericAnchorResource");
 	ClassDB::register_class<GenericAnchorResource>();
-	StringName* abc = memnew(StringName("GenericAnchorResource")); 
+	StringName *abc = memnew(StringName("GenericAnchorResource"));
 
 	//internal::gdextension_interface_classdb_unregister_extension_class(internal::library, abc->_native_ptr());
 
 	//AddCustomIdlDialog::load_idl("res://testidl.json");
-	
 
 	Dictionary reso;
 	Dictionary struct_info;
@@ -153,6 +160,9 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	add_setting("solana_sdk/client/default_ws_port", Variant::Type::INT, WSS_PORT);
 	add_setting("solana_sdk/anchor/custom_anchor_programs", Variant::Type::PACKED_STRING_ARRAY, PackedStringArray());
 
+	load_idl_from_string(String(candy_guard_idl.c_str()));
+	load_idl_from_string(String(candy_machine_core_idl.c_str()));
+	load_idl_from_string(String(mpl_core_idl.c_str()));
 	load_user_programs();
 
 	// Leave memory allocated and free in unregister_singleton.
