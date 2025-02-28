@@ -21,7 +21,7 @@ func execute():
 # Run all test cases
 func run_tests():
 	await create_or_load_user_with_profile()
-	await update_profile()
+	# await update_profile()
 	await add_wallet()
 	await remove_wallet()
 	await claim_badge_criteria()

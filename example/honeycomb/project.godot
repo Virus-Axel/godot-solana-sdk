@@ -22,4 +22,4 @@ renderer/rendering_method.mobile="gl_compatibility"
 
 [solana_sdk]
 
-client/default_url="https://rpc.test.honeycombprotocol.com"
+client/default_url="https://rpc.solana.studio"

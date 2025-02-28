@@ -213,7 +213,10 @@ String HoneyComb::build() {
 			// Serialize Boolean as raw true/false without quotes
 			args_values += "\"" + String(arg["name"]) + "\": " + (value ? "true" : "false") + ",";
 			std::cout << "Serialized boolean: " << (value ? "true" : "false") << std::endl;
-		} else {
+		} else if (value.get_type() == Variant::INT || value.get_type() == Variant::FLOAT) {
+      args_values += "\"" + String(arg["name"]) + "\": " + String::num(value) + ",";
+      std::cout << "Serialized number: " << String::num(value).ascii() << std::endl;
+    } else {
 			args_values += "\"" + String(arg["name"]) + "\": \"" + String(value) + "\",";
 			std::cout << "Primitive value: " << String(value).ascii() << std::endl;
 		}

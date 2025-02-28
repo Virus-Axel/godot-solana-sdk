@@ -53,7 +53,7 @@ func before_all():
 		)
 	assembler_config = await base.create_assembler_config(
 		client, 
-		project,
+		project["address"],
 		traits.order,
 		traits.traits,
 		utils.user_keypair.get_public_string(),
@@ -62,7 +62,7 @@ func before_all():
 	
 	character_model = await base.create_character_model_raw(
 		client,
-		project,
+		project["address"],
 		assembler_config.address,
 		utils.admin_keypair.get_public_string(),
 		utils.user_keypair.get_public_string(),

@@ -10,6 +10,7 @@ func _ready():
 	await run_user_tests()
 	await run_character_wrap_tests()
 	await run_mission_tests()
+	await run_staking_tests()
 	 
 
 func before_all():
@@ -37,3 +38,8 @@ func run_mission_tests():
 	var mission_flow = load("res://tests/test_missions.gd").new()
 	add_child(mission_flow)
 	await mission_flow.execute()
+
+func run_staking_tests():
+	var staking_flow = load("res://tests/test_staking.gd").new()
+	add_child(staking_flow)
+	await staking_flow.execute()

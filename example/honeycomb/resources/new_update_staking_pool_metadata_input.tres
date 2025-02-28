@@ -1,0 +1,8 @@
+[gd_resource type="UpdateStakingPoolMetadataInput" format=3 uid="uid://b68sbgp22wqoi"]
+
+[resource]
+rewardsPerDuration = 0
+rewardsDuration = 0
+maxRewardsDuration = 0
+cooldownDuration = 0
+startTime = 0

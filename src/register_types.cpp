@@ -46,8 +46,8 @@
 #include "wallet_adapter.hpp"
 #include "honeycomb/honeycomb.hpp"
 #include "honeycomb/honeycomb_generated.hpp"
-#include "honeycomb/types/index.hpp"
-#include "honeycomb/enums.hpp"
+#include "honeycomb/types/index_generated.hpp"
+#include "honeycomb/enums_generated.hpp"
 
 namespace godot {
 namespace {

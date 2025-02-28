@@ -77,6 +77,9 @@ func create_project_delegate_authority():
 	print("Running test: Create Project Delegate Authority")
 	var service_delegation: ServiceDelegationInput = load("res://resources/new_service_delegation_input.tres")
 	print("Service Delegation: ", service_delegation.to_dict())
+	var hive_control: ServiceDelegationHiveControl = load("res://resources/new_service_delegation_hive_control.tres")
+	hive_control.permission =  HiveControlPermissionInput.get_manageservices()
+	service_delegation.HiveControl = [hive_control]
 
 	client.create_create_delegate_authority_transaction(project.address, utils.user_keypair.get_public_string(), service_delegation, utils.admin_keypair.get_public_string(), utils.admin_keypair.get_public_string())
 	var response = await client.query_response_received
@@ -99,7 +102,12 @@ func create_project_delegate_authority():
 # Test Case: Modify Project Delegate Authority
 func modify_project_delegate_authority():
 	print("Running test: Modify Project Delegate Authority")
-	var modify_delegation = load("res://resources/new_modify_delegation_input.tres")
+	var modify_delegation: ModifyDelegationInput = load("res://resources/new_modify_delegation_input.tres")
+	var modify_service_delegation_input: ModifyServiceDelegationInput = load("res://resources/new_modify_service_delegation_input.tres")
+	modify_delegation.delegation = modify_service_delegation_input
+	var hive_control: ServiceDelegationHiveControl = load("res://resources/new_service_delegation_hive_control.tres")
+	hive_control.permission =  HiveControlPermissionInput.get_managecriterias()
+	modify_service_delegation_input.HiveControl = [hive_control]
 	print(modify_delegation.to_dict())
 
 	client.create_modify_delegation_transaction(project.address, utils.user_keypair.get_public_string(), modify_delegation, utils.admin_keypair.get_public_string(), utils.admin_keypair.get_public_string())
