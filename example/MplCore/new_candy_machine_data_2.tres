@@ -1,0 +1,15 @@
+[gd_resource type="CandyMachineData2" load_steps=2 format=3 uid="uid://dsccj4wvxvi5k"]
+
+[sub_resource type="ConfigLineSettings" id="ConfigLineSettings_hoke2"]
+prefixName = "a"
+nameLength = 16
+prefixUri = "a"
+uriLength = 32
+isSequential = true
+
+[resource]
+itemsAvailable = 2
+maxSupply = 2
+isMutable = true
+enable_configLineSettings = true
+configLineSettings = SubResource("ConfigLineSettings_hoke2")

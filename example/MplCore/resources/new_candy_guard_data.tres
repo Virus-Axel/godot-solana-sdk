@@ -1,0 +1,19 @@
+[gd_resource type="CandyGuardData" load_steps=4 format=3 uid="uid://briyc5fq87j1a"]
+
+[sub_resource type="Pubkey" id="Pubkey_islym"]
+type = "CUSTOM"
+value = "HzgnFaratgGvuxBZZRKjDXFgXYXrd93U4GmkFN3MqxFt"
+bytes = PackedByteArray(252, 130, 19, 152, 223, 77, 88, 22, 16, 201, 240, 75, 121, 146, 182, 228, 127, 4, 19, 199, 205, 67, 182, 167, 25, 247, 176, 37, 217, 165, 43, 91)
+
+[sub_resource type="SolPayment" id="SolPayment_tkiea"]
+lamports = 6
+destination = SubResource("Pubkey_islym")
+
+[sub_resource type="GuardSet" id="GuardSet_0wgcr"]
+enable_solPayment = true
+solPayment = SubResource("SolPayment_tkiea")
+
+[resource]
+default = SubResource("GuardSet_0wgcr")
+enable_groups = true
+groups = Array[Group]([])

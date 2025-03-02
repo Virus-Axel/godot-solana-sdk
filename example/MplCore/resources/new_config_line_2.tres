@@ -1,0 +1,5 @@
+[gd_resource type="ConfigLine2" format=3 uid="uid://boxd3o8lktmcl"]
+
+[resource]
+name = "abc"
+uri = "abc"
