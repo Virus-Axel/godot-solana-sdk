@@ -7,6 +7,7 @@
 #include "instructions/mpl_token_metadata.hpp"
 #include "instructions/spl_token.hpp"
 #include "instructions/system_program.hpp"
+#include "anchor/generic_anchor_resource.hpp"
 
 namespace godot {
 

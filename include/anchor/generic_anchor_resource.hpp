@@ -67,6 +67,7 @@ private:
 
 	static String get_enum_hint(const StringName &enum_type);
 	static Variant godot_type_defval(const Variant::Type type_name);
+	static PackedStringArray names_from_array(const Array fields);
 
 	void operator=(const GenericAnchorResource & /*p_rval*/) {}
 	friend class ClassDB;
@@ -113,6 +114,7 @@ public:
 	static GDExtensionBool property_can_revert_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name);
 	static GDExtensionBool property_get_revert_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
 	static GDExtensionBool validate_property_bind(GDExtensionClassInstancePtr p_instance, GDExtensionPropertyInfo *p_property);
+	bool is_property_enabled(const StringName& property_name);
 
 	static void to_string_bind(GDExtensionClassInstancePtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr r_out);
 	static void free(void * /*data*/, GDExtensionClassInstancePtr ptr);
@@ -138,6 +140,7 @@ public:
 	GenericAnchorResource() = default;
 	static void bind_anchor_enum(const Dictionary &enum_data);
 	static void bind_anchor_resource(const Dictionary &resource);
+	static void bind_mint_methods(const StringName &class_name);
 	static void bind_virtual_method(const StringName &class_name, const StringName &method_name);
 	static void set_class_name(const String &name) {
 		string_name = name.ascii();
@@ -161,6 +164,9 @@ public:
 	void no_set(const Variant &value) {
 		WARN_PRINT_ED("Setter is undefined, assign property directly instead");
 	}
+
+	Array get_extra_account_metas();
+	PackedByteArray serialize_core_mint_args();
 
 	~GenericAnchorResource() = default;
 };

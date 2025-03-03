@@ -23,6 +23,7 @@ example/addons/
 /bin/
 test-ledger/
 
+
 .vscode/
 .godot/
 

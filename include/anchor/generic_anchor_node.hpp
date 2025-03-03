@@ -47,6 +47,7 @@ private:
 	static GDExtensionObjectPtr _create_instance_func(void *data);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
 
+	static void bind_pid_getter(const StringName &p_class_name);
 	static StringName get_fetcher_name(const StringName &account_name);
 
 	void operator=(const GenericAnchorNode & /*p_rval*/) {}
@@ -123,6 +124,7 @@ public:
 		_gde_binding_free_callback,
 		_gde_binding_reference_callback,
 	};
+	static bool has_extra_accounts(const StringName& program, const StringName& instruction);
 
 protected:
 	virtual void _notificationv(int32_t p_what, bool p_reversed = false) override;
@@ -152,6 +154,7 @@ public:
 		int consumed_bytes = 0;
 		emit_signal("account_fetched", Object::cast_to<AnchorProgram>(anchor_program)->deserialize_dict(account_data, fetch_account["type"], consumed_bytes));
 	}
+	Variant get_pid() const;
 	~GenericAnchorNode() = default;
 };
 } //namespace godot

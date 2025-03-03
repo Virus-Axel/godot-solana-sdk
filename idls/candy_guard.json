@@ -109,7 +109,7 @@
         {
           "name": "asset",
           "isMut": true,
-          "isSigner": false,
+          "isSigner": true,
           "docs": [
             "Mint account of the NFT. The account will be initialized if necessary.",
             "",
