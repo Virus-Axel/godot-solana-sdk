@@ -5,6 +5,7 @@
 #include "sha256.hpp"
 #include "solana_client.hpp"
 #include "solana_utils.hpp"
+#include "anchor/generic_anchor_node.hpp"
 
 #include "godot_cpp/variant/utility_functions.hpp"
 #include <godot_cpp/classes/json.hpp>
@@ -315,6 +316,12 @@ PackedByteArray AnchorProgram::serialize_variant(const Variant &var) {
 			result.append_array(((String)var).to_ascii_buffer());
 			break;
 
+		case Variant::PACKED_BYTE_ARRAY:
+			result.resize(4);
+			result.encode_u32(0, (static_cast<PackedByteArray>(var).size()));
+			result.append_array(static_cast<PackedByteArray>(var));
+			break;
+
 		case Variant::ARRAY:
 			result.resize(4);
 			result.encode_u32(0, ((Array)var).size());
@@ -368,8 +375,15 @@ void AnchorProgram::register_instruction_builders() {
 
 PackedByteArray AnchorProgram::discriminator_by_name(const String &name, const String &namespace_string) const {
 	SHA256 hasher;
+	std::cout << "HS: " << name.ascii() << std::endl;
 	hasher.update(namespace_string.to_ascii_buffer().ptr(), namespace_string.length());
-	hasher.update(name.to_ascii_buffer().ptr(), name.length());
+	if(name == "mint_v_1"){
+		String another_name = "mint_v1";
+		hasher.update(another_name.to_ascii_buffer().ptr(), another_name.length());
+	}
+	else{
+		hasher.update(name.to_ascii_buffer().ptr(), name.length());
+	}
 
 	uint8_t *hash = hasher.digest();
 	PackedByteArray discriminator;
@@ -1045,7 +1059,13 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
 	const Dictionary instruction_info = find_idl_instruction(name);
 
 	ERR_FAIL_COND_V_EDMSG(instruction_info.is_empty(), nullptr, (String("IDL does not contain an instruction named ") + name + ".").ascii());
-	ERR_FAIL_COND_V_EDMSG(((Array)instruction_info["accounts"]).size() != accounts.size(), nullptr, "Unexpected amount or accounts");
+	
+	if(GenericAnchorNode::has_extra_accounts(get_idl_name(), name)){
+		ERR_FAIL_COND_V_EDMSG(((Array)instruction_info["accounts"]).size() > accounts.size(), nullptr, "Unexpected amount or accounts");
+	}
+	else{
+		ERR_FAIL_COND_V_EDMSG(((Array)instruction_info["accounts"]).size() != accounts.size(), nullptr, "Unexpected amount or accounts");
+	}
 
 	Instruction *result = memnew(Instruction);
 
@@ -1063,6 +1083,7 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
 	}
 	result->set_program_id(Pubkey::new_from_string(use_pid));
 	data.append_array(serialize_variant(arguments));
+
 	result->set_data(data);
 
 	Array ref_accounts = instruction_info["accounts"];
@@ -1080,6 +1101,16 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
 		}
 		result->append_meta(*memnew(AccountMeta(accounts[i], is_signer, writable)));
 	}
+
+	// Extra accounts
+	for (unsigned int i = ref_accounts.size(); i < accounts.size(); i++){
+		std::cout << "EXTAR " << accounts[i].get_type() << std::endl;
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(accounts[i].get_type() != Variant::OBJECT, result, "Unknown object");
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(!static_cast<Object*>(accounts[i])->is_class("AccountMeta"), result, "Extra Args are supposed to be AccountMetas");
+		std::cout << "EXTAR " << accounts[i].get_type() << std::endl;
+		result->append_meta(*memnew(AccountMeta(accounts[i])));
+	}
+
 	return result;
 }
 
