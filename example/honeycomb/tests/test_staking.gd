@@ -428,7 +428,7 @@ func unstake_characters():
 	
 	var transaction_result = await client.query_response_received
 	if not transaction_result.is_empty():
-		var transactions = transaction_result.createSendCharactersOnMissionTransaction.transactions
+		var transactions = transaction_result.createUnstakeCharactersTransactions.transactions
 		for tx in transactions:
 			if not tx.is_empty():
 				await utils.process_transaction(tx, [utils.user_keypair] as Array[Keypair])
