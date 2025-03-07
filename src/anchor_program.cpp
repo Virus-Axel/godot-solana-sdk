@@ -375,7 +375,6 @@ void AnchorProgram::register_instruction_builders() {
 
 PackedByteArray AnchorProgram::discriminator_by_name(const String &name, const String &namespace_string) const {
 	SHA256 hasher;
-	std::cout << "HS: " << name.ascii() << std::endl;
 	hasher.update(namespace_string.to_ascii_buffer().ptr(), namespace_string.length());
 	if(name == "mint_v_1"){
 		String another_name = "mint_v1";
@@ -1104,10 +1103,8 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
 
 	// Extra accounts
 	for (unsigned int i = ref_accounts.size(); i < accounts.size(); i++){
-		std::cout << "EXTAR " << accounts[i].get_type() << std::endl;
 		ERR_FAIL_COND_V_EDMSG_CUSTOM(accounts[i].get_type() != Variant::OBJECT, result, "Unknown object");
 		ERR_FAIL_COND_V_EDMSG_CUSTOM(!static_cast<Object*>(accounts[i])->is_class("AccountMeta"), result, "Extra Args are supposed to be AccountMetas");
-		std::cout << "EXTAR " << accounts[i].get_type() << std::endl;
 		result->append_meta(*memnew(AccountMeta(accounts[i])));
 	}
 

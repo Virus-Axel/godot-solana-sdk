@@ -41,6 +41,7 @@ private:
 	static std::unordered_map<StringName, StringName> account_fetch_method_accounts;
 
 	String pending_fetch_account;
+	String local_name = "";
 
 	static void bind_resources(const Array &resources, const String &class_name);
 

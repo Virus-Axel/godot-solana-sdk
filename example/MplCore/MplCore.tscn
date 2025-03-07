@@ -18,7 +18,7 @@ script = ExtResource("1_m1mdq")
 [node name="WalletAdapter" type="WalletAdapter" parent="."]
 
 [node name="Timer" type="Timer" parent="."]
-wait_time = 10.0
+wait_time = 20.0
 one_shot = true
 autostart = true
 
