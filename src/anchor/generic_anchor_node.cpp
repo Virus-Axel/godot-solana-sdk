@@ -47,6 +47,7 @@ GDExtensionObjectPtr GenericAnchorNode::_create_instance_func(void *data) {
 	const String instance_class = *static_cast<StringName *>(data);
 	GenericAnchorNode *new_object = memnew_custom(GenericAnchorNode);
 	new_object->anchor_program = memnew_custom(AnchorProgram);
+	new_object->local_name = instance_class;
 	const Variant custom_pid = AnchorProgram::get_address_from_idl(loaded_idls[instance_class]);
 	ERR_FAIL_COND_V_EDMSG_CUSTOM(custom_pid.get_type() != Variant::OBJECT, new_object->_owner, "Could not get PID");
 	Object::cast_to<AnchorProgram>(new_object->anchor_program)->set_idl(loaded_idls[instance_class]);

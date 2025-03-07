@@ -32,7 +32,6 @@ std::string prop_name = "aaa";
 std::string instruction_name = "";
 
 bool GenericAnchorResource::_set(const StringName &p_name, const Variant &p_value) { // NOLINT(bugprone-easily-swappable-parameters)
-	const String name = p_name;
 
 	if (properties.find(p_name) == properties.end()) {
 		return false;
@@ -69,36 +68,7 @@ bool GenericAnchorResource::_set(const StringName &p_name, const Variant &p_valu
 		}
 	}
 
-	// Check if has enabler that is not checked (setting from script).
-	/*else if (properties.find("enable_" + p_name) != properties.end()) {
-		if (!properties["enable_" + p_name].value) {
-			properties["enable_" + p_name].value = true;
-			properties[p_name].enabled = true;
-		}
-	}*/
-
 	return true;
-	//property_database[get_class_static()][p_name].value = p_value;
-	/*return true;
-	for (auto &property : properties) {
-		if (property.property_info.name == name) {
-			property.value = p_value;
-			return true;
-		}
-	}
-
-	// Not a property so a enable checkbox is being set.
-	ERR_FAIL_COND_V_EDMSG_CUSTOM(name.begins_with(OPTIONAL_PROPERTY_PREFIX), false, "Could not find property");
-
-	const String property_to_toggle = name.lstrip(OPTIONAL_PROPERTY_PREFIX);
-	for (auto &property : properties) {
-		if (property.property_info.name == property_to_toggle) {
-			property.enabled = !property.enabled;
-			return true;
-		}
-	}
-
-	return true;*/
 }
 
 bool GenericAnchorResource::_get(const StringName &p_name, Variant &r_ret) const {
@@ -975,11 +945,6 @@ PackedByteArray GenericAnchorResource::serialize() {
 Array GenericAnchorResource::get_extra_account_metas() {
 	TypedArray<AccountMeta> result;
 
-	std::cout << "entries: " << properties.size() << std::endl;
-	for(auto pair: properties){
-		std::cout << String(pair.first).ascii() << std::endl;
-	}
-
 	if (is_property_enabled("enable_thirdPartySigner")) {
 		result.append(memnew(AccountMeta(properties["thirdPartySigner"].value.get("signerKey"), true, true)));
 	}
@@ -1036,7 +1001,35 @@ PackedByteArray GenericAnchorResource::serialize_core_mint_args() {
 
 	if (local_name == "CandyGuardData") {
 		result.append_array(Object::cast_to<GenericAnchorResource>(properties["default"].value)->serialize_core_mint_args());
-		result.append_array(AnchorProgram::serialize_variant(properties["groups"].value));
+		
+		PackedByteArray group_size_stream;
+		group_size_stream.resize(4);
+
+		if(properties["enable_groups"].value){
+			const Array &groups = properties["groups"].value;
+			const uint32_t group_size = groups.size();
+			group_size_stream.encode_u32(0, group_size);
+			result.append_array(group_size_stream);
+
+			for(unsigned int i = 0; i < groups.size(); i++){
+				const Variant group = groups[i];
+				ERR_FAIL_COND_V_EDMSG_CUSTOM(group.get_type() != Variant::OBJECT, PackedByteArray(), "Group is not an object.");
+				ERR_FAIL_COND_V_EDMSG_CUSTOM(!static_cast<Object*>(group)->is_class("Group"), PackedByteArray(), "Group is not a Group resource.");
+
+				GenericAnchorResource* class_ptr = Object::cast_to<GenericAnchorResource>(group);;
+				PackedByteArray fix_size_label = String(class_ptr->properties["label"].value).to_ascii_buffer();
+
+				const int MAX_LABEL_SIZE = 6;
+				fix_size_label.resize(MAX_LABEL_SIZE);
+
+				result.append_array(fix_size_label);
+				result.append_array(Object::cast_to<GenericAnchorResource>(class_ptr->properties["guards"].value)->serialize_core_mint_args());
+			}
+		}
+		else{
+			result.append_array(group_size_stream);
+		}
+		//result.append_array(AnchorProgram::serialize_variant(properties["groups"].value));
 		return result;
 	}
 
