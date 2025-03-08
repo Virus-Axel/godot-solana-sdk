@@ -1,187 +1,187 @@
 #include "honeycomb/honeycomb.hpp"
 
-#include "honeycomb/types/CharacterHistory_generated.hpp"
-#include "honeycomb/types/AssemblerConfig_generated.hpp"
-#include "honeycomb/types/CharacterTrait_generated.hpp"
-#include "honeycomb/types/CharacterModel_generated.hpp"
-#include "honeycomb/types/CharacterConfigWrapped_generated.hpp"
-#include "honeycomb/types/CharacterConfigAssembled_generated.hpp"
-#include "honeycomb/types/NftCreator_generated.hpp"
-#include "honeycomb/types/MintAs_generated.hpp"
-#include "honeycomb/types/MintAsParamsMplBubblegum_generated.hpp"
-#include "honeycomb/types/CharacterCooldown_generated.hpp"
-#include "honeycomb/types/Character_generated.hpp"
-#include "honeycomb/types/CharacterSource_generated.hpp"
-#include "honeycomb/types/Wrapped_generated.hpp"
-#include "honeycomb/types/AssetCriteria_generated.hpp"
+#include "honeycomb/types/AddMultiplierMetadataInput_generated.hpp"
+#include "honeycomb/types/AdvancedTreeConfig_generated.hpp"
 #include "honeycomb/types/Assembled_generated.hpp"
-#include "honeycomb/types/CharacterUsedBy_generated.hpp"
-#include "honeycomb/types/UsedByStaking_generated.hpp"
-#include "honeycomb/types/UsedByMission_generated.hpp"
-#include "honeycomb/types/EarnedRewards_generated.hpp"
-#include "honeycomb/types/UsedByGuild_generated.hpp"
-#include "honeycomb/types/GuildRole_generated.hpp"
-#include "honeycomb/types/UsedByEjected_generated.hpp"
-#include "honeycomb/types/UsedByCustom_generated.hpp"
-#include "honeycomb/types/Global_generated.hpp"
-#include "honeycomb/types/Project_generated.hpp"
-#include "honeycomb/types/DelegateAuthority_generated.hpp"
-#include "honeycomb/types/ServiceDelegation_generated.hpp"
-#include "honeycomb/types/Service_generated.hpp"
-#include "honeycomb/types/ServiceParamsAssembler_generated.hpp"
-#include "honeycomb/types/ServiceParamsAssetManager_generated.hpp"
-#include "honeycomb/types/ServiceParamsStaking_generated.hpp"
-#include "honeycomb/types/ServiceParamsMissions_generated.hpp"
-#include "honeycomb/types/ServiceParamsRaffles_generated.hpp"
-#include "honeycomb/types/ServiceParamsGuildKit_generated.hpp"
-#include "honeycomb/types/AssociatedProgram_generated.hpp"
-#include "honeycomb/types/SerializableActions_generated.hpp"
-#include "honeycomb/types/ProfileDataConfig_generated.hpp"
-#include "honeycomb/types/User_generated.hpp"
-#include "honeycomb/types/HoneycombUserInfo_generated.hpp"
-#include "honeycomb/types/CivicInfo_generated.hpp"
-#include "honeycomb/types/SocialInfo_generated.hpp"
-#include "honeycomb/types/Wallets_generated.hpp"
-#include "honeycomb/types/Profile_generated.hpp"
-#include "honeycomb/types/ProfileInfo_generated.hpp"
-#include "honeycomb/types/PlatformData_generated.hpp"
-#include "honeycomb/types/BadgeCriteria_generated.hpp"
-#include "honeycomb/types/HoneycombAccount_generated.hpp"
-#include "honeycomb/types/CompressedAccount_generated.hpp"
-#include "honeycomb/types/HoneycombNode_generated.hpp"
-#include "honeycomb/types/Proof_generated.hpp"
-#include "honeycomb/types/ControlledMerkleTrees_generated.hpp"
-#include "honeycomb/types/MissionPool_generated.hpp"
-#include "honeycomb/types/Mission_generated.hpp"
-#include "honeycomb/types/MissionCost_generated.hpp"
-#include "honeycomb/types/TimeRequirement_generated.hpp"
-#include "honeycomb/types/TimeRequirementParams_generated.hpp"
-#include "honeycomb/types/Reward_generated.hpp"
-#include "honeycomb/types/XpRewardType_generated.hpp"
-#include "honeycomb/types/ResourceRewardType_generated.hpp"
-#include "honeycomb/types/ResourceRewardTypeParams_generated.hpp"
-#include "honeycomb/types/StakingPool_generated.hpp"
-#include "honeycomb/types/LockType_generated.hpp"
-#include "honeycomb/types/Multipliers_generated.hpp"
-#include "honeycomb/types/Multiplier_generated.hpp"
-#include "honeycomb/types/MultiplierType_generated.hpp"
-#include "honeycomb/types/MultiplierTypeParamsStakeDuration_generated.hpp"
-#include "honeycomb/types/MultiplierTypeParamsNFTCount_generated.hpp"
-#include "honeycomb/types/MultiplierTypeParamsCreator_generated.hpp"
-#include "honeycomb/types/MultiplierTypeParamsCollection_generated.hpp"
-#include "honeycomb/types/Staker_generated.hpp"
-#include "honeycomb/types/HoneycombTransaction_generated.hpp"
-#include "honeycomb/types/CreateCreateProjectTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateAssemblerConfigTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateCharacterModelTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateInitResourceTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateCreateNewResourceTreeTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateInitializeRecipeTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateBeginCookingTransactionResponse_generated.hpp"
-#include "honeycomb/types/Transactions_generated.hpp"
-#include "honeycomb/types/TransactionResponse_generated.hpp"
-#include "honeycomb/types/TransactionBundleResponse_generated.hpp"
-#include "honeycomb/types/AuthResponse_generated.hpp"
-#include "honeycomb/types/AuthConfirmed_generated.hpp"
-#include "honeycomb/types/OutputHoldingTree_generated.hpp"
-#include "honeycomb/types/CreateCreateHolderAccountTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateInitMultipliersTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateCreateStakingPoolTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateCreateMissionPoolTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateUpdateMissionPoolTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateCreateMissionTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateUpdateMissionTransactionResponse_generated.hpp"
-#include "honeycomb/types/CreateInitializeFaucetTransactionResponse_generated.hpp"
-#include "honeycomb/types/TreeSetupResponse_generated.hpp"
-#include "honeycomb/types/HoneycombResource_generated.hpp"
-#include "honeycomb/types/ResourceBalance_generated.hpp"
-#include "honeycomb/types/ResourceStorage_generated.hpp"
-#include "honeycomb/types/ResourceStorageParams_generated.hpp"
-#include "honeycomb/types/ResourceKind_generated.hpp"
-#include "honeycomb/types/ResourceKindParamsHplFungible_generated.hpp"
-#include "honeycomb/types/ResourceKindParamsWrappedFungible_generated.hpp"
-#include "honeycomb/types/ResourceCustody_generated.hpp"
-#include "honeycomb/types/ResourceCustodyParams_generated.hpp"
-#include "honeycomb/types/ResourceKindParamsHplNonFungible_generated.hpp"
-#include "honeycomb/types/ResourceKindParamsWrappedMplCore_generated.hpp"
-#include "honeycomb/types/Recipe_generated.hpp"
-#include "honeycomb/types/Ingredient_generated.hpp"
-#include "honeycomb/types/Meal_generated.hpp"
-#include "honeycomb/types/Faucet_generated.hpp"
-#include "honeycomb/types/Holding_generated.hpp"
-#include "honeycomb/types/CharacterTraitInput_generated.hpp"
-#include "honeycomb/types/MintAsInput_generated.hpp"
-#include "honeycomb/types/CharacterCooldownInput_generated.hpp"
-#include "honeycomb/types/MintAsMplBubblegumInput_generated.hpp"
-#include "honeycomb/types/CharacterConfigInput_generated.hpp"
 #include "honeycomb/types/AssemblerConfigInput_generated.hpp"
-#include "honeycomb/types/NftCreatorInput_generated.hpp"
+#include "honeycomb/types/AssemblerConfig_generated.hpp"
+#include "honeycomb/types/AssetCriteriaFilter_generated.hpp"
 #include "honeycomb/types/AssetCriteriaInput_generated.hpp"
-#include "honeycomb/types/CharactersFilter_generated.hpp"
+#include "honeycomb/types/AssetCriteria_generated.hpp"
+#include "honeycomb/types/AssociatedProgramInput_generated.hpp"
+#include "honeycomb/types/AssociatedProgram_generated.hpp"
+#include "honeycomb/types/AuthConfirmed_generated.hpp"
+#include "honeycomb/types/AuthResponse_generated.hpp"
+#include "honeycomb/types/BadgeCriteria_generated.hpp"
+#include "honeycomb/types/BasicTreeConfig_generated.hpp"
+#include "honeycomb/types/CharacterConfigAssembled_generated.hpp"
+#include "honeycomb/types/CharacterConfigInput_generated.hpp"
+#include "honeycomb/types/CharacterConfigWrapped_generated.hpp"
+#include "honeycomb/types/CharacterCooldownInput_generated.hpp"
+#include "honeycomb/types/CharacterCooldown_generated.hpp"
+#include "honeycomb/types/CharacterHistory_generated.hpp"
+#include "honeycomb/types/CharacterModel_generated.hpp"
 #include "honeycomb/types/CharacterSourceFilter_generated.hpp"
 #include "honeycomb/types/CharacterSourceParamsFilter_generated.hpp"
-#include "honeycomb/types/AssetCriteriaFilter_generated.hpp"
+#include "honeycomb/types/CharacterSource_generated.hpp"
+#include "honeycomb/types/CharacterTraitInput_generated.hpp"
+#include "honeycomb/types/CharacterTrait_generated.hpp"
 #include "honeycomb/types/CharacterUsedByFilter_generated.hpp"
 #include "honeycomb/types/CharacterUsedByParamsFilter_generated.hpp"
-#include "honeycomb/types/EarnedRewardsFilter_generated.hpp"
-#include "honeycomb/types/UsedByGuildFilter_generated.hpp"
-#include "honeycomb/types/GuildRoleFilter_generated.hpp"
+#include "honeycomb/types/CharacterUsedBy_generated.hpp"
+#include "honeycomb/types/Character_generated.hpp"
+#include "honeycomb/types/CharactersFilter_generated.hpp"
 #include "honeycomb/types/CivicInfoInput_generated.hpp"
-#include "honeycomb/types/UserInfoInput_generated.hpp"
-#include "honeycomb/types/PartialUserInfoInput_generated.hpp"
-#include "honeycomb/types/UpdateWalletInput_generated.hpp"
-#include "honeycomb/types/AssociatedProgramInput_generated.hpp"
-#include "honeycomb/types/SerializableActionsInput_generated.hpp"
-#include "honeycomb/types/ProfileDataConfigInput_generated.hpp"
-#include "honeycomb/types/ProfileInfoInput_generated.hpp"
-#include "honeycomb/types/CustomDataInput_generated.hpp"
-#include "honeycomb/types/PlatformDataInput_generated.hpp"
-#include "honeycomb/types/ServiceDelegationInput_generated.hpp"
-#include "honeycomb/types/ServiceDelegationHiveControl_generated.hpp"
-#include "honeycomb/types/ServiceDelegationCharacterManager_generated.hpp"
-#include "honeycomb/types/ServiceDelegationResourceManager_generated.hpp"
-#include "honeycomb/types/ServiceDelegationNectarStaking_generated.hpp"
-#include "honeycomb/types/ServiceDelegationNectarMissions_generated.hpp"
-#include "honeycomb/types/ServiceDelegationBuzzGuild_generated.hpp"
-#include "honeycomb/types/ModifyServiceDelegationInput_generated.hpp"
-#include "honeycomb/types/ModifyDelegationInput_generated.hpp"
-#include "honeycomb/types/UpdateMissionInput_generated.hpp"
+#include "honeycomb/types/CivicInfo_generated.hpp"
+#include "honeycomb/types/ClaimBadgeCriteriaInput_generated.hpp"
+#include "honeycomb/types/CompressedAccount_generated.hpp"
+#include "honeycomb/types/ControlledMerkleTrees_generated.hpp"
+#include "honeycomb/types/CreateAssemblerConfigTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateBadgeCriteriaInput_generated.hpp"
+#include "honeycomb/types/CreateBeginCookingTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateCharacterModelTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateCreateHolderAccountTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateCreateMissionPoolTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateCreateMissionTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateCreateNewResourceTreeTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateCreateProjectTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateCreateStakingPoolTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateInitMultipliersTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateInitResourceTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateInitializeFaucetTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateInitializeRecipeTransactionResponse_generated.hpp"
 #include "honeycomb/types/CreateStakingPoolMetadataInput_generated.hpp"
-#include "honeycomb/types/UpdateStakingPoolMetadataInput_generated.hpp"
-#include "honeycomb/types/MultiplierTypeInput_generated.hpp"
-#include "honeycomb/types/AddMultiplierMetadataInput_generated.hpp"
-#include "honeycomb/types/InitStakingMultiplierMetadataInput_generated.hpp"
+#include "honeycomb/types/CreateUpdateMissionPoolTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateUpdateMissionTransactionResponse_generated.hpp"
+#include "honeycomb/types/CustomDataInput_generated.hpp"
+#include "honeycomb/types/DelegateAuthority_generated.hpp"
 #include "honeycomb/types/DisrcriminatorFilter_generated.hpp"
-#include "honeycomb/types/TreeLeaf_generated.hpp"
-#include "honeycomb/types/TreeSetupConfig_generated.hpp"
-#include "honeycomb/types/BasicTreeConfig_generated.hpp"
-#include "honeycomb/types/AdvancedTreeConfig_generated.hpp"
+#include "honeycomb/types/EarnedRewardsFilter_generated.hpp"
+#include "honeycomb/types/EarnedRewards_generated.hpp"
+#include "honeycomb/types/Faucet_generated.hpp"
+#include "honeycomb/types/Global_generated.hpp"
+#include "honeycomb/types/GuildRoleFilter_generated.hpp"
+#include "honeycomb/types/GuildRole_generated.hpp"
+#include "honeycomb/types/Holding_generated.hpp"
+#include "honeycomb/types/HoneycombAccount_generated.hpp"
+#include "honeycomb/types/HoneycombNode_generated.hpp"
+#include "honeycomb/types/HoneycombResource_generated.hpp"
+#include "honeycomb/types/HoneycombTransaction_generated.hpp"
+#include "honeycomb/types/HoneycombUserInfo_generated.hpp"
+#include "honeycomb/types/ImportResourceInputCustodyInput_generated.hpp"
+#include "honeycomb/types/ImportResourceInput_generated.hpp"
+#include "honeycomb/types/Ingredient_generated.hpp"
+#include "honeycomb/types/IngredientsInput_generated.hpp"
+#include "honeycomb/types/InitResourceInput_generated.hpp"
+#include "honeycomb/types/InitStakingMultiplierMetadataInput_generated.hpp"
+#include "honeycomb/types/LockType_generated.hpp"
+#include "honeycomb/types/MealInput_generated.hpp"
+#include "honeycomb/types/Meal_generated.hpp"
+#include "honeycomb/types/MintAsInput_generated.hpp"
+#include "honeycomb/types/MintAsMplBubblegumInput_generated.hpp"
+#include "honeycomb/types/MintAsParamsMplBubblegum_generated.hpp"
+#include "honeycomb/types/MintAs_generated.hpp"
+#include "honeycomb/types/MissionCost_generated.hpp"
+#include "honeycomb/types/MissionPool_generated.hpp"
+#include "honeycomb/types/MissionReward_generated.hpp"
+#include "honeycomb/types/Mission_generated.hpp"
+#include "honeycomb/types/ModifyDelegationInput_generated.hpp"
+#include "honeycomb/types/ModifyServiceDelegationInput_generated.hpp"
+#include "honeycomb/types/MultiplierTypeInput_generated.hpp"
+#include "honeycomb/types/MultiplierTypeParamsCollection_generated.hpp"
+#include "honeycomb/types/MultiplierTypeParamsCreator_generated.hpp"
+#include "honeycomb/types/MultiplierTypeParamsNFTCount_generated.hpp"
+#include "honeycomb/types/MultiplierTypeParamsStakeDuration_generated.hpp"
+#include "honeycomb/types/MultiplierType_generated.hpp"
+#include "honeycomb/types/Multiplier_generated.hpp"
+#include "honeycomb/types/Multipliers_generated.hpp"
+#include "honeycomb/types/NewMissionCost_generated.hpp"
+#include "honeycomb/types/NewMissionData_generated.hpp"
+#include "honeycomb/types/NewMissionPoolData_generated.hpp"
+#include "honeycomb/types/NftCreatorInput_generated.hpp"
+#include "honeycomb/types/NftCreator_generated.hpp"
+#include "honeycomb/types/OutputHoldingTree_generated.hpp"
+#include "honeycomb/types/PartialUserInfoInput_generated.hpp"
+#include "honeycomb/types/ParticipateOnMissionData_generated.hpp"
+#include "honeycomb/types/PlatformDataInput_generated.hpp"
+#include "honeycomb/types/PlatformData_generated.hpp"
+#include "honeycomb/types/ProfileDataConfigInput_generated.hpp"
+#include "honeycomb/types/ProfileDataConfig_generated.hpp"
+#include "honeycomb/types/ProfileInfoInput_generated.hpp"
+#include "honeycomb/types/ProfileInfo_generated.hpp"
+#include "honeycomb/types/Profile_generated.hpp"
+#include "honeycomb/types/Project_generated.hpp"
+#include "honeycomb/types/Proof_generated.hpp"
+#include "honeycomb/types/RecallFromMissionData_generated.hpp"
 #include "honeycomb/types/RecipeInputResource_generated.hpp"
 #include "honeycomb/types/RecipeInputResources_generated.hpp"
 #include "honeycomb/types/RecipeOutputResource_generated.hpp"
 #include "honeycomb/types/RecipeResources_generated.hpp"
-#include "honeycomb/types/NewMissionPoolData_generated.hpp"
-#include "honeycomb/types/UpdateMissionPoolData_generated.hpp"
-#include "honeycomb/types/NewMissionCost_generated.hpp"
-#include "honeycomb/types/MissionReward_generated.hpp"
-#include "honeycomb/types/NewMissionData_generated.hpp"
-#include "honeycomb/types/UpdateMissionData_generated.hpp"
-#include "honeycomb/types/ParticipateOnMissionData_generated.hpp"
-#include "honeycomb/types/RecallFromMissionData_generated.hpp"
-#include "honeycomb/types/CreateBadgeCriteriaInput_generated.hpp"
-#include "honeycomb/types/ClaimBadgeCriteriaInput_generated.hpp"
-#include "honeycomb/types/UpdateBadgeCriteriaInput_generated.hpp"
-#include "honeycomb/types/SendTransactionsOptions_generated.hpp"
+#include "honeycomb/types/Recipe_generated.hpp"
+#include "honeycomb/types/ResourceBalance_generated.hpp"
+#include "honeycomb/types/ResourceCustodyParams_generated.hpp"
+#include "honeycomb/types/ResourceCustody_generated.hpp"
+#include "honeycomb/types/ResourceKindParamsHplFungible_generated.hpp"
+#include "honeycomb/types/ResourceKindParamsHplNonFungible_generated.hpp"
+#include "honeycomb/types/ResourceKindParamsWrappedFungible_generated.hpp"
+#include "honeycomb/types/ResourceKindParamsWrappedMplCore_generated.hpp"
+#include "honeycomb/types/ResourceKind_generated.hpp"
+#include "honeycomb/types/ResourceRewardTypeParams_generated.hpp"
+#include "honeycomb/types/ResourceRewardType_generated.hpp"
+#include "honeycomb/types/ResourceStorageParams_generated.hpp"
+#include "honeycomb/types/ResourceStorage_generated.hpp"
+#include "honeycomb/types/Reward_generated.hpp"
 #include "honeycomb/types/SendTransactionBundlesOptions_generated.hpp"
+#include "honeycomb/types/SendTransactionsOptions_generated.hpp"
+#include "honeycomb/types/SerializableActionsInput_generated.hpp"
+#include "honeycomb/types/SerializableActions_generated.hpp"
+#include "honeycomb/types/ServiceDelegationBuzzGuild_generated.hpp"
+#include "honeycomb/types/ServiceDelegationCharacterManager_generated.hpp"
+#include "honeycomb/types/ServiceDelegationHiveControl_generated.hpp"
+#include "honeycomb/types/ServiceDelegationInput_generated.hpp"
+#include "honeycomb/types/ServiceDelegationNectarMissions_generated.hpp"
+#include "honeycomb/types/ServiceDelegationNectarStaking_generated.hpp"
+#include "honeycomb/types/ServiceDelegationResourceManager_generated.hpp"
+#include "honeycomb/types/ServiceDelegation_generated.hpp"
+#include "honeycomb/types/ServiceParamsAssembler_generated.hpp"
+#include "honeycomb/types/ServiceParamsAssetManager_generated.hpp"
+#include "honeycomb/types/ServiceParamsGuildKit_generated.hpp"
+#include "honeycomb/types/ServiceParamsMissions_generated.hpp"
+#include "honeycomb/types/ServiceParamsRaffles_generated.hpp"
+#include "honeycomb/types/ServiceParamsStaking_generated.hpp"
+#include "honeycomb/types/Service_generated.hpp"
+#include "honeycomb/types/SocialInfo_generated.hpp"
+#include "honeycomb/types/Staker_generated.hpp"
+#include "honeycomb/types/StakingPool_generated.hpp"
+#include "honeycomb/types/TimeRequirementParams_generated.hpp"
+#include "honeycomb/types/TimeRequirement_generated.hpp"
+#include "honeycomb/types/TransactionBundleResponse_generated.hpp"
 #include "honeycomb/types/TransactionBundlesOptions_generated.hpp"
-#include "honeycomb/types/InitResourceInput_generated.hpp"
-#include "honeycomb/types/IngredientsInput_generated.hpp"
-#include "honeycomb/types/MealInput_generated.hpp"
-#include "honeycomb/types/ImportResourceInput_generated.hpp"
-#include "honeycomb/types/ImportResourceInputCustodyInput_generated.hpp"
+#include "honeycomb/types/TransactionResponse_generated.hpp"
+#include "honeycomb/types/Transactions_generated.hpp"
+#include "honeycomb/types/TreeLeaf_generated.hpp"
+#include "honeycomb/types/TreeSetupConfig_generated.hpp"
+#include "honeycomb/types/TreeSetupResponse_generated.hpp"
+#include "honeycomb/types/UpdateBadgeCriteriaInput_generated.hpp"
+#include "honeycomb/types/UpdateMissionData_generated.hpp"
+#include "honeycomb/types/UpdateMissionInput_generated.hpp"
+#include "honeycomb/types/UpdateMissionPoolData_generated.hpp"
+#include "honeycomb/types/UpdateStakingPoolMetadataInput_generated.hpp"
+#include "honeycomb/types/UpdateWalletInput_generated.hpp"
+#include "honeycomb/types/UsedByCustom_generated.hpp"
+#include "honeycomb/types/UsedByEjected_generated.hpp"
+#include "honeycomb/types/UsedByGuildFilter_generated.hpp"
+#include "honeycomb/types/UsedByGuild_generated.hpp"
+#include "honeycomb/types/UsedByMission_generated.hpp"
+#include "honeycomb/types/UsedByStaking_generated.hpp"
+#include "honeycomb/types/UserInfoInput_generated.hpp"
+#include "honeycomb/types/User_generated.hpp"
+#include "honeycomb/types/Wallets_generated.hpp"
+#include "honeycomb/types/Wrapped_generated.hpp"
+#include "honeycomb/types/XpRewardType_generated.hpp"
 namespace godot {
 
-Variant HoneyComb::findCompressedAccounts(Array addresses, Variant identity, Array leaves, Dictionary parsedData){
+Variant HoneyComb::findCompressedAccounts(Array addresses, Variant identity, Array leaves, Dictionary parsedData) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -197,32 +197,28 @@ Variant HoneyComb::findCompressedAccounts(Array addresses, Variant identity, Arr
 		add_arg("parsedData", "JSON", parsedData, true);
 	}
 
-
 	method_name = "compressedAccount";
-
 
 	query_fields = "leaf_idx parsed_data raw_data schema_validated tree_id";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::fetchProofs(Array leaves){
+Variant HoneyComb::fetchProofs(Array leaves) {
 	if (pending) {
 		return ERR_BUSY;
 	}
 
 	add_arg("leaves", "[TreeLeaf!]", leaves, false);
 
-
 	method_name = "proof";
-
 
 	query_fields = "root proof maxDepth node_index leaf leaf_index tree_id canopy_depth";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findAccounts(PackedByteArray programId, PackedByteArray discriminator, Dictionary parsedData){
+Variant HoneyComb::findAccounts(PackedByteArray programId, PackedByteArray discriminator, Dictionary parsedData) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -235,16 +231,14 @@ Variant HoneyComb::findAccounts(PackedByteArray programId, PackedByteArray discr
 		add_arg("parsedData", "JSON", parsedData, true);
 	}
 
-
 	method_name = "account";
-
 
 	query_fields = "address program_id discriminator parsed_data";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::sendTransactionBundles(Array txs, String blockhash, int32_t lastValidBlockHeight, Variant options){
+Variant HoneyComb::sendTransactionBundles(Array txs, String blockhash, int32_t lastValidBlockHeight, Variant options) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -256,16 +250,14 @@ Variant HoneyComb::sendTransactionBundles(Array txs, String blockhash, int32_t l
 		add_arg("options", "SendTransactionBundlesOptions", Object::cast_to<godot::honeycomb_resource::SendTransactionBundlesOptions>(options)->to_dict(), true);
 	}
 
-
 	method_name = "sendTransactionBundles";
-
 
 	query_fields = "bundleId responses { signature error status }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::signWithShadowSignerAndSendTransactionBundles(Array txs, String blockhash, int32_t lastValidBlockHeight, String authToken, Variant options){
+Variant HoneyComb::signWithShadowSignerAndSendTransactionBundles(Array txs, String blockhash, int32_t lastValidBlockHeight, String authToken, Variant options) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -278,16 +270,14 @@ Variant HoneyComb::signWithShadowSignerAndSendTransactionBundles(Array txs, Stri
 		add_arg("options", "SendTransactionBundlesOptions", Object::cast_to<godot::honeycomb_resource::SendTransactionBundlesOptions>(options)->to_dict(), true);
 	}
 
-
 	method_name = "signWithShadowSignerAndSendTransactionBundles";
-
 
 	query_fields = "bundleId responses { signature error status }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::sendBulkTransactions(Array txs, String blockhash, int32_t lastValidBlockHeight, Variant options){
+Variant HoneyComb::sendBulkTransactions(Array txs, String blockhash, int32_t lastValidBlockHeight, Variant options) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -298,17 +288,15 @@ Variant HoneyComb::sendBulkTransactions(Array txs, String blockhash, int32_t las
 	if (options != Variant(nullptr)) {
 		add_arg("options", "SendTransactionBundlesOptions", Object::cast_to<godot::honeycomb_resource::SendTransactionBundlesOptions>(options)->to_dict(), true);
 	}
-
 
 	method_name = "sendBulkTransactions";
 
-
 	query_fields = "signature error status";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::signWithShadowSignerAndSendBulkTransactions(Array txs, String blockhash, int32_t lastValidBlockHeight, Variant options){
+Variant HoneyComb::signWithShadowSignerAndSendBulkTransactions(Array txs, String blockhash, int32_t lastValidBlockHeight, Variant options) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -320,16 +308,14 @@ Variant HoneyComb::signWithShadowSignerAndSendBulkTransactions(Array txs, String
 		add_arg("options", "SendTransactionBundlesOptions", Object::cast_to<godot::honeycomb_resource::SendTransactionBundlesOptions>(options)->to_dict(), true);
 	}
 
-
 	method_name = "signWithShadowSignerAndSendBulkTransactions";
-
 
 	query_fields = "signature error status";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::authRequest(String wallet, bool useTx, String useRpc){
+Variant HoneyComb::authRequest(String wallet, bool useTx, String useRpc) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -342,16 +328,14 @@ Variant HoneyComb::authRequest(String wallet, bool useTx, String useRpc){
 		add_arg("useRpc", "String", Pubkey::string_from_variant(useRpc), true);
 	}
 
-
 	method_name = "authRequest";
-
 
 	query_fields = "message tx";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::authConfirm(String wallet, String signature){
+Variant HoneyComb::authConfirm(String wallet, String signature) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -359,16 +343,14 @@ Variant HoneyComb::authConfirm(String wallet, String signature){
 	add_arg("wallet", "String", Pubkey::string_from_variant(wallet), false);
 	add_arg("signature", "String", Pubkey::string_from_variant(signature), false);
 
-
 	method_name = "authConfirm";
-
 
 	query_fields = "accessToken user { address id info { bio name pfp } wallets { shadow wallets }  }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createTransferAssetsTransactions(PackedStringArray addresses, String to, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createTransferAssetsTransactions(PackedStringArray addresses, String to, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -382,16 +364,14 @@ Variant HoneyComb::createTransferAssetsTransactions(PackedStringArray addresses,
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createTransferAssetsTransactions";
-
 
 	query_fields = "blockhash lastValidBlockHeight transactions";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createBurnAssetsTransactions(PackedStringArray addresses, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createBurnAssetsTransactions(PackedStringArray addresses, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -404,16 +384,14 @@ Variant HoneyComb::createBurnAssetsTransactions(PackedStringArray addresses, Pac
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createBurnAssetsTransactions";
-
 
 	query_fields = "blockhash lastValidBlockHeight transactions";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findGlobal(String env){
+Variant HoneyComb::findGlobal(String env) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -422,16 +400,14 @@ Variant HoneyComb::findGlobal(String env){
 		add_arg("env", "String", Pubkey::string_from_variant(env), true);
 	}
 
-
 	method_name = "global";
-
 
 	query_fields = "address bump config userTrees { active merkle_trees schema } totalUsers";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findProjects(Array addresses, PackedStringArray names, Array authorities){
+Variant HoneyComb::findProjects(Array addresses, PackedStringArray names, Array authorities) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -446,16 +422,14 @@ Variant HoneyComb::findProjects(Array addresses, PackedStringArray names, Array 
 		add_arg("authorities", "[Pubkey!]", authorities, true);
 	}
 
-
 	method_name = "project";
-
 
 	query_fields = "associatedPrograms { address trustedActions { kind }  } authority bump driver address key name profileDataConfig { achievements customDataFields } profileTrees { active merkle_trees schema } badgeCriteria { index condition endTime startTime } services { kind params { ... on ServiceParamsAssembler { assemblerId } ... on ServiceParamsAssetManager { assetManagerId } ... on ServiceParamsStaking { poolId } ... on ServiceParamsMissions { poolId } ... on ServiceParamsRaffles { poolId } ... on ServiceParamsGuildKit { kitId }  }  } subsidyFees";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findDelegateAuthority(Array addresses, Array delegates, Array projects){
+Variant HoneyComb::findDelegateAuthority(Array addresses, Array delegates, Array projects) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -470,16 +444,14 @@ Variant HoneyComb::findDelegateAuthority(Array addresses, Array delegates, Array
 		add_arg("projects", "[Pubkey!]", projects, true);
 	}
 
-
 	method_name = "delegateAuthority";
-
 
 	query_fields = "authority bump delegations { kind index permission }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findUsers(Array addresses, PackedInt32Array ids, Array wallets, bool includeProof, Array includeProjectProfiles){
+Variant HoneyComb::findUsers(Array addresses, PackedInt32Array ids, Array wallets, bool includeProof, Array includeProjectProfiles) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -500,16 +472,14 @@ Variant HoneyComb::findUsers(Array addresses, PackedInt32Array ids, Array wallet
 		add_arg("includeProjectProfiles", "[Pubkey!]", includeProjectProfiles, true);
 	}
 
-
 	method_name = "user";
-
 
 	query_fields = "address id info { bio name pfp username } socialInfo { discord twitter civic { expiry gatekeeperNetwork walletIndex } steam } wallets { shadow wallets } profiles { customData address identity info { bio name pfp } platformData { achievements custom xp } project userId leaf_idx tree_id proof { leaf leaf_index node_index proof maxDepth root tree_id canopy_depth }  } leaf_idx tree_id proof { leaf leaf_index node_index maxDepth proof root tree_id canopy_depth }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findProfiles(Array addresses, Array projects, PackedInt32Array userIds, PackedStringArray identities, bool includeProof, bool includeUsers){
+Variant HoneyComb::findProfiles(Array addresses, Array projects, PackedInt32Array userIds, PackedStringArray identities, bool includeProof, bool includeUsers) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -533,16 +503,14 @@ Variant HoneyComb::findProfiles(Array addresses, Array projects, PackedInt32Arra
 		add_arg("includeUsers", "Boolean", includeUsers, true);
 	}
 
-
 	method_name = "profile";
-
 
 	query_fields = "customData address identity info { bio name pfp } platformData { achievements custom xp } project userId leaf_idx tree_id proof { leaf leaf_index node_index proof maxDepth root tree_id canopy_depth } user { address id info { bio name pfp username } socialInfo { discord twitter civic { expiry gatekeeperNetwork walletIndex } steam } wallets { shadow wallets } leaf_idx tree_id proof { leaf leaf_index node_index maxDepth proof root tree_id canopy_depth }  }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createNewUserTransaction(String wallet, Variant info, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createNewUserTransaction(String wallet, Variant info, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -561,16 +529,14 @@ Variant HoneyComb::createNewUserTransaction(String wallet, Variant info, String 
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createNewUserTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createNewUserBulkTransaction(PackedStringArray wallet, Array info, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createNewUserBulkTransaction(PackedStringArray wallet, Array info, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -585,16 +551,14 @@ Variant HoneyComb::createNewUserBulkTransaction(PackedStringArray wallet, Array 
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createNewUserBulkTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transactions";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createUpdateUserTransaction(String payer, Variant info, Variant wallets, bool populateCivic, Array removeSocials, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createUpdateUserTransaction(String payer, Variant info, Variant wallets, bool populateCivic, Array removeSocials, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -619,16 +583,14 @@ Variant HoneyComb::createUpdateUserTransaction(String payer, Variant info, Varia
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createUpdateUserTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateProjectTransaction(String authority, String name, String driver, Array associatedPrograms, Variant profileDataConfig, bool subsidizeFees, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateProjectTransaction(String authority, String name, String driver, Array associatedPrograms, Variant profileDataConfig, bool subsidizeFees, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -657,16 +619,14 @@ Variant HoneyComb::createCreateProjectTransaction(String authority, String name,
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createCreateProjectTransaction";
-
 
 	query_fields = "project tx { blockhash lastValidBlockHeight transaction }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createChangeProjectDriverTransaction(String project, String driver, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createChangeProjectDriverTransaction(String project, String driver, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -684,16 +644,14 @@ Variant HoneyComb::createChangeProjectDriverTransaction(String project, String d
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createChangeProjectDriverTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateDelegateAuthorityTransaction(String project, String delegate, Variant serviceDelegations, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateDelegateAuthorityTransaction(String project, String delegate, Variant serviceDelegations, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -712,16 +670,14 @@ Variant HoneyComb::createCreateDelegateAuthorityTransaction(String project, Stri
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createCreateDelegateAuthorityTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createModifyDelegationTransaction(String project, String delegate, Variant modifyDelegation, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createModifyDelegationTransaction(String project, String delegate, Variant modifyDelegation, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -740,16 +696,14 @@ Variant HoneyComb::createModifyDelegationTransaction(String project, String dele
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createModifyDelegationTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateProfilesTreeTransaction(Variant treeConfig, String project, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateProfilesTreeTransaction(Variant treeConfig, String project, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -764,16 +718,14 @@ Variant HoneyComb::createCreateProfilesTreeTransaction(Variant treeConfig, Strin
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createCreateProfilesTreeTransaction";
-
 
 	query_fields = "tx { blockhash lastValidBlockHeight transaction } treeAddress proofBytes space cost maxTreeCapacity";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createNewProfileTransaction(String project, String payer, String identity, Variant info, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createNewProfileTransaction(String project, String payer, String identity, Variant info, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -793,16 +745,14 @@ Variant HoneyComb::createNewProfileTransaction(String project, String payer, Str
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createNewProfileTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createUpdateProfileTransaction(String profile, String payer, Variant info, Variant customData, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createUpdateProfileTransaction(String profile, String payer, Variant info, Variant customData, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -822,16 +772,14 @@ Variant HoneyComb::createUpdateProfileTransaction(String profile, String payer, 
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createUpdateProfileTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createUpdatePlatformDataTransaction(String profile, String authority, String delegateAuthority, String payer, Variant platformData, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createUpdatePlatformDataTransaction(String profile, String authority, String delegateAuthority, String payer, Variant platformData, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -854,16 +802,14 @@ Variant HoneyComb::createUpdatePlatformDataTransaction(String profile, String au
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createUpdatePlatformDataTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createNewUserWithProfileTransaction(String project, String wallet, Variant userInfo, String payer, String profileIdentity, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createNewUserWithProfileTransaction(String project, String wallet, Variant userInfo, String payer, String profileIdentity, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -884,16 +830,14 @@ Variant HoneyComb::createNewUserWithProfileTransaction(String project, String wa
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createNewUserWithProfileTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findAssemblerConfig(Array addresses, PackedStringArray tickers, Array characterModel, Array project){
+Variant HoneyComb::findAssemblerConfig(Array addresses, PackedStringArray tickers, Array characterModel, Array project) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -911,16 +855,14 @@ Variant HoneyComb::findAssemblerConfig(Array addresses, PackedStringArray ticker
 		add_arg("project", "[Pubkey!]", project, true);
 	}
 
-
 	method_name = "assemblerConfig";
-
 
 	query_fields = "address program_id discriminator ticker project order merkle_trees { active merkle_trees schema }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findCharacterTraits(Array addresses, Array trees, bool includeProof){
+Variant HoneyComb::findCharacterTraits(Array addresses, Array trees, bool includeProof) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -935,16 +877,14 @@ Variant HoneyComb::findCharacterTraits(Array addresses, Array trees, bool includ
 		add_arg("includeProof", "Boolean", includeProof, true);
 	}
 
-
 	method_name = "characterTrait";
-
 
 	query_fields = "address layer leaf_idx name proof { root proof node_index leaf maxDepth leaf_index tree_id canopy_depth } tree_id uri";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findCharacterModels(Array addresses, Variant project, Array assemblerConfigs){
+Variant HoneyComb::findCharacterModels(Array addresses, Variant project, Array assemblerConfigs) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -959,16 +899,14 @@ Variant HoneyComb::findCharacterModels(Array addresses, Variant project, Array a
 		add_arg("assemblerConfigs", "[Pubkey!]", assemblerConfigs, true);
 	}
 
-
 	method_name = "characterModel";
-
 
 	query_fields = "address program_id discriminator bump key equipableCriteria project attributes merkle_trees { active merkle_trees schema } cooldown { ejection } config { ... on CharacterConfigWrapped { criterias { kind params } kind } ... on CharacterConfigAssembled { kind assemblerConfig name symbol description creators { address share } sellerFeeBasisPoints collectionName mintAs { kind params { ... on MintAsParamsMplBubblegum { merkleTree }  }  }  }  }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findCharacters(bool includeProof, Array addresses, Variant filters, Array trees, Array wallets, Array mints, Array attributeHashes){
+Variant HoneyComb::findCharacters(bool includeProof, Array addresses, Variant filters, Array trees, Array wallets, Array mints, Array attributeHashes) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -995,16 +933,14 @@ Variant HoneyComb::findCharacters(bool includeProof, Array addresses, Variant fi
 		add_arg("attributeHashes", "[Pubkey!]", attributeHashes, true);
 	}
 
-
 	method_name = "character";
-
 
 	query_fields = "source { kind params { ... on Wrapped { mint criteria { kind params } kind } ... on Assembled { hash mint uri attributes assemblerConfig }  } kind } owner proof { leaf leaf_index node_index maxDepth proof root tree_id canopy_depth } usedBy { kind params { ... on UsedByStaking { pool staker stakedAt claimedAt } ... on UsedByMission { missionId participationId rewards { delta rewardIdx collected } endTime } ... on UsedByGuild { id role { kind } order } ... on UsedByEjected { mint } ... on UsedByCustom { user data }  }  } equipments leaf_idx tree_id address asset cooldown { ejection }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::fetchCharacterHistory(Array addresses, PackedStringArray event){
+Variant HoneyComb::fetchCharacterHistory(Array addresses, PackedStringArray event) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1014,16 +950,14 @@ Variant HoneyComb::fetchCharacterHistory(Array addresses, PackedStringArray even
 		add_arg("event", "[String!]", event, true);
 	}
 
-
 	method_name = "characterHistory";
-
 
 	query_fields = "address event event_data time";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateAssemblerConfigTransaction(String ticker, String project, String authority, Variant treeConfig, PackedStringArray order, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateAssemblerConfigTransaction(String ticker, String project, String authority, Variant treeConfig, PackedStringArray order, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1047,16 +981,14 @@ Variant HoneyComb::createCreateAssemblerConfigTransaction(String ticker, String 
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createCreateAssemblerConfigTransaction";
-
 
 	query_fields = "tx { blockhash lastValidBlockHeight transaction } assemblerConfig treeAddress proofBytes space cost maxTreeCapacity";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createAddCharacterTraitsTransactions(String assemblerConfig, Array traits, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createAddCharacterTraitsTransactions(String assemblerConfig, Array traits, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1074,16 +1006,14 @@ Variant HoneyComb::createAddCharacterTraitsTransactions(String assemblerConfig, 
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createAddCharacterTraitsTransactions";
-
 
 	query_fields = "blockhash lastValidBlockHeight transactions";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createRemoveCharacterTraitsTransactions(String assemblerConfig, PackedStringArray traitsAddresses, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createRemoveCharacterTraitsTransactions(String assemblerConfig, PackedStringArray traitsAddresses, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1101,16 +1031,14 @@ Variant HoneyComb::createRemoveCharacterTraitsTransactions(String assemblerConfi
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createRemoveCharacterTraitsTransactions";
-
 
 	query_fields = "blockhash lastValidBlockHeight transactions";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateCharacterModelTransaction(Variant config, String project, String authority, Array attributes, Variant mintAs, Variant cooldown, PackedStringArray equipableCriteria, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateCharacterModelTransaction(Variant config, String project, String authority, Array attributes, Variant mintAs, Variant cooldown, PackedStringArray equipableCriteria, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1140,16 +1068,14 @@ Variant HoneyComb::createCreateCharacterModelTransaction(Variant config, String 
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createCreateCharacterModelTransaction";
-
 
 	query_fields = "characterModel tx { blockhash lastValidBlockHeight transaction }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateCharactersTreeTransaction(Variant treeConfig, String project, String characterModel, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateCharactersTreeTransaction(Variant treeConfig, String project, String characterModel, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1168,16 +1094,14 @@ Variant HoneyComb::createCreateCharactersTreeTransaction(Variant treeConfig, Str
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createCreateCharactersTreeTransaction";
-
 
 	query_fields = "tx { blockhash lastValidBlockHeight transaction } treeAddress proofBytes space cost maxTreeCapacity";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createAssembleCharacterTransaction(String project, String assemblerConfig, String characterModel, String owner, String authority, String uri, Array attributes, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createAssembleCharacterTransaction(String project, String assemblerConfig, String characterModel, String owner, String authority, String uri, Array attributes, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1203,16 +1127,14 @@ Variant HoneyComb::createAssembleCharacterTransaction(String project, String ass
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createAssembleCharacterTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createUpdateCharacterTraitsTransaction(String characterAddress, String project, String assemblerConfig, String characterModel, String authority, String uri, Array attributes, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createUpdateCharacterTraitsTransaction(String characterAddress, String project, String assemblerConfig, String characterModel, String authority, String uri, Array attributes, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1238,16 +1160,14 @@ Variant HoneyComb::createUpdateCharacterTraitsTransaction(String characterAddres
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createUpdateCharacterTraitsTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createPopulateCharacterTransaction(String project, String characterModel, String mint, String owner, String updateAuthority, String payer, Array attributes, String assemblerConfig, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createPopulateCharacterTransaction(String project, String characterModel, String mint, String owner, String updateAuthority, String payer, Array attributes, String assemblerConfig, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1271,16 +1191,14 @@ Variant HoneyComb::createPopulateCharacterTransaction(String project, String cha
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createPopulateCharacterTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createWrapAssetsToCharacterTransactions(String project, String characterModel, String wallet, PackedStringArray mintList, String libreplexDeployment, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createWrapAssetsToCharacterTransactions(String project, String characterModel, String wallet, PackedStringArray mintList, String libreplexDeployment, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1299,16 +1217,14 @@ Variant HoneyComb::createWrapAssetsToCharacterTransactions(String project, Strin
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createWrapAssetsToCharacterTransactions";
-
 
 	query_fields = "transactions blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createUnwrapAssetsFromCharacterTransactions(String project, PackedStringArray characterAddresses, String characterModel, String wallet, String libreplexDeployment, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createUnwrapAssetsFromCharacterTransactions(String project, PackedStringArray characterAddresses, String characterModel, String wallet, String libreplexDeployment, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1327,16 +1243,14 @@ Variant HoneyComb::createUnwrapAssetsFromCharacterTransactions(String project, P
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createUnwrapAssetsFromCharacterTransactions";
-
 
 	query_fields = "blockhash lastValidBlockHeight transactions";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createEquipResourceOnCharacterTransaction(String characterModel, String characterAddress, String resource, int64_t amount, String owner, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createEquipResourceOnCharacterTransaction(String characterModel, String characterAddress, String resource, int64_t amount, String owner, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1355,17 +1269,15 @@ Variant HoneyComb::createEquipResourceOnCharacterTransaction(String characterMod
 	if (computeUnitPrice != -1) {
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
-
 
 	method_name = "createEquipResourceOnCharacterTransaction";
 
-
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createDismountResourceOnCharacterTransaction(String characterModel, String characterAddress, String resource, int64_t amount, String owner, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createDismountResourceOnCharacterTransaction(String characterModel, String characterAddress, String resource, int64_t amount, String owner, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1385,16 +1297,14 @@ Variant HoneyComb::createDismountResourceOnCharacterTransaction(String character
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createDismountResourceOnCharacterTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createUseCharacterTransaction(String character, String project, String characterModel, String user, Dictionary data, bool unUse, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createUseCharacterTransaction(String character, String project, String characterModel, String user, Dictionary data, bool unUse, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1419,16 +1329,14 @@ Variant HoneyComb::createUseCharacterTransaction(String character, String projec
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createUseCharacterTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findStakingPools(Array addresses, Array projects, PackedStringArray names){
+Variant HoneyComb::findStakingPools(Array addresses, Array projects, PackedStringArray names) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1443,16 +1351,14 @@ Variant HoneyComb::findStakingPools(Array addresses, Array projects, PackedStrin
 		add_arg("names", "[String!]", names, true);
 	}
 
-
 	method_name = "stakingPools";
-
 
 	query_fields = "allowedMints bump characterModels cooldownDuration resource endTime key lockType { kind } maxRewardsDuration minStakeDuration name project resetStakeDuration rewardsDuration rewardsPerDuration startTime totalStaked address";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findStakers(Array addresses, Array stakingPools, Array wallets){
+Variant HoneyComb::findStakers(Array addresses, Array stakingPools, Array wallets) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1467,16 +1373,14 @@ Variant HoneyComb::findStakers(Array addresses, Array stakingPools, Array wallet
 		add_arg("wallets", "[Pubkey!]", wallets, true);
 	}
 
-
 	method_name = "stakers";
-
 
 	query_fields = "bump stakingPool totalStaked wallet";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findMultipliers(Array addresses, Array stakingPools){
+Variant HoneyComb::findMultipliers(Array addresses, Array stakingPools) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1488,16 +1392,14 @@ Variant HoneyComb::findMultipliers(Array addresses, Array stakingPools){
 		add_arg("stakingPools", "[Pubkey!]", stakingPools, true);
 	}
 
-
 	method_name = "multipliers";
-
 
 	query_fields = "bump collectionMultipliers { multiplierType { kind params { ... on MultiplierTypeParamsStakeDuration { minDuration } ... on MultiplierTypeParamsNFTCount { minCount } ... on MultiplierTypeParamsCreator { creator } ... on MultiplierTypeParamsCollection { collection }  }  } value } countMultipliers { multiplierType { kind params { ... on MultiplierTypeParamsStakeDuration { minDuration } ... on MultiplierTypeParamsNFTCount { minCount } ... on MultiplierTypeParamsCreator { creator } ... on MultiplierTypeParamsCollection { collection }  }  } value } creatorMultipliers { multiplierType { kind params { ... on MultiplierTypeParamsStakeDuration { minDuration } ... on MultiplierTypeParamsNFTCount { minCount } ... on MultiplierTypeParamsCreator { creator } ... on MultiplierTypeParamsCollection { collection }  }  } value } decimals durationMultipliers { multiplierType { kind params { ... on MultiplierTypeParamsStakeDuration { minDuration } ... on MultiplierTypeParamsNFTCount { minCount } ... on MultiplierTypeParamsCreator { creator } ... on MultiplierTypeParamsCollection { collection }  }  } value } address stakingPool";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateStakingPoolTransaction(String project, String resource, Variant metadata, String authority, Variant multiplier, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateStakingPoolTransaction(String project, String resource, Variant metadata, String authority, Variant multiplier, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1522,16 +1424,14 @@ Variant HoneyComb::createCreateStakingPoolTransaction(String project, String res
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createCreateStakingPoolTransaction";
-
 
 	query_fields = "transactions { transactions blockhash lastValidBlockHeight } stakingPoolAddress multipliersAddress";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createUpdateStakingPoolTransaction(String project, String stakingPool, String authority, Variant metadata, String characterModel, String resource, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createUpdateStakingPoolTransaction(String project, String stakingPool, String authority, Variant metadata, String characterModel, String resource, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1561,16 +1461,14 @@ Variant HoneyComb::createUpdateStakingPoolTransaction(String project, String sta
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createUpdateStakingPoolTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createInitMultipliersTransaction(String project, String stakingPool, int32_t decimals, Array multipliers, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createInitMultipliersTransaction(String project, String stakingPool, int32_t decimals, Array multipliers, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1593,16 +1491,14 @@ Variant HoneyComb::createInitMultipliersTransaction(String project, String staki
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createInitMultipliersTransaction";
-
 
 	query_fields = "tx { transaction blockhash lastValidBlockHeight } multipliersAddress";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createAddMultiplierTransaction(String project, String multiplier, Variant metadata, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createAddMultiplierTransaction(String project, String multiplier, Variant metadata, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1624,16 +1520,14 @@ Variant HoneyComb::createAddMultiplierTransaction(String project, String multipl
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createAddMultiplierTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createStakeCharactersTransactions(PackedStringArray characterAddresses, String characterModel, String stakingPool, String project, String feePayer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createStakeCharactersTransactions(PackedStringArray characterAddresses, String characterModel, String stakingPool, String project, String feePayer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1652,16 +1546,14 @@ Variant HoneyComb::createStakeCharactersTransactions(PackedStringArray character
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createStakeCharactersTransactions";
-
 
 	query_fields = "blockhash lastValidBlockHeight transactions";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createClaimStakingRewardsTransactions(PackedStringArray characterAddresses, String characterModel, String feePayer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createClaimStakingRewardsTransactions(PackedStringArray characterAddresses, String characterModel, String feePayer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1677,17 +1569,15 @@ Variant HoneyComb::createClaimStakingRewardsTransactions(PackedStringArray chara
 	if (computeUnitPrice != -1) {
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
-
 
 	method_name = "createClaimStakingRewardsTransactions";
 
-
 	query_fields = "blockhash lastValidBlockHeight transactions";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createUnstakeCharactersTransactions(PackedStringArray characterAddresses, String characterModel, String feePayer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createUnstakeCharactersTransactions(PackedStringArray characterAddresses, String characterModel, String feePayer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1704,16 +1594,14 @@ Variant HoneyComb::createUnstakeCharactersTransactions(PackedStringArray charact
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createUnstakeCharactersTransactions";
-
 
 	query_fields = "blockhash lastValidBlockHeight transactions";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findMissions(Array addresses, Array missionPools){
+Variant HoneyComb::findMissions(Array addresses, Array missionPools) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1725,16 +1613,14 @@ Variant HoneyComb::findMissions(Array addresses, Array missionPools){
 		add_arg("missionPools", "[Pubkey!]", missionPools, true);
 	}
 
-
 	method_name = "mission";
-
 
 	query_fields = "project address program_id discriminator bump missionPool name minXp cost { amount resource_address } requirement { ... on TimeRequirement { kind params { duration }  }  } rewards { min max rewardType { ... on XpRewardType { kind } ... on ResourceRewardType { kind params { address }  }  }  }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findMissionPools(Array addresses, Variant project){
+Variant HoneyComb::findMissionPools(Array addresses, Variant project) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1746,16 +1632,14 @@ Variant HoneyComb::findMissionPools(Array addresses, Variant project){
 		add_arg("project", "Pubkey", Object::cast_to<Pubkey>(project)->to_string(), true);
 	}
 
-
 	method_name = "missionPool";
-
 
 	query_fields = "address program_id discriminator bump project name factionsMerkleRoot randomizerRound characterModels guildKits";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateMissionPoolTransaction(Variant data, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateMissionPoolTransaction(Variant data, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1768,16 +1652,14 @@ Variant HoneyComb::createCreateMissionPoolTransaction(Variant data, PackedString
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createCreateMissionPoolTransaction";
-
 
 	query_fields = "tx { transaction blockhash lastValidBlockHeight } missionPoolAddress";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createUpdateMissionPoolTransaction(Variant data, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createUpdateMissionPoolTransaction(Variant data, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1790,16 +1672,14 @@ Variant HoneyComb::createUpdateMissionPoolTransaction(Variant data, PackedString
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createUpdateMissionPoolTransaction";
-
 
 	query_fields = "tx { transaction blockhash lastValidBlockHeight }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateMissionTransaction(Variant data, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateMissionTransaction(Variant data, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1812,16 +1692,14 @@ Variant HoneyComb::createCreateMissionTransaction(Variant data, PackedStringArra
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createCreateMissionTransaction";
-
 
 	query_fields = "tx { transaction blockhash lastValidBlockHeight } missionAddress";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createUpdateMissionTransaction(String missionAddress, String authority, Variant params, String payer, String delegateAuthority, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createUpdateMissionTransaction(String missionAddress, String authority, Variant params, String payer, String delegateAuthority, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1842,16 +1720,14 @@ Variant HoneyComb::createUpdateMissionTransaction(String missionAddress, String 
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createUpdateMissionTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createSendCharactersOnMissionTransaction(Variant data, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createSendCharactersOnMissionTransaction(Variant data, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1864,16 +1740,14 @@ Variant HoneyComb::createSendCharactersOnMissionTransaction(Variant data, Packed
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createSendCharactersOnMissionTransaction";
-
 
 	query_fields = "transactions blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createRecallCharactersTransaction(Variant data, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createRecallCharactersTransaction(Variant data, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1886,16 +1760,14 @@ Variant HoneyComb::createRecallCharactersTransaction(Variant data, PackedStringA
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createRecallCharactersTransaction";
-
 
 	query_fields = "transactions blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findResources(Array addresses, Array projects, Array mints){
+Variant HoneyComb::findResources(Array addresses, Array projects, Array mints) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1910,16 +1782,14 @@ Variant HoneyComb::findResources(Array addresses, Array projects, Array mints){
 		add_arg("mints", "[Pubkey!]", mints, true);
 	}
 
-
 	method_name = "resources";
-
 
 	query_fields = "address bump kind { kind params { ... on ResourceKindParamsHplFungible { __typename decimals } ... on ResourceKindParamsWrappedFungible { __typename decimals custody { kind params { burnerDestination }  }  } ... on ResourceKindParamsHplNonFungible { __typename characteristics } ... on ResourceKindParamsWrappedMplCore { __typename characteristics }  }  } mint project tags storage { params { promiseSupply merkle_trees { active merkle_trees schema }  } kind }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findResourcesBalance(PackedStringArray wallets, PackedStringArray addresses, PackedStringArray projects, PackedStringArray mints){
+Variant HoneyComb::findResourcesBalance(PackedStringArray wallets, PackedStringArray addresses, PackedStringArray projects, PackedStringArray mints) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1935,16 +1805,14 @@ Variant HoneyComb::findResourcesBalance(PackedStringArray wallets, PackedStringA
 		add_arg("mints", "[String!]", mints, true);
 	}
 
-
 	method_name = "resourcesBalance";
-
 
 	query_fields = "address amount mint wallet resourceStorage";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findFaucets(Array addresses, Array projects, Array resources){
+Variant HoneyComb::findFaucets(Array addresses, Array projects, Array resources) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1959,16 +1827,14 @@ Variant HoneyComb::findFaucets(Array addresses, Array projects, Array resources)
 		add_arg("resources", "[Pubkey!]", resources, true);
 	}
 
-
 	method_name = "faucets";
-
 
 	query_fields = "resource repeatInterval project amount lastClaimed address";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findRecipes(Array addresses, Array projects){
+Variant HoneyComb::findRecipes(Array addresses, Array projects) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1980,16 +1846,14 @@ Variant HoneyComb::findRecipes(Array addresses, Array projects){
 		add_arg("projects", "[Pubkey!]", projects, true);
 	}
 
-
 	method_name = "recipes";
-
 
 	query_fields = "address bump ingredients { amount resourceAddress } key meal { amount resourceAddress } project xp";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::findHoldings(Array addresses, Array holders, Array trees, bool includeProof){
+Variant HoneyComb::findHoldings(Array addresses, Array holders, Array trees, bool includeProof) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2007,16 +1871,14 @@ Variant HoneyComb::findHoldings(Array addresses, Array holders, Array trees, boo
 		add_arg("includeProof", "Boolean", includeProof, true);
 	}
 
-
 	method_name = "holdings";
-
 
 	query_fields = "address balance characteristics holder leaf_idx tree_id proof { canopy_depth leaf leaf_index maxDepth node_index proof root tree_id }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateNewResourceTransaction(String project, String authority, Variant params, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateNewResourceTransaction(String project, String authority, Variant params, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2037,16 +1899,14 @@ Variant HoneyComb::createCreateNewResourceTransaction(String project, String aut
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createCreateNewResourceTransaction";
-
 
 	query_fields = "tx { transaction blockhash lastValidBlockHeight } resource";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createImportFungibleResourceTransaction(Variant params, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createImportFungibleResourceTransaction(Variant params, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2059,16 +1919,14 @@ Variant HoneyComb::createImportFungibleResourceTransaction(Variant params, Packe
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createImportFungibleResourceTransaction";
-
 
 	query_fields = "resource tx { blockhash lastValidBlockHeight transaction }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createExportFungibleResourceTransaction(String resource, String authority, String delegateAuthority, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createExportFungibleResourceTransaction(String resource, String authority, String delegateAuthority, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2085,16 +1943,14 @@ Variant HoneyComb::createExportFungibleResourceTransaction(String resource, Stri
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createExportFungibleResourceTransaction";
-
 
 	query_fields = "blockhash lastValidBlockHeight transaction";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateNewResourceTreeTransaction(String project, String resource, String authority, Variant treeConfig, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateNewResourceTreeTransaction(String project, String resource, String authority, Variant treeConfig, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2116,16 +1972,14 @@ Variant HoneyComb::createCreateNewResourceTreeTransaction(String project, String
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createCreateNewResourceTreeTransaction";
-
 
 	query_fields = "tx { blockhash lastValidBlockHeight transaction } treeAddress proofBytes space cost maxTreeCapacity";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createMintResourceTransaction(String resource, String owner, String authority, int64_t amount, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createMintResourceTransaction(String resource, String owner, String authority, int64_t amount, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2147,16 +2001,14 @@ Variant HoneyComb::createMintResourceTransaction(String resource, String owner, 
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createMintResourceTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createBurnResourceTransaction(String resource, int64_t amount, String authority, String owner, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createBurnResourceTransaction(String resource, int64_t amount, String authority, String owner, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2180,16 +2032,14 @@ Variant HoneyComb::createBurnResourceTransaction(String resource, int64_t amount
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createBurnResourceTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createTransferResourceTransaction(String resource, String owner, String recipient, int64_t amount, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createTransferResourceTransaction(String resource, String owner, String recipient, int64_t amount, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2208,16 +2058,14 @@ Variant HoneyComb::createTransferResourceTransaction(String resource, String own
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createTransferResourceTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateWrapHoldingTransaction(String resource, int64_t amount, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateWrapHoldingTransaction(String resource, int64_t amount, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2234,17 +2082,15 @@ Variant HoneyComb::createCreateWrapHoldingTransaction(String resource, int64_t a
 	if (computeUnitPrice != -1) {
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
-
 
 	method_name = "createCreateWrapHoldingTransaction";
 
-
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createCreateUnwrapHoldingTransaction(String resource, int64_t amount, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createCreateUnwrapHoldingTransaction(String resource, int64_t amount, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2262,16 +2108,14 @@ Variant HoneyComb::createCreateUnwrapHoldingTransaction(String resource, int64_t
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createCreateUnwrapHoldingTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createInitializeFaucetTransaction(String resource, int32_t amount, int32_t repeatInterval, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createInitializeFaucetTransaction(String resource, int32_t amount, int32_t repeatInterval, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2293,16 +2137,14 @@ Variant HoneyComb::createInitializeFaucetTransaction(String resource, int32_t am
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createInitializeFaucetTransaction";
-
 
 	query_fields = "tx { transaction blockhash lastValidBlockHeight } faucet";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createClaimFaucetTransaction(String faucet, String owner, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createClaimFaucetTransaction(String faucet, String owner, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2319,16 +2161,14 @@ Variant HoneyComb::createClaimFaucetTransaction(String faucet, String owner, Str
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createClaimFaucetTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createInitializeRecipeTransaction(String project, int64_t xp, Array ingredients, Variant meal, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createInitializeRecipeTransaction(String project, int64_t xp, Array ingredients, Variant meal, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2351,16 +2191,14 @@ Variant HoneyComb::createInitializeRecipeTransaction(String project, int64_t xp,
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createInitializeRecipeTransaction";
-
 
 	query_fields = "recipe transactions { transactions blockhash lastValidBlockHeight }";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createAddIngredientsTransaction(String recipe, Array ingredients, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createAddIngredientsTransaction(String recipe, Array ingredients, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2381,16 +2219,14 @@ Variant HoneyComb::createAddIngredientsTransaction(String recipe, Array ingredie
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createAddIngredientsTransaction";
-
 
 	query_fields = "transactions blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createRemoveIngredientsTransaction(String recipe, PackedStringArray ingredients, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createRemoveIngredientsTransaction(String recipe, PackedStringArray ingredients, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2411,16 +2247,14 @@ Variant HoneyComb::createRemoveIngredientsTransaction(String recipe, PackedStrin
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createRemoveIngredientsTransaction";
-
 
 	query_fields = "transactions blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createInitCookingProcessTransactions(String recipe, String authority, String payer, int32_t computeUnitPrice, PackedStringArray lutAddresses){
+Variant HoneyComb::createInitCookingProcessTransactions(String recipe, String authority, String payer, int32_t computeUnitPrice, PackedStringArray lutAddresses) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2437,16 +2271,14 @@ Variant HoneyComb::createInitCookingProcessTransactions(String recipe, String au
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
 	}
 
-
 	method_name = "createInitCookingProcessTransactions";
-
 
 	query_fields = "blockhash lastValidBlockHeight transactions";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createInitializeBadgeCriteriaTransaction(Variant args, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createInitializeBadgeCriteriaTransaction(Variant args, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2459,16 +2291,14 @@ Variant HoneyComb::createInitializeBadgeCriteriaTransaction(Variant args, Packed
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createInitializeBadgeCriteriaTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createClaimBadgeCriteriaTransaction(Variant args, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createClaimBadgeCriteriaTransaction(Variant args, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2481,16 +2311,14 @@ Variant HoneyComb::createClaimBadgeCriteriaTransaction(Variant args, PackedStrin
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createClaimBadgeCriteriaTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
 
-Variant HoneyComb::createUpdateBadgeCriteriaTransaction(Variant args, PackedStringArray lutAddresses, int32_t computeUnitPrice){
+Variant HoneyComb::createUpdateBadgeCriteriaTransaction(Variant args, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2503,9 +2331,7 @@ Variant HoneyComb::createUpdateBadgeCriteriaTransaction(Variant args, PackedStri
 		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
 	}
 
-
 	method_name = "createUpdateBadgeCriteriaTransaction";
-
 
 	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
@@ -2602,4 +2428,4 @@ void HoneyComb::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_claim_badge_criteria_transaction", "args", "lutAddresses", "computeUnitPrice"), &HoneyComb::createClaimBadgeCriteriaTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_update_badge_criteria_transaction", "args", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUpdateBadgeCriteriaTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
 }
-} // godot
+} //namespace godot
