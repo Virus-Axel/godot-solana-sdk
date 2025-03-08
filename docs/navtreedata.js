@@ -44,7 +44,9 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"account_8hpp_source.html"
+"_add_multiplier_metadata_input__generated_8hpp_source.html",
+"classgodot_1_1_merged_account_metas.html#a9f2f3330b450ca7c61a7293f07c5523e",
+"classgodot_1_1honeycomb__resource_1_1_used_by_ejected.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

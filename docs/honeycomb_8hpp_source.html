@@ -112,7 +112,7 @@ $(function(){initNavTree('honeycomb_8hpp_source.html',''); initResizable(true); 
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">namespace </span>godot{</div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">enum</span> ResourceStorageEnum{</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">enum</span> <a class="code hl_class" href="classgodot_1_1_resource_storage_enum.html">ResourceStorageEnum</a>{</div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    AccountState = 0,</div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    LedgerState = 1,</div>
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>};</div>
@@ -125,7 +125,7 @@ $(function(){initNavTree('honeycomb_8hpp_source.html',''); initResizable(true); 
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    String symbol = <span class="stringliteral">&quot;&quot;</span>;</div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    String uri = <span class="stringliteral">&quot;&quot;</span>;</div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    int32_t decimals = 0;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    ResourceStorageEnum storage = AccountState;</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <a class="code hl_class" href="classgodot_1_1_resource_storage_enum.html">ResourceStorageEnum</a> storage = AccountState;</div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">protected</span>:</div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">public</span>:</div>
@@ -199,8 +199,7 @@ $(function(){initNavTree('honeycomb_8hpp_source.html',''); initResizable(true); 
 <div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>};</div>
 </div>
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
-<div class="foldopen" id="foldopen00088" data-start="{" data-end="};">
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno"><a class="line" href="classgodot_1_1_honey_comb.html">   88</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_honey_comb.html">HoneyComb</a>: <span class="keyword">public</span> Node{</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_honey_comb.html">HoneyComb</a>: <span class="keyword">public</span> Node{</div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>GDCLASS(<a class="code hl_class" href="classgodot_1_1_honey_comb.html">HoneyComb</a>, Node)</div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="keyword">private</span>:</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keywordtype">bool</span> pending = <span class="keyword">false</span>;</div>
@@ -241,15 +240,15 @@ $(function(){initNavTree('honeycomb_8hpp_source.html',''); initResizable(true); 
 <div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>    Variant createBurnResourceTransaction(<span class="keyword">const</span> Variant&amp; resource, int64_t amount, <span class="keyword">const</span> Variant&amp; authority, <span class="keyword">const</span> Variant&amp; owner = <span class="stringliteral">&quot;&quot;</span>, <span class="keyword">const</span> Variant&amp; payer = <span class="stringliteral">&quot;&quot;</span>, <span class="keyword">const</span> Variant&amp; delegateAuthority = <span class="stringliteral">&quot;&quot;</span>, PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);</div>
 <div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>    Variant createNewUserTransaction(<span class="keyword">const</span> Variant&amp; wallet, Variant info = Variant(<span class="keyword">nullptr</span>), <span class="keyword">const</span> Variant&amp; payer = <span class="stringliteral">&quot;&quot;</span>, PackedStringArray lutAddresses = PackedStringArray(), int32_t computeUnitPrice = -1);</div>
 <div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>};</div>
-</div>
 <div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span> </div>
 <div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>}</div>
 <div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span> </div>
 <div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassgodot_1_1_advanced_tree_config_html"><div class="ttname"><a href="classgodot_1_1_advanced_tree_config.html">godot::AdvancedTreeConfig</a></div><div class="ttdef"><b>Definition</b> honeycomb.hpp:65</div></div>
 <div class="ttc" id="aclassgodot_1_1_basic_tree_config_html"><div class="ttname"><a href="classgodot_1_1_basic_tree_config.html">godot::BasicTreeConfig</a></div><div class="ttdef"><b>Definition</b> honeycomb.hpp:56</div></div>
-<div class="ttc" id="aclassgodot_1_1_honey_comb_html"><div class="ttname"><a href="classgodot_1_1_honey_comb.html">godot::HoneyComb</a></div><div class="ttdef"><b>Definition</b> honeycomb.hpp:88</div></div>
+<div class="ttc" id="aclassgodot_1_1_honey_comb_html"><div class="ttname"><a href="classgodot_1_1_honey_comb.html">godot::HoneyComb</a></div><div class="ttdef"><b>Definition</b> honeycomb.hpp:14</div></div>
 <div class="ttc" id="aclassgodot_1_1_init_resource_input_html"><div class="ttname"><a href="classgodot_1_1_init_resource_input.html">godot::InitResourceInput</a></div><div class="ttdef"><b>Definition</b> honeycomb.hpp:16</div></div>
+<div class="ttc" id="aclassgodot_1_1_resource_storage_enum_html"><div class="ttname"><a href="classgodot_1_1_resource_storage_enum.html">godot::ResourceStorageEnum</a></div><div class="ttdef"><b>Definition</b> enums_generated.hpp:292</div></div>
 <div class="ttc" id="aclassgodot_1_1_transaction_html"><div class="ttname"><a href="classgodot_1_1_transaction.html">godot::Transaction</a></div><div class="ttdef"><b>Definition</b> transaction.hpp:21</div></div>
 <div class="ttc" id="aclassgodot_1_1_tree_setup_config_html"><div class="ttname"><a href="classgodot_1_1_tree_setup_config.html">godot::TreeSetupConfig</a></div><div class="ttdef"><b>Definition</b> honeycomb.hpp:77</div></div>
 <div class="ttc" id="aclassgodot_1_1_user_info_input_html"><div class="ttname"><a href="classgodot_1_1_user_info_input.html">godot::UserInfoInput</a></div><div class="ttdef"><b>Definition</b> honeycomb.hpp:42</div></div>
@@ -259,7 +258,7 @@ $(function(){initNavTree('honeycomb_8hpp_source.html',''); initResizable(true); 
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><b>honeycomb.hpp</b></li>
-    <li class="footer">Generated on Wed Feb 26 2025 19:11:14 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Mar 8 2025 07:24:26 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

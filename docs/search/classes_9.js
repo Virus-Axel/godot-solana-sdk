@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['pubkey_0',['Pubkey',['../classgodot_1_1_pubkey.html',1,'godot']]]
+  ['keypair_0',['Keypair',['../classgodot_1_1_keypair.html',1,'godot']]]
 ];

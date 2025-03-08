@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['list_0',['Deprecated List',['../deprecated.html',1,'']]]
+  ['keypair_0',['Keypair',['../classgodot_1_1_keypair.html',1,'godot']]]
 ];
