@@ -1,0 +1,10 @@
+[gd_resource type="ModifyDelegationInput" load_steps=3 format=3 uid="uid://c517gfty1v5m6"]
+
+[ext_resource type="ServiceDelegationHiveControl" uid="uid://yd1afn10fspq" path="res://resources/update_service_delegation_hive_control.tres" id="1_curh0"]
+
+[sub_resource type="ModifyServiceDelegationInput" id="ModifyServiceDelegationInput_0ktfs"]
+HiveControl = ExtResource("1_curh0")
+
+[resource]
+delegation = SubResource("ModifyServiceDelegationInput_0ktfs")
+index = 2

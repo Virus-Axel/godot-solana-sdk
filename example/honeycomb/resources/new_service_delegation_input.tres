@@ -1,0 +1,6 @@
+[gd_resource type="ServiceDelegationInput" load_steps=2 format=3 uid="uid://cqjq6jaqgmyul"]
+
+[ext_resource type="ServiceDelegationHiveControl" uid="uid://yd1afn10fspq" path="res://resources/update_service_delegation_hive_control.tres" id="1_djfyp"]
+
+[resource]
+HiveControl = [ExtResource("1_djfyp")]

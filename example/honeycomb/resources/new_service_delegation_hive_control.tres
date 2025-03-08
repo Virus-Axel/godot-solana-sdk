@@ -1,0 +1,4 @@
+[gd_resource type="ServiceDelegationHiveControl" format=3 uid="uid://b87iguumms8ig"]
+
+[resource]
+permission = "ManageServices"

@@ -34,7 +34,6 @@
 #include "dialogs/menubar_helper.hpp"
 #include "doc_data_godot-solana-sdk.gen.h"
 #include "hash.hpp"
-#include "honeycomb.hpp"
 #include "instruction.hpp"
 #include "keypair.hpp"
 #include "meta_data/collection.hpp"
@@ -55,6 +54,10 @@
 #include "system_program.hpp"
 #include "transaction.hpp"
 #include "wallet_adapter.hpp"
+#include "honeycomb/honeycomb.hpp"
+#include "honeycomb/honeycomb_generated.hpp"
+#include "honeycomb/types/index_generated.hpp"
+#include "honeycomb/enums_generated.hpp"
 
 namespace godot {
 namespace {
@@ -135,6 +138,10 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<RpcSingleHttpRequestClient>();
 	ClassDB::register_class<RpcMultiHttpRequestClient>();
 	ClassDB::register_class<HoneyComb>();
+
+	REGISTER_HONEYCOMB_TYPES
+  REGISTER_HONEYCOMB_ENUM
+
 	ClassDB::register_class<MenuBarHelper>();
 	ClassDB::register_class<AddCustomIdlDialog>();
 	//ClassDB::register_class<GenericAnchorNode>();
