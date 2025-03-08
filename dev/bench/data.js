@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1741419247440,
+  "lastUpdate": 1741459679267,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -690,6 +690,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/29c4e8dcbf729c0496afc0bf3239d225cb78366e"
         },
         "date": 1741419246324,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.352739726027397,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "db37283d8f967f8c13dd63752806c4b85bd190bb",
+          "message": "Merge pull request #341 from Virus-Axel/refactor/format_honeycomb\n\nFormat honeycomb files and avoid doxygen warning",
+          "timestamp": "2025-03-08T18:33:48+01:00",
+          "tree_id": "8c479888a8b384b785b6d987f68c0163d4dfa7fc",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/db37283d8f967f8c13dd63752806c4b85bd190bb"
+        },
+        "date": 1741459677632,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
