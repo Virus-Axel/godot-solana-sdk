@@ -47,6 +47,11 @@ namespace godot {
 	ERR_FAIL_EDMSG(m_msg)                                                  \
 	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
 
+#define ERR_FAIL_COND_V_MSG_CUSTOM(m_cond, m_retval, m_msg)                \
+	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
+	ERR_FAIL_COND_V_MSG(m_cond, m_retval, m_msg)                           \
+	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
+
 #define WARN_PRINT_ONCE_ED_CUSTOM(m_msg)                                   \
 	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
 	WARN_PRINT_ONCE_ED(m_msg)                                              \

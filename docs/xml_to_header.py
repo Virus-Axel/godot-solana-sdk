@@ -98,6 +98,8 @@ def tree_to_func(tree):
     for param in params:
         param_info = {}
         param_type = param.find("type")
+        if "const" not in tree.text:
+            continue
         param_info["type"] = get_param_type(param_type)
         param_name = param.find("declname")
         param_info["name"] = param_name.text

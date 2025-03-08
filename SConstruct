@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import os
+import re
 import platform
 from docs.xml_to_header import doxy_to_header, get_classes_list
 from tools.js_to_header import js_to_cpp_header
+from tools.json_to_header import json_to_header
 
 CONTAINER_BUILD_PATH = "build-containers"
 CONTAINER_NAME = "godot-solana-sdk-container"
@@ -13,6 +15,16 @@ IOS_OSXCROSS_TRIPPLE = 23
 
 DOC_HEADER_NAME = "include/doc_data_godot-solana-sdk.gen.h"
 
+
+
+def clean_filename(filepath):
+    # Extract filename without extension
+    filename = os.path.splitext(os.path.basename(filepath))[0]
+
+    # Remove all non-alphabetic characters
+    cleaned_name = re.sub(r'[^a-zA-Z_]', '', filename)
+
+    return cleaned_name
 
 def build_docs(env):
     class_list = get_classes_list("docs/xml")
@@ -197,6 +209,8 @@ env.Append(CPPPATH=["src/wallet_adapter/"])
 env.Append(CPPPATH=["src/candy_machine/"])
 env.Append(CPPPATH=["src/honeycomb"])
 env.Append(CPPPATH=["src/honeycomb/types"])
+env.Append(CPPPATH=["src/dialogs/"])
+env.Append(CPPPATH=["src/anchor/"])
 
 sources = Glob("src/*.cpp")
 
@@ -219,6 +233,15 @@ if env.GetOption("container_build"):
 else:
 
     build_docs(env)
+    IDL_PATH = "idls"
+    IDL_HEADER_PATH = "include/anchor/generated/"
+    directory = os.path.dirname(IDL_HEADER_PATH)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+
+    for filename in os.listdir(IDL_PATH):
+        if filename.endswith(".json"):
+            json_to_header(os.path.join(IDL_PATH, filename), clean_filename(filename), IDL_HEADER_PATH)
 
     set_tmp_dir(env["platform"], env["target"])
     if env["platform"] == "ios" and platform.system() != "Darwin":
