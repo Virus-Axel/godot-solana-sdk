@@ -1,59 +1,48 @@
 using CharacterConfig = std::variant<
-    CharacterConfigWrapped,
-    CharacterConfigAssembled
->;
+		CharacterConfigWrapped,
+		CharacterConfigAssembled>;
 
 using MintAsParams = std::variant<
-    MintAsParamsMplBubblegum
->;
+		MintAsParamsMplBubblegum>;
 
 using CharacterSourceParams = std::variant<
-    Wrapped,
-    Assembled
->;
+		Wrapped,
+		Assembled>;
 
 using CharacterUsedByParams = std::variant<
-    UsedByStaking,
-    UsedByMission,
-    UsedByGuild,
-    UsedByEjected,
-    UsedByCustom
->;
+		UsedByStaking,
+		UsedByMission,
+		UsedByGuild,
+		UsedByEjected,
+		UsedByCustom>;
 
 using ServiceParams = std::variant<
-    ServiceParamsAssembler,
-    ServiceParamsAssetManager,
-    ServiceParamsStaking,
-    ServiceParamsMissions,
-    ServiceParamsRaffles,
-    ServiceParamsGuildKit
->;
+		ServiceParamsAssembler,
+		ServiceParamsAssetManager,
+		ServiceParamsStaking,
+		ServiceParamsMissions,
+		ServiceParamsRaffles,
+		ServiceParamsGuildKit>;
 
 using MissionRequirement = std::variant<
-    TimeRequirement
->;
+		TimeRequirement>;
 
 using RewardType = std::variant<
-    XpRewardType,
-    ResourceRewardType
->;
+		XpRewardType,
+		ResourceRewardType>;
 
 using MultiplierTypeParams = std::variant<
-    MultiplierTypeParamsStakeDuration,
-    MultiplierTypeParamsNFTCount,
-    MultiplierTypeParamsCreator,
-    MultiplierTypeParamsCollection
->;
+		MultiplierTypeParamsStakeDuration,
+		MultiplierTypeParamsNFTCount,
+		MultiplierTypeParamsCreator,
+		MultiplierTypeParamsCollection>;
 
 using OutputHolding = std::variant<
-    Holding,
-    OutputHoldingTree
->;
+		Holding,
+		OutputHoldingTree>;
 
 using ResourceKindParams = std::variant<
-    ResourceKindParamsHplFungible,
-    ResourceKindParamsWrappedFungible,
-    ResourceKindParamsHplNonFungible,
-    ResourceKindParamsWrappedMplCore
->;
-
+		ResourceKindParamsHplFungible,
+		ResourceKindParamsWrappedFungible,
+		ResourceKindParamsHplNonFungible,
+		ResourceKindParamsWrappedMplCore>;
