@@ -5,6 +5,7 @@
 #include "godot_cpp/variant/variant.hpp"
 
 #include "anchor_program.hpp"
+#include "custom_class_management/generic_type.hpp"
 
 namespace godot {
 
@@ -27,7 +28,7 @@ typedef struct {
 	String type_info;
 } ResourcePropertyInfo;
 
-class GenericAnchorResource : public Resource {
+class GenericAnchorResource : public GenericType<Resource> {
 private:
 	const String OPTIONAL_PROPERTY_PREFIX = "enable_";
 
