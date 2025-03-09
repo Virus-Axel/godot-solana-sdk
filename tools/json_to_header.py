@@ -30,5 +30,3 @@ const std::string {header_name + '_' + 'idl'} = "{modify_json_content}";
 
     with open(os.path.join(output_directory, f'{header_name}.hpp'), "w", encoding="utf8") as file:
         file.write(header_content)
-
-    print("Header file generated: data.h")

@@ -3,6 +3,7 @@
 import os
 import re
 import platform
+import subprocess
 from docs.xml_to_header import doxy_to_header, get_classes_list
 from tools.js_to_header import js_to_cpp_header
 from tools.json_to_header import json_to_header
@@ -15,7 +16,25 @@ IOS_OSXCROSS_TRIPPLE = 23
 
 DOC_HEADER_NAME = "include/doc_data_godot-solana-sdk.gen.h"
 
+TEST_VALIDATOR_PATH = "ledger"
 
+def build_so(target, source, env):
+    target_path = str(target[0])
+    source_path = str(source[0])
+    cmd = f"solana program dump {source_path} > {target_path}"
+    return os.system(cmd)
+
+def run_validator(target, source, env):
+    """Start solana-test-validator and terminate it on keypress."""
+    validator_args = ['--ledger', f'{TEST_VALIDATOR_PATH}/test-ledger', '-r', '--quiet']
+    process = subprocess.Popen([env['TEST_VALIDATOR']] + validator_args + env["PROGRAM_ARGS"] + env['ACCOUNT_ARGS'])
+
+    BLUE = "\033[94m"   # ANSI escape code for blue text
+    RESET = "\033[0m"   # Reset to default color
+    input(f"\r{BLUE}Press Enter to exit...{RESET}\n")
+    process.terminate()  # Gracefully stop the process
+
+    return None  # No file output expected
 
 def clean_filename(filepath):
     # Extract filename without extension
@@ -365,4 +384,41 @@ else:
     clang_tidy_action = lint_env.Action([tidy_command])
     clang_tidy_command = lint_env.Command(
         "lint", "compile_commands.json", clang_tidy_action
+    )
+
+    # Define test validator target
+
+    VALIDATOR_PROGRAMS = {
+        'candy_guard': 'CMAGAKJ67e9hRZgfC5SFTbZH8MgEmtqazKXjmkaJjWTJ',
+        'candy_machine_core': 'CMACYFENjoBMHzapRXyo1JZkVS6EtaDDzkjMrmQLvr4J',
+        'mpl_core_program': 'CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d',
+        'MPCG': 'Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g',
+        'MPMD': 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
+        'CMV3': 'CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR',
+    }
+
+    solana_env = Environment(ENV=os.environ)
+
+    validator_programs = [f'{TEST_VALIDATOR_PATH}/{f}.so' for f in VALIDATOR_PROGRAMS.keys()]
+    validator_program_args = [
+        arg for f in VALIDATOR_PROGRAMS.keys() 
+        for arg in ['--bpf-program', VALIDATOR_PROGRAMS[f], f'{TEST_VALIDATOR_PATH}/{f}.so']
+    ]
+
+    for validator_program in VALIDATOR_PROGRAMS.keys():
+        program_library_file = f'{TEST_VALIDATOR_PATH}/{validator_program}.so'
+        dump_program_command = f'solana program dump --url mainnet-beta {VALIDATOR_PROGRAMS[validator_program]} {program_library_file}'
+        dump_program_action = solana_env.Action([dump_program_command])
+        dump_program_target = solana_env.Command(program_library_file, None, dump_program_action)
+
+    solana_env['TEST_VALIDATOR'] = os.environ.get("SOLANA_TEST_VALIDATOR", "solana-test-validator")
+    account_files = Glob(f'{TEST_VALIDATOR_PATH}/accounts/*.json')
+    print(account_files)
+    solana_env["ACCOUNT_ARGS"] = [
+        item for f in account_files for item in ("--account", os.path.splitext(os.path.basename(str(f)))[0], str(f))
+    ]
+    solana_env["PROGRAM_ARGS"] = validator_program_args
+    test_validator_action = Action(run_validator)
+    test_validator_command = solana_env.Command(
+        "test-validator", validator_programs, test_validator_action
     )

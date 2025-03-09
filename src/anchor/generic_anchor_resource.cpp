@@ -14,6 +14,7 @@
 #include "godot_cpp/variant/string_name.hpp"
 #include "godot_cpp/variant/utility_functions.hpp"
 
+#include "account_meta.hpp"
 #include "anchor_program.hpp"
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
@@ -31,7 +32,6 @@ std::string prop_name = "aaa";
 std::string instruction_name = "";
 
 bool GenericAnchorResource::_set(const StringName &p_name, const Variant &p_value) { // NOLINT(bugprone-easily-swappable-parameters)
-	const String name = p_name;
 
 	if (properties.find(p_name) == properties.end()) {
 		return false;
@@ -68,36 +68,7 @@ bool GenericAnchorResource::_set(const StringName &p_name, const Variant &p_valu
 		}
 	}
 
-	// Check if has enabler that is not checked (setting from script).
-	/*else if (properties.find("enable_" + p_name) != properties.end()) {
-		if (!properties["enable_" + p_name].value) {
-			properties["enable_" + p_name].value = true;
-			properties[p_name].enabled = true;
-		}
-	}*/
-
 	return true;
-	//property_database[get_class_static()][p_name].value = p_value;
-	/*return true;
-	for (auto &property : properties) {
-		if (property.property_info.name == name) {
-			property.value = p_value;
-			return true;
-		}
-	}
-
-	// Not a property so a enable checkbox is being set.
-	ERR_FAIL_COND_V_EDMSG_CUSTOM(name.begins_with(OPTIONAL_PROPERTY_PREFIX), false, "Could not find property");
-
-	const String property_to_toggle = name.lstrip(OPTIONAL_PROPERTY_PREFIX);
-	for (auto &property : properties) {
-		if (property.property_info.name == property_to_toggle) {
-			property.enabled = !property.enabled;
-			return true;
-		}
-	}
-
-	return true;*/
 }
 
 bool GenericAnchorResource::_get(const StringName &p_name, Variant &r_ret) const {
@@ -168,7 +139,7 @@ PropertyCanRevertMethod GenericAnchorResource::_get_property_can_revert() {
 	return (bool(Wrapped::*)(const StringName &p_name) const) & GenericAnchorResource::_property_can_revert;
 }
 
-PropertyGetRevertMethod GenericAnchorResource::_get_property_get_revert(){
+PropertyGetRevertMethod GenericAnchorResource::_get_property_get_revert() {
 	return (bool(Wrapped::*)(const StringName &p_name, Variant &) const) & GenericAnchorResource::_property_get_revert;
 }
 
@@ -499,6 +470,16 @@ Variant GenericAnchorResource::godot_type_defval(const Variant::Type type_name) 
 	}
 }
 
+PackedStringArray GenericAnchorResource::names_from_array(const Array fields) {
+	PackedStringArray names;
+	for (unsigned int i = 0; i < fields.size(); i++) {
+		const Dictionary field = fields[i];
+		names.append(field["name"]);
+	}
+
+	return names;
+}
+
 const StringName &GenericAnchorResource::get_class_static() {
 	static StringName string_name_gd = "GenericAnchorResource";
 	string_name_gd = *memnew_custom(String(string_name.c_str()));
@@ -613,6 +594,10 @@ GDExtensionBool GenericAnchorResource::validate_property_bind(GDExtensionClassIn
 	return static_cast<GDExtensionBool>(ret);
 }
 
+bool GenericAnchorResource::is_property_enabled(const StringName &property_name) {
+	return properties[property_name].value;
+}
+
 void GenericAnchorResource::to_string_bind(GDExtensionClassInstancePtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr r_out) {
 	if ((p_instance != nullptr) && (GenericAnchorResource::_get_to_string() != nullptr)) {
 		if (GenericAnchorResource::_get_to_string() != Resource::_get_to_string()) {
@@ -716,9 +701,18 @@ void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
 	for (unsigned int i = 0; i < fields.size(); i++) {
 		add_property(fields[i]);
 	}
+	bind_mint_methods(class_name);
 
 	MethodBind *method_bind = create_method_bind(&GenericAnchorResource::serialize);
 	bind_resource_method(get_class_static(), D_METHOD("serialize"), method_bind);
+}
+
+void GenericAnchorResource::bind_mint_methods(const StringName &class_name) {
+	MethodBind *serialize_core_mint_bind = create_method_bind(&GenericAnchorResource::serialize_core_mint_args);
+	bind_resource_method(class_name, D_METHOD("serialize_core_mint_args"), serialize_core_mint_bind);
+
+	MethodBind *get_extra_account_metas_bind = create_method_bind(&GenericAnchorResource::get_extra_account_metas);
+	bind_resource_method(class_name, D_METHOD("get_extra_account_metas"), get_extra_account_metas_bind);
 }
 
 void GenericAnchorResource::bind_virtual_method(const StringName &class_name, const StringName &method_name) {
@@ -944,6 +938,128 @@ PackedByteArray GenericAnchorResource::serialize() {
 			}
 		}
 	}
+
+	return result;
+}
+
+Array GenericAnchorResource::get_extra_account_metas() {
+	TypedArray<AccountMeta> result;
+
+	if (is_property_enabled("enable_thirdPartySigner")) {
+		result.append(memnew(AccountMeta(properties["thirdPartySigner"].value.get("signerKey"), true, true)));
+	}
+	if (is_property_enabled("enable_gatekeeper")) {
+		result.append(memnew(AccountMeta(properties["gatekeeper"].value.get("gatekeeperNetwork"), false, false)));
+	}
+	if (is_property_enabled("enable_nftPayment")) {
+		result.append(memnew(AccountMeta(properties["nftPayment"].value.get("destination"), false, true)));
+	}
+	if (is_property_enabled("enable_nftGate")) {
+		result.append(memnew(AccountMeta(properties["nftGate"].value.get("requiredCollection"), false, false)));
+	}
+	if (is_property_enabled("enable_nftBurn")) {
+		result.append(memnew(AccountMeta(properties["nftBurn"].value.get("requiredCollection"), false, true)));
+	}
+	if (is_property_enabled("enable_solPayment")) {
+		result.append(memnew(AccountMeta(properties["solPayment"].value.get("destination"), false, true)));
+	}
+	if (is_property_enabled("enable_nftMintLimit")) {
+		// TODO(VIRAX): Find the correct key here
+		//const Variant limit_authority = MplCandyGuard::new_limit_counter_pda(static_cast<uint8_t>(limit_id), payer, machine_key, guard_key);
+		result.append(memnew(AccountMeta(properties["nftMintLimit"].value.get("requiredCollection"), false, true)));
+	}
+	if (is_property_enabled("enable_tokenPayment")) {
+		result.append(memnew(AccountMeta(properties["tokenPayment"].value.get("mint"), false, true)));
+		result.append(memnew(AccountMeta(properties["tokenPayment"].value.get("destinationAta"), false, true)));
+	}
+	if (is_property_enabled("enable_tokenGate")) {
+		// TODO(VirAx): Different from old guard. Verify this
+		result.append(memnew(AccountMeta(properties["tokenGate"].value.get("mint"), false, true)));
+	}
+	if (is_property_enabled("enable_tokenBurn")) {
+		// TODO(VirAx): Different from old guard. Verify this
+		result.append(memnew(AccountMeta(properties["tokenBurn"].value.get("mint"), false, true)));
+	}
+	if (is_property_enabled("enable_freezeSolPayment")) {
+		result.append(memnew(AccountMeta(properties["freezeSolPayment"].value.get("destination"), false, true)));
+	}
+	if (is_property_enabled("enable_freezeTokenPayment")) {
+		result.append(memnew(AccountMeta(properties["freezeTokenPayment"].value.get("mint"), false, false)));
+		result.append(memnew(AccountMeta(properties["freezeTokenPayment"].value.get("destinationAta"), false, true)));
+	}
+	if (is_property_enabled("enable_programGate")) {
+		for (unsigned int i = 0; i < static_cast<Array>(properties["programGate"].value.get("additional")).size(); i++) {
+			result.append(memnew(AccountMeta(static_cast<Array>(properties["programGate"].value.get("additional"))[i], false, false)));
+		}
+	}
+
+	return result;
+}
+
+PackedByteArray GenericAnchorResource::serialize_core_mint_args() {
+	PackedByteArray result;
+
+	if (local_name == "CandyGuardData") {
+		result.append_array(Object::cast_to<GenericAnchorResource>(properties["default"].value)->serialize_core_mint_args());
+		
+		PackedByteArray group_size_stream;
+		group_size_stream.resize(4);
+
+		if(properties["enable_groups"].value){
+			const Array &groups = properties["groups"].value;
+			const uint32_t group_size = groups.size();
+			group_size_stream.encode_u32(0, group_size);
+			result.append_array(group_size_stream);
+
+			for(unsigned int i = 0; i < groups.size(); i++){
+				const Variant group = groups[i];
+				ERR_FAIL_COND_V_EDMSG_CUSTOM(group.get_type() != Variant::OBJECT, PackedByteArray(), "Group is not an object.");
+				ERR_FAIL_COND_V_EDMSG_CUSTOM(!static_cast<Object*>(group)->is_class("Group"), PackedByteArray(), "Group is not a Group resource.");
+
+				GenericAnchorResource* class_ptr = Object::cast_to<GenericAnchorResource>(group);;
+				PackedByteArray fix_size_label = String(class_ptr->properties["label"].value).to_ascii_buffer();
+
+				const int MAX_LABEL_SIZE = 6;
+				fix_size_label.resize(MAX_LABEL_SIZE);
+
+				result.append_array(fix_size_label);
+				result.append_array(Object::cast_to<GenericAnchorResource>(class_ptr->properties["guards"].value)->serialize_core_mint_args());
+			}
+		}
+		else{
+			result.append_array(group_size_stream);
+		}
+		//result.append_array(AnchorProgram::serialize_variant(properties["groups"].value));
+		return result;
+	}
+
+	uint8_t counter = 0;
+	uint64_t enabled_map = 0;
+
+	result.resize(sizeof(enabled_map));
+
+	for (auto property : properties) {
+		if (property.first == StringName("enable_groups")) {
+			continue;
+		} else if (property.first.begins_with("enable_")) {
+			std::vector<StringName> guard_names = property_order[local_name];
+			if (property.second.value) {
+				int index = 0;
+				for (unsigned int i = 0; i < guard_names.size() / 2; i++) {
+					if (guard_names[i * 2] == property.first) {
+						index = i;
+						break;
+					}
+				}
+				enabled_map += (1 << index);
+			}
+			++counter;
+		} else if (property.second.enabled) {
+			result.append_array(AnchorProgram::serialize_variant(property.second.value));
+		}
+	}
+
+	result.encode_u64(0, enabled_map);
 
 	return result;
 }

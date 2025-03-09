@@ -1,0 +1,6 @@
+[gd_resource type="CreateCollectionV2Args" format=3 uid="uid://b4yai5deqvhed"]
+
+[resource]
+name = "Demo"
+uri = "example.example"
+plugins = null

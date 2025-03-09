@@ -1,0 +1,59 @@
+[gd_resource type="CandyGuardData" load_steps=17 format=3 uid="uid://briyc5fq87j1a"]
+
+[sub_resource type="AssetMintLimit" id="AssetMintLimit_nur54"]
+
+[sub_resource type="FreezeSolPayment" id="FreezeSolPayment_7fvtm"]
+
+[sub_resource type="FreezeTokenPayment" id="FreezeTokenPayment_1y055"]
+
+[sub_resource type="Gatekeeper" id="Gatekeeper_f85tn"]
+
+[sub_resource type="NftBurn" id="NftBurn_3t1mp"]
+
+[sub_resource type="NftGate" id="NftGate_1a21h"]
+
+[sub_resource type="NftMintLimit" id="NftMintLimit_mrggb"]
+
+[sub_resource type="NftPayment" id="NftPayment_pluv6"]
+
+[sub_resource type="ProgramGate" id="ProgramGate_acm1d"]
+additional = Array[Pubkey]([null])
+
+[sub_resource type="Pubkey" id="Pubkey_islym"]
+type = "CUSTOM"
+value = "HzgnFaratgGvuxBZZRKjDXFgXYXrd93U4GmkFN3MqxFt"
+bytes = PackedByteArray(252, 130, 19, 152, 223, 77, 88, 22, 16, 201, 240, 75, 121, 146, 182, 228, 127, 4, 19, 199, 205, 67, 182, 167, 25, 247, 176, 37, 217, 165, 43, 91)
+
+[sub_resource type="SolPayment" id="SolPayment_tkiea"]
+lamports = 6
+destination = SubResource("Pubkey_islym")
+
+[sub_resource type="ThirdPartySigner" id="ThirdPartySigner_036co"]
+
+[sub_resource type="TokenBurn" id="TokenBurn_psyby"]
+
+[sub_resource type="TokenGate" id="TokenGate_g7c4c"]
+
+[sub_resource type="TokenPayment" id="TokenPayment_4q0fg"]
+
+[sub_resource type="GuardSet" id="GuardSet_0wgcr"]
+enable_solPayment = true
+solPayment = SubResource("SolPayment_tkiea")
+tokenPayment = SubResource("TokenPayment_4q0fg")
+thirdPartySigner = SubResource("ThirdPartySigner_036co")
+tokenGate = SubResource("TokenGate_g7c4c")
+gatekeeper = SubResource("Gatekeeper_f85tn")
+nftPayment = SubResource("NftPayment_pluv6")
+nftGate = SubResource("NftGate_1a21h")
+nftBurn = SubResource("NftBurn_3t1mp")
+tokenBurn = SubResource("TokenBurn_psyby")
+freezeSolPayment = SubResource("FreezeSolPayment_7fvtm")
+freezeTokenPayment = SubResource("FreezeTokenPayment_1y055")
+programGate = SubResource("ProgramGate_acm1d")
+nftMintLimit = SubResource("NftMintLimit_mrggb")
+assetMintLimit = SubResource("AssetMintLimit_nur54")
+
+[resource]
+default = SubResource("GuardSet_0wgcr")
+enable_groups = true
+groups = Array[Group]([])
