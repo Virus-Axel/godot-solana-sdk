@@ -203,8 +203,11 @@ var annotated_dup =
       [ "ConfigLine", "classgodot_1_1_config_line.html", null ],
       [ "ConfigLineSetting", "classgodot_1_1_config_line_setting.html", null ],
       [ "CreateMetaDataArgs", "classgodot_1_1_create_meta_data_args.html", null ],
+      [ "CustomClassManager", "classgodot_1_1_custom_class_manager.html", null ],
       [ "GenericAnchorNode", "classgodot_1_1_generic_anchor_node.html", null ],
       [ "GenericAnchorResource", "classgodot_1_1_generic_anchor_resource.html", null ],
+      [ "GenericNode", "classgodot_1_1_generic_node.html", null ],
+      [ "GenericType", "classgodot_1_1_generic_type.html", null ],
       [ "Hash", "classgodot_1_1_hash.html", null ],
       [ "HiveControlPermissionInput", "classgodot_1_1_hive_control_permission_input.html", null ],
       [ "HoneyComb", "classgodot_1_1_honey_comb.html", null ],
@@ -256,6 +259,5 @@ var annotated_dup =
       [ "WalletAdapter", "classgodot_1_1_wallet_adapter.html", null ],
       [ "WsRequestData", "structgodot_1_1_ws_request_data.html", null ]
     ] ],
-    [ "CustomClassManager", "class_custom_class_manager.html", null ],
     [ "FieldElement", "class_field_element.html", null ]
 ];

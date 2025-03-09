@@ -2,6 +2,7 @@ var dir_d44c64559bbebec7f509842c48db8b23 =
 [
     [ "anchor", "dir_d835b3732207f70a7b534fef32e316f2.html", "dir_d835b3732207f70a7b534fef32e316f2" ],
     [ "candy_machine", "dir_5f627655c57e0213242e4f793928fa51.html", "dir_5f627655c57e0213242e4f793928fa51" ],
+    [ "custom_class_management", "dir_48d4448cdf5a9b76eb834ff869ce1764.html", "dir_48d4448cdf5a9b76eb834ff869ce1764" ],
     [ "dialogs", "dir_2c3bdccfb6394a78f2c21b4468960011.html", "dir_2c3bdccfb6394a78f2c21b4468960011" ],
     [ "honeycomb", "dir_f2d03d082bf6774413dc366729b43405.html", "dir_f2d03d082bf6774413dc366729b43405" ],
     [ "instructions", "dir_2843b2c750ff6b39dcfe98bf2554dba0.html", "dir_2843b2c750ff6b39dcfe98bf2554dba0" ],
@@ -13,7 +14,6 @@ var dir_d44c64559bbebec7f509842c48db8b23 =
     [ "account_meta.hpp", "account__meta_8hpp_source.html", null ],
     [ "anchor_program.hpp", "anchor__program_8hpp_source.html", null ],
     [ "curve25519.hpp", "curve25519_8hpp_source.html", null ],
-    [ "custom_class_manager.hpp", "custom__class__manager_8hpp_source.html", null ],
     [ "hash.hpp", "hash_8hpp_source.html", null ],
     [ "honeycomb.hpp", "honeycomb_8hpp_source.html", null ],
     [ "instruction.hpp", "instruction_8hpp_source.html", null ],

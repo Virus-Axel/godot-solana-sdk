@@ -1,6 +1,9 @@
 var hierarchy =
 [
-    [ "CustomClassManager", "class_custom_class_manager.html", null ],
+    [ "BaseType", null, [
+      [ "godot::GenericType< BaseType >", "classgodot_1_1_generic_type.html", null ]
+    ] ],
+    [ "godot::CustomClassManager", "classgodot_1_1_custom_class_manager.html", null ],
     [ "FieldElement", "class_field_element.html", null ],
     [ "HTTPClient", null, [
       [ "godot::RpcMultiHttpRequestClient", "classgodot_1_1_rpc_multi_http_request_client.html", null ],
@@ -13,11 +16,15 @@ var hierarchy =
       [ "godot::MethodBindHack", "classgodot_1_1_method_bind_hack.html", null ]
     ] ],
     [ "Node", null, [
+      [ "godot::GenericType< Node >", "classgodot_1_1_generic_type.html", [
+        [ "godot::GenericNode", "classgodot_1_1_generic_node.html", [
+          [ "godot::GenericAnchorNode", "classgodot_1_1_generic_anchor_node.html", null ]
+        ] ]
+      ] ],
       [ "godot::Account", "classgodot_1_1_account.html", null ],
       [ "godot::AnchorProgram", "classgodot_1_1_anchor_program.html", null ],
       [ "godot::AssociatedTokenAccountProgram", "classgodot_1_1_associated_token_account_program.html", null ],
       [ "godot::ComputeBudget", "classgodot_1_1_compute_budget.html", null ],
-      [ "godot::GenericAnchorNode", "classgodot_1_1_generic_anchor_node.html", null ],
       [ "godot::HoneyComb", "classgodot_1_1_honey_comb.html", null ],
       [ "godot::HoneyComb", "classgodot_1_1_honey_comb.html", null ],
       [ "godot::MenuBarHelper", "classgodot_1_1_menu_bar_helper.html", null ],
@@ -57,6 +64,9 @@ var hierarchy =
     ] ],
     [ "godot::RequestData", "structgodot_1_1_request_data.html", null ],
     [ "Resource", null, [
+      [ "godot::GenericType< Resource >", "classgodot_1_1_generic_type.html", [
+        [ "godot::GenericAnchorResource", "classgodot_1_1_generic_anchor_resource.html", null ]
+      ] ],
       [ "godot::AccountMeta", "classgodot_1_1_account_meta.html", null ],
       [ "godot::AddressLookupTable", "classgodot_1_1_address_lookup_table.html", null ],
       [ "godot::AdvancedTreeConfig", "classgodot_1_1_advanced_tree_config.html", null ],
@@ -66,7 +76,6 @@ var hierarchy =
       [ "godot::ConfigLine", "classgodot_1_1_config_line.html", null ],
       [ "godot::ConfigLineSetting", "classgodot_1_1_config_line_setting.html", null ],
       [ "godot::CreateMetaDataArgs", "classgodot_1_1_create_meta_data_args.html", null ],
-      [ "godot::GenericAnchorResource", "classgodot_1_1_generic_anchor_resource.html", null ],
       [ "godot::Hash", "classgodot_1_1_hash.html", null ],
       [ "godot::InitResourceInput", "classgodot_1_1_init_resource_input.html", null ],
       [ "godot::Instruction", "classgodot_1_1_instruction.html", null ],

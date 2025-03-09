@@ -57,6 +57,6 @@ var searchData=
   ['createstakingpoolmetadatainput_54',['CreateStakingPoolMetadataInput',['../classgodot_1_1honeycomb__resource_1_1_create_staking_pool_metadata_input.html',1,'godot::honeycomb_resource']]],
   ['createupdatemissionpooltransactionresponse_55',['CreateUpdateMissionPoolTransactionResponse',['../classgodot_1_1honeycomb__resource_1_1_create_update_mission_pool_transaction_response.html',1,'godot::honeycomb_resource']]],
   ['createupdatemissiontransactionresponse_56',['CreateUpdateMissionTransactionResponse',['../classgodot_1_1honeycomb__resource_1_1_create_update_mission_transaction_response.html',1,'godot::honeycomb_resource']]],
-  ['customclassmanager_57',['CustomClassManager',['../class_custom_class_manager.html',1,'']]],
+  ['customclassmanager_57',['CustomClassManager',['../classgodot_1_1_custom_class_manager.html',1,'godot']]],
   ['customdatainput_58',['CustomDataInput',['../classgodot_1_1honeycomb__resource_1_1_custom_data_input.html',1,'godot::honeycomb_resource']]]
 ];

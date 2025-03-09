@@ -45,8 +45,8 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "_add_multiplier_metadata_input__generated_8hpp_source.html",
-"classgodot_1_1_merged_account_metas.html#a9f2f3330b450ca7c61a7293f07c5523e",
-"classgodot_1_1honeycomb__resource_1_1_used_by_ejected.html"
+"classgodot_1_1_merged_account_metas.html#a8f356a298ac3b97a64f3dcbe10dd239d",
+"classgodot_1_1honeycomb__resource_1_1_update_wallet_input.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
