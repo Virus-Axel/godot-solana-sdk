@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1741459679267,
+  "lastUpdate": 1741545115675,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -724,6 +724,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.352739726027397,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d7291ec14f8be27171b1b5b1c8fa6dcb7fa25af5",
+          "message": "Merge pull request #342 from Virus-Axel/feature/idl_to_node\n\nFeature/idl to node",
+          "timestamp": "2025-03-09T19:23:46+01:00",
+          "tree_id": "78401c66e9463ed960e2d3b82101bf19920a0242",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/d7291ec14f8be27171b1b5b1c8fa6dcb7fa25af5"
+        },
+        "date": 1741545113999,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.35958904109589,
             "unit": "Percent"
           }
         ]
