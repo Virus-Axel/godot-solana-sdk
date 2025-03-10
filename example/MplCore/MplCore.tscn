@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cttiurs73850o"]
 
-[ext_resource type="Script" path="res://MplCore.gd" id="1_m1mdq"]
+[ext_resource type="Script" uid="uid://bqtqk3o2c8ayf" path="res://MplCore.gd" id="1_m1mdq"]
 
 [node name="Control" type="Control"]
 layout_mode = 3

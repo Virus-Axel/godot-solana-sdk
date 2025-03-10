@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c28h2g1ne6nyb"]
 
-[ext_resource type="Script" path="res://WalletAdapterDemo.gd" id="1_ti5ca"]
+[ext_resource type="Script" uid="uid://xxsbxnvblwsn" path="res://WalletAdapterDemo.gd" id="1_ti5ca"]
 
 [node name="WalletAdapterWeb" type="Control"]
 layout_mode = 3
