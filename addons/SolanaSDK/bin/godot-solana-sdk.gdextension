@@ -1,0 +1,24 @@
+[configuration]
+
+entry_symbol = "solana_sdk_library_init"
+compatibility_minimum = "4.1"
+
+[libraries]
+
+linux.x86_64="libgodot-solana-sdk.linux.template_debug.x86_64.so"
+linux.template_debug.64="libgodot-solana-sdk.linux.template_debug.x86_64.so"
+linux.template_release.64="libgodot-solana-sdk.linux.template_release.x86_64.so"
+ios.template_debug.arm64="libgodot-solana-sdk.ios.template_debug.arm64.dylib"
+ios.template_release.arm64="libgodot-solana-sdk.ios.template_release.arm64.dylib"
+windows.x86_64="libgodot-solana-sdk.windows.template_release.x86_64.dll"
+windows.template_release.x86_64="libgodot-solana-sdk.windows.template_release.x86_64.dll"
+windows.template_debug.x86_64="libgodot-solana-sdk.windows.template_debug.x86_64.dll"
+macos.template_release="libgodot-solana-sdk.macos.template_release.framework"
+macos.template_debug="libgodot-solana-sdk.macos.template_debug.framework"
+macos.arm64="libgodot-solana-sdk.macos.template_debug.framework"
+web.template_release.wasm32="libgodot-solana-sdk.web.template_release.wasm32.wasm"
+web.template_debug.wasm32="libgodot-solana-sdk.web.template_debug.wasm32.wasm"
+web.template_release.wasm32.nothreads="libgodot-solana-sdk.web.template_debug.wasm32.nothreads.wasm"
+web.template_debug.wasm32.nothreads="libgodot-solana-sdk.web.template_debug.wasm32.nothreads.wasm"
+android.template_debug.arm64="libgodot-solana-sdk.android.template_debug.arm64.so"
+android.template_release.arm64="libgodot-solana-sdk.android.template_release.arm64.so"
