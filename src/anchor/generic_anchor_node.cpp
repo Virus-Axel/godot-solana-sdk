@@ -89,7 +89,7 @@ StringName GenericAnchorNode::get_fetcher_name(const StringName &account_name) {
 
 const StringName &GenericAnchorNode::get_class_static() {
 	static StringName string_name_gd = "GenericAnchorNode";
-	string_name_gd = *memnew_custom(String(string_name.c_str()));
+	string_name_gd = String(string_name.c_str());
 	return string_name_gd;
 }
 
