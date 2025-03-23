@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1741545115675,
+  "lastUpdate": 1742761439065,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -753,6 +753,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.35958904109589,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f32259fa83c87d8653ea0bd1f46c5a1baed461f8",
+          "message": "Merge pull request #343 from Virus-Axel/bugfix/remove_leaks\n\nRemove leaking memory in class name getter",
+          "timestamp": "2025-03-23T21:12:30+01:00",
+          "tree_id": "28c33d80b82d7425615f9266c96f7237a3bdc049",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/f32259fa83c87d8653ea0bd1f46c5a1baed461f8"
+        },
+        "date": 1742761438192,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.356164383561644,
             "unit": "Percent"
           }
         ]
