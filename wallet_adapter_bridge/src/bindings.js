@@ -17,7 +17,7 @@ export async function signMessageProcedure(buffer_message) {
     async function storeMessageSignature() {
         try {
             buffer_message = new TextEncoder().encode(buffer_message);
-            Module.message_signature = (await Module.wallet_handler.signMessage(buffer_message, 'utf8')).signature;
+            Module.message_signature = (await Module.wallet_handler.signMessage(buffer_message, 'utf8'));
             if (Module.message_signature == null) {
                 Module.wallet_status = -1;
                 return;

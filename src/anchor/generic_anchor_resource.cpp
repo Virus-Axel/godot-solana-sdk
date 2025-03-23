@@ -482,7 +482,7 @@ PackedStringArray GenericAnchorResource::names_from_array(const Array fields) {
 
 const StringName &GenericAnchorResource::get_class_static() {
 	static StringName string_name_gd = "GenericAnchorResource";
-	string_name_gd = *memnew_custom(String(string_name.c_str()));
+	string_name_gd = String(string_name.c_str());
 	return string_name_gd;
 }
 

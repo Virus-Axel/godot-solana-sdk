@@ -308,7 +308,7 @@ else:
         js_sources = Glob(f"{WALLET_ADAPTER_BRIDGE_DIR}/src/*.js")
 
         NPM_INSTALL_COMMAND = (
-            f"npm install --prefix {WALLET_ADAPTER_BRIDGE_DIR} --no-audit --no-fund"
+            f"npm install --prefix {WALLET_ADAPTER_BRIDGE_DIR} --no-audit --no-fund --legacy-peer-deps --force"
         )
         NPM_BUILD_COMMAND = (
             f"npm run build --prefix {WALLET_ADAPTER_BRIDGE_DIR} -- --no-stats-warnings"
