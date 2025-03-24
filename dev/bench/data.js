@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1742761439065,
+  "lastUpdate": 1742834333155,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -782,6 +782,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.356164383561644,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "612dd099e4b94bd3d2871d4b4154e2b7300e77be",
+          "message": "Merge pull request #345 from Virus-Axel/bugfix/crash_on_set_payer\n\nUpdate godot version in benchmark job",
+          "timestamp": "2025-03-24T17:26:28+01:00",
+          "tree_id": "4379fcb14ca90b1dc8047eacea78d4c78781e631",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/612dd099e4b94bd3d2871d4b4154e2b7300e77be"
+        },
+        "date": 1742834332159,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.360824742268041,
             "unit": "Percent"
           }
         ]
