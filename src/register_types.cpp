@@ -34,6 +34,10 @@
 #include "dialogs/menubar_helper.hpp"
 #include "doc_data_godot-solana-sdk.gen.h"
 #include "hash.hpp"
+#include "honeycomb/enums_generated.hpp"
+#include "honeycomb/honeycomb.hpp"
+#include "honeycomb/honeycomb_generated.hpp"
+#include "honeycomb/types/index_generated.hpp"
 #include "instruction.hpp"
 #include "keypair.hpp"
 #include "meta_data/collection.hpp"
@@ -54,10 +58,6 @@
 #include "system_program.hpp"
 #include "transaction.hpp"
 #include "wallet_adapter.hpp"
-#include "honeycomb/honeycomb.hpp"
-#include "honeycomb/honeycomb_generated.hpp"
-#include "honeycomb/types/index_generated.hpp"
-#include "honeycomb/enums_generated.hpp"
 
 namespace godot {
 namespace {
@@ -93,7 +93,7 @@ void load_idl_from_string(const String &json_content) {
 }
 
 void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR && (_doc_data_size > 0)) {
 		auto editor_help_load_xml_from_utf8_chars_and_len = reinterpret_cast<GDExtensionsInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen>(internal::gdextension_interface_get_proc_address("editor_help_load_xml_from_utf8_chars_and_len")); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		editor_help_load_xml_from_utf8_chars_and_len(static_cast<const char *>(_doc_data), _doc_data_size);
 	}
@@ -140,27 +140,11 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<HoneyComb>();
 
 	REGISTER_HONEYCOMB_TYPES
-  REGISTER_HONEYCOMB_ENUM
+	REGISTER_HONEYCOMB_ENUM
 
 	ClassDB::register_class<MenuBarHelper>();
 	ClassDB::register_class<AddCustomIdlDialog>();
-	//ClassDB::register_class<GenericAnchorNode>();
-	//ClassDB::register_class<GenericAnchorResource>();
-	GenericAnchorResource::set_class_name("GenericAnchorResource");
 	ClassDB::register_class<GenericAnchorResource>();
-	StringName *abc = memnew(StringName("GenericAnchorResource"));
-
-	//internal::gdextension_interface_classdb_unregister_extension_class(internal::library, abc->_native_ptr());
-
-	//AddCustomIdlDialog::load_idl("res://testidl.json");
-
-	Dictionary reso;
-	Dictionary struct_info;
-	reso["name"] = "GenericAnchorResource";
-	struct_info["fields"] = Array();
-	reso["type"] = struct_info;
-	//GenericAnchorResource::bind_anchor_resource(reso);
-	GenericAnchorResource::set_class_name("aaa");
 
 	add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
 	add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, HTTPS_PORT);
