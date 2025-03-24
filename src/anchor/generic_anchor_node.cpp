@@ -45,7 +45,7 @@ void GenericAnchorNode::bind_resources(const Array &resources, const String &cla
 	}
 }
 
-GDExtensionObjectPtr GenericAnchorNode::_create_instance_func(void *data) {
+GDExtensionObjectPtr GenericAnchorNode::_create_instance_func(void *data, GDExtensionBool p_notify_postinitialize) {
 	const String instance_class = *static_cast<StringName *>(data);
 	GenericAnchorNode *new_object = memnew_custom(GenericAnchorNode);
 	new_object->anchor_program = memnew_custom(AnchorProgram);
@@ -72,15 +72,18 @@ void GenericAnchorNode::_process(double p_delta) {
 }
 
 GDExtensionClassInstancePtr GenericAnchorNode::_recreate_instance_func(void *data, GDExtensionObjectPtr obj) { // NOLINT(bugprone-easily-swappable-parameters)
+	if constexpr (!std::is_abstract_v<GenericAnchorNode>) {
 #ifdef HOT_RELOAD_ENABLED
-	auto *new_instance = static_cast<GenericAnchorNode *>(memalloc(sizeof(GenericAnchorNode)));
-	Wrapped::RecreateInstance recreate_data = { new_instance, obj, Wrapped::recreate_instance };
-	Wrapped::recreate_instance = &recreate_data;
-	memnew_placement(new_instance, GenericAnchorNode);
-	return new_instance;
+		//Wrapped::_constructing_recreate_owner = obj;
+		GenericAnchorNode *new_instance = (GenericAnchorNode *)memalloc(sizeof(GenericAnchorNode));
+		memnew_placement(new_instance, GenericAnchorNode);
+		return new_instance;
 #else
-	return nullptr;
+		return nullptr;
 #endif
+	} else {
+		return nullptr;
+	}
 }
 
 StringName GenericAnchorNode::get_fetcher_name(const StringName &account_name) {
@@ -89,7 +92,7 @@ StringName GenericAnchorNode::get_fetcher_name(const StringName &account_name) {
 
 const StringName &GenericAnchorNode::get_class_static() {
 	static StringName string_name_gd = "GenericAnchorNode";
-	string_name_gd = *memnew_custom(String(string_name.c_str()));
+	string_name_gd = String(string_name.c_str());
 	return string_name_gd;
 }
 
@@ -167,11 +170,12 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 	set_class_name(class_name);
 
 	// Register this class with Godot
-	GDExtensionClassCreationInfo3 class_info = {
+	GDExtensionClassCreationInfo4 class_info = {
 		false, // GDExtensionBool is_virtual;
 		false, // GDExtensionBool is_abstract;
 		true, // GDExtensionBool is_exposed;
 		true, // GDExtensionBool is_runtime;
+		nullptr,
 		set_bind, // GDExtensionClassSet set_func;
 		get_bind, // GDExtensionClassGet get_func;
 		has_get_property_list() ? get_property_list_bind : nullptr, // GDExtensionClassGetPropertyList get_property_list_func;
@@ -189,13 +193,12 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 		&get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
 		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
 		nullptr, // GDExtensionClassCallVirtualWithData call_virtual_func;
-		nullptr, // GDExtensionClassGetRID get_rid;
 		(void *)names[names.size() - 1], // void *class_userdata;
 	};
 
 	StringName name = String(class_name);
 	StringName parent_name = "Node";
-	internal::gdextension_interface_classdb_register_extension_class3(internal::library, name._native_ptr(), parent_name._native_ptr(), &class_info);
+	internal::gdextension_interface_classdb_register_extension_class4(internal::library, name._native_ptr(), parent_name._native_ptr(), &class_info);
 
 	bind_signal(class_name, MethodInfo("account_fetched", PropertyInfo(Variant::DICTIONARY, "account_info")));
 

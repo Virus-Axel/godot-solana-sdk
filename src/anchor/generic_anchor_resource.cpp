@@ -93,7 +93,7 @@ bool GenericAnchorResource::_get(const StringName &p_name, Variant &r_ret) const
 		return true;*/
 }
 
-GDExtensionObjectPtr GenericAnchorResource::_create_instance_func(void *data) {
+GDExtensionObjectPtr GenericAnchorResource::_create_instance_func(void *data, GDExtensionBool p_notify_postinitialize) {
 	const String instance_class = *(StringName *)data;
 
 	set_class_name(instance_class);
@@ -166,23 +166,27 @@ void GenericAnchorResource::initialize_class() {
 }
 
 GDExtensionClassInstancePtr GenericAnchorResource::_recreate_instance_func(void *data, GDExtensionObjectPtr obj) {
+	if constexpr (!std::is_abstract_v<GenericAnchorResource>) {
 #ifdef HOT_RELOAD_ENABLED
-	GenericAnchorResource *new_instance = (GenericAnchorResource *)memalloc(sizeof(GenericAnchorResource));
-	Wrapped::RecreateInstance recreate_data = { new_instance, obj, Wrapped::recreate_instance };
-	Wrapped::recreate_instance = &recreate_data;
-	memnew_placement(new_instance, GenericAnchorResource);
-	return new_instance;
+		//Wrapped::_constructing_recreate_owner = obj;
+		GenericAnchorResource *new_instance = (GenericAnchorResource *)memalloc(sizeof(GenericAnchorResource));
+		memnew_placement(new_instance, GenericAnchorResource);
+		return new_instance;
 #else
-	return nullptr;
+		return nullptr;
 #endif
+	} else {
+		return nullptr;
+	}
 }
 
 void GenericAnchorResource::bind_resource_class(const StringName &p_class_name, const StringName &parent_name) {
-	GDExtensionClassCreationInfo3 class_info = {
+	GDExtensionClassCreationInfo4 class_info = {
 		false, // GDExtensionBool is_virtual;
 		false, // GDExtensionBool is_abstract;
 		true, // GDExtensionBool is_exposed;
 		false, // GDExtensionBool is_runtime;
+		nullptr,
 		GenericAnchorResource::set_bind, // GDExtensionClassSet set_func;
 		GenericAnchorResource::get_bind, // GDExtensionClassGet get_func;
 		GenericAnchorResource::has_get_property_list() ? GenericAnchorResource::get_property_list_bind : nullptr, // GDExtensionClassGetPropertyList get_property_list_func;
@@ -200,12 +204,11 @@ void GenericAnchorResource::bind_resource_class(const StringName &p_class_name, 
 		&ClassDB::get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
 		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
 		nullptr, // GDExtensionClassCallVirtualWithData call_virtual_func;
-		nullptr, // GDExtensionClassGetRID get_rid;
 		//(void*)&GenericAnchorResource::get_class_static(),
 		static_cast<void *>(names[names.size() - 1]), // void *class_userdata;
 	};
 
-	internal::gdextension_interface_classdb_register_extension_class3(internal::library, p_class_name._native_ptr(), parent_name._native_ptr(), &class_info);
+	internal::gdextension_interface_classdb_register_extension_class4(internal::library, p_class_name._native_ptr(), parent_name._native_ptr(), &class_info);
 }
 
 void GenericAnchorResource::bind_resource_method(const StringName &p_class_name, const MethodDefinition &method_prototype, MethodBind *p_method) {
@@ -482,7 +485,7 @@ PackedStringArray GenericAnchorResource::names_from_array(const Array fields) {
 
 const StringName &GenericAnchorResource::get_class_static() {
 	static StringName string_name_gd = "GenericAnchorResource";
-	string_name_gd = *memnew_custom(String(string_name.c_str()));
+	string_name_gd = String(string_name.c_str());
 	return string_name_gd;
 }
 
@@ -1001,22 +1004,23 @@ PackedByteArray GenericAnchorResource::serialize_core_mint_args() {
 
 	if (local_name == "CandyGuardData") {
 		result.append_array(Object::cast_to<GenericAnchorResource>(properties["default"].value)->serialize_core_mint_args());
-		
+
 		PackedByteArray group_size_stream;
 		group_size_stream.resize(4);
 
-		if(properties["enable_groups"].value){
+		if (properties["enable_groups"].value) {
 			const Array &groups = properties["groups"].value;
 			const uint32_t group_size = groups.size();
 			group_size_stream.encode_u32(0, group_size);
 			result.append_array(group_size_stream);
 
-			for(unsigned int i = 0; i < groups.size(); i++){
+			for (unsigned int i = 0; i < groups.size(); i++) {
 				const Variant group = groups[i];
 				ERR_FAIL_COND_V_EDMSG_CUSTOM(group.get_type() != Variant::OBJECT, PackedByteArray(), "Group is not an object.");
-				ERR_FAIL_COND_V_EDMSG_CUSTOM(!static_cast<Object*>(group)->is_class("Group"), PackedByteArray(), "Group is not a Group resource.");
+				ERR_FAIL_COND_V_EDMSG_CUSTOM(!static_cast<Object *>(group)->is_class("Group"), PackedByteArray(), "Group is not a Group resource.");
 
-				GenericAnchorResource* class_ptr = Object::cast_to<GenericAnchorResource>(group);;
+				GenericAnchorResource *class_ptr = Object::cast_to<GenericAnchorResource>(group);
+				;
 				PackedByteArray fix_size_label = String(class_ptr->properties["label"].value).to_ascii_buffer();
 
 				const int MAX_LABEL_SIZE = 6;
@@ -1025,8 +1029,7 @@ PackedByteArray GenericAnchorResource::serialize_core_mint_args() {
 				result.append_array(fix_size_label);
 				result.append_array(Object::cast_to<GenericAnchorResource>(class_ptr->properties["guards"].value)->serialize_core_mint_args());
 			}
-		}
-		else{
+		} else {
 			result.append_array(group_size_stream);
 		}
 		//result.append_array(AnchorProgram::serialize_variant(properties["groups"].value));

@@ -71,11 +71,32 @@ func wallet_adapter_in_deserialized_transaction():
 
 	PASS(2)
 
+func sign_text_message(wallet_type, test_id):
+	$WalletAdapter.set_wallet_type(wallet_type)
+	$WalletAdapter.connect_wallet()
+	await $WalletAdapter.connection_established
+	
+	var text_message := "Hello Godot"
+	
+	$WalletAdapter.sign_text_message(text_message)
+	var signature = await $WalletAdapter.message_signed
+	
+	var empty_signature : PackedByteArray
+	empty_signature.resize(64)
+	assert(signature != empty_signature)
+	assert(signature.size() == 64)
+
+	PASS(test_id)
+
 
 func _ready():
 	await wallet_adapter_sign(20, 0)
 	await wallet_adapter_sign(36, 1)
 	await wallet_adapter_in_deserialized_transaction()
+	
+	# TODO(VirAx): Uncomment when supported by wallet adapter mock.
+	#await sign_text_message(20, 3)
+	#await sign_text_message(36, 4)
 
 
 func _on_timeout_timeout():

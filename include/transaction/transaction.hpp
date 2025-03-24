@@ -55,6 +55,7 @@ private:
 	bool append_budget_instructions = true;
 
 	bool skip_preflight = false;
+	bool deserialized = false;
 
 	static bool are_all_bytes_zeroes(const PackedByteArray &bytes);
 

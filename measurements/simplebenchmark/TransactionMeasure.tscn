@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b46gh8t6ocmka"]
 
-[ext_resource type="Script" path="res://transaction_measure.gd" id="1_54535"]
+[ext_resource type="Script" uid="uid://bsk2d36m5ykg0" path="res://transaction_measure.gd" id="1_54535"]
 
 [node name="TransactionMeasure" type="Control"]
 layout_mode = 3

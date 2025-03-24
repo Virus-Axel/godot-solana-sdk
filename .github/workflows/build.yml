@@ -145,7 +145,12 @@ jobs:
         if: ${{ startsWith(matrix.identifier, 'web-') }}
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+
+      - name: (Web) Update npm
+        if: ${{ startsWith(matrix.identifier, 'web-') }}
+        run: |
+          npm install -g npm@11
 
       - name: Set up Python
         uses: actions/setup-python@v2

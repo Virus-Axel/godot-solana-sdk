@@ -4,7 +4,7 @@ extends VBoxContainer
 @onready var payer: Keypair = Keypair.new_from_file("res://payer.json")
 const LAMPORTS_PER_SOL = 1000000000
 
-const TOTAL_CASES := 13
+const TOTAL_CASES := 14
 var passed_test_mask := 0
 
 
@@ -249,6 +249,34 @@ func string_as_account_input():
 	PASS(12)
 
 
+func handle_set_payer_on_deserialized_transaction():
+	var receiver: Pubkey = Pubkey.new_from_string("78GVwUb8ojcJVrEVkwCU5tfUKTfJuiazRrysGwgjqsif")
+	var tx = Transaction.new()
+
+	add_child(tx)
+	
+	tx.set_payer(payer)
+	
+	var ix: Instruction = SystemProgram.transfer(payer, receiver, LAMPORTS_PER_SOL / 10)
+	tx.add_instruction(ix)
+
+	tx.update_latest_blockhash()
+
+	tx.sign()
+	
+	var new_tx = Transaction.new_from_bytes(tx.serialize())
+	
+	var random_payer = Keypair.new_random()
+	new_tx.set_payer(random_payer)
+	
+	var original = tx.serialize()
+	var reconstructed = new_tx.serialize()
+
+	assert(original == reconstructed)
+
+	PASS(13)
+
+
 func _ready():
 	# Use a local cluster for unlimited Solana airdrops.
 	# SolanaClient defaults to devnet cluster URL if not specified.
@@ -265,6 +293,7 @@ func _ready():
 	blockhash_before_instruction()
 	transaction_from_bytes()
 	string_as_account_input()
+	handle_set_payer_on_deserialized_transaction()
 
 
 func _on_timeout_timeout():
