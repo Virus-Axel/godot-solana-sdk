@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://f7w6n866ytk6"]
 
-[ext_resource type="Script" path="res://transaction_example.gd" id="1_5f21j"]
+[ext_resource type="Script" uid="uid://smdtiu6pfnni" path="res://transaction_example.gd" id="1_5f21j"]
 
 [node name="TransactionExample" type="VBoxContainer"]
 anchors_preset = 8

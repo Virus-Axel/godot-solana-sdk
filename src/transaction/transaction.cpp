@@ -1,11 +1,7 @@
 #include "transaction.hpp"
-#include "instruction.hpp"
-#include "keypair.hpp"
-#include "pubkey.hpp"
-
-#include "utils.hpp"
 
 #include <cstdint>
+
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/classes/thread.hpp>
@@ -17,6 +13,12 @@
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+
+#include "account_meta.hpp"
+#include "instruction.hpp"
+#include "keypair.hpp"
+#include "pubkey.hpp"
+#include "utils.hpp"
 #include <instructions/compute_budget.hpp>
 #include <merged_account_metas.hpp>
 #include <message.hpp>
@@ -385,6 +387,7 @@ void Transaction::from_bytes(const PackedByteArray &bytes) {
 	message.create(bytes.slice(cursor));
 	address_lookup_tables = message.get_address_lookup_tables();
 	signers.resize(signer_size);
+	deserialized = true;
 
 	check_fully_signed();
 }
@@ -396,11 +399,8 @@ Variant Transaction::new_from_bytes(const PackedByteArray &bytes) {
 	return result;
 }
 
-Transaction::Transaction() {
-	send_client = memnew_custom(SolanaClient);
-	blockhash_client = memnew_custom(SolanaClient);
-	subscribe_client = memnew_custom(SolanaClient);
-
+Transaction::Transaction() :
+		subscribe_client(memnew_custom(SolanaClient)), blockhash_client(memnew_custom(SolanaClient)), send_client(memnew_custom(SolanaClient)) {
 	// Override because we call process functions ourselves.
 	send_client->set_async_override(true);
 	blockhash_client->set_async_override(true);
@@ -455,6 +455,10 @@ Array Transaction::get_instructions() {
 }
 
 void Transaction::set_payer(const Variant &p_value) {
+	if (deserialized) {
+		WARN_PRINT_ED_CUSTOM("Cannot set payer on deserialized transaction");
+		return;
+	}
 	payer = p_value;
 	reset_state();
 	create_message();
