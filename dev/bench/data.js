@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1742834333155,
+  "lastUpdate": 1742839992381,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -811,6 +811,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.360824742268041,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cb0dddbc67492dafe8c261a472260bce34e5d9fe",
+          "message": "Merge pull request #346 from Virus-Axel/bugfix/crash_on_set_payer\n\nFix crash on set payer on deserialized transaction",
+          "timestamp": "2025-03-24T19:04:35+01:00",
+          "tree_id": "8449a2e66cfe05ad6032d411d9889bc08bbb63bc",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/cb0dddbc67492dafe8c261a472260bce34e5d9fe"
+        },
+        "date": 1742839991409,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.356164383561644,
             "unit": "Percent"
           }
         ]
