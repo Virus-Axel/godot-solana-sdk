@@ -11,7 +11,6 @@
 
 namespace godot {
 
-
 class MethodBindHack : public MethodBind {
 public:
 	void set_arg_count(unsigned int count) {
@@ -32,20 +31,20 @@ private:
 
 	static void bind_resources(const Array &resources, const String &class_name);
 
-	static GDExtensionObjectPtr _create_instance_func(void *data);
+	static GDExtensionObjectPtr _create_instance_func(void *data, GDExtensionBool p_notify_postinitialize);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
 
 	static void bind_pid_getter(const StringName &p_class_name);
 	static StringName get_fetcher_name(const StringName &account_name);
+	static const StringName *_get_extension_class_name();
 
 	void operator=(const GenericAnchorNode & /*p_rval*/) {}
+
 	friend class ClassDB;
 	friend class Wrapped;
 
 protected:
 	void _process(double p_delta);
-
-	static const StringName *_get_extension_class_name();
 
 public:
 	typedef GenericAnchorNode self_type;
@@ -56,10 +55,9 @@ public:
 		string_name = name.ascii();
 	}
 
-	static bool has_extra_accounts(const StringName& program, const StringName& instruction);
+	static bool has_extra_accounts(const StringName &program, const StringName &instruction);
 
 protected:
-
 private:
 protected:
 	static void _bind_methods();

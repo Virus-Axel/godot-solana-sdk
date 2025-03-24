@@ -57,7 +57,7 @@ private:
 		}
 	}
 
-	static GDExtensionObjectPtr _create_instance_func(void *data);
+	static GDExtensionObjectPtr _create_instance_func(void *data, GDExtensionBool p_notify_postinitialize);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
 
 	static void bind_resource_class(const StringName &p_class_name, const StringName &parent_name);
@@ -131,7 +131,7 @@ public:
 	};
 
 protected:
-	virtual void _notificationv(int32_t p_what, bool p_reversed = false) override;
+	virtual void _notificationv(int32_t p_what, bool p_reversed = false);
 
 private:
 protected:

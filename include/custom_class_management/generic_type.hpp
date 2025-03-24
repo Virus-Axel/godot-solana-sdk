@@ -44,7 +44,7 @@ private:
 protected:
 	static std::unordered_map<StringName, GDExtensionClassCallVirtual> virtual_methods;
 
-	void _notificationv(int32_t p_what, bool p_reversed) override {
+	void _notificationv(int32_t p_what, bool p_reversed) {
 		GenericType::notification_bind(this, p_what, static_cast<GDExtensionBool>(p_reversed));
 	}
 
@@ -55,8 +55,7 @@ protected:
 		const StringName &string_name = get_class_static();
 		return &string_name;
 	}
-
-	static GDExtensionClassCallVirtual get_virtual_func(void *p_userdata, GDExtensionConstStringNamePtr p_name) {
+	static GDExtensionClassCallVirtual get_virtual_func(void *p_userdata, GDExtensionConstStringNamePtr p_name, uint32_t p_hash) {
 		// This is called by Godot the first time it calls a virtual function, and it caches the result, per object instance.
 		// Because of this, it can happen from different threads at once.
 		// It should be ok not using any mutex as long as we only READ data.
