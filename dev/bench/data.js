@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1742839992381,
+  "lastUpdate": 1742935633832,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -835,6 +835,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/cb0dddbc67492dafe8c261a472260bce34e5d9fe"
         },
         "date": 1742839991409,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.356164383561644,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8d8d8394c0b4d62b731cfe131734002ceccaf176",
+          "message": "Merge pull request #348 from Virus-Axel/bugfix/fix_solana_client_keys\n\nFix account key parameters in SolanaClient",
+          "timestamp": "2025-03-25T21:38:46+01:00",
+          "tree_id": "ef9407a4897464954bf771172a91d0f88dd56775",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/8d8d8394c0b4d62b731cfe131734002ceccaf176"
+        },
+        "date": 1742935632868,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
