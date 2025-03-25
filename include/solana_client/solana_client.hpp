@@ -1,15 +1,22 @@
-#ifndef SOLANA_SDK_SOLANA_CLIENT_HPP
-#define SOLANA_SDK_SOLANA_CLIENT_HPP
+#ifndef SOLANA_CLIENT_SOLANA_CLIENT_HPP
+#define SOLANA_CLIENT_SOLANA_CLIENT_HPP
+#include <cstdint>
+#include <string>
 
-#include <godot_cpp/classes/http_client.hpp>
-#include <godot_cpp/classes/node.hpp>
-#include <godot_cpp/classes/web_socket_peer.hpp>
-#include <queue>
+#include "godot_cpp/classes/node.hpp"
+#include "godot_cpp/classes/wrapped.hpp"
+#include "godot_cpp/variant/callable.hpp"
+#include "godot_cpp/variant/callable_method_pointer.hpp"
+#include "godot_cpp/variant/packed_string_array.hpp"
+#include "godot_cpp/variant/string.hpp"
 
 #include "rpc_multi_http_request_client.hpp"
 #include "rpc_single_ws_request_client.hpp"
 
 namespace godot {
+
+const uint32_t ASSET_DEFAULT_FETCH_LIMIT = 10;
+const float DEFAULT_TIMEOUT_SECONDS = 20.0F;
 
 const uint32_t HTTPS_PORT = 443;
 const uint32_t WSS_PORT = 443;
@@ -26,13 +33,10 @@ class SolanaClient : public Node {
 	GDCLASS(SolanaClient, Node)
 
 private:
-	float timeout = 20.0;
+	float timeout = DEFAULT_TIMEOUT_SECONDS;
 
 	uint32_t http_port_override = 0;
 	uint32_t ws_port_override = 0;
-
-	const std::string DEFAULT_URL = "https://api.devnet.solana.com";
-	const std::string DEFAULT_WS_URL = "wss://api.devnet.solana.com";
 
 	String url_override = "";
 	String ws_url = "";
@@ -62,10 +66,11 @@ private:
 
 	String ws_from_http(const String &http_url);
 	String get_real_url();
-	uint32_t get_real_http_port() const;
-	uint32_t get_real_ws_port() const;
+	[[nodiscard]] uint32_t get_real_http_port() const;
+	[[nodiscard]] uint32_t get_real_ws_port() const;
 	String get_real_ws_url();
 
+	static PackedStringArray get_address_strings(const Array &keys);
 	static RpcSingleWsRequestClient *get_current_ws_client();
 	static RpcMultiHttpRequestClient *get_current_http_client();
 
@@ -189,7 +194,7 @@ public:
 	 *
 	 * @return Current timeout in seconds.
 	 */
-	float get_timeout() const;
+	[[nodiscard]] float get_timeout() const;
 
 	void set_ws_url(const String &url);
 	String get_ws_url();
@@ -221,11 +226,11 @@ public:
 	void disable_slot_range();
 
 	void set_async_override(bool use_async);
-	bool get_async_override() const;
-	bool is_ready() const;
+	[[nodiscard]] bool get_async_override() const;
+	[[nodiscard]] bool is_ready() const;
 
-	void get_account_info(const String &account);
-	void get_balance(const String &account);
+	void get_account_info(const Variant &account);
+	void get_balance(const Variant &account);
 	void get_block(uint64_t slot);
 	void get_block_height();
 	void get_latest_blockhash();
@@ -245,55 +250,55 @@ public:
 	void get_identity();
 	void get_inflation_governor();
 	void get_inflation_rate();
-	void get_inflation_reward(const PackedStringArray &accounts, const Variant &epoch = Variant::NIL);
+	void get_inflation_reward(const Array &accounts, const Variant &epoch = Variant::NIL);
 	void get_largest_accounts(const String &filter = "");
 	void get_leader_schedule(const Variant &slot = Variant::NIL);
 	void get_max_retransmit_slot();
 	void get_max_shred_insert_slot();
 	void get_minimum_balance_for_rent_extemption(uint64_t data_size);
-	void get_multiple_accounts(const PackedStringArray &accounts);
-	void get_program_accounts(const String &program_address, const Array &filters = Array(), bool with_context = false);
+	void get_multiple_accounts(const Array &accounts);
+	void get_program_accounts(const Variant &program_address, const Array &filters = Array(), bool with_context = false);
 	void get_recent_performance_samples();
-	void get_recent_prioritization_fees(const PackedStringArray &account_addresses);
-	void get_signature_for_address(const String &address, const String &before = "", const String &until = "");
+	void get_recent_prioritization_fees(const Array &account_addresses);
+	void get_signature_for_address(const Variant &address, const String &before = "", const String &until = "");
 	void get_signature_statuses(const PackedStringArray &signatures, bool search_transaction_history = false);
 	void get_slot();
 	void get_slot_leader();
 	void get_slot_leaders(const Variant &start_slot = Variant(), const Variant &slot_limit = Variant());
-	void get_stake_activation(const String &account);
+	void get_stake_activation(const Variant &account);
 	void get_stake_minimum_delegation();
 	void get_supply(bool exclude_non_circulating = false);
-	void get_token_account_balance(const String &token_account);
-	void get_token_accounts_by_delegate(const String &account_delegate, const String &mint = "", const String &program_id = "");
-	void get_token_accounts_by_owner(const String &owner, const String &mint = "", const String &program_id = "");
-	void get_token_largest_account(const String &token_mint);
-	void get_token_supply(const String &token_mint);
+	void get_token_account_balance(const Variant &token_account);
+	void get_token_accounts_by_delegate(const Variant &account_delegate, const Variant &mint = nullptr, const Variant &program_id = nullptr);
+	void get_token_accounts_by_owner(const Variant &owner, const Variant &mint = nullptr, const Variant &program_id = nullptr);
+	void get_token_largest_account(const Variant &token_mint);
+	void get_token_supply(const Variant &token_mint);
 	void get_transaction(const String &signature);
 	void get_transaction_count();
 	void get_version();
-	void get_vote_accounts(const String &vote_pubkey = "", bool keep_unstaked_delinquents = false);
+	void get_vote_accounts(const Variant &vote_pubkey = "", bool keep_unstaked_delinquents = false);
 	void is_blockhash_valid(const String &blockhash);
 	void minimum_ledger_slot();
-	void request_airdrop(const String &address, uint64_t lamports);
+	void request_airdrop(const Variant &address, uint64_t lamports);
 	void send_transaction(const String &encoded_transaction, uint64_t max_retries = UINT64_MAX, bool skip_preflight = false);
 	void simulate_transaction(const String &encoded_transaction, bool sig_verify = false, bool replace_blockhash = false, const Array &account_addresses = Array(), const String &account_encoding = "base64");
 
 	void get_asset(const Variant &asset_id);
 	void get_asset_proof(const Variant &asset_id);
-	void get_assets_by_authority(const Variant &authority, uint32_t page = 1, uint32_t limit = 10);
-	void get_assets_by_creator_address(const Variant &creator_address, bool only_verified = false, uint32_t page = 1, uint32_t limit = 10);
-	void get_assets_by_group(const String &group_key, const Variant &group_value, uint32_t page = 1, uint32_t limit = 10);
-	void get_assets_by_owner(const Variant &owner, uint32_t page = 1, uint32_t limit = 10);
+	void get_assets_by_authority(const Variant &authority, uint32_t page = 1, uint32_t limit = ASSET_DEFAULT_FETCH_LIMIT);
+	void get_assets_by_creator_address(const Variant &creator_address, bool only_verified = false, uint32_t page = 1, uint32_t limit = ASSET_DEFAULT_FETCH_LIMIT);
+	void get_assets_by_group(const String &group_key, const Variant &group_value, uint32_t page = 1, uint32_t limit = ASSET_DEFAULT_FETCH_LIMIT);
+	void get_assets_by_owner(const Variant &owner, uint32_t page = 1, uint32_t limit = ASSET_DEFAULT_FETCH_LIMIT);
 
 	void account_subscribe(const Variant &account_key, const Callable &callback);
 	void signature_subscribe(const String &signature, const Callable &callback, const String &commitment);
-	void program_subscribe(const String &program_id, const Callable &callback);
+	void program_subscribe(const Variant &program_id, const Callable &callback);
 	void root_subscribe(const Callable &callback);
 	void slot_subscribe(const Callable &callback);
 
 	void unsubscribe_all(const Callable &callback);
 
-	~SolanaClient() = default;
+	~SolanaClient() override = default;
 };
 } //namespace godot
 
