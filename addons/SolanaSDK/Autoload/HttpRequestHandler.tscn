@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://fa45moquo0p0"]
+
+[ext_resource type="Script" uid="uid://ckibtxppy1iax" path="res://addons/SolanaSDK/Scripts/Utility/http_request_handler.gd" id="1_lqwwi"]
+
+[node name="HttpRequestHandler" type="Node2D"]
+script = ExtResource("1_lqwwi")

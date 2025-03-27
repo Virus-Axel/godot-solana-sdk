@@ -1,0 +1,146 @@
+[gd_scene load_steps=13 format=3 uid="uid://bf3edinsgleli"]
+
+[ext_resource type="Script" uid="uid://bs3gv2pfqlrxy" path="res://addons/SolanaSDK/Demos/_LoginDemo/login_manager.gd" id="1_0vojp"]
+[ext_resource type="Texture2D" uid="uid://dnqcw4msg2uow" path="res://addons/SolanaSDK/Textures/Buttons/b_orange_pressed.PNG" id="5_o1wf6"]
+[ext_resource type="Texture2D" uid="uid://5erj253phx4s" path="res://addons/SolanaSDK/Textures/Buttons/b_orange_hover.PNG" id="6_5mt3p"]
+[ext_resource type="Texture2D" uid="uid://et1kvxp5bprg" path="res://addons/SolanaSDK/Textures/Buttons/b_inactive.PNG" id="7_mpo2d"]
+[ext_resource type="Script" uid="uid://b5nw7fquhlcbl" path="res://addons/SolanaSDK/Demos/_LoginDemo/scene_loader.gd" id="8_r3y48"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bume7"]
+bg_color = Color(0.937255, 0.682353, 0.341176, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_muk2j"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tt47o"]
+texture = ExtResource("7_mpo2d")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6yw5e"]
+texture = ExtResource("6_5mt3p")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5y8r4"]
+texture = ExtResource("5_o1wf6")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_y3x8p"]
+texture = ExtResource("5_o1wf6")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y5jui"]
+bg_color = Color(0.360524, 0.371319, 0.458671, 1)
+
+[node name="LoginScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_0vojp")
+path_to_scene = "res://addons/SolanaSDK/Demos/_DemoSelectScene/DemoSelectScene.tscn"
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bume7")
+
+[node name="IntroText" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -371.0
+offset_top = 110.0
+offset_right = 366.0
+offset_bottom = 257.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 120
+text = "Godot Solana SDK
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="About" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -56.0
+offset_top = 249.0
+offset_right = 387.0
+offset_bottom = 324.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 60
+text = "Demo Package
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Tag" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -333.0
+offset_top = 251.0
+offset_right = -138.0
+offset_bottom = 290.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 25
+text = "By Rubians"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LoginButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -178.0
+offset_top = -273.0
+offset_right = 178.0
+offset_bottom = -196.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/focus = SubResource("StyleBoxEmpty_muk2j")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_tt47o")
+theme_override_styles/hover = SubResource("StyleBoxTexture_6yw5e")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_5y8r4")
+theme_override_styles/normal = SubResource("StyleBoxTexture_y3x8p")
+text = "CONNECT WALLET"
+
+[node name="SceneLoader" type="Node" parent="."]
+script = ExtResource("8_r3y48")
+
+[node name="LoadingCanvas" type="Panel" parent="SceneLoader"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_y5jui")
+
+[node name="Label" type="Label" parent="SceneLoader/LoadingCanvas"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 41
+text = "Loading, please wait..."
+
+[connection signal="pressed" from="LoginButton" to="." method="_on_login_button_pressed"]
