@@ -928,7 +928,6 @@ void SolanaClient::_ready() {
 
 SolanaClient::SolanaClient() :
 		transaction_detail("full") {
-	ws_callback = callable_mp(this, &SolanaClient::ws_response_callback);
 }
 
 Dictionary SolanaClient::parse_url(const String &url) {

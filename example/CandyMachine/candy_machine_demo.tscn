@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://r6iblg6q5c6i"]
 
-[ext_resource type="Script" path="res://candy_machine_demo.gd" id="1_1361b"]
+[ext_resource type="Script" uid="uid://bg66a6b73k2ku" path="res://candy_machine_demo.gd" id="1_1361b"]
 
 [node name="CandyMachineDemo" type="Control"]
 layout_mode = 3

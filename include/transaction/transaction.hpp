@@ -18,8 +18,8 @@ enum ConfirmationLevel {
 	FINALIZED,
 };
 
-class Transaction : public Node {
-	GDCLASS(Transaction, Node)
+class Transaction : public SolanaClient {
+	GDCLASS(Transaction, SolanaClient)
 
 private:
 	unsigned int processed_connections = 0;
