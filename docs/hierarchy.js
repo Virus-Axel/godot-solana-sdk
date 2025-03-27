@@ -32,14 +32,14 @@ var hierarchy =
       [ "godot::ShdwDrive", "classgodot_1_1_shdw_drive.html", null ],
       [ "godot::SolanaClient", "classgodot_1_1_solana_client.html", [
         [ "godot::MplCandyMachine", "classgodot_1_1_mpl_candy_machine.html", null ],
-        [ "godot::MplTokenMetadata", "classgodot_1_1_mpl_token_metadata.html", null ]
+        [ "godot::MplTokenMetadata", "classgodot_1_1_mpl_token_metadata.html", null ],
+        [ "godot::Transaction", "classgodot_1_1_transaction.html", null ]
       ] ],
       [ "godot::SolanaUtils", "classgodot_1_1_solana_utils.html", null ],
       [ "godot::SystemProgram", "classgodot_1_1_system_program.html", null ],
       [ "godot::TokenProgram", "classgodot_1_1_token_program.html", [
         [ "godot::TokenProgram2022", "classgodot_1_1_token_program2022.html", null ]
       ] ],
-      [ "godot::Transaction", "classgodot_1_1_transaction.html", null ],
       [ "godot::WalletAdapter", "classgodot_1_1_wallet_adapter.html", null ]
     ] ],
     [ "Object", null, [
