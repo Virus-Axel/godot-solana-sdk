@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cecmsfwj7x417"]
 
-[ext_resource type="Script" path="res://honeycomb.gd" id="1_forsj"]
+[ext_resource type="Script" uid="uid://c2ijk2cc6wjus" path="res://honeycomb.gd" id="1_forsj"]
 
 [node name="HoneyComb" type="HoneyComb"]
 script = ExtResource("1_forsj")

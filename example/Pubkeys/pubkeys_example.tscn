@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cunax25r7ml5v"]
 
-[ext_resource type="Script" path="res://PubkeysExample.gd" id="1_6y4sq"]
+[ext_resource type="Script" uid="uid://c83nwk2x2nwgl" path="res://PubkeysExample.gd" id="1_6y4sq"]
 
 [node name="PubkeysExample" type="ItemList"]
 anchors_preset = 15

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://38c464i58lat"]
 
-[ext_resource type="Script" path="res://token_2022_demo.gd" id="1_lap4m"]
+[ext_resource type="Script" uid="uid://dr32qwvao0rhx" path="res://token_2022_demo.gd" id="1_lap4m"]
 
 [node name="Token2022Demo" type="Control"]
 layout_mode = 3

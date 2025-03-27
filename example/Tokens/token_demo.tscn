@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dhr4dagl1pd4t"]
 
-[ext_resource type="Script" path="res://TokenDemo.gd" id="1_ujxc3"]
+[ext_resource type="Script" uid="uid://chmny8j5ecof0" path="res://TokenDemo.gd" id="1_ujxc3"]
 
 [node name="TokenDemo" type="Control"]
 layout_mode = 3

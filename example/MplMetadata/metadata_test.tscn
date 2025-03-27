@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://d3iuc8xkaowda"]
 
-[ext_resource type="Script" path="res://metadata_test.gd" id="1_a7ae3"]
+[ext_resource type="Script" uid="uid://yohjbty7jbli" path="res://metadata_test.gd" id="1_a7ae3"]
 
 [node name="MetadataTest" type="Control"]
 layout_mode = 3

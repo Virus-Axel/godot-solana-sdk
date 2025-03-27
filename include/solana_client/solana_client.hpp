@@ -61,7 +61,7 @@ private:
 	bool rewards = false;
 	bool slot_range_enabled = false;
 
-	Callable ws_callback;
+	Callable ws_callback = callable_mp(this, &SolanaClient::ws_response_callback);;
 	Callable rpc_callback = callable_mp(this, &SolanaClient::response_callback);
 
 	String ws_from_http(const String &http_url);
