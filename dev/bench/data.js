@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1742935633832,
+  "lastUpdate": 1743108377124,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -869,6 +869,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.356164383561644,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ff7e87fe88680223098f215f778325b84f67cad3",
+          "message": "Merge pull request #350 from Virus-Axel/bugfix/transaction_inheritance\n\nInherit SolanaClient from transaction",
+          "timestamp": "2025-03-27T21:37:39+01:00",
+          "tree_id": "318bda40c364d47fa7b64def852427ae78be312f",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/ff7e87fe88680223098f215f778325b84f67cad3"
+        },
+        "date": 1743108374937,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.373287671232877,
             "unit": "Percent"
           }
         ]
