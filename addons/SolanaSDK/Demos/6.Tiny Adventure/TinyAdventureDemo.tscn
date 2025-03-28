@@ -4,11 +4,11 @@
 [ext_resource type="PackedScene" uid="uid://blmw46he11fxs" path="res://addons/SolanaSDK/Scripts/TransactionManager/TransactionOverlayUI.tscn" id="2_ripwo"]
 [ext_resource type="Texture2D" uid="uid://c7s56sayh028u" path="res://addons/SolanaSDK/Textures/SolanaLogo.png" id="5_3wya5"]
 [ext_resource type="Script" uid="uid://cvjs0lluew8kq" path="res://addons/SolanaSDK/Scripts/NFTGating/token_button_lock.gd" id="8_p878m"]
+[ext_resource type="Texture2D" uid="uid://didva3i0a8eeq" path="res://addons/SolanaSDK/Textures/g5383.png" id="9_31hcr"]
 [ext_resource type="Texture2D" uid="uid://cye2pbirpht4u" path="res://addons/SolanaSDK/Textures/Buttons/b_green_pressed.PNG" id="9_nsyg2"]
 [ext_resource type="Texture2D" uid="uid://d4kauar2qc15y" path="res://addons/SolanaSDK/Textures/Buttons/b_green_hover.PNG" id="10_8d8y4"]
 [ext_resource type="Texture2D" uid="uid://dq15ny3t87eog" path="res://addons/SolanaSDK/icon.svg" id="10_t3mrk"]
 [ext_resource type="Texture2D" uid="uid://et1kvxp5bprg" path="res://addons/SolanaSDK/Textures/Buttons/b_inactive.PNG" id="11_0107k"]
-[ext_resource type="Texture2D" uid="uid://bgbp0rixlgwes" path="res://addons/SolanaSDK/Textures/open-treasure-chest-icon-flat-style-vector.png" id="11_ot3nv"]
 [ext_resource type="Texture2D" uid="uid://dnqcw4msg2uow" path="res://addons/SolanaSDK/Textures/Buttons/b_orange_pressed.PNG" id="12_uwrbt"]
 [ext_resource type="Texture2D" uid="uid://5erj253phx4s" path="res://addons/SolanaSDK/Textures/Buttons/b_orange_hover.PNG" id="13_h53v3"]
 [ext_resource type="Script" uid="uid://rodqxxqhixqe" path="res://addons/SolanaSDK/Demos/_LoginDemo/scene_change_button.gd" id="14_4x4kr"]
@@ -80,6 +80,7 @@ grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_7pi32")
 
 [node name="StartingScreen" type="MarginContainer" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 14
 anchor_top = 0.5
@@ -151,10 +152,8 @@ theme_override_styles/pressed = SubResource("StyleBoxTexture_bio0t")
 theme_override_styles/normal = SubResource("StyleBoxTexture_hadpj")
 text = "Start game"
 script = ExtResource("8_p878m")
-unlock_amount = 0.01
 
 [node name="GameScreen" type="VBoxContainer" parent="."]
-visible = false
 layout_mode = 1
 anchors_preset = 14
 anchor_top = 0.5
@@ -234,7 +233,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_g1fkt")
 [node name="Chest" type="TextureRect" parent="GameScreen/BlocksContainer/Block3"]
 custom_minimum_size = Vector2(120, 120)
 layout_mode = 2
-texture = ExtResource("11_ot3nv")
+texture = ExtResource("9_31hcr")
 expand_mode = 4
 stretch_mode = 5
 

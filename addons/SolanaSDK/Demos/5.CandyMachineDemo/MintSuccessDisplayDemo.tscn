@@ -3,12 +3,8 @@
 [ext_resource type="Script" uid="uid://khidadi6f8ul" path="res://addons/SolanaSDK/Demos/5.CandyMachineDemo/mint_display.gd" id="1_jna51"]
 [ext_resource type="Script" uid="uid://fyl7vadeoj03" path="res://addons/SolanaSDK/Scripts/Utility/DisplaySystems/Assets/displayable_asset.gd" id="4_rx3nx"]
 [ext_resource type="Texture2D" uid="uid://dkyfoudbohuqq" path="res://addons/SolanaSDK/Textures/missingicon.png" id="5_8kmi8"]
-
-[sub_resource type="Resource" id="Resource_wsqqb"]
-metadata/__load_path__ = "res://Textures/Socials/webicon.png"
-
-[sub_resource type="Resource" id="Resource_v1lqp"]
-metadata/__load_path__ = "res://Sounds/UI/buttonpress.mp3"
+[ext_resource type="AudioStream" uid="uid://cojs82uu73ctv" path="res://Sounds/UI/buttonpress.mp3" id="7_e5287"]
+[ext_resource type="Texture2D" uid="uid://cidquspubtjjb" path="res://Textures/Socials/webicon.png" id="9_43s7o"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vqr1a"]
 
@@ -100,7 +96,7 @@ stretch_mode = 5
 [node name="TextureButton" type="TextureButton" parent="Content/MintSuccessScreen/RubianDetails/RubianVisual"]
 visible = false
 layout_mode = 2
-texture_normal = SubResource("Resource_wsqqb")
+texture_normal = ExtResource("9_43s7o")
 stretch_mode = 5
 
 [node name="Description" type="Label" parent="Content/MintSuccessScreen/RubianDetails"]
@@ -124,7 +120,7 @@ theme_type_variation = &"ButtonAlt"
 text = "Close"
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Content/MintSuccessScreen/RubianDetails/ActionButtons/CloseButton"]
-stream = SubResource("Resource_v1lqp")
+stream = ExtResource("7_e5287")
 
 [node name="FinalizingMint" type="PanelContainer" parent="."]
 visible = false

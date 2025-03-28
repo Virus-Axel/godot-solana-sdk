@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ditj5e2daevt8" path="res://addons/SolanaSDK/Scripts/Managers/solana_service.gd" id="1_hwc3u"]
 [ext_resource type="Script" uid="uid://67dkrftyxy86" path="res://addons/SolanaSDK/Scripts/TransactionManager/transaction_manager.gd" id="2_v3adq"]
-[ext_resource type="PackedScene" uid="uid://clveiq3atvwet" path="res://addons/SolanaSDK/Scripts/WalletAdapter/WalletAdapterUI.tscn" id="3_oybfe"]
+[ext_resource type="PackedScene" uid="uid://clveiq3atvwet" path="res://addons/SolanaSDK/Scripts/WalletAdapter/WalletAdapterUI.tscn" id="3_4222r"]
 [ext_resource type="Texture2D" uid="uid://dkyfoudbohuqq" path="res://addons/SolanaSDK/Textures/missingicon.png" id="4_s5tc6"]
 [ext_resource type="Script" uid="uid://be77h1ww1quiy" path="res://addons/SolanaSDK/Scripts/Managers/wallet_service.gd" id="5_f327g"]
 [ext_resource type="Script" uid="uid://73ttw7wqmnr" path="res://addons/SolanaSDK/Scripts/ThirdPartyTools/Helius/helius_api.gd" id="6_jo0rl"]
@@ -18,13 +18,14 @@
 
 [node name="SolanaService" type="Node"]
 script = ExtResource("1_hwc3u")
+rpc_cluster = 1
 sonic_rpc = "https://www.devnet.sonic.game"
 honeycomb_rpc = "https://rpc.test.honeycombprotocol.com/"
 
 [node name="WalletService" type="Node" parent="."]
 script = ExtResource("5_f327g")
 use_generated = true
-wallet_adapter_scn = ExtResource("3_oybfe")
+wallet_adapter_scn = ExtResource("3_4222r")
 
 [node name="WalletAdapter" type="WalletAdapter" parent="WalletService"]
 
