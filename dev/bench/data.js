@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1743108377124,
+  "lastUpdate": 1743188551347,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -898,6 +898,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.373287671232877,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "102485601+ZenRepublic@users.noreply.github.com",
+            "name": "Zen Republic",
+            "username": "ZenRepublic"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ca3ab1fb3bc0ed7ae0cf3e4b09a3a5af1ef7f66d",
+          "message": "Merge addon and SolanaService repo\n\nThe Godot Addon repo using godot-solana-sdk binaries are in two different repos. This commit merges the Godot Addon repo.",
+          "timestamp": "2025-03-28T19:53:48+01:00",
+          "tree_id": "91d4da37cd2d4d9940d55ba6c309b06adea6c99a",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/ca3ab1fb3bc0ed7ae0cf3e4b09a3a5af1ef7f66d"
+        },
+        "date": 1743188549985,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.366438356164384,
             "unit": "Percent"
           }
         ]
