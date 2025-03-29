@@ -351,10 +351,9 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, "unit_limit"));
 		p_list->push_back(PropertyInfo(Variant::INT, "unit_price"));
 	}
-	p_list->push_back(PropertyInfo(Variant::BOOL, "skip_preflight"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "external_payer", PROPERTY_HINT_NONE, "false"));
 	if (!external_payer) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair,JSON"));
 	} else {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_NODE_TYPE, "WalletAdapter"));
 	}
