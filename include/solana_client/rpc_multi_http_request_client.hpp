@@ -10,19 +10,40 @@
 
 namespace godot {
 
+/**
+ * @class RpcMultiHttpRequestClient
+ * @brief Used to send multiple request simultaneously.
+ * 
+ * This class can be used to send asynchronous requests. It creates instances of
+ * RpcSingleHttpRequestClient and processes the list of clients synchronously.
+ */
 class RpcMultiHttpRequestClient : public HTTPClient {
 	GDCLASS(RpcMultiHttpRequestClient, HTTPClient)
 private:
 	TypedArray<RpcSingleHttpRequestClient> requests;
+	unsigned int last_processed_frame = 0;
 
 protected:
-	unsigned int last_processed_frame = 0;
-	bool pending_request = false;
 
+	/**
+	 * @bindmethods{RpcMultiHttpRequestClient, Node}
+	 */
 	static void _bind_methods();
 
 public:
+	/**
+	 * @brief @_process
+	 */
 	void process(double delta);
+
+	/**
+	 * @brief Initiate an asynchronous request.
+	 * 
+	 * @param request_body Request to send.
+	 * @param parsed_url URL of the request.
+	 * @param callback Callback to call on response received.
+	 * @param timeout Timeout of request.
+	 */
 	void asynchronous_request(const Dictionary &request_body, const Dictionary &parsed_url, const Callable &callback, float timeout = 20.0F);
 };
 

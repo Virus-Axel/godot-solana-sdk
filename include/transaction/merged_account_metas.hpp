@@ -6,6 +6,9 @@
 
 namespace godot {
 
+/**
+ * @brief List object that manages, merges and sorts AccountMetas.
+ */
 class MergedAccountMetas {
 private:
 	TypedArray<AccountMeta> merged_metas;

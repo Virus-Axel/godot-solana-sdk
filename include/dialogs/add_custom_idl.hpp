@@ -10,6 +10,9 @@ namespace godot {
 
 const std::string CUSTOM_IDL_LOCATION_SETTING = "solana_sdk/anchor/custom_anchor_programs";
 
+/**
+ * @brief Dialog window used to create custom IDL nodes,
+ */
 class AddCustomIdlDialog : public Window {
 	GDCLASS(AddCustomIdlDialog, Window)
 private:
@@ -20,11 +23,24 @@ private:
 	static void idl_selected_callback(const String &filename);
 
 protected:
+	/**
+	 * @brief Binds methods of AddCustomIdlDialog Window.
+	 */
 	static void _bind_methods();
 
 public:
 	AddCustomIdlDialog();
+
+	/**
+	 * @brief Resets the window to its default appearance.
+	 */
 	void clear();
+
+	/**
+	 * @brief Loads an IDL from a file and creates a generic anchor node from it.
+	 * 
+	 * @param filename Path to IDL file.
+	 */
 	static void load_idl(const String &filename);
 	~AddCustomIdlDialog() = default;
 };

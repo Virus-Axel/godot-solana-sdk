@@ -14,6 +14,9 @@ typedef enum {
 	IDL_TO_NODE = 0,
 } MenuID;
 
+/**
+ * @brief Helper class to inject objects to the Godot menu bar.
+ */
 class MenuBarHelper : public Node {
 	GDCLASS(MenuBarHelper, Node);
 
@@ -23,13 +26,36 @@ private:
 	static void initialize_dialogs(Node *parent);
 
 protected:
+	/**
+	 * @brief Bind methods for MenuBarHelper Node.
+	 */
 	static void _bind_methods();
+
+	/**
+	 * @brief Emited when a menu item is pressed from the menu.
+	 * 
+	 * @param menu_id ID of item from menu.
+	 */
 	static void menu_pressed_callback(int64_t menu_id);
 
 public:
+	/**
+	 * @brief Call bound notification function.
+	 * 
+	 * @param p_what Notification type.
+	 * @param p_reversed Reversed.
+	 */
 	void _notification(int32_t p_what, bool p_reversed = false);
 	MenuBarHelper() = default;
+
+	/**
+	 * @brief Emited when Solana menu can be created and injected.
+	 */
 	static void ready_callback();
+
+	/**
+	 * @brief Cleans up resources related to MenuBar.
+	 */
 	static void deinitialize_dialogs();
 	~MenuBarHelper() = default;
 };

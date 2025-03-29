@@ -80,31 +80,80 @@ inline Array build_array(T arg1, Args... args) {
 	return arr;
 }
 
+/**
+ * @class SolanaUtils
+ * @brief Utility class for various purposes like encoding and decoding.
+ */
 class SolanaUtils : public Node {
 	GDCLASS(SolanaUtils, Node)
 
 private:
 protected:
+
+	/**
+	 * @bindmethods{SolanaUtils, Node}
+	 */
 	static void _bind_methods();
 
 public:
-	const String MAINNET_URL = "https://api.mainnet.solana.com";
-	const String DEVNET_URL = "https://api.devnet.solana.com";
-	const String TESTNET_URL = "https://api.testnet.solana.com";
-	const String LOCALHOST_URL = "http://127.0.0.1:8899";
+	const String MAINNET_URL = "https://api.mainnet.solana.com"; ///< Mainnet RPC Endpoint URL.
+	const String DEVNET_URL = "https://api.devnet.solana.com"; ///< Devnet RPC Endpoint URL.
+	const String TESTNET_URL = "https://api.testnet.solana.com"; ///< Testnet RPC Endpoint URL.
+	const String LOCALHOST_URL = "http://127.0.0.1:8899"; ///< Localnet RPC Endpoint URL.
 
-	static const std::string ZERO_ENCODED_32;
+	static const std::string ZERO_ENCODED_32; ///< Base58 encoded 32 lengthed byte array of 0's.
 
-	static const std::string SPL_TOKEN_ADDRESS;
-	static const std::string SPL_ASSOCIATED_TOKEN_ADDRESS;
+	static const std::string SPL_TOKEN_ADDRESS; ///< SPL token address.
+	static const std::string SPL_ASSOCIATED_TOKEN_ADDRESS; ///< SPL associated token address.
 
 	SolanaUtils();
+	/**
+	 * @brief Decode base58 encoded string into bytes.
+	 * 
+	 * @param str Base58 encoded string to decode.
+	 * @return PackedByteArray Decoded bytes.
+	 */
 	static PackedByteArray bs58_decode(String str);
+
+	/**
+	 * @brief Encode a byte array into a base58 encoded string.
+	 * 
+	 * @param input Byte array to encode.
+	 * @return String Base58 encoded String.
+	 */
 	static String bs58_encode(PackedByteArray input);
+
+	/**
+	 * @brief Encode a byte array int a base64 encoded string.
+	 * 
+	 * @param bytes Byte array to encode.
+	 * @return String Base64 encoded String.
+	 */
 	static String bs64_encode(PackedByteArray bytes);
+
+	/**
+	 * @brief Decode a base64 encoded string into bytes.
+	 * 
+	 * @param input Base64 encoded string to decode.
+	 * @return PackedByteArray Decoded bytes.
+	 */
 	static PackedByteArray bs64_decode(String input);
 
+	/**
+	 * @brief Short vec encode a 16 bit integer.
+	 * 
+	 * @param value integer to encode.
+	 * @return PackedByteArray Short vec encoded byte array.
+	 */
 	static PackedByteArray short_u16_encode(unsigned int value);
+
+	/**
+	 * @brief Decode short vec bytes int an integer.
+	 * 
+	 * @param bytes Short vec encoded bytes.
+	 * @param cursor Pointer to an integer that saves abount of bytes required.
+	 * @return unsigned int Decoded integer.
+	 */
 	static unsigned int short_u16_decode(const PackedByteArray &bytes, int *cursor);
 
 	~SolanaUtils() = default;

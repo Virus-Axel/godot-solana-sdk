@@ -652,14 +652,6 @@ bool Pubkey::operator==(const Pubkey &other) const {
 	return (bytes == other.bytes);
 }
 
-Pubkey::operator StringName() const {
-	return to_string();
-}
-
-Pubkey::operator PackedByteArray() const {
-	return to_bytes();
-}
-
 Pubkey::~Pubkey() {
 }
 
