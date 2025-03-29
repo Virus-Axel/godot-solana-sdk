@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1743234790695,
+  "lastUpdate": 1743272889129,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -985,6 +985,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.36986301369863,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "993c0714c5f2bf01936d1aed68fadb40d833f012",
+          "message": "Merge pull request #352 from Virus-Axel/bugfix/enable_json_quick_select\n\nEnable JSON quick select for payer property",
+          "timestamp": "2025-03-29T19:19:43+01:00",
+          "tree_id": "96425d4e35e3670222bb3f85851f2bdd824e6ac4",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/993c0714c5f2bf01936d1aed68fadb40d833f012"
+        },
+        "date": 1743272887755,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.373287671232877,
             "unit": "Percent"
           }
         ]
