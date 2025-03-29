@@ -51,6 +51,7 @@ func create_token_metadata_extension():
 	tx.update_latest_blockhash()
 
 	tx.sign_and_send()
+	print("AIT")
 	var result = await tx.transaction_response_received
 	assert(result.has("result"))
 
