@@ -10,8 +10,11 @@ A GDExtention that gives Godot engine Solana support. This plugin provides the p
 
 # How to use
 
-Download the binaries in the release section [here](https://github.com/Virus-Axel/godot-solana-sdk/releases). place the binaries anywhere in your godot project directory under *res://bin/*. Reload your project and you are good to go. See examples for an up to date usage example. Version 1.1 is built for Godot 4.3 and later. Use the latest official release of godot to avoid problems.
+Download the binaries in the release section [here](https://github.com/Virus-Axel/godot-solana-sdk/releases). place the binaries anywhere in your godot project directory under *res://bin/*. Reload your project and the SDK should be loaded.
 
+![setup](https://github.com/user-attachments/assets/1307ebe4-9630-4d0a-baa8-ecfbeea99759)
+
+See examples for an up to date usage example.
 
 > [!CAUTION]
 > It might be dangerous to use mainnet in you applications. Crypto can be stolen. Security is not yet evaluated for the godot-solana-sdk. I can audit security if there is demand.
@@ -20,7 +23,7 @@ When the plugin is loaded, the engine will have an additional set of nodes and r
 
 ## Nodes
 
-These are the nodes provided by this plugin:
+These are some of the nodes provided by this plugin:
 
 - SolanaUtils
 - SolanaClient
@@ -39,7 +42,7 @@ These are the nodes provided by this plugin:
 ![Screenshot from 2023-05-20 17-41-43](https://github.com/Virus-Axel/godot-solana-sdk/assets/14315050/56464477-dafc-41c6-8c6c-cfe9cd89ca6d)
 
 ## Resources
-These are the resources provided by this plugin:
+These are some of the resources provided by this plugin:
 
 - Pubkey
 - Keypair
