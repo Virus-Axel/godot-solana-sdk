@@ -24,3 +24,7 @@ renderer/rendering_method.mobile="gl_compatibility"
 
 client/default_url="http://localhost:8899"
 client/default_ws_port=8900
+
+[threading]
+
+worker_pool/max_threads=1
