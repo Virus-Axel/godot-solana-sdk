@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1743188551347,
+  "lastUpdate": 1743234716515,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -927,6 +927,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.366438356164384,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "eaaf56912da06d8bf1a830ab3847140364dbae15",
+          "message": "Remove false statements in README.md",
+          "timestamp": "2025-03-29T08:43:44+01:00",
+          "tree_id": "051af66fe0fb9d6f9f0fa9a797073c17b738f63a",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/eaaf56912da06d8bf1a830ab3847140364dbae15"
+        },
+        "date": 1743234715367,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.373287671232877,
             "unit": "Percent"
           }
         ]
