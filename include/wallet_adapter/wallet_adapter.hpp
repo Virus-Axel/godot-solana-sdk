@@ -48,6 +48,16 @@ enum WalletType {
 	MAX_TYPES,
 };
 
+/**
+ * @brief Handles interaction with external wallet applications.
+ * 
+ * The WalletAdapter can be used as any other signer type like a Keypair. When using a WalletAdapter for
+ * instructions or as payer, the wallet app will be requested to sign when needed. The class provices 
+ * methods to connect and disconnect the selected wallet application.
+ * 
+ * @note This class is mainly intended for web platform. It has been proven to work on desktop and mobile
+ * as well with some tweaking, but is not actively tested yet.
+ */
 class WalletAdapter : public Node {
 	GDCLASS(WalletAdapter, Node)
 private:
@@ -77,35 +87,131 @@ private:
 	static Array get_all_wallets();
 
 protected:
+	/**
+	 * @bindmethods{WalletAdapter, Node}
+	 */
 	static void _bind_methods();
 
 public:
+	/**
+	 * @_process
+	 */
 	void _process(double delta) override;
 	WalletAdapter();
 
+	/**
+	 * @brief Check if Variant is of type WalletAdapter Object.
+	 * 
+	 * @param other Variatn to type check.
+	 * @return true if Variant is a WalletAdapter.
+	 * @return false Otherwise.
+	 */
 	static bool is_wallet_adapter(const Variant &other);
 
+	/**
+	 * @brief Attempt to connect wallet.
+	 * 
+	 * Opens a browser extension popup to ask user to connect. If already connected no popup will appear
+	 * and the WalletAdapter will instantly get the connected Pubkey. 
+	 */
 	void connect_wallet();
 
+	/**
+	 * @brief Check if connected.
+	 * 
+	 * @return true If wallet is connected
+	 * @return false if wallet is not connected.
+	 */
 	bool is_connected() const;
+
+	/**
+	 * @brief Check if no operation is ongoing.
+	 * 
+	 * @return true If wallet is idle.
+	 * @return false If wallet is busy.
+	 */
 	bool is_idle();
+
+	/**
+	 * @brief Check if transaction changed after a wallet operation.
+	 * 
+	 * @return true If transaction was modified.
+	 * @return false If transaction is the same.
+	 */
 	bool did_transaction_change() const;
+
+	/**
+	 * @brief Check if there are several available wallets.
+	 * 
+	 * @return true If several wallets are available.
+	 * @return false If one or zero wallets are available.
+	 */
 	static bool has_multiple_wallets();
 
+	/**
+	 * @brief Poll connection request.
+	 */
 	void poll_connection();
+
+	/**
+	 * @brief Poll message signing request.
+	 */
 	void poll_message_signing();
+
+	/**
+	 * @brief Get the connected Pubkey.
+	 * 
+	 * @return Variant Connected Pubkey.
+	 */
 	Variant get_connected_key();
+
+	/**
+	 * @brief Get the message signature of latest signing operation.
+	 */
 	static PackedByteArray get_message_signature();
+
+	/**
+	 * @brief Get the modified serialized Transaction.
+	 * 
+	 * This can be used when wallet modifies the Transaction to get the modified version.
+	 */
 	static PackedByteArray get_modified_transaction();
 
+	/**
+	 * @brief Get the available wallets.
+	 * 
+	 * @return Array Array of wallet type IDs.
+	 */
 	static Array get_available_wallets();
 
+	/**
+	 * @setter{wallet_type}
+	 */
 	void set_wallet_type(int wallet_type);
+
+	/**
+	 * @getter{wallet_type, int}
+	 */
 	int get_wallet_type();
 
+	/**
+	 * @brief Sign a Transaction message.
+	 * 
+	 * @param serialized_message Serialized Transaction message.
+	 * @param index Index of the active signer.
+	 */
 	void sign_message(const PackedByteArray &serialized_message, const uint32_t index);
+
+	/**
+	 * @brief Sign a text message.
+	 * 
+	 * @param message Text message to sign.
+	 */
 	void sign_text_message(const String &message);
 
+	/**
+	 * @getter{active_signer_index, uint32_t}
+	 */
 	uint32_t get_active_signer_index() const;
 	~WalletAdapter() = default;
 };

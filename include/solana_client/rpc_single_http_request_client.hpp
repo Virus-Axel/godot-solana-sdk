@@ -8,14 +8,21 @@
 
 namespace godot {
 
+/**
+ * @brief Specifies information about a request.
+ */
 typedef struct {
-	Dictionary request;
-	Dictionary parsed_url;
-	double timeout;
-	int request_identifier;
-	Callable callback;
+	Dictionary request; ///< Request to send.
+	Dictionary parsed_url; ///< URL Dictionary.
+	double timeout; ///< timeout of request.
+	int request_identifier; ///< ID to pass with the RPC request.
+	Callable callback; ///< Callback that will be called when request response received.
 } RequestData;
 
+/**
+ * @class RpcSingleHttpRequestClient
+ * @brief Handles requests synchronously in a queue.
+ */
 class RpcSingleHttpRequestClient : public HTTPClient {
 	GDCLASS(RpcSingleHttpRequestClient, HTTPClient)
 private:
@@ -38,13 +45,40 @@ private:
 	void finalize_request(const Dictionary &response);
 
 protected:
+	/**
+	 * @bindmethods{RpcSingleHttpRequestClient, Node}
+	 */
 	static void _bind_methods();
 
 public:
+	/**
+	 * @brief Check if request queue is empty.
+	 * 
+	 * @return true If request queue is empty.
+	 * @return false If request is queued.
+	 */
 	bool is_completed() const;
+
+	/**
+	 * @setter{skip_id, skip_id}
+	 */
 	void set_skip_id(bool skip_id);
 
+	/**
+	 * @brief Process the request.
+	 * 
+	 * @param delta Elapsed time since last process.
+	 */
 	void process(const double delta);
+
+	/**
+	 * @brief Initiate an asynchronous request.
+	 * 
+	 * @param request_body Request Dictionary.
+	 * @param parsed_url URL to send request to.
+	 * @param callback Callback to call on response received.
+	 * @param timeout Timeout of request.
+	 */
 	void asynchronous_request(const Dictionary &request_body, const Dictionary &parsed_url, const Callable &callback, float timeout = 20.0F);
 };
 

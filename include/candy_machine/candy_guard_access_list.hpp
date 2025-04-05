@@ -9,6 +9,9 @@
 
 namespace godot {
 
+/**
+ * @brief Guard access list for candy guard program.
+ */
 class CandyGuardAccessList : public Resource {
 	GDCLASS(CandyGuardAccessList, Resource)
 private:
@@ -95,17 +98,65 @@ private:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 protected:
+	/**
+	 * @brief Binds mathods of CandyGuardAccessList Resource.
+	 */
 	static void _bind_methods();
 
 public:
+	/**
+	 * @brief Get the label property
+	 * 
+	 * @return String Label property.
+	 */
 	String get_label() const;
 
+	/**
+	 * @brief Serialize the Candy guard access list.
+	 * 
+	 * @return PackedByteArray Serialized byte array.
+	 */
 	PackedByteArray serialize() const;
+
+	/**
+	 * @brief Serialize into mint settings.
+	 * 
+	 * Mint settings are needed in some cases instructions.
+	 * 
+	 * @return PackedByteArray Serialized byte array.
+	 */
 	PackedByteArray serialize_mint_settings() const;
+
+	/**
+	 * @brief Serialized guard groups.
+	 * 
+	 * @return PackedByteArray Serialized byte array.
+	 */
 	PackedByteArray serialize_groups() const;
+
+	/**
+	 * @brief Serialize guard settings.
+	 *
+	 * @return PackedByteArray Serialized byte array.
+	 */
 	PackedByteArray serialize_guard_settings() const;
 
+	/**
+	 * @brief Get CandyGuardAccessList group from a group label.
+	 * 
+	 * @param label Group label
+	 * @return CandyGuardAccessList& Reference to a group in a candy guard access list.
+	 */
 	CandyGuardAccessList &get_group(const String &label);
+
+	/**
+	 * @brief Get the mint arg account array.
+	 * 
+	 * @param payer Payer of the mint transaction.
+	 * @param machine_key Candy machine key.
+	 * @param guard_key Guard key.
+	 * @return TypedArray<AccountMeta> Mint argument accounts.
+	 */
 	TypedArray<AccountMeta> get_mint_arg_accounts(const Variant &payer, const Variant &machine_key, const Variant &guard_key);
 };
 
