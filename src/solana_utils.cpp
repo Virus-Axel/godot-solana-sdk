@@ -181,13 +181,9 @@ String SolanaUtils::bs64_encode(PackedByteArray bytes) {
 }
 
 PackedByteArray SolanaUtils::bs64_decode(String input) {
-	std::cout << "HI" << std::endl;
 	if(input.is_empty()){
-		std::cout << "AAAAAAAAAAAAAA1" << std::endl;
 		return PackedByteArray();
 	}
-
-	std::cout << "AAAAAAAAAAAA " << input.ascii() << std::endl;
 
 	PackedByteArray result;
 	int cutoff = 0;

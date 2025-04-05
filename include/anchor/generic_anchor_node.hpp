@@ -6,7 +6,7 @@
 #include "godot_cpp/variant/utility_functions.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
-#include "anchor_program.hpp"
+#include "anchor/anchor_program.hpp"
 #include "custom_class_management/generic_node.hpp"
 
 namespace godot {
@@ -67,7 +67,7 @@ private:
 protected:
 	/**
 	 * @brief Process Anchor program node.
-	 * 
+	 *
 	 * @param p_delta Elapsed time since last performed process.
 	 */
 	void _process(double p_delta);
@@ -83,14 +83,14 @@ public:
 
 	/**
 	 * @brief Get the class name of the Node.
-	 * 
+	 *
 	 * @return const StringName& Reference to class name.
 	 */
 	static const StringName &get_class_static();
 
 	/**
 	 * @brief Set the class name of the Node.
-	 * 
+	 *
 	 * @param name Class name to set.
 	 */
 	static void set_class_name(const String &name) {
@@ -99,7 +99,7 @@ public:
 
 	/**
 	 * @brief Checks if specific Anchor node instruction expects extra accounts.
-	 * 
+	 *
 	 * @param program Anchor Program name.
 	 * @param instruction Instruction name.
 	 * @return true If instruction expects extra accounts.
@@ -107,13 +107,13 @@ public:
 	 */
 	static bool has_extra_accounts(const StringName &program, const StringName &instruction);
 
-	Variant anchor_program = nullptr; ///< Specific Anchor program. 
+	Variant anchor_program = nullptr; ///< Specific Anchor program.
 
 	GenericAnchorNode() = default;
 
 	/**
 	 * @brief Extract the accounts from a list of args.
-	 * 
+	 *
 	 * @param args to extract from.
 	 * @param instruction_name Instruction with argument specification.
 	 * @return Array Extracted accounts.
@@ -122,7 +122,7 @@ public:
 
 	/**
 	 * @brief Extract the arguments from a list of args.
-	 * 
+	 *
 	 * @param args to extract from.
 	 * @param instruction_name Instruction with argument specification.
 	 * @return Array Extracted accounts.
@@ -131,14 +131,14 @@ public:
 
 	/**
 	 * @brief Bind an anchor node to godot.
-	 * 
+	 *
 	 * @param idl IDL of anchor node.
 	 */
 	static void bind_anchor_node(const Dictionary &idl);
 
 	/**
 	 * @brief Bind instruction builder method to a class.
-	 * 
+	 *
 	 * @param p_class_name Class name of class to bind method to.
 	 * @param anchor_instruction Instruction specification.
 	 */
@@ -146,7 +146,7 @@ public:
 
 	/**
 	 * @brief Bind account fetcher method to a class.
-	 * 
+	 *
 	 * @param p_class_name Class name of class to bind method to.
 	 * @param anchor_account Account specification.
 	 */
@@ -154,7 +154,7 @@ public:
 
 	/**
 	 * @brief Bind signal to a class.
-	 * 
+	 *
 	 * @param p_class_name Class name of class to bind signal to.
 	 * @param p_signal Signal to bind.
 	 */
@@ -162,7 +162,7 @@ public:
 
 	/**
 	 * @brief Get the Program ID of the specific anchor program.
-	 * 
+	 *
 	 * @return Variant Program ID Pubkey.
 	 */
 	Variant get_pid() const;

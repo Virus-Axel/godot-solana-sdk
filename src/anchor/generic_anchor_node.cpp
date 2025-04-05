@@ -13,8 +13,8 @@
 #include "godot_cpp/variant/string_name.hpp"
 #include "godot_cpp/variant/utility_functions.hpp"
 
+#include "anchor/anchor_program.hpp"
 #include "anchor/generic_anchor_resource.hpp"
-#include "anchor_program.hpp"
 #include "custom_class_management/generic_node.hpp"
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
