@@ -1,27 +1,4 @@
 var searchData=
 [
-  ['save_5fto_5ffile_0',['save_to_file',['../classgodot_1_1_keypair.html#a7b7ccac6a23f1b1cb284fa3a05b66c50',1,'godot::Keypair']]],
-  ['serialize_1',['serialize',['../classgodot_1_1_message.html#a9127ac294b133fe14273c0f20a83a68b',1,'godot::Message']]],
-  ['serialize_5fblockhash_2',['serialize_blockhash',['../classgodot_1_1_message.html#a5563f1fcb49663eeb0ca9757720ce347',1,'godot::Message']]],
-  ['serialize_5flookup_5ftables_3',['serialize_lookup_tables',['../classgodot_1_1_message.html#ade9a9550908ade83c1342967ab2bc22a',1,'godot::Message']]],
-  ['set_5faddress_5flookup_5ftables_4',['set_address_lookup_tables',['../classgodot_1_1_message.html#ae1a09013c2301a805952070dac6b3550',1,'godot::Message']]],
-  ['set_5fbase_5',['set_base',['../classgodot_1_1_pubkey.html#affea02c8f66a30d681b04c9df42a5812',1,'godot::Pubkey']]],
-  ['set_5fcallback_6',['set_callback',['../classgodot_1_1_solana_client.html#ad05fe310b293c989aba341e3543f5715',1,'godot::SolanaClient']]],
-  ['set_5flatest_5fblockhash_7',['set_latest_blockhash',['../classgodot_1_1_message.html#ae79e65f3d540664172a6b26e25099fa0',1,'godot::Message']]],
-  ['set_5fowner_8',['set_owner',['../classgodot_1_1_pubkey.html#a456511ed483d257fb5e00dfaa66c184d',1,'godot::Pubkey']]],
-  ['set_5fprivate_5fbytes_9',['set_private_bytes',['../classgodot_1_1_keypair.html#a5dbc438db0b95a561f9cc2e0f88711e5',1,'godot::Keypair']]],
-  ['set_5fprivate_5fstring_10',['set_private_string',['../classgodot_1_1_keypair.html#a4ea9e7e808aaeb4a3c7cfb0fab0d9504',1,'godot::Keypair']]],
-  ['set_5fpublic_5fbytes_11',['set_public_bytes',['../classgodot_1_1_keypair.html#a6b867559de2faee07bc667de64522c1a',1,'godot::Keypair']]],
-  ['set_5fpublic_5fstring_12',['set_public_string',['../classgodot_1_1_keypair.html#ad316985440e9d95d90855fb18040b8ee',1,'godot::Keypair']]],
-  ['set_5fseed_13',['set_seed',['../classgodot_1_1_keypair.html#a195d2a7bf8077629f3bedce4efab3567',1,'godot::Keypair::set_seed()'],['../classgodot_1_1_pubkey.html#a79985f14405856b5cca07b1d0f92a66e',1,'godot::Pubkey::set_seed()']]],
-  ['set_5ftimeout_14',['set_timeout',['../classgodot_1_1_solana_client.html#aa89e555083aa16ea544e0c9e7a14be6a',1,'godot::SolanaClient']]],
-  ['set_5ftoken_5fmint_5faddress_15',['set_token_mint_address',['../classgodot_1_1_pubkey.html#a5cf0521a2a1cf513926aca76f4d05ce9',1,'godot::Pubkey']]],
-  ['set_5ftype_16',['set_type',['../classgodot_1_1_pubkey.html#aa446eac4024cabaec76baf41c617ba80',1,'godot::Pubkey']]],
-  ['set_5funique_17',['set_unique',['../classgodot_1_1_keypair.html#abd853e5439955fda9eefaac4d7c59b50',1,'godot::Keypair']]],
-  ['set_5furl_5foverride_18',['set_url_override',['../classgodot_1_1_solana_client.html#ad0e4ab37b29d226023dedfcced3bd2cc',1,'godot::SolanaClient']]],
-  ['set_5fwallet_5faddress_19',['set_wallet_address',['../classgodot_1_1_pubkey.html#a7303163b2f3df79e12f770472be0479c',1,'godot::Pubkey']]],
-  ['sign_5fmessage_20',['sign_message',['../classgodot_1_1_keypair.html#ac327bcf081bb6fd2bb2a339b0e266910',1,'godot::Keypair']]],
-  ['sort_21',['sort',['../classgodot_1_1_merged_account_metas.html#a918af0f39236d7e142492425f430dfdf',1,'godot::MergedAccountMetas']]],
-  ['string_5ffrom_5fvariant_22',['string_from_variant',['../classgodot_1_1_pubkey.html#a0cba144cc67457d996358629099f29c8',1,'godot::Pubkey']]],
-  ['supply_5fsigners_23',['supply_signers',['../classgodot_1_1_merged_account_metas.html#a4b79d6d8e93f4f24c0be7fdbe3736e9f',1,'godot::MergedAccountMetas::supply_signers()'],['../classgodot_1_1_message.html#a551b377787aa3beacdeb941dc3fa7f7a',1,'godot::Message::supply_signers()']]]
+  ['keypair_0',['Keypair',['../classgodot_1_1_keypair.html#a938a5268999cf93892047d32f58207a7',1,'godot::Keypair']]]
 ];

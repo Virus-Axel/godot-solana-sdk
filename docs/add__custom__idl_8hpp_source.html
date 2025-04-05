@@ -114,37 +114,42 @@ $(function(){initNavTree('add__custom__idl_8hpp_source.html',''); initResizable(
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">const</span> std::string CUSTOM_IDL_LOCATION_SETTING = <span class="stringliteral">&quot;solana_sdk/anchor/custom_anchor_programs&quot;</span>;</div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
-<div class="foldopen" id="foldopen00013" data-start="{" data-end="};">
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno"><a class="line" href="classgodot_1_1_add_custom_idl_dialog.html">   13</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_add_custom_idl_dialog.html">AddCustomIdlDialog</a> : <span class="keyword">public</span> Window {</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_add_custom_idl_dialog.html">AddCustomIdlDialog</a>, Window)</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    <span class="keyword">const</span> <span class="keywordtype">char</span> *SELECT_IDL_TEXT = <span class="stringliteral">&quot;Select IDL&quot;</span>;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    Label *select_idl_label = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    Variant parent_window = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> idl_selected_callback(<span class="keyword">const</span> String &amp;filename);</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
+<div class="foldopen" id="foldopen00016" data-start="{" data-end="};">
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="classgodot_1_1_add_custom_idl_dialog.html">   16</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_add_custom_idl_dialog.html">AddCustomIdlDialog</a> : <span class="keyword">public</span> Window {</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_add_custom_idl_dialog.html">AddCustomIdlDialog</a>, Window)</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <span class="keyword">const</span> <span class="keywordtype">char</span> *SELECT_IDL_TEXT = <span class="stringliteral">&quot;Select IDL&quot;</span>;</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    Label *select_idl_label = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    Variant parent_window = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> idl_selected_callback(<span class="keyword">const</span> String &amp;filename);</div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <a class="code hl_class" href="classgodot_1_1_add_custom_idl_dialog.html">AddCustomIdlDialog</a>();</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keywordtype">void</span> clear();</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> load_idl(<span class="keyword">const</span> String &amp;filename);</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <a class="code hl_class" href="classgodot_1_1_add_custom_idl_dialog.html">~AddCustomIdlDialog</a>() = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>};</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_add_custom_idl_dialog.html#a6ffc376bd2ee70da05e9639289f16eed">_bind_methods</a>();</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <a class="code hl_class" href="classgodot_1_1_add_custom_idl_dialog.html">AddCustomIdlDialog</a>();</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_add_custom_idl_dialog.html#a7f74c3505a0e33112153f12e4e1aa557">clear</a>();</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_add_custom_idl_dialog.html#a45a3073abbb4293163bdf9a3b314df50">load_idl</a>(<span class="keyword">const</span> String &amp;filename);</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <a class="code hl_class" href="classgodot_1_1_add_custom_idl_dialog.html">~AddCustomIdlDialog</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>};</div>
 </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>} <span class="comment">//namespace godot</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassgodot_1_1_add_custom_idl_dialog_html"><div class="ttname"><a href="classgodot_1_1_add_custom_idl_dialog.html">godot::AddCustomIdlDialog</a></div><div class="ttdef"><b>Definition</b> add_custom_idl.hpp:13</div></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>} <span class="comment">//namespace godot</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassgodot_1_1_add_custom_idl_dialog_html"><div class="ttname"><a href="classgodot_1_1_add_custom_idl_dialog.html">godot::AddCustomIdlDialog</a></div><div class="ttdoc">Dialog window used to create custom IDL nodes,.</div><div class="ttdef"><b>Definition</b> add_custom_idl.hpp:16</div></div>
+<div class="ttc" id="aclassgodot_1_1_add_custom_idl_dialog_html_a45a3073abbb4293163bdf9a3b314df50"><div class="ttname"><a href="classgodot_1_1_add_custom_idl_dialog.html#a45a3073abbb4293163bdf9a3b314df50">godot::AddCustomIdlDialog::load_idl</a></div><div class="ttdeci">static void load_idl(const String &amp;filename)</div><div class="ttdoc">Loads an IDL from a file and creates a generic anchor node from it.</div><div class="ttdef"><b>Definition</b> add_custom_idl.cpp:47</div></div>
+<div class="ttc" id="aclassgodot_1_1_add_custom_idl_dialog_html_a6ffc376bd2ee70da05e9639289f16eed"><div class="ttname"><a href="classgodot_1_1_add_custom_idl_dialog.html#a6ffc376bd2ee70da05e9639289f16eed">godot::AddCustomIdlDialog::_bind_methods</a></div><div class="ttdeci">static void _bind_methods()</div><div class="ttdoc">Binds methods of AddCustomIdlDialog Window.</div><div class="ttdef"><b>Definition</b> add_custom_idl.cpp:65</div></div>
+<div class="ttc" id="aclassgodot_1_1_add_custom_idl_dialog_html_a7f74c3505a0e33112153f12e4e1aa557"><div class="ttname"><a href="classgodot_1_1_add_custom_idl_dialog.html#a7f74c3505a0e33112153f12e4e1aa557">godot::AddCustomIdlDialog::clear</a></div><div class="ttdeci">void clear()</div><div class="ttdoc">Resets the window to its default appearance.</div><div class="ttdef"><b>Definition</b> add_custom_idl.cpp:18</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_2c3bdccfb6394a78f2c21b4468960011.html">dialogs</a></li><li class="navelem"><b>add_custom_idl.hpp</b></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

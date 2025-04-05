@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['parse_5furl_0',['parse_url',['../classgodot_1_1_solana_client.html#a7a5ad08a54f6a8cb36698865abb1b56a',1,'godot::SolanaClient']]],
-  ['pubkey_1',['Pubkey',['../classgodot_1_1_pubkey.html#a28373f1d1915410a1603a141655114bb',1,'godot::Pubkey::Pubkey()'],['../classgodot_1_1_pubkey.html#a499efa20f1e984c683fae363fdeb254f',1,'godot::Pubkey::Pubkey(const String &amp;from)'],['../classgodot_1_1_pubkey.html#a53573402cc01bbb77e5dbabf360081c6',1,'godot::Pubkey::Pubkey(const Variant &amp;from)']]]
+  ['has_5fextra_5faccounts_0',['has_extra_accounts',['../classgodot_1_1_generic_anchor_node.html#aa90206f4f299d6654005f9b22261afcf',1,'godot::GenericAnchorNode']]],
+  ['has_5fget_5fproperty_5flist_1',['has_get_property_list',['../classgodot_1_1_generic_anchor_resource.html#aa9f882e0f154ceb1ec3be669a06486f9',1,'godot::GenericAnchorResource::has_get_property_list()'],['../classgodot_1_1_generic_type.html#a968c4097c40ab7e190df5ff7ecff7892',1,'godot::GenericType::has_get_property_list()']]],
+  ['has_5fmultiple_5fwallets_2',['has_multiple_wallets',['../classgodot_1_1_wallet_adapter.html#a6dba5b2cb74edb425a6fe6cfd66fb748',1,'godot::WalletAdapter']]]
 ];

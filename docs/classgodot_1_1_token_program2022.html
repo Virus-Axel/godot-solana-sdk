@@ -101,125 +101,609 @@ $(function(){initNavTree('classgodot_1_1_token_program2022.html',''); initResiza
 <div class="header">
   <div class="summary">
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
-<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="classgodot_1_1_token_program2022-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">godot::TokenProgram2022 Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> Builder for Solana Token2022 Program.  
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="spl__token__2022_8hpp_source.html">spl_token_2022.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for godot::TokenProgram2022:</div>
 <div class="dyncontent">
  <div class="center">
   <img src="classgodot_1_1_token_program2022.png" usemap="#godot::TokenProgram2022_map" alt=""/>
   <map id="godot::TokenProgram2022_map" name="godot::TokenProgram2022_map">
-<area href="classgodot_1_1_token_program.html" alt="godot::TokenProgram" shape="rect" coords="0,56,159,80"/>
+<area href="classgodot_1_1_token_program.html" title="Instruction Builder for Solana Token Program." alt="godot::TokenProgram" shape="rect" coords="0,56,159,80"/>
   </map>
 </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a614d58a7916e35eaec9da35e1318485f" id="r_a614d58a7916e35eaec9da35e1318485f"><td class="memItemLeft" align="right" valign="top"><a id="a614d58a7916e35eaec9da35e1318485f" name="a614d58a7916e35eaec9da35e1318485f"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>get_pid</b> ()</td></tr>
+<tr class="memitem:a614d58a7916e35eaec9da35e1318485f" id="r_a614d58a7916e35eaec9da35e1318485f"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a614d58a7916e35eaec9da35e1318485f">get_pid</a> ()</td></tr>
+<tr class="memdesc:a614d58a7916e35eaec9da35e1318485f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the Program ID of <a class="el" href="classgodot_1_1_token_program2022.html" title="Instruction Builder for Solana Token2022 Program.">TokenProgram2022</a>.  <br /></td></tr>
 <tr class="separator:a614d58a7916e35eaec9da35e1318485f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a91cd5e6ced0f1a6cc36b126270c696d1" id="r_a91cd5e6ced0f1a6cc36b126270c696d1"><td class="memItemLeft" align="right" valign="top"><a id="a91cd5e6ced0f1a6cc36b126270c696d1" name="a91cd5e6ced0f1a6cc36b126270c696d1"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_metadata</b> (const Variant &amp;payer, const Variant &amp;mint_keypair, const String &amp;name, const String &amp;symbol, const String &amp;uri)</td></tr>
+<tr class="memitem:a91cd5e6ced0f1a6cc36b126270c696d1" id="r_a91cd5e6ced0f1a6cc36b126270c696d1"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a91cd5e6ced0f1a6cc36b126270c696d1">initialize_metadata</a> (const Variant &amp;payer, const Variant &amp;mint_keypair, const String &amp;name, const String &amp;symbol, const String &amp;uri)</td></tr>
+<tr class="memdesc:a91cd5e6ced0f1a6cc36b126270c696d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that initializes metadata for a mint.  <br /></td></tr>
 <tr class="separator:a91cd5e6ced0f1a6cc36b126270c696d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a795e59e1649a807f5827c8a7b774e2fa" id="r_a795e59e1649a807f5827c8a7b774e2fa"><td class="memItemLeft" align="right" valign="top"><a id="a795e59e1649a807f5827c8a7b774e2fa" name="a795e59e1649a807f5827c8a7b774e2fa"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_metadata_pointer</b> (const Variant &amp;payer, const Variant &amp;mint_keypair)</td></tr>
+<tr class="memitem:a795e59e1649a807f5827c8a7b774e2fa" id="r_a795e59e1649a807f5827c8a7b774e2fa"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a795e59e1649a807f5827c8a7b774e2fa">initialize_metadata_pointer</a> (const Variant &amp;payer, const Variant &amp;mint_keypair)</td></tr>
+<tr class="memdesc:a795e59e1649a807f5827c8a7b774e2fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that initializes a metadata pointer.  <br /></td></tr>
 <tr class="separator:a795e59e1649a807f5827c8a7b774e2fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1c47b1d496a748e78271854f542cd611" id="r_a1c47b1d496a748e78271854f542cd611"><td class="memItemLeft" align="right" valign="top"><a id="a1c47b1d496a748e78271854f542cd611" name="a1c47b1d496a748e78271854f542cd611"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>update_metadata</b> (const Variant &amp;payer, const Variant &amp;mint_keypair, const String &amp;field, const String &amp;value)</td></tr>
+<tr class="memitem:a1c47b1d496a748e78271854f542cd611" id="r_a1c47b1d496a748e78271854f542cd611"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1c47b1d496a748e78271854f542cd611">update_metadata</a> (const Variant &amp;payer, const Variant &amp;mint_keypair, const String &amp;field, const String &amp;value)</td></tr>
+<tr class="memdesc:a1c47b1d496a748e78271854f542cd611"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that updates metadata.  <br /></td></tr>
 <tr class="separator:a1c47b1d496a748e78271854f542cd611"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56a13671c6af271a6687cc91cb0c793c" id="r_a56a13671c6af271a6687cc91cb0c793c"><td class="memItemLeft" align="right" valign="top"><a id="a56a13671c6af271a6687cc91cb0c793c" name="a56a13671c6af271a6687cc91cb0c793c"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_mint</b> (const Variant &amp;mint_pubkey, const Variant &amp;mint_authority, const Variant &amp;freeze_authority=nullptr, const uint32_t decimals=9)</td></tr>
+<tr class="memitem:a56a13671c6af271a6687cc91cb0c793c" id="r_a56a13671c6af271a6687cc91cb0c793c"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a56a13671c6af271a6687cc91cb0c793c">initialize_mint</a> (const Variant &amp;mint_pubkey, const Variant &amp;mint_authority, const Variant &amp;freeze_authority=nullptr, const uint32_t decimals=9)</td></tr>
+<tr class="memdesc:a56a13671c6af271a6687cc91cb0c793c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _initialize_mint but with program ID set to Spl token 2022 program ID.  <br /></td></tr>
 <tr class="separator:a56a13671c6af271a6687cc91cb0c793c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae3955bdbf883bee8cef5efe7752d42b" id="r_aae3955bdbf883bee8cef5efe7752d42b"><td class="memItemLeft" align="right" valign="top"><a id="aae3955bdbf883bee8cef5efe7752d42b" name="aae3955bdbf883bee8cef5efe7752d42b"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_account</b> (const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey)</td></tr>
+<tr class="memitem:aae3955bdbf883bee8cef5efe7752d42b" id="r_aae3955bdbf883bee8cef5efe7752d42b"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aae3955bdbf883bee8cef5efe7752d42b">initialize_account</a> (const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey)</td></tr>
+<tr class="memdesc:aae3955bdbf883bee8cef5efe7752d42b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _initialize_account but with program ID set to Spl token 2022 program ID.  <br /></td></tr>
 <tr class="separator:aae3955bdbf883bee8cef5efe7752d42b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad21ec6ad7e66c44ce7f0242c43c01de2" id="r_ad21ec6ad7e66c44ce7f0242c43c01de2"><td class="memItemLeft" align="right" valign="top"><a id="ad21ec6ad7e66c44ce7f0242c43c01de2" name="ad21ec6ad7e66c44ce7f0242c43c01de2"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>mint_to</b> (const Variant &amp;mint_pubkey, const Variant &amp;account_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;mint_authority, uint64_t amount)</td></tr>
+<tr class="memitem:ad21ec6ad7e66c44ce7f0242c43c01de2" id="r_ad21ec6ad7e66c44ce7f0242c43c01de2"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad21ec6ad7e66c44ce7f0242c43c01de2">mint_to</a> (const Variant &amp;mint_pubkey, const Variant &amp;account_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;mint_authority, uint64_t amount)</td></tr>
+<tr class="memdesc:ad21ec6ad7e66c44ce7f0242c43c01de2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _mint_to but with program ID set to Spl token 2022 program ID.  <br /></td></tr>
 <tr class="separator:ad21ec6ad7e66c44ce7f0242c43c01de2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a439bd9269fb069900cbd4294a9ba8c06" id="r_a439bd9269fb069900cbd4294a9ba8c06"><td class="memItemLeft" align="right" valign="top"><a id="a439bd9269fb069900cbd4294a9ba8c06" name="a439bd9269fb069900cbd4294a9ba8c06"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>transfer_checked</b> (const Variant &amp;source_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;destination_pubkey, const Variant &amp;source_authority, uint64_t amount, uint32_t decimals)</td></tr>
+<tr class="memitem:a439bd9269fb069900cbd4294a9ba8c06" id="r_a439bd9269fb069900cbd4294a9ba8c06"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a439bd9269fb069900cbd4294a9ba8c06">transfer_checked</a> (const Variant &amp;source_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;destination_pubkey, const Variant &amp;source_authority, uint64_t amount, uint32_t decimals)</td></tr>
+<tr class="memdesc:a439bd9269fb069900cbd4294a9ba8c06"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _transfer_checked but with program ID set to Spl token 2022 program ID.  <br /></td></tr>
 <tr class="separator:a439bd9269fb069900cbd4294a9ba8c06"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abc71df8cd7cadc3d9c822f459910190c" id="r_abc71df8cd7cadc3d9c822f459910190c"><td class="memItemLeft" align="right" valign="top"><a id="abc71df8cd7cadc3d9c822f459910190c" name="abc71df8cd7cadc3d9c822f459910190c"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>freeze_account</b> (const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;freeze_authority)</td></tr>
+<tr class="memitem:abc71df8cd7cadc3d9c822f459910190c" id="r_abc71df8cd7cadc3d9c822f459910190c"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abc71df8cd7cadc3d9c822f459910190c">freeze_account</a> (const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;freeze_authority)</td></tr>
+<tr class="memdesc:abc71df8cd7cadc3d9c822f459910190c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _freeze_account but with program ID set to Spl token 2022 program ID.  <br /></td></tr>
 <tr class="separator:abc71df8cd7cadc3d9c822f459910190c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad809545db32f305547a86a9b61da4599" id="r_ad809545db32f305547a86a9b61da4599"><td class="memItemLeft" align="right" valign="top"><a id="ad809545db32f305547a86a9b61da4599" name="ad809545db32f305547a86a9b61da4599"></a>
-static unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>get_mint_account_size_from_data</b> (const String &amp;name, const String symbol, const String uri, const Dictionary custom_data)</td></tr>
+<tr class="memitem:ad809545db32f305547a86a9b61da4599" id="r_ad809545db32f305547a86a9b61da4599"><td class="memItemLeft" align="right" valign="top">static unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad809545db32f305547a86a9b61da4599">get_mint_account_size_from_data</a> (const String &amp;name, const String symbol, const String uri, const Dictionary custom_data)</td></tr>
+<tr class="memdesc:ad809545db32f305547a86a9b61da4599"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the program ID of <a class="el" href="classgodot_1_1_token_program.html" title="Instruction Builder for Solana Token Program.">TokenProgram</a>.  <br /></td></tr>
 <tr class="separator:ad809545db32f305547a86a9b61da4599"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_static_methods_classgodot_1_1_token_program"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_static_methods_classgodot_1_1_token_program')"><img src="closed.png" alt="-"/>&#160;Static Public Member Functions inherited from <a class="el" href="classgodot_1_1_token_program.html">godot::TokenProgram</a></td></tr>
-<tr class="memitem:aa327cd58c5aa787888ea98ed4a2ac453 inherit pub_static_methods_classgodot_1_1_token_program" id="r_aa327cd58c5aa787888ea98ed4a2ac453"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>new_token_record_address</b> (const Variant &amp;token, const Variant &amp;mint)</td></tr>
+<tr class="memitem:aa327cd58c5aa787888ea98ed4a2ac453 inherit pub_static_methods_classgodot_1_1_token_program" id="r_aa327cd58c5aa787888ea98ed4a2ac453"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#aa327cd58c5aa787888ea98ed4a2ac453">new_token_record_address</a> (const Variant &amp;token, const Variant &amp;mint)</td></tr>
+<tr class="memdesc:aa327cd58c5aa787888ea98ed4a2ac453 inherit pub_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new token record <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>.  <br /></td></tr>
 <tr class="separator:aa327cd58c5aa787888ea98ed4a2ac453 inherit pub_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae811d6b63ef6a30af8890016f96be9dd inherit pub_static_methods_classgodot_1_1_token_program" id="r_ae811d6b63ef6a30af8890016f96be9dd"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>new_delegate_record_address</b> (const Variant &amp;update_authority, const Variant &amp;mint, const Variant &amp;delegate_address, const MetaDataDelegateRole role)</td></tr>
+<tr class="memitem:ae811d6b63ef6a30af8890016f96be9dd inherit pub_static_methods_classgodot_1_1_token_program" id="r_ae811d6b63ef6a30af8890016f96be9dd"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#ae811d6b63ef6a30af8890016f96be9dd">new_delegate_record_address</a> (const Variant &amp;update_authority, const Variant &amp;mint, const Variant &amp;delegate_address, const <a class="el" href="classgodot_1_1_token_program.html#a48f241d411cdb28d7ad8373b11308bd6">MetaDataDelegateRole</a> role)</td></tr>
+<tr class="memdesc:ae811d6b63ef6a30af8890016f96be9dd inherit pub_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new delegate record address.  <br /></td></tr>
 <tr class="separator:ae811d6b63ef6a30af8890016f96be9dd inherit pub_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0cc62a53f707bda705d86fd97bf99efb inherit pub_static_methods_classgodot_1_1_token_program" id="r_a0cc62a53f707bda705d86fd97bf99efb"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_mint</b> (const Variant &amp;mint_pubkey, const Variant &amp;mint_authority, const Variant &amp;freeze_authority=nullptr, const uint32_t decimals=9)</td></tr>
+<tr class="memitem:a0cc62a53f707bda705d86fd97bf99efb inherit pub_static_methods_classgodot_1_1_token_program" id="r_a0cc62a53f707bda705d86fd97bf99efb"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#a0cc62a53f707bda705d86fd97bf99efb">initialize_mint</a> (const Variant &amp;mint_pubkey, const Variant &amp;mint_authority, const Variant &amp;freeze_authority=nullptr, const uint32_t decimals=9)</td></tr>
+<tr class="memdesc:a0cc62a53f707bda705d86fd97bf99efb inherit pub_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _initialize_mint but with program ID set to Spl token program ID.  <br /></td></tr>
 <tr class="separator:a0cc62a53f707bda705d86fd97bf99efb inherit pub_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54aedbcd592cbafe068519f7af9d7a1b inherit pub_static_methods_classgodot_1_1_token_program" id="r_a54aedbcd592cbafe068519f7af9d7a1b"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_account</b> (const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey)</td></tr>
+<tr class="memitem:a54aedbcd592cbafe068519f7af9d7a1b inherit pub_static_methods_classgodot_1_1_token_program" id="r_a54aedbcd592cbafe068519f7af9d7a1b"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#a54aedbcd592cbafe068519f7af9d7a1b">initialize_account</a> (const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey)</td></tr>
+<tr class="memdesc:a54aedbcd592cbafe068519f7af9d7a1b inherit pub_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _initialize_account but with program ID set to Spl token program ID.  <br /></td></tr>
 <tr class="separator:a54aedbcd592cbafe068519f7af9d7a1b inherit pub_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b0fa030a8d201d0eea8f267ce9e4830 inherit pub_static_methods_classgodot_1_1_token_program" id="r_a6b0fa030a8d201d0eea8f267ce9e4830"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>mint_to</b> (const Variant &amp;mint_pubkey, const Variant &amp;account_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;mint_authority, uint64_t amount)</td></tr>
+<tr class="memitem:a6b0fa030a8d201d0eea8f267ce9e4830 inherit pub_static_methods_classgodot_1_1_token_program" id="r_a6b0fa030a8d201d0eea8f267ce9e4830"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#a6b0fa030a8d201d0eea8f267ce9e4830">mint_to</a> (const Variant &amp;mint_pubkey, const Variant &amp;account_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;mint_authority, uint64_t amount)</td></tr>
+<tr class="memdesc:a6b0fa030a8d201d0eea8f267ce9e4830 inherit pub_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _mint_to but with program ID set to Spl token program ID.  <br /></td></tr>
 <tr class="separator:a6b0fa030a8d201d0eea8f267ce9e4830 inherit pub_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac9db0247ef9a184a75a82e369beb7f7a inherit pub_static_methods_classgodot_1_1_token_program" id="r_ac9db0247ef9a184a75a82e369beb7f7a"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>transfer_checked</b> (const Variant &amp;source_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;destination_pubkey, const Variant &amp;source_authority, uint64_t amount, uint32_t decimals)</td></tr>
+<tr class="memitem:ac9db0247ef9a184a75a82e369beb7f7a inherit pub_static_methods_classgodot_1_1_token_program" id="r_ac9db0247ef9a184a75a82e369beb7f7a"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#ac9db0247ef9a184a75a82e369beb7f7a">transfer_checked</a> (const Variant &amp;source_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;destination_pubkey, const Variant &amp;source_authority, uint64_t amount, uint32_t decimals)</td></tr>
+<tr class="memdesc:ac9db0247ef9a184a75a82e369beb7f7a inherit pub_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _transfer_checked but with program ID set to Spl token program ID.  <br /></td></tr>
 <tr class="separator:ac9db0247ef9a184a75a82e369beb7f7a inherit pub_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66d5263ac1ecca761e201393ecfe47ee inherit pub_static_methods_classgodot_1_1_token_program" id="r_a66d5263ac1ecca761e201393ecfe47ee"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>freeze_account</b> (const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;freeze_authority)</td></tr>
+<tr class="memitem:a66d5263ac1ecca761e201393ecfe47ee inherit pub_static_methods_classgodot_1_1_token_program" id="r_a66d5263ac1ecca761e201393ecfe47ee"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#a66d5263ac1ecca761e201393ecfe47ee">freeze_account</a> (const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;freeze_authority)</td></tr>
+<tr class="memdesc:a66d5263ac1ecca761e201393ecfe47ee inherit pub_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _freeze_account but with program ID set to Spl token program ID.  <br /></td></tr>
 <tr class="separator:a66d5263ac1ecca761e201393ecfe47ee inherit pub_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39bf546fd0dec565da205c8744f3ef59 inherit pub_static_methods_classgodot_1_1_token_program" id="r_a39bf546fd0dec565da205c8744f3ef59"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>get_pid</b> ()</td></tr>
+<tr class="memitem:a39bf546fd0dec565da205c8744f3ef59 inherit pub_static_methods_classgodot_1_1_token_program" id="r_a39bf546fd0dec565da205c8744f3ef59"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#a39bf546fd0dec565da205c8744f3ef59">get_pid</a> ()</td></tr>
+<tr class="memdesc:a39bf546fd0dec565da205c8744f3ef59 inherit pub_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the program ID of <a class="el" href="classgodot_1_1_token_program.html" title="Instruction Builder for Solana Token Program.">TokenProgram</a>.  <br /></td></tr>
 <tr class="separator:a39bf546fd0dec565da205c8744f3ef59 inherit pub_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
-Static Public Attributes</h2></td></tr>
-<tr class="memitem:a9963cd50438b36dbcdf040e02e1db976" id="r_a9963cd50438b36dbcdf040e02e1db976"><td class="memItemLeft" align="right" valign="top"><a id="a9963cd50438b36dbcdf040e02e1db976" name="a9963cd50438b36dbcdf040e02e1db976"></a>
-static const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>ID</b> = &quot;TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb&quot;</td></tr>
-<tr class="separator:a9963cd50438b36dbcdf040e02e1db976"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
 <tr class="memitem:ae22e725ab72d22a14c848d57ac3db1ef" id="r_ae22e725ab72d22a14c848d57ac3db1ef"><td class="memItemLeft" align="right" valign="top"><a id="ae22e725ab72d22a14c848d57ac3db1ef" name="ae22e725ab72d22a14c848d57ac3db1ef"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods</b> ()</td></tr>
+<tr class="memdesc:ae22e725ab72d22a14c848d57ac3db1ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bind methods for <a class="el" href="classgodot_1_1_token_program2022.html" title="Instruction Builder for Solana Token2022 Program.">TokenProgram2022</a> Node. <br /></td></tr>
 <tr class="separator:ae22e725ab72d22a14c848d57ac3db1ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_static_methods_classgodot_1_1_token_program"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_static_methods_classgodot_1_1_token_program')"><img src="closed.png" alt="-"/>&#160;Static Protected Member Functions inherited from <a class="el" href="classgodot_1_1_token_program.html">godot::TokenProgram</a></td></tr>
-<tr class="memitem:a0e79b905d82af1f6270e617dcc357d8a inherit pro_static_methods_classgodot_1_1_token_program" id="r_a0e79b905d82af1f6270e617dcc357d8a"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>_initialize_mint</b> (const Variant &amp;token_program_pid, const Variant &amp;mint_pubkey, const Variant &amp;mint_authority, const Variant &amp;freeze_authority=nullptr, const uint32_t decimals=9)</td></tr>
+<tr class="memitem:a0e79b905d82af1f6270e617dcc357d8a inherit pro_static_methods_classgodot_1_1_token_program" id="r_a0e79b905d82af1f6270e617dcc357d8a"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#a0e79b905d82af1f6270e617dcc357d8a">_initialize_mint</a> (const Variant &amp;token_program_pid, const Variant &amp;mint_pubkey, const Variant &amp;mint_authority, const Variant &amp;freeze_authority=nullptr, const uint32_t decimals=9)</td></tr>
+<tr class="memdesc:a0e79b905d82af1f6270e617dcc357d8a inherit pro_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that initializes a mint.  <br /></td></tr>
 <tr class="separator:a0e79b905d82af1f6270e617dcc357d8a inherit pro_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a55d0153d0e57dd625e2b8e9c891f6e inherit pro_static_methods_classgodot_1_1_token_program" id="r_a6a55d0153d0e57dd625e2b8e9c891f6e"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>_initialize_account</b> (const Variant &amp;token_program_pid, const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey)</td></tr>
+<tr class="memitem:a6a55d0153d0e57dd625e2b8e9c891f6e inherit pro_static_methods_classgodot_1_1_token_program" id="r_a6a55d0153d0e57dd625e2b8e9c891f6e"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#a6a55d0153d0e57dd625e2b8e9c891f6e">_initialize_account</a> (const Variant &amp;token_program_pid, const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey)</td></tr>
+<tr class="memdesc:a6a55d0153d0e57dd625e2b8e9c891f6e inherit pro_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an instruction that initializes a token account.  <br /></td></tr>
 <tr class="separator:a6a55d0153d0e57dd625e2b8e9c891f6e inherit pro_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5dca351c4b74689af2d40b48f7bb96b8 inherit pro_static_methods_classgodot_1_1_token_program" id="r_a5dca351c4b74689af2d40b48f7bb96b8"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>_mint_to</b> (const Variant &amp;token_program_pid, const Variant &amp;mint_pubkey, const Variant &amp;account_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;mint_authority, uint64_t amount)</td></tr>
+<tr class="memitem:a5dca351c4b74689af2d40b48f7bb96b8 inherit pro_static_methods_classgodot_1_1_token_program" id="r_a5dca351c4b74689af2d40b48f7bb96b8"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#a5dca351c4b74689af2d40b48f7bb96b8">_mint_to</a> (const Variant &amp;token_program_pid, const Variant &amp;mint_pubkey, const Variant &amp;account_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;mint_authority, uint64_t amount)</td></tr>
+<tr class="memdesc:a5dca351c4b74689af2d40b48f7bb96b8 inherit pro_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an instruction that mints a token to account.  <br /></td></tr>
 <tr class="separator:a5dca351c4b74689af2d40b48f7bb96b8 inherit pro_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a607f79b84559517b3014b3ffa1c8649f inherit pro_static_methods_classgodot_1_1_token_program" id="r_a607f79b84559517b3014b3ffa1c8649f"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>_transfer_checked</b> (const Variant &amp;token_program_pid, const Variant &amp;source_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;destination_pubkey, const Variant &amp;source_authority, uint64_t amount, uint32_t decimals)</td></tr>
+<tr class="memitem:a607f79b84559517b3014b3ffa1c8649f inherit pro_static_methods_classgodot_1_1_token_program" id="r_a607f79b84559517b3014b3ffa1c8649f"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#a607f79b84559517b3014b3ffa1c8649f">_transfer_checked</a> (const Variant &amp;token_program_pid, const Variant &amp;source_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;destination_pubkey, const Variant &amp;source_authority, uint64_t amount, uint32_t decimals)</td></tr>
+<tr class="memdesc:a607f79b84559517b3014b3ffa1c8649f inherit pro_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that transfers a token to another account.  <br /></td></tr>
 <tr class="separator:a607f79b84559517b3014b3ffa1c8649f inherit pro_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a374a0dbe57353877f8dd6d2490839fbe inherit pro_static_methods_classgodot_1_1_token_program" id="r_a374a0dbe57353877f8dd6d2490839fbe"><td class="memItemLeft" align="right" valign="top">
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>_freeze_account</b> (const Variant &amp;token_program_pid, const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;freeze_authority)</td></tr>
+<tr class="memitem:a374a0dbe57353877f8dd6d2490839fbe inherit pro_static_methods_classgodot_1_1_token_program" id="r_a374a0dbe57353877f8dd6d2490839fbe"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#a374a0dbe57353877f8dd6d2490839fbe">_freeze_account</a> (const Variant &amp;token_program_pid, const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;freeze_authority)</td></tr>
+<tr class="memdesc:a374a0dbe57353877f8dd6d2490839fbe inherit pro_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that freezes a token account.  <br /></td></tr>
 <tr class="separator:a374a0dbe57353877f8dd6d2490839fbe inherit pro_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab406ce1168a6b7d2d412334765cce532 inherit pro_static_methods_classgodot_1_1_token_program" id="r_ab406ce1168a6b7d2d412334765cce532"><td class="memItemLeft" align="right" valign="top">
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods</b> ()</td></tr>
+<tr class="memdesc:ab406ce1168a6b7d2d412334765cce532 inherit pro_static_methods_classgodot_1_1_token_program"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bind methods for <a class="el" href="classgodot_1_1_token_program.html" title="Instruction Builder for Solana Token Program.">TokenProgram</a> Node. <br /></td></tr>
 <tr class="separator:ab406ce1168a6b7d2d412334765cce532 inherit pro_static_methods_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="inherited" name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pub_types_classgodot_1_1_token_program"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_types_classgodot_1_1_token_program')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classgodot_1_1_token_program.html">godot::TokenProgram</a></td></tr>
-<tr class="memitem:a48f241d411cdb28d7ad8373b11308bd6 inherit pub_types_classgodot_1_1_token_program" id="r_a48f241d411cdb28d7ad8373b11308bd6"><td class="memItemLeft" align="right" valign="top"><a id="a48f241d411cdb28d7ad8373b11308bd6" name="a48f241d411cdb28d7ad8373b11308bd6"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>MetaDataDelegateRole</b> { <b>AUTHORITY</b> = 0
-, <b>COLLECTION</b> = 1
-, <b>USE</b> = 2
-, <b>UPDATE</b> = 3
+<tr class="memitem:a48f241d411cdb28d7ad8373b11308bd6 inherit pub_types_classgodot_1_1_token_program" id="r_a48f241d411cdb28d7ad8373b11308bd6"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classgodot_1_1_token_program.html#a48f241d411cdb28d7ad8373b11308bd6">MetaDataDelegateRole</a> { <a class="el" href="classgodot_1_1_token_program.html#a48f241d411cdb28d7ad8373b11308bd6ab420851973cd59809988f248514acd91">AUTHORITY</a> = 0
+, <a class="el" href="classgodot_1_1_token_program.html#a48f241d411cdb28d7ad8373b11308bd6a17c4708abdde3c6fa6c8210d84a7e34a">COLLECTION</a> = 1
+, <a class="el" href="classgodot_1_1_token_program.html#a48f241d411cdb28d7ad8373b11308bd6a5c11db5c388ebf623dcfc2dc5677dfca">USE</a> = 2
+, <a class="el" href="classgodot_1_1_token_program.html#a48f241d411cdb28d7ad8373b11308bd6a17594ded381196a9a21f461df626463f">UPDATE</a> = 3
  }</td></tr>
+<tr class="memdesc:a48f241d411cdb28d7ad8373b11308bd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Role of delegate in metadata.  <a href="classgodot_1_1_token_program.html#a48f241d411cdb28d7ad8373b11308bd6">More...</a><br /></td></tr>
 <tr class="separator:a48f241d411cdb28d7ad8373b11308bd6 inherit pub_types_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pro_static_attribs_classgodot_1_1_token_program"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_static_attribs_classgodot_1_1_token_program')"><img src="closed.png" alt="-"/>&#160;Static Protected Attributes inherited from <a class="el" href="classgodot_1_1_token_program.html">godot::TokenProgram</a></td></tr>
-<tr class="memitem:a1cc967d4e3ae1788011024c292647610 inherit pro_static_attribs_classgodot_1_1_token_program" id="r_a1cc967d4e3ae1788011024c292647610"><td class="memItemLeft" align="right" valign="top">
-static const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>ID</b> = &quot;TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA&quot;</td></tr>
-<tr class="separator:a1cc967d4e3ae1788011024c292647610 inherit pro_static_attribs_classgodot_1_1_token_program"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p><a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> Builder for Solana Token2022 Program. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="abc71df8cd7cadc3d9c822f459910190c" name="abc71df8cd7cadc3d9c822f459910190c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc71df8cd7cadc3d9c822f459910190c">&#9670;&#160;</a></span>freeze_account()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram2022::freeze_account </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>account_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>owner_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>freeze_authority</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Same as _freeze_account but with program ID set to Spl token 2022 program ID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">account_pubkey</td><td><a class="el" href="classgodot_1_1_account.html" title="Account data storage class.">Account</a> to freeze. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key. </td></tr>
+    <tr><td class="paramname">owner_pubkey</td><td>Unused TODO(Virax): remove </td></tr>
+    <tr><td class="paramname">freeze_authority</td><td>Freeze authority of account. <b>Signer</b></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Freeze account instruction. </dd></dl>
+
+</div>
+</div>
+<a id="ad809545db32f305547a86a9b61da4599" name="ad809545db32f305547a86a9b61da4599"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad809545db32f305547a86a9b61da4599">&#9670;&#160;</a></span>get_mint_account_size_from_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int TokenProgram2022::get_mint_account_size_from_data </td>
+          <td>(</td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const String</td>          <td class="paramname"><span class="paramname"><em>symbol</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const String</td>          <td class="paramname"><span class="paramname"><em>uri</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Dictionary</td>          <td class="paramname"><span class="paramname"><em>custom_data</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the program ID of <a class="el" href="classgodot_1_1_token_program.html" title="Instruction Builder for Solana Token Program.">TokenProgram</a>. </p>
+<dl class="section return"><dt>Returns</dt><dd>Variant Program ID <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a614d58a7916e35eaec9da35e1318485f" name="a614d58a7916e35eaec9da35e1318485f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a614d58a7916e35eaec9da35e1318485f">&#9670;&#160;</a></span>get_pid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram2022::get_pid </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the Program ID of <a class="el" href="classgodot_1_1_token_program2022.html" title="Instruction Builder for Solana Token2022 Program.">TokenProgram2022</a>. </p>
+<dl class="section return"><dt>Returns</dt><dd>Variant Program ID <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </dd></dl>
+
+</div>
+</div>
+<a id="aae3955bdbf883bee8cef5efe7752d42b" name="aae3955bdbf883bee8cef5efe7752d42b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae3955bdbf883bee8cef5efe7752d42b">&#9670;&#160;</a></span>initialize_account()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram2022::initialize_account </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>account_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>owner_pubkey</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Same as _initialize_account but with program ID set to Spl token 2022 program ID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">account_pubkey</td><td>Token account to initialize. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key. </td></tr>
+    <tr><td class="paramname">owner_pubkey</td><td>Owner of token account. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Initialize account <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a91cd5e6ced0f1a6cc36b126270c696d1" name="a91cd5e6ced0f1a6cc36b126270c696d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a91cd5e6ced0f1a6cc36b126270c696d1">&#9670;&#160;</a></span>initialize_metadata()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram2022::initialize_metadata </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>payer</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_keypair</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>symbol</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>uri</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that initializes metadata for a mint. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">payer</td><td>Payer of the <a class="el" href="classgodot_1_1_transaction.html" title="Used to construct and send transactions on Solana blockchain.">Transaction</a>. <b>Signer</b></td></tr>
+    <tr><td class="paramname">mint_keypair</td><td>Mint key. <b>Writable</b></td></tr>
+    <tr><td class="paramname">name</td><td>Name of token. </td></tr>
+    <tr><td class="paramname">symbol</td><td>Symbol of token. </td></tr>
+    <tr><td class="paramname">uri</td><td>URI of token. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Initialize metadata <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a795e59e1649a807f5827c8a7b774e2fa" name="a795e59e1649a807f5827c8a7b774e2fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a795e59e1649a807f5827c8a7b774e2fa">&#9670;&#160;</a></span>initialize_metadata_pointer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram2022::initialize_metadata_pointer </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>payer</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_keypair</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that initializes a metadata pointer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">payer</td><td>Payer of the <a class="el" href="classgodot_1_1_transaction.html" title="Used to construct and send transactions on Solana blockchain.">Transaction</a>. <b>Signer</b></td></tr>
+    <tr><td class="paramname">mint_keypair</td><td>Mint key. <b>Writable</b></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Create metadata pointer <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a56a13671c6af271a6687cc91cb0c793c" name="a56a13671c6af271a6687cc91cb0c793c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a56a13671c6af271a6687cc91cb0c793c">&#9670;&#160;</a></span>initialize_mint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram2022::initialize_mint </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>freeze_authority</em></span><span class="paramdefsep"> = </span><span class="paramdefval">nullptr</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>decimals</em></span><span class="paramdefsep"> = </span><span class="paramdefval">9</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Same as _initialize_mint but with program ID set to Spl token 2022 program ID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key of mint to initialize. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_authority</td><td>Authority of mint. </td></tr>
+    <tr><td class="paramname">freeze_authority</td><td>Freeze authority of mint. </td></tr>
+    <tr><td class="paramname">decimals</td><td>Decimals to initialize with. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Initialize mint instruction. </dd></dl>
+
+</div>
+</div>
+<a id="ad21ec6ad7e66c44ce7f0242c43c01de2" name="ad21ec6ad7e66c44ce7f0242c43c01de2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad21ec6ad7e66c44ce7f0242c43c01de2">&#9670;&#160;</a></span>mint_to()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram2022::mint_to </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>account_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>owner_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>amount</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Same as _mint_to but with program ID set to Spl token 2022 program ID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key. <b>Writable</b></td></tr>
+    <tr><td class="paramname">account_pubkey</td><td>Token account key. <b>Writable</b></td></tr>
+    <tr><td class="paramname">owner_pubkey</td><td>Owner of token account. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_authority</td><td>Authority of mint. <b>Signer</b></td></tr>
+    <tr><td class="paramname">amount</td><td>Amount of tokens to mint. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Mint to <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a439bd9269fb069900cbd4294a9ba8c06" name="a439bd9269fb069900cbd4294a9ba8c06"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a439bd9269fb069900cbd4294a9ba8c06">&#9670;&#160;</a></span>transfer_checked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram2022::transfer_checked </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>source_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>destination_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>source_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>amount</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>decimals</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Same as _transfer_checked but with program ID set to Spl token 2022 program ID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">source_pubkey</td><td><a class="el" href="classgodot_1_1_account.html" title="Account data storage class.">Account</a> to send from. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key. </td></tr>
+    <tr><td class="paramname">destination_pubkey</td><td><a class="el" href="classgodot_1_1_account.html" title="Account data storage class.">Account</a> to send to. <b>Writable</b></td></tr>
+    <tr><td class="paramname">source_authority</td><td>Sender account authority. <b>Signer</b></td></tr>
+    <tr><td class="paramname">amount</td><td>Amount of fractions of a token to send. </td></tr>
+    <tr><td class="paramname">decimals</td><td>Decimals of one fraction. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Transfer checked <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a1c47b1d496a748e78271854f542cd611" name="a1c47b1d496a748e78271854f542cd611"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c47b1d496a748e78271854f542cd611">&#9670;&#160;</a></span>update_metadata()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram2022::update_metadata </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>payer</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_keypair</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>field</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that updates metadata. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">payer</td><td>Payer of the <a class="el" href="classgodot_1_1_transaction.html" title="Used to construct and send transactions on Solana blockchain.">Transaction</a>. <b>Signer</b></td></tr>
+    <tr><td class="paramname">mint_keypair</td><td>Mint key. <b>Writable</b></td></tr>
+    <tr><td class="paramname">field</td><td>What field to update. </td></tr>
+    <tr><td class="paramname">value</td><td>Value to set. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Update metadata pointer <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>include/instructions/<a class="el" href="spl__token__2022_8hpp_source.html">spl_token_2022.hpp</a></li>
 <li>src/instructions/<b>spl_token_2022.cpp</b></li>
@@ -230,7 +714,7 @@ static const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>I
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_token_program2022.html">TokenProgram2022</a></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:10 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

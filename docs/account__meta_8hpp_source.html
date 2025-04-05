@@ -105,69 +105,93 @@ $(function(){initNavTree('account__meta_8hpp_source.html',''); initResizable(tru
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#ifndef SOLANA_SDK_ACCOUNT_META_HPP</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#define SOLANA_SDK_ACCOUNT_META_HPP</span></div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span> </div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &quot;pubkey.hpp&quot;</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &quot;account_meta.hpp&quot;</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &quot;utils.hpp&quot;</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;godot_cpp/classes/node.hpp&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span>godot{</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
-<div class="foldopen" id="foldopen00012" data-start="{" data-end="};">
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="classgodot_1_1_account_meta.html">   12</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_account_meta.html">AccountMeta</a> : <span class="keyword">public</span> Resource {</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_account_meta.html">AccountMeta</a>, Resource)</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    <span class="keywordtype">bool</span> is_signer = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    <span class="keywordtype">bool</span> writeable = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    Variant key;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keywordtype">bool</span> _set(<span class="keyword">const</span> StringName &amp;p_name, <span class="keyword">const</span> Variant &amp;p_value);</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keywordtype">bool</span> _get(<span class="keyword">const</span> StringName &amp;p_name, Variant &amp;r_ret) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &quot;godot_cpp/classes/node.hpp&quot;</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &quot;pubkey.hpp&quot;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &quot;utils.hpp&quot;</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">namespace </span>godot {</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="foldopen" id="foldopen00019" data-start="{" data-end="};">
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="classgodot_1_1_account_meta.html">   19</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_account_meta.html">AccountMeta</a> : <span class="keyword">public</span> Resource {</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_account_meta.html">AccountMeta</a>, Resource)</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keywordtype">bool</span> is_signer = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keywordtype">bool</span> writeable = <span class="keyword">false</span>;</div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <a class="code hl_class" href="classgodot_1_1_account_meta.html">AccountMeta</a>();</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <a class="code hl_class" href="classgodot_1_1_account_meta.html">AccountMeta</a>(<span class="keyword">const</span> Variant&amp; pid, <span class="keywordtype">bool</span> signer, <span class="keywordtype">bool</span> writeable);</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <a class="code hl_class" href="classgodot_1_1_account_meta.html">AccountMeta</a>(<span class="keyword">const</span> Variant&amp; other);</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <span class="keywordtype">void</span> set_pubkey(<span class="keyword">const</span> Variant &amp;p_value);</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    Variant get_pubkey() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    Variant key;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_account_meta.html#a8aeb0b6ca81d52db30dd4a613d36cf3e">_bind_methods</a>();</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    Variant get_signer() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    <span class="keywordtype">void</span> set_key(<span class="keyword">const</span> Variant &amp;p_value);</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    Variant get_key() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_account_meta.html#a5f34f00d67656388d0a6b60ee863a4f7">_set</a>(<span class="keyword">const</span> StringName &amp;p_name, <span class="keyword">const</span> Variant &amp;p_value);</div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keywordtype">void</span> set_is_signer(<span class="keyword">const</span> <span class="keywordtype">bool</span> p_value);</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    <span class="keywordtype">bool</span> get_is_signer() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keywordtype">void</span> set_writeable(<span class="keyword">const</span> <span class="keywordtype">bool</span> p_value);</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <span class="keywordtype">bool</span> get_writeable() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <span class="keywordtype">void</span> create_new(<span class="keyword">const</span> Variant&amp; account_key, <span class="keywordtype">bool</span> is_signer, <span class="keywordtype">bool</span> writeable);</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keyword">static</span> <span class="keywordtype">bool</span> is_account_meta(<span class="keyword">const</span> Variant &amp;other);</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <span class="keyword">static</span> Variant new_account_meta(<span class="keyword">const</span> Variant&amp; account_key, <span class="keywordtype">bool</span> is_signer, <span class="keywordtype">bool</span> writeable);</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> <a class="code hl_class" href="classgodot_1_1_account_meta.html">AccountMeta</a>&amp; other) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_account_meta.html#aa599de5f22f0c025912b5d16ba54301e">_get</a>(<span class="keyword">const</span> StringName &amp;p_name, Variant &amp;r_ret) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <a class="code hl_class" href="classgodot_1_1_account_meta.html">AccountMeta</a>();</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <a class="code hl_class" href="classgodot_1_1_account_meta.html">~AccountMeta</a>();</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>};</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <a class="code hl_class" href="classgodot_1_1_account_meta.html">AccountMeta</a>(<span class="keyword">const</span> Variant &amp;pid, <span class="keywordtype">bool</span> signer, <span class="keywordtype">bool</span> writeable);</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <a class="code hl_class" href="classgodot_1_1_account_meta.html">AccountMeta</a>(<span class="keyword">const</span> Variant &amp;other);</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_account_meta.html#a0e5ffcd01e4ed6c524476214b1c8059c">set_pubkey</a>(<span class="keyword">const</span> Variant &amp;p_value);</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    Variant <a class="code hl_function" href="classgodot_1_1_account_meta.html#ad6b8961f6e6d17bf299adb8f525651e3">get_pubkey</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    Variant <a class="code hl_function" href="classgodot_1_1_account_meta.html#a259c3f61524058ac3254a7a22b277bff">get_signer</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_account_meta.html#a72a9a16282d91001bb8386eaf2859d1c">set_key</a>(<span class="keyword">const</span> Variant &amp;p_value);</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    Variant <a class="code hl_function" href="classgodot_1_1_account_meta.html#ae327de462959a1e91a6cd78b9e74af60">get_key</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span> </div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_account_meta.html#a12392fe5a927ca8bac3e64b0d5729645">set_is_signer</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> p_value);</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_account_meta.html#ab939c9af9aab6d792ba15a37a261d0b7">get_is_signer</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span> </div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_account_meta.html#aaaa3e4a6e8efe95b710c803cb2843288">set_writeable</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> p_value);</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span> </div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_account_meta.html#a8653cf6c8f23a734e5142c876cbfd3ea">get_writeable</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span> </div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_account_meta.html#a32ab93cfbe6fabb6d521b2b2fb2d2db8">create_new</a>(<span class="keyword">const</span> Variant &amp;account_key, <span class="keywordtype">bool</span> is_signer, <span class="keywordtype">bool</span> writeable);</div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span> </div>
+<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>    <span class="keyword">static</span> <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_account_meta.html#abccde758392be5adb85afe69b2d7a72d">is_account_meta</a>(<span class="keyword">const</span> Variant &amp;other);</div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span> </div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>    <span class="keyword">static</span> Variant <a class="code hl_function" href="classgodot_1_1_account_meta.html#ad9a782dc8b75e55561ef4eb9234aa45e">new_account_meta</a>(<span class="keyword">const</span> Variant &amp;account_key, <span class="keywordtype">bool</span> is_signer, <span class="keywordtype">bool</span> writeable);</div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span> </div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_account_meta.html#ad8a8f1e4023c1f6ec67aa06da0911cc7">operator==</a>(<span class="keyword">const</span> <a class="code hl_class" href="classgodot_1_1_account_meta.html">AccountMeta</a> &amp;other) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span> </div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>    <a class="code hl_class" href="classgodot_1_1_account_meta.html">~AccountMeta</a>();</div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>};</div>
 </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>}</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassgodot_1_1_account_meta_html"><div class="ttname"><a href="classgodot_1_1_account_meta.html">godot::AccountMeta</a></div><div class="ttdef"><b>Definition</b> account_meta.hpp:12</div></div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>} <span class="comment">//namespace godot</span></div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span> </div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html"><div class="ttname"><a href="classgodot_1_1_account_meta.html">godot::AccountMeta</a></div><div class="ttdoc">Contains account key and signer and writable information.</div><div class="ttdef"><b>Definition</b> account_meta.hpp:19</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_a0e5ffcd01e4ed6c524476214b1c8059c"><div class="ttname"><a href="classgodot_1_1_account_meta.html#a0e5ffcd01e4ed6c524476214b1c8059c">godot::AccountMeta::set_pubkey</a></div><div class="ttdeci">void set_pubkey(const Variant &amp;p_value)</div><div class="ttdoc">Set key part of object.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:52</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_a12392fe5a927ca8bac3e64b0d5729645"><div class="ttname"><a href="classgodot_1_1_account_meta.html#a12392fe5a927ca8bac3e64b0d5729645">godot::AccountMeta::set_is_signer</a></div><div class="ttdeci">void set_is_signer(const bool p_value)</div><div class="ttdoc">Set the is signer property.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:81</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_a259c3f61524058ac3254a7a22b277bff"><div class="ttname"><a href="classgodot_1_1_account_meta.html#a259c3f61524058ac3254a7a22b277bff">godot::AccountMeta::get_signer</a></div><div class="ttdeci">Variant get_signer() const</div><div class="ttdoc">Gets key or a keypair object.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:61</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_a32ab93cfbe6fabb6d521b2b2fb2d2db8"><div class="ttname"><a href="classgodot_1_1_account_meta.html#a32ab93cfbe6fabb6d521b2b2fb2d2db8">godot::AccountMeta::create_new</a></div><div class="ttdeci">void create_new(const Variant &amp;account_key, bool is_signer, bool writeable)</div><div class="ttdoc">Constructs this AccountMeta from components.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:123</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_a5f34f00d67656388d0a6b60ee863a4f7"><div class="ttname"><a href="classgodot_1_1_account_meta.html#a5f34f00d67656388d0a6b60ee863a4f7">godot::AccountMeta::_set</a></div><div class="ttdeci">bool _set(const StringName &amp;p_name, const Variant &amp;p_value)</div><div class="ttdoc">Set property of AccountMeta.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:25</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_a72a9a16282d91001bb8386eaf2859d1c"><div class="ttname"><a href="classgodot_1_1_account_meta.html#a72a9a16282d91001bb8386eaf2859d1c">godot::AccountMeta::set_key</a></div><div class="ttdeci">void set_key(const Variant &amp;p_value)</div><div class="ttdoc">Set the key component of the AccountMeta.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:73</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_a8653cf6c8f23a734e5142c876cbfd3ea"><div class="ttname"><a href="classgodot_1_1_account_meta.html#a8653cf6c8f23a734e5142c876cbfd3ea">godot::AccountMeta::get_writeable</a></div><div class="ttdeci">bool get_writeable() const</div><div class="ttdoc">Get the writeable property.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:93</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_a8aeb0b6ca81d52db30dd4a613d36cf3e"><div class="ttname"><a href="classgodot_1_1_account_meta.html#a8aeb0b6ca81d52db30dd4a613d36cf3e">godot::AccountMeta::_bind_methods</a></div><div class="ttdeci">static void _bind_methods()</div><div class="ttdoc">Binds methods of AccountMeta Resource.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:10</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_aa599de5f22f0c025912b5d16ba54301e"><div class="ttname"><a href="classgodot_1_1_account_meta.html#aa599de5f22f0c025912b5d16ba54301e">godot::AccountMeta::_get</a></div><div class="ttdeci">bool _get(const StringName &amp;p_name, Variant &amp;r_ret) const</div><div class="ttdoc">Gets property of AccountMeta.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:38</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_aaaa3e4a6e8efe95b710c803cb2843288"><div class="ttname"><a href="classgodot_1_1_account_meta.html#aaaa3e4a6e8efe95b710c803cb2843288">godot::AccountMeta::set_writeable</a></div><div class="ttdeci">void set_writeable(const bool p_value)</div><div class="ttdoc">Set the writeable property.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:89</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_ab939c9af9aab6d792ba15a37a261d0b7"><div class="ttname"><a href="classgodot_1_1_account_meta.html#ab939c9af9aab6d792ba15a37a261d0b7">godot::AccountMeta::get_is_signer</a></div><div class="ttdeci">bool get_is_signer() const</div><div class="ttdoc">Get the is signer property.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:85</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_abccde758392be5adb85afe69b2d7a72d"><div class="ttname"><a href="classgodot_1_1_account_meta.html#abccde758392be5adb85afe69b2d7a72d">godot::AccountMeta::is_account_meta</a></div><div class="ttdeci">static bool is_account_meta(const Variant &amp;other)</div><div class="ttdoc">Checks if Variant is of type AccountMeta object.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:128</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_ad6b8961f6e6d17bf299adb8f525651e3"><div class="ttname"><a href="classgodot_1_1_account_meta.html#ad6b8961f6e6d17bf299adb8f525651e3">godot::AccountMeta::get_pubkey</a></div><div class="ttdeci">Variant get_pubkey() const</div><div class="ttdoc">Get the key object's Pubkey part.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:56</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_ad8a8f1e4023c1f6ec67aa06da0911cc7"><div class="ttname"><a href="classgodot_1_1_account_meta.html#ad8a8f1e4023c1f6ec67aa06da0911cc7">godot::AccountMeta::operator==</a></div><div class="ttdeci">bool operator==(const AccountMeta &amp;other) const</div><div class="ttdoc">Checks equality of AccountMeta's keys.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:142</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_ad9a782dc8b75e55561ef4eb9234aa45e"><div class="ttname"><a href="classgodot_1_1_account_meta.html#ad9a782dc8b75e55561ef4eb9234aa45e">godot::AccountMeta::new_account_meta</a></div><div class="ttdeci">static Variant new_account_meta(const Variant &amp;account_key, bool is_signer, bool writeable)</div><div class="ttdoc">Allocates a new AccountMeta object from components.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:132</div></div>
+<div class="ttc" id="aclassgodot_1_1_account_meta_html_ae327de462959a1e91a6cd78b9e74af60"><div class="ttname"><a href="classgodot_1_1_account_meta.html#ae327de462959a1e91a6cd78b9e74af60">godot::AccountMeta::get_key</a></div><div class="ttdeci">Variant get_key() const</div><div class="ttdoc">Get the key component of the AccountMeta.</div><div class="ttdef"><b>Definition</b> account_meta.cpp:77</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><b>account_meta.hpp</b></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

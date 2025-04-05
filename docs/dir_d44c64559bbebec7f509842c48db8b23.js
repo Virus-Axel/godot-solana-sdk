@@ -4,7 +4,6 @@ var dir_d44c64559bbebec7f509842c48db8b23 =
     [ "candy_machine", "dir_5f627655c57e0213242e4f793928fa51.html", "dir_5f627655c57e0213242e4f793928fa51" ],
     [ "custom_class_management", "dir_48d4448cdf5a9b76eb834ff869ce1764.html", "dir_48d4448cdf5a9b76eb834ff869ce1764" ],
     [ "dialogs", "dir_2c3bdccfb6394a78f2c21b4468960011.html", "dir_2c3bdccfb6394a78f2c21b4468960011" ],
-    [ "honeycomb", "dir_f2d03d082bf6774413dc366729b43405.html", "dir_f2d03d082bf6774413dc366729b43405" ],
     [ "instructions", "dir_2843b2c750ff6b39dcfe98bf2554dba0.html", "dir_2843b2c750ff6b39dcfe98bf2554dba0" ],
     [ "meta_data", "dir_eecdcfd7ff7fd35cc670ecaf4ce2e748.html", "dir_eecdcfd7ff7fd35cc670ecaf4ce2e748" ],
     [ "solana_client", "dir_63409d5bccd6cae6a9473d064241435d.html", "dir_63409d5bccd6cae6a9473d064241435d" ],

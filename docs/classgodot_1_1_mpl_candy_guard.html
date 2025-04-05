@@ -101,12 +101,16 @@ $(function(){initNavTree('classgodot_1_1_mpl_candy_guard.html',''); initResizabl
 <div class="header">
   <div class="summary">
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
-<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="classgodot_1_1_mpl_candy_guard-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">godot::MplCandyGuard Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> builder for Candy Guard v3 program.  
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="candy__guard_8hpp_source.html">candy_guard.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for godot::MplCandyGuard:</div>
 <div class="dyncontent">
@@ -116,37 +120,342 @@ Inheritance diagram for godot::MplCandyGuard:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:aa82ff187666ca591c894c5ea15b71f5e" id="r_aa82ff187666ca591c894c5ea15b71f5e"><td class="memItemLeft" align="right" valign="top"><a id="aa82ff187666ca591c894c5ea15b71f5e" name="aa82ff187666ca591c894c5ea15b71f5e"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>initialize</b> (const Variant &amp;owner, const Variant &amp;candy_guard_authority, const Variant &amp;payer, const Variant &amp;candy_guard_acl)</td></tr>
+<tr class="memitem:aa82ff187666ca591c894c5ea15b71f5e" id="r_aa82ff187666ca591c894c5ea15b71f5e"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa82ff187666ca591c894c5ea15b71f5e">initialize</a> (const Variant &amp;owner, const Variant &amp;candy_guard_authority, const Variant &amp;payer, const Variant &amp;candy_guard_acl)</td></tr>
+<tr class="memdesc:aa82ff187666ca591c894c5ea15b71f5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an instruction to initialize a CandyGuard account.  <br /></td></tr>
 <tr class="separator:aa82ff187666ca591c894c5ea15b71f5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac01272636fa2993f77927e632b5823af" id="r_ac01272636fa2993f77927e632b5823af"><td class="memItemLeft" align="right" valign="top"><a id="ac01272636fa2993f77927e632b5823af" name="ac01272636fa2993f77927e632b5823af"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>wrap</b> (const Variant &amp;candy_guard_id, const Variant &amp;guard_authority, const Variant &amp;candy_machine_id, const Variant &amp;candy_machine_authority)</td></tr>
+<tr class="memitem:ac01272636fa2993f77927e632b5823af" id="r_ac01272636fa2993f77927e632b5823af"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac01272636fa2993f77927e632b5823af">wrap</a> (const Variant &amp;candy_guard_id, const Variant &amp;guard_authority, const Variant &amp;candy_machine_id, const Variant &amp;candy_machine_authority)</td></tr>
+<tr class="memdesc:ac01272636fa2993f77927e632b5823af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create wrap instruction to add a CandyGuard to a CandyMachine.  <br /></td></tr>
 <tr class="separator:ac01272636fa2993f77927e632b5823af"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9664426f03e4cbb85b9d0f5ce56f8ab8" id="r_a9664426f03e4cbb85b9d0f5ce56f8ab8"><td class="memItemLeft" align="right" valign="top"><a id="a9664426f03e4cbb85b9d0f5ce56f8ab8" name="a9664426f03e4cbb85b9d0f5ce56f8ab8"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>mint</b> (const Variant &amp;candy_machine_id, const Variant &amp;guard_account_id, const Variant &amp;payer, const Variant &amp;receiver, const Variant &amp;mint, const Variant &amp;nft_mint_authority, const Variant &amp;collection_mint, const Variant &amp;collection_update_authority, const Variant &amp;candy_guard_acl, const String &amp;label)</td></tr>
+<tr class="memitem:a9664426f03e4cbb85b9d0f5ce56f8ab8" id="r_a9664426f03e4cbb85b9d0f5ce56f8ab8"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9664426f03e4cbb85b9d0f5ce56f8ab8">mint</a> (const Variant &amp;candy_machine_id, const Variant &amp;guard_account_id, const Variant &amp;payer, const Variant &amp;receiver, const Variant &amp;mint, const Variant &amp;nft_mint_authority, const Variant &amp;collection_mint, const Variant &amp;collection_update_authority, const Variant &amp;candy_guard_acl, const String &amp;label)</td></tr>
+<tr class="memdesc:a9664426f03e4cbb85b9d0f5ce56f8ab8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create instruction to mint from a candy machine wrapped by a candy guard.  <br /></td></tr>
 <tr class="separator:a9664426f03e4cbb85b9d0f5ce56f8ab8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5d34e02457c62c2ec10e94d24a8c7ed2" id="r_a5d34e02457c62c2ec10e94d24a8c7ed2"><td class="memItemLeft" align="right" valign="top"><a id="a5d34e02457c62c2ec10e94d24a8c7ed2" name="a5d34e02457c62c2ec10e94d24a8c7ed2"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>get_pid</b> ()</td></tr>
+<tr class="memitem:a5d34e02457c62c2ec10e94d24a8c7ed2" id="r_a5d34e02457c62c2ec10e94d24a8c7ed2"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5d34e02457c62c2ec10e94d24a8c7ed2">get_pid</a> ()</td></tr>
+<tr class="memdesc:a5d34e02457c62c2ec10e94d24a8c7ed2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the <a class="el" href="classgodot_1_1_mpl_candy_guard.html" title="Instruction builder for Candy Guard v3 program.">MplCandyGuard</a> Program ID.  <br /></td></tr>
 <tr class="separator:a5d34e02457c62c2ec10e94d24a8c7ed2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5a0427195b27385becf3538899634118" id="r_a5a0427195b27385becf3538899634118"><td class="memItemLeft" align="right" valign="top"><a id="a5a0427195b27385becf3538899634118" name="a5a0427195b27385becf3538899634118"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>new_associated_candy_guard_key</b> (const Variant &amp;candy_machine_key)</td></tr>
+<tr class="memitem:a5a0427195b27385becf3538899634118" id="r_a5a0427195b27385becf3538899634118"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5a0427195b27385becf3538899634118">new_associated_candy_guard_key</a> (const Variant &amp;candy_machine_key)</td></tr>
+<tr class="memdesc:a5a0427195b27385becf3538899634118"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new associated candy guard key,.  <br /></td></tr>
 <tr class="separator:a5a0427195b27385becf3538899634118"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2fb7e71a8d532b4f78968d25a5a7f435" id="r_a2fb7e71a8d532b4f78968d25a5a7f435"><td class="memItemLeft" align="right" valign="top"><a id="a2fb7e71a8d532b4f78968d25a5a7f435" name="a2fb7e71a8d532b4f78968d25a5a7f435"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>new_limit_counter_pda</b> (const uint8_t mint_guard_id, const Variant &amp;payer, const Variant &amp;candy_machine_key, const Variant &amp;candy_guard_key)</td></tr>
+<tr class="memitem:a2fb7e71a8d532b4f78968d25a5a7f435" id="r_a2fb7e71a8d532b4f78968d25a5a7f435"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2fb7e71a8d532b4f78968d25a5a7f435">new_limit_counter_pda</a> (const uint8_t mint_guard_id, const Variant &amp;payer, const Variant &amp;candy_machine_key, const Variant &amp;candy_guard_key)</td></tr>
+<tr class="memdesc:a2fb7e71a8d532b4f78968d25a5a7f435"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new mint limit PDA <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>.  <br /></td></tr>
 <tr class="separator:a2fb7e71a8d532b4f78968d25a5a7f435"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
-Static Public Attributes</h2></td></tr>
-<tr class="memitem:a6e0effd6e1951b787a9b43b2e774ccb8" id="r_a6e0effd6e1951b787a9b43b2e774ccb8"><td class="memItemLeft" align="right" valign="top"><a id="a6e0effd6e1951b787a9b43b2e774ccb8" name="a6e0effd6e1951b787a9b43b2e774ccb8"></a>
-static const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>ID</b> = &quot;Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g&quot;</td></tr>
-<tr class="separator:a6e0effd6e1951b787a9b43b2e774ccb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
 <tr class="memitem:a30d321f9a5a9460c790d451cbbfc0192" id="r_a30d321f9a5a9460c790d451cbbfc0192"><td class="memItemLeft" align="right" valign="top"><a id="a30d321f9a5a9460c790d451cbbfc0192" name="a30d321f9a5a9460c790d451cbbfc0192"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods</b> ()</td></tr>
+<tr class="memdesc:a30d321f9a5a9460c790d451cbbfc0192"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bind methods for <a class="el" href="classgodot_1_1_mpl_candy_guard.html" title="Instruction builder for Candy Guard v3 program.">MplCandyGuard</a> Node. <br /></td></tr>
 <tr class="separator:a30d321f9a5a9460c790d451cbbfc0192"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p><a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> builder for Candy Guard v3 program. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a5d34e02457c62c2ec10e94d24a8c7ed2" name="a5d34e02457c62c2ec10e94d24a8c7ed2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d34e02457c62c2ec10e94d24a8c7ed2">&#9670;&#160;</a></span>get_pid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::MplCandyGuard::get_pid </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the <a class="el" href="classgodot_1_1_mpl_candy_guard.html" title="Instruction builder for Candy Guard v3 program.">MplCandyGuard</a> Program ID. </p>
+<dl class="section return"><dt>Returns</dt><dd>Variant Program ID <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </dd></dl>
+
+</div>
+</div>
+<a id="aa82ff187666ca591c894c5ea15b71f5e" name="aa82ff187666ca591c894c5ea15b71f5e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa82ff187666ca591c894c5ea15b71f5e">&#9670;&#160;</a></span>initialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::MplCandyGuard::initialize </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>owner</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>candy_guard_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>payer</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>candy_guard_acl</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an instruction to initialize a CandyGuard account. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">owner</td><td>Owner of candy guard program. <b>Signer</b></td></tr>
+    <tr><td class="paramname">candy_guard_authority</td><td>Authority of candy guard account. </td></tr>
+    <tr><td class="paramname">payer</td><td>Payer of the transaction. <b>Signer</b></td></tr>
+    <tr><td class="paramname">candy_guard_acl</td><td>CandyGuardAcl specifying the guards to use. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Initialize <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a9664426f03e4cbb85b9d0f5ce56f8ab8" name="a9664426f03e4cbb85b9d0f5ce56f8ab8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9664426f03e4cbb85b9d0f5ce56f8ab8">&#9670;&#160;</a></span>mint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::MplCandyGuard::mint </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>candy_machine_id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>guard_account_id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>payer</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>receiver</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>nft_mint_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>collection_mint</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>collection_update_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>candy_guard_acl</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>label</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create instruction to mint from a candy machine wrapped by a candy guard. </p>
+<p>Can mint both NFT and pNft. Only when the transaction is succesfully validated by the <a class="el" href="classgodot_1_1_mpl_candy_guard.html" title="Instruction builder for Candy Guard v3 program.">MplCandyGuard</a> program, it is forwarded to the Candy Machine.</p>
+<dl class="section note"><dt>Note</dt><dd>In Metaplex program this instruction is referred to as mintV2.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">candy_machine_id</td><td>Candy machine account key. <b>Writable</b></td></tr>
+    <tr><td class="paramname">guard_account_id</td><td>Candy guard key. Can be retrieved using new_associated_candy_guard_key. </td></tr>
+    <tr><td class="paramname">payer</td><td>Payer of the transaction. <b>Signer</b> *Writable**</td></tr>
+    <tr><td class="paramname">receiver</td><td>Minter (owner) of the NFT. <b>Signer</b> *Writable**</td></tr>
+    <tr><td class="paramname">mint</td><td>Mint account of the NFT. Must be created before executing this instruction. <b>Writable</b></td></tr>
+    <tr><td class="paramname">nft_mint_authority</td><td>Mint authority of the NFT. </td></tr>
+    <tr><td class="paramname">collection_mint</td><td>Mint account of the collection. </td></tr>
+    <tr><td class="paramname">collection_update_authority</td><td>Update authority of the collection. </td></tr>
+    <tr><td class="paramname">candy_guard_acl</td><td>CandyGuardAcl with mint parameters. </td></tr>
+    <tr><td class="paramname">label</td><td>Gourd group label to mint with. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Mint <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a5a0427195b27385becf3538899634118" name="a5a0427195b27385becf3538899634118"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a0427195b27385becf3538899634118">&#9670;&#160;</a></span>new_associated_candy_guard_key()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::MplCandyGuard::new_associated_candy_guard_key </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>candy_machine_key</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a new associated candy guard key,. </p>
+<p>Program Derrived Address with seeds ["candy_guard", base]</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">candy_machine_key</td><td>Base (owner) of the candy guard account. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant PDA <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a2fb7e71a8d532b4f78968d25a5a7f435" name="a2fb7e71a8d532b4f78968d25a5a7f435"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2fb7e71a8d532b4f78968d25a5a7f435">&#9670;&#160;</a></span>new_limit_counter_pda()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::MplCandyGuard::new_limit_counter_pda </td>
+          <td>(</td>
+          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em>mint_guard_id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>payer</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>candy_machine_key</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>candy_guard_key</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a new mint limit PDA <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </p>
+<p>Program Derrived Address with seeds ["mint_limit", mint_guard_id, payer, candy_machine_key, candy_guard_key]</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mint_guard_id</td><td>Mint guard account key. </td></tr>
+    <tr><td class="paramname">payer</td><td>Payer key. </td></tr>
+    <tr><td class="paramname">candy_machine_key</td><td>Candy machine key. </td></tr>
+    <tr><td class="paramname">candy_guard_key</td><td>Candy guard key. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Mint counter account PDA <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </dd></dl>
+
+</div>
+</div>
+<a id="ac01272636fa2993f77927e632b5823af" name="ac01272636fa2993f77927e632b5823af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac01272636fa2993f77927e632b5823af">&#9670;&#160;</a></span>wrap()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::MplCandyGuard::wrap </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>candy_guard_id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>guard_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>candy_machine_id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>candy_machine_authority</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create wrap instruction to add a CandyGuard to a CandyMachine. </p>
+<p>When a CandyGuard is added to a CandyMachine, minting is only allowed through <a class="el" href="classgodot_1_1_mpl_candy_guard.html" title="Instruction builder for Candy Guard v3 program.">MplCandyGuard</a> program.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">candy_guard_id</td><td>Candy Guard key. Can be retrieved using new_associated_candy_guard_key. </td></tr>
+    <tr><td class="paramname">guard_authority</td><td>Authority of candy guard account. <b>Signer</b></td></tr>
+    <tr><td class="paramname">candy_machine_id</td><td>Candy Machine key to add guard to. <b>Writable</b></td></tr>
+    <tr><td class="paramname">candy_machine_authority</td><td>Authority of the Candy Machine. <b>Signer</b></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Wrap instruction. </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>include/candy_machine/<a class="el" href="candy__guard_8hpp_source.html">candy_guard.hpp</a></li>
 <li>src/candy_machine/<b>candy_guard.cpp</b></li>
@@ -157,7 +466,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_mpl_candy_guard.html">MplCandyGuard</a></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

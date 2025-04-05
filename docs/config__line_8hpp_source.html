@@ -113,78 +113,103 @@ $(function(){initNavTree('config__line_8hpp_source.html',''); initResizable(true
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span>godot {</div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
-<div class="foldopen" id="foldopen00012" data-start="{" data-end="};">
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="classgodot_1_1_config_line.html">   12</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_config_line.html">ConfigLine</a> : <span class="keyword">public</span> Resource {</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_config_line.html">ConfigLine</a>, Resource)</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    String name;</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    String uri;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
+<div class="foldopen" id="foldopen00015" data-start="{" data-end="};">
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno"><a class="line" href="classgodot_1_1_config_line.html">   15</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_config_line.html">ConfigLine</a> : <span class="keyword">public</span> Resource {</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_config_line.html">ConfigLine</a>, Resource)</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    String name;</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    String uri;</div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <a class="code hl_class" href="classgodot_1_1_config_line.html">ConfigLine</a>();</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keywordtype">void</span> set_name(<span class="keyword">const</span> String &amp;value);</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    String get_name();</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_config_line.html#ae4c56cdf2cc9c231e82262f4a5cec0b7">_bind_methods</a>();</div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keywordtype">void</span> set_uri(<span class="keyword">const</span> String &amp;value);</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    String get_uri();</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <a class="code hl_class" href="classgodot_1_1_config_line.html">ConfigLine</a>();</div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    PackedByteArray serialize();</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <a class="code hl_class" href="classgodot_1_1_config_line.html">~ConfigLine</a>();</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>};</div>
-</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="foldopen" id="foldopen00034" data-start="{" data-end="};">
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="classgodot_1_1_config_line_setting.html">   34</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_config_line_setting.html">ConfigLineSetting</a> : <span class="keyword">public</span> Resource {</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_config_line_setting.html">ConfigLineSetting</a>, Resource)</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    String prefix_name;</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    String prefix_uri;</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    uint32_t name_length = 0;</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    uint32_t uri_length = 0;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keywordtype">bool</span> is_sequential = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <a class="code hl_class" href="classgodot_1_1_config_line_setting.html">ConfigLineSetting</a>();</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keywordtype">void</span> set_prefix_name(<span class="keyword">const</span> String &amp;value);</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    String get_prefix_name();</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordtype">void</span> set_name_length(<span class="keyword">const</span> uint32_t value);</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    uint32_t get_name_length();</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordtype">void</span> set_prefix_uri(<span class="keyword">const</span> String &amp;value);</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    String get_prefix_uri();</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_config_line.html#a9ee72ace3c1ac7b342081fe09980d8b9">set_name</a>(<span class="keyword">const</span> String &amp;value);</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    String <a class="code hl_function" href="classgodot_1_1_config_line.html#a2314f0af630a322a536bce967ce13ef5">get_name</a>();</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_config_line.html#acc3c987d329e537d234a0b55b03dbbbd">set_uri</a>(<span class="keyword">const</span> String &amp;value);</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    String <a class="code hl_function" href="classgodot_1_1_config_line.html#a4217796d8c37d250c5c92667ca660b66">get_uri</a>();</div>
 <div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keywordtype">void</span> set_uri_length(<span class="keyword">const</span> uint32_t value);</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    uint32_t get_uri_length();</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keywordtype">void</span> set_is_sequential(<span class="keyword">const</span> <span class="keywordtype">bool</span> value);</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <span class="keywordtype">bool</span> get_is_sequential();</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    PackedByteArray serialize();</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <a class="code hl_class" href="classgodot_1_1_config_line_setting.html">~ConfigLineSetting</a>();</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>};</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_config_line.html#ae087d2fd9d0670c5cea40dcd7708e3a4">serialize</a>();</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    <a class="code hl_class" href="classgodot_1_1_config_line.html">~ConfigLine</a>();</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>};</div>
 </div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>} <span class="comment">//namespace godot</span></div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassgodot_1_1_config_line_html"><div class="ttname"><a href="classgodot_1_1_config_line.html">godot::ConfigLine</a></div><div class="ttdef"><b>Definition</b> config_line.hpp:12</div></div>
-<div class="ttc" id="aclassgodot_1_1_config_line_setting_html"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html">godot::ConfigLineSetting</a></div><div class="ttdef"><b>Definition</b> config_line.hpp:34</div></div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
+<div class="foldopen" id="foldopen00070" data-start="{" data-end="};">
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="classgodot_1_1_config_line_setting.html">   70</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_config_line_setting.html">ConfigLineSetting</a> : <span class="keyword">public</span> Resource {</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_config_line_setting.html">ConfigLineSetting</a>, Resource)</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    String prefix_name;</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    String prefix_uri;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    uint32_t name_length = 0;</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    uint32_t uri_length = 0;</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <span class="keywordtype">bool</span> is_sequential = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_config_line_setting.html#a8dd7a9fdb6a37db0bb158a8dab313697">_bind_methods</a>();</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    <a class="code hl_class" href="classgodot_1_1_config_line_setting.html">ConfigLineSetting</a>();</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_config_line_setting.html#aafecf99482009b01baf20d1f2f516a48">set_prefix_name</a>(<span class="keyword">const</span> String &amp;value);</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    String <a class="code hl_function" href="classgodot_1_1_config_line_setting.html#a4cfde3d62d7c5fd0157b16996ccf8027">get_prefix_name</a>();</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span> </div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_config_line_setting.html#ae6761bfaae5f3b430393054e946f8ba0">set_name_length</a>(<span class="keyword">const</span> uint32_t value);</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span> </div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    uint32_t <a class="code hl_function" href="classgodot_1_1_config_line_setting.html#a4cb84c3ef77ec1c9922ce4d17e873eb1">get_name_length</a>();</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span> </div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_config_line_setting.html#a49d2de1327390c82e425b37a6a4553b2">set_prefix_uri</a>(<span class="keyword">const</span> String &amp;value);</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span> </div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>    String <a class="code hl_function" href="classgodot_1_1_config_line_setting.html#aac90d9c307fde962cec1c5074dc84171">get_prefix_uri</a>();</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span> </div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_config_line_setting.html#a6b618c40defee4a4d6f2a16c67e8e0ba">set_uri_length</a>(<span class="keyword">const</span> uint32_t value);</div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span> </div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>    uint32_t <a class="code hl_function" href="classgodot_1_1_config_line_setting.html#abdb3f25dfa4ecc63dd90c19cfe573dcd">get_uri_length</a>();</div>
+<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span> </div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_config_line_setting.html#a565cbb3dec1942f28cc38d6e1c37b2cb">set_is_sequential</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> value);</div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span> </div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_config_line_setting.html#af54aa8ed28c35b7826b69cc2906a093d">get_is_sequential</a>();</div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span> </div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_config_line_setting.html#a94391018821cec0fe1cab3772d34a68a">serialize</a>();</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>    <a class="code hl_class" href="classgodot_1_1_config_line_setting.html">~ConfigLineSetting</a>();</div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>};</div>
+</div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span> </div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>} <span class="comment">//namespace godot</span></div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span> </div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_html"><div class="ttname"><a href="classgodot_1_1_config_line.html">godot::ConfigLine</a></div><div class="ttdoc">Name and URI information for Candy Machine Program.</div><div class="ttdef"><b>Definition</b> config_line.hpp:15</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_html_a2314f0af630a322a536bce967ce13ef5"><div class="ttname"><a href="classgodot_1_1_config_line.html#a2314f0af630a322a536bce967ce13ef5">godot::ConfigLine::get_name</a></div><div class="ttdeci">String get_name()</div><div class="ttdoc">Get the name property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:30</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_html_a4217796d8c37d250c5c92667ca660b66"><div class="ttname"><a href="classgodot_1_1_config_line.html#a4217796d8c37d250c5c92667ca660b66">godot::ConfigLine::get_uri</a></div><div class="ttdeci">String get_uri()</div><div class="ttdoc">Get the URI property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:37</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_html_a9ee72ace3c1ac7b342081fe09980d8b9"><div class="ttname"><a href="classgodot_1_1_config_line.html#a9ee72ace3c1ac7b342081fe09980d8b9">godot::ConfigLine::set_name</a></div><div class="ttdeci">void set_name(const String &amp;value)</div><div class="ttdoc">Set the name property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:27</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_html_acc3c987d329e537d234a0b55b03dbbbd"><div class="ttname"><a href="classgodot_1_1_config_line.html#acc3c987d329e537d234a0b55b03dbbbd">godot::ConfigLine::set_uri</a></div><div class="ttdeci">void set_uri(const String &amp;value)</div><div class="ttdoc">Set the URI property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:34</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_html_ae087d2fd9d0670c5cea40dcd7708e3a4"><div class="ttname"><a href="classgodot_1_1_config_line.html#ae087d2fd9d0670c5cea40dcd7708e3a4">godot::ConfigLine::serialize</a></div><div class="ttdeci">PackedByteArray serialize()</div><div class="ttdoc">Serialize the ConfigLine.</div><div class="ttdef"><b>Definition</b> config_line.cpp:41</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_html_ae4c56cdf2cc9c231e82262f4a5cec0b7"><div class="ttname"><a href="classgodot_1_1_config_line.html#ae4c56cdf2cc9c231e82262f4a5cec0b7">godot::ConfigLine::_bind_methods</a></div><div class="ttdeci">static void _bind_methods()</div><div class="ttdoc">Bind methods of ConfigLine Resource.</div><div class="ttdef"><b>Definition</b> config_line.cpp:11</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html">godot::ConfigLineSetting</a></div><div class="ttdoc">Settings about how asset names and URI will be assigned to tokens.</div><div class="ttdef"><b>Definition</b> config_line.hpp:70</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html_a49d2de1327390c82e425b37a6a4553b2"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html#a49d2de1327390c82e425b37a6a4553b2">godot::ConfigLineSetting::set_prefix_uri</a></div><div class="ttdeci">void set_prefix_uri(const String &amp;value)</div><div class="ttdoc">Set the prefix URI property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:99</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html_a4cb84c3ef77ec1c9922ce4d17e873eb1"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html#a4cb84c3ef77ec1c9922ce4d17e873eb1">godot::ConfigLineSetting::get_name_length</a></div><div class="ttdeci">uint32_t get_name_length()</div><div class="ttdoc">Get the name length property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:95</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html_a4cfde3d62d7c5fd0157b16996ccf8027"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html#a4cfde3d62d7c5fd0157b16996ccf8027">godot::ConfigLineSetting::get_prefix_name</a></div><div class="ttdeci">String get_prefix_name()</div><div class="ttdoc">Get the prefix name property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:88</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html_a565cbb3dec1942f28cc38d6e1c37b2cb"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html#a565cbb3dec1942f28cc38d6e1c37b2cb">godot::ConfigLineSetting::set_is_sequential</a></div><div class="ttdeci">void set_is_sequential(const bool value)</div><div class="ttdoc">Set the is sequential property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:113</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html_a6b618c40defee4a4d6f2a16c67e8e0ba"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html#a6b618c40defee4a4d6f2a16c67e8e0ba">godot::ConfigLineSetting::set_uri_length</a></div><div class="ttdeci">void set_uri_length(const uint32_t value)</div><div class="ttdoc">Set the URI length property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:106</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html_a8dd7a9fdb6a37db0bb158a8dab313697"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html#a8dd7a9fdb6a37db0bb158a8dab313697">godot::ConfigLineSetting::_bind_methods</a></div><div class="ttdeci">static void _bind_methods()</div><div class="ttdoc">Bind methods of ConfigLineSetting Resource.</div><div class="ttdef"><b>Definition</b> config_line.cpp:57</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html_a94391018821cec0fe1cab3772d34a68a"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html#a94391018821cec0fe1cab3772d34a68a">godot::ConfigLineSetting::serialize</a></div><div class="ttdeci">PackedByteArray serialize()</div><div class="ttdoc">Serialize ConfigLineSetting.</div><div class="ttdef"><b>Definition</b> config_line.cpp:120</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html_aac90d9c307fde962cec1c5074dc84171"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html#aac90d9c307fde962cec1c5074dc84171">godot::ConfigLineSetting::get_prefix_uri</a></div><div class="ttdeci">String get_prefix_uri()</div><div class="ttdoc">Get the prefix URI property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:102</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html_aafecf99482009b01baf20d1f2f516a48"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html#aafecf99482009b01baf20d1f2f516a48">godot::ConfigLineSetting::set_prefix_name</a></div><div class="ttdeci">void set_prefix_name(const String &amp;value)</div><div class="ttdoc">Set the prefix name property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:85</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html_abdb3f25dfa4ecc63dd90c19cfe573dcd"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html#abdb3f25dfa4ecc63dd90c19cfe573dcd">godot::ConfigLineSetting::get_uri_length</a></div><div class="ttdeci">uint32_t get_uri_length()</div><div class="ttdoc">Get the URI length property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:109</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html_ae6761bfaae5f3b430393054e946f8ba0"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html#ae6761bfaae5f3b430393054e946f8ba0">godot::ConfigLineSetting::set_name_length</a></div><div class="ttdeci">void set_name_length(const uint32_t value)</div><div class="ttdoc">Set the name length property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:92</div></div>
+<div class="ttc" id="aclassgodot_1_1_config_line_setting_html_af54aa8ed28c35b7826b69cc2906a093d"><div class="ttname"><a href="classgodot_1_1_config_line_setting.html#af54aa8ed28c35b7826b69cc2906a093d">godot::ConfigLineSetting::get_is_sequential</a></div><div class="ttdeci">bool get_is_sequential()</div><div class="ttdoc">Get the is sequential property.</div><div class="ttdef"><b>Definition</b> config_line.cpp:116</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_5f627655c57e0213242e4f793928fa51.html">candy_machine</a></li><li class="navelem"><b>config_line.hpp</b></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

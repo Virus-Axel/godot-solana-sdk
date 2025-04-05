@@ -107,6 +107,11 @@ $(function(){initNavTree('classgodot_1_1_wallet_adapter.html',''); initResizable
   <div class="headertitle"><div class="title">godot::WalletAdapter Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Handles interaction with external wallet applications.  
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="wallet__adapter_8hpp_source.html">wallet_adapter.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for godot::WalletAdapter:</div>
 <div class="dyncontent">
@@ -116,70 +121,460 @@ Inheritance diagram for godot::WalletAdapter:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a71be864726a707b9de6aa4968eff7b0d" id="r_a71be864726a707b9de6aa4968eff7b0d"><td class="memItemLeft" align="right" valign="top"><a id="a71be864726a707b9de6aa4968eff7b0d" name="a71be864726a707b9de6aa4968eff7b0d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>_process</b> (double delta) override</td></tr>
+<tr class="memitem:a71be864726a707b9de6aa4968eff7b0d" id="r_a71be864726a707b9de6aa4968eff7b0d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a71be864726a707b9de6aa4968eff7b0d">_process</a> (double delta) override</td></tr>
+<tr class="memdesc:a71be864726a707b9de6aa4968eff7b0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called each frame in scene tree.  <br /></td></tr>
 <tr class="separator:a71be864726a707b9de6aa4968eff7b0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c52cb3db87e26dbdb77c4c7275716b6" id="r_a2c52cb3db87e26dbdb77c4c7275716b6"><td class="memItemLeft" align="right" valign="top"><a id="a2c52cb3db87e26dbdb77c4c7275716b6" name="a2c52cb3db87e26dbdb77c4c7275716b6"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>connect_wallet</b> ()</td></tr>
+<tr class="memitem:a2c52cb3db87e26dbdb77c4c7275716b6" id="r_a2c52cb3db87e26dbdb77c4c7275716b6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2c52cb3db87e26dbdb77c4c7275716b6">connect_wallet</a> ()</td></tr>
+<tr class="memdesc:a2c52cb3db87e26dbdb77c4c7275716b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to connect wallet.  <br /></td></tr>
 <tr class="separator:a2c52cb3db87e26dbdb77c4c7275716b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0266b9fe8d4530468ad6b33daf882e77" id="r_a0266b9fe8d4530468ad6b33daf882e77"><td class="memItemLeft" align="right" valign="top"><a id="a0266b9fe8d4530468ad6b33daf882e77" name="a0266b9fe8d4530468ad6b33daf882e77"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_connected</b> () const</td></tr>
+<tr class="memitem:a0266b9fe8d4530468ad6b33daf882e77" id="r_a0266b9fe8d4530468ad6b33daf882e77"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0266b9fe8d4530468ad6b33daf882e77">is_connected</a> () const</td></tr>
+<tr class="memdesc:a0266b9fe8d4530468ad6b33daf882e77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if connected.  <br /></td></tr>
 <tr class="separator:a0266b9fe8d4530468ad6b33daf882e77"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35f945cfb7a0102714cf3a5b3576f8b2" id="r_a35f945cfb7a0102714cf3a5b3576f8b2"><td class="memItemLeft" align="right" valign="top"><a id="a35f945cfb7a0102714cf3a5b3576f8b2" name="a35f945cfb7a0102714cf3a5b3576f8b2"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_idle</b> ()</td></tr>
+<tr class="memitem:a35f945cfb7a0102714cf3a5b3576f8b2" id="r_a35f945cfb7a0102714cf3a5b3576f8b2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a35f945cfb7a0102714cf3a5b3576f8b2">is_idle</a> ()</td></tr>
+<tr class="memdesc:a35f945cfb7a0102714cf3a5b3576f8b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if no operation is ongoing.  <br /></td></tr>
 <tr class="separator:a35f945cfb7a0102714cf3a5b3576f8b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66430604f8dabc7ec8fe381d504c3e7f" id="r_a66430604f8dabc7ec8fe381d504c3e7f"><td class="memItemLeft" align="right" valign="top"><a id="a66430604f8dabc7ec8fe381d504c3e7f" name="a66430604f8dabc7ec8fe381d504c3e7f"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>did_transaction_change</b> () const</td></tr>
+<tr class="memitem:a66430604f8dabc7ec8fe381d504c3e7f" id="r_a66430604f8dabc7ec8fe381d504c3e7f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a66430604f8dabc7ec8fe381d504c3e7f">did_transaction_change</a> () const</td></tr>
+<tr class="memdesc:a66430604f8dabc7ec8fe381d504c3e7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if transaction changed after a wallet operation.  <br /></td></tr>
 <tr class="separator:a66430604f8dabc7ec8fe381d504c3e7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8e645e553a92779c4a96968fd28e4b57" id="r_a8e645e553a92779c4a96968fd28e4b57"><td class="memItemLeft" align="right" valign="top"><a id="a8e645e553a92779c4a96968fd28e4b57" name="a8e645e553a92779c4a96968fd28e4b57"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>poll_connection</b> ()</td></tr>
+<tr class="memdesc:a8e645e553a92779c4a96968fd28e4b57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Poll connection request. <br /></td></tr>
 <tr class="separator:a8e645e553a92779c4a96968fd28e4b57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57bb70975a38697884f9843d34b9618e" id="r_a57bb70975a38697884f9843d34b9618e"><td class="memItemLeft" align="right" valign="top"><a id="a57bb70975a38697884f9843d34b9618e" name="a57bb70975a38697884f9843d34b9618e"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>poll_message_signing</b> ()</td></tr>
+<tr class="memdesc:a57bb70975a38697884f9843d34b9618e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Poll message signing request. <br /></td></tr>
 <tr class="separator:a57bb70975a38697884f9843d34b9618e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2de4564c01919885a04f04626effe03b" id="r_a2de4564c01919885a04f04626effe03b"><td class="memItemLeft" align="right" valign="top"><a id="a2de4564c01919885a04f04626effe03b" name="a2de4564c01919885a04f04626effe03b"></a>
-Variant&#160;</td><td class="memItemRight" valign="bottom"><b>get_connected_key</b> ()</td></tr>
+<tr class="memitem:a2de4564c01919885a04f04626effe03b" id="r_a2de4564c01919885a04f04626effe03b"><td class="memItemLeft" align="right" valign="top">Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2de4564c01919885a04f04626effe03b">get_connected_key</a> ()</td></tr>
+<tr class="memdesc:a2de4564c01919885a04f04626effe03b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the connected <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>.  <br /></td></tr>
 <tr class="separator:a2de4564c01919885a04f04626effe03b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5e6f9d3dcf2ac7034d082d70e47aa933" id="r_a5e6f9d3dcf2ac7034d082d70e47aa933"><td class="memItemLeft" align="right" valign="top"><a id="a5e6f9d3dcf2ac7034d082d70e47aa933" name="a5e6f9d3dcf2ac7034d082d70e47aa933"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_wallet_type</b> (int wallet_type)</td></tr>
+<tr class="memitem:a5e6f9d3dcf2ac7034d082d70e47aa933" id="r_a5e6f9d3dcf2ac7034d082d70e47aa933"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5e6f9d3dcf2ac7034d082d70e47aa933">set_wallet_type</a> (int wallet_type)</td></tr>
+<tr class="memdesc:a5e6f9d3dcf2ac7034d082d70e47aa933"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the value of wallet_type.  <br /></td></tr>
 <tr class="separator:a5e6f9d3dcf2ac7034d082d70e47aa933"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b174f1186da5bba39ebef0830d14912" id="r_a7b174f1186da5bba39ebef0830d14912"><td class="memItemLeft" align="right" valign="top"><a id="a7b174f1186da5bba39ebef0830d14912" name="a7b174f1186da5bba39ebef0830d14912"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>get_wallet_type</b> ()</td></tr>
+<tr class="memitem:a7b174f1186da5bba39ebef0830d14912" id="r_a7b174f1186da5bba39ebef0830d14912"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7b174f1186da5bba39ebef0830d14912">get_wallet_type</a> ()</td></tr>
+<tr class="memdesc:a7b174f1186da5bba39ebef0830d14912"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the value of wallet_type.  <br /></td></tr>
 <tr class="separator:a7b174f1186da5bba39ebef0830d14912"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4713a7ca671ed664ed5a790c6ac9689" id="r_af4713a7ca671ed664ed5a790c6ac9689"><td class="memItemLeft" align="right" valign="top"><a id="af4713a7ca671ed664ed5a790c6ac9689" name="af4713a7ca671ed664ed5a790c6ac9689"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>sign_message</b> (const PackedByteArray &amp;serialized_message, const uint32_t index)</td></tr>
+<tr class="memitem:af4713a7ca671ed664ed5a790c6ac9689" id="r_af4713a7ca671ed664ed5a790c6ac9689"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af4713a7ca671ed664ed5a790c6ac9689">sign_message</a> (const PackedByteArray &amp;serialized_message, const uint32_t index)</td></tr>
+<tr class="memdesc:af4713a7ca671ed664ed5a790c6ac9689"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sign a <a class="el" href="classgodot_1_1_transaction.html" title="Used to construct and send transactions on Solana blockchain.">Transaction</a> message.  <br /></td></tr>
 <tr class="separator:af4713a7ca671ed664ed5a790c6ac9689"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a00ee7ff95c2fa9abcdbde7d98e495577" id="r_a00ee7ff95c2fa9abcdbde7d98e495577"><td class="memItemLeft" align="right" valign="top"><a id="a00ee7ff95c2fa9abcdbde7d98e495577" name="a00ee7ff95c2fa9abcdbde7d98e495577"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>sign_text_message</b> (const String &amp;message)</td></tr>
+<tr class="memitem:a00ee7ff95c2fa9abcdbde7d98e495577" id="r_a00ee7ff95c2fa9abcdbde7d98e495577"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a00ee7ff95c2fa9abcdbde7d98e495577">sign_text_message</a> (const String &amp;message)</td></tr>
+<tr class="memdesc:a00ee7ff95c2fa9abcdbde7d98e495577"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sign a text message.  <br /></td></tr>
 <tr class="separator:a00ee7ff95c2fa9abcdbde7d98e495577"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad6d9c292e51be1caf93e1ddc9ebd88ed" id="r_ad6d9c292e51be1caf93e1ddc9ebd88ed"><td class="memItemLeft" align="right" valign="top"><a id="ad6d9c292e51be1caf93e1ddc9ebd88ed" name="ad6d9c292e51be1caf93e1ddc9ebd88ed"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>get_active_signer_index</b> () const</td></tr>
+<tr class="memitem:ad6d9c292e51be1caf93e1ddc9ebd88ed" id="r_ad6d9c292e51be1caf93e1ddc9ebd88ed"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad6d9c292e51be1caf93e1ddc9ebd88ed">get_active_signer_index</a> () const</td></tr>
+<tr class="memdesc:ad6d9c292e51be1caf93e1ddc9ebd88ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the value of active_signer_index.  <br /></td></tr>
 <tr class="separator:ad6d9c292e51be1caf93e1ddc9ebd88ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a2762fb100279b86798d051f98fd1ea70" id="r_a2762fb100279b86798d051f98fd1ea70"><td class="memItemLeft" align="right" valign="top"><a id="a2762fb100279b86798d051f98fd1ea70" name="a2762fb100279b86798d051f98fd1ea70"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_wallet_adapter</b> (const Variant &amp;other)</td></tr>
+<tr class="memitem:a2762fb100279b86798d051f98fd1ea70" id="r_a2762fb100279b86798d051f98fd1ea70"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2762fb100279b86798d051f98fd1ea70">is_wallet_adapter</a> (const Variant &amp;other)</td></tr>
+<tr class="memdesc:a2762fb100279b86798d051f98fd1ea70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if Variant is of type <a class="el" href="classgodot_1_1_wallet_adapter.html" title="Handles interaction with external wallet applications.">WalletAdapter</a> Object.  <br /></td></tr>
 <tr class="separator:a2762fb100279b86798d051f98fd1ea70"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6dba5b2cb74edb425a6fe6cfd66fb748" id="r_a6dba5b2cb74edb425a6fe6cfd66fb748"><td class="memItemLeft" align="right" valign="top"><a id="a6dba5b2cb74edb425a6fe6cfd66fb748" name="a6dba5b2cb74edb425a6fe6cfd66fb748"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>has_multiple_wallets</b> ()</td></tr>
+<tr class="memitem:a6dba5b2cb74edb425a6fe6cfd66fb748" id="r_a6dba5b2cb74edb425a6fe6cfd66fb748"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6dba5b2cb74edb425a6fe6cfd66fb748">has_multiple_wallets</a> ()</td></tr>
+<tr class="memdesc:a6dba5b2cb74edb425a6fe6cfd66fb748"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if there are several available wallets.  <br /></td></tr>
 <tr class="separator:a6dba5b2cb74edb425a6fe6cfd66fb748"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7dbcb05019518715934610fbdb5141a3" id="r_a7dbcb05019518715934610fbdb5141a3"><td class="memItemLeft" align="right" valign="top"><a id="a7dbcb05019518715934610fbdb5141a3" name="a7dbcb05019518715934610fbdb5141a3"></a>
 static PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><b>get_message_signature</b> ()</td></tr>
+<tr class="memdesc:a7dbcb05019518715934610fbdb5141a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the message signature of latest signing operation. <br /></td></tr>
 <tr class="separator:a7dbcb05019518715934610fbdb5141a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aebbc84d58c3f8004fadb8dba0e60cf97" id="r_aebbc84d58c3f8004fadb8dba0e60cf97"><td class="memItemLeft" align="right" valign="top"><a id="aebbc84d58c3f8004fadb8dba0e60cf97" name="aebbc84d58c3f8004fadb8dba0e60cf97"></a>
-static PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><b>get_modified_transaction</b> ()</td></tr>
+<tr class="memitem:aebbc84d58c3f8004fadb8dba0e60cf97" id="r_aebbc84d58c3f8004fadb8dba0e60cf97"><td class="memItemLeft" align="right" valign="top">static PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aebbc84d58c3f8004fadb8dba0e60cf97">get_modified_transaction</a> ()</td></tr>
+<tr class="memdesc:aebbc84d58c3f8004fadb8dba0e60cf97"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the modified serialized <a class="el" href="classgodot_1_1_transaction.html" title="Used to construct and send transactions on Solana blockchain.">Transaction</a>.  <br /></td></tr>
 <tr class="separator:aebbc84d58c3f8004fadb8dba0e60cf97"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae19df44fec055925352222a16085a6aa" id="r_ae19df44fec055925352222a16085a6aa"><td class="memItemLeft" align="right" valign="top"><a id="ae19df44fec055925352222a16085a6aa" name="ae19df44fec055925352222a16085a6aa"></a>
-static Array&#160;</td><td class="memItemRight" valign="bottom"><b>get_available_wallets</b> ()</td></tr>
+<tr class="memitem:ae19df44fec055925352222a16085a6aa" id="r_ae19df44fec055925352222a16085a6aa"><td class="memItemLeft" align="right" valign="top">static Array&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae19df44fec055925352222a16085a6aa">get_available_wallets</a> ()</td></tr>
+<tr class="memdesc:ae19df44fec055925352222a16085a6aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the available wallets.  <br /></td></tr>
 <tr class="separator:ae19df44fec055925352222a16085a6aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
 <tr class="memitem:a09cbc04f7245ea8b79c67dc17c7e2294" id="r_a09cbc04f7245ea8b79c67dc17c7e2294"><td class="memItemLeft" align="right" valign="top"><a id="a09cbc04f7245ea8b79c67dc17c7e2294" name="a09cbc04f7245ea8b79c67dc17c7e2294"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods</b> ()</td></tr>
+<tr class="memdesc:a09cbc04f7245ea8b79c67dc17c7e2294"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bind methods for <a class="el" href="classgodot_1_1_wallet_adapter.html" title="Handles interaction with external wallet applications.">WalletAdapter</a> Node. <br /></td></tr>
 <tr class="separator:a09cbc04f7245ea8b79c67dc17c7e2294"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Handles interaction with external wallet applications. </p>
+<p>The <a class="el" href="classgodot_1_1_wallet_adapter.html" title="Handles interaction with external wallet applications.">WalletAdapter</a> can be used as any other signer type like a <a class="el" href="classgodot_1_1_keypair.html" title="An ed25519 Keypair.">Keypair</a>. When using a <a class="el" href="classgodot_1_1_wallet_adapter.html" title="Handles interaction with external wallet applications.">WalletAdapter</a> for instructions or as payer, the wallet app will be requested to sign when needed. The class provices methods to connect and disconnect the selected wallet application.</p>
+<dl class="section note"><dt>Note</dt><dd>This class is mainly intended for web platform. It has been proven to work on desktop and mobile as well with some tweaking, but is not actively tested yet. </dd></dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a71be864726a707b9de6aa4968eff7b0d" name="a71be864726a707b9de6aa4968eff7b0d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71be864726a707b9de6aa4968eff7b0d">&#9670;&#160;</a></span>_process()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::WalletAdapter::_process </td>
+          <td>(</td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>delta</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Called each frame in scene tree. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">delta</td><td>Elapsed time since last process was called. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a2c52cb3db87e26dbdb77c4c7275716b6" name="a2c52cb3db87e26dbdb77c4c7275716b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c52cb3db87e26dbdb77c4c7275716b6">&#9670;&#160;</a></span>connect_wallet()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::WalletAdapter::connect_wallet </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attempt to connect wallet. </p>
+<p>Opens a browser extension popup to ask user to connect. If already connected no popup will appear and the <a class="el" href="classgodot_1_1_wallet_adapter.html" title="Handles interaction with external wallet applications.">WalletAdapter</a> will instantly get the connected <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </p>
+
+</div>
+</div>
+<a id="a66430604f8dabc7ec8fe381d504c3e7f" name="a66430604f8dabc7ec8fe381d504c3e7f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66430604f8dabc7ec8fe381d504c3e7f">&#9670;&#160;</a></span>did_transaction_change()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool godot::WalletAdapter::did_transaction_change </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check if transaction changed after a wallet operation. </p>
+<dl class="section return"><dt>Returns</dt><dd>true If transaction was modified. </dd>
+<dd>
+false If transaction is the same. </dd></dl>
+
+</div>
+</div>
+<a id="ad6d9c292e51be1caf93e1ddc9ebd88ed" name="ad6d9c292e51be1caf93e1ddc9ebd88ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6d9c292e51be1caf93e1ddc9ebd88ed">&#9670;&#160;</a></span>get_active_signer_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t godot::WalletAdapter::get_active_signer_index </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the value of active_signer_index. </p>
+<dl class="section return"><dt>Returns</dt><dd>uint32_t The current value of active_signer_index. </dd></dl>
+
+</div>
+</div>
+<a id="ae19df44fec055925352222a16085a6aa" name="ae19df44fec055925352222a16085a6aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae19df44fec055925352222a16085a6aa">&#9670;&#160;</a></span>get_available_wallets()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Array godot::WalletAdapter::get_available_wallets </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the available wallets. </p>
+<dl class="section return"><dt>Returns</dt><dd>Array Array of wallet type IDs. </dd></dl>
+
+</div>
+</div>
+<a id="a2de4564c01919885a04f04626effe03b" name="a2de4564c01919885a04f04626effe03b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2de4564c01919885a04f04626effe03b">&#9670;&#160;</a></span>get_connected_key()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::WalletAdapter::get_connected_key </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the connected <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </p>
+<dl class="section return"><dt>Returns</dt><dd>Variant Connected <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </dd></dl>
+
+</div>
+</div>
+<a id="aebbc84d58c3f8004fadb8dba0e60cf97" name="aebbc84d58c3f8004fadb8dba0e60cf97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aebbc84d58c3f8004fadb8dba0e60cf97">&#9670;&#160;</a></span>get_modified_transaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">PackedByteArray godot::WalletAdapter::get_modified_transaction </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the modified serialized <a class="el" href="classgodot_1_1_transaction.html" title="Used to construct and send transactions on Solana blockchain.">Transaction</a>. </p>
+<p>This can be used when wallet modifies the <a class="el" href="classgodot_1_1_transaction.html" title="Used to construct and send transactions on Solana blockchain.">Transaction</a> to get the modified version. </p>
+
+</div>
+</div>
+<a id="a7b174f1186da5bba39ebef0830d14912" name="a7b174f1186da5bba39ebef0830d14912"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b174f1186da5bba39ebef0830d14912">&#9670;&#160;</a></span>get_wallet_type()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int godot::WalletAdapter::get_wallet_type </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the value of wallet_type. </p>
+<dl class="section return"><dt>Returns</dt><dd>int The current value of wallet_type. </dd></dl>
+
+</div>
+</div>
+<a id="a6dba5b2cb74edb425a6fe6cfd66fb748" name="a6dba5b2cb74edb425a6fe6cfd66fb748"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6dba5b2cb74edb425a6fe6cfd66fb748">&#9670;&#160;</a></span>has_multiple_wallets()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool godot::WalletAdapter::has_multiple_wallets </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check if there are several available wallets. </p>
+<dl class="section return"><dt>Returns</dt><dd>true If several wallets are available. </dd>
+<dd>
+false If one or zero wallets are available. </dd></dl>
+
+</div>
+</div>
+<a id="a0266b9fe8d4530468ad6b33daf882e77" name="a0266b9fe8d4530468ad6b33daf882e77"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0266b9fe8d4530468ad6b33daf882e77">&#9670;&#160;</a></span>is_connected()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool godot::WalletAdapter::is_connected </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check if connected. </p>
+<dl class="section return"><dt>Returns</dt><dd>true If wallet is connected </dd>
+<dd>
+false if wallet is not connected. </dd></dl>
+
+</div>
+</div>
+<a id="a35f945cfb7a0102714cf3a5b3576f8b2" name="a35f945cfb7a0102714cf3a5b3576f8b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35f945cfb7a0102714cf3a5b3576f8b2">&#9670;&#160;</a></span>is_idle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool godot::WalletAdapter::is_idle </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check if no operation is ongoing. </p>
+<dl class="section return"><dt>Returns</dt><dd>true If wallet is idle. </dd>
+<dd>
+false If wallet is busy. </dd></dl>
+
+</div>
+</div>
+<a id="a2762fb100279b86798d051f98fd1ea70" name="a2762fb100279b86798d051f98fd1ea70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2762fb100279b86798d051f98fd1ea70">&#9670;&#160;</a></span>is_wallet_adapter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool godot::WalletAdapter::is_wallet_adapter </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>other</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check if Variant is of type <a class="el" href="classgodot_1_1_wallet_adapter.html" title="Handles interaction with external wallet applications.">WalletAdapter</a> Object. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">other</td><td>Variatn to type check. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if Variant is a <a class="el" href="classgodot_1_1_wallet_adapter.html" title="Handles interaction with external wallet applications.">WalletAdapter</a>. </dd>
+<dd>
+false Otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a5e6f9d3dcf2ac7034d082d70e47aa933" name="a5e6f9d3dcf2ac7034d082d70e47aa933"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e6f9d3dcf2ac7034d082d70e47aa933">&#9670;&#160;</a></span>set_wallet_type()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::WalletAdapter::set_wallet_type </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>wallet_type</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the value of wallet_type. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">wallet_type</td><td>The new value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="af4713a7ca671ed664ed5a790c6ac9689" name="af4713a7ca671ed664ed5a790c6ac9689"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4713a7ca671ed664ed5a790c6ac9689">&#9670;&#160;</a></span>sign_message()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::WalletAdapter::sign_message </td>
+          <td>(</td>
+          <td class="paramtype">const PackedByteArray &amp;</td>          <td class="paramname"><span class="paramname"><em>serialized_message</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>index</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sign a <a class="el" href="classgodot_1_1_transaction.html" title="Used to construct and send transactions on Solana blockchain.">Transaction</a> message. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">serialized_message</td><td>Serialized <a class="el" href="classgodot_1_1_transaction.html" title="Used to construct and send transactions on Solana blockchain.">Transaction</a> message. </td></tr>
+    <tr><td class="paramname">index</td><td>Index of the active signer. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a00ee7ff95c2fa9abcdbde7d98e495577" name="a00ee7ff95c2fa9abcdbde7d98e495577"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a00ee7ff95c2fa9abcdbde7d98e495577">&#9670;&#160;</a></span>sign_text_message()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::WalletAdapter::sign_text_message </td>
+          <td>(</td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>message</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sign a text message. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">message</td><td>Text message to sign. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>include/wallet_adapter/<a class="el" href="wallet__adapter_8hpp_source.html">wallet_adapter.hpp</a></li>
 <li>src/wallet_adapter/<b>wallet_adapter.cpp</b></li>
@@ -190,7 +585,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_wallet_adapter.html">WalletAdapter</a></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:10 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

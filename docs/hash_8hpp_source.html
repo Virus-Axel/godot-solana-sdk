@@ -112,47 +112,63 @@ $(function(){initNavTree('hash_8hpp_source.html',''); initResizable(true); });
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">namespace </span>godot{</div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
-<div class="foldopen" id="foldopen00011" data-start="{" data-end="};">
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno"><a class="line" href="classgodot_1_1_hash.html">   11</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_hash.html">Hash</a> : <span class="keyword">public</span> Resource {</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_hash.html">Hash</a>, Resource)</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    <span class="keywordtype">bool</span> unique = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    String value = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    PackedByteArray bytes;</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    <span class="keywordtype">bool</span> _set(<span class="keyword">const</span> StringName &amp;p_name, <span class="keyword">const</span> Variant &amp;p_value);</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <span class="keywordtype">bool</span> _get(<span class="keyword">const</span> StringName &amp;p_name, Variant &amp;r_ret) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keywordtype">void</span> _get_property_list(List&lt;PropertyInfo&gt; *p_list) <span class="keyword">const</span>;</div>
+<div class="foldopen" id="foldopen00017" data-start="{" data-end="};">
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="classgodot_1_1_hash.html">   17</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_hash.html">Hash</a> : <span class="keyword">public</span> Resource {</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_hash.html">Hash</a>, Resource)</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    <span class="keywordtype">bool</span> unique = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    String value = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    PackedByteArray bytes;</div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <a class="code hl_class" href="classgodot_1_1_hash.html">Hash</a>();</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keywordtype">void</span> set_value(<span class="keyword">const</span> String&amp; p_value);</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    String get_value();</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <span class="keywordtype">void</span> set_bytes(<span class="keyword">const</span> PackedByteArray&amp; p_value);</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    PackedByteArray get_bytes();</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    <span class="keywordtype">void</span> set_unique(<span class="keyword">const</span> <span class="keywordtype">bool</span> p_value);</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keywordtype">bool</span> get_unique();</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <a class="code hl_class" href="classgodot_1_1_hash.html">~Hash</a>();</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>};</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_hash.html#adff878dd8ae8d0e4133d884151e95dc5">_bind_methods</a>();</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_hash.html#ae409f31d8566ce69ae12452f0a2c0e24">_set</a>(<span class="keyword">const</span> StringName &amp;p_name, <span class="keyword">const</span> Variant &amp;p_value);</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_hash.html#a5fa5f29e2b11757c2ca1873a6bb25d81">_get</a>(<span class="keyword">const</span> StringName &amp;p_name, Variant &amp;r_ret) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_hash.html#aaae0b0ad089e577bdc896b6537b5ab0f">_get_property_list</a>(List&lt;PropertyInfo&gt; *p_list) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <a class="code hl_class" href="classgodot_1_1_hash.html">Hash</a>();</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_hash.html#a152a2ae2073497a18c6263bbaa575ecb">set_value</a>(<span class="keyword">const</span> String&amp; p_value);</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    String <a class="code hl_function" href="classgodot_1_1_hash.html#a1794dc8a4da36c42054758f40b1617a7">get_value</a>();</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_hash.html#a7f745b91af11f5b90d1058251f6be697">set_bytes</a>(<span class="keyword">const</span> PackedByteArray&amp; p_value);</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_hash.html#a9939ac882da7d57456bd7ce9fe12c701">get_bytes</a>();</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_hash.html#ac293550e962b2b1012295e8fda0f7682">set_unique</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> p_value);</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_hash.html#aaf8ab0e52ec43f725e7d6ccee925201c">get_unique</a>();</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    <a class="code hl_class" href="classgodot_1_1_hash.html">~Hash</a>();</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>};</div>
 </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>}</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassgodot_1_1_hash_html"><div class="ttname"><a href="classgodot_1_1_hash.html">godot::Hash</a></div><div class="ttdef"><b>Definition</b> hash.hpp:11</div></div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>}</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span> </div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassgodot_1_1_hash_html"><div class="ttname"><a href="classgodot_1_1_hash.html">godot::Hash</a></div><div class="ttdoc">Arbitrary byte long hash.</div><div class="ttdef"><b>Definition</b> hash.hpp:17</div></div>
+<div class="ttc" id="aclassgodot_1_1_hash_html_a152a2ae2073497a18c6263bbaa575ecb"><div class="ttname"><a href="classgodot_1_1_hash.html#a152a2ae2073497a18c6263bbaa575ecb">godot::Hash::set_value</a></div><div class="ttdeci">void set_value(const String &amp;p_value)</div><div class="ttdoc">Set the bytes value.</div><div class="ttdef"><b>Definition</b> hash.cpp:53</div></div>
+<div class="ttc" id="aclassgodot_1_1_hash_html_a1794dc8a4da36c42054758f40b1617a7"><div class="ttname"><a href="classgodot_1_1_hash.html#a1794dc8a4da36c42054758f40b1617a7">godot::Hash::get_value</a></div><div class="ttdeci">String get_value()</div><div class="ttdoc">Get the value property.</div><div class="ttdef"><b>Definition</b> hash.cpp:72</div></div>
+<div class="ttc" id="aclassgodot_1_1_hash_html_a5fa5f29e2b11757c2ca1873a6bb25d81"><div class="ttname"><a href="classgodot_1_1_hash.html#a5fa5f29e2b11757c2ca1873a6bb25d81">godot::Hash::_get</a></div><div class="ttdeci">bool _get(const StringName &amp;p_name, Variant &amp;r_ret) const</div><div class="ttdoc">Get Hash property.</div><div class="ttdef"><b>Definition</b> hash.cpp:36</div></div>
+<div class="ttc" id="aclassgodot_1_1_hash_html_a7f745b91af11f5b90d1058251f6be697"><div class="ttname"><a href="classgodot_1_1_hash.html#a7f745b91af11f5b90d1058251f6be697">godot::Hash::set_bytes</a></div><div class="ttdeci">void set_bytes(const PackedByteArray &amp;p_value)</div><div class="ttdoc">Set the bytes property.</div><div class="ttdef"><b>Definition</b> hash.cpp:76</div></div>
+<div class="ttc" id="aclassgodot_1_1_hash_html_a9939ac882da7d57456bd7ce9fe12c701"><div class="ttname"><a href="classgodot_1_1_hash.html#a9939ac882da7d57456bd7ce9fe12c701">godot::Hash::get_bytes</a></div><div class="ttdeci">PackedByteArray get_bytes()</div><div class="ttdoc">Get the bytes property.</div><div class="ttdef"><b>Definition</b> hash.cpp:96</div></div>
+<div class="ttc" id="aclassgodot_1_1_hash_html_aaae0b0ad089e577bdc896b6537b5ab0f"><div class="ttname"><a href="classgodot_1_1_hash.html#aaae0b0ad089e577bdc896b6537b5ab0f">godot::Hash::_get_property_list</a></div><div class="ttdeci">void _get_property_list(List&lt; PropertyInfo &gt; *p_list) const</div><div class="ttdoc">Get property list.</div><div class="ttdef"><b>Definition</b> hash.cpp:109</div></div>
+<div class="ttc" id="aclassgodot_1_1_hash_html_aaf8ab0e52ec43f725e7d6ccee925201c"><div class="ttname"><a href="classgodot_1_1_hash.html#aaf8ab0e52ec43f725e7d6ccee925201c">godot::Hash::get_unique</a></div><div class="ttdeci">bool get_unique()</div><div class="ttdoc">Get the unique property.</div><div class="ttdef"><b>Definition</b> hash.cpp:105</div></div>
+<div class="ttc" id="aclassgodot_1_1_hash_html_ac293550e962b2b1012295e8fda0f7682"><div class="ttname"><a href="classgodot_1_1_hash.html#ac293550e962b2b1012295e8fda0f7682">godot::Hash::set_unique</a></div><div class="ttdeci">void set_unique(const bool p_value)</div><div class="ttdoc">Set the unique property.</div><div class="ttdef"><b>Definition</b> hash.cpp:100</div></div>
+<div class="ttc" id="aclassgodot_1_1_hash_html_adff878dd8ae8d0e4133d884151e95dc5"><div class="ttname"><a href="classgodot_1_1_hash.html#adff878dd8ae8d0e4133d884151e95dc5">godot::Hash::_bind_methods</a></div><div class="ttdeci">static void _bind_methods()</div><div class="ttdoc">Bind methods of Hash Resource.</div><div class="ttdef"><b>Definition</b> hash.cpp:9</div></div>
+<div class="ttc" id="aclassgodot_1_1_hash_html_ae409f31d8566ce69ae12452f0a2c0e24"><div class="ttname"><a href="classgodot_1_1_hash.html#ae409f31d8566ce69ae12452f0a2c0e24">godot::Hash::_set</a></div><div class="ttdeci">bool _set(const StringName &amp;p_name, const Variant &amp;p_value)</div><div class="ttdoc">Set Hash property.</div><div class="ttdef"><b>Definition</b> hash.cpp:19</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><b>hash.hpp</b></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

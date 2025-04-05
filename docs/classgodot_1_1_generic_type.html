@@ -111,6 +111,11 @@ $(function(){initNavTree('classgodot_1_1_generic_type.html',''); initResizable(t
   <div class="headertitle"><div class="title">godot::GenericType&lt; BaseType &gt; Class Template Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Extensible type that can be modified with custom behavior.  
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="generic__type_8hpp_source.html">generic_type.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for godot::GenericType&lt; BaseType &gt;:</div>
 <div class="dyncontent">
@@ -122,122 +127,130 @@ Inheritance diagram for godot::GenericType&lt; BaseType &gt;:</div>
 Public Types</h2></td></tr>
 <tr class="memitem:aee8fa0f83636bd2aebec653bfb4f077d" id="r_aee8fa0f83636bd2aebec653bfb4f077d"><td class="memItemLeft" align="right" valign="top"><a id="aee8fa0f83636bd2aebec653bfb4f077d" name="aee8fa0f83636bd2aebec653bfb4f077d"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>self_type</b> = <a class="el" href="classgodot_1_1_generic_type.html">GenericType</a></td></tr>
+<tr class="memdesc:aee8fa0f83636bd2aebec653bfb4f077d"><td class="mdescLeft">&#160;</td><td class="mdescRight">This type. <br /></td></tr>
 <tr class="separator:aee8fa0f83636bd2aebec653bfb4f077d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa1e9e38f5b1ea9a96636ae30072956e5" id="r_aa1e9e38f5b1ea9a96636ae30072956e5"><td class="memItemLeft" align="right" valign="top"><a id="aa1e9e38f5b1ea9a96636ae30072956e5" name="aa1e9e38f5b1ea9a96636ae30072956e5"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>parent_type</b> = BaseType</td></tr>
+<tr class="memdesc:aa1e9e38f5b1ea9a96636ae30072956e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parent type. <br /></td></tr>
 <tr class="separator:aa1e9e38f5b1ea9a96636ae30072956e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a039f90ef32f1908ba2fd74b0b9b5a3d9" id="r_a039f90ef32f1908ba2fd74b0b9b5a3d9"><td class="memItemLeft" align="right" valign="top"><a id="a039f90ef32f1908ba2fd74b0b9b5a3d9" name="a039f90ef32f1908ba2fd74b0b9b5a3d9"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_class</b> ()</td></tr>
+<tr class="memitem:a039f90ef32f1908ba2fd74b0b9b5a3d9" id="r_a039f90ef32f1908ba2fd74b0b9b5a3d9"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a039f90ef32f1908ba2fd74b0b9b5a3d9">initialize_class</a> ()</td></tr>
+<tr class="memdesc:a039f90ef32f1908ba2fd74b0b9b5a3d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes a class.  <br /></td></tr>
 <tr class="separator:a039f90ef32f1908ba2fd74b0b9b5a3d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af47706a67afb8f47af5301df0c4d6ba3" id="r_af47706a67afb8f47af5301df0c4d6ba3"><td class="memItemLeft" align="right" valign="top"><a id="af47706a67afb8f47af5301df0c4d6ba3" name="af47706a67afb8f47af5301df0c4d6ba3"></a>
-static const StringName &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_class_static</b> ()</td></tr>
+<tr class="memitem:af47706a67afb8f47af5301df0c4d6ba3" id="r_af47706a67afb8f47af5301df0c4d6ba3"><td class="memItemLeft" align="right" valign="top">static const StringName &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af47706a67afb8f47af5301df0c4d6ba3">get_class_static</a> ()</td></tr>
+<tr class="memdesc:af47706a67afb8f47af5301df0c4d6ba3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the class name of the generic type.  <br /></td></tr>
 <tr class="separator:af47706a67afb8f47af5301df0c4d6ba3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7db3750f9926fb8e9ef666331d3ce98d" id="r_a7db3750f9926fb8e9ef666331d3ce98d"><td class="memItemLeft" align="right" valign="top"><a id="a7db3750f9926fb8e9ef666331d3ce98d" name="a7db3750f9926fb8e9ef666331d3ce98d"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>set_class_name</b> (const String &amp;name)</td></tr>
+<tr class="memitem:a7db3750f9926fb8e9ef666331d3ce98d" id="r_a7db3750f9926fb8e9ef666331d3ce98d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7db3750f9926fb8e9ef666331d3ce98d">set_class_name</a> (const String &amp;name)</td></tr>
+<tr class="memdesc:a7db3750f9926fb8e9ef666331d3ce98d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the class name of a particular type.  <br /></td></tr>
 <tr class="separator:a7db3750f9926fb8e9ef666331d3ce98d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae936d2d2859af847da1a57d3261bec55" id="r_ae936d2d2859af847da1a57d3261bec55"><td class="memItemLeft" align="right" valign="top"><a id="ae936d2d2859af847da1a57d3261bec55" name="ae936d2d2859af847da1a57d3261bec55"></a>
-static const StringName &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_parent_class_static</b> ()</td></tr>
+<tr class="memitem:ae936d2d2859af847da1a57d3261bec55" id="r_ae936d2d2859af847da1a57d3261bec55"><td class="memItemLeft" align="right" valign="top">static const StringName &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae936d2d2859af847da1a57d3261bec55">get_parent_class_static</a> ()</td></tr>
+<tr class="memdesc:ae936d2d2859af847da1a57d3261bec55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the parent class name.  <br /></td></tr>
 <tr class="separator:ae936d2d2859af847da1a57d3261bec55"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a126767b7fe5e4743bdfefb5bb81fd23e" id="r_a126767b7fe5e4743bdfefb5bb81fd23e"><td class="memItemLeft" align="right" valign="top"><a id="a126767b7fe5e4743bdfefb5bb81fd23e" name="a126767b7fe5e4743bdfefb5bb81fd23e"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>notification_bind</b> (GDExtensionClassInstancePtr p_instance, int32_t p_what, GDExtensionBool p_reversed)</td></tr>
+<tr class="memitem:a126767b7fe5e4743bdfefb5bb81fd23e" id="r_a126767b7fe5e4743bdfefb5bb81fd23e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a126767b7fe5e4743bdfefb5bb81fd23e">notification_bind</a> (GDExtensionClassInstancePtr p_instance, int32_t p_what, GDExtensionBool p_reversed)</td></tr>
+<tr class="memdesc:a126767b7fe5e4743bdfefb5bb81fd23e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bind notification function.  <br /></td></tr>
 <tr class="separator:a126767b7fe5e4743bdfefb5bb81fd23e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29446fa634c6c58397768cd79ac63ab4" id="r_a29446fa634c6c58397768cd79ac63ab4"><td class="memItemLeft" align="right" valign="top"><a id="a29446fa634c6c58397768cd79ac63ab4" name="a29446fa634c6c58397768cd79ac63ab4"></a>
-static GDExtensionBool&#160;</td><td class="memItemRight" valign="bottom"><b>set_bind</b> (GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value)</td></tr>
+<tr class="memitem:a29446fa634c6c58397768cd79ac63ab4" id="r_a29446fa634c6c58397768cd79ac63ab4"><td class="memItemLeft" align="right" valign="top">static GDExtensionBool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a29446fa634c6c58397768cd79ac63ab4">set_bind</a> (GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value)</td></tr>
+<tr class="memdesc:a29446fa634c6c58397768cd79ac63ab4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the bind method function.  <br /></td></tr>
 <tr class="separator:a29446fa634c6c58397768cd79ac63ab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aace98b0139d577e480f393eea713f83d" id="r_aace98b0139d577e480f393eea713f83d"><td class="memItemLeft" align="right" valign="top"><a id="aace98b0139d577e480f393eea713f83d" name="aace98b0139d577e480f393eea713f83d"></a>
-static GDExtensionBool&#160;</td><td class="memItemRight" valign="bottom"><b>get_bind</b> (GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret)</td></tr>
+<tr class="memitem:aace98b0139d577e480f393eea713f83d" id="r_aace98b0139d577e480f393eea713f83d"><td class="memItemLeft" align="right" valign="top">static GDExtensionBool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aace98b0139d577e480f393eea713f83d">get_bind</a> (GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret)</td></tr>
+<tr class="memdesc:aace98b0139d577e480f393eea713f83d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the bind method function.  <br /></td></tr>
 <tr class="separator:aace98b0139d577e480f393eea713f83d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a968c4097c40ab7e190df5ff7ecff7892" id="r_a968c4097c40ab7e190df5ff7ecff7892"><td class="memItemLeft" align="right" valign="top"><a id="a968c4097c40ab7e190df5ff7ecff7892" name="a968c4097c40ab7e190df5ff7ecff7892"></a>
-static bool&#160;</td><td class="memItemRight" valign="bottom"><b>has_get_property_list</b> ()</td></tr>
+<tr class="memitem:a968c4097c40ab7e190df5ff7ecff7892" id="r_a968c4097c40ab7e190df5ff7ecff7892"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a968c4097c40ab7e190df5ff7ecff7892">has_get_property_list</a> ()</td></tr>
+<tr class="memdesc:a968c4097c40ab7e190df5ff7ecff7892"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if get_property_list function has been overridden.  <br /></td></tr>
 <tr class="separator:a968c4097c40ab7e190df5ff7ecff7892"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a40bf71d3ff31d174782ed8f0137db5ba" id="r_a40bf71d3ff31d174782ed8f0137db5ba"><td class="memItemLeft" align="right" valign="top"><a id="a40bf71d3ff31d174782ed8f0137db5ba" name="a40bf71d3ff31d174782ed8f0137db5ba"></a>
-static const GDExtensionPropertyInfo *&#160;</td><td class="memItemRight" valign="bottom"><b>get_property_list_bind</b> (GDExtensionClassInstancePtr p_instance, uint32_t *r_count)</td></tr>
+<tr class="memitem:a40bf71d3ff31d174782ed8f0137db5ba" id="r_a40bf71d3ff31d174782ed8f0137db5ba"><td class="memItemLeft" align="right" valign="top">static const GDExtensionPropertyInfo *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a40bf71d3ff31d174782ed8f0137db5ba">get_property_list_bind</a> (GDExtensionClassInstancePtr p_instance, uint32_t *r_count)</td></tr>
+<tr class="memdesc:a40bf71d3ff31d174782ed8f0137db5ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the property list bind method function.  <br /></td></tr>
 <tr class="separator:a40bf71d3ff31d174782ed8f0137db5ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b2fdc3b3b1be2ab4809c1aafc9f633c" id="r_a6b2fdc3b3b1be2ab4809c1aafc9f633c"><td class="memItemLeft" align="right" valign="top"><a id="a6b2fdc3b3b1be2ab4809c1aafc9f633c" name="a6b2fdc3b3b1be2ab4809c1aafc9f633c"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>free_property_list_bind</b> (GDExtensionClassInstancePtr p_instance, const GDExtensionPropertyInfo *p_list, uint32_t)</td></tr>
+<tr class="memdesc:a6b2fdc3b3b1be2ab4809c1aafc9f633c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free property list bind. <br /></td></tr>
 <tr class="separator:a6b2fdc3b3b1be2ab4809c1aafc9f633c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab58562125904e95f6def54ca6f0d554e" id="r_ab58562125904e95f6def54ca6f0d554e"><td class="memItemLeft" align="right" valign="top"><a id="ab58562125904e95f6def54ca6f0d554e" name="ab58562125904e95f6def54ca6f0d554e"></a>
-static GDExtensionBool&#160;</td><td class="memItemRight" valign="bottom"><b>property_can_revert_bind</b> (GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name)</td></tr>
+<tr class="memitem:ab58562125904e95f6def54ca6f0d554e" id="r_ab58562125904e95f6def54ca6f0d554e"><td class="memItemLeft" align="right" valign="top">static GDExtensionBool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab58562125904e95f6def54ca6f0d554e">property_can_revert_bind</a> (GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name)</td></tr>
+<tr class="memdesc:ab58562125904e95f6def54ca6f0d554e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if property_can_revert_bind was overridden.  <br /></td></tr>
 <tr class="separator:ab58562125904e95f6def54ca6f0d554e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a900a4b7d5340843c28ac8811d0b79f20" id="r_a900a4b7d5340843c28ac8811d0b79f20"><td class="memItemLeft" align="right" valign="top"><a id="a900a4b7d5340843c28ac8811d0b79f20" name="a900a4b7d5340843c28ac8811d0b79f20"></a>
-static GDExtensionBool&#160;</td><td class="memItemRight" valign="bottom"><b>property_get_revert_bind</b> (GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret)</td></tr>
+<tr class="memitem:a900a4b7d5340843c28ac8811d0b79f20" id="r_a900a4b7d5340843c28ac8811d0b79f20"><td class="memItemLeft" align="right" valign="top">static GDExtensionBool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a900a4b7d5340843c28ac8811d0b79f20">property_get_revert_bind</a> (GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret)</td></tr>
+<tr class="memdesc:a900a4b7d5340843c28ac8811d0b79f20"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if property_get_revert is overridden.  <br /></td></tr>
 <tr class="separator:a900a4b7d5340843c28ac8811d0b79f20"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3f984829ab6e34a6c04e53c0b2a3dec1" id="r_a3f984829ab6e34a6c04e53c0b2a3dec1"><td class="memItemLeft" align="right" valign="top"><a id="a3f984829ab6e34a6c04e53c0b2a3dec1" name="a3f984829ab6e34a6c04e53c0b2a3dec1"></a>
-static GDExtensionBool&#160;</td><td class="memItemRight" valign="bottom"><b>validate_property_bind</b> (GDExtensionClassInstancePtr p_instance, GDExtensionPropertyInfo *p_property)</td></tr>
+<tr class="memitem:a3f984829ab6e34a6c04e53c0b2a3dec1" id="r_a3f984829ab6e34a6c04e53c0b2a3dec1"><td class="memItemLeft" align="right" valign="top">static GDExtensionBool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3f984829ab6e34a6c04e53c0b2a3dec1">validate_property_bind</a> (GDExtensionClassInstancePtr p_instance, GDExtensionPropertyInfo *p_property)</td></tr>
+<tr class="memdesc:a3f984829ab6e34a6c04e53c0b2a3dec1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if validate_property has been overridden.  <br /></td></tr>
 <tr class="separator:a3f984829ab6e34a6c04e53c0b2a3dec1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1ea8e9375e418b3587e32b922aee9f1d" id="r_a1ea8e9375e418b3587e32b922aee9f1d"><td class="memItemLeft" align="right" valign="top"><a id="a1ea8e9375e418b3587e32b922aee9f1d" name="a1ea8e9375e418b3587e32b922aee9f1d"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>to_string_bind</b> (GDExtensionClassInstancePtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr r_out)</td></tr>
+<tr class="memitem:a1ea8e9375e418b3587e32b922aee9f1d" id="r_a1ea8e9375e418b3587e32b922aee9f1d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1ea8e9375e418b3587e32b922aee9f1d">to_string_bind</a> (GDExtensionClassInstancePtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr r_out)</td></tr>
+<tr class="memdesc:a1ea8e9375e418b3587e32b922aee9f1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get to_string return.  <br /></td></tr>
 <tr class="separator:a1ea8e9375e418b3587e32b922aee9f1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a545373903cd5d7d7f976dcf7763f8798" id="r_a545373903cd5d7d7f976dcf7763f8798"><td class="memItemLeft" align="right" valign="top"><a id="a545373903cd5d7d7f976dcf7763f8798" name="a545373903cd5d7d7f976dcf7763f8798"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>free</b> (void *, GDExtensionClassInstancePtr ptr)</td></tr>
+<tr class="memdesc:a545373903cd5d7d7f976dcf7763f8798"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free static data. <br /></td></tr>
 <tr class="separator:a545373903cd5d7d7f976dcf7763f8798"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae2b54d0cd92efe9493911daa61a8504d" id="r_ae2b54d0cd92efe9493911daa61a8504d"><td class="memItemLeft" align="right" valign="top"><a id="ae2b54d0cd92efe9493911daa61a8504d" name="ae2b54d0cd92efe9493911daa61a8504d"></a>
 static void *&#160;</td><td class="memItemRight" valign="bottom"><b>_gde_binding_create_callback</b> (void *, void *)</td></tr>
+<tr class="memdesc:ae2b54d0cd92efe9493911daa61a8504d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Placeholder method. <br /></td></tr>
 <tr class="separator:ae2b54d0cd92efe9493911daa61a8504d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7aa175f7e1f129ddce9444226ffc4a4c" id="r_a7aa175f7e1f129ddce9444226ffc4a4c"><td class="memItemLeft" align="right" valign="top"><a id="a7aa175f7e1f129ddce9444226ffc4a4c" name="a7aa175f7e1f129ddce9444226ffc4a4c"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>_gde_binding_free_callback</b> (void *, void *, void *)</td></tr>
+<tr class="memdesc:a7aa175f7e1f129ddce9444226ffc4a4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Placeholder method. <br /></td></tr>
 <tr class="separator:a7aa175f7e1f129ddce9444226ffc4a4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aea27382a120a4e60b1cd6181ae03ba6e" id="r_aea27382a120a4e60b1cd6181ae03ba6e"><td class="memItemLeft" align="right" valign="top"><a id="aea27382a120a4e60b1cd6181ae03ba6e" name="aea27382a120a4e60b1cd6181ae03ba6e"></a>
-static GDExtensionBool&#160;</td><td class="memItemRight" valign="bottom"><b>_gde_binding_reference_callback</b> (void *, void *, GDExtensionBool)</td></tr>
+<tr class="memitem:aea27382a120a4e60b1cd6181ae03ba6e" id="r_aea27382a120a4e60b1cd6181ae03ba6e"><td class="memItemLeft" align="right" valign="top">static GDExtensionBool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aea27382a120a4e60b1cd6181ae03ba6e">_gde_binding_reference_callback</a> (void *, void *, GDExtensionBool)</td></tr>
+<tr class="memdesc:aea27382a120a4e60b1cd6181ae03ba6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Placeholder method.  <br /></td></tr>
 <tr class="separator:aea27382a120a4e60b1cd6181ae03ba6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
 <tr class="memitem:a52720ea3f552984c811b9e896b3d2c67" id="r_a52720ea3f552984c811b9e896b3d2c67"><td class="memItemLeft" align="right" valign="top">static constexpr GDExtensionInstanceBindingCallbacks&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a52720ea3f552984c811b9e896b3d2c67">_gde_binding_callbacks</a></td></tr>
+<tr class="memdesc:a52720ea3f552984c811b9e896b3d2c67"><td class="mdescLeft">&#160;</td><td class="mdescRight">Binding callbacks structure.  <br /></td></tr>
 <tr class="separator:a52720ea3f552984c811b9e896b3d2c67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a9e13f13ae587440e83d8067bd16ca676" id="r_a9e13f13ae587440e83d8067bd16ca676"><td class="memItemLeft" align="right" valign="top"><a id="a9e13f13ae587440e83d8067bd16ca676" name="a9e13f13ae587440e83d8067bd16ca676"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>_notificationv</b> (int32_t p_what, bool p_reversed)</td></tr>
+<tr class="memitem:a9e13f13ae587440e83d8067bd16ca676" id="r_a9e13f13ae587440e83d8067bd16ca676"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9e13f13ae587440e83d8067bd16ca676">_notificationv</a> (int32_t p_what, bool p_reversed)</td></tr>
+<tr class="memdesc:a9e13f13ae587440e83d8067bd16ca676"><td class="mdescLeft">&#160;</td><td class="mdescRight">Call bound notification function.  <br /></td></tr>
 <tr class="separator:a9e13f13ae587440e83d8067bd16ca676"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a51d311ca9c04a1b8047f592c3c7dd520" id="r_a51d311ca9c04a1b8047f592c3c7dd520"><td class="memItemLeft" align="right" valign="top"><a id="a51d311ca9c04a1b8047f592c3c7dd520" name="a51d311ca9c04a1b8047f592c3c7dd520"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>_is_extension_class</b> () const override</td></tr>
+<tr class="memitem:a51d311ca9c04a1b8047f592c3c7dd520" id="r_a51d311ca9c04a1b8047f592c3c7dd520"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a51d311ca9c04a1b8047f592c3c7dd520">_is_extension_class</a> () const override</td></tr>
+<tr class="memdesc:a51d311ca9c04a1b8047f592c3c7dd520"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if class is an extension class.  <br /></td></tr>
 <tr class="separator:a51d311ca9c04a1b8047f592c3c7dd520"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
-<tr class="memitem:a52e9c8fe02f6f9f72efc96ce973a4b77" id="r_a52e9c8fe02f6f9f72efc96ce973a4b77"><td class="memItemLeft" align="right" valign="top"><a id="a52e9c8fe02f6f9f72efc96ce973a4b77" name="a52e9c8fe02f6f9f72efc96ce973a4b77"></a>
-static const StringName *&#160;</td><td class="memItemRight" valign="bottom"><b>_get_extension_class_name</b> ()</td></tr>
+<tr class="memitem:a52e9c8fe02f6f9f72efc96ce973a4b77" id="r_a52e9c8fe02f6f9f72efc96ce973a4b77"><td class="memItemLeft" align="right" valign="top">static const StringName *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a52e9c8fe02f6f9f72efc96ce973a4b77">_get_extension_class_name</a> ()</td></tr>
+<tr class="memdesc:a52e9c8fe02f6f9f72efc96ce973a4b77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get extension class name.  <br /></td></tr>
 <tr class="separator:a52e9c8fe02f6f9f72efc96ce973a4b77"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a62275550ad849525faa446302d758e05" id="r_a62275550ad849525faa446302d758e05"><td class="memItemLeft" align="right" valign="top"><a id="a62275550ad849525faa446302d758e05" name="a62275550ad849525faa446302d758e05"></a>
-static GDExtensionClassCallVirtual&#160;</td><td class="memItemRight" valign="bottom"><b>get_virtual_func</b> (void *p_userdata, GDExtensionConstStringNamePtr p_name, uint32_t p_hash)</td></tr>
+<tr class="memitem:a62275550ad849525faa446302d758e05" id="r_a62275550ad849525faa446302d758e05"><td class="memItemLeft" align="right" valign="top">static GDExtensionClassCallVirtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a62275550ad849525faa446302d758e05">get_virtual_func</a> (void *p_userdata, GDExtensionConstStringNamePtr p_name, uint32_t p_hash)</td></tr>
+<tr class="memdesc:a62275550ad849525faa446302d758e05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the virtual methods mapped to class name.  <br /></td></tr>
 <tr class="separator:a62275550ad849525faa446302d758e05"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7019abb61cfb0e63eaaf128ac75b34b0" id="r_a7019abb61cfb0e63eaaf128ac75b34b0"><td class="memItemLeft" align="right" valign="top"><a id="a7019abb61cfb0e63eaaf128ac75b34b0" name="a7019abb61cfb0e63eaaf128ac75b34b0"></a>
-static BindMethodFunc&#160;</td><td class="memItemRight" valign="bottom"><b>_get_bind_methods</b> ()</td></tr>
+<tr class="memitem:a7019abb61cfb0e63eaaf128ac75b34b0" id="r_a7019abb61cfb0e63eaaf128ac75b34b0"><td class="memItemLeft" align="right" valign="top">static BindMethodFunc&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7019abb61cfb0e63eaaf128ac75b34b0">_get_bind_methods</a> ()</td></tr>
+<tr class="memdesc:a7019abb61cfb0e63eaaf128ac75b34b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get _bind_methods method.  <br /></td></tr>
 <tr class="separator:a7019abb61cfb0e63eaaf128ac75b34b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a37d768854205706a9f7f3a0342de83f8" id="r_a37d768854205706a9f7f3a0342de83f8"><td class="memItemLeft" align="right" valign="top"><a id="a37d768854205706a9f7f3a0342de83f8" name="a37d768854205706a9f7f3a0342de83f8"></a>
-static NotificationMethod&#160;</td><td class="memItemRight" valign="bottom"><b>_get_notification</b> ()</td></tr>
+<tr class="memitem:a37d768854205706a9f7f3a0342de83f8" id="r_a37d768854205706a9f7f3a0342de83f8"><td class="memItemLeft" align="right" valign="top">static NotificationMethod&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a37d768854205706a9f7f3a0342de83f8">_get_notification</a> ()</td></tr>
+<tr class="memdesc:a37d768854205706a9f7f3a0342de83f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get _notification method.  <br /></td></tr>
 <tr class="separator:a37d768854205706a9f7f3a0342de83f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a38d885fa665ac52be81687b658da0c" id="r_a6a38d885fa665ac52be81687b658da0c"><td class="memItemLeft" align="right" valign="top"><a id="a6a38d885fa665ac52be81687b658da0c" name="a6a38d885fa665ac52be81687b658da0c"></a>
-static SetMethod&#160;</td><td class="memItemRight" valign="bottom"><b>_get_set</b> ()</td></tr>
+<tr class="memitem:a6a38d885fa665ac52be81687b658da0c" id="r_a6a38d885fa665ac52be81687b658da0c"><td class="memItemLeft" align="right" valign="top">static SetMethod&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6a38d885fa665ac52be81687b658da0c">_get_set</a> ()</td></tr>
+<tr class="memdesc:a6a38d885fa665ac52be81687b658da0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get _set method.  <br /></td></tr>
 <tr class="separator:a6a38d885fa665ac52be81687b658da0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a78eda368233c187a800cf7e992832360" id="r_a78eda368233c187a800cf7e992832360"><td class="memItemLeft" align="right" valign="top"><a id="a78eda368233c187a800cf7e992832360" name="a78eda368233c187a800cf7e992832360"></a>
-static GetMethod&#160;</td><td class="memItemRight" valign="bottom"><b>_get_get</b> ()</td></tr>
+<tr class="memitem:a78eda368233c187a800cf7e992832360" id="r_a78eda368233c187a800cf7e992832360"><td class="memItemLeft" align="right" valign="top">static GetMethod&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a78eda368233c187a800cf7e992832360">_get_get</a> ()</td></tr>
+<tr class="memdesc:a78eda368233c187a800cf7e992832360"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get _get method.  <br /></td></tr>
 <tr class="separator:a78eda368233c187a800cf7e992832360"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a261735fef7c6cd775acdaa1418d4d3a6" id="r_a261735fef7c6cd775acdaa1418d4d3a6"><td class="memItemLeft" align="right" valign="top"><a id="a261735fef7c6cd775acdaa1418d4d3a6" name="a261735fef7c6cd775acdaa1418d4d3a6"></a>
-static GetPropertyListMethod&#160;</td><td class="memItemRight" valign="bottom"><b>_get_get_property_list</b> ()</td></tr>
+<tr class="memitem:a261735fef7c6cd775acdaa1418d4d3a6" id="r_a261735fef7c6cd775acdaa1418d4d3a6"><td class="memItemLeft" align="right" valign="top">static GetPropertyListMethod&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a261735fef7c6cd775acdaa1418d4d3a6">_get_get_property_list</a> ()</td></tr>
+<tr class="memdesc:a261735fef7c6cd775acdaa1418d4d3a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get _get_property_list method.  <br /></td></tr>
 <tr class="separator:a261735fef7c6cd775acdaa1418d4d3a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abaa32fb1defbf5da74045430ba66c9ad" id="r_abaa32fb1defbf5da74045430ba66c9ad"><td class="memItemLeft" align="right" valign="top"><a id="abaa32fb1defbf5da74045430ba66c9ad" name="abaa32fb1defbf5da74045430ba66c9ad"></a>
-static PropertyCanRevertMethod&#160;</td><td class="memItemRight" valign="bottom"><b>_get_property_can_revert</b> ()</td></tr>
+<tr class="memitem:abaa32fb1defbf5da74045430ba66c9ad" id="r_abaa32fb1defbf5da74045430ba66c9ad"><td class="memItemLeft" align="right" valign="top">static PropertyCanRevertMethod&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abaa32fb1defbf5da74045430ba66c9ad">_get_property_can_revert</a> ()</td></tr>
+<tr class="memdesc:abaa32fb1defbf5da74045430ba66c9ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get _property_can_revert method.  <br /></td></tr>
 <tr class="separator:abaa32fb1defbf5da74045430ba66c9ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6d31f38c3aba98c13e5e5fb6eb318238" id="r_a6d31f38c3aba98c13e5e5fb6eb318238"><td class="memItemLeft" align="right" valign="top"><a id="a6d31f38c3aba98c13e5e5fb6eb318238" name="a6d31f38c3aba98c13e5e5fb6eb318238"></a>
-static PropertyGetRevertMethod&#160;</td><td class="memItemRight" valign="bottom"><b>_get_property_get_revert</b> ()</td></tr>
+<tr class="memitem:a6d31f38c3aba98c13e5e5fb6eb318238" id="r_a6d31f38c3aba98c13e5e5fb6eb318238"><td class="memItemLeft" align="right" valign="top">static PropertyGetRevertMethod&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6d31f38c3aba98c13e5e5fb6eb318238">_get_property_get_revert</a> ()</td></tr>
+<tr class="memdesc:a6d31f38c3aba98c13e5e5fb6eb318238"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get _property_get_revert method.  <br /></td></tr>
 <tr class="separator:a6d31f38c3aba98c13e5e5fb6eb318238"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8c9e684581134d9d3d09c6146c852c64" id="r_a8c9e684581134d9d3d09c6146c852c64"><td class="memItemLeft" align="right" valign="top"><a id="a8c9e684581134d9d3d09c6146c852c64" name="a8c9e684581134d9d3d09c6146c852c64"></a>
-static ValidatePropertyMethod&#160;</td><td class="memItemRight" valign="bottom"><b>_get_validate_property</b> ()</td></tr>
+<tr class="memitem:a8c9e684581134d9d3d09c6146c852c64" id="r_a8c9e684581134d9d3d09c6146c852c64"><td class="memItemLeft" align="right" valign="top">static ValidatePropertyMethod&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8c9e684581134d9d3d09c6146c852c64">_get_validate_property</a> ()</td></tr>
+<tr class="memdesc:a8c9e684581134d9d3d09c6146c852c64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get _validate_property method.  <br /></td></tr>
 <tr class="separator:a8c9e684581134d9d3d09c6146c852c64"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3731f6d502569ec7a0c06edf80234209" id="r_a3731f6d502569ec7a0c06edf80234209"><td class="memItemLeft" align="right" valign="top"><a id="a3731f6d502569ec7a0c06edf80234209" name="a3731f6d502569ec7a0c06edf80234209"></a>
-static ToStringMethod&#160;</td><td class="memItemRight" valign="bottom"><b>_get_to_string</b> ()</td></tr>
+<tr class="memitem:a3731f6d502569ec7a0c06edf80234209" id="r_a3731f6d502569ec7a0c06edf80234209"><td class="memItemLeft" align="right" valign="top">static ToStringMethod&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3731f6d502569ec7a0c06edf80234209">_get_to_string</a> ()</td></tr>
+<tr class="memdesc:a3731f6d502569ec7a0c06edf80234209"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get _to_string method.  <br /></td></tr>
 <tr class="separator:a3731f6d502569ec7a0c06edf80234209"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-attribs" name="pro-static-attribs"></a>
 Static Protected Attributes</h2></td></tr>
 <tr class="memitem:af82ecfcd55f062757131a3c7f6423bb6" id="r_af82ecfcd55f062757131a3c7f6423bb6"><td class="memItemLeft" align="right" valign="top"><a id="af82ecfcd55f062757131a3c7f6423bb6" name="af82ecfcd55f062757131a3c7f6423bb6"></a>
 static std::unordered_map&lt; StringName, GDExtensionClassCallVirtual &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>virtual_methods</b></td></tr>
+<tr class="memdesc:af82ecfcd55f062757131a3c7f6423bb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Virtual function map. <br /></td></tr>
 <tr class="separator:af82ecfcd55f062757131a3c7f6423bb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="friends" name="friends"></a>
@@ -246,6 +259,1000 @@ Friends</h2></td></tr>
 class&#160;</td><td class="memItemRight" valign="bottom"><b>Wrapped</b></td></tr>
 <tr class="separator:ad6b3a87cffa0dd6454a860ea1f972bfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><div class="compoundTemplParams">template&lt;typename BaseType&gt;<br />
+class godot::GenericType&lt; BaseType &gt;</div><p>Extensible type that can be modified with custom behavior. </p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">BaseType</td><td>Type that will be inherited from. </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="aea27382a120a4e60b1cd6181ae03ba6e" name="aea27382a120a4e60b1cd6181ae03ba6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea27382a120a4e60b1cd6181ae03ba6e">&#9670;&#160;</a></span>_gde_binding_reference_callback()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static GDExtensionBool <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_gde_binding_reference_callback </td>
+          <td>(</td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionBool</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Placeholder method. </p>
+<dl class="section return"><dt>Returns</dt><dd>GDExtensionBool 1. </dd></dl>
+
+</div>
+</div>
+<a id="a7019abb61cfb0e63eaaf128ac75b34b0" name="a7019abb61cfb0e63eaaf128ac75b34b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7019abb61cfb0e63eaaf128ac75b34b0">&#9670;&#160;</a></span>_get_bind_methods()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static BindMethodFunc <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_get_bind_methods </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get _bind_methods method. </p>
+<dl class="section return"><dt>Returns</dt><dd>BindMethodFunc _bind_methods method. </dd></dl>
+
+</div>
+</div>
+<a id="a52e9c8fe02f6f9f72efc96ce973a4b77" name="a52e9c8fe02f6f9f72efc96ce973a4b77"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a52e9c8fe02f6f9f72efc96ce973a4b77">&#9670;&#160;</a></span>_get_extension_class_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static const StringName * <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_get_extension_class_name </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get extension class name. </p>
+<dl class="section return"><dt>Returns</dt><dd>const StringName* Pointer to class name. </dd></dl>
+
+</div>
+</div>
+<a id="a78eda368233c187a800cf7e992832360" name="a78eda368233c187a800cf7e992832360"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a78eda368233c187a800cf7e992832360">&#9670;&#160;</a></span>_get_get()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static GetMethod <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_get_get </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get _get method. </p>
+<dl class="section return"><dt>Returns</dt><dd>GetMethod _get method. </dd></dl>
+
+</div>
+</div>
+<a id="a261735fef7c6cd775acdaa1418d4d3a6" name="a261735fef7c6cd775acdaa1418d4d3a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a261735fef7c6cd775acdaa1418d4d3a6">&#9670;&#160;</a></span>_get_get_property_list()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static GetPropertyListMethod <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_get_get_property_list </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get _get_property_list method. </p>
+<dl class="section return"><dt>Returns</dt><dd>GetPropertyListMethod _get_property_list method. </dd></dl>
+
+</div>
+</div>
+<a id="a37d768854205706a9f7f3a0342de83f8" name="a37d768854205706a9f7f3a0342de83f8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a37d768854205706a9f7f3a0342de83f8">&#9670;&#160;</a></span>_get_notification()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static NotificationMethod <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_get_notification </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get _notification method. </p>
+<dl class="section return"><dt>Returns</dt><dd>NotificationMethod _notification method. </dd></dl>
+
+</div>
+</div>
+<a id="abaa32fb1defbf5da74045430ba66c9ad" name="abaa32fb1defbf5da74045430ba66c9ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abaa32fb1defbf5da74045430ba66c9ad">&#9670;&#160;</a></span>_get_property_can_revert()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static PropertyCanRevertMethod <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_get_property_can_revert </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get _property_can_revert method. </p>
+<dl class="section return"><dt>Returns</dt><dd>PropertyCanRevertMethod _property_can_revert method. </dd></dl>
+
+</div>
+</div>
+<a id="a6d31f38c3aba98c13e5e5fb6eb318238" name="a6d31f38c3aba98c13e5e5fb6eb318238"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d31f38c3aba98c13e5e5fb6eb318238">&#9670;&#160;</a></span>_get_property_get_revert()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static PropertyGetRevertMethod <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_get_property_get_revert </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get _property_get_revert method. </p>
+<dl class="section return"><dt>Returns</dt><dd>PropertyGetRevertMethod _property_get_revert method. </dd></dl>
+
+</div>
+</div>
+<a id="a6a38d885fa665ac52be81687b658da0c" name="a6a38d885fa665ac52be81687b658da0c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a38d885fa665ac52be81687b658da0c">&#9670;&#160;</a></span>_get_set()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static SetMethod <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_get_set </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get _set method. </p>
+<dl class="section return"><dt>Returns</dt><dd>SetMethod _set method. </dd></dl>
+
+</div>
+</div>
+<a id="a3731f6d502569ec7a0c06edf80234209" name="a3731f6d502569ec7a0c06edf80234209"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3731f6d502569ec7a0c06edf80234209">&#9670;&#160;</a></span>_get_to_string()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static ToStringMethod <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_get_to_string </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get _to_string method. </p>
+<dl class="section return"><dt>Returns</dt><dd>ToStringMethod _to_string method. </dd></dl>
+
+</div>
+</div>
+<a id="a8c9e684581134d9d3d09c6146c852c64" name="a8c9e684581134d9d3d09c6146c852c64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c9e684581134d9d3d09c6146c852c64">&#9670;&#160;</a></span>_get_validate_property()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static ValidatePropertyMethod <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_get_validate_property </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get _validate_property method. </p>
+<dl class="section return"><dt>Returns</dt><dd>ValidatePropertyMethod _validate_property method. </dd></dl>
+
+</div>
+</div>
+<a id="a51d311ca9c04a1b8047f592c3c7dd520" name="a51d311ca9c04a1b8047f592c3c7dd520"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51d311ca9c04a1b8047f592c3c7dd520">&#9670;&#160;</a></span>_is_extension_class()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_is_extension_class </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">override</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check if class is an extension class. </p>
+<dl class="section return"><dt>Returns</dt><dd>true If class is an extension class. </dd>
+<dd>
+false Otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a9e13f13ae587440e83d8067bd16ca676" name="a9e13f13ae587440e83d8067bd16ca676"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e13f13ae587440e83d8067bd16ca676">&#9670;&#160;</a></span>_notificationv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::_notificationv </td>
+          <td>(</td>
+          <td class="paramtype">int32_t</td>          <td class="paramname"><span class="paramname"><em>p_what</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>p_reversed</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Call bound notification function. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_what</td><td>Notification type. </td></tr>
+    <tr><td class="paramname">p_reversed</td><td>Reversed. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aace98b0139d577e480f393eea713f83d" name="aace98b0139d577e480f393eea713f83d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aace98b0139d577e480f393eea713f83d">&#9670;&#160;</a></span>get_bind()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static GDExtensionBool <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::get_bind </td>
+          <td>(</td>
+          <td class="paramtype">GDExtensionClassInstancePtr</td>          <td class="paramname"><span class="paramname"><em>p_instance</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionConstStringNamePtr</td>          <td class="paramname"><span class="paramname"><em>p_name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionVariantPtr</td>          <td class="paramname"><span class="paramname"><em>r_ret</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the bind method function. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_instance</td><td>Instance pointer </td></tr>
+    <tr><td class="paramname">p_name</td><td>Name of property. </td></tr>
+    <tr><td class="paramname">r_ret</td><td>Return variant pointer. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>GDExtensionBool 0 on success. </dd>
+<dd>
+GDExtensionBool 1 on failure. </dd></dl>
+
+</div>
+</div>
+<a id="af47706a67afb8f47af5301df0c4d6ba3" name="af47706a67afb8f47af5301df0c4d6ba3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af47706a67afb8f47af5301df0c4d6ba3">&#9670;&#160;</a></span>get_class_static()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static const StringName &amp; <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::get_class_static </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the class name of the generic type. </p>
+<dl class="section return"><dt>Returns</dt><dd>const StringName&amp; Class name. </dd></dl>
+
+</div>
+</div>
+<a id="ae936d2d2859af847da1a57d3261bec55" name="ae936d2d2859af847da1a57d3261bec55"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae936d2d2859af847da1a57d3261bec55">&#9670;&#160;</a></span>get_parent_class_static()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static const StringName &amp; <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::get_parent_class_static </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the parent class name. </p>
+<dl class="section return"><dt>Returns</dt><dd>const StringName&amp; Parent class name. </dd></dl>
+
+</div>
+</div>
+<a id="a40bf71d3ff31d174782ed8f0137db5ba" name="a40bf71d3ff31d174782ed8f0137db5ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a40bf71d3ff31d174782ed8f0137db5ba">&#9670;&#160;</a></span>get_property_list_bind()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static const GDExtensionPropertyInfo * <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::get_property_list_bind </td>
+          <td>(</td>
+          <td class="paramtype">GDExtensionClassInstancePtr</td>          <td class="paramname"><span class="paramname"><em>p_instance</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t *</td>          <td class="paramname"><span class="paramname"><em>r_count</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the property list bind method function. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_instance</td><td>Instance pointer. </td></tr>
+    <tr><td class="paramname">r_count</td><td>Return counter. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>const GDExtensionPropertyInfo* Property list. </dd>
+<dd>
+const GDExtensionPropertyInfo* Null on failure. </dd></dl>
+
+</div>
+</div>
+<a id="a62275550ad849525faa446302d758e05" name="a62275550ad849525faa446302d758e05"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62275550ad849525faa446302d758e05">&#9670;&#160;</a></span>get_virtual_func()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static GDExtensionClassCallVirtual <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::get_virtual_func </td>
+          <td>(</td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>p_userdata</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionConstStringNamePtr</td>          <td class="paramname"><span class="paramname"><em>p_name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>p_hash</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the virtual methods mapped to class name. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_userdata</td><td>Pointer to class name. </td></tr>
+    <tr><td class="paramname">p_name</td><td>Virtual function name. </td></tr>
+    <tr><td class="paramname">p_hash</td><td>Not used. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>GDExtensionClassCallVirtual </dd></dl>
+
+</div>
+</div>
+<a id="a968c4097c40ab7e190df5ff7ecff7892" name="a968c4097c40ab7e190df5ff7ecff7892"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a968c4097c40ab7e190df5ff7ecff7892">&#9670;&#160;</a></span>has_get_property_list()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::has_get_property_list </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Checks if get_property_list function has been overridden. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if get_property_list has been overridden. </dd>
+<dd>
+false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a039f90ef32f1908ba2fd74b0b9b5a3d9" name="a039f90ef32f1908ba2fd74b0b9b5a3d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a039f90ef32f1908ba2fd74b0b9b5a3d9">&#9670;&#160;</a></span>initialize_class()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::initialize_class </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Initializes a class. </p>
+<p>Exposed method for increased control over godot bindings. </p>
+
+</div>
+</div>
+<a id="a126767b7fe5e4743bdfefb5bb81fd23e" name="a126767b7fe5e4743bdfefb5bb81fd23e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a126767b7fe5e4743bdfefb5bb81fd23e">&#9670;&#160;</a></span>notification_bind()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::notification_bind </td>
+          <td>(</td>
+          <td class="paramtype">GDExtensionClassInstancePtr</td>          <td class="paramname"><span class="paramname"><em>p_instance</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t</td>          <td class="paramname"><span class="paramname"><em>p_what</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionBool</td>          <td class="paramname"><span class="paramname"><em>p_reversed</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Bind notification function. </p>
+<p>Exposed bind notification function for extra control over class methods.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_instance</td><td>Pointer to instance. </td></tr>
+    <tr><td class="paramname">p_what</td><td>Notification type. </td></tr>
+    <tr><td class="paramname">p_reversed</td><td>reversed. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab58562125904e95f6def54ca6f0d554e" name="ab58562125904e95f6def54ca6f0d554e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab58562125904e95f6def54ca6f0d554e">&#9670;&#160;</a></span>property_can_revert_bind()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static GDExtensionBool <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::property_can_revert_bind </td>
+          <td>(</td>
+          <td class="paramtype">GDExtensionClassInstancePtr</td>          <td class="paramname"><span class="paramname"><em>p_instance</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionConstStringNamePtr</td>          <td class="paramname"><span class="paramname"><em>p_name</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check if property_can_revert_bind was overridden. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_instance</td><td>Instance pointer. </td></tr>
+    <tr><td class="paramname">p_name</td><td>Name of property. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>GDExtensionBool true if property_can_revert_bind is overridden. </dd>
+<dd>
+GDExtensionBool false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a900a4b7d5340843c28ac8811d0b79f20" name="a900a4b7d5340843c28ac8811d0b79f20"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a900a4b7d5340843c28ac8811d0b79f20">&#9670;&#160;</a></span>property_get_revert_bind()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static GDExtensionBool <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::property_get_revert_bind </td>
+          <td>(</td>
+          <td class="paramtype">GDExtensionClassInstancePtr</td>          <td class="paramname"><span class="paramname"><em>p_instance</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionConstStringNamePtr</td>          <td class="paramname"><span class="paramname"><em>p_name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionVariantPtr</td>          <td class="paramname"><span class="paramname"><em>r_ret</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check if property_get_revert is overridden. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_instance</td><td>Instance pointer. </td></tr>
+    <tr><td class="paramname">p_name</td><td>Name of pointer. </td></tr>
+    <tr><td class="paramname">r_ret</td><td>Pointer to property. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>GDExtensionBool true if property_get_revert is overridden. </dd>
+<dd>
+GDExtensionBool false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a29446fa634c6c58397768cd79ac63ab4" name="a29446fa634c6c58397768cd79ac63ab4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a29446fa634c6c58397768cd79ac63ab4">&#9670;&#160;</a></span>set_bind()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static GDExtensionBool <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::set_bind </td>
+          <td>(</td>
+          <td class="paramtype">GDExtensionClassInstancePtr</td>          <td class="paramname"><span class="paramname"><em>p_instance</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionConstStringNamePtr</td>          <td class="paramname"><span class="paramname"><em>p_name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionConstVariantPtr</td>          <td class="paramname"><span class="paramname"><em>p_value</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set the bind method function. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_instance</td><td>Instance pointer. </td></tr>
+    <tr><td class="paramname">p_name</td><td>Property name. </td></tr>
+    <tr><td class="paramname">p_value</td><td>Property value. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>GDExtensionBool 0 on success. </dd>
+<dd>
+GDExtensionBool 1 on failure. </dd></dl>
+
+</div>
+</div>
+<a id="a7db3750f9926fb8e9ef666331d3ce98d" name="a7db3750f9926fb8e9ef666331d3ce98d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7db3750f9926fb8e9ef666331d3ce98d">&#9670;&#160;</a></span>set_class_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::set_class_name </td>
+          <td>(</td>
+          <td class="paramtype">const String &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set the class name of a particular type. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td>class name to set. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a1ea8e9375e418b3587e32b922aee9f1d" name="a1ea8e9375e418b3587e32b922aee9f1d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1ea8e9375e418b3587e32b922aee9f1d">&#9670;&#160;</a></span>to_string_bind()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::to_string_bind </td>
+          <td>(</td>
+          <td class="paramtype">GDExtensionClassInstancePtr</td>          <td class="paramname"><span class="paramname"><em>p_instance</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionBool *</td>          <td class="paramname"><span class="paramname"><em>r_is_valid</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionStringPtr</td>          <td class="paramname"><span class="paramname"><em>r_out</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get to_string return. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_instance</td><td>Instance pointer. </td></tr>
+    <tr><td class="paramname">r_is_valid</td><td>Indicates that to_string is overridden. </td></tr>
+    <tr><td class="paramname">r_out</td><td>to_string output. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a3f984829ab6e34a6c04e53c0b2a3dec1" name="a3f984829ab6e34a6c04e53c0b2a3dec1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f984829ab6e34a6c04e53c0b2a3dec1">&#9670;&#160;</a></span>validate_property_bind()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename BaseType &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static GDExtensionBool <a class="el" href="classgodot_1_1_generic_type.html">godot::GenericType</a>&lt; BaseType &gt;::validate_property_bind </td>
+          <td>(</td>
+          <td class="paramtype">GDExtensionClassInstancePtr</td>          <td class="paramname"><span class="paramname"><em>p_instance</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">GDExtensionPropertyInfo *</td>          <td class="paramname"><span class="paramname"><em>p_property</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check if validate_property has been overridden. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p_instance</td><td>Instance pointer. </td></tr>
+    <tr><td class="paramname">p_property</td><td>Pointer to property. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>GDExtensionBool true if validate_property is overridden. </dd>
+<dd>
+GDExtensionBool false otherwise. </dd></dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="a52720ea3f552984c811b9e896b3d2c67" name="a52720ea3f552984c811b9e896b3d2c67"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a52720ea3f552984c811b9e896b3d2c67">&#9670;&#160;</a></span>_gde_binding_callbacks</h2>
@@ -269,11 +1276,16 @@ template&lt;typename BaseType &gt; </div>
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= {</div>
-<div class="line">        _gde_binding_create_callback,</div>
-<div class="line">        _gde_binding_free_callback,</div>
-<div class="line">        _gde_binding_reference_callback,</div>
+<div class="line">        <a class="code hl_function" href="#ae2b54d0cd92efe9493911daa61a8504d">_gde_binding_create_callback</a>,</div>
+<div class="line">        <a class="code hl_function" href="#a7aa175f7e1f129ddce9444226ffc4a4c">_gde_binding_free_callback</a>,</div>
+<div class="line">        <a class="code hl_function" href="#aea27382a120a4e60b1cd6181ae03ba6e">_gde_binding_reference_callback</a>,</div>
 <div class="line">    }</div>
+<div class="ttc" id="aclassgodot_1_1_generic_type_html_a7aa175f7e1f129ddce9444226ffc4a4c"><div class="ttname"><a href="#a7aa175f7e1f129ddce9444226ffc4a4c">godot::GenericType::_gde_binding_free_callback</a></div><div class="ttdeci">static void _gde_binding_free_callback(void *, void *, void *)</div><div class="ttdoc">Placeholder method.</div><div class="ttdef"><b>Definition</b> generic_type.hpp:448</div></div>
+<div class="ttc" id="aclassgodot_1_1_generic_type_html_ae2b54d0cd92efe9493911daa61a8504d"><div class="ttname"><a href="#ae2b54d0cd92efe9493911daa61a8504d">godot::GenericType::_gde_binding_create_callback</a></div><div class="ttdeci">static void * _gde_binding_create_callback(void *, void *)</div><div class="ttdoc">Placeholder method.</div><div class="ttdef"><b>Definition</b> generic_type.hpp:442</div></div>
+<div class="ttc" id="aclassgodot_1_1_generic_type_html_aea27382a120a4e60b1cd6181ae03ba6e"><div class="ttname"><a href="#aea27382a120a4e60b1cd6181ae03ba6e">godot::GenericType::_gde_binding_reference_callback</a></div><div class="ttdeci">static GDExtensionBool _gde_binding_reference_callback(void *, void *, GDExtensionBool)</div><div class="ttdoc">Placeholder method.</div><div class="ttdef"><b>Definition</b> generic_type.hpp:455</div></div>
 </div><!-- fragment -->
+<p>Binding callbacks structure. </p>
+
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
@@ -286,7 +1298,7 @@ template&lt;typename BaseType &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_generic_type.html">GenericType</a></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

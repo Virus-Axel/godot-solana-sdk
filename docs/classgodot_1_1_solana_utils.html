@@ -108,6 +108,11 @@ $(function(){initNavTree('classgodot_1_1_solana_utils.html',''); initResizable(t
   <div class="headertitle"><div class="title">godot::SolanaUtils Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Utility class for various purposes like encoding and decoding.  
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="solana__utils_8hpp_source.html">solana_utils.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for godot::SolanaUtils:</div>
 <div class="dyncontent">
@@ -117,58 +122,278 @@ Inheritance diagram for godot::SolanaUtils:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a9d217bb10624469c647071c65390f85d" id="r_a9d217bb10624469c647071c65390f85d"><td class="memItemLeft" align="right" valign="top"><a id="a9d217bb10624469c647071c65390f85d" name="a9d217bb10624469c647071c65390f85d"></a>
-static PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><b>bs58_decode</b> (String str)</td></tr>
+<tr class="memitem:a9d217bb10624469c647071c65390f85d" id="r_a9d217bb10624469c647071c65390f85d"><td class="memItemLeft" align="right" valign="top">static PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9d217bb10624469c647071c65390f85d">bs58_decode</a> (String str)</td></tr>
+<tr class="memdesc:a9d217bb10624469c647071c65390f85d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decode base58 encoded string into bytes.  <br /></td></tr>
 <tr class="separator:a9d217bb10624469c647071c65390f85d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4d4095b8a6d9d7d91ad4e664ec6b0ebf" id="r_a4d4095b8a6d9d7d91ad4e664ec6b0ebf"><td class="memItemLeft" align="right" valign="top"><a id="a4d4095b8a6d9d7d91ad4e664ec6b0ebf" name="a4d4095b8a6d9d7d91ad4e664ec6b0ebf"></a>
-static String&#160;</td><td class="memItemRight" valign="bottom"><b>bs58_encode</b> (PackedByteArray input)</td></tr>
+<tr class="memitem:a4d4095b8a6d9d7d91ad4e664ec6b0ebf" id="r_a4d4095b8a6d9d7d91ad4e664ec6b0ebf"><td class="memItemLeft" align="right" valign="top">static String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4d4095b8a6d9d7d91ad4e664ec6b0ebf">bs58_encode</a> (PackedByteArray input)</td></tr>
+<tr class="memdesc:a4d4095b8a6d9d7d91ad4e664ec6b0ebf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encode a byte array into a base58 encoded string.  <br /></td></tr>
 <tr class="separator:a4d4095b8a6d9d7d91ad4e664ec6b0ebf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8bb01440a022523289b233ebbc77207b" id="r_a8bb01440a022523289b233ebbc77207b"><td class="memItemLeft" align="right" valign="top"><a id="a8bb01440a022523289b233ebbc77207b" name="a8bb01440a022523289b233ebbc77207b"></a>
-static String&#160;</td><td class="memItemRight" valign="bottom"><b>bs64_encode</b> (PackedByteArray bytes)</td></tr>
+<tr class="memitem:a8bb01440a022523289b233ebbc77207b" id="r_a8bb01440a022523289b233ebbc77207b"><td class="memItemLeft" align="right" valign="top">static String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8bb01440a022523289b233ebbc77207b">bs64_encode</a> (PackedByteArray bytes)</td></tr>
+<tr class="memdesc:a8bb01440a022523289b233ebbc77207b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encode a byte array int a base64 encoded string.  <br /></td></tr>
 <tr class="separator:a8bb01440a022523289b233ebbc77207b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae0a6756128149b6bbaa757ce981fdc2a" id="r_ae0a6756128149b6bbaa757ce981fdc2a"><td class="memItemLeft" align="right" valign="top"><a id="ae0a6756128149b6bbaa757ce981fdc2a" name="ae0a6756128149b6bbaa757ce981fdc2a"></a>
-static PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><b>bs64_decode</b> (String input)</td></tr>
+<tr class="memitem:ae0a6756128149b6bbaa757ce981fdc2a" id="r_ae0a6756128149b6bbaa757ce981fdc2a"><td class="memItemLeft" align="right" valign="top">static PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae0a6756128149b6bbaa757ce981fdc2a">bs64_decode</a> (String input)</td></tr>
+<tr class="memdesc:ae0a6756128149b6bbaa757ce981fdc2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decode a base64 encoded string into bytes.  <br /></td></tr>
 <tr class="separator:ae0a6756128149b6bbaa757ce981fdc2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abc2a1a697e3455581bda030438fb3691" id="r_abc2a1a697e3455581bda030438fb3691"><td class="memItemLeft" align="right" valign="top"><a id="abc2a1a697e3455581bda030438fb3691" name="abc2a1a697e3455581bda030438fb3691"></a>
-static PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><b>short_u16_encode</b> (unsigned int value)</td></tr>
+<tr class="memitem:abc2a1a697e3455581bda030438fb3691" id="r_abc2a1a697e3455581bda030438fb3691"><td class="memItemLeft" align="right" valign="top">static PackedByteArray&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abc2a1a697e3455581bda030438fb3691">short_u16_encode</a> (unsigned int value)</td></tr>
+<tr class="memdesc:abc2a1a697e3455581bda030438fb3691"><td class="mdescLeft">&#160;</td><td class="mdescRight">Short vec encode a 16 bit integer.  <br /></td></tr>
 <tr class="separator:abc2a1a697e3455581bda030438fb3691"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae051ad477b962ca82108ebdbf7906ea6" id="r_ae051ad477b962ca82108ebdbf7906ea6"><td class="memItemLeft" align="right" valign="top"><a id="ae051ad477b962ca82108ebdbf7906ea6" name="ae051ad477b962ca82108ebdbf7906ea6"></a>
-static unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>short_u16_decode</b> (const PackedByteArray &amp;bytes, int *cursor)</td></tr>
+<tr class="memitem:ae051ad477b962ca82108ebdbf7906ea6" id="r_ae051ad477b962ca82108ebdbf7906ea6"><td class="memItemLeft" align="right" valign="top">static unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae051ad477b962ca82108ebdbf7906ea6">short_u16_decode</a> (const PackedByteArray &amp;bytes, int *cursor)</td></tr>
+<tr class="memdesc:ae051ad477b962ca82108ebdbf7906ea6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decode short vec bytes int an integer.  <br /></td></tr>
 <tr class="separator:ae051ad477b962ca82108ebdbf7906ea6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a61c9fe9b6f9c9f8d1380f6c1491bc6b9" id="r_a61c9fe9b6f9c9f8d1380f6c1491bc6b9"><td class="memItemLeft" align="right" valign="top"><a id="a61c9fe9b6f9c9f8d1380f6c1491bc6b9" name="a61c9fe9b6f9c9f8d1380f6c1491bc6b9"></a>
 const String&#160;</td><td class="memItemRight" valign="bottom"><b>MAINNET_URL</b> = &quot;https://api.mainnet.solana.com&quot;</td></tr>
+<tr class="memdesc:a61c9fe9b6f9c9f8d1380f6c1491bc6b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mainnet RPC Endpoint URL. <br /></td></tr>
 <tr class="separator:a61c9fe9b6f9c9f8d1380f6c1491bc6b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f7a1ec286b26a71ba4fb77bdaf3bc84" id="r_a5f7a1ec286b26a71ba4fb77bdaf3bc84"><td class="memItemLeft" align="right" valign="top"><a id="a5f7a1ec286b26a71ba4fb77bdaf3bc84" name="a5f7a1ec286b26a71ba4fb77bdaf3bc84"></a>
 const String&#160;</td><td class="memItemRight" valign="bottom"><b>DEVNET_URL</b> = &quot;https://api.devnet.solana.com&quot;</td></tr>
+<tr class="memdesc:a5f7a1ec286b26a71ba4fb77bdaf3bc84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Devnet RPC Endpoint URL. <br /></td></tr>
 <tr class="separator:a5f7a1ec286b26a71ba4fb77bdaf3bc84"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc31b51b27ecda969f312d2a0892f894" id="r_afc31b51b27ecda969f312d2a0892f894"><td class="memItemLeft" align="right" valign="top"><a id="afc31b51b27ecda969f312d2a0892f894" name="afc31b51b27ecda969f312d2a0892f894"></a>
 const String&#160;</td><td class="memItemRight" valign="bottom"><b>TESTNET_URL</b> = &quot;https://api.testnet.solana.com&quot;</td></tr>
+<tr class="memdesc:afc31b51b27ecda969f312d2a0892f894"><td class="mdescLeft">&#160;</td><td class="mdescRight">Testnet RPC Endpoint URL. <br /></td></tr>
 <tr class="separator:afc31b51b27ecda969f312d2a0892f894"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae8141ef01405a033a68066c6b1adeff8" id="r_ae8141ef01405a033a68066c6b1adeff8"><td class="memItemLeft" align="right" valign="top"><a id="ae8141ef01405a033a68066c6b1adeff8" name="ae8141ef01405a033a68066c6b1adeff8"></a>
 const String&#160;</td><td class="memItemRight" valign="bottom"><b>LOCALHOST_URL</b> = &quot;http://127.0.0.1:8899&quot;</td></tr>
+<tr class="memdesc:ae8141ef01405a033a68066c6b1adeff8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Localnet RPC Endpoint URL. <br /></td></tr>
 <tr class="separator:ae8141ef01405a033a68066c6b1adeff8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
 <tr class="memitem:af2548583ad43443a4085434079f3d999" id="r_af2548583ad43443a4085434079f3d999"><td class="memItemLeft" align="right" valign="top"><a id="af2548583ad43443a4085434079f3d999" name="af2548583ad43443a4085434079f3d999"></a>
 static const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>ZERO_ENCODED_32</b> = &quot;11111111111111111111111111111111&quot;</td></tr>
+<tr class="memdesc:af2548583ad43443a4085434079f3d999"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base58 encoded 32 lengthed byte array of 0's. <br /></td></tr>
 <tr class="separator:af2548583ad43443a4085434079f3d999"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4ceaefc7707b71a50a6c7c4bd9d9277c" id="r_a4ceaefc7707b71a50a6c7c4bd9d9277c"><td class="memItemLeft" align="right" valign="top"><a id="a4ceaefc7707b71a50a6c7c4bd9d9277c" name="a4ceaefc7707b71a50a6c7c4bd9d9277c"></a>
 static const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>SPL_TOKEN_ADDRESS</b> = &quot;TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA&quot;</td></tr>
+<tr class="memdesc:a4ceaefc7707b71a50a6c7c4bd9d9277c"><td class="mdescLeft">&#160;</td><td class="mdescRight">SPL token address. <br /></td></tr>
 <tr class="separator:a4ceaefc7707b71a50a6c7c4bd9d9277c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab629f6fb46fb99619d50f5f7e0be3846" id="r_ab629f6fb46fb99619d50f5f7e0be3846"><td class="memItemLeft" align="right" valign="top"><a id="ab629f6fb46fb99619d50f5f7e0be3846" name="ab629f6fb46fb99619d50f5f7e0be3846"></a>
 static const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>SPL_ASSOCIATED_TOKEN_ADDRESS</b> = &quot;ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL&quot;</td></tr>
+<tr class="memdesc:ab629f6fb46fb99619d50f5f7e0be3846"><td class="mdescLeft">&#160;</td><td class="mdescRight">SPL associated token address. <br /></td></tr>
 <tr class="separator:ab629f6fb46fb99619d50f5f7e0be3846"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
 <tr class="memitem:a27e36dca2020c08415178f0cada40720" id="r_a27e36dca2020c08415178f0cada40720"><td class="memItemLeft" align="right" valign="top"><a id="a27e36dca2020c08415178f0cada40720" name="a27e36dca2020c08415178f0cada40720"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods</b> ()</td></tr>
+<tr class="memdesc:a27e36dca2020c08415178f0cada40720"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bind methods for <a class="el" href="classgodot_1_1_solana_utils.html" title="Utility class for various purposes like encoding and decoding.">SolanaUtils</a> Node. <br /></td></tr>
 <tr class="separator:a27e36dca2020c08415178f0cada40720"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Utility class for various purposes like encoding and decoding. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a9d217bb10624469c647071c65390f85d" name="a9d217bb10624469c647071c65390f85d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d217bb10624469c647071c65390f85d">&#9670;&#160;</a></span>bs58_decode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">PackedByteArray godot::SolanaUtils::bs58_decode </td>
+          <td>(</td>
+          <td class="paramtype">String</td>          <td class="paramname"><span class="paramname"><em>str</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Decode base58 encoded string into bytes. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">str</td><td>Base58 encoded string to decode. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PackedByteArray Decoded bytes. </dd></dl>
+
+</div>
+</div>
+<a id="a4d4095b8a6d9d7d91ad4e664ec6b0ebf" name="a4d4095b8a6d9d7d91ad4e664ec6b0ebf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d4095b8a6d9d7d91ad4e664ec6b0ebf">&#9670;&#160;</a></span>bs58_encode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">String godot::SolanaUtils::bs58_encode </td>
+          <td>(</td>
+          <td class="paramtype">PackedByteArray</td>          <td class="paramname"><span class="paramname"><em>input</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Encode a byte array into a base58 encoded string. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">input</td><td>Byte array to encode. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>String Base58 encoded String. </dd></dl>
+
+</div>
+</div>
+<a id="ae0a6756128149b6bbaa757ce981fdc2a" name="ae0a6756128149b6bbaa757ce981fdc2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0a6756128149b6bbaa757ce981fdc2a">&#9670;&#160;</a></span>bs64_decode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">PackedByteArray godot::SolanaUtils::bs64_decode </td>
+          <td>(</td>
+          <td class="paramtype">String</td>          <td class="paramname"><span class="paramname"><em>input</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Decode a base64 encoded string into bytes. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">input</td><td>Base64 encoded string to decode. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PackedByteArray Decoded bytes. </dd></dl>
+
+</div>
+</div>
+<a id="a8bb01440a022523289b233ebbc77207b" name="a8bb01440a022523289b233ebbc77207b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8bb01440a022523289b233ebbc77207b">&#9670;&#160;</a></span>bs64_encode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">String godot::SolanaUtils::bs64_encode </td>
+          <td>(</td>
+          <td class="paramtype">PackedByteArray</td>          <td class="paramname"><span class="paramname"><em>bytes</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Encode a byte array int a base64 encoded string. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bytes</td><td>Byte array to encode. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>String Base64 encoded String. </dd></dl>
+
+</div>
+</div>
+<a id="ae051ad477b962ca82108ebdbf7906ea6" name="ae051ad477b962ca82108ebdbf7906ea6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae051ad477b962ca82108ebdbf7906ea6">&#9670;&#160;</a></span>short_u16_decode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int godot::SolanaUtils::short_u16_decode </td>
+          <td>(</td>
+          <td class="paramtype">const PackedByteArray &amp;</td>          <td class="paramname"><span class="paramname"><em>bytes</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>cursor</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Decode short vec bytes int an integer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bytes</td><td>Short vec encoded bytes. </td></tr>
+    <tr><td class="paramname">cursor</td><td>Pointer to an integer that saves abount of bytes required. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>unsigned int Decoded integer. </dd></dl>
+
+</div>
+</div>
+<a id="abc2a1a697e3455581bda030438fb3691" name="abc2a1a697e3455581bda030438fb3691"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc2a1a697e3455581bda030438fb3691">&#9670;&#160;</a></span>short_u16_encode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">PackedByteArray godot::SolanaUtils::short_u16_encode </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>value</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Short vec encode a 16 bit integer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">value</td><td>integer to encode. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PackedByteArray Short vec encoded byte array. </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>include/<a class="el" href="solana__utils_8hpp_source.html">solana_utils.hpp</a></li>
 <li>src/<b>solana_utils.cpp</b></li>
@@ -179,7 +404,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_solana_utils.html">SolanaUtils</a></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:10 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

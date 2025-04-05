@@ -103,84 +103,798 @@ $(function(){initNavTree('classgodot_1_1_token_program.html',''); initResizable(
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
-<a href="#pro-static-attribs">Static Protected Attributes</a> &#124;
 <a href="classgodot_1_1_token_program-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">godot::TokenProgram Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> Builder for Solana Token Program.  
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="spl__token_8hpp_source.html">spl_token.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for godot::TokenProgram:</div>
 <div class="dyncontent">
  <div class="center">
   <img src="classgodot_1_1_token_program.png" usemap="#godot::TokenProgram_map" alt=""/>
   <map id="godot::TokenProgram_map" name="godot::TokenProgram_map">
-<area href="classgodot_1_1_token_program2022.html" alt="godot::TokenProgram2022" shape="rect" coords="0,112,159,136"/>
+<area href="classgodot_1_1_token_program2022.html" title="Instruction Builder for Solana Token2022 Program." alt="godot::TokenProgram2022" shape="rect" coords="0,112,159,136"/>
   </map>
 </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a48f241d411cdb28d7ad8373b11308bd6" id="r_a48f241d411cdb28d7ad8373b11308bd6"><td class="memItemLeft" align="right" valign="top"><a id="a48f241d411cdb28d7ad8373b11308bd6" name="a48f241d411cdb28d7ad8373b11308bd6"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>MetaDataDelegateRole</b> { <b>AUTHORITY</b> = 0
-, <b>COLLECTION</b> = 1
-, <b>USE</b> = 2
-, <b>UPDATE</b> = 3
+<tr class="memitem:a48f241d411cdb28d7ad8373b11308bd6" id="r_a48f241d411cdb28d7ad8373b11308bd6"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a48f241d411cdb28d7ad8373b11308bd6">MetaDataDelegateRole</a> { <a class="el" href="#a48f241d411cdb28d7ad8373b11308bd6ab420851973cd59809988f248514acd91">AUTHORITY</a> = 0
+, <a class="el" href="#a48f241d411cdb28d7ad8373b11308bd6a17c4708abdde3c6fa6c8210d84a7e34a">COLLECTION</a> = 1
+, <a class="el" href="#a48f241d411cdb28d7ad8373b11308bd6a5c11db5c388ebf623dcfc2dc5677dfca">USE</a> = 2
+, <a class="el" href="#a48f241d411cdb28d7ad8373b11308bd6a17594ded381196a9a21f461df626463f">UPDATE</a> = 3
  }</td></tr>
+<tr class="memdesc:a48f241d411cdb28d7ad8373b11308bd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Role of delegate in metadata.  <a href="#a48f241d411cdb28d7ad8373b11308bd6">More...</a><br /></td></tr>
 <tr class="separator:a48f241d411cdb28d7ad8373b11308bd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:aa327cd58c5aa787888ea98ed4a2ac453" id="r_aa327cd58c5aa787888ea98ed4a2ac453"><td class="memItemLeft" align="right" valign="top"><a id="aa327cd58c5aa787888ea98ed4a2ac453" name="aa327cd58c5aa787888ea98ed4a2ac453"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>new_token_record_address</b> (const Variant &amp;token, const Variant &amp;mint)</td></tr>
+<tr class="memitem:aa327cd58c5aa787888ea98ed4a2ac453" id="r_aa327cd58c5aa787888ea98ed4a2ac453"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa327cd58c5aa787888ea98ed4a2ac453">new_token_record_address</a> (const Variant &amp;token, const Variant &amp;mint)</td></tr>
+<tr class="memdesc:aa327cd58c5aa787888ea98ed4a2ac453"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new token record <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>.  <br /></td></tr>
 <tr class="separator:aa327cd58c5aa787888ea98ed4a2ac453"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae811d6b63ef6a30af8890016f96be9dd" id="r_ae811d6b63ef6a30af8890016f96be9dd"><td class="memItemLeft" align="right" valign="top"><a id="ae811d6b63ef6a30af8890016f96be9dd" name="ae811d6b63ef6a30af8890016f96be9dd"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>new_delegate_record_address</b> (const Variant &amp;update_authority, const Variant &amp;mint, const Variant &amp;delegate_address, const MetaDataDelegateRole role)</td></tr>
+<tr class="memitem:ae811d6b63ef6a30af8890016f96be9dd" id="r_ae811d6b63ef6a30af8890016f96be9dd"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae811d6b63ef6a30af8890016f96be9dd">new_delegate_record_address</a> (const Variant &amp;update_authority, const Variant &amp;mint, const Variant &amp;delegate_address, const <a class="el" href="#a48f241d411cdb28d7ad8373b11308bd6">MetaDataDelegateRole</a> role)</td></tr>
+<tr class="memdesc:ae811d6b63ef6a30af8890016f96be9dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new delegate record address.  <br /></td></tr>
 <tr class="separator:ae811d6b63ef6a30af8890016f96be9dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0cc62a53f707bda705d86fd97bf99efb" id="r_a0cc62a53f707bda705d86fd97bf99efb"><td class="memItemLeft" align="right" valign="top"><a id="a0cc62a53f707bda705d86fd97bf99efb" name="a0cc62a53f707bda705d86fd97bf99efb"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_mint</b> (const Variant &amp;mint_pubkey, const Variant &amp;mint_authority, const Variant &amp;freeze_authority=nullptr, const uint32_t decimals=9)</td></tr>
+<tr class="memitem:a0cc62a53f707bda705d86fd97bf99efb" id="r_a0cc62a53f707bda705d86fd97bf99efb"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0cc62a53f707bda705d86fd97bf99efb">initialize_mint</a> (const Variant &amp;mint_pubkey, const Variant &amp;mint_authority, const Variant &amp;freeze_authority=nullptr, const uint32_t decimals=9)</td></tr>
+<tr class="memdesc:a0cc62a53f707bda705d86fd97bf99efb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _initialize_mint but with program ID set to Spl token program ID.  <br /></td></tr>
 <tr class="separator:a0cc62a53f707bda705d86fd97bf99efb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54aedbcd592cbafe068519f7af9d7a1b" id="r_a54aedbcd592cbafe068519f7af9d7a1b"><td class="memItemLeft" align="right" valign="top"><a id="a54aedbcd592cbafe068519f7af9d7a1b" name="a54aedbcd592cbafe068519f7af9d7a1b"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>initialize_account</b> (const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey)</td></tr>
+<tr class="memitem:a54aedbcd592cbafe068519f7af9d7a1b" id="r_a54aedbcd592cbafe068519f7af9d7a1b"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a54aedbcd592cbafe068519f7af9d7a1b">initialize_account</a> (const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey)</td></tr>
+<tr class="memdesc:a54aedbcd592cbafe068519f7af9d7a1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _initialize_account but with program ID set to Spl token program ID.  <br /></td></tr>
 <tr class="separator:a54aedbcd592cbafe068519f7af9d7a1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b0fa030a8d201d0eea8f267ce9e4830" id="r_a6b0fa030a8d201d0eea8f267ce9e4830"><td class="memItemLeft" align="right" valign="top"><a id="a6b0fa030a8d201d0eea8f267ce9e4830" name="a6b0fa030a8d201d0eea8f267ce9e4830"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>mint_to</b> (const Variant &amp;mint_pubkey, const Variant &amp;account_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;mint_authority, uint64_t amount)</td></tr>
+<tr class="memitem:a6b0fa030a8d201d0eea8f267ce9e4830" id="r_a6b0fa030a8d201d0eea8f267ce9e4830"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6b0fa030a8d201d0eea8f267ce9e4830">mint_to</a> (const Variant &amp;mint_pubkey, const Variant &amp;account_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;mint_authority, uint64_t amount)</td></tr>
+<tr class="memdesc:a6b0fa030a8d201d0eea8f267ce9e4830"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _mint_to but with program ID set to Spl token program ID.  <br /></td></tr>
 <tr class="separator:a6b0fa030a8d201d0eea8f267ce9e4830"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac9db0247ef9a184a75a82e369beb7f7a" id="r_ac9db0247ef9a184a75a82e369beb7f7a"><td class="memItemLeft" align="right" valign="top"><a id="ac9db0247ef9a184a75a82e369beb7f7a" name="ac9db0247ef9a184a75a82e369beb7f7a"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>transfer_checked</b> (const Variant &amp;source_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;destination_pubkey, const Variant &amp;source_authority, uint64_t amount, uint32_t decimals)</td></tr>
+<tr class="memitem:ac9db0247ef9a184a75a82e369beb7f7a" id="r_ac9db0247ef9a184a75a82e369beb7f7a"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac9db0247ef9a184a75a82e369beb7f7a">transfer_checked</a> (const Variant &amp;source_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;destination_pubkey, const Variant &amp;source_authority, uint64_t amount, uint32_t decimals)</td></tr>
+<tr class="memdesc:ac9db0247ef9a184a75a82e369beb7f7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _transfer_checked but with program ID set to Spl token program ID.  <br /></td></tr>
 <tr class="separator:ac9db0247ef9a184a75a82e369beb7f7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66d5263ac1ecca761e201393ecfe47ee" id="r_a66d5263ac1ecca761e201393ecfe47ee"><td class="memItemLeft" align="right" valign="top"><a id="a66d5263ac1ecca761e201393ecfe47ee" name="a66d5263ac1ecca761e201393ecfe47ee"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>freeze_account</b> (const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;freeze_authority)</td></tr>
+<tr class="memitem:a66d5263ac1ecca761e201393ecfe47ee" id="r_a66d5263ac1ecca761e201393ecfe47ee"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a66d5263ac1ecca761e201393ecfe47ee">freeze_account</a> (const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;freeze_authority)</td></tr>
+<tr class="memdesc:a66d5263ac1ecca761e201393ecfe47ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as _freeze_account but with program ID set to Spl token program ID.  <br /></td></tr>
 <tr class="separator:a66d5263ac1ecca761e201393ecfe47ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39bf546fd0dec565da205c8744f3ef59" id="r_a39bf546fd0dec565da205c8744f3ef59"><td class="memItemLeft" align="right" valign="top"><a id="a39bf546fd0dec565da205c8744f3ef59" name="a39bf546fd0dec565da205c8744f3ef59"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>get_pid</b> ()</td></tr>
+<tr class="memitem:a39bf546fd0dec565da205c8744f3ef59" id="r_a39bf546fd0dec565da205c8744f3ef59"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a39bf546fd0dec565da205c8744f3ef59">get_pid</a> ()</td></tr>
+<tr class="memdesc:a39bf546fd0dec565da205c8744f3ef59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the program ID of <a class="el" href="classgodot_1_1_token_program.html" title="Instruction Builder for Solana Token Program.">TokenProgram</a>.  <br /></td></tr>
 <tr class="separator:a39bf546fd0dec565da205c8744f3ef59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
-<tr class="memitem:a0e79b905d82af1f6270e617dcc357d8a" id="r_a0e79b905d82af1f6270e617dcc357d8a"><td class="memItemLeft" align="right" valign="top"><a id="a0e79b905d82af1f6270e617dcc357d8a" name="a0e79b905d82af1f6270e617dcc357d8a"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>_initialize_mint</b> (const Variant &amp;token_program_pid, const Variant &amp;mint_pubkey, const Variant &amp;mint_authority, const Variant &amp;freeze_authority=nullptr, const uint32_t decimals=9)</td></tr>
+<tr class="memitem:a0e79b905d82af1f6270e617dcc357d8a" id="r_a0e79b905d82af1f6270e617dcc357d8a"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0e79b905d82af1f6270e617dcc357d8a">_initialize_mint</a> (const Variant &amp;token_program_pid, const Variant &amp;mint_pubkey, const Variant &amp;mint_authority, const Variant &amp;freeze_authority=nullptr, const uint32_t decimals=9)</td></tr>
+<tr class="memdesc:a0e79b905d82af1f6270e617dcc357d8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that initializes a mint.  <br /></td></tr>
 <tr class="separator:a0e79b905d82af1f6270e617dcc357d8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a55d0153d0e57dd625e2b8e9c891f6e" id="r_a6a55d0153d0e57dd625e2b8e9c891f6e"><td class="memItemLeft" align="right" valign="top"><a id="a6a55d0153d0e57dd625e2b8e9c891f6e" name="a6a55d0153d0e57dd625e2b8e9c891f6e"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>_initialize_account</b> (const Variant &amp;token_program_pid, const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey)</td></tr>
+<tr class="memitem:a6a55d0153d0e57dd625e2b8e9c891f6e" id="r_a6a55d0153d0e57dd625e2b8e9c891f6e"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6a55d0153d0e57dd625e2b8e9c891f6e">_initialize_account</a> (const Variant &amp;token_program_pid, const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey)</td></tr>
+<tr class="memdesc:a6a55d0153d0e57dd625e2b8e9c891f6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an instruction that initializes a token account.  <br /></td></tr>
 <tr class="separator:a6a55d0153d0e57dd625e2b8e9c891f6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5dca351c4b74689af2d40b48f7bb96b8" id="r_a5dca351c4b74689af2d40b48f7bb96b8"><td class="memItemLeft" align="right" valign="top"><a id="a5dca351c4b74689af2d40b48f7bb96b8" name="a5dca351c4b74689af2d40b48f7bb96b8"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>_mint_to</b> (const Variant &amp;token_program_pid, const Variant &amp;mint_pubkey, const Variant &amp;account_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;mint_authority, uint64_t amount)</td></tr>
+<tr class="memitem:a5dca351c4b74689af2d40b48f7bb96b8" id="r_a5dca351c4b74689af2d40b48f7bb96b8"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5dca351c4b74689af2d40b48f7bb96b8">_mint_to</a> (const Variant &amp;token_program_pid, const Variant &amp;mint_pubkey, const Variant &amp;account_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;mint_authority, uint64_t amount)</td></tr>
+<tr class="memdesc:a5dca351c4b74689af2d40b48f7bb96b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an instruction that mints a token to account.  <br /></td></tr>
 <tr class="separator:a5dca351c4b74689af2d40b48f7bb96b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a607f79b84559517b3014b3ffa1c8649f" id="r_a607f79b84559517b3014b3ffa1c8649f"><td class="memItemLeft" align="right" valign="top"><a id="a607f79b84559517b3014b3ffa1c8649f" name="a607f79b84559517b3014b3ffa1c8649f"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>_transfer_checked</b> (const Variant &amp;token_program_pid, const Variant &amp;source_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;destination_pubkey, const Variant &amp;source_authority, uint64_t amount, uint32_t decimals)</td></tr>
+<tr class="memitem:a607f79b84559517b3014b3ffa1c8649f" id="r_a607f79b84559517b3014b3ffa1c8649f"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a607f79b84559517b3014b3ffa1c8649f">_transfer_checked</a> (const Variant &amp;token_program_pid, const Variant &amp;source_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;destination_pubkey, const Variant &amp;source_authority, uint64_t amount, uint32_t decimals)</td></tr>
+<tr class="memdesc:a607f79b84559517b3014b3ffa1c8649f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that transfers a token to another account.  <br /></td></tr>
 <tr class="separator:a607f79b84559517b3014b3ffa1c8649f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a374a0dbe57353877f8dd6d2490839fbe" id="r_a374a0dbe57353877f8dd6d2490839fbe"><td class="memItemLeft" align="right" valign="top"><a id="a374a0dbe57353877f8dd6d2490839fbe" name="a374a0dbe57353877f8dd6d2490839fbe"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>_freeze_account</b> (const Variant &amp;token_program_pid, const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;freeze_authority)</td></tr>
+<tr class="memitem:a374a0dbe57353877f8dd6d2490839fbe" id="r_a374a0dbe57353877f8dd6d2490839fbe"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a374a0dbe57353877f8dd6d2490839fbe">_freeze_account</a> (const Variant &amp;token_program_pid, const Variant &amp;account_pubkey, const Variant &amp;mint_pubkey, const Variant &amp;owner_pubkey, const Variant &amp;freeze_authority)</td></tr>
+<tr class="memdesc:a374a0dbe57353877f8dd6d2490839fbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that freezes a token account.  <br /></td></tr>
 <tr class="separator:a374a0dbe57353877f8dd6d2490839fbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab406ce1168a6b7d2d412334765cce532" id="r_ab406ce1168a6b7d2d412334765cce532"><td class="memItemLeft" align="right" valign="top"><a id="ab406ce1168a6b7d2d412334765cce532" name="ab406ce1168a6b7d2d412334765cce532"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods</b> ()</td></tr>
+<tr class="memdesc:ab406ce1168a6b7d2d412334765cce532"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bind methods for <a class="el" href="classgodot_1_1_token_program.html" title="Instruction Builder for Solana Token Program.">TokenProgram</a> Node. <br /></td></tr>
 <tr class="separator:ab406ce1168a6b7d2d412334765cce532"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-attribs" name="pro-static-attribs"></a>
-Static Protected Attributes</h2></td></tr>
-<tr class="memitem:a1cc967d4e3ae1788011024c292647610" id="r_a1cc967d4e3ae1788011024c292647610"><td class="memItemLeft" align="right" valign="top"><a id="a1cc967d4e3ae1788011024c292647610" name="a1cc967d4e3ae1788011024c292647610"></a>
-static const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>ID</b> = &quot;TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA&quot;</td></tr>
-<tr class="separator:a1cc967d4e3ae1788011024c292647610"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p><a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> Builder for Solana Token Program. </p>
+</div><h2 class="groupheader">Member Enumeration Documentation</h2>
+<a id="a48f241d411cdb28d7ad8373b11308bd6" name="a48f241d411cdb28d7ad8373b11308bd6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48f241d411cdb28d7ad8373b11308bd6">&#9670;&#160;</a></span>MetaDataDelegateRole</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="#a48f241d411cdb28d7ad8373b11308bd6">godot::TokenProgram::MetaDataDelegateRole</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Role of delegate in metadata. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a48f241d411cdb28d7ad8373b11308bd6ab420851973cd59809988f248514acd91" name="a48f241d411cdb28d7ad8373b11308bd6ab420851973cd59809988f248514acd91"></a>AUTHORITY&#160;</td><td class="fielddoc"><p>Authority role. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a48f241d411cdb28d7ad8373b11308bd6a17c4708abdde3c6fa6c8210d84a7e34a" name="a48f241d411cdb28d7ad8373b11308bd6a17c4708abdde3c6fa6c8210d84a7e34a"></a>COLLECTION&#160;</td><td class="fielddoc"><p>Collection role. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a48f241d411cdb28d7ad8373b11308bd6a5c11db5c388ebf623dcfc2dc5677dfca" name="a48f241d411cdb28d7ad8373b11308bd6a5c11db5c388ebf623dcfc2dc5677dfca"></a>USE&#160;</td><td class="fielddoc"><p>Use role. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a48f241d411cdb28d7ad8373b11308bd6a17594ded381196a9a21f461df626463f" name="a48f241d411cdb28d7ad8373b11308bd6a17594ded381196a9a21f461df626463f"></a>UPDATE&#160;</td><td class="fielddoc"><p>Update role. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a374a0dbe57353877f8dd6d2490839fbe" name="a374a0dbe57353877f8dd6d2490839fbe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a374a0dbe57353877f8dd6d2490839fbe">&#9670;&#160;</a></span>_freeze_account()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::_freeze_account </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>token_program_pid</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>account_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>owner_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>freeze_authority</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that freezes a token account. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">token_program_pid</td><td>Token program to mint with. </td></tr>
+    <tr><td class="paramname">account_pubkey</td><td><a class="el" href="classgodot_1_1_account.html" title="Account data storage class.">Account</a> to freeze. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key. </td></tr>
+    <tr><td class="paramname">owner_pubkey</td><td>Unused TODO(Virax): remove </td></tr>
+    <tr><td class="paramname">freeze_authority</td><td>Freeze authority of account. <b>Signer</b></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Freeze account instruction. </dd></dl>
+
+</div>
+</div>
+<a id="a6a55d0153d0e57dd625e2b8e9c891f6e" name="a6a55d0153d0e57dd625e2b8e9c891f6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a55d0153d0e57dd625e2b8e9c891f6e">&#9670;&#160;</a></span>_initialize_account()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::_initialize_account </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>token_program_pid</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>account_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>owner_pubkey</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an instruction that initializes a token account. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">token_program_pid</td><td>Token program to initialize with. </td></tr>
+    <tr><td class="paramname">account_pubkey</td><td>Token account to initialize. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key. </td></tr>
+    <tr><td class="paramname">owner_pubkey</td><td>Owner of token account. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Initialize account <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a0e79b905d82af1f6270e617dcc357d8a" name="a0e79b905d82af1f6270e617dcc357d8a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e79b905d82af1f6270e617dcc357d8a">&#9670;&#160;</a></span>_initialize_mint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::_initialize_mint </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>token_program_pid</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>freeze_authority</em></span><span class="paramdefsep"> = </span><span class="paramdefval">nullptr</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>decimals</em></span><span class="paramdefsep"> = </span><span class="paramdefval">9</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that initializes a mint. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">token_program_pid</td><td>Token program to initialize with. </td></tr>
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key of mint to initialize. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_authority</td><td>Authority of mint. </td></tr>
+    <tr><td class="paramname">freeze_authority</td><td>Freeze authority of mint. </td></tr>
+    <tr><td class="paramname">decimals</td><td>Decimals to initialize with. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Initialize mint instruction. </dd></dl>
+
+</div>
+</div>
+<a id="a5dca351c4b74689af2d40b48f7bb96b8" name="a5dca351c4b74689af2d40b48f7bb96b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5dca351c4b74689af2d40b48f7bb96b8">&#9670;&#160;</a></span>_mint_to()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::_mint_to </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>token_program_pid</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>account_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>owner_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>amount</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an instruction that mints a token to account. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">token_program_pid</td><td>Token program to mint with. </td></tr>
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key. <b>Writable</b></td></tr>
+    <tr><td class="paramname">account_pubkey</td><td>Token account key. <b>Writable</b></td></tr>
+    <tr><td class="paramname">owner_pubkey</td><td>Owner of token account. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_authority</td><td>Authority of mint. <b>Signer</b></td></tr>
+    <tr><td class="paramname">amount</td><td>Amount of tokens to mint. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Mint to <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a607f79b84559517b3014b3ffa1c8649f" name="a607f79b84559517b3014b3ffa1c8649f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a607f79b84559517b3014b3ffa1c8649f">&#9670;&#160;</a></span>_transfer_checked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::_transfer_checked </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>token_program_pid</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>source_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>destination_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>source_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>amount</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>decimals</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create an <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> that transfers a token to another account. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">token_program_pid</td><td>Token program to mint with. </td></tr>
+    <tr><td class="paramname">source_pubkey</td><td><a class="el" href="classgodot_1_1_account.html" title="Account data storage class.">Account</a> to send from. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key. </td></tr>
+    <tr><td class="paramname">destination_pubkey</td><td><a class="el" href="classgodot_1_1_account.html" title="Account data storage class.">Account</a> to send to. <b>Writable</b></td></tr>
+    <tr><td class="paramname">source_authority</td><td>Sender account authority. <b>Signer</b></td></tr>
+    <tr><td class="paramname">amount</td><td>Amount of fractions of a token to send. </td></tr>
+    <tr><td class="paramname">decimals</td><td>Decimals of one fraction. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Transfer checked <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a66d5263ac1ecca761e201393ecfe47ee" name="a66d5263ac1ecca761e201393ecfe47ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66d5263ac1ecca761e201393ecfe47ee">&#9670;&#160;</a></span>freeze_account()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::freeze_account </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>account_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>owner_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>freeze_authority</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Same as _freeze_account but with program ID set to Spl token program ID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">account_pubkey</td><td><a class="el" href="classgodot_1_1_account.html" title="Account data storage class.">Account</a> to freeze. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key. </td></tr>
+    <tr><td class="paramname">owner_pubkey</td><td>Unused TODO(Virax): remove </td></tr>
+    <tr><td class="paramname">freeze_authority</td><td>Freeze authority of account. <b>Signer</b></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Freeze account instruction. </dd></dl>
+
+</div>
+</div>
+<a id="a39bf546fd0dec565da205c8744f3ef59" name="a39bf546fd0dec565da205c8744f3ef59"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a39bf546fd0dec565da205c8744f3ef59">&#9670;&#160;</a></span>get_pid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::get_pid </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the program ID of <a class="el" href="classgodot_1_1_token_program.html" title="Instruction Builder for Solana Token Program.">TokenProgram</a>. </p>
+<dl class="section return"><dt>Returns</dt><dd>Variant Program ID <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a54aedbcd592cbafe068519f7af9d7a1b" name="a54aedbcd592cbafe068519f7af9d7a1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54aedbcd592cbafe068519f7af9d7a1b">&#9670;&#160;</a></span>initialize_account()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::initialize_account </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>account_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>owner_pubkey</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Same as _initialize_account but with program ID set to Spl token program ID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">account_pubkey</td><td>Token account to initialize. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key. </td></tr>
+    <tr><td class="paramname">owner_pubkey</td><td>Owner of token account. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Initialize account <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a0cc62a53f707bda705d86fd97bf99efb" name="a0cc62a53f707bda705d86fd97bf99efb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0cc62a53f707bda705d86fd97bf99efb">&#9670;&#160;</a></span>initialize_mint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::initialize_mint </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>freeze_authority</em></span><span class="paramdefsep"> = </span><span class="paramdefval">nullptr</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>decimals</em></span><span class="paramdefsep"> = </span><span class="paramdefval">9</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Same as _initialize_mint but with program ID set to Spl token program ID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key of mint to initialize. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_authority</td><td>Authority of mint. </td></tr>
+    <tr><td class="paramname">freeze_authority</td><td>Freeze authority of mint. </td></tr>
+    <tr><td class="paramname">decimals</td><td>Decimals to initialize with. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Initialize mint instruction. </dd></dl>
+
+</div>
+</div>
+<a id="a6b0fa030a8d201d0eea8f267ce9e4830" name="a6b0fa030a8d201d0eea8f267ce9e4830"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b0fa030a8d201d0eea8f267ce9e4830">&#9670;&#160;</a></span>mint_to()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::mint_to </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>account_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>owner_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>amount</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Same as _mint_to but with program ID set to Spl token program ID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key. <b>Writable</b></td></tr>
+    <tr><td class="paramname">account_pubkey</td><td>Token account key. <b>Writable</b></td></tr>
+    <tr><td class="paramname">owner_pubkey</td><td>Owner of token account. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_authority</td><td>Authority of mint. <b>Signer</b></td></tr>
+    <tr><td class="paramname">amount</td><td>Amount of tokens to mint. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Mint to <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="ae811d6b63ef6a30af8890016f96be9dd" name="ae811d6b63ef6a30af8890016f96be9dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae811d6b63ef6a30af8890016f96be9dd">&#9670;&#160;</a></span>new_delegate_record_address()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::new_delegate_record_address </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>update_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>delegate_address</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="#a48f241d411cdb28d7ad8373b11308bd6">MetaDataDelegateRole</a></td>          <td class="paramname"><span class="paramname"><em>role</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a new delegate record address. </p>
+<dl class="section warning"><dt>Warning</dt><dd>Setting role does not have an effect. Collection role will always be used.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">update_authority</td><td>Update authority. </td></tr>
+    <tr><td class="paramname">mint</td><td>Mint key. </td></tr>
+    <tr><td class="paramname">delegate_address</td><td>Delegate address. </td></tr>
+    <tr><td class="paramname">role</td><td>Role of delegate account. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Delegate record address. </dd></dl>
+
+</div>
+</div>
+<a id="aa327cd58c5aa787888ea98ed4a2ac453" name="aa327cd58c5aa787888ea98ed4a2ac453"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa327cd58c5aa787888ea98ed4a2ac453">&#9670;&#160;</a></span>new_token_record_address()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::new_token_record_address </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>token</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a new token record <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </p>
+<p>Program Derrived Address with seeds ["metadata", token_metadata_pid, mint, "token_record", token]</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">token</td><td>Token account address. </td></tr>
+    <tr><td class="paramname">mint</td><td>Mint address. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Token record <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </dd></dl>
+
+</div>
+</div>
+<a id="ac9db0247ef9a184a75a82e369beb7f7a" name="ac9db0247ef9a184a75a82e369beb7f7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9db0247ef9a184a75a82e369beb7f7a">&#9670;&#160;</a></span>transfer_checked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant TokenProgram::transfer_checked </td>
+          <td>(</td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>source_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>mint_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>destination_pubkey</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Variant &amp;</td>          <td class="paramname"><span class="paramname"><em>source_authority</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t</td>          <td class="paramname"><span class="paramname"><em>amount</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>decimals</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Same as _transfer_checked but with program ID set to Spl token program ID. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">source_pubkey</td><td><a class="el" href="classgodot_1_1_account.html" title="Account data storage class.">Account</a> to send from. <b>Writable</b></td></tr>
+    <tr><td class="paramname">mint_pubkey</td><td>Mint key. </td></tr>
+    <tr><td class="paramname">destination_pubkey</td><td><a class="el" href="classgodot_1_1_account.html" title="Account data storage class.">Account</a> to send to. <b>Writable</b></td></tr>
+    <tr><td class="paramname">source_authority</td><td>Sender account authority. <b>Signer</b></td></tr>
+    <tr><td class="paramname">amount</td><td>Amount of fractions of a token to send. </td></tr>
+    <tr><td class="paramname">decimals</td><td>Decimals of one fraction. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Transfer checked <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>include/instructions/<a class="el" href="spl__token_8hpp_source.html">spl_token.hpp</a></li>
 <li>src/instructions/<b>spl_token.cpp</b></li>
@@ -191,7 +905,7 @@ static const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>I
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_token_program.html">TokenProgram</a></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:10 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

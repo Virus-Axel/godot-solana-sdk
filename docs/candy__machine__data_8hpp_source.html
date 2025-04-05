@@ -105,96 +105,140 @@ $(function(){initNavTree('candy__machine__data_8hpp_source.html',''); initResiza
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#ifndef SOLANA_SDK_MPL_CANDY_MACHINE_DATA</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#define SOLANA_SDK_MPL_CANDY_MACHINE_DATA</span></div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span> </div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;account_meta.hpp&gt;</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &lt;godot_cpp/classes/node.hpp&gt;</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;godot_cpp/classes/resource.hpp&gt;</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;godot_cpp/variant/variant.hpp&gt;</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;solana_client.hpp&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span>godot {</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
-<div class="foldopen" id="foldopen00012" data-start="{" data-end="};">
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="classgodot_1_1_candy_machine_data.html">   12</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_candy_machine_data.html">CandyMachineData</a> : <span class="keyword">public</span> Resource {</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_candy_machine_data.html">CandyMachineData</a>, Resource)</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    uint32_t token_standard = 0;</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    PackedByteArray features;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    Variant authority;</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    Variant mint_authority;</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    Variant collection_mint;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    uint64_t items_redeemed = 0;</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    uint64_t items_available = 0;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    String symbol;</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    uint32_t seller_fee_basis_points = 0;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    uint64_t max_supply = 0;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keywordtype">bool</span> is_mutable = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    Array creators;</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    Variant config_line_setting = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    Variant hidden_settings = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> get_config_line_size();</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keywordtype">void</span> set_token_standard(<span class="keyword">const</span> uint32_t value);</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    uint32_t get_token_standard();</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keywordtype">void</span> set_features(<span class="keyword">const</span> PackedByteArray &amp;value);</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    PackedByteArray get_features();</div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &quot;godot_cpp/classes/node.hpp&quot;</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &quot;godot_cpp/classes/resource.hpp&quot;</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &quot;godot_cpp/variant/variant.hpp&quot;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &quot;account_meta.hpp&quot;</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &quot;solana_client.hpp&quot;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">namespace </span>godot {</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
+<div class="foldopen" id="foldopen00016" data-start="{" data-end="};">
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="classgodot_1_1_candy_machine_data.html">   16</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_candy_machine_data.html">CandyMachineData</a> : <span class="keyword">public</span> Resource {</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_candy_machine_data.html">CandyMachineData</a>, Resource)</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    uint32_t token_standard = 0;</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    PackedByteArray features;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    Variant authority;</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    Variant mint_authority;</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    Variant collection_mint;</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    uint64_t items_redeemed = 0;</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    uint64_t items_available = 0;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    String symbol;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    uint32_t seller_fee_basis_points = 0;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    uint64_t max_supply = 0;</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    <span class="keywordtype">bool</span> is_mutable = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    Array creators;</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    Variant config_line_setting = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    Variant hidden_settings = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> get_config_line_size();</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a54bda842aab14b485cabe33b8f431f81">_bind_methods</a>();</div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keywordtype">void</span> set_authority(<span class="keyword">const</span> Variant &amp;value);</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    Variant get_authority();</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keywordtype">void</span> set_mint_authority(<span class="keyword">const</span> Variant &amp;value);</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    Variant get_mint_authority();</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keywordtype">void</span> set_items_available(<span class="keyword">const</span> uint64_t value);</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    uint64_t get_items_available();</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    <span class="keywordtype">void</span> set_collection_mint(<span class="keyword">const</span> Variant &amp;value);</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    Variant get_collection_mint();</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    <span class="keywordtype">void</span> set_items_redeemed(<span class="keyword">const</span> uint64_t value);</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    uint64_t get_items_redeemed();</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a930a16852b101a2dd857c6aa9ab51a2a">set_token_standard</a>(<span class="keyword">const</span> uint32_t value);</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    uint32_t <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a9c7f530b1e6925b39b86f75bb691baa5">get_token_standard</a>();</div>
 <div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keywordtype">void</span> set_symbol(<span class="keyword">const</span> String &amp;value);</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    String get_symbol();</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <span class="keywordtype">void</span> set_seller_fee_basis_points(<span class="keyword">const</span> uint32_t value);</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    uint32_t get_seller_fee_basis_points();</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keywordtype">void</span> set_max_supply(<span class="keyword">const</span> uint64_t value);</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    uint64_t get_max_supply();</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    <span class="keywordtype">void</span> set_is_mutable(<span class="keyword">const</span> <span class="keywordtype">bool</span> value);</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keywordtype">bool</span> get_is_mutable();</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keywordtype">void</span> set_creators(<span class="keyword">const</span> Array &amp;value);</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    Array get_creators();</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keywordtype">void</span> set_config_line_setting(<span class="keyword">const</span> Variant &amp;config_line_setting);</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    Variant get_config_line_setting();</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    PackedByteArray serialize();</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> get_space_for_candy();</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>};</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#af6ba277aa152c24259e615b0596715a3">set_features</a>(<span class="keyword">const</span> PackedByteArray &amp;value);</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a6aa461976ad8891dcb8d9d127c0d6426">get_features</a>();</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#ad9d75cf12f0c1c2d2b0b0ed7245a8118">set_authority</a>(<span class="keyword">const</span> Variant &amp;value);</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span> </div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    Variant <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#aab816cd6eef94a3ea887e93d731c156f">get_authority</a>();</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span> </div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#ad899f688eac4769025433cfdc09e9109">set_mint_authority</a>(<span class="keyword">const</span> Variant &amp;value);</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    Variant <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#ab9df1c7a5e83e5fb9d911580d28ac746">get_mint_authority</a>();</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a6612e678194da0a1aee2be4d56459193">set_items_available</a>(<span class="keyword">const</span> uint64_t value);</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span> </div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    uint64_t <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#aceaa2fc62064600d08463b239e381c51">get_items_available</a>();</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a5b743f320d36e18f5c11c5658bb704ae">set_collection_mint</a>(<span class="keyword">const</span> Variant &amp;value);</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span> </div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>    Variant <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#ac269cef2a4bd68d408bb66221fb1b08d">get_collection_mint</a>();</div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span> </div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#ad96db9394c457aa3074cd3ec6cf2c61e">set_items_redeemed</a>(<span class="keyword">const</span> uint64_t value);</div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span> </div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>    uint64_t <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#ac5f550f42206b933002f13dac09cb0b4">get_items_redeemed</a>();</div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span> </div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#aee5679cbddd38345614b74ccc6ead176">set_symbol</a>(<span class="keyword">const</span> String &amp;value);</div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span> </div>
+<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>    String <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#acaa468a180506ac2d6c318f04cdf97a0">get_symbol</a>();</div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span> </div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#aa7e46d54d7db8841744aa4faa53648c3">set_seller_fee_basis_points</a>(<span class="keyword">const</span> uint32_t value);</div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span> </div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>    uint32_t <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a01e2a9632cdd237030ac4d41fcdb3896">get_seller_fee_basis_points</a>();</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span> </div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a52c2aa9afc87bd508346fa91ef23ab25">set_max_supply</a>(<span class="keyword">const</span> uint64_t value);</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span> </div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>    uint64_t <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a3cf3929d8db0417fb8fad95caef792bd">get_max_supply</a>();</div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span> </div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#ae780863b67624aa7aa1a65e309743763">set_is_mutable</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> value);</div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span> </div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a6ed6b4cd5895d59e24961d684c4a2b9f">get_is_mutable</a>();</div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span> </div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a85c13b8c77008b35cf9b167c3404ec02">set_creators</a>(<span class="keyword">const</span> Array &amp;value);</div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span> </div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>    Array <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#abb304351128beca46e0c6f19cbc30014">get_creators</a>();</div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span> </div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a4f4e2e34cbeee4ce59c1846d2786961f">set_config_line_setting</a>(<span class="keyword">const</span> Variant &amp;config_line_setting);</div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span> </div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>    Variant <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#a3af4f3201f9524638eb870d6c1ccfef0">get_config_line_setting</a>();</div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span> </div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#afcc204658d3ce0ef47544d0f225e35b9">serialize</a>();</div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span> </div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> <a class="code hl_function" href="classgodot_1_1_candy_machine_data.html#ae95a58560e473711bae935e3c493ed59">get_space_for_candy</a>();</div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>};</div>
 </div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>} <span class="comment">//namespace godot</span></div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html">godot::CandyMachineData</a></div><div class="ttdef"><b>Definition</b> candy_machine_data.hpp:12</div></div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span> </div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>} <span class="comment">//namespace godot</span></div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span> </div>
+<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html">godot::CandyMachineData</a></div><div class="ttdoc">Details about Candy Machines used by Candy Machine program.</div><div class="ttdef"><b>Definition</b> candy_machine_data.hpp:16</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a01e2a9632cdd237030ac4d41fcdb3896"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a01e2a9632cdd237030ac4d41fcdb3896">godot::CandyMachineData::get_seller_fee_basis_points</a></div><div class="ttdeci">uint32_t get_seller_fee_basis_points()</div><div class="ttdoc">Get the seller fee basis point property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:129</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a3af4f3201f9524638eb870d6c1ccfef0"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a3af4f3201f9524638eb870d6c1ccfef0">godot::CandyMachineData::get_config_line_setting</a></div><div class="ttdeci">Variant get_config_line_setting()</div><div class="ttdoc">Get the config line setting property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:158</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a3cf3929d8db0417fb8fad95caef792bd"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a3cf3929d8db0417fb8fad95caef792bd">godot::CandyMachineData::get_max_supply</a></div><div class="ttdeci">uint64_t get_max_supply()</div><div class="ttdoc">Get the max supply property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:136</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a4f4e2e34cbeee4ce59c1846d2786961f"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a4f4e2e34cbeee4ce59c1846d2786961f">godot::CandyMachineData::set_config_line_setting</a></div><div class="ttdeci">void set_config_line_setting(const Variant &amp;config_line_setting)</div><div class="ttdoc">Set the consig line settings property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:154</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a52c2aa9afc87bd508346fa91ef23ab25"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a52c2aa9afc87bd508346fa91ef23ab25">godot::CandyMachineData::set_max_supply</a></div><div class="ttdeci">void set_max_supply(const uint64_t value)</div><div class="ttdoc">Set the max supply property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:133</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a54bda842aab14b485cabe33b8f431f81"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a54bda842aab14b485cabe33b8f431f81">godot::CandyMachineData::_bind_methods</a></div><div class="ttdeci">static void _bind_methods()</div><div class="ttdoc">Bind methods for CandyMachineData Resource.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:13</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a5b743f320d36e18f5c11c5658bb704ae"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a5b743f320d36e18f5c11c5658bb704ae">godot::CandyMachineData::set_collection_mint</a></div><div class="ttdeci">void set_collection_mint(const Variant &amp;value)</div><div class="ttdoc">Set the collection mint property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:98</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a6612e678194da0a1aee2be4d56459193"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a6612e678194da0a1aee2be4d56459193">godot::CandyMachineData::set_items_available</a></div><div class="ttdeci">void set_items_available(const uint64_t value)</div><div class="ttdoc">Set the items available property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:112</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a6aa461976ad8891dcb8d9d127c0d6426"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a6aa461976ad8891dcb8d9d127c0d6426">godot::CandyMachineData::get_features</a></div><div class="ttdeci">PackedByteArray get_features()</div><div class="ttdoc">Get the features property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:80</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a6ed6b4cd5895d59e24961d684c4a2b9f"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a6ed6b4cd5895d59e24961d684c4a2b9f">godot::CandyMachineData::get_is_mutable</a></div><div class="ttdeci">bool get_is_mutable()</div><div class="ttdoc">Get the is mutable property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:143</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a85c13b8c77008b35cf9b167c3404ec02"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a85c13b8c77008b35cf9b167c3404ec02">godot::CandyMachineData::set_creators</a></div><div class="ttdeci">void set_creators(const Array &amp;value)</div><div class="ttdoc">Set the creators property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:147</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a930a16852b101a2dd857c6aa9ab51a2a"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a930a16852b101a2dd857c6aa9ab51a2a">godot::CandyMachineData::set_token_standard</a></div><div class="ttdeci">void set_token_standard(const uint32_t value)</div><div class="ttdoc">Set the token standard property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:70</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_a9c7f530b1e6925b39b86f75bb691baa5"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#a9c7f530b1e6925b39b86f75bb691baa5">godot::CandyMachineData::get_token_standard</a></div><div class="ttdeci">uint32_t get_token_standard()</div><div class="ttdoc">Get the token standard property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:73</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_aa7e46d54d7db8841744aa4faa53648c3"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#aa7e46d54d7db8841744aa4faa53648c3">godot::CandyMachineData::set_seller_fee_basis_points</a></div><div class="ttdeci">void set_seller_fee_basis_points(const uint32_t value)</div><div class="ttdoc">Set the seller fee basis points property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:126</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_aab816cd6eef94a3ea887e93d731c156f"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#aab816cd6eef94a3ea887e93d731c156f">godot::CandyMachineData::get_authority</a></div><div class="ttdeci">Variant get_authority()</div><div class="ttdoc">Get the authority property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:87</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_ab9df1c7a5e83e5fb9d911580d28ac746"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#ab9df1c7a5e83e5fb9d911580d28ac746">godot::CandyMachineData::get_mint_authority</a></div><div class="ttdeci">Variant get_mint_authority()</div><div class="ttdoc">Get the mint authority property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:94</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_abb304351128beca46e0c6f19cbc30014"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#abb304351128beca46e0c6f19cbc30014">godot::CandyMachineData::get_creators</a></div><div class="ttdeci">Array get_creators()</div><div class="ttdoc">Get the creators property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:150</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_ac269cef2a4bd68d408bb66221fb1b08d"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#ac269cef2a4bd68d408bb66221fb1b08d">godot::CandyMachineData::get_collection_mint</a></div><div class="ttdeci">Variant get_collection_mint()</div><div class="ttdoc">Get the collection mint property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:101</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_ac5f550f42206b933002f13dac09cb0b4"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#ac5f550f42206b933002f13dac09cb0b4">godot::CandyMachineData::get_items_redeemed</a></div><div class="ttdeci">uint64_t get_items_redeemed()</div><div class="ttdoc">Get the items redeemed property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:108</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_acaa468a180506ac2d6c318f04cdf97a0"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#acaa468a180506ac2d6c318f04cdf97a0">godot::CandyMachineData::get_symbol</a></div><div class="ttdeci">String get_symbol()</div><div class="ttdoc">Get the symbol property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:122</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_aceaa2fc62064600d08463b239e381c51"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#aceaa2fc62064600d08463b239e381c51">godot::CandyMachineData::get_items_available</a></div><div class="ttdeci">uint64_t get_items_available()</div><div class="ttdoc">Get the items available property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:115</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_ad899f688eac4769025433cfdc09e9109"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#ad899f688eac4769025433cfdc09e9109">godot::CandyMachineData::set_mint_authority</a></div><div class="ttdeci">void set_mint_authority(const Variant &amp;value)</div><div class="ttdoc">Set the mint authority property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:91</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_ad96db9394c457aa3074cd3ec6cf2c61e"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#ad96db9394c457aa3074cd3ec6cf2c61e">godot::CandyMachineData::set_items_redeemed</a></div><div class="ttdeci">void set_items_redeemed(const uint64_t value)</div><div class="ttdoc">Set the items redeemed property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:105</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_ad9d75cf12f0c1c2d2b0b0ed7245a8118"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#ad9d75cf12f0c1c2d2b0b0ed7245a8118">godot::CandyMachineData::set_authority</a></div><div class="ttdeci">void set_authority(const Variant &amp;value)</div><div class="ttdoc">Set the authority property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:84</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_ae780863b67624aa7aa1a65e309743763"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#ae780863b67624aa7aa1a65e309743763">godot::CandyMachineData::set_is_mutable</a></div><div class="ttdeci">void set_is_mutable(const bool value)</div><div class="ttdoc">Set the is mutable property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:140</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_ae95a58560e473711bae935e3c493ed59"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#ae95a58560e473711bae935e3c493ed59">godot::CandyMachineData::get_space_for_candy</a></div><div class="ttdeci">unsigned int get_space_for_candy()</div><div class="ttdoc">Get the space for candy property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:213</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_aee5679cbddd38345614b74ccc6ead176"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#aee5679cbddd38345614b74ccc6ead176">godot::CandyMachineData::set_symbol</a></div><div class="ttdeci">void set_symbol(const String &amp;value)</div><div class="ttdoc">Set the symbol property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:119</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_af6ba277aa152c24259e615b0596715a3"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#af6ba277aa152c24259e615b0596715a3">godot::CandyMachineData::set_features</a></div><div class="ttdeci">void set_features(const PackedByteArray &amp;value)</div><div class="ttdoc">Set the features byte array property.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:77</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_machine_data_html_afcc204658d3ce0ef47544d0f225e35b9"><div class="ttname"><a href="classgodot_1_1_candy_machine_data.html#afcc204658d3ce0ef47544d0f225e35b9">godot::CandyMachineData::serialize</a></div><div class="ttdeci">PackedByteArray serialize()</div><div class="ttdoc">Serialize candy machine data.</div><div class="ttdef"><b>Definition</b> candy_machine_data.cpp:162</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_5f627655c57e0213242e4f793928fa51.html">candy_machine</a></li><li class="navelem"><b>candy_machine_data.hpp</b></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

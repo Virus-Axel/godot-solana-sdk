@@ -112,91 +112,150 @@ $(function(){initNavTree('meta__data_8hpp_source.html',''); initResizable(true);
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">namespace </span>godot{</div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
-<div class="foldopen" id="foldopen00011" data-start="{" data-end="};">
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno"><a class="line" href="classgodot_1_1_meta_data.html">   11</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_meta_data.html">MetaData</a>: <span class="keyword">public</span> Resource{</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_meta_data.html">MetaData</a>, Resource)</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    <span class="keywordtype">bool</span> enable_creators = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    <span class="keywordtype">bool</span> enable_collection = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    <span class="keywordtype">bool</span> enable_uses = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    <span class="keywordtype">bool</span> enable_collection_details = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <span class="keywordtype">bool</span> primary_sale_happened = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <span class="keywordtype">bool</span> is_mutable = <span class="keyword">false</span>;</div>
+<div class="foldopen" id="foldopen00014" data-start="{" data-end="};">
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="classgodot_1_1_meta_data.html">   14</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_meta_data.html">MetaData</a>: <span class="keyword">public</span> Resource{</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_meta_data.html">MetaData</a>, Resource)</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    <span class="keywordtype">bool</span> enable_creators = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    <span class="keywordtype">bool</span> enable_collection = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <span class="keywordtype">bool</span> enable_uses = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <span class="keywordtype">bool</span> enable_collection_details = <span class="keyword">false</span>;</div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    String name;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    String symbol;</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    String uri;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    uint16_t seller_fee_basis_points = 0;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    Array creators;</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    Variant collection;</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    Variant uses;</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    uint64_t collection_size = 0;</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    Variant mint;</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    Variant update_authority;</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <span class="keywordtype">bool</span> primary_sale_happened = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keywordtype">bool</span> is_mutable = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    String name;</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    String symbol;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    String uri;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    uint16_t seller_fee_basis_points = 0;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    Array creators;</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    Variant collection;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    Variant uses;</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    uint64_t collection_size = 0;</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    Variant edition_nonce;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    Variant token_standard;</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    Variant collection_details;</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    Variant programmable_config;</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keywordtype">bool</span> _set(<span class="keyword">const</span> StringName &amp;p_name, <span class="keyword">const</span> Variant &amp;p_value);</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keywordtype">bool</span> _get(<span class="keyword">const</span> StringName &amp;p_name, Variant &amp;r_ret) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <span class="keywordtype">void</span> _get_property_list(List&lt;PropertyInfo&gt; *p_list) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <span class="keywordtype">void</span> set_token_name(<span class="keyword">const</span> String&amp; token_name);</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    String get_token_name();</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keywordtype">void</span> set_symbol(<span class="keyword">const</span> String&amp; symbol);</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    String get_symbol();</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keywordtype">void</span> set_uri(<span class="keyword">const</span> String&amp; uri);</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    String get_uri();</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keywordtype">void</span> set_seller_fee_basis_points(<span class="keyword">const</span> uint16_t seller_fee_basis_points);</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    uint16_t get_seller_fee_basis_points();</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <span class="keywordtype">void</span> set_primary_sale_happened(<span class="keywordtype">bool</span> primary_sale_happened);</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordtype">bool</span> get_primary_sale_happened();</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    <span class="keywordtype">void</span> set_is_mutable(<span class="keywordtype">bool</span> is_mutable);</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keywordtype">bool</span> get_is_mutable();</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keywordtype">void</span> set_mint(<span class="keyword">const</span> Variant&amp; mint);</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    Variant get_mint();</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keywordtype">void</span> set_update_authority(<span class="keyword">const</span> Variant&amp; update_authority);</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    Variant get_update_authority();</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    <span class="keywordtype">void</span> set_edition_nonce(<span class="keyword">const</span> Variant&amp; edition_nonce);</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    Variant get_edition_nonce();</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keywordtype">void</span> set_token_standard(<span class="keyword">const</span> Variant&amp; token_standard);</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    Variant get_token_standard();</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    <span class="keywordtype">void</span> set_collection_details(<span class="keyword">const</span> Variant&amp; collection_details);</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    Variant get_collection_details();</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="keywordtype">void</span> set_programmable_config(<span class="keyword">const</span> Variant&amp; programmable_config);</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    Variant get_programmable_config();</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keywordtype">void</span> add_creator(<span class="keyword">const</span> Variant&amp; creator);</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    Array get_creators();</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keywordtype">void</span> set_collection(<span class="keyword">const</span> Variant&amp; collection);</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    Variant get_collection();</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#ac3c69f8e9c05038fe5cb2fa89d2f3172">copy_from_dict</a>(<span class="keyword">const</span> Dictionary &amp;other);</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    PackedByteArray serialize(<span class="keyword">const</span> <span class="keywordtype">bool</span> is_mutable) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>};</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    Variant mint;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    Variant update_authority;</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    Variant edition_nonce;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    Variant token_standard;</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    Variant collection_details;</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    Variant programmable_config;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a9000cc90bbcf6e8d781f926e6421f23a">_bind_methods</a>();</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a8b8b0981020dd688d5432f53fca12d18">_set</a>(<span class="keyword">const</span> StringName &amp;p_name, <span class="keyword">const</span> Variant &amp;p_value);</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a665afc4698cffbba4a83bb021a14945a">_get</a>(<span class="keyword">const</span> StringName &amp;p_name, Variant &amp;r_ret) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a9d79b1e181cc44961ce481d9587ba77c">_get_property_list</a>(List&lt;PropertyInfo&gt; *p_list) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#aed28a63954c79b101b4f220ce2433e13">set_token_name</a>(<span class="keyword">const</span> String&amp; token_name);</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    String <a class="code hl_function" href="classgodot_1_1_meta_data.html#a8f83c5ff647d3b64b0d38b02e161300b">get_token_name</a>();</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a6b2fcaab397b209022ed06f9c6bbf576">set_symbol</a>(<span class="keyword">const</span> String&amp; symbol);</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span> </div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    String <a class="code hl_function" href="classgodot_1_1_meta_data.html#acb1beb381ccb3f3c51ded063d7001dba">get_symbol</a>();</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#adeed31a27764431da7291f607db1c565">set_uri</a>(<span class="keyword">const</span> String&amp; uri);</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span> </div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    String <a class="code hl_function" href="classgodot_1_1_meta_data.html#a80482c122c6532e5d51ec456f9cb3397">get_uri</a>();</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span> </div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a58cf0e9afb4f14e0f696bf9cfe208abd">set_seller_fee_basis_points</a>(<span class="keyword">const</span> uint16_t seller_fee_basis_points);</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span> </div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>    uint16_t <a class="code hl_function" href="classgodot_1_1_meta_data.html#ac5ab83903922adb5efdf4b41c92e7b2c">get_seller_fee_basis_points</a>();</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span> </div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#af592e7997ca4aed90089f6d9362a66c7">set_primary_sale_happened</a>(<span class="keywordtype">bool</span> primary_sale_happened);</div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span> </div>
+<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a6e9bb0eb07c1de345ec3efa323f16bf1">get_primary_sale_happened</a>();</div>
+<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span> </div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a3c91d65c8515fc2b2f4b1286cda42180">set_is_mutable</a>(<span class="keywordtype">bool</span> is_mutable);</div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span> </div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#abb177e2de97ed13463c696db8580c70a">get_is_mutable</a>();</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span> </div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a2327ee6b9fac04ebaeec2fa7893af659">set_mint</a>(<span class="keyword">const</span> Variant&amp; mint);</div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span> </div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>    Variant <a class="code hl_function" href="classgodot_1_1_meta_data.html#a0e728289eafab80dbcf3aebfe7e1ba4c">get_mint</a>();</div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span> </div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#ab4b60910d4f8072b9ba63e01a2a67e31">set_update_authority</a>(<span class="keyword">const</span> Variant&amp; update_authority);</div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span> </div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>    Variant <a class="code hl_function" href="classgodot_1_1_meta_data.html#ae54f5637b508572f234b7014090ad171">get_update_authority</a>();</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span> </div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a59c6bb58f83f1fed2d70c4d24c31ef5d">set_edition_nonce</a>(<span class="keyword">const</span> Variant&amp; edition_nonce);</div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span> </div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>    Variant <a class="code hl_function" href="classgodot_1_1_meta_data.html#a1ea3fd1b1a4016e3e247161f3144957b">get_edition_nonce</a>();</div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span> </div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#ac3927003768b621000cea71af727164e">set_token_standard</a>(<span class="keyword">const</span> Variant&amp; token_standard);</div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span> </div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>    Variant <a class="code hl_function" href="classgodot_1_1_meta_data.html#adb6c6832cf200240d9db7eaefd6eb4fd">get_token_standard</a>();</div>
+<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span> </div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a656daaa4e84ca0da16b72579dfc8268e">set_collection_details</a>(<span class="keyword">const</span> Variant&amp; collection_details);</div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span> </div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>    Variant <a class="code hl_function" href="classgodot_1_1_meta_data.html#a0faaebe654f915173bde8d294b35bac3">get_collection_details</a>();</div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span> </div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a10627adbd680cc6d569700a4e7014f33">set_programmable_config</a>(<span class="keyword">const</span> Variant&amp; programmable_config);</div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span> </div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>    Variant <a class="code hl_function" href="classgodot_1_1_meta_data.html#a379b701e06b53778bfe480f91f5a0afa">get_programmable_config</a>();</div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span> </div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#aef6f12bb128d499df4fad9652b53c879">add_creator</a>(<span class="keyword">const</span> Variant&amp; creator);</div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span> </div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>    Array <a class="code hl_function" href="classgodot_1_1_meta_data.html#a39a357c6d341c225eb3f870a1e8eef4b">get_creators</a>();</div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span> </div>
+<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#a3fad5ea35bbe1b33b0a743fb2a3a0e19">set_collection</a>(<span class="keyword">const</span> Variant&amp; collection);</div>
+<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span> </div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>    Variant <a class="code hl_function" href="classgodot_1_1_meta_data.html#acbc8b263dde8a2fff7ee12a867ab2b67">get_collection</a>();</div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span> </div>
+<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_meta_data.html#ac3c69f8e9c05038fe5cb2fa89d2f3172">copy_from_dict</a>(<span class="keyword">const</span> Dictionary &amp;other);</div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span> </div>
+<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_meta_data.html#aee9e58caaa3d6276f9c9011447a42f46">serialize</a>(<span class="keyword">const</span> <span class="keywordtype">bool</span> is_mutable) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>};</div>
 </div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>}</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassgodot_1_1_meta_data_html"><div class="ttname"><a href="classgodot_1_1_meta_data.html">godot::MetaData</a></div><div class="ttdef"><b>Definition</b> meta_data.hpp:11</div></div>
+<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span>}</div>
+<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span> </div>
+<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html"><div class="ttname"><a href="classgodot_1_1_meta_data.html">godot::MetaData</a></div><div class="ttdoc">Contains token metadata.</div><div class="ttdef"><b>Definition</b> meta_data.hpp:14</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a0e728289eafab80dbcf3aebfe7e1ba4c"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a0e728289eafab80dbcf3aebfe7e1ba4c">godot::MetaData::get_mint</a></div><div class="ttdeci">Variant get_mint()</div><div class="ttdoc">Get the mint property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:215</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a0faaebe654f915173bde8d294b35bac3"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a0faaebe654f915173bde8d294b35bac3">godot::MetaData::get_collection_details</a></div><div class="ttdeci">Variant get_collection_details()</div><div class="ttdoc">Get the collection details property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:247</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a10627adbd680cc6d569700a4e7014f33"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a10627adbd680cc6d569700a4e7014f33">godot::MetaData::set_programmable_config</a></div><div class="ttdeci">void set_programmable_config(const Variant &amp;programmable_config)</div><div class="ttdoc">Set the programmable config property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:251</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a1ea3fd1b1a4016e3e247161f3144957b"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a1ea3fd1b1a4016e3e247161f3144957b">godot::MetaData::get_edition_nonce</a></div><div class="ttdeci">Variant get_edition_nonce()</div><div class="ttdoc">Get the edition nonce property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:231</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a2327ee6b9fac04ebaeec2fa7893af659"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a2327ee6b9fac04ebaeec2fa7893af659">godot::MetaData::set_mint</a></div><div class="ttdeci">void set_mint(const Variant &amp;mint)</div><div class="ttdoc">Set the mint property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:211</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a379b701e06b53778bfe480f91f5a0afa"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a379b701e06b53778bfe480f91f5a0afa">godot::MetaData::get_programmable_config</a></div><div class="ttdeci">Variant get_programmable_config()</div><div class="ttdoc">Get the programmable config property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:255</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a39a357c6d341c225eb3f870a1e8eef4b"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a39a357c6d341c225eb3f870a1e8eef4b">godot::MetaData::get_creators</a></div><div class="ttdeci">Array get_creators()</div><div class="ttdoc">Get the creators array.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:264</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a3c91d65c8515fc2b2f4b1286cda42180"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a3c91d65c8515fc2b2f4b1286cda42180">godot::MetaData::set_is_mutable</a></div><div class="ttdeci">void set_is_mutable(bool is_mutable)</div><div class="ttdoc">Set the is mutable property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:204</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a3fad5ea35bbe1b33b0a743fb2a3a0e19"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a3fad5ea35bbe1b33b0a743fb2a3a0e19">godot::MetaData::set_collection</a></div><div class="ttdeci">void set_collection(const Variant &amp;collection)</div><div class="ttdoc">Set the collection property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:366</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a58cf0e9afb4f14e0f696bf9cfe208abd"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a58cf0e9afb4f14e0f696bf9cfe208abd">godot::MetaData::set_seller_fee_basis_points</a></div><div class="ttdeci">void set_seller_fee_basis_points(const uint16_t seller_fee_basis_points)</div><div class="ttdoc">Set the seller fee basis points property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:190</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a59c6bb58f83f1fed2d70c4d24c31ef5d"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a59c6bb58f83f1fed2d70c4d24c31ef5d">godot::MetaData::set_edition_nonce</a></div><div class="ttdeci">void set_edition_nonce(const Variant &amp;edition_nonce)</div><div class="ttdoc">Set the edition nonce property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:227</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a656daaa4e84ca0da16b72579dfc8268e"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a656daaa4e84ca0da16b72579dfc8268e">godot::MetaData::set_collection_details</a></div><div class="ttdeci">void set_collection_details(const Variant &amp;collection_details)</div><div class="ttdoc">Set the collection details property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:243</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a665afc4698cffbba4a83bb021a14945a"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a665afc4698cffbba4a83bb021a14945a">godot::MetaData::_get</a></div><div class="ttdeci">bool _get(const StringName &amp;p_name, Variant &amp;r_ret) const</div><div class="ttdoc">Get a property with given name.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:58</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a6b2fcaab397b209022ed06f9c6bbf576"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a6b2fcaab397b209022ed06f9c6bbf576">godot::MetaData::set_symbol</a></div><div class="ttdeci">void set_symbol(const String &amp;symbol)</div><div class="ttdoc">Set the symbol property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:178</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a6e9bb0eb07c1de345ec3efa323f16bf1"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a6e9bb0eb07c1de345ec3efa323f16bf1">godot::MetaData::get_primary_sale_happened</a></div><div class="ttdeci">bool get_primary_sale_happened()</div><div class="ttdoc">Get the primary sale happened property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:200</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a80482c122c6532e5d51ec456f9cb3397"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a80482c122c6532e5d51ec456f9cb3397">godot::MetaData::get_uri</a></div><div class="ttdeci">String get_uri()</div><div class="ttdoc">Get the uri property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:187</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a8b8b0981020dd688d5432f53fca12d18"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a8b8b0981020dd688d5432f53fca12d18">godot::MetaData::_set</a></div><div class="ttdeci">bool _set(const StringName &amp;p_name, const Variant &amp;p_value)</div><div class="ttdoc">Set a property with given name.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:10</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a8f83c5ff647d3b64b0d38b02e161300b"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a8f83c5ff647d3b64b0d38b02e161300b">godot::MetaData::get_token_name</a></div><div class="ttdeci">String get_token_name()</div><div class="ttdoc">Get the token name property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:175</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a9000cc90bbcf6e8d781f926e6421f23a"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a9000cc90bbcf6e8d781f926e6421f23a">godot::MetaData::_bind_methods</a></div><div class="ttdeci">static void _bind_methods()</div><div class="ttdoc">Bind methods for MetaData Resource.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:102</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_a9d79b1e181cc44961ce481d9587ba77c"><div class="ttname"><a href="classgodot_1_1_meta_data.html#a9d79b1e181cc44961ce481d9587ba77c">godot::MetaData::_get_property_list</a></div><div class="ttdeci">void _get_property_list(List&lt; PropertyInfo &gt; *p_list) const</div><div class="ttdoc">Get list of all properties.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:136</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_ab4b60910d4f8072b9ba63e01a2a67e31"><div class="ttname"><a href="classgodot_1_1_meta_data.html#ab4b60910d4f8072b9ba63e01a2a67e31">godot::MetaData::set_update_authority</a></div><div class="ttdeci">void set_update_authority(const Variant &amp;update_authority)</div><div class="ttdoc">Set the update authority property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:219</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_abb177e2de97ed13463c696db8580c70a"><div class="ttname"><a href="classgodot_1_1_meta_data.html#abb177e2de97ed13463c696db8580c70a">godot::MetaData::get_is_mutable</a></div><div class="ttdeci">bool get_is_mutable()</div><div class="ttdoc">Get the is mutable property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:207</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_ac3927003768b621000cea71af727164e"><div class="ttname"><a href="classgodot_1_1_meta_data.html#ac3927003768b621000cea71af727164e">godot::MetaData::set_token_standard</a></div><div class="ttdeci">void set_token_standard(const Variant &amp;token_standard)</div><div class="ttdoc">Set the token standard property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:235</div></div>
 <div class="ttc" id="aclassgodot_1_1_meta_data_html_ac3c69f8e9c05038fe5cb2fa89d2f3172"><div class="ttname"><a href="classgodot_1_1_meta_data.html#ac3c69f8e9c05038fe5cb2fa89d2f3172">godot::MetaData::copy_from_dict</a></div><div class="ttdeci">void copy_from_dict(const Dictionary &amp;other)</div><div class="ttdoc">Copies the existing data from a dictionary returned by the DAS methods.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:272</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_ac5ab83903922adb5efdf4b41c92e7b2c"><div class="ttname"><a href="classgodot_1_1_meta_data.html#ac5ab83903922adb5efdf4b41c92e7b2c">godot::MetaData::get_seller_fee_basis_points</a></div><div class="ttdeci">uint16_t get_seller_fee_basis_points()</div><div class="ttdoc">Get the seller fee basis points property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:193</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_acb1beb381ccb3f3c51ded063d7001dba"><div class="ttname"><a href="classgodot_1_1_meta_data.html#acb1beb381ccb3f3c51ded063d7001dba">godot::MetaData::get_symbol</a></div><div class="ttdeci">String get_symbol()</div><div class="ttdoc">Get the symbol property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:181</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_acbc8b263dde8a2fff7ee12a867ab2b67"><div class="ttname"><a href="classgodot_1_1_meta_data.html#acbc8b263dde8a2fff7ee12a867ab2b67">godot::MetaData::get_collection</a></div><div class="ttdeci">Variant get_collection()</div><div class="ttdoc">Get the collection property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:268</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_adb6c6832cf200240d9db7eaefd6eb4fd"><div class="ttname"><a href="classgodot_1_1_meta_data.html#adb6c6832cf200240d9db7eaefd6eb4fd">godot::MetaData::get_token_standard</a></div><div class="ttdeci">Variant get_token_standard()</div><div class="ttdoc">Get the token standard property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:239</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_adeed31a27764431da7291f607db1c565"><div class="ttname"><a href="classgodot_1_1_meta_data.html#adeed31a27764431da7291f607db1c565">godot::MetaData::set_uri</a></div><div class="ttdeci">void set_uri(const String &amp;uri)</div><div class="ttdoc">Set the uri property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:184</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_ae54f5637b508572f234b7014090ad171"><div class="ttname"><a href="classgodot_1_1_meta_data.html#ae54f5637b508572f234b7014090ad171">godot::MetaData::get_update_authority</a></div><div class="ttdeci">Variant get_update_authority()</div><div class="ttdoc">Get the update authority property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:223</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_aed28a63954c79b101b4f220ce2433e13"><div class="ttname"><a href="classgodot_1_1_meta_data.html#aed28a63954c79b101b4f220ce2433e13">godot::MetaData::set_token_name</a></div><div class="ttdeci">void set_token_name(const String &amp;token_name)</div><div class="ttdoc">Set the token name property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:172</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_aee9e58caaa3d6276f9c9011447a42f46"><div class="ttname"><a href="classgodot_1_1_meta_data.html#aee9e58caaa3d6276f9c9011447a42f46">godot::MetaData::serialize</a></div><div class="ttdeci">PackedByteArray serialize(const bool is_mutable) const</div><div class="ttdoc">Serialize MetaData.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:370</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_aef6f12bb128d499df4fad9652b53c879"><div class="ttname"><a href="classgodot_1_1_meta_data.html#aef6f12bb128d499df4fad9652b53c879">godot::MetaData::add_creator</a></div><div class="ttdeci">void add_creator(const Variant &amp;creator)</div><div class="ttdoc">Add creator to creator array.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:260</div></div>
+<div class="ttc" id="aclassgodot_1_1_meta_data_html_af592e7997ca4aed90089f6d9362a66c7"><div class="ttname"><a href="classgodot_1_1_meta_data.html#af592e7997ca4aed90089f6d9362a66c7">godot::MetaData::set_primary_sale_happened</a></div><div class="ttdeci">void set_primary_sale_happened(bool primary_sale_happened)</div><div class="ttdoc">Set the primary sale happened property.</div><div class="ttdef"><b>Definition</b> meta_data.cpp:197</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_eecdcfd7ff7fd35cc670ecaf4ce2e748.html">meta_data</a></li><li class="navelem"><b>meta_data.hpp</b></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

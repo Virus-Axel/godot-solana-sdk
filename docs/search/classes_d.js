@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['outputholdingtree_0',['OutputHoldingTree',['../classgodot_1_1honeycomb__resource_1_1_output_holding_tree.html',1,'godot::honeycomb_resource']]]
+  ['walletadapter_0',['WalletAdapter',['../classgodot_1_1_wallet_adapter.html',1,'godot']]],
+  ['wsrequestdata_1',['WsRequestData',['../structgodot_1_1_ws_request_data.html',1,'godot']]]
 ];

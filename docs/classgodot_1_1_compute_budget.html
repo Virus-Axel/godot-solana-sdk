@@ -107,6 +107,11 @@ $(function(){initNavTree('classgodot_1_1_compute_budget.html',''); initResizable
   <div class="headertitle"><div class="title">godot::ComputeBudget Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> builder for Compute Budget program.  
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="compute__budget_8hpp_source.html">compute_budget.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for godot::ComputeBudget:</div>
 <div class="dyncontent">
@@ -116,40 +121,141 @@ Inheritance diagram for godot::ComputeBudget:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a2e50d09bb114ed6c694b15cf47d0d12c" id="r_a2e50d09bb114ed6c694b15cf47d0d12c"><td class="memItemLeft" align="right" valign="top"><a id="a2e50d09bb114ed6c694b15cf47d0d12c" name="a2e50d09bb114ed6c694b15cf47d0d12c"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>set_compute_unit_limit</b> (const uint32_t unit_limit)</td></tr>
+<tr class="memitem:a2e50d09bb114ed6c694b15cf47d0d12c" id="r_a2e50d09bb114ed6c694b15cf47d0d12c"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2e50d09bb114ed6c694b15cf47d0d12c">set_compute_unit_limit</a> (const uint32_t unit_limit)</td></tr>
+<tr class="memdesc:a2e50d09bb114ed6c694b15cf47d0d12c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a compute unit limit instruction.  <br /></td></tr>
 <tr class="separator:a2e50d09bb114ed6c694b15cf47d0d12c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a18adc0ed253c55f4a703766fab78609d" id="r_a18adc0ed253c55f4a703766fab78609d"><td class="memItemLeft" align="right" valign="top"><a id="a18adc0ed253c55f4a703766fab78609d" name="a18adc0ed253c55f4a703766fab78609d"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>set_compute_unit_price</b> (const uint32_t unit_price)</td></tr>
+<tr class="memitem:a18adc0ed253c55f4a703766fab78609d" id="r_a18adc0ed253c55f4a703766fab78609d"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a18adc0ed253c55f4a703766fab78609d">set_compute_unit_price</a> (const uint32_t unit_price)</td></tr>
+<tr class="memdesc:a18adc0ed253c55f4a703766fab78609d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a compute unit price instruction.  <br /></td></tr>
 <tr class="separator:a18adc0ed253c55f4a703766fab78609d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad98ce2408b9eb495733d54e8dd6f386c" id="r_ad98ce2408b9eb495733d54e8dd6f386c"><td class="memItemLeft" align="right" valign="top"><a id="ad98ce2408b9eb495733d54e8dd6f386c" name="ad98ce2408b9eb495733d54e8dd6f386c"></a>
-static Variant&#160;</td><td class="memItemRight" valign="bottom"><b>get_pid</b> ()</td></tr>
+<tr class="memitem:ad98ce2408b9eb495733d54e8dd6f386c" id="r_ad98ce2408b9eb495733d54e8dd6f386c"><td class="memItemLeft" align="right" valign="top">static Variant&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad98ce2408b9eb495733d54e8dd6f386c">get_pid</a> ()</td></tr>
+<tr class="memdesc:ad98ce2408b9eb495733d54e8dd6f386c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the Compute Budget program ID.  <br /></td></tr>
 <tr class="separator:ad98ce2408b9eb495733d54e8dd6f386c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
 <tr class="memitem:ab7ea6e15a3e0fa615ff83cb664da809a" id="r_ab7ea6e15a3e0fa615ff83cb664da809a"><td class="memItemLeft" align="right" valign="top"><a id="ab7ea6e15a3e0fa615ff83cb664da809a" name="ab7ea6e15a3e0fa615ff83cb664da809a"></a>
 static const int&#160;</td><td class="memItemRight" valign="bottom"><b>COMPUTE_UNIT_LIMIT_DATA_SIZE</b> = 5</td></tr>
+<tr class="memdesc:ab7ea6e15a3e0fa615ff83cb664da809a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data length of a compute unit limit instruction. <br /></td></tr>
 <tr class="separator:ab7ea6e15a3e0fa615ff83cb664da809a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c96191b79f01b895090cb12461dd5c5" id="r_a5c96191b79f01b895090cb12461dd5c5"><td class="memItemLeft" align="right" valign="top"><a id="a5c96191b79f01b895090cb12461dd5c5" name="a5c96191b79f01b895090cb12461dd5c5"></a>
 static const int&#160;</td><td class="memItemRight" valign="bottom"><b>COMPUTE_UNIT_PRICE_DATA_SIZE</b> = 9</td></tr>
+<tr class="memdesc:a5c96191b79f01b895090cb12461dd5c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Data length of a compute price limit instruction. <br /></td></tr>
 <tr class="separator:a5c96191b79f01b895090cb12461dd5c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adfeada090aaadd0c9514e0b380ba60c7" id="r_adfeada090aaadd0c9514e0b380ba60c7"><td class="memItemLeft" align="right" valign="top"><a id="adfeada090aaadd0c9514e0b380ba60c7" name="adfeada090aaadd0c9514e0b380ba60c7"></a>
 static const int&#160;</td><td class="memItemRight" valign="bottom"><b>UNIT_LIMIT_DISCRIMINATOR</b> = 2</td></tr>
+<tr class="memdesc:adfeada090aaadd0c9514e0b380ba60c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Discriminator of a compute unit limit instruction. <br /></td></tr>
 <tr class="separator:adfeada090aaadd0c9514e0b380ba60c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad6cc89767b3f4fb3ededa5aca9efd8ad" id="r_ad6cc89767b3f4fb3ededa5aca9efd8ad"><td class="memItemLeft" align="right" valign="top"><a id="ad6cc89767b3f4fb3ededa5aca9efd8ad" name="ad6cc89767b3f4fb3ededa5aca9efd8ad"></a>
 static const int&#160;</td><td class="memItemRight" valign="bottom"><b>UNIT_PRICE_DISCRIMINATOR</b> = 3</td></tr>
+<tr class="memdesc:ad6cc89767b3f4fb3ededa5aca9efd8ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Discriminator of a compute unit price instruction. <br /></td></tr>
 <tr class="separator:ad6cc89767b3f4fb3ededa5aca9efd8ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a96503bdf686cbcb1fb9eab005fd8e0fe" id="r_a96503bdf686cbcb1fb9eab005fd8e0fe"><td class="memItemLeft" align="right" valign="top"><a id="a96503bdf686cbcb1fb9eab005fd8e0fe" name="a96503bdf686cbcb1fb9eab005fd8e0fe"></a>
-static const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>ID</b> = &quot;ComputeBudget111111111111111111111111111111&quot;</td></tr>
-<tr class="separator:a96503bdf686cbcb1fb9eab005fd8e0fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
 <tr class="memitem:a77102b395ea2b9354c85a7249a96ba19" id="r_a77102b395ea2b9354c85a7249a96ba19"><td class="memItemLeft" align="right" valign="top"><a id="a77102b395ea2b9354c85a7249a96ba19" name="a77102b395ea2b9354c85a7249a96ba19"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods</b> ()</td></tr>
+<tr class="memdesc:a77102b395ea2b9354c85a7249a96ba19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bind methods of <a class="el" href="classgodot_1_1_compute_budget.html" title="Instruction builder for Compute Budget program.">ComputeBudget</a> Node. <br /></td></tr>
 <tr class="separator:a77102b395ea2b9354c85a7249a96ba19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p><a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a> builder for Compute Budget program. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="ad98ce2408b9eb495733d54e8dd6f386c" name="ad98ce2408b9eb495733d54e8dd6f386c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad98ce2408b9eb495733d54e8dd6f386c">&#9670;&#160;</a></span>get_pid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::ComputeBudget::get_pid </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the Compute Budget program ID. </p>
+<dl class="section return"><dt>Returns</dt><dd>Variant Program ID <a class="el" href="classgodot_1_1_pubkey.html" title="The address of a Solana account.">Pubkey</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a2e50d09bb114ed6c694b15cf47d0d12c" name="a2e50d09bb114ed6c694b15cf47d0d12c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e50d09bb114ed6c694b15cf47d0d12c">&#9670;&#160;</a></span>set_compute_unit_limit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::ComputeBudget::set_compute_unit_limit </td>
+          <td>(</td>
+          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>unit_limit</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a compute unit limit instruction. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">unit_limit</td><td>Unit limit. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Compute unit limit <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
+<a id="a18adc0ed253c55f4a703766fab78609d" name="a18adc0ed253c55f4a703766fab78609d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18adc0ed253c55f4a703766fab78609d">&#9670;&#160;</a></span>set_compute_unit_price()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Variant godot::ComputeBudget::set_compute_unit_price </td>
+          <td>(</td>
+          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>unit_price</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Create a compute unit price instruction. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">unit_price</td><td>compute price. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Variant Compute unit <a class="el" href="classgodot_1_1_instruction.html" title="Contains all instruction information used for transactions.">Instruction</a>. </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>include/instructions/<a class="el" href="compute__budget_8hpp_source.html">compute_budget.hpp</a></li>
 <li>src/instructions/<b>compute_budget.cpp</b></li>
@@ -160,7 +266,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_compute_budget.html">ComputeBudget</a></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

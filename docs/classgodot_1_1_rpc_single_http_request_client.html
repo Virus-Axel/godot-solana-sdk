@@ -106,6 +106,11 @@ $(function(){initNavTree('classgodot_1_1_rpc_single_http_request_client.html',''
   <div class="headertitle"><div class="title">godot::RpcSingleHttpRequestClient Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Handles requests synchronously in a queue.  
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="rpc__single__http__request__client_8hpp_source.html">rpc_single_http_request_client.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for godot::RpcSingleHttpRequestClient:</div>
 <div class="dyncontent">
@@ -115,25 +120,143 @@ Inheritance diagram for godot::RpcSingleHttpRequestClient:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a41a996283a3985f561048c2052a4977f" id="r_a41a996283a3985f561048c2052a4977f"><td class="memItemLeft" align="right" valign="top"><a id="a41a996283a3985f561048c2052a4977f" name="a41a996283a3985f561048c2052a4977f"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_completed</b> () const</td></tr>
+<tr class="memitem:a41a996283a3985f561048c2052a4977f" id="r_a41a996283a3985f561048c2052a4977f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a41a996283a3985f561048c2052a4977f">is_completed</a> () const</td></tr>
+<tr class="memdesc:a41a996283a3985f561048c2052a4977f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if request queue is empty.  <br /></td></tr>
 <tr class="separator:a41a996283a3985f561048c2052a4977f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a682ef06949cec52580a4bd051db0df71" id="r_a682ef06949cec52580a4bd051db0df71"><td class="memItemLeft" align="right" valign="top"><a id="a682ef06949cec52580a4bd051db0df71" name="a682ef06949cec52580a4bd051db0df71"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_skip_id</b> (bool skip_id)</td></tr>
+<tr class="memitem:a682ef06949cec52580a4bd051db0df71" id="r_a682ef06949cec52580a4bd051db0df71"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a682ef06949cec52580a4bd051db0df71">set_skip_id</a> (bool skip_id)</td></tr>
+<tr class="memdesc:a682ef06949cec52580a4bd051db0df71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the value of skip_id.  <br /></td></tr>
 <tr class="separator:a682ef06949cec52580a4bd051db0df71"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac77591b6bf03b74e82b5dca0b7c7714b" id="r_ac77591b6bf03b74e82b5dca0b7c7714b"><td class="memItemLeft" align="right" valign="top"><a id="ac77591b6bf03b74e82b5dca0b7c7714b" name="ac77591b6bf03b74e82b5dca0b7c7714b"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>process</b> (const double delta)</td></tr>
+<tr class="memitem:ac77591b6bf03b74e82b5dca0b7c7714b" id="r_ac77591b6bf03b74e82b5dca0b7c7714b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac77591b6bf03b74e82b5dca0b7c7714b">process</a> (const double delta)</td></tr>
+<tr class="memdesc:ac77591b6bf03b74e82b5dca0b7c7714b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process the request.  <br /></td></tr>
 <tr class="separator:ac77591b6bf03b74e82b5dca0b7c7714b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73033b0aecbfcdb942d9063d6202f8ae" id="r_a73033b0aecbfcdb942d9063d6202f8ae"><td class="memItemLeft" align="right" valign="top"><a id="a73033b0aecbfcdb942d9063d6202f8ae" name="a73033b0aecbfcdb942d9063d6202f8ae"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>asynchronous_request</b> (const Dictionary &amp;request_body, const Dictionary &amp;parsed_url, const Callable &amp;callback, float timeout=20.0F)</td></tr>
+<tr class="memitem:a73033b0aecbfcdb942d9063d6202f8ae" id="r_a73033b0aecbfcdb942d9063d6202f8ae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a73033b0aecbfcdb942d9063d6202f8ae">asynchronous_request</a> (const Dictionary &amp;request_body, const Dictionary &amp;parsed_url, const Callable &amp;callback, float timeout=20.0F)</td></tr>
+<tr class="memdesc:a73033b0aecbfcdb942d9063d6202f8ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initiate an asynchronous request.  <br /></td></tr>
 <tr class="separator:a73033b0aecbfcdb942d9063d6202f8ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
 <tr class="memitem:a89067d62bde0a64ab993e0e1452cc27f" id="r_a89067d62bde0a64ab993e0e1452cc27f"><td class="memItemLeft" align="right" valign="top"><a id="a89067d62bde0a64ab993e0e1452cc27f" name="a89067d62bde0a64ab993e0e1452cc27f"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods</b> ()</td></tr>
+<tr class="memdesc:a89067d62bde0a64ab993e0e1452cc27f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bind methods for <a class="el" href="classgodot_1_1_rpc_single_http_request_client.html" title="Handles requests synchronously in a queue.">RpcSingleHttpRequestClient</a> Node. <br /></td></tr>
 <tr class="separator:a89067d62bde0a64ab993e0e1452cc27f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Handles requests synchronously in a queue. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a73033b0aecbfcdb942d9063d6202f8ae" name="a73033b0aecbfcdb942d9063d6202f8ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a73033b0aecbfcdb942d9063d6202f8ae">&#9670;&#160;</a></span>asynchronous_request()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::RpcSingleHttpRequestClient::asynchronous_request </td>
+          <td>(</td>
+          <td class="paramtype">const Dictionary &amp;</td>          <td class="paramname"><span class="paramname"><em>request_body</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Dictionary &amp;</td>          <td class="paramname"><span class="paramname"><em>parsed_url</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Callable &amp;</td>          <td class="paramname"><span class="paramname"><em>callback</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>timeout</em></span><span class="paramdefsep"> = </span><span class="paramdefval">20.0F</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Initiate an asynchronous request. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">request_body</td><td>Request Dictionary. </td></tr>
+    <tr><td class="paramname">parsed_url</td><td>URL to send request to. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback to call on response received. </td></tr>
+    <tr><td class="paramname">timeout</td><td>Timeout of request. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a41a996283a3985f561048c2052a4977f" name="a41a996283a3985f561048c2052a4977f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a41a996283a3985f561048c2052a4977f">&#9670;&#160;</a></span>is_completed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool godot::RpcSingleHttpRequestClient::is_completed </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check if request queue is empty. </p>
+<dl class="section return"><dt>Returns</dt><dd>true If request queue is empty. </dd>
+<dd>
+false If request is queued. </dd></dl>
+
+</div>
+</div>
+<a id="ac77591b6bf03b74e82b5dca0b7c7714b" name="ac77591b6bf03b74e82b5dca0b7c7714b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac77591b6bf03b74e82b5dca0b7c7714b">&#9670;&#160;</a></span>process()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::RpcSingleHttpRequestClient::process </td>
+          <td>(</td>
+          <td class="paramtype">const double</td>          <td class="paramname"><span class="paramname"><em>delta</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Process the request. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">delta</td><td>Elapsed time since last process. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a682ef06949cec52580a4bd051db0df71" name="a682ef06949cec52580a4bd051db0df71"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a682ef06949cec52580a4bd051db0df71">&#9670;&#160;</a></span>set_skip_id()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::RpcSingleHttpRequestClient::set_skip_id </td>
+          <td>(</td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>skip_id</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the value of skip_id. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">skip_id</td><td>The new value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>include/solana_client/<a class="el" href="rpc__single__http__request__client_8hpp_source.html">rpc_single_http_request_client.hpp</a></li>
 <li>src/solana_client/<b>rpc_single_http_request_client.cpp</b></li>
@@ -144,7 +267,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods<
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_rpc_single_http_request_client.html">RpcSingleHttpRequestClient</a></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

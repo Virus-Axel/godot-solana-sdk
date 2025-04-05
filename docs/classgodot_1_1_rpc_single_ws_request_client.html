@@ -102,11 +102,15 @@ $(function(){initNavTree('classgodot_1_1_rpc_single_ws_request_client.html','');
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
-<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classgodot_1_1_rpc_single_ws_request_client-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">godot::RpcSingleWsRequestClient Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Handles web socket requests synchronously in a queue.  
+ <a href="#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="rpc__single__ws__request__client_8hpp_source.html">rpc_single_ws_request_client.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for godot::RpcSingleWsRequestClient:</div>
 <div class="dyncontent">
@@ -116,31 +120,160 @@ Inheritance diagram for godot::RpcSingleWsRequestClient:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a74705c9b8570a34e2e5d884c09883951" id="r_a74705c9b8570a34e2e5d884c09883951"><td class="memItemLeft" align="right" valign="top"><a id="a74705c9b8570a34e2e5d884c09883951" name="a74705c9b8570a34e2e5d884c09883951"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_pending</b> () const</td></tr>
+<tr class="memitem:a74705c9b8570a34e2e5d884c09883951" id="r_a74705c9b8570a34e2e5d884c09883951"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a74705c9b8570a34e2e5d884c09883951">is_pending</a> () const</td></tr>
+<tr class="memdesc:a74705c9b8570a34e2e5d884c09883951"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a request is pending.  <br /></td></tr>
 <tr class="separator:a74705c9b8570a34e2e5d884c09883951"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f45e7d9baee7209ccc881b8277e536d" id="r_a9f45e7d9baee7209ccc881b8277e536d"><td class="memItemLeft" align="right" valign="top"><a id="a9f45e7d9baee7209ccc881b8277e536d" name="a9f45e7d9baee7209ccc881b8277e536d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>process</b> (double delta)</td></tr>
+<tr class="memitem:a9f45e7d9baee7209ccc881b8277e536d" id="r_a9f45e7d9baee7209ccc881b8277e536d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9f45e7d9baee7209ccc881b8277e536d">process</a> (double delta)</td></tr>
+<tr class="memdesc:a9f45e7d9baee7209ccc881b8277e536d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process the requests client.  <br /></td></tr>
 <tr class="separator:a9f45e7d9baee7209ccc881b8277e536d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14882f465f6c228854434020028757f9" id="r_a14882f465f6c228854434020028757f9"><td class="memItemLeft" align="right" valign="top"><a id="a14882f465f6c228854434020028757f9" name="a14882f465f6c228854434020028757f9"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>enqueue_ws_request</b> (const Dictionary &amp;request_body, const Callable &amp;callback, const Callable &amp;confirmation_callback, const Dictionary &amp;url, float timeout=20.0F)</td></tr>
+<tr class="memitem:a14882f465f6c228854434020028757f9" id="r_a14882f465f6c228854434020028757f9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a14882f465f6c228854434020028757f9">enqueue_ws_request</a> (const Dictionary &amp;request_body, const Callable &amp;callback, const Callable &amp;confirmation_callback, const Dictionary &amp;url, float timeout=20.0F)</td></tr>
+<tr class="memdesc:a14882f465f6c228854434020028757f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enqueue a web socket request.  <br /></td></tr>
 <tr class="separator:a14882f465f6c228854434020028757f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a02e259af61423d4188669bc8d0dfdd62" id="r_a02e259af61423d4188669bc8d0dfdd62"><td class="memItemLeft" align="right" valign="top"><a id="a02e259af61423d4188669bc8d0dfdd62" name="a02e259af61423d4188669bc8d0dfdd62"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>unsubscribe_all</b> (const Callable &amp;callback, const Dictionary &amp;url, float timeout=20.0F)</td></tr>
+<tr class="memitem:a02e259af61423d4188669bc8d0dfdd62" id="r_a02e259af61423d4188669bc8d0dfdd62"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a02e259af61423d4188669bc8d0dfdd62">unsubscribe_all</a> (const Callable &amp;callback, const Dictionary &amp;url, float timeout=20.0F)</td></tr>
+<tr class="memdesc:a02e259af61423d4188669bc8d0dfdd62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send requests to unsubscribe all active subscriptions with a certain Callable connected.  <br /></td></tr>
 <tr class="separator:a02e259af61423d4188669bc8d0dfdd62"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
 <tr class="memitem:ab8fe831b177d690f358b1ee705642367" id="r_ab8fe831b177d690f358b1ee705642367"><td class="memItemLeft" align="right" valign="top"><a id="ab8fe831b177d690f358b1ee705642367" name="ab8fe831b177d690f358b1ee705642367"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>_bind_methods</b> ()</td></tr>
+<tr class="memdesc:ab8fe831b177d690f358b1ee705642367"><td class="mdescLeft">&#160;</td><td class="mdescRight">bindmethods{<a class="el" href="classgodot_1_1_rpc_single_ws_request_client.html" title="Handles web socket requests synchronously in a queue.">RpcSingleWsRequestClient</a>, Node} <br /></td></tr>
 <tr class="separator:ab8fe831b177d690f358b1ee705642367"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
-Protected Attributes</h2></td></tr>
-<tr class="memitem:a9b8c51a41781104e000cc91bab89264e" id="r_a9b8c51a41781104e000cc91bab89264e"><td class="memItemLeft" align="right" valign="top"><a id="a9b8c51a41781104e000cc91bab89264e" name="a9b8c51a41781104e000cc91bab89264e"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>pending_request</b> = false</td></tr>
-<tr class="separator:a9b8c51a41781104e000cc91bab89264e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Handles web socket requests synchronously in a queue. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a14882f465f6c228854434020028757f9" name="a14882f465f6c228854434020028757f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a14882f465f6c228854434020028757f9">&#9670;&#160;</a></span>enqueue_ws_request()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::RpcSingleWsRequestClient::enqueue_ws_request </td>
+          <td>(</td>
+          <td class="paramtype">const Dictionary &amp;</td>          <td class="paramname"><span class="paramname"><em>request_body</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Callable &amp;</td>          <td class="paramname"><span class="paramname"><em>callback</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Callable &amp;</td>          <td class="paramname"><span class="paramname"><em>confirmation_callback</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Dictionary &amp;</td>          <td class="paramname"><span class="paramname"><em>url</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>timeout</em></span><span class="paramdefsep"> = </span><span class="paramdefval">20.0F</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enqueue a web socket request. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">request_body</td><td>Request Dictionary. </td></tr>
+    <tr><td class="paramname">callback</td><td>Callback to be called when subscription notification is received. </td></tr>
+    <tr><td class="paramname">confirmation_callback</td><td>Callback to be called when request response is received. </td></tr>
+    <tr><td class="paramname">url</td><td>URL to send request to. </td></tr>
+    <tr><td class="paramname">timeout</td><td>Timeout of request. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a74705c9b8570a34e2e5d884c09883951" name="a74705c9b8570a34e2e5d884c09883951"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74705c9b8570a34e2e5d884c09883951">&#9670;&#160;</a></span>is_pending()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool godot::RpcSingleWsRequestClient::is_pending </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check if a request is pending. </p>
+<dl class="section return"><dt>Returns</dt><dd>true If a request is pending. </dd>
+<dd>
+false If no request is pending. </dd></dl>
+
+</div>
+</div>
+<a id="a9f45e7d9baee7209ccc881b8277e536d" name="a9f45e7d9baee7209ccc881b8277e536d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f45e7d9baee7209ccc881b8277e536d">&#9670;&#160;</a></span>process()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::RpcSingleWsRequestClient::process </td>
+          <td>(</td>
+          <td class="paramtype">double</td>          <td class="paramname"><span class="paramname"><em>delta</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Process the requests client. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">delta</td><td>Elapsed time since last process. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a02e259af61423d4188669bc8d0dfdd62" name="a02e259af61423d4188669bc8d0dfdd62"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02e259af61423d4188669bc8d0dfdd62">&#9670;&#160;</a></span>unsubscribe_all()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void godot::RpcSingleWsRequestClient::unsubscribe_all </td>
+          <td>(</td>
+          <td class="paramtype">const Callable &amp;</td>          <td class="paramname"><span class="paramname"><em>callback</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Dictionary &amp;</td>          <td class="paramname"><span class="paramname"><em>url</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>timeout</em></span><span class="paramdefsep"> = </span><span class="paramdefval">20.0F</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Send requests to unsubscribe all active subscriptions with a certain Callable connected. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">callback</td><td>Callback to identify subscriptions to unsubscribe to. </td></tr>
+    <tr><td class="paramname">url</td><td>URL to use for requests. </td></tr>
+    <tr><td class="paramname">timeout</td><td>Timeout of requests. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>include/solana_client/<a class="el" href="rpc__single__ws__request__client_8hpp_source.html">rpc_single_ws_request_client.hpp</a></li>
 <li>src/solana_client/<b>rpc_single_ws_request_client.cpp</b></li>
@@ -151,7 +284,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>pending_request</b> =
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>godot</b></li><li class="navelem"><a class="el" href="classgodot_1_1_rpc_single_ws_request_client.html">RpcSingleWsRequestClient</a></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

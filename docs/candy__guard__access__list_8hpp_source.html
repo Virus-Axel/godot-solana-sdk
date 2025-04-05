@@ -113,119 +113,131 @@ $(function(){initNavTree('candy__guard__access__list_8hpp_source.html',''); init
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span>godot {</div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
-<div class="foldopen" id="foldopen00012" data-start="{" data-end="};">
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="classgodot_1_1_candy_guard_access_list.html">   12</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_candy_guard_access_list.html">CandyGuardAccessList</a> : <span class="keyword">public</span> Resource {</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_candy_guard_access_list.html">CandyGuardAccessList</a>, Resource)</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    String label = <span class="stringliteral">&quot;default&quot;</span>;</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    <span class="keywordtype">bool</span> top_level = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    <span class="keywordtype">bool</span> enable_address_gate = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    Variant address_gate_reciever;</div>
+<div class="foldopen" id="foldopen00015" data-start="{" data-end="};">
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno"><a class="line" href="classgodot_1_1_candy_guard_access_list.html">   15</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_candy_guard_access_list.html">CandyGuardAccessList</a> : <span class="keyword">public</span> Resource {</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_candy_guard_access_list.html">CandyGuardAccessList</a>, Resource)</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    String label = <span class="stringliteral">&quot;default&quot;</span>;</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <span class="keywordtype">bool</span> top_level = <span class="keyword">true</span>;</div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    <span class="keywordtype">bool</span> enable_allocation = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    uint32_t allocation_id = 0;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    uint32_t allocation_size = 0;</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keywordtype">bool</span> enable_allow_list = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    PackedByteArray allowed_merkle_root;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    <span class="keywordtype">bool</span> enable_address_gate = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    Variant address_gate_reciever;</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keywordtype">bool</span> enable_allocation = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    uint32_t allocation_id = 0;</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    uint32_t allocation_size = 0;</div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keywordtype">bool</span> enable_bot_tax = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    uint64_t bot_tax_lamports = 0;</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    <span class="keywordtype">bool</span> validate_last_instruction = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="keywordtype">bool</span> enable_end_date = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    int64_t end_date = 0;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keywordtype">bool</span> enable_allow_list = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    PackedByteArray allowed_merkle_root;</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <span class="keywordtype">bool</span> enable_bot_tax = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    uint64_t bot_tax_lamports = 0;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    <span class="keywordtype">bool</span> validate_last_instruction = <span class="keyword">false</span>;</div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keywordtype">bool</span> enable_freeze_sol_payment = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    uint64_t freeze_amount_lamports = 0;</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    Variant freeze_sol_destination;</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keywordtype">bool</span> enable_freeze_token_payment = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    uint64_t amount = 0;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    Variant mint;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    Variant freeze_token_destination_ata;</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keywordtype">bool</span> enable_gatekeeper = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    Variant gatekeeper_network;</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <span class="keywordtype">bool</span> expire_on_use = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <span class="keywordtype">bool</span> enable_mint_limit = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    uint32_t limit_id = 0;</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    uint32_t mint_limit = 0;</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordtype">bool</span> enable_nft_burn = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    Variant required_nft_burn_collection;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keywordtype">bool</span> enable_end_date = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    int64_t end_date = 0;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keywordtype">bool</span> enable_freeze_sol_payment = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    uint64_t freeze_amount_lamports = 0;</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    Variant freeze_sol_destination;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keywordtype">bool</span> enable_freeze_token_payment = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    uint64_t amount = 0;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    Variant mint;</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    Variant freeze_token_destination_ata;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keywordtype">bool</span> enable_gatekeeper = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    Variant gatekeeper_network;</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keywordtype">bool</span> expire_on_use = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keywordtype">bool</span> enable_mint_limit = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    uint32_t limit_id = 0;</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    uint32_t mint_limit = 0;</div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordtype">bool</span> enable_nft_gate = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    Variant required_nft_gate_collection;</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordtype">bool</span> enable_nft_burn = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    Variant required_nft_burn_collection;</div>
 <div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keywordtype">bool</span> enable_nft_payment = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    Variant required_nft_payment_collection;</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    Variant nft_payment_destination;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <span class="keywordtype">bool</span> enable_program_gate = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    Array program_gate_addresses;</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keywordtype">bool</span> enable_nft_gate = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    Variant required_nft_gate_collection;</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keywordtype">bool</span> enable_nft_payment = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    Variant required_nft_payment_collection;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    Variant nft_payment_destination;</div>
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keywordtype">bool</span> enable_redeem_account = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    uint64_t max_redeem_amount = 0;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keywordtype">bool</span> enable_program_gate = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    Array program_gate_addresses;</div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    <span class="keywordtype">bool</span> enable_sol_payment = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    uint64_t sol_payment_lamports = 0;</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    Variant sol_payment_destination;</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keywordtype">bool</span> enable_start_date = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    int64_t start_date = 0;</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    <span class="keywordtype">bool</span> enable_redeem_account = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    uint64_t max_redeem_amount = 0;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keywordtype">bool</span> enable_sol_payment = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    uint64_t sol_payment_lamports = 0;</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    Variant sol_payment_destination;</div>
 <div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span> </div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keywordtype">bool</span> enable_third_party_signer = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    Variant signer_key;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keywordtype">bool</span> enable_start_date = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    int64_t start_date = 0;</div>
 <div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordtype">bool</span> enable_token_burn = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    uint64_t token_burn_amount = 0;</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    Variant token_burn_mint;</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <span class="keywordtype">bool</span> enable_token_gate = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    uint64_t token_gate_amount = 0;</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    Variant token_gate_mint;</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    <span class="keywordtype">bool</span> enable_token_payment = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    uint64_t token_payment_amount = 0;</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    Variant token_payment_mint;</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    Variant token_payment_destination;</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    TypedArray&lt;CandyGuardAccessList&gt; groups;</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="keywordtype">bool</span> _set(<span class="keyword">const</span> StringName &amp;p_name, <span class="keyword">const</span> Variant &amp;p_value);</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="keywordtype">bool</span> _get(<span class="keyword">const</span> StringName &amp;p_name, Variant &amp;r_ret) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <span class="keywordtype">void</span> _get_property_list(List&lt;PropertyInfo&gt; *p_list) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordtype">bool</span> enable_third_party_signer = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    Variant signer_key;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keywordtype">bool</span> enable_token_burn = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    uint64_t token_burn_amount = 0;</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    Variant token_burn_mint;</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordtype">bool</span> enable_token_gate = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    uint64_t token_gate_amount = 0;</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    Variant token_gate_mint;</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    <span class="keywordtype">bool</span> enable_token_payment = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    uint64_t token_payment_amount = 0;</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    Variant token_payment_mint;</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    Variant token_payment_destination;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    TypedArray&lt;CandyGuardAccessList&gt; groups;</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span> </div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="keywordtype">bool</span> _set(<span class="keyword">const</span> StringName &amp;p_name, <span class="keyword">const</span> Variant &amp;p_value);</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="keywordtype">bool</span> _get(<span class="keyword">const</span> StringName &amp;p_name, Variant &amp;r_ret) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="keywordtype">void</span> _get_property_list(List&lt;PropertyInfo&gt; *p_list) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span> </div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    String get_label() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    PackedByteArray serialize() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    PackedByteArray serialize_mint_settings() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    PackedByteArray serialize_groups() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    PackedByteArray serialize_guard_settings() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span> </div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    <a class="code hl_class" href="classgodot_1_1_candy_guard_access_list.html">CandyGuardAccessList</a> &amp;get_group(<span class="keyword">const</span> String &amp;label);</div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>    TypedArray&lt;AccountMeta&gt; get_mint_arg_accounts(<span class="keyword">const</span> Variant &amp;payer, <span class="keyword">const</span> Variant &amp;machine_key, <span class="keyword">const</span> Variant &amp;guard_key);</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>};</div>
-</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span> </div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>} <span class="comment">//namespace godot</span></div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_candy_guard_access_list.html#a77111580769446ef1c076f686b15091e">_bind_methods</a>();</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    String <a class="code hl_function" href="classgodot_1_1_candy_guard_access_list.html#a582f87b92ad4a78e650cd4e4a5d0e109">get_label</a>() <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span> </div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassgodot_1_1_candy_guard_access_list_html"><div class="ttname"><a href="classgodot_1_1_candy_guard_access_list.html">godot::CandyGuardAccessList</a></div><div class="ttdef"><b>Definition</b> candy_guard_access_list.hpp:12</div></div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_candy_guard_access_list.html#a2c0d9b046694a2df821065185507c0c7">serialize</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span> </div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_candy_guard_access_list.html#a3e6fa92031d468e439834d0f6bffb2a1">serialize_mint_settings</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span> </div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_candy_guard_access_list.html#a25c98202c2cbe847fa7bd404347f7a4d">serialize_groups</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span> </div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_candy_guard_access_list.html#ad1c3af3e5892591f54c16d7e26192c1d">serialize_guard_settings</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span> </div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>    <a class="code hl_class" href="classgodot_1_1_candy_guard_access_list.html">CandyGuardAccessList</a> &amp;<a class="code hl_function" href="classgodot_1_1_candy_guard_access_list.html#ad4391b26c15412966c85e3024c1db232">get_group</a>(<span class="keyword">const</span> String &amp;label);</div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span> </div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>    TypedArray&lt;AccountMeta&gt; <a class="code hl_function" href="classgodot_1_1_candy_guard_access_list.html#a6d8dd784e172c85caa4084d00f99267c">get_mint_arg_accounts</a>(<span class="keyword">const</span> Variant &amp;payer, <span class="keyword">const</span> Variant &amp;machine_key, <span class="keyword">const</span> Variant &amp;guard_key);</div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>};</div>
+</div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span> </div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>} <span class="comment">//namespace godot</span></div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span> </div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassgodot_1_1_candy_guard_access_list_html"><div class="ttname"><a href="classgodot_1_1_candy_guard_access_list.html">godot::CandyGuardAccessList</a></div><div class="ttdoc">Guard access list for candy guard program.</div><div class="ttdef"><b>Definition</b> candy_guard_access_list.hpp:15</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_guard_access_list_html_a25c98202c2cbe847fa7bd404347f7a4d"><div class="ttname"><a href="classgodot_1_1_candy_guard_access_list.html#a25c98202c2cbe847fa7bd404347f7a4d">godot::CandyGuardAccessList::serialize_groups</a></div><div class="ttdeci">PackedByteArray serialize_groups() const</div><div class="ttdoc">Serialized guard groups.</div><div class="ttdef"><b>Definition</b> candy_guard_access_list.cpp:33</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_guard_access_list_html_a2c0d9b046694a2df821065185507c0c7"><div class="ttname"><a href="classgodot_1_1_candy_guard_access_list.html#a2c0d9b046694a2df821065185507c0c7">godot::CandyGuardAccessList::serialize</a></div><div class="ttdeci">PackedByteArray serialize() const</div><div class="ttdoc">Serialize the Candy guard access list.</div><div class="ttdef"><b>Definition</b> candy_guard_access_list.cpp:20</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_guard_access_list_html_a3e6fa92031d468e439834d0f6bffb2a1"><div class="ttname"><a href="classgodot_1_1_candy_guard_access_list.html#a3e6fa92031d468e439834d0f6bffb2a1">godot::CandyGuardAccessList::serialize_mint_settings</a></div><div class="ttdeci">PackedByteArray serialize_mint_settings() const</div><div class="ttdoc">Serialize into mint settings.</div><div class="ttdef"><b>Definition</b> candy_guard_access_list.cpp:270</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_guard_access_list_html_a582f87b92ad4a78e650cd4e4a5d0e109"><div class="ttname"><a href="classgodot_1_1_candy_guard_access_list.html#a582f87b92ad4a78e650cd4e4a5d0e109">godot::CandyGuardAccessList::get_label</a></div><div class="ttdeci">String get_label() const</div><div class="ttdoc">Get the label property.</div><div class="ttdef"><b>Definition</b> candy_guard_access_list.cpp:16</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_guard_access_list_html_a6d8dd784e172c85caa4084d00f99267c"><div class="ttname"><a href="classgodot_1_1_candy_guard_access_list.html#a6d8dd784e172c85caa4084d00f99267c">godot::CandyGuardAccessList::get_mint_arg_accounts</a></div><div class="ttdeci">TypedArray&lt; AccountMeta &gt; get_mint_arg_accounts(const Variant &amp;payer, const Variant &amp;machine_key, const Variant &amp;guard_key)</div><div class="ttdoc">Get the mint arg account array.</div><div class="ttdef"><b>Definition</b> candy_guard_access_list.cpp:215</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_guard_access_list_html_a77111580769446ef1c076f686b15091e"><div class="ttname"><a href="classgodot_1_1_candy_guard_access_list.html#a77111580769446ef1c076f686b15091e">godot::CandyGuardAccessList::_bind_methods</a></div><div class="ttdeci">static void _bind_methods()</div><div class="ttdoc">Binds mathods of CandyGuardAccessList Resource.</div><div class="ttdef"><b>Definition</b> candy_guard_access_list.cpp:13</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_guard_access_list_html_ad1c3af3e5892591f54c16d7e26192c1d"><div class="ttname"><a href="classgodot_1_1_candy_guard_access_list.html#ad1c3af3e5892591f54c16d7e26192c1d">godot::CandyGuardAccessList::serialize_guard_settings</a></div><div class="ttdeci">PackedByteArray serialize_guard_settings() const</div><div class="ttdoc">Serialize guard settings.</div><div class="ttdef"><b>Definition</b> candy_guard_access_list.cpp:53</div></div>
+<div class="ttc" id="aclassgodot_1_1_candy_guard_access_list_html_ad4391b26c15412966c85e3024c1db232"><div class="ttname"><a href="classgodot_1_1_candy_guard_access_list.html#ad4391b26c15412966c85e3024c1db232">godot::CandyGuardAccessList::get_group</a></div><div class="ttdeci">CandyGuardAccessList &amp; get_group(const String &amp;label)</div><div class="ttdoc">Get CandyGuardAccessList group from a group label.</div><div class="ttdef"><b>Definition</b> candy_guard_access_list.cpp:199</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_5f627655c57e0213242e4f793928fa51.html">candy_machine</a></li><li class="navelem"><b>candy_guard_access_list.hpp</b></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

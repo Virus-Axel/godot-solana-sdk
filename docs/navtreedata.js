@@ -25,15 +25,19 @@
 var NAVTREE =
 [
   [ "godot-solana-sdk", "index.html", [
+    [ "Todo List", "todo.html", null ],
     [ "Deprecated List", "deprecated.html", null ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
       [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
       [ "Class Members", "functions.html", [
-        [ "All", "functions.html", null ],
-        [ "Functions", "functions_func.html", null ],
-        [ "Variables", "functions_vars.html", null ]
+        [ "All", "functions.html", "functions_dup" ],
+        [ "Functions", "functions_func.html", "functions_func" ],
+        [ "Variables", "functions_vars.html", null ],
+        [ "Typedefs", "functions_type.html", null ],
+        [ "Enumerations", "functions_enum.html", null ],
+        [ "Enumerator", "functions_eval.html", null ]
       ] ]
     ] ],
     [ "Files", "files.html", [
@@ -44,9 +48,9 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"_add_multiplier_metadata_input__generated_8hpp_source.html",
-"classgodot_1_1_merged_account_metas.html#a8f356a298ac3b97a64f3dcbe10dd239d",
-"classgodot_1_1honeycomb__resource_1_1_update_wallet_input.html"
+"account_8hpp_source.html",
+"classgodot_1_1_merged_account_metas.html#a9f2f3330b450ca7c61a7293f07c5523e",
+"classgodot_1_1_token_program2022.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

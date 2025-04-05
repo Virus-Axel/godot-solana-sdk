@@ -122,137 +122,189 @@ $(function(){initNavTree('transaction_8hpp_source.html',''); initResizable(true)
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    FINALIZED,</div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>};</div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="foldopen" id="foldopen00021" data-start="{" data-end="};">
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="classgodot_1_1_transaction.html">   21</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_transaction.html">Transaction</a> : <span class="keyword">public</span> <a class="code hl_class" href="classgodot_1_1_solana_client.html">SolanaClient</a> {</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_transaction.html">Transaction</a>, <a class="code hl_class" href="classgodot_1_1_solana_client.html">SolanaClient</a>)</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> processed_connections = 0;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> confirmed_connections = 0;</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> finalized_connections = 0;</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> active_subscriptions = 0;</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    uint32_t unit_limit = 800000;</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    uint32_t unit_price = 8000;</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    uint32_t ready_signature_amount = 0;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    <a class="code hl_class" href="classgodot_1_1_message.html">Message</a> message;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    Array address_lookup_tables;</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    Array instructions;</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    Variant payer;</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    Array signers;</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    TypedArray&lt;PackedByteArray&gt; signatures;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    String latest_blockhash_string = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    String result_signature = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    String latest_commitment = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    String url_override = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <a class="code hl_class" href="classgodot_1_1_solana_client.html">SolanaClient</a> *send_client = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <a class="code hl_class" href="classgodot_1_1_solana_client.html">SolanaClient</a> *blockhash_client = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <a class="code hl_class" href="classgodot_1_1_solana_client.html">SolanaClient</a> *subscribe_client = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keywordtype">bool</span> has_cumpute_budget_instructions = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordtype">bool</span> external_payer = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    <span class="keywordtype">bool</span> pending_blockhash = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <span class="keywordtype">bool</span> pending_send = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordtype">bool</span> append_budget_instructions = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keywordtype">bool</span> skip_preflight = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keywordtype">bool</span> deserialized = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keyword">static</span> <span class="keywordtype">bool</span> are_all_bytes_zeroes(<span class="keyword">const</span> PackedByteArray &amp;bytes);</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <span class="keywordtype">void</span> _get_property_list(List&lt;PropertyInfo&gt; *p_list) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    <span class="keywordtype">void</span> _signer_signed(<span class="keyword">const</span> PackedByteArray &amp;signature, <span class="keyword">const</span> int32_t index);</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    <span class="keywordtype">void</span> _signer_failed();</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keywordtype">bool</span> is_phantom_payer() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="keywordtype">bool</span> has_valid_payer() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    <span class="keywordtype">void</span> create_message();</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keywordtype">void</span> check_fully_signed();</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="keywordtype">void</span> reset_state();</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keywordtype">void</span> sign_at_index(<span class="keyword">const</span> uint32_t index);</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keywordtype">void</span> copy_connection_state();</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keywordtype">void</span> subscribe_to_signature(ConfirmationLevel confirmation_level);</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keywordtype">void</span> subscribe_to_signature();</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <span class="keywordtype">void</span> _emit_processed_callback(<span class="keyword">const</span> Dictionary &amp;params);</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordtype">void</span> _emit_confirmed_callback(<span class="keyword">const</span> Dictionary &amp;params);</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="keywordtype">void</span> _emit_finalized_callback(<span class="keyword">const</span> Dictionary &amp;params);</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
+<div class="foldopen" id="foldopen00028" data-start="{" data-end="};">
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="classgodot_1_1_transaction.html">   28</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_transaction.html">Transaction</a> : <span class="keyword">public</span> <a class="code hl_class" href="classgodot_1_1_solana_client.html">SolanaClient</a> {</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_transaction.html">Transaction</a>, <a class="code hl_class" href="classgodot_1_1_solana_client.html">SolanaClient</a>)</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> processed_connections = 0;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> confirmed_connections = 0;</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> finalized_connections = 0;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> active_subscriptions = 0;</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    uint32_t unit_limit = 800000;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    uint32_t unit_price = 8000;</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    uint32_t ready_signature_amount = 0;</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <a class="code hl_class" href="classgodot_1_1_message.html">Message</a> message;</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    Array address_lookup_tables;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    Array instructions;</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    Variant payer;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    Array signers;</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    TypedArray&lt;PackedByteArray&gt; signatures;</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    String latest_blockhash_string = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    String result_signature = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    String latest_commitment = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    String url_override = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <a class="code hl_class" href="classgodot_1_1_solana_client.html">SolanaClient</a> *send_client = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <a class="code hl_class" href="classgodot_1_1_solana_client.html">SolanaClient</a> *blockhash_client = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    <a class="code hl_class" href="classgodot_1_1_solana_client.html">SolanaClient</a> *subscribe_client = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keywordtype">bool</span> has_cumpute_budget_instructions = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keywordtype">bool</span> external_payer = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keywordtype">bool</span> pending_blockhash = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keywordtype">bool</span> pending_send = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <span class="keywordtype">bool</span> append_budget_instructions = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    <span class="keywordtype">bool</span> skip_preflight = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keywordtype">bool</span> deserialized = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="keyword">static</span> <span class="keywordtype">bool</span> are_all_bytes_zeroes(<span class="keyword">const</span> PackedByteArray &amp;bytes);</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keywordtype">void</span> _get_property_list(List&lt;PropertyInfo&gt; *p_list) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="keywordtype">void</span> _signer_signed(<span class="keyword">const</span> PackedByteArray &amp;signature, <span class="keyword">const</span> int32_t index);</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keywordtype">void</span> _signer_failed();</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keywordtype">bool</span> is_phantom_payer() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keywordtype">bool</span> has_valid_payer() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keywordtype">void</span> create_message();</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    <span class="keywordtype">void</span> check_fully_signed();</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <span class="keywordtype">void</span> reset_state();</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="keywordtype">void</span> sign_at_index(<span class="keyword">const</span> uint32_t index);</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    <span class="keywordtype">void</span> copy_connection_state();</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keywordtype">void</span> subscribe_to_signature(ConfirmationLevel confirmation_level);</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <span class="keywordtype">void</span> subscribe_to_signature();</div>
 <div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <a class="code hl_class" href="classgodot_1_1_transaction.html">Transaction</a>();</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    <span class="keywordtype">void</span> from_bytes(<span class="keyword">const</span> PackedByteArray &amp;bytes);</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    <span class="keywordtype">void</span> _emit_processed_callback(<span class="keyword">const</span> Dictionary &amp;params);</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordtype">void</span> _emit_confirmed_callback(<span class="keyword">const</span> Dictionary &amp;params);</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    <span class="keywordtype">void</span> _emit_finalized_callback(<span class="keyword">const</span> Dictionary &amp;params);</div>
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    <span class="keyword">static</span> Variant new_from_bytes(<span class="keyword">const</span> PackedByteArray &amp;bytes);</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    <span class="keywordtype">void</span> _ready() <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keywordtype">void</span> _process(<span class="keywordtype">double</span> delta) <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="keywordtype">void</span> set_instructions(<span class="keyword">const</span> Array &amp;p_value);</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    Array get_instructions();</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span> </div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="keywordtype">void</span> set_payer(<span class="keyword">const</span> Variant &amp;p_value);</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    Variant get_payer();</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span> </div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    <span class="keywordtype">void</span> set_url_override(<span class="keyword">const</span> String &amp;p_value);</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    <span class="comment">// The following functions need to comply with godot layout.</span></div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    <span class="comment">/* NOLINTBEGIN(bugprone-easily-swappable-parameters)*/</span></div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keywordtype">bool</span> _set(<span class="keyword">const</span> StringName &amp;p_name, <span class="keyword">const</span> Variant &amp;p_value);</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    <span class="keywordtype">bool</span> _get(<span class="keyword">const</span> StringName &amp;p_name, Variant &amp;r_ret) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    <span class="comment">/* NOLINTBEGIN(bugprone-easily-swappable-parameters)*/</span></div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span> </div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    <span class="keywordtype">void</span> set_signers(<span class="keyword">const</span> Array &amp;p_value);</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    Array get_signers();</div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span> </div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    <span class="keywordtype">void</span> set_unit_limit(<span class="keyword">const</span> uint32_t value);</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    uint32_t get_unit_limit() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span> </div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    <span class="keywordtype">void</span> set_unit_price(<span class="keyword">const</span> uint32_t value);</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    uint32_t get_unit_price() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span> </div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    <span class="keywordtype">void</span> set_external_payer(<span class="keywordtype">bool</span> p_value);</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    <span class="keywordtype">bool</span> get_external_payer() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span> </div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>    <span class="keywordtype">void</span> update_latest_blockhash(<span class="keyword">const</span> String &amp;custom_hash = <span class="stringliteral">&quot;&quot;</span>);</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>    <span class="keywordtype">void</span> add_instruction(<span class="keyword">const</span> Variant &amp;instruction);</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a1827630593076bcb22458ee0da279a39">_bind_methods</a>();</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <a class="code hl_class" href="classgodot_1_1_transaction.html">Transaction</a>();</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a8c2667d64ee2361c9058ba6cf7b859cf">from_bytes</a>(<span class="keyword">const</span> PackedByteArray &amp;bytes);</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    <span class="keyword">static</span> Variant <a class="code hl_function" href="classgodot_1_1_transaction.html#a539760045082cc81fb8395a600d9b92a">new_from_bytes</a>(<span class="keyword">const</span> PackedByteArray &amp;bytes);</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span> </div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a9a41f798b5c5cf3c065d8a94a5a410c4">_ready</a>() <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span> </div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#ac959f6385cd039d7b3297f45d1c56093">_process</a>(<span class="keywordtype">double</span> delta) <span class="keyword">override</span>;</div>
 <div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span> </div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    PackedByteArray serialize();</div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    PackedByteArray serialize_message();</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>    PackedByteArray serialize_signers();</div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>    Error sign();</div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>    <span class="keywordtype">void</span> send();</div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>    Variant sign_and_send();</div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>    Error partially_sign(<span class="keyword">const</span> Array &amp;array);</div>
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span> </div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>    <span class="keywordtype">void</span> send_callback(Dictionary params);</div>
-<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>    <span class="keywordtype">void</span> blockhash_callback(Dictionary params);</div>
-<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>    <span class="keywordtype">void</span> set_address_lookup_tables(<span class="keyword">const</span> Array &amp;address_lookup_tables);</div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>    Array get_address_lookup_tables();</div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span> </div>
-<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>    <a class="code hl_class" href="classgodot_1_1_transaction.html">~Transaction</a>() = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>};</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a5e420da7d3a2854fb1b97ad8b416524a">set_instructions</a>(<span class="keyword">const</span> Array &amp;p_value);</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span> </div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>    Array <a class="code hl_function" href="classgodot_1_1_transaction.html#a918ff4dc99dbee81eb9ef75abb8d23eb">get_instructions</a>();</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span> </div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a1f1a4d8e393caea078a2346b03fd65aa">set_payer</a>(<span class="keyword">const</span> Variant &amp;p_value);</div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span> </div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>    Variant <a class="code hl_function" href="classgodot_1_1_transaction.html#a097c2d09465f7f8e5bec91b3e77e9116">get_payer</a>();</div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span> </div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a1d36aa906d3076953ec82c4d80b42d19">set_url_override</a>(<span class="keyword">const</span> String &amp;p_value);</div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span> </div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>    <span class="comment">// The following functions need to comply with godot layout.</span></div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>    <span class="comment">/* NOLINTBEGIN(bugprone-easily-swappable-parameters)*/</span></div>
+<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a761c6584cc5df0e8ae6f10b4fcbfb82b">_set</a>(<span class="keyword">const</span> StringName &amp;p_name, <span class="keyword">const</span> Variant &amp;p_value);</div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span> </div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a86fc5d940f40f705d651f39aa04ccc6a">_get</a>(<span class="keyword">const</span> StringName &amp;p_name, Variant &amp;r_ret) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>    <span class="comment">/* NOLINTBEGIN(bugprone-easily-swappable-parameters)*/</span></div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span> </div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a10c9ba90f32e9e0331ea1989a3bd2b75">set_signers</a>(<span class="keyword">const</span> Array &amp;p_value);</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span> </div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>    Array <a class="code hl_function" href="classgodot_1_1_transaction.html#ab80d01de76b32e32de08d5ab6a49a591">get_signers</a>();</div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span> </div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a915dfefd7e45a43746fdd215c872f6ba">set_unit_limit</a>(<span class="keyword">const</span> uint32_t value);</div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span> </div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>    uint32_t <a class="code hl_function" href="classgodot_1_1_transaction.html#af875904089c4f3830b7b8ea806ea3e61">get_unit_limit</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span> </div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#ad7021598235e44fb71380292618d3691">set_unit_price</a>(<span class="keyword">const</span> uint32_t value);</div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span> </div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>    uint32_t <a class="code hl_function" href="classgodot_1_1_transaction.html#a2a8425f06e3f7415b3b7dfa47b868623">get_unit_price</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span> </div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a1f63070a56eea61618d0eb81e593aed5">set_external_payer</a>(<span class="keywordtype">bool</span> p_value);</div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span> </div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#ac5eb02719a0a0134e849ceffaca2b9f7">get_external_payer</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span> </div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a39bbcc041866b766ecdd56c7970122d6">update_latest_blockhash</a>(<span class="keyword">const</span> String &amp;custom_hash = <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span> </div>
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#aded6c65557ec6e85361114c9551a9045">add_instruction</a>(<span class="keyword">const</span> Variant &amp;instruction);</div>
+<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span> </div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_transaction.html#ad423113e17423c394fe68584439b6085">serialize</a>();</div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span> </div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_transaction.html#a162d12ad3a07ccda3b0b39ea4e84eb9a">serialize_message</a>();</div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span> </div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>    PackedByteArray <a class="code hl_function" href="classgodot_1_1_transaction.html#a5217aac11ca3adc33604015dc18ae3ca">serialize_signers</a>();</div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span> </div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>    Error <a class="code hl_function" href="classgodot_1_1_transaction.html#ac4e762bf5805b871dec4ae9ea008c63b">sign</a>();</div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span> </div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#a2b047f857e9a2384aef696c00faf341f">send</a>();</div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span> </div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>    Variant <a class="code hl_function" href="classgodot_1_1_transaction.html#ad954055a5c118abfb8b1f75fabb0f5d6">sign_and_send</a>();</div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span> </div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>    Error <a class="code hl_function" href="classgodot_1_1_transaction.html#ace23ff813f3982ef4e8e3a8a78ce1f66">partially_sign</a>(<span class="keyword">const</span> Array &amp;array);</div>
+<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span> </div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#ad4880123b0f73c6d44b7b96e14f5e129">send_callback</a>(Dictionary params);</div>
+<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span> </div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#ab5ab75dd5d60e77327f74f13b4937b19">blockhash_callback</a>(Dictionary params);</div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span> </div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_transaction.html#ab512fc3f1a261bf5aaa6fa71ef60d7b4">set_address_lookup_tables</a>(<span class="keyword">const</span> Array &amp;address_lookup_tables);</div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span> </div>
+<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>    Array <a class="code hl_function" href="classgodot_1_1_transaction.html#a182ecf6e82266f7127caf831a6d07d31">get_address_lookup_tables</a>();</div>
+<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span> </div>
+<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>    <a class="code hl_class" href="classgodot_1_1_transaction.html">~Transaction</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>};</div>
 </div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>} <span class="comment">//namespace godot</span></div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span> </div>
-<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span>} <span class="comment">//namespace godot</span></div>
+<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span> </div>
+<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassgodot_1_1_message_html"><div class="ttname"><a href="classgodot_1_1_message.html">godot::Message</a></div><div class="ttdoc">A helper class for transaction messages.</div><div class="ttdef"><b>Definition</b> message.hpp:21</div></div>
 <div class="ttc" id="aclassgodot_1_1_solana_client_html"><div class="ttname"><a href="classgodot_1_1_solana_client.html">godot::SolanaClient</a></div><div class="ttdoc">Manager for RPC HTTP API communication.</div><div class="ttdef"><b>Definition</b> solana_client.hpp:32</div></div>
-<div class="ttc" id="aclassgodot_1_1_transaction_html"><div class="ttname"><a href="classgodot_1_1_transaction.html">godot::Transaction</a></div><div class="ttdef"><b>Definition</b> transaction.hpp:21</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html"><div class="ttname"><a href="classgodot_1_1_transaction.html">godot::Transaction</a></div><div class="ttdoc">Used to construct and send transactions on Solana blockchain.</div><div class="ttdef"><b>Definition</b> transaction.hpp:28</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a097c2d09465f7f8e5bec91b3e77e9116"><div class="ttname"><a href="classgodot_1_1_transaction.html#a097c2d09465f7f8e5bec91b3e77e9116">godot::Transaction::get_payer</a></div><div class="ttdeci">Variant get_payer()</div><div class="ttdoc">Get the value of payer.</div><div class="ttdef"><b>Definition</b> transaction.cpp:450</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a10c9ba90f32e9e0331ea1989a3bd2b75"><div class="ttname"><a href="classgodot_1_1_transaction.html#a10c9ba90f32e9e0331ea1989a3bd2b75">godot::Transaction::set_signers</a></div><div class="ttdeci">void set_signers(const Array &amp;p_value)</div><div class="ttdoc">Set the value of signers.</div><div class="ttdef"><b>Definition</b> transaction.cpp:486</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a162d12ad3a07ccda3b0b39ea4e84eb9a"><div class="ttname"><a href="classgodot_1_1_transaction.html#a162d12ad3a07ccda3b0b39ea4e84eb9a">godot::Transaction::serialize_message</a></div><div class="ttdeci">PackedByteArray serialize_message()</div><div class="ttdoc">Serialize Transaction's Message.</div><div class="ttdef"><b>Definition</b> transaction.cpp:522</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a1827630593076bcb22458ee0da279a39"><div class="ttname"><a href="classgodot_1_1_transaction.html#a1827630593076bcb22458ee0da279a39">godot::Transaction::_bind_methods</a></div><div class="ttdeci">static void _bind_methods()</div><div class="ttdoc">Bind methods for Transaction Node.</div><div class="ttdef"><b>Definition</b> transaction.cpp:30</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a182ecf6e82266f7127caf831a6d07d31"><div class="ttname"><a href="classgodot_1_1_transaction.html#a182ecf6e82266f7127caf831a6d07d31">godot::Transaction::get_address_lookup_tables</a></div><div class="ttdeci">Array get_address_lookup_tables()</div><div class="ttdoc">Get the value of address_lookup_tables.</div><div class="ttdef"><b>Definition</b> transaction.cpp:643</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a1d36aa906d3076953ec82c4d80b42d19"><div class="ttname"><a href="classgodot_1_1_transaction.html#a1d36aa906d3076953ec82c4d80b42d19">godot::Transaction::set_url_override</a></div><div class="ttdeci">void set_url_override(const String &amp;p_value)</div><div class="ttdoc">Set the value of url_override.</div><div class="ttdef"><b>Definition</b> transaction.cpp:454</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a1f1a4d8e393caea078a2346b03fd65aa"><div class="ttname"><a href="classgodot_1_1_transaction.html#a1f1a4d8e393caea078a2346b03fd65aa">godot::Transaction::set_payer</a></div><div class="ttdeci">void set_payer(const Variant &amp;p_value)</div><div class="ttdoc">Set the value of payer.</div><div class="ttdef"><b>Definition</b> transaction.cpp:440</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a1f63070a56eea61618d0eb81e593aed5"><div class="ttname"><a href="classgodot_1_1_transaction.html#a1f63070a56eea61618d0eb81e593aed5">godot::Transaction::set_external_payer</a></div><div class="ttdeci">void set_external_payer(bool p_value)</div><div class="ttdoc">Set the value of external_payer.</div><div class="ttdef"><b>Definition</b> transaction.cpp:458</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a2a8425f06e3f7415b3b7dfa47b868623"><div class="ttname"><a href="classgodot_1_1_transaction.html#a2a8425f06e3f7415b3b7dfa47b868623">godot::Transaction::get_unit_price</a></div><div class="ttdeci">uint32_t get_unit_price() const</div><div class="ttdoc">Get the value of unit_price.</div><div class="ttdef"><b>Definition</b> transaction.cpp:509</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a2b047f857e9a2384aef696c00faf341f"><div class="ttname"><a href="classgodot_1_1_transaction.html#a2b047f857e9a2384aef696c00faf341f">godot::Transaction::send</a></div><div class="ttdeci">void send()</div><div class="ttdoc">Send a Transaction to the RPC node.</div><div class="ttdef"><b>Definition</b> transaction.cpp:574</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a39bbcc041866b766ecdd56c7970122d6"><div class="ttname"><a href="classgodot_1_1_transaction.html#a39bbcc041866b766ecdd56c7970122d6">godot::Transaction::update_latest_blockhash</a></div><div class="ttdeci">void update_latest_blockhash(const String &amp;custom_hash=&quot;&quot;)</div><div class="ttdoc">Sends a request to update latest blockhash or updates from parameter.</div><div class="ttdef"><b>Definition</b> transaction.cpp:467</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a5217aac11ca3adc33604015dc18ae3ca"><div class="ttname"><a href="classgodot_1_1_transaction.html#a5217aac11ca3adc33604015dc18ae3ca">godot::Transaction::serialize_signers</a></div><div class="ttdeci">PackedByteArray serialize_signers()</div><div class="ttdoc">Serialize Transaction's signers.</div><div class="ttdef"><b>Definition</b> transaction.cpp:528</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a539760045082cc81fb8395a600d9b92a"><div class="ttname"><a href="classgodot_1_1_transaction.html#a539760045082cc81fb8395a600d9b92a">godot::Transaction::new_from_bytes</a></div><div class="ttdeci">static Variant new_from_bytes(const PackedByteArray &amp;bytes)</div><div class="ttdoc">Creates a new Transaction from a serialized Transaction.</div><div class="ttdef"><b>Definition</b> transaction.cpp:393</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a5e420da7d3a2854fb1b97ad8b416524a"><div class="ttname"><a href="classgodot_1_1_transaction.html#a5e420da7d3a2854fb1b97ad8b416524a">godot::Transaction::set_instructions</a></div><div class="ttdeci">void set_instructions(const Array &amp;p_value)</div><div class="ttdoc">Set the value of instruction.</div><div class="ttdef"><b>Definition</b> transaction.cpp:430</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a761c6584cc5df0e8ae6f10b4fcbfb82b"><div class="ttname"><a href="classgodot_1_1_transaction.html#a761c6584cc5df0e8ae6f10b4fcbfb82b">godot::Transaction::_set</a></div><div class="ttdeci">bool _set(const StringName &amp;p_name, const Variant &amp;p_value)</div><div class="ttdoc">Set property of Transaction.</div><div class="ttdef"><b>Definition</b> transaction.cpp:248</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a86fc5d940f40f705d651f39aa04ccc6a"><div class="ttname"><a href="classgodot_1_1_transaction.html#a86fc5d940f40f705d651f39aa04ccc6a">godot::Transaction::_get</a></div><div class="ttdeci">bool _get(const StringName &amp;p_name, Variant &amp;r_ret) const</div><div class="ttdoc">Get property of Transaction.</div><div class="ttdef"><b>Definition</b> transaction.cpp:293</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a8c2667d64ee2361c9058ba6cf7b859cf"><div class="ttname"><a href="classgodot_1_1_transaction.html#a8c2667d64ee2361c9058ba6cf7b859cf">godot::Transaction::from_bytes</a></div><div class="ttdeci">void from_bytes(const PackedByteArray &amp;bytes)</div><div class="ttdoc">Assembles this Transaction from a serialized Transaction.</div><div class="ttdef"><b>Definition</b> transaction.cpp:364</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a915dfefd7e45a43746fdd215c872f6ba"><div class="ttname"><a href="classgodot_1_1_transaction.html#a915dfefd7e45a43746fdd215c872f6ba">godot::Transaction::set_unit_limit</a></div><div class="ttdeci">void set_unit_limit(const uint32_t value)</div><div class="ttdoc">Set the value of unit_limit.</div><div class="ttdef"><b>Definition</b> transaction.cpp:495</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a918ff4dc99dbee81eb9ef75abb8d23eb"><div class="ttname"><a href="classgodot_1_1_transaction.html#a918ff4dc99dbee81eb9ef75abb8d23eb">godot::Transaction::get_instructions</a></div><div class="ttdeci">Array get_instructions()</div><div class="ttdoc">Get the value of instruction.</div><div class="ttdef"><b>Definition</b> transaction.cpp:436</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_a9a41f798b5c5cf3c065d8a94a5a410c4"><div class="ttname"><a href="classgodot_1_1_transaction.html#a9a41f798b5c5cf3c065d8a94a5a410c4">godot::Transaction::_ready</a></div><div class="ttdeci">void _ready() override</div><div class="ttdoc">Called when Node enters scene tree.</div><div class="ttdef"><b>Definition</b> transaction.cpp:407</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_ab512fc3f1a261bf5aaa6fa71ef60d7b4"><div class="ttname"><a href="classgodot_1_1_transaction.html#ab512fc3f1a261bf5aaa6fa71ef60d7b4">godot::Transaction::set_address_lookup_tables</a></div><div class="ttdeci">void set_address_lookup_tables(const Array &amp;address_lookup_tables)</div><div class="ttdoc">Set the value of address_lookup_tables.</div><div class="ttdef"><b>Definition</b> transaction.cpp:639</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_ab5ab75dd5d60e77327f74f13b4937b19"><div class="ttname"><a href="classgodot_1_1_transaction.html#ab5ab75dd5d60e77327f74f13b4937b19">godot::Transaction::blockhash_callback</a></div><div class="ttdeci">void blockhash_callback(Dictionary params)</div><div class="ttdoc">Called when blockhash request is finalized.</div><div class="ttdef"><b>Definition</b> transaction.cpp:557</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_ab80d01de76b32e32de08d5ab6a49a591"><div class="ttname"><a href="classgodot_1_1_transaction.html#ab80d01de76b32e32de08d5ab6a49a591">godot::Transaction::get_signers</a></div><div class="ttdeci">Array get_signers()</div><div class="ttdoc">Get the value of signers.</div><div class="ttdef"><b>Definition</b> transaction.cpp:491</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_ac4e762bf5805b871dec4ae9ea008c63b"><div class="ttname"><a href="classgodot_1_1_transaction.html#ac4e762bf5805b871dec4ae9ea008c63b">godot::Transaction::sign</a></div><div class="ttdeci">Error sign()</div><div class="ttdoc">Sign the transaction with available signers.</div><div class="ttdef"><b>Definition</b> transaction.cpp:593</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_ac5eb02719a0a0134e849ceffaca2b9f7"><div class="ttname"><a href="classgodot_1_1_transaction.html#ac5eb02719a0a0134e849ceffaca2b9f7">godot::Transaction::get_external_payer</a></div><div class="ttdeci">bool get_external_payer() const</div><div class="ttdoc">Get the value of external_payer.</div><div class="ttdef"><b>Definition</b> transaction.cpp:463</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_ac959f6385cd039d7b3297f45d1c56093"><div class="ttname"><a href="classgodot_1_1_transaction.html#ac959f6385cd039d7b3297f45d1c56093">godot::Transaction::_process</a></div><div class="ttdeci">void _process(double delta) override</div><div class="ttdoc">Called each frame in scene tree.</div><div class="ttdef"><b>Definition</b> transaction.cpp:410</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_ace23ff813f3982ef4e8e3a8a78ce1f66"><div class="ttname"><a href="classgodot_1_1_transaction.html#ace23ff813f3982ef4e8e3a8a78ce1f66">godot::Transaction::partially_sign</a></div><div class="ttdeci">Error partially_sign(const Array &amp;array)</div><div class="ttdoc">Adds required signatures using provided list of signers.</div><div class="ttdef"><b>Definition</b> transaction.cpp:615</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_ad423113e17423c394fe68584439b6085"><div class="ttname"><a href="classgodot_1_1_transaction.html#ad423113e17423c394fe68584439b6085">godot::Transaction::serialize</a></div><div class="ttdeci">PackedByteArray serialize()</div><div class="ttdoc">Serialize Transaction.</div><div class="ttdef"><b>Definition</b> transaction.cpp:513</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_ad4880123b0f73c6d44b7b96e14f5e129"><div class="ttname"><a href="classgodot_1_1_transaction.html#ad4880123b0f73c6d44b7b96e14f5e129">godot::Transaction::send_callback</a></div><div class="ttdeci">void send_callback(Dictionary params)</div><div class="ttdoc">Called when send is finalized.</div><div class="ttdef"><b>Definition</b> transaction.cpp:546</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_ad7021598235e44fb71380292618d3691"><div class="ttname"><a href="classgodot_1_1_transaction.html#ad7021598235e44fb71380292618d3691">godot::Transaction::set_unit_price</a></div><div class="ttdeci">void set_unit_price(const uint32_t value)</div><div class="ttdoc">Set the value of unit_limit.</div><div class="ttdef"><b>Definition</b> transaction.cpp:504</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_ad954055a5c118abfb8b1f75fabb0f5d6"><div class="ttname"><a href="classgodot_1_1_transaction.html#ad954055a5c118abfb8b1f75fabb0f5d6">godot::Transaction::sign_and_send</a></div><div class="ttdeci">Variant sign_and_send()</div><div class="ttdoc">Sign and send a Transaction.</div><div class="ttdef"><b>Definition</b> transaction.cpp:537</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_aded6c65557ec6e85361114c9551a9045"><div class="ttname"><a href="classgodot_1_1_transaction.html#aded6c65557ec6e85361114c9551a9045">godot::Transaction::add_instruction</a></div><div class="ttdeci">void add_instruction(const Variant &amp;instruction)</div><div class="ttdoc">Adds an instruction to the instruction array.</div><div class="ttdef"><b>Definition</b> transaction.cpp:480</div></div>
+<div class="ttc" id="aclassgodot_1_1_transaction_html_af875904089c4f3830b7b8ea806ea3e61"><div class="ttname"><a href="classgodot_1_1_transaction.html#af875904089c4f3830b7b8ea806ea3e61">godot::Transaction::get_unit_limit</a></div><div class="ttdeci">uint32_t get_unit_limit() const</div><div class="ttdoc">Get the value of unit_limit.</div><div class="ttdef"><b>Definition</b> transaction.cpp:500</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_8292401b7d49f3a07916459d8979411e.html">transaction</a></li><li class="navelem"><b>transaction.hpp</b></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

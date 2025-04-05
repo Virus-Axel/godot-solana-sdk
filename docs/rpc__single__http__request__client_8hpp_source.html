@@ -112,62 +112,74 @@ $(function(){initNavTree('rpc__single__http__request__client_8hpp_source.html','
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">namespace </span>godot {</div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
-<div class="foldopen" id="foldopen00011" data-start="{" data-end="};">
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno"><a class="line" href="structgodot_1_1_request_data.html">   11</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    Dictionary request;</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    Dictionary parsed_url;</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    <span class="keywordtype">double</span> timeout;</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    <span class="keywordtype">int</span> request_identifier;</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    Callable callback;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>} <a class="code hl_struct" href="structgodot_1_1_request_data.html">RequestData</a>;</div>
+<div class="foldopen" id="foldopen00014" data-start="{" data-end="};">
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="structgodot_1_1_request_data.html">   14</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno"><a class="line" href="structgodot_1_1_request_data.html#ad631923002b4c7794e1a483077900ac2">   15</a></span>    Dictionary <a class="code hl_variable" href="structgodot_1_1_request_data.html#ad631923002b4c7794e1a483077900ac2">request</a>; </div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="structgodot_1_1_request_data.html#a8853e5f07b8bcaedcebd02a6a8d18d38">   16</a></span>    Dictionary <a class="code hl_variable" href="structgodot_1_1_request_data.html#a8853e5f07b8bcaedcebd02a6a8d18d38">parsed_url</a>; </div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="structgodot_1_1_request_data.html#a2b926aeb2401e7bf0051586a63c49fdd">   17</a></span>    <span class="keywordtype">double</span> <a class="code hl_variable" href="structgodot_1_1_request_data.html#a2b926aeb2401e7bf0051586a63c49fdd">timeout</a>; </div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="structgodot_1_1_request_data.html#a3bf7ad77121e4696d0e71b20114f924b">   18</a></span>    <span class="keywordtype">int</span> <a class="code hl_variable" href="structgodot_1_1_request_data.html#a3bf7ad77121e4696d0e71b20114f924b">request_identifier</a>; </div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="structgodot_1_1_request_data.html#a4e0952921546c3baf0852dbb56d37feb">   19</a></span>    Callable <a class="code hl_variable" href="structgodot_1_1_request_data.html#a4e0952921546c3baf0852dbb56d37feb">callback</a>; </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>} <a class="code hl_struct" href="structgodot_1_1_request_data.html">RequestData</a>;</div>
 </div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
-<div class="foldopen" id="foldopen00019" data-start="{" data-end="};">
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="classgodot_1_1_rpc_single_http_request_client.html">   19</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_rpc_single_http_request_client.html">RpcSingleHttpRequestClient</a> : <span class="keyword">public</span> HTTPClient {</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_rpc_single_http_request_client.html">RpcSingleHttpRequestClient</a>, HTTPClient)</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <span class="keywordtype">bool</span> skip_id = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    std::queue&lt;RequestData&gt; request_queue;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    PackedByteArray response_data;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keywordtype">void</span> process_message_sending();</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keywordtype">void</span> process_body();</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keywordtype">void</span> initiate_connection();</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    <span class="keywordtype">void</span> update_timeouts(<span class="keyword">const</span> <span class="keywordtype">double</span> delta);</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <span class="keywordtype">bool</span> is_pending() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="keywordtype">bool</span> has_request() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    <span class="keywordtype">bool</span> is_response_valid(<span class="keyword">const</span> Dictionary &amp;response) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    Error connect_to();</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    Error send_next_request();</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keywordtype">void</span> finalize_faulty();</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keywordtype">void</span> finalize_request(<span class="keyword">const</span> Dictionary &amp;response);</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keywordtype">bool</span> is_completed() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <span class="keywordtype">void</span> set_skip_id(<span class="keywordtype">bool</span> skip_id);</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
+<div class="foldopen" id="foldopen00026" data-start="{" data-end="};">
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="classgodot_1_1_rpc_single_http_request_client.html">   26</a></span><span class="keyword">class </span><a class="code hl_class" href="classgodot_1_1_rpc_single_http_request_client.html">RpcSingleHttpRequestClient</a> : <span class="keyword">public</span> HTTPClient {</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    GDCLASS(<a class="code hl_class" href="classgodot_1_1_rpc_single_http_request_client.html">RpcSingleHttpRequestClient</a>, HTTPClient)</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keywordtype">bool</span> skip_id = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    std::queue&lt;RequestData&gt; request_queue;</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    PackedByteArray response_data;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    <span class="keywordtype">void</span> process_message_sending();</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    <span class="keywordtype">void</span> process_body();</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    <span class="keywordtype">void</span> initiate_connection();</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keywordtype">void</span> update_timeouts(<span class="keyword">const</span> <span class="keywordtype">double</span> delta);</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keywordtype">bool</span> is_pending() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keywordtype">bool</span> has_request() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    <span class="keywordtype">bool</span> is_response_valid(<span class="keyword">const</span> Dictionary &amp;response) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    Error connect_to();</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    Error send_next_request();</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keywordtype">void</span> finalize_faulty();</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <span class="keywordtype">void</span> finalize_request(<span class="keyword">const</span> Dictionary &amp;response);</div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keywordtype">void</span> process(<span class="keyword">const</span> <span class="keywordtype">double</span> delta);</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <span class="keywordtype">void</span> asynchronous_request(<span class="keyword">const</span> Dictionary &amp;request_body, <span class="keyword">const</span> Dictionary &amp;parsed_url, <span class="keyword">const</span> Callable &amp;callback, <span class="keywordtype">float</span> timeout = 20.0F);</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>};</div>
-</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>} <span class="comment">//namespace godot</span></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_rpc_single_http_request_client.html#a89067d62bde0a64ab993e0e1452cc27f">_bind_methods</a>();</div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassgodot_1_1_rpc_single_http_request_client_html"><div class="ttname"><a href="classgodot_1_1_rpc_single_http_request_client.html">godot::RpcSingleHttpRequestClient</a></div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.hpp:19</div></div>
-<div class="ttc" id="astructgodot_1_1_request_data_html"><div class="ttname"><a href="structgodot_1_1_request_data.html">godot::RequestData</a></div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.hpp:11</div></div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="classgodot_1_1_rpc_single_http_request_client.html#a41a996283a3985f561048c2052a4977f">is_completed</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_rpc_single_http_request_client.html#a682ef06949cec52580a4bd051db0df71">set_skip_id</a>(<span class="keywordtype">bool</span> skip_id);</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_rpc_single_http_request_client.html#ac77591b6bf03b74e82b5dca0b7c7714b">process</a>(<span class="keyword">const</span> <span class="keywordtype">double</span> delta);</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classgodot_1_1_rpc_single_http_request_client.html#a73033b0aecbfcdb942d9063d6202f8ae">asynchronous_request</a>(<span class="keyword">const</span> Dictionary &amp;request_body, <span class="keyword">const</span> Dictionary &amp;parsed_url, <span class="keyword">const</span> Callable &amp;callback, <span class="keywordtype">float</span> timeout = 20.0F);</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>};</div>
+</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>} <span class="comment">//namespace godot</span></div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span> </div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassgodot_1_1_rpc_single_http_request_client_html"><div class="ttname"><a href="classgodot_1_1_rpc_single_http_request_client.html">godot::RpcSingleHttpRequestClient</a></div><div class="ttdoc">Handles requests synchronously in a queue.</div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.hpp:26</div></div>
+<div class="ttc" id="aclassgodot_1_1_rpc_single_http_request_client_html_a41a996283a3985f561048c2052a4977f"><div class="ttname"><a href="classgodot_1_1_rpc_single_http_request_client.html#a41a996283a3985f561048c2052a4977f">godot::RpcSingleHttpRequestClient::is_completed</a></div><div class="ttdeci">bool is_completed() const</div><div class="ttdoc">Check if request queue is empty.</div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.cpp:84</div></div>
+<div class="ttc" id="aclassgodot_1_1_rpc_single_http_request_client_html_a682ef06949cec52580a4bd051db0df71"><div class="ttname"><a href="classgodot_1_1_rpc_single_http_request_client.html#a682ef06949cec52580a4bd051db0df71">godot::RpcSingleHttpRequestClient::set_skip_id</a></div><div class="ttdeci">void set_skip_id(bool skip_id)</div><div class="ttdoc">Set the value of skip_id.</div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.cpp:88</div></div>
+<div class="ttc" id="aclassgodot_1_1_rpc_single_http_request_client_html_a73033b0aecbfcdb942d9063d6202f8ae"><div class="ttname"><a href="classgodot_1_1_rpc_single_http_request_client.html#a73033b0aecbfcdb942d9063d6202f8ae">godot::RpcSingleHttpRequestClient::asynchronous_request</a></div><div class="ttdeci">void asynchronous_request(const Dictionary &amp;request_body, const Dictionary &amp;parsed_url, const Callable &amp;callback, float timeout=20.0F)</div><div class="ttdoc">Initiate an asynchronous request.</div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.cpp:212</div></div>
+<div class="ttc" id="aclassgodot_1_1_rpc_single_http_request_client_html_a89067d62bde0a64ab993e0e1452cc27f"><div class="ttname"><a href="classgodot_1_1_rpc_single_http_request_client.html#a89067d62bde0a64ab993e0e1452cc27f">godot::RpcSingleHttpRequestClient::_bind_methods</a></div><div class="ttdeci">static void _bind_methods()</div><div class="ttdoc">Bind methods for RpcSingleHttpRequestClient Node.</div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.cpp:209</div></div>
+<div class="ttc" id="aclassgodot_1_1_rpc_single_http_request_client_html_ac77591b6bf03b74e82b5dca0b7c7714b"><div class="ttname"><a href="classgodot_1_1_rpc_single_http_request_client.html#ac77591b6bf03b74e82b5dca0b7c7714b">godot::RpcSingleHttpRequestClient::process</a></div><div class="ttdeci">void process(const double delta)</div><div class="ttdoc">Process the request.</div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.cpp:172</div></div>
+<div class="ttc" id="astructgodot_1_1_request_data_html"><div class="ttname"><a href="structgodot_1_1_request_data.html">godot::RequestData</a></div><div class="ttdoc">Specifies information about a request.</div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.hpp:14</div></div>
+<div class="ttc" id="astructgodot_1_1_request_data_html_a2b926aeb2401e7bf0051586a63c49fdd"><div class="ttname"><a href="structgodot_1_1_request_data.html#a2b926aeb2401e7bf0051586a63c49fdd">godot::RequestData::timeout</a></div><div class="ttdeci">double timeout</div><div class="ttdoc">timeout of request.</div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.hpp:17</div></div>
+<div class="ttc" id="astructgodot_1_1_request_data_html_a3bf7ad77121e4696d0e71b20114f924b"><div class="ttname"><a href="structgodot_1_1_request_data.html#a3bf7ad77121e4696d0e71b20114f924b">godot::RequestData::request_identifier</a></div><div class="ttdeci">int request_identifier</div><div class="ttdoc">ID to pass with the RPC request.</div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.hpp:18</div></div>
+<div class="ttc" id="astructgodot_1_1_request_data_html_a4e0952921546c3baf0852dbb56d37feb"><div class="ttname"><a href="structgodot_1_1_request_data.html#a4e0952921546c3baf0852dbb56d37feb">godot::RequestData::callback</a></div><div class="ttdeci">Callable callback</div><div class="ttdoc">Callback that will be called when request response received.</div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.hpp:19</div></div>
+<div class="ttc" id="astructgodot_1_1_request_data_html_a8853e5f07b8bcaedcebd02a6a8d18d38"><div class="ttname"><a href="structgodot_1_1_request_data.html#a8853e5f07b8bcaedcebd02a6a8d18d38">godot::RequestData::parsed_url</a></div><div class="ttdeci">Dictionary parsed_url</div><div class="ttdoc">URL Dictionary.</div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.hpp:16</div></div>
+<div class="ttc" id="astructgodot_1_1_request_data_html_ad631923002b4c7794e1a483077900ac2"><div class="ttname"><a href="structgodot_1_1_request_data.html#ad631923002b4c7794e1a483077900ac2">godot::RequestData::request</a></div><div class="ttdeci">Dictionary request</div><div class="ttdoc">Request to send.</div><div class="ttdef"><b>Definition</b> rpc_single_http_request_client.hpp:15</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_63409d5bccd6cae6a9473d064241435d.html">solana_client</a></li><li class="navelem"><b>rpc_single_http_request_client.hpp</b></li>
-    <li class="footer">Generated on Sat Mar 29 2025 18:21:01 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
+    <li class="footer">Generated on Sat Apr 5 2025 05:14:09 for godot-solana-sdk by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>
 </body>

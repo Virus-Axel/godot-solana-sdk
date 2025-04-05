@@ -1,5 +1,9 @@
 var classgodot_1_1_keypair =
 [
+    [ "Keypair", "classgodot_1_1_keypair.html#a938a5268999cf93892047d32f58207a7", null ],
+    [ "_get", "classgodot_1_1_keypair.html#ad561a73e2e289c2309f3aeb45e02af38", null ],
+    [ "_get_property_list", "classgodot_1_1_keypair.html#a099b4b8b435266f55a92bbed66a86aa8", null ],
+    [ "_set", "classgodot_1_1_keypair.html#afd6eaa0d734cf0f5c61237c9c9177e8d", null ],
     [ "from_seed", "classgodot_1_1_keypair.html#a5bae41ffd394a85b05fa40365721766f", null ],
     [ "get_private_bytes", "classgodot_1_1_keypair.html#a63f6e5a51dfbedae6107e3c725262d35", null ],
     [ "get_private_string", "classgodot_1_1_keypair.html#a2256b007690a685d70aa383aa3f6ac88", null ],
