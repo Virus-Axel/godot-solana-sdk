@@ -5,13 +5,14 @@ const std::string TokenProgram::ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5D
 
 
 Variant TokenProgram::_initialize_mint(const Variant& token_program_pid, const Variant& mint_pubkey, const Variant& mint_authority, const Variant& freeze_authority, const uint32_t decimals){
-    Instruction *result = memnew(Instruction);
+    Variant result = memnew(Instruction);
     PackedByteArray data;
     if(freeze_authority.get_type() == Variant::OBJECT){
         data.resize(67);
 
         data[34] = 1;
         PackedByteArray mint_authority_bytes = Pubkey::bytes_from_variant(mint_authority);
+        ERR_FAIL_COND_V_EDMSG(mint_authority_bytes.size() != PUBKEY_LENGTH, nullptr, "Invalid mint authority.");
 
         for(unsigned int i = 0; i < 32; i++){
             data[35 + i] = mint_authority_bytes[i];
@@ -27,19 +28,20 @@ Variant TokenProgram::_initialize_mint(const Variant& token_program_pid, const V
     data[1] = decimals;
 
     PackedByteArray mint_authority_bytes = Pubkey::bytes_from_variant(mint_authority);
+    ERR_FAIL_COND_V_EDMSG(mint_authority_bytes.size() != PUBKEY_LENGTH, nullptr, "Invalid mint authority.");
 
     for(unsigned int i = 0; i < 32; i++){
         data[2 + i] = mint_authority_bytes[i];
     }
 
-    result->set_program_id(token_program_pid);
-    result->set_data(data);
+    Object::cast_to<Instruction>(result)->set_program_id(token_program_pid);
+    Object::cast_to<Instruction>(result)->set_data(data);
 
-    result->append_meta(*memnew(AccountMeta(mint_pubkey, false, true)));
+    Object::cast_to<Instruction>(result)->append_meta(*memnew(AccountMeta(mint_pubkey, false, true)));
 
-    Pubkey *rent = memnew(Pubkey);
-    rent->from_string("SysvarRent111111111111111111111111111111111");
-    result->append_meta(*memnew(AccountMeta(rent, false, false)));
+    Variant rent = memnew(Pubkey);
+    Object::cast_to<Pubkey>(rent)->from_string("SysvarRent111111111111111111111111111111111");
+    Object::cast_to<Instruction>(result)->append_meta(*memnew(AccountMeta(rent, false, false)));
 
     return result;
 }
@@ -54,6 +56,7 @@ Variant TokenProgram::_initialize_account(const Variant& token_program_pid, cons
     data[0] = DISCRIMINATOR;
 
     PackedByteArray owner_bytes = Pubkey::bytes_from_variant(owner_pubkey);
+    ERR_FAIL_COND_V_EDMSG(owner_bytes.size() != PUBKEY_LENGTH, nullptr, "Invalid owner.");
     for(unsigned int i = 0; i < 32; i++){
         data[1 + i] = owner_bytes[i];
     }
