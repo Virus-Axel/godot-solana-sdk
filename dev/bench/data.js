@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1743830473483,
+  "lastUpdate": 1743875538142,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1038,6 +1038,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/a77f3671d5387f9a1bf82223f09756ec778567cb"
         },
         "date": 1743830471613,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.373287671232877,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f001e620d06c2302c1ffa697e86827e6358db1e1",
+          "message": "Merge pull request #357 from Virus-Axel/bugfix/check_api\n\nFix bound methods parameter type error handling",
+          "timestamp": "2025-04-05T19:44:04+02:00",
+          "tree_id": "55a7c0bec228d1e753046898b5cc0ae5570a6ec3",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/f001e620d06c2302c1ffa697e86827e6358db1e1"
+        },
+        "date": 1743875536844,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
