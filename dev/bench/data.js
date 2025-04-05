@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1743272889129,
+  "lastUpdate": 1743830473483,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1009,6 +1009,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/993c0714c5f2bf01936d1aed68fadb40d833f012"
         },
         "date": 1743272887755,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.373287671232877,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a77f3671d5387f9a1bf82223f09756ec778567cb",
+          "message": "Merge pull request #356 from Virus-Axel/docs/api_docs\n\nAdd class method and enum documentations",
+          "timestamp": "2025-04-05T07:12:46+02:00",
+          "tree_id": "09844735bafb6ec3a678bf169025a3e1dea34b2e",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/a77f3671d5387f9a1bf82223f09756ec778567cb"
+        },
+        "date": 1743830471613,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
