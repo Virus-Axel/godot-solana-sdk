@@ -68,8 +68,7 @@ jobs:
                 cp godot-solana-sdk.gdextension bin/
                 cd ${{matrix.dir}}
                 ln -s ../../bin
-                mkdir .godot
-                echo "res://bin/godot-solana-sdk.gdextension" >> .godot/extension_list.cfg
+                godot --headless --import --path .
 
             - name: Setup Solana tools
               uses: metadaoproject/setup-solana@v1.0
@@ -152,5 +151,5 @@ jobs:
               shell: bash
               run: |
                 cd ${{matrix.dir}}
-                godot --headless --quit-after 5000 | ( ! grep FAIL)
+                godot --headless --path . --quit-after 5000 | ( ! grep FAIL)
                 exit $?

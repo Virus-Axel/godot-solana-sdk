@@ -25,6 +25,7 @@ protected:
      * @param freeze_authority Freeze authority of mint.
      * @param decimals Decimals to initialize with.
      * @return Variant Initialize mint instruction.
+     * @return Variant Null Variant on failure.
      */
     static Variant _initialize_mint(const Variant& token_program_pid, const Variant& mint_pubkey, const Variant& mint_authority, const Variant& freeze_authority = nullptr, const uint32_t decimals = 9);
 
@@ -36,6 +37,7 @@ protected:
      * @param mint_pubkey Mint key.
      * @param owner_pubkey Owner of token account.
      * @return Variant Initialize account Instruction.
+     * @return Variant Null Variant on failure.
      */
     static Variant _initialize_account(const Variant& token_program_pid, const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey);
 
@@ -126,6 +128,7 @@ public:
      * @param freeze_authority Freeze authority of mint.
      * @param decimals Decimals to initialize with.
      * @return Variant Initialize mint instruction.
+     * @return Variant Null Variant on failure.
      */
     static Variant initialize_mint(const Variant& mint_pubkey, const Variant& mint_authority, const Variant& freeze_authority = nullptr, const uint32_t decimals = 9);
 
@@ -136,6 +139,7 @@ public:
      * @param mint_pubkey Mint key.
      * @param owner_pubkey Owner of token account.
      * @return Variant Initialize account Instruction.
+     * @return Variant Null Variant on failure.
      */
     static Variant initialize_account(const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey);
 

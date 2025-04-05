@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3 uid="uid://o8gp1pp0i3eq"]
+
+[ext_resource type="Script" uid="uid://bgrcyrmffx1u4" path="res://check_api.gd" id="1_bu2hj"]
+
+[node name="CheckApi" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_bu2hj")
+
+[node name="Transaction" type="Transaction" parent="."]
+
+[node name="SolanaUtils" type="SolanaUtils" parent="."]
+
+[node name="SolanaClient" type="SolanaClient" parent="."]
+
+[node name="AnchorProgram" type="AnchorProgram" parent="."]
+
+[node name="candy_machine_core" type="candy_machine_core" parent="."]
+
+[node name="candy_guard" type="candy_guard" parent="."]
+
+[node name="TokenProgram" type="TokenProgram" parent="."]
+
+[node name="TokenProgram2022" type="TokenProgram2022" parent="."]
+
+[node name="AssociatedTokenAccountProgram" type="AssociatedTokenAccountProgram" parent="."]
+
+[node name="MplTokenMetadata" type="MplTokenMetadata" parent="."]
+
+[node name="mpl_core_program" type="mpl_core_program" parent="."]
+
+[node name="ComputeBudget" type="ComputeBudget" parent="."]
+
+[node name="SystemProgram" type="SystemProgram" parent="."]
+
+[node name="ShdwDrive" type="ShdwDrive" parent="."]
+
+[node name="WalletAdapter" type="WalletAdapter" parent="."]
