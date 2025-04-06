@@ -192,3 +192,32 @@ jobs:
           name: ${{ github.event.repository.name }}
           pattern: ${{ github.event.repository.name }}-*
           delete-merged: true
+
+  package:
+    runs-on: ubuntu-latest
+    needs: merge
+    steps:
+
+    - name: Checkout project
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ github.event.repository.name }}
+        path: ./bin
+
+    - name: Package Solanakit
+      shell: sh
+      run: |
+        ls -l bin/
+        cp -r bin addons/SolanaSDK/
+      
+    - name: Upload SolanaKit
+      uses: actions/upload-artifact@v4
+      with:
+        name: addons
+        path: |
+          ${{ github.workspace }}/addons
