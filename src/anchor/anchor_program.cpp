@@ -1,11 +1,11 @@
-#include "anchor_program.hpp"
+#include "anchor/anchor_program.hpp"
 
+#include "anchor/generic_anchor_node.hpp"
 #include "instruction.hpp"
 #include "pubkey.hpp"
 #include "sha256.hpp"
 #include "solana_client.hpp"
 #include "solana_utils.hpp"
-#include "anchor/generic_anchor_node.hpp"
 
 #include "godot_cpp/variant/utility_functions.hpp"
 #include <godot_cpp/classes/json.hpp>
@@ -376,11 +376,10 @@ void AnchorProgram::register_instruction_builders() {
 PackedByteArray AnchorProgram::discriminator_by_name(const String &name, const String &namespace_string) const {
 	SHA256 hasher;
 	hasher.update(namespace_string.to_ascii_buffer().ptr(), namespace_string.length());
-	if(name == "mint_v_1"){
+	if (name == "mint_v_1") {
 		String another_name = "mint_v1";
 		hasher.update(another_name.to_ascii_buffer().ptr(), another_name.length());
-	}
-	else{
+	} else {
 		hasher.update(name.to_ascii_buffer().ptr(), name.length());
 	}
 
@@ -894,7 +893,7 @@ String AnchorProgram::get_object_name(const Variant &anchor_type) {
 		if (anchor_type_dict.has("option")) {
 			return AnchorProgram::get_object_name(anchor_type_dict["option"]);
 		}
-		if(anchor_type_dict.has("vec")){
+		if (anchor_type_dict.has("vec")) {
 			return AnchorProgram::get_object_name(anchor_type_dict["vec"]);
 		}
 		if (anchor_type_dict.has("defined")) {
@@ -905,13 +904,13 @@ String AnchorProgram::get_object_name(const Variant &anchor_type) {
 	return "";
 }
 
-bool AnchorProgram::is_vec_type(const Variant &anchor_type){
+bool AnchorProgram::is_vec_type(const Variant &anchor_type) {
 	if (anchor_type.get_type() == Variant::DICTIONARY) {
 		const Dictionary anchor_type_dict = anchor_type;
 		if (anchor_type_dict.has("option")) {
 			return AnchorProgram::is_vec_type(anchor_type_dict["option"]);
 		}
-		if(anchor_type_dict.has("vec")){
+		if (anchor_type_dict.has("vec")) {
 			return true;
 		}
 	}
@@ -995,9 +994,15 @@ String AnchorProgram::get_godot_class_hint(const Variant &anchor_type) {
 		if (anchor_type_dict.has("vec")) {
 			return MAKE_RESOURCE_TYPE_HINT(AnchorProgram::get_godot_class_hint(anchor_type_dict["vec"]));
 		}
+		if (anchor_type_dict.has("tuple")) {
+			// TODO(Virax): Implement tuple support.
+			return "";
+		}
 		if (anchor_type_dict.has("type")) {
 			return get_godot_class_hint(anchor_type_dict["type"]);
 		}
+	} else if (anchor_type.get_type() == Variant::ARRAY) {
+		return "";
 	} else if (anchor_type.get_type() == Variant::STRING) {
 		const String type_string = anchor_type;
 		if (type_string == "publicKey") {
@@ -1024,7 +1029,7 @@ PropertyHint AnchorProgram::get_godot_hint(const Variant &anchor_type) {
 		if (anchor_type_dict.has("vec")) {
 			return PROPERTY_HINT_ARRAY_TYPE;
 		}
-		if(anchor_type_dict.has("type")){
+		if (anchor_type_dict.has("type")) {
 			return AnchorProgram::get_godot_hint(anchor_type_dict["type"]);
 		}
 	} else if (anchor_type.get_type() == Variant::STRING) {
@@ -1058,11 +1063,10 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
 	const Dictionary instruction_info = find_idl_instruction(name);
 
 	ERR_FAIL_COND_V_EDMSG(instruction_info.is_empty(), nullptr, (String("IDL does not contain an instruction named ") + name + ".").ascii());
-	
-	if(GenericAnchorNode::has_extra_accounts(get_idl_name(), name)){
+
+	if (GenericAnchorNode::has_extra_accounts(get_idl_name(), name)) {
 		ERR_FAIL_COND_V_EDMSG(((Array)instruction_info["accounts"]).size() > accounts.size(), nullptr, "Unexpected amount or accounts");
-	}
-	else{
+	} else {
 		ERR_FAIL_COND_V_EDMSG(((Array)instruction_info["accounts"]).size() != accounts.size(), nullptr, "Unexpected amount or accounts");
 	}
 
@@ -1102,9 +1106,9 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
 	}
 
 	// Extra accounts
-	for (unsigned int i = ref_accounts.size(); i < accounts.size(); i++){
+	for (unsigned int i = ref_accounts.size(); i < accounts.size(); i++) {
 		ERR_FAIL_COND_V_EDMSG_CUSTOM(accounts[i].get_type() != Variant::OBJECT, result, "Unknown object");
-		ERR_FAIL_COND_V_EDMSG_CUSTOM(!static_cast<Object*>(accounts[i])->is_class("AccountMeta"), result, "Extra Args are supposed to be AccountMetas");
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(!static_cast<Object *>(accounts[i])->is_class("AccountMeta"), result, "Extra Args are supposed to be AccountMetas");
 		result->append_meta(*memnew(AccountMeta(accounts[i])));
 	}
 

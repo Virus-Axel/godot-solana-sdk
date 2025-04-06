@@ -18,7 +18,7 @@
 #include "sha256.hpp"
 
 #include "account_meta.hpp"
-#include "anchor_program.hpp"
+#include "anchor/anchor_program.hpp"
 #include "hash.hpp"
 #include "instruction.hpp"
 #include "keypair.hpp"

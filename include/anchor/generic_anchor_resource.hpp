@@ -4,7 +4,7 @@
 #include "godot_cpp/classes/node.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
-#include "anchor_program.hpp"
+#include "anchor/anchor_program.hpp"
 #include "custom_class_management/generic_type.hpp"
 
 namespace godot {
@@ -85,7 +85,7 @@ private:
 protected:
 	/**
 	 * @brief Check if class is an extension class.
-	 * 
+	 *
 	 * @return true If class is an extension class.
 	 * @return false Otherwise.
 	 */
@@ -93,77 +93,77 @@ protected:
 
 	/**
 	 * @brief Get extension class name.
-	 * 
+	 *
 	 * @return const StringName* Pointer to class name.
 	 */
 	static const StringName *_get_extension_class_name();
 
 	/**
 	 * @brief Get _bind_methods method.
-	 * 
+	 *
 	 * @return BindMethodFunc _bind_methods method.
 	 */
 	static BindMethodFunc _get_bind_methods();
 
 	/**
 	 * @brief Get _notification method.
-	 * 
+	 *
 	 * @return NotificationMethod _notification method.
 	 */
 	static NotificationMethod _get_notification();
 
 	/**
 	 * @brief Get _set method.
-	 * 
+	 *
 	 * @return SetMethod _set method.
 	 */
 	static SetMethod _get_set();
 
 	/**
 	 * @brief Get _get method.
-	 * 
+	 *
 	 * @return GetMethod _get method.
 	 */
 	static GetMethod _get_get();
 
 	/**
 	 * @brief Get _get_property_list method.
-	 * 
+	 *
 	 * @return GetPropertyListMethod _get_property_list method.
 	 */
 	static GetPropertyListMethod _get_get_property_list();
 
 	/**
 	 * @brief Get _property_can_revert method.
-	 * 
+	 *
 	 * @return PropertyCanRevertMethod _property_can_revert method.
 	 */
 	static PropertyCanRevertMethod _get_property_can_revert();
 
 	/**
 	 * @brief Get _property_get_revert method.
-	 * 
+	 *
 	 * @return PropertyGetRevertMethod _property_get_revert method.
 	 */
 	static PropertyGetRevertMethod _get_property_get_revert();
 
 	/**
 	 * @brief Get _validate_property method.
-	 * 
+	 *
 	 * @return ValidatePropertyMethod _validate_property method.
 	 */
 	static ValidatePropertyMethod _get_validate_property();
 
 	/**
 	 * @brief Get _to_string method.
-	 * 
+	 *
 	 * @return ToStringMethod _to_string method.
 	 */
 	static ToStringMethod _get_to_string();
 
 	/**
 	 * @brief Register virtual methods.
-	 * 
+	 *
 	 * @tparam T This type.
 	 * @tparam B Parent type.
 	 */
@@ -174,7 +174,7 @@ protected:
 
 	/**
 	 * @brief Call bound notification function.
-	 * 
+	 *
 	 * @param p_what Notification type.
 	 * @param p_reversed Reversed.
 	 */
@@ -191,30 +191,30 @@ public:
 
 	/**
 	 * @brief Initializes a class
-	 * 
+	 *
 	 * Exposed method for increased control over godot bindings.
 	 */
 	static void initialize_class();
 
 	/**
 	 * @brief Get the class name of the Resource.
-	 * 
+	 *
 	 * @return const StringName& Reference to class name.
 	 */
 	static const StringName &get_class_static();
 
 	/**
 	 * @brief Get the class name of the Resource.
-	 * 
+	 *
 	 * @return StringName Class name.
 	 */
 	static const StringName &get_parent_class_static();
 
 	/**
 	 * @brief Bind notification function
-	 * 
+	 *
 	 * Exposed bind notification function for extra control over class methods.
-	 * 
+	 *
 	 * @param p_instance Pointer to instance.
 	 * @param p_what Notification type.
 	 * @param p_reversed reversed.
@@ -223,7 +223,7 @@ public:
 
 	/**
 	 * @brief Set the bind method function.
-	 * 
+	 *
 	 * @param p_instance Instance pointer.
 	 * @param p_name Property name.
 	 * @param p_value Property value.
@@ -231,13 +231,13 @@ public:
 	 * @return GDExtensionBool 1 on failure.
 	 */
 	static GDExtensionBool set_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value);
-	
+
 	/**
 	 * @brief Get the bind method function.
-	 * 
+	 *
 	 * @param p_instance Instance pointer
 	 * @param p_name Name of property.
-	 * @param r_ret Return variant pointer. 
+	 * @param r_ret Return variant pointer.
 	 * @return GDExtensionBool 0 on success.
 	 * @return GDExtensionBool 1 on failure.
 	 */
@@ -245,7 +245,7 @@ public:
 
 	/**
 	 * @brief Checks if get_property_list function has been overridden.
-	 * 
+	 *
 	 * @return true if get_property_list has been overridden.
 	 * @return false otherwise.
 	 */
@@ -253,7 +253,7 @@ public:
 
 	/**
 	 * @brief Get the property list bind method function.
-	 * 
+	 *
 	 * @param p_instance Instance pointer.
 	 * @param r_count Return counter.
 	 * @return const GDExtensionPropertyInfo* Property list.
@@ -268,17 +268,17 @@ public:
 
 	/**
 	 * @brief Check if property_can_revert_bind was overridden.
-	 * 
+	 *
 	 * @param p_instance Instance pointer.
 	 * @param p_name Name of property.
 	 * @return GDExtensionBool true if property_can_revert_bind is overridden.
 	 * @return GDExtensionBool false otherwise.
 	 */
 	static GDExtensionBool property_can_revert_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name);
-	
+
 	/**
 	 * @brief Check if property_get_revert is overridden.
-	 * 
+	 *
 	 * @param p_instance Instance pointer.
 	 * @param p_name Name of pointer.
 	 * @param r_ret Pointer to property.
@@ -286,35 +286,35 @@ public:
 	 * @return GDExtensionBool false otherwise.
 	 */
 	static GDExtensionBool property_get_revert_bind(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
-	
+
 	/**
 	 * @brief Check if validate_property has been overridden.
-	 * 
+	 *
 	 * @param p_instance Instance pointer.
 	 * @param p_property Pointer to property.
 	 * @return GDExtensionBool true if validate_property is overridden.
 	 * @return GDExtensionBool false otherwise.
 	 */
 	static GDExtensionBool validate_property_bind(GDExtensionClassInstancePtr p_instance, GDExtensionPropertyInfo *p_property);
-	
+
 	/**
 	 * @brief Check if property is enabled.
-	 * 
+	 *
 	 * @param property_name Property name.
 	 * @return true If property is enabled.
 	 * @return false If property is disabled.
 	 */
-	bool is_property_enabled(const StringName& property_name);
+	bool is_property_enabled(const StringName &property_name);
 
 	/**
 	 * @brief Get to_string return.
-	 * 
+	 *
 	 * @param p_instance Instance pointer.
 	 * @param r_is_valid Indicates that to_string is overridden.
 	 * @param r_out to_string output.
 	 */
 	static void to_string_bind(GDExtensionClassInstancePtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr r_out);
-	
+
 	/**
 	 * @brief Free static data.
 	 */
@@ -324,7 +324,7 @@ public:
 	 * @brief Placeholder method.
 	 */
 	static void *_gde_binding_create_callback(void * /*p_token*/, void * /*p_instance*/);
-	
+
 	/**
 	 * @brief Placeholder method.
 	 */
@@ -332,7 +332,7 @@ public:
 
 	/**
 	 * @brief Placeholder method.
-	 * 
+	 *
 	 * @return GDExtensionBool 1.
 	 */
 	static GDExtensionBool _gde_binding_reference_callback(void * /*p_token*/, void * /*p_instance*/, GDExtensionBool /*p_reference*/);
@@ -350,30 +350,30 @@ public:
 
 	/**
 	 * @brief Bind an anchor enum to godot.
-	 * 
+	 *
 	 * @param enum_data Anchor specification of an enum.
 	 */
 	static void bind_anchor_enum(const Dictionary &enum_data);
 
 	/**
 	 * @brief Bind anchor resource to godot.
-	 * 
+	 *
 	 * @param resource Anchor resource specification.
 	 */
 	static void bind_anchor_resource(const Dictionary &resource);
 
 	/**
 	 * @brief Bind special mint arg serialization methods.
-	 * 
+	 *
 	 * @param class_name Name of class to bind to.
 	 */
 	static void bind_mint_methods(const StringName &class_name);
 
 	/**
 	 * @brief Binds virtual methods
-	 * 
+	 *
 	 * @warning This method is disabled.
-	 * 
+	 *
 	 * @param class_name Name of class to bind to.
 	 * @param method_name Not used.
 	 */
@@ -381,7 +381,7 @@ public:
 
 	/**
 	 * @brief Set the class name of particular Resource.
-	 * 
+	 *
 	 * @param name Class name to set.
 	 */
 	static void set_class_name(const String &name) {
@@ -390,23 +390,23 @@ public:
 
 	/**
 	 * @brief Placeholder method
-	 * 
+	 *
 	 * @param property_data Not used.
 	 */
 	static void add_enum_properties(const Dictionary &property_data);
 
 	/**
 	 * @brief Add property to class.
-	 * 
+	 *
 	 * Binds property and automatically created setters and getters.
-	 * 
+	 *
 	 * @param property_data Property info.
 	 */
 	static void add_property(const Dictionary &property_data);
 
 	/**
 	 * @brief Get all property values.
-	 * 
+	 *
 	 * @param class_name Name of class to get values of.
 	 * @return Array Property values.
 	 */
@@ -414,7 +414,7 @@ public:
 
 	/**
 	 * @brief Serializes properties.
-	 * 
+	 *
 	 * @return PackedByteArray Serialized bytes.
 	 */
 	PackedByteArray serialize();
@@ -437,7 +437,7 @@ public:
 
 	/**
 	 * @brief Template method prototype.
-	 * 
+	 *
 	 * @return Variant nullptr.
 	 */
 	Variant no_get() {
@@ -447,7 +447,7 @@ public:
 
 	/**
 	 * @brief Template method prototype.
-	 * 
+	 *
 	 * @param value Not used.
 	 */
 	void no_set(const Variant &value) {
@@ -456,14 +456,14 @@ public:
 
 	/**
 	 * @brief Get the extra account metas for certain Candy Guard instructions.
-	 * 
+	 *
 	 * @return Array List of extra account metas.
 	 */
 	Array get_extra_account_metas();
 
 	/**
 	 * @brief Serialize core mint args for certain Candy Guard instructions.
-	 * 
+	 *
 	 * @return PackedByteArray Serialized bytes.
 	 */
 	PackedByteArray serialize_core_mint_args();

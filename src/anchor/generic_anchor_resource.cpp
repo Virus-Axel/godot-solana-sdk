@@ -15,7 +15,7 @@
 #include "godot_cpp/variant/utility_functions.hpp"
 
 #include "account_meta.hpp"
-#include "anchor_program.hpp"
+#include "anchor/anchor_program.hpp"
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
 
@@ -120,35 +120,35 @@ BindMethodFunc GenericAnchorResource::_get_bind_methods() {
 }
 
 NotificationMethod GenericAnchorResource::_get_notification() {
-	return (void(::godot::Wrapped::*)(int)) & GenericAnchorResource::_notification;
+	return (void (::godot::Wrapped::*)(int))&GenericAnchorResource::_notification;
 }
 
 SetMethod GenericAnchorResource::_get_set() {
-	return (bool(Wrapped::*)(const StringName &p_name, const Variant &p_property)) & GenericAnchorResource::_set;
+	return (bool (Wrapped::*)(const StringName &p_name, const Variant &p_property))&GenericAnchorResource::_set;
 }
 
 GetMethod GenericAnchorResource::_get_get() {
-	return (bool(Wrapped::*)(const StringName &p_name, Variant &r_ret) const) & GenericAnchorResource::_get;
+	return (bool (Wrapped::*)(const StringName &p_name, Variant &r_ret) const) & GenericAnchorResource::_get;
 }
 
 GetPropertyListMethod GenericAnchorResource::_get_get_property_list() {
-	return (void(Wrapped::*)(List<PropertyInfo> * p_list) const) & GenericAnchorResource::_get_property_list;
+	return (void (Wrapped::*)(List<PropertyInfo> *p_list) const) & GenericAnchorResource::_get_property_list;
 }
 
 PropertyCanRevertMethod GenericAnchorResource::_get_property_can_revert() {
-	return (bool(Wrapped::*)(const StringName &p_name) const) & GenericAnchorResource::_property_can_revert;
+	return (bool (Wrapped::*)(const StringName &p_name) const) & GenericAnchorResource::_property_can_revert;
 }
 
 PropertyGetRevertMethod GenericAnchorResource::_get_property_get_revert() {
-	return (bool(Wrapped::*)(const StringName &p_name, Variant &) const) & GenericAnchorResource::_property_get_revert;
+	return (bool (Wrapped::*)(const StringName &p_name, Variant &) const) & GenericAnchorResource::_property_get_revert;
 }
 
 ValidatePropertyMethod GenericAnchorResource::_get_validate_property() {
-	return (void(Wrapped::*)(PropertyInfo & p_property) const) & GenericAnchorResource::_validate_property;
+	return (void (Wrapped::*)(PropertyInfo &p_property) const) & GenericAnchorResource::_validate_property;
 }
 
 ToStringMethod GenericAnchorResource::_get_to_string() {
-	return (String(Wrapped::*)() const)&GenericAnchorResource::_to_string;
+	return (String (Wrapped::*)() const) & GenericAnchorResource::_to_string;
 }
 
 void GenericAnchorResource::initialize_class() {
@@ -794,6 +794,7 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) {
 
 		// Extra props
 		const Array field_types = enum_field_map[object_type];
+
 		for (unsigned int i = 0; i < field_types.size(); i++) {
 			const Dictionary field_type = field_types[i];
 			if (!field_type.has("fields")) {
@@ -802,9 +803,9 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) {
 
 			const String value_field_name = field_type["name"];
 			const Array value_field_types = field_type["fields"];
-
+			
 			for (unsigned int j = 0; j < value_field_types.size(); j++) {
-				const Dictionary value_field_type = value_field_types[j];
+				const Variant value_field_type = value_field_types[j];
 				const String enum_value_name = value_field_name + String("_value_") + String::num_uint64(j);
 				if (property_database[get_class_static()].find(enum_value_name) != property_database[get_class_static()].end()) {
 					continue;
@@ -814,7 +815,6 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) {
 				const String enum_value_hint_string = AnchorProgram::get_godot_class_hint(value_field_type);
 				const PropertyHint enum_value_hint = AnchorProgram::get_godot_hint(value_field_type);
 				const String extra_type_info = AnchorProgram::get_int_type_info(value_field_type);
-
 				const ResourcePropertyInfo enum_value_info = ResourcePropertyInfo{
 					.property_info = PropertyInfo(enum_value_godot_type, enum_value_name, enum_value_hint, enum_value_hint_string),
 					.value = godot_type_defval(enum_value_godot_type),
