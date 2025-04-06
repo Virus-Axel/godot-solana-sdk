@@ -11,7 +11,6 @@ var dir_d44c64559bbebec7f509842c48db8b23 =
     [ "wallet_adapter", "dir_3d74e32432710667f9edafd9fe2c3ff0.html", "dir_3d74e32432710667f9edafd9fe2c3ff0" ],
     [ "account.hpp", "account_8hpp_source.html", null ],
     [ "account_meta.hpp", "account__meta_8hpp_source.html", null ],
-    [ "anchor_program.hpp", "anchor__program_8hpp_source.html", null ],
     [ "curve25519.hpp", "curve25519_8hpp_source.html", null ],
     [ "hash.hpp", "hash_8hpp_source.html", null ],
     [ "honeycomb.hpp", "honeycomb_8hpp_source.html", null ],
