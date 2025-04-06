@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1743875538142,
+  "lastUpdate": 1743918444926,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1067,6 +1067,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/f001e620d06c2302c1ffa697e86827e6358db1e1"
         },
         "date": 1743875536844,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.373287671232877,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b70193d0ef3aef26c5b52aaf9052f10a291e7398",
+          "message": "Merge pull request #358 from Virus-Axel/bugfix/remove_tuple_warnings\n\nRemove unknown type warnings at init",
+          "timestamp": "2025-04-06T07:38:59+02:00",
+          "tree_id": "1ba012338a0094aa4c3f273432fb0494207900b2",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/b70193d0ef3aef26c5b52aaf9052f10a291e7398"
+        },
+        "date": 1743918443103,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
