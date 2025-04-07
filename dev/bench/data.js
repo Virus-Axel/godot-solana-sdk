@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1744049025479,
+  "lastUpdate": 1744056802710,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1159,6 +1159,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.366438356164384,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c4461b9e111bd6477ab00c454b0a305105f31354",
+          "message": "Merge pull request #361 from Virus-Axel/bugfix/optimize_workflows\n\nUse artifact instead of building",
+          "timestamp": "2025-04-07T22:05:02+02:00",
+          "tree_id": "3fba817a870acdc1da670a2c68e184262837d2a2",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/c4461b9e111bd6477ab00c454b0a305105f31354"
+        },
+        "date": 1744056801395,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.363013698630137,
             "unit": "Percent"
           }
         ]
