@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1743918444926,
+  "lastUpdate": 1744045686122,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1096,6 +1096,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/b70193d0ef3aef26c5b52aaf9052f10a291e7398"
         },
         "date": 1743918443103,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.373287671232877,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d952c865c02006633f872bd2e3be9d8cb8743417",
+          "message": "Merge pull request #359 from Virus-Axel/feature/package_plugin\n\nAdd package plugin",
+          "timestamp": "2025-04-07T18:59:32+02:00",
+          "tree_id": "a7407711df3850a965dda2f2e08f4082b5192032",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/d952c865c02006633f872bd2e3be9d8cb8743417"
+        },
+        "date": 1744045684897,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
