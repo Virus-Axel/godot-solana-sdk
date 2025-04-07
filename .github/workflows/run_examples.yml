@@ -1,8 +1,8 @@
 name: Run Examples
 on:
-  push:
-  pull_request:
-  workflow_dispatch:
+  workflow_run:
+    workflows: ['🛠️ Builds']
+    types: [completed]
 
 jobs:
     check_example_directories:
