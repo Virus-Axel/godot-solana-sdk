@@ -1,8 +1,6 @@
 name: Run Examples
 on:
-  workflow_run:
-    workflows: ['🛠️ Builds']
-    types: [completed]
+  workflow_call:
 
 jobs:
     check_example_directories:
@@ -34,8 +32,6 @@ jobs:
               with:
                 name: ${{ github.event.repository.name }}
                 path: ./bin
-                github-token: ${{ secrets.GITHUB_TOKEN }}
-                run-id: ${{ github.event.workflow_run.id }}
 
             - name: Set up Python
               uses: actions/setup-python@v2
