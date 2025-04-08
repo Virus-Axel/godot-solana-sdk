@@ -221,3 +221,7 @@ jobs:
         name: addons
         path: |
           ${{ github.workspace }}/addons
+
+  tests:
+    needs: build
+    uses: ./.github/workflows/run_examples.yml
