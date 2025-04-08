@@ -54,11 +54,6 @@ jobs:
                     use-dotnet: false
                     include-templates: true
 
-            - name: Checkout project
-              uses: actions/checkout@v2
-              with:
-                submodules: recursive
-
             - name: Prepare project 
               shell: bash
               run: |
