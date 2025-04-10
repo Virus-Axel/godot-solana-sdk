@@ -1,14 +1,15 @@
 #include "pubkey.hpp"
 #include "utils.hpp"
 
+#include "godot_cpp/classes/json.hpp"
+#include "godot_cpp/classes/random_number_generator.hpp"
+#include "godot_cpp/core/class_db.hpp"
 #include "sha256.hpp"
-#include <godot_cpp/classes/random_number_generator.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <solana_utils.hpp>
 
 #include "account_meta.hpp"
 #include "curve25519.hpp"
 #include "keypair.hpp"
+#include "solana_utils.hpp"
 #include "spl_token.hpp"
 #include "wallet_adapter.hpp"
 
@@ -397,8 +398,11 @@ PackedByteArray Pubkey::bytes_from_variant(const Variant &other) {
 			bytes.resize(32);
 			return bytes;
 		}
+	} else if (static_cast<Object *>(other)->get_class() == "JSON") {
+		const Variant keypair = Keypair::new_from_bytes(PackedByteArray(Object::cast_to<JSON>(other)->get_data()));
+		return Object::cast_to<Keypair>(keypair)->get_public_bytes();
 	} else {
-		const Array params = build_array(static_cast<Object*>(other)->get_class());
+		const Array params = build_array(static_cast<Object *>(other)->get_class());
 		ERR_FAIL_V_EDMSG(PackedByteArray(), String("Bug: Unknown object {0}. Please report.").format(params));
 	}
 }
@@ -428,6 +432,10 @@ String Pubkey::string_from_variant(const Variant &other) {
 			// Return placeholder
 			return SolanaUtils::ZERO_ENCODED_32.c_str();
 		}
+
+	} else if (static_cast<Object *>(other)->get_class() == "JSON") {
+		const Variant keypair = Keypair::new_from_bytes(PackedByteArray(Object::cast_to<JSON>(other)->get_data()));
+		return Object::cast_to<Keypair>(keypair)->get_public_string();
 	} else {
 		ERR_FAIL_V_EDMSG("", "Bug: Unknown object. Please report.");
 	}
@@ -642,14 +650,6 @@ void Pubkey::operator=(const Variant &other) {
 
 bool Pubkey::operator==(const Pubkey &other) const {
 	return (bytes == other.bytes);
-}
-
-Pubkey::operator StringName() const {
-	return to_string();
-}
-
-Pubkey::operator PackedByteArray() const {
-	return to_bytes();
 }
 
 Pubkey::~Pubkey() {

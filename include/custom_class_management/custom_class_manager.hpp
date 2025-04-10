@@ -8,6 +8,10 @@
 #include "godot_cpp/variant/string_name.hpp"
 
 namespace godot {
+
+/**
+ * @brief Manager for regestering custom classes within extension.
+ */
 class CustomClassManager {
 private:
 	static std::unordered_map<StringName, GDExtensionClassCallVirtual> virtual_methods;
@@ -15,6 +19,13 @@ private:
 public:
 	CustomClassManager() = default;
 
+	/**
+	 * @brief Registers virtual methods.
+	 * 
+	 * @warning This method does not do anything at the moment, don't use.
+	 * 
+	 * @param class_name Name of the class.
+	 */
 	void register_virtual_methods(const StringName &class_name);
 
 	~CustomClassManager() = default;

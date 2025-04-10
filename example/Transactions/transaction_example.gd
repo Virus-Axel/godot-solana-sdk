@@ -4,7 +4,7 @@ extends VBoxContainer
 @onready var payer: Keypair = Keypair.new_from_file("res://payer.json")
 const LAMPORTS_PER_SOL = 1000000000
 
-const TOTAL_CASES := 14
+const TOTAL_CASES := 15
 var passed_test_mask := 0
 
 
@@ -18,7 +18,7 @@ func transaction_example_airdrop_to():
 	# so building a transaction is not necessary
 	
 
-	$SolanaClient.request_airdrop(payer.get_public_string(), 2 * LAMPORTS_PER_SOL)
+	$SolanaClient.request_airdrop(payer.get_public_string(), 3 * LAMPORTS_PER_SOL)
 	var response = await $SolanaClient.http_response_received
 
 	# Error check the RPC result
@@ -277,6 +277,20 @@ func handle_set_payer_on_deserialized_transaction():
 	PASS(13)
 
 
+func send_transaction_from_scene_tree():
+	var account_key = Keypair.new_random()
+	var ix: Instruction = SystemProgram.create_account(payer, account_key, 1000000, 10, SystemProgram.get_pid())
+	$Transaction.set_instructions([ix])
+	
+	$Transaction.update_latest_blockhash()
+	$Transaction.sign_and_send()
+	
+	var response = await $Transaction.transaction_response_received
+	assert(response.has("result"))
+	
+	PASS(14)
+
+
 func _ready():
 	# Use a local cluster for unlimited Solana airdrops.
 	# SolanaClient defaults to devnet cluster URL if not specified.
@@ -294,6 +308,7 @@ func _ready():
 	transaction_from_bytes()
 	string_as_account_input()
 	handle_set_payer_on_deserialized_transaction()
+	send_transaction_from_scene_tree()
 
 
 func _on_timeout_timeout():

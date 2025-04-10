@@ -1,6 +1,6 @@
 extends Control
 
-const TOTAL_CASES := 3
+const TOTAL_CASES := 4
 var passed_test_mask := 0
 
 const MINT_SIZE := 82
@@ -74,6 +74,20 @@ func test_fetch_metadata():
 	PASS(1)
 
 
+func fetch_problematic_metadatas():
+	var problematic_nfts = [
+		"5duyy3TK4BKqFgkDKTLxBbEhvGUYw7MtiXjqn3HYu8B",
+		"DRoM1mVPrCQzd4TmMZtS5oKJwbfdMnjumuNBn6nPCCwK",
+		"6xcLZd5eqQWqt292bJxkBanoxKMjPSc8KomayQ4j2M8m",
+	]
+	
+	for problem_nft in problematic_nfts:
+		$MplTokenMetadata.get_mint_metadata(mint_keypair)
+		var metadata = await $MplTokenMetadata.metadata_fetched
+
+	PASS(3)
+
+
 func test_fetch_usdc_metadata():
 	var usdc_address = Pubkey.new_from_string("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
 	$MplTokenMetadata.get_mint_metadata(usdc_address)
@@ -100,6 +114,7 @@ func _ready() -> void:
 	await test_create_metadata()
 	await test_fetch_metadata()
 	await test_fetch_usdc_metadata()
+	await fetch_problematic_metadatas()
 
 
 func _on_timeout_timeout():

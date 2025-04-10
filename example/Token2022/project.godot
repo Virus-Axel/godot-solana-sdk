@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Token2022"
 run/main_scene="res://token_2022_demo.tscn"
-config/features=PackedStringArray("4.2", "GL Compatibility")
+config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [rendering]
@@ -24,3 +24,7 @@ renderer/rendering_method.mobile="gl_compatibility"
 
 client/default_url="http://localhost:8899"
 client/default_ws_port=8900
+
+[threading]
+
+worker_pool/max_threads=1

@@ -181,13 +181,20 @@ String SolanaUtils::bs64_encode(PackedByteArray bytes) {
 }
 
 PackedByteArray SolanaUtils::bs64_decode(String input) {
+	if(input.is_empty()){
+		return PackedByteArray();
+	}
+
 	PackedByteArray result;
 	int cutoff = 0;
 
 	// Buffer size with padding
 	result.resize(input.length() * 6 / 8); // Maybe should be ceiled...
 	for (unsigned int i = 0; i < input.length(); i++) {
-		int val = int(std::find(BASE_64_MAP.begin(), BASE_64_MAP.end(), input[i]) - BASE_64_MAP.begin());
+		const auto element = std::find(BASE_64_MAP.begin(), BASE_64_MAP.end(), input[i]);
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(element == BASE_64_MAP.end(), PackedByteArray(), "Invalid input.");
+
+		int val = int(element - BASE_64_MAP.begin());
 
 		if (input[i] == '=') {
 			if (i == input.to_utf8_buffer().size() - 1) {

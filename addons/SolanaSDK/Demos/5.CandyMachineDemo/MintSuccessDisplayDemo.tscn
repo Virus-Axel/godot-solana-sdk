@@ -1,0 +1,148 @@
+[gd_scene load_steps=7 format=3 uid="uid://crbvwhxhee4ds"]
+
+[ext_resource type="Script" uid="uid://khidadi6f8ul" path="res://addons/SolanaSDK/Demos/5.CandyMachineDemo/mint_display.gd" id="1_jna51"]
+[ext_resource type="Script" uid="uid://fyl7vadeoj03" path="res://addons/SolanaSDK/Scripts/Utility/DisplaySystems/Assets/displayable_asset.gd" id="4_rx3nx"]
+[ext_resource type="Texture2D" uid="uid://dkyfoudbohuqq" path="res://addons/SolanaSDK/Textures/missingicon.png" id="5_8kmi8"]
+[ext_resource type="AudioStream" uid="uid://cojs82uu73ctv" path="res://Sounds/UI/buttonpress.mp3" id="7_e5287"]
+[ext_resource type="Texture2D" uid="uid://cidquspubtjjb" path="res://Textures/Socials/webicon.png" id="9_43s7o"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vqr1a"]
+
+[node name="MintSuccessDisplayDemo" type="Control" node_paths=PackedStringArray("displayable_asset", "loading_screen")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+script = ExtResource("1_jna51")
+displayable_asset = NodePath("Content/MintSuccessScreen/RubianDetails")
+loading_screen = NodePath("FinalizingMint")
+
+[node name="Background" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"PanelFlat"
+
+[node name="Content" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 50
+theme_override_constants/margin_top = 50
+theme_override_constants/margin_right = 50
+theme_override_constants/margin_bottom = 50
+
+[node name="MintSuccessScreen" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="NewRubianMinted" type="Label" parent="Content/MintSuccessScreen"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_type_variation = &"HeaderMedium"
+text = "New Asset Minted!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RubianDetails" type="VBoxContainer" parent="Content/MintSuccessScreen" node_paths=PackedStringArray("visual", "name_label")]
+layout_mode = 2
+theme_override_constants/separation = 50
+alignment = 1
+script = ExtResource("4_rx3nx")
+visual = NodePath("RubianVisual/MarginContainer/Visual")
+image_size = 1024
+name_label = NodePath("RubianName/NameLabel")
+
+[node name="RubianName" type="HBoxContainer" parent="Content/MintSuccessScreen/RubianDetails"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="NameLabel" type="Label" parent="Content/MintSuccessScreen/RubianDetails/RubianName"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+text = "Asset Name"
+
+[node name="RubianVisual" type="PanelContainer" parent="Content/MintSuccessScreen/RubianDetails"]
+custom_minimum_size = Vector2(450, 450)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="Content/MintSuccessScreen/RubianDetails/RubianVisual"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Visual" type="TextureRect" parent="Content/MintSuccessScreen/RubianDetails/RubianVisual/MarginContainer"]
+layout_mode = 2
+texture = ExtResource("5_8kmi8")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TextureButton" type="TextureButton" parent="Content/MintSuccessScreen/RubianDetails/RubianVisual"]
+visible = false
+layout_mode = 2
+texture_normal = ExtResource("9_43s7o")
+stretch_mode = 5
+
+[node name="Description" type="Label" parent="Content/MintSuccessScreen/RubianDetails"]
+custom_minimum_size = Vector2(347.035, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Welcome to the best community of web3"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ActionButtons" type="VBoxContainer" parent="Content/MintSuccessScreen/RubianDetails"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="CloseButton" type="Button" parent="Content/MintSuccessScreen/RubianDetails/ActionButtons"]
+custom_minimum_size = Vector2(350, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"ButtonAlt"
+text = "Close"
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Content/MintSuccessScreen/RubianDetails/ActionButtons/CloseButton"]
+stream = ExtResource("7_e5287")
+
+[node name="FinalizingMint" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_vqr1a")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="FinalizingMint"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Text" type="Label" parent="FinalizingMint/VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+theme_override_font_sizes/font_size = 51
+text = "Minting in progress"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="Content/MintSuccessScreen/RubianDetails/ActionButtons/CloseButton" to="." method="close"]

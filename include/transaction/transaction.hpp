@@ -18,8 +18,15 @@ enum ConfirmationLevel {
 	FINALIZED,
 };
 
-class Transaction : public Node {
-	GDCLASS(Transaction, Node)
+/**
+ * @brief Used to construct and send transactions on Solana blockchain.
+ * 
+ * This class is an essential class in all Solana interaction. It is used in all underlying
+ * on-chain communication where the state of the blockchain is changed. It handles the whole
+ * procees of compiling, signing and sending.
+ */
+class Transaction : public SolanaClient {
+	GDCLASS(Transaction, SolanaClient)
 
 private:
 	unsigned int processed_connections = 0;
@@ -79,57 +86,205 @@ private:
 	void _emit_finalized_callback(const Dictionary &params);
 
 protected:
+	/**
+	 * @brief @bindmethods{Transaction, Node}
+	 */
 	static void _bind_methods();
 
 public:
 	Transaction();
+
+	/**
+	 * @brief Assembles this Transaction from a serialized Transaction.
+	 * 
+	 * @param bytes The serialized Transaction to reconstruct.
+	 */
 	void from_bytes(const PackedByteArray &bytes);
 
+	/**
+	 * @brief Creates a new Transaction from a serialized Transaction.
+	 * 
+	 * @param bytes The serialized Transaction to reconstruct.
+	 * @return Variant Reconstructed Transaction.
+	 */
 	static Variant new_from_bytes(const PackedByteArray &bytes);
 
+	/**
+	 * @_ready
+	 */
 	void _ready() override;
+
+	/**
+	 * @_process
+	 */
 	void _process(double delta) override;
 
+	/**
+	 * @brief @setter{instruction, p_value}
+	 */
 	void set_instructions(const Array &p_value);
+
+	/**
+	 * @getter{instruction, Array}
+	 */
 	Array get_instructions();
 
+	/**
+	 * @setter{payer, p_value}
+	 */
 	void set_payer(const Variant &p_value);
+
+	/**
+	 * @getter{payer, Variant}
+	 */
 	Variant get_payer();
 
+	/**
+	 * @setter{url_override, p_value}
+	 */
 	void set_url_override(const String &p_value);
 
 	// The following functions need to comply with godot layout.
 	/* NOLINTBEGIN(bugprone-easily-swappable-parameters)*/
+	/**
+	 * @_set{Transaction}
+	 */
 	bool _set(const StringName &p_name, const Variant &p_value);
+
+	/**
+	 * @_get{Transaction}
+	 */
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	/* NOLINTBEGIN(bugprone-easily-swappable-parameters)*/
 
+	/**
+	 * @setter{signers, p_value}
+	 */
 	void set_signers(const Array &p_value);
+
+	/**
+	 * @getter{signers, Array}
+	 */
 	Array get_signers();
 
+	/**
+	 * @setter{unit_limit, value}
+	 */
 	void set_unit_limit(const uint32_t value);
+
+	/**
+	 * @getter{unit_limit, uint32_t}
+	 */
 	uint32_t get_unit_limit() const;
 
+	/**
+	 * @setter{unit_limit, value}
+	 */
 	void set_unit_price(const uint32_t value);
+
+	/**
+	 * @getter{unit_price, uint32_t}
+	 */
 	uint32_t get_unit_price() const;
 
+	/**
+	 * @setter{external_payer, p_value}
+	 */
 	void set_external_payer(bool p_value);
+
+	/**
+	 * @getter{external_payer, bool}
+	 */
 	bool get_external_payer() const;
 
+	/**
+	 * @brief Sends a request to update latest blockhash or updates from parameter.
+	 * 
+	 * If the custom_hash is empty the latest blockhash will be fetched from the RPC node.
+	 * If the custom_hash is provided, the latest blockhash will be set to the provided hash.
+	 * 
+	 * @param custom_hash Base58 encoded blockhash, can be empty.
+	 */
 	void update_latest_blockhash(const String &custom_hash = "");
+
+	/**
+	 * @brief Adds an instruction to the instruction array.
+	 * 
+	 * @param instruction Instruction to add.
+	 */
 	void add_instruction(const Variant &instruction);
 
+	/**
+	 * @serializer{Transaction}
+	 */
 	PackedByteArray serialize();
+
+	/**
+	 * @serializer{Transaction's Message}
+	 */
 	PackedByteArray serialize_message();
+
+	/**
+	 * @serializer{Transaction's signers}
+	 */
 	PackedByteArray serialize_signers();
+
+	/**
+	 * @brief Sign the transaction with available signers.
+	 * 
+	 * Asynchronously fills the signature array with the available signers. If a WalletAdapter is
+	 * present as a signer, a popup window should appear for user approval. Signers provided from
+	 * AccountMeta's when building an instruction are saved internally and does not need to be added
+	 * with set_signers.
+	 * 
+	 * @return Error Status of sign.
+	 */
 	Error sign();
+
+	/**
+	 * @brief Send a Transaction to the RPC node.
+	 * 
+	 * @note Transactions should be fully signed at this point.
+	 */
 	void send();
+
+	/**
+	 * @brief Sign and send a Transaction.
+	 * 
+	 * @return Variant OK.
+	 */
 	Variant sign_and_send();
+
+	/**
+	 * @brief Adds required signatures using provided list of signers.
+	 * 
+	 * @param array Signatures to sign with.
+	 * @return Error Status of signing.
+	 */
 	Error partially_sign(const Array &array);
 
+	/**
+	 * @brief Called when send is finalized.
+	 * 
+	 * @param params Send response.
+	 */
 	void send_callback(Dictionary params);
+
+	/**
+	 * @brief Called when blockhash request is finalized.
+	 * 
+	 * @param params Request response.
+	 */
 	void blockhash_callback(Dictionary params);
+
+	/**
+	 * @setter{address_lookup_tables}
+	 */
 	void set_address_lookup_tables(const Array &address_lookup_tables);
+
+	/**
+	 * @getter{address_lookup_tables, Array}
+	 */
 	Array get_address_lookup_tables();
 
 	~Transaction() = default;

@@ -194,18 +194,17 @@ void Transaction::copy_connection_state() {
 }
 
 void Transaction::subscribe_to_signature(ConfirmationLevel confirmation_level) {
-	ERR_FAIL_COND_EDMSG_CUSTOM(subscribe_client == nullptr, "Invalid state");
 	switch (confirmation_level) {
 		case CONFIRMED:
-			subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_confirmed_callback), "confirmed");
+			signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_confirmed_callback), "confirmed");
 			break;
 
 		case PROCESSED:
-			subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_processed_callback), "processed");
+			signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_processed_callback), "processed");
 			break;
 
 		case FINALIZED:
-			subscribe_client->signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_finalized_callback), "finalized");
+			signature_subscribe(result_signature, callable_mp(this, &Transaction::_emit_finalized_callback), "finalized");
 			break;
 
 		default:
@@ -352,10 +351,9 @@ void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::INT, "unit_limit"));
 		p_list->push_back(PropertyInfo(Variant::INT, "unit_price"));
 	}
-	p_list->push_back(PropertyInfo(Variant::BOOL, "skip_preflight"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "external_payer", PROPERTY_HINT_NONE, "false"));
 	if (!external_payer) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair,JSON"));
 	} else {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "payer", PROPERTY_HINT_NODE_TYPE, "WalletAdapter"));
 	}
@@ -402,30 +400,15 @@ Variant Transaction::new_from_bytes(const PackedByteArray &bytes) {
 Transaction::Transaction() :
 		subscribe_client(memnew_custom(SolanaClient)), blockhash_client(memnew_custom(SolanaClient)), send_client(memnew_custom(SolanaClient)) {
 	// Override because we call process functions ourselves.
-	send_client->set_async_override(true);
-	blockhash_client->set_async_override(true);
-	subscribe_client->set_async_override(true);
-
-	send_client->set_url_override(url_override);
-	blockhash_client->set_url_override(url_override);
+	set_async_override(true);
+	set_url_override(url_override);
 }
 
 void Transaction::_ready() {
 }
 
 void Transaction::_process(double delta) {
-	if (pending_send) {
-		send_client->_process(delta);
-	}
-	if (pending_blockhash) {
-		blockhash_client->_process(delta);
-	}
-	if (subscribe_client != nullptr) {
-		blockhash_client->_process(delta);
-		if (active_subscriptions != 0U) {
-			subscribe_client->_process(delta);
-		}
-	}
+	SolanaClient::_process(delta);
 
 	// Detect new connections after transaction is performed.
 	if (!result_signature.is_empty()) {
@@ -486,8 +469,8 @@ void Transaction::update_latest_blockhash(const String &custom_hash) {
 
 	if (custom_hash.is_empty()) {
 		pending_blockhash = true;
-		blockhash_client->connect("http_response_received", callable_mp(this, &Transaction::blockhash_callback), CONNECT_ONE_SHOT);
-		blockhash_client->get_latest_blockhash();
+		connect("http_response_received", callable_mp(this, &Transaction::blockhash_callback), CONNECT_ONE_SHOT);
+		get_latest_blockhash();
 	} else {
 		latest_blockhash_string = custom_hash;
 		message.set_latest_blockhash(custom_hash);
@@ -603,8 +586,8 @@ void Transaction::send() {
 	}
 
 	pending_send = true;
-	send_client->connect("http_response_received", callable_mp(this, &Transaction::send_callback), CONNECT_ONE_SHOT);
-	send_client->send_transaction(SolanaUtils::bs64_encode(serialized_bytes), UINT64_MAX, skip_preflight);
+	connect("http_response_received", callable_mp(this, &Transaction::send_callback), CONNECT_ONE_SHOT);
+	send_transaction(SolanaUtils::bs64_encode(serialized_bytes), UINT64_MAX, skip_preflight);
 }
 
 Error Transaction::sign() {

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://3mxuwlxc4nqy"]
 
-[ext_resource type="Script" path="res://KeypairDemo.gd" id="1_ts5p3"]
+[ext_resource type="Script" uid="uid://cx4u6v11mlmpc" path="res://KeypairDemo.gd" id="1_ts5p3"]
 
 [node name="KeypairDemo" type="VBoxContainer"]
 anchors_preset = 8

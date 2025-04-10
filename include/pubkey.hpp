@@ -45,9 +45,24 @@ private:
 	static bool is_variant_valid_key(const Variant &variant);
 
 protected:
+	/**
+	 * @brief @bindmethods{Pubkey, Resource}
+	 */
 	static void _bind_methods();
+
+	/**
+	 * @_set{Pubkey}
+	 */
 	bool _set(const StringName &p_name, const Variant &p_value);
+
+	/**
+	 * @_get{Pubkey}
+	 */
 	bool _get(const StringName &p_name, Variant &r_ret) const;
+	
+	/**
+	 * @_get_property_list
+	 */
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
@@ -445,11 +460,21 @@ public:
 	 */
 	bool get_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address);
 
+	/**
+	 * @brief Assign this Pubkey from a Variant.
+	 * 
+	 * @param other Pubkey compatible key Variant.
+	 */
 	void operator=(const Variant &other);
-	bool operator==(const Pubkey &other) const;
 
-	operator StringName() const;
-	operator PackedByteArray() const;
+	/**
+	 * @brief Compare two pubkeys.
+	 * 
+	 * @param other Pubkey to compare to.
+	 * @return true If Pubkeys are equal.
+	 * @return false If Pubkeys are not equal.
+	 */
+	bool operator==(const Pubkey &other) const;
 
 	~Pubkey();
 };
