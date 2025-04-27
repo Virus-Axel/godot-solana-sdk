@@ -22,7 +22,6 @@ func try_unlock() -> void:
 		return
 		
 	var held_nft_list:Array[WalletAsset] = SolanaService.asset_manager.get_owned_assets_from_collection(collection_gate)
-	
 	match lock_type:
 		NFTLockType.HELD_AMOUNT:
 			set_interactable(held_nft_list.size()>=unlock_amount)
