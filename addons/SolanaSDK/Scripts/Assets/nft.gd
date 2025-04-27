@@ -15,9 +15,12 @@ func get_category() -> String:
 	else:
 		return ""
 		
-#func get_collection_mint() -> Pubkey:
-	#var nft_collection:MetaDataCollection = metadata.get_collection()[0]
-	#return nft_collection.key
+func get_collection_mint() -> Pubkey:
+	if metadata.get_collection() == null:
+		return null
+		
+	var nft_collection:MetaDataCollection = metadata.get_collection()
+	return nft_collection.key
 	
 func is_3D_model() -> bool:
 	return get_category() == "vr"

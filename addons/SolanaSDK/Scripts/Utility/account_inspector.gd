@@ -1,7 +1,7 @@
 extends Node
 class_name AccountInspector
 
-enum InspectSite {SOLSCAN,EXPLORER,SOLANAFM}
+enum InspectSite {SOLSCAN,EXPLORER}
 
 func get_tx_link(tx_id:String,inspect_site:InspectSite=InspectSite.SOLSCAN) -> String:
 	var link = get_link_base(inspect_site)
@@ -24,16 +24,20 @@ func get_link_base(inspect_site:InspectSite) -> String:
 			base = "https://solscan.io/"
 		InspectSite.EXPLORER:
 			base = "https://explorer.solana.com/"
-		InspectSite.SOLANAFM:
-			base = "https://solana.fm/"
 	return base
 			
 func get_cluster_extension(inspect_site:InspectSite) -> String:
 	var extension:String
-	if SolanaService.rpc_cluster == SolanaService.RpcCluster.DEVNET:
+	if SolanaService.rpc_cluster == SolanaService.RpcCluster.MAINNET:
+		extension = ""
+	elif SolanaService.rpc_cluster == SolanaService.RpcCluster.DEVNET:
 		extension = "?cluster=devnet"
-		if inspect_site == InspectSite.SOLANAFM:
-			extension += "-alpha"
-			
+	else:
+		extension = "?cluster=custom&customUrl="
+		if SolanaService.rpc_cluster == SolanaService.RpcCluster.MAGICBLOCK:
+			extension += SolanaService.magicblock_rpc.uri_encode()
+		elif SolanaService.rpc_cluster == SolanaService.RpcCluster.HONEYNET:
+			extension += SolanaService.honeycomb_rpc.uri_encode()
+		
 	return extension
 	
