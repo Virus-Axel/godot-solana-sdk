@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1744139708422,
+  "lastUpdate": 1745777578886,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1270,6 +1270,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/3867ffcf1c3fc79ba358f3f33b8d51309c3790ae"
         },
         "date": 1744139707180,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.373287671232877,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "102485601+ZenRepublic@users.noreply.github.com",
+            "name": "Zen Republic",
+            "username": "ZenRepublic"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fab099b9acda7bdc2c98821f80a6bba172326adc",
+          "message": "Addon Session Key smart contract to addon\n\n* 1.4 update addon\n\nSession Keys + Minor fixes\n\n* Session Keys\n\n+ minor fixes\n\nAdd fetching owner of wallet asset + better transaction data custom data handling",
+          "timestamp": "2025-04-27T20:04:28+02:00",
+          "tree_id": "88ba77a5381d4ac6a42d6f2b440e6aa8c1ee5446",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/fab099b9acda7bdc2c98821f80a6bba172326adc"
+        },
+        "date": 1745777577664,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
