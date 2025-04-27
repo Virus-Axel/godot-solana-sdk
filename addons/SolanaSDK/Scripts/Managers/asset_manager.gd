@@ -243,11 +243,11 @@ func get_owned_asset(asset_mint:Pubkey) -> WalletAsset:
 	return null
 
 func get_owned_assets() -> Array[WalletAsset]:
-	var owned_assets:Array[WalletAsset]
+	var assets:Array[WalletAsset]
 	for asset in owned_assets:
-		if asset is Nft:
-			owned_assets.append(asset)
-	return owned_assets
+		if asset is Nft or asset is CoreAsset:
+			assets.append(asset)
+	return assets
 	
 func get_owned_tokens() -> Array[WalletAsset]:
 	var owned_tokens:Array[WalletAsset]
@@ -260,9 +260,9 @@ func get_owned_assets_from_collection_key(collection_id:Pubkey) -> Array[WalletA
 	var collection_assets:Array[WalletAsset]
 	var owned_assets:Array[WalletAsset] = get_owned_assets()
 	for asset in owned_assets:
-		if asset.metadata.get_collection() == null:
+		if asset.get_collection_mint() == null:
 			continue
-		if asset.metadata.get_collection().key.to_string() == collection_id.to_string():
+		if asset.get_collection_mint().to_string() == collection_id.to_string():
 			collection_assets.append(asset)
 			
 	return collection_assets

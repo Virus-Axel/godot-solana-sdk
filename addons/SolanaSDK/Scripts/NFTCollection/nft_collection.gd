@@ -38,6 +38,6 @@ func belongs_to_collection(asset:WalletAsset) -> bool:
 			return false
 		return asset.metadata.get_creators()[0].address.to_string() == collection_mint.to_string()
 	else:
-		if asset.metadata.get_collection() == null:
+		if asset.get_collection_mint() == null:
 			return false
-		return asset.metadata.get_collection().key.to_string() == collection_mint.to_string()
+		return asset.get_collection_mint().to_string() == collection_mint.to_string()

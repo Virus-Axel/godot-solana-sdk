@@ -1,0 +1,231 @@
+{
+  "address": "KeyspM2ssCJbqUhQ4k7sveSiY4WjnYsrXkC8oDbwde5",
+  "metadata": {
+    "name": "gpl_session",
+    "version": "2.0.6",
+    "spec": "0.1.0",
+    "description": "Gum Session Protocol (GPL Session)",
+    "repository": "https://github.com/magicblock-labs/gum-program-library"
+  },
+  "instructions": [
+    {
+      "name": "create_session",
+      "discriminator": [
+        242,
+        193,
+        143,
+        179,
+        150,
+        25,
+        122,
+        227
+      ],
+      "accounts": [
+        {
+          "name": "session_token",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  101,
+                  115,
+                  115,
+                  105,
+                  111,
+                  110,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "target_program"
+              },
+              {
+                "kind": "account",
+                "path": "session_signer"
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "session_signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "target_program",
+          "docs": [
+            "CHECK the target program is actually a program."
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "top_up",
+          "type": {
+            "option": "bool"
+          }
+        },
+        {
+          "name": "valid_until",
+          "type": {
+            "option": "i64"
+          }
+        },
+        {
+          "name": "lamports",
+          "type": {
+            "option": "u64"
+          }
+        }
+      ]
+    },
+    {
+      "name": "revoke_session",
+      "discriminator": [
+        86,
+        92,
+        198,
+        120,
+        144,
+        2,
+        7,
+        194
+      ],
+      "accounts": [
+        {
+          "name": "session_token",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  101,
+                  115,
+                  115,
+                  105,
+                  111,
+                  110,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "session_token.target_program",
+                "account": "SessionToken"
+              },
+              {
+                "kind": "account",
+                "path": "session_token.session_signer",
+                "account": "SessionToken"
+              },
+              {
+                "kind": "account",
+                "path": "session_token.authority",
+                "account": "SessionToken"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "relations": [
+            "session_token"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "SessionToken",
+      "discriminator": [
+        233,
+        4,
+        115,
+        14,
+        46,
+        21,
+        1,
+        15
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "ValidityTooLong",
+      "msg": "Requested validity is too long"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidToken",
+      "msg": "Invalid session token"
+    },
+    {
+      "code": 6002,
+      "name": "NoToken",
+      "msg": "No session token provided"
+    }
+  ],
+  "types": [
+    {
+      "name": "SessionToken",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "target_program",
+            "type": "pubkey"
+          },
+          {
+            "name": "session_signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "valid_until",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ]
+}
