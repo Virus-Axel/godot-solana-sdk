@@ -9,7 +9,7 @@ func is_url_safe(url:String) -> bool:
 		"content":url
 	}
 	var response:Dictionary = await HttpRequestHandler.send_post_request(JSON.stringify(body),headers,api_link+"asset/details")
-	if response.has("error"):
+	if response.size() == 0 or response["body"].has("error"):
 		push_error("failed to get response for whether %s is safe or not!" % url)
 		return false
 	

@@ -71,7 +71,7 @@ func get_estimated_priority_fee(transaction:Transaction) -> int:
 		}]
 	}
 	var response:Dictionary = await HttpRequestHandler.send_post_request(JSON.stringify(body),headers,rpc_url)
-	if response.has("error"):
+	if response.size() == 0 or response["body"].has("error"):
 		push_error(response)
 		return 0
 	

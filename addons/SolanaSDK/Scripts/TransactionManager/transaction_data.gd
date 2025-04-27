@@ -14,11 +14,6 @@ func set_custom_data(custom_data:Dictionary) -> void:
 func is_successful():
 	return data.size() != 0 && data.has("result")
 	
-func get_tx_id():
-	if !is_successful():
-		return null
-	return data["result"]
-	
 func get_link(inspect_type:AccountInspector.InspectSite = AccountInspector.InspectSite.EXPLORER) -> String:
 	if !is_successful():
 		push_error("Trying to fetch link of a failed transaction!")

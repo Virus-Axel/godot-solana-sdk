@@ -1,9 +1,9 @@
 extends Node
-enum RpcCluster{MAINNET,DEVNET,MAGICBLOCK,HONEYNET}
+enum RpcCluster{MAINNET,DEVNET,SONIC,HONEYNET}
 @export var rpc_cluster:RpcCluster=RpcCluster.MAINNET
 @export var mainnet_rpc:String
 @export var devnet_rpc:String
-@export var magicblock_rpc:String
+@export var sonic_rpc:String
 @export var honeycomb_rpc:String
 
 var default_devnet = "https://api.devnet.solana.com"
@@ -60,8 +60,8 @@ func set_rpc_cluster(new_cluster:RpcCluster)->void:
 			active_rpc = mainnet_rpc
 		RpcCluster.DEVNET:
 			active_rpc = devnet_rpc
-		RpcCluster.MAGICBLOCK:
-			active_rpc = magicblock_rpc
+		RpcCluster.SONIC:
+			active_rpc = sonic_rpc
 		RpcCluster.HONEYNET:
 			active_rpc = honeycomb_rpc
 			

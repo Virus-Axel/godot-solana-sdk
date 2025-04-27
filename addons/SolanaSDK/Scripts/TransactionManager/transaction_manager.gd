@@ -240,18 +240,20 @@ func get_needed_unit_price(transaction:Transaction) -> int:
 	return estimated_unit_price
 	
 	
-func transfer_sol(receiver:Pubkey,amount:float,tx_commitment=Commitment.CONFIRMED, custom_sender:Keypair=null) -> TransactionData:
+func transfer_sol(receiver:String,amount:float,tx_commitment=Commitment.CONFIRMED, custom_sender:Keypair=null) -> TransactionData:
 	var instructions:Array[Instruction]
 	
 	var sender_keypair = SolanaService.wallet.get_kp()
 	var sender_account:Pubkey = SolanaService.wallet.get_pubkey()
 	if custom_sender!=null:
 		sender_keypair = custom_sender
-		sender_account = custom_sender.to_pubkey()
+		sender_account = Pubkey.new_from_string(custom_sender.get_public_string())
 	
-	var amount_in_lamports = int(amount*pow(10,9))
+	var receiver_account:Pubkey = Pubkey.new_from_string(receiver)  
 	
-	var sol_transfer_ix:Instruction = SystemProgram.transfer(sender_account,receiver,amount_in_lamports)
+	var amount_in_lamports = int(amount*1000000000)
+	
+	var sol_transfer_ix:Instruction = SystemProgram.transfer(sender_keypair,receiver_account,amount_in_lamports)
 	instructions.append(sol_transfer_ix)
 	
 	var transaction:Transaction = await create_transaction(instructions,sender_keypair)
@@ -260,34 +262,37 @@ func transfer_sol(receiver:Pubkey,amount:float,tx_commitment=Commitment.CONFIRME
 		var tx_data:TransactionData = await sign_and_send(transaction,tx_commitment,custom_sender)
 		return tx_data
 	else:
-		var tx_data:TransactionData = await sign_and_send(transaction,tx_commitment)
+		var tx_data:TransactionData = await sign_and_send(transaction)
 		return tx_data
 
-func transfer_token(token_mint:Pubkey,receiver:Pubkey,amount:float,tx_commitment=Commitment.CONFIRMED,custom_sender:Keypair=null) -> TransactionData:
+func transfer_token(token_address:String,receiver:String,amount:float,tx_commitment=Commitment.CONFIRMED,custom_sender:Keypair=null) -> TransactionData:
 	var instructions:Array[Instruction]
 	
 	var sender_keypair = SolanaService.wallet.get_kp()
 	var sender_account:Pubkey = SolanaService.wallet.get_pubkey()
 	if custom_sender!=null:
 		sender_keypair = custom_sender
-		sender_account = custom_sender.to_pubkey()
+		sender_account = Pubkey.new_from_string(custom_sender.get_public_string())
+		
+	var receiver_account:Pubkey = Pubkey.new_from_string(receiver) 
+	var token_mint:Pubkey = Pubkey.new_from_string(token_address) 
 	
-	var sender_ata:Pubkey = await SolanaService.get_associated_token_account(sender_account.to_string(),token_mint.to_string())
+	var sender_ata:Pubkey = await SolanaService.get_associated_token_account(sender_account.to_string(),token_address)
 	
 	#check if an ATA for this token exists in wallet. if not, add initalize as instruction
-	var receiver_ata:Pubkey = await SolanaService.get_associated_token_account(receiver.to_string(),token_mint.to_string())
+	var receiver_ata:Pubkey = await SolanaService.get_associated_token_account(receiver_account.to_string(),token_address)
 	if receiver_ata == null:
-		receiver_ata = Pubkey.new_associated_token_address(receiver,token_mint)
+		receiver_ata = Pubkey.new_associated_token_address(receiver_account,token_mint)
 		var init_ata_ix:Instruction = AssociatedTokenAccountProgram.create_associated_token_account(
 			sender_keypair,
-			receiver,
+			receiver_account,
 			token_mint,
 			SolanaService.TOKEN_PID
 			)
 		instructions.append(init_ata_ix)
 		
 	#get the decimals of the token to multiply by the amount provided
-	var token_decimals = await SolanaService.get_token_decimals(token_mint.to_string())
+	var token_decimals = await SolanaService.get_token_decimals(token_address)
 	var decimal_amount = amount*pow(10,token_decimals)
 	var transfer_ix:Instruction = TokenProgram.transfer_checked(sender_ata,token_mint,receiver_ata,sender_keypair,decimal_amount,token_decimals)
 	instructions.append(transfer_ix)

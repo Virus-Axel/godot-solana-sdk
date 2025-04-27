@@ -23,7 +23,7 @@ func _ready() -> void:
 func get_swap_quote(token_to_send:Pubkey,token_to_receive:Pubkey,amount_to_send:float,slippage_percentage:float,fee_account:Pubkey=null,fee_percentage:float=0):
 	var input_mint:String = "inputMint="+token_to_send.to_string()
 	var mint_data:Dictionary = await get_token_data(token_to_send)
-	if mint_data.has("error"):
+	if mint_data.size() == 0:
 		return null
 	
 	var output_mint:String = "outputMint="+token_to_receive.to_string()
@@ -53,13 +53,11 @@ func swap_token(payer:Pubkey,swap_quote:Dictionary) -> TransactionData:
 
 func get_token_data(token_mint:Pubkey) -> Dictionary:
 	var response:Dictionary = await HttpRequestHandler.send_get_request(JUP_TOKEN_API+token_mint.to_string())
-	if response.has("error"):
-		response
 	return response["body"]
 	
 func get_token_status(token_mint:Pubkey) -> TokenStatus:
 	var response:Dictionary = await get_token_data(token_mint)
-	if response.has("error"):
+	if response.size() == 0:
 		return TokenStatus.UNKNOWN
 		
 	if "verified" in response["tags"] or "strict" in response["tags"]:
@@ -74,7 +72,7 @@ func get_token_unit_price(token_mint:Pubkey,price_against:Pubkey=null) -> float:
 		vs_token = "&vsToken="+price_against.to_string()
 		
 	var response:Dictionary = await HttpRequestHandler.send_get_request(JUP_PRICE_API+ids+vs_token)
-	if response.has("error"):
+	if response == {}:
 		return 0
 	return response["body"]["data"][token_mint.to_string()]["price"]
 

@@ -17,7 +17,7 @@ enum InputType{ALPHANUMERIC,INTEGER,DECIMAL, URL}
 @export var allow_zero:bool=true
 
 
-var alphanumeric_regex = "^[a-zA-Z0-9 _\\-@.,]+$"
+var alphanumeric_regex = "^[a-zA-Z0-9 _\\-@]+$"
 var integer_regex = "^[-+]?\\d+$"
 var fraction_regex = "^[-+]?[0-9]+(\\.[0-9]+)?$"
 var url_regex = "^(https?:\\/\\/)?([a-zA-Z0-9.-]+)\\.([a-zA-Z]{2,6})(:[0-9]{1,5})?(\\/\\S*)?$"
@@ -33,7 +33,6 @@ func _ready() -> void:
 	text_changed.connect(handle_text_change)
 	text_submitted.connect(handle_text_submit)
 	focus_exited.connect(handle_focus_lost)
-	focus_entered.connect(select_input)
 	match input_type:
 		InputType.ALPHANUMERIC:
 			input_constraint.compile(alphanumeric_regex)
@@ -47,6 +46,7 @@ func _ready() -> void:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	pass
+	
 
 func handle_text_change(new_text: String) -> void:
 	#if input_constraint.search(new_text) == null:
@@ -58,16 +58,6 @@ func handle_text_change(new_text: String) -> void:
 	#text = new_text
 	#caret_column = text.length()
 	pass
-
-func select_input() -> void:
-	# Defer select_all to the next frame to allow mouse events to finish
-	await get_tree().process_frame
-
-	if has_focus():
-		# Only select all if the caret is still at the beginning (likely from tabbing)
-		if caret_column == 0:
-			select_all()
-			caret_column = text.length()
 	
 func handle_text_submit(new_text:String) -> void:
 #	when submit text, just release focus and all the logic goes there

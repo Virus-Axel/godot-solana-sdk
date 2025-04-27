@@ -10,8 +10,6 @@ var is_hidden:bool
 
 var original_text:String
 
-signal on_lock_state_changed(passed:bool)
-
 func _ready() -> void:
 	original_text = text
 	self.visibility_changed.connect(on_visibility_changed)
@@ -45,14 +43,11 @@ func set_interactable(state:bool) -> void:
 		visible = state
 		is_hidden = !state
 	
-	if SolanaService.wallet.is_logged_in():
+	if SolanaService.wallet.is_logged_in() and locked_text != "":
 		if disabled:
-			if locked_text != "":
-				text = locked_text
+			text = locked_text
 		else:
 			text = original_text
-			
-	on_lock_state_changed.emit(state)
 		
 func try_unlock() -> void:
 	set_interactable(SolanaService.wallet.is_logged_in())

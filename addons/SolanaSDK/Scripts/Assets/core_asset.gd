@@ -15,31 +15,9 @@ func get_category() -> String:
 	else:
 		return ""
 		
-func get_authority() -> Pubkey:
-	if das_metadata.size()==0:
-		return null
-		
-	if das_metadata["authorities"].size() == 0:
-		return null 
-		
-	for i in range(das_metadata["authorities"].size()):
-		if "full" in das_metadata["authorities"][i]["scopes"]:
-			return Pubkey.new_from_string(das_metadata["authorities"][i]["address"])
-			
-	return null
-		
-func get_collection_mint() -> Pubkey:
-	if das_metadata.size()==0:
-		return null
-		
-	if das_metadata["grouping"].size() == 0:
-		return null 
-	
-	for i in range(das_metadata["grouping"].size()):
-		if das_metadata["grouping"][i]["group_key"] == "collection":
-			return Pubkey.new_from_string(das_metadata["grouping"][i]["group_value"])
-	
-	return null
+#func get_collection_mint() -> Pubkey:
+	#var nft_collection:MetaDataCollection = metadata.get_collection()[0]
+	#return nft_collection.key
 	
 func get_plugin_data() -> Dictionary:
 	if das_metadata.size()==0:

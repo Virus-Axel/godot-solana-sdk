@@ -140,12 +140,13 @@ script = ExtResource("6_d4boe")
 data_input_system = NodePath("DataInputSystem")
 send_button = NodePath("SendButton")
 
-[node name="DataInputSystem" type="Node" parent="TransactionContainer/TransactionBoxes/SolTransactionPanel"]
+[node name="DataInputSystem" type="Node" parent="TransactionContainer/TransactionBoxes/SolTransactionPanel" node_paths=PackedStringArray("input_submit_button")]
 script = ExtResource("7_h3u85")
 input_fields = {
 "receiverAddress": NodePath("../ReceiverInputField"),
 "transferAmount": NodePath("../AmountInputField")
 }
+input_submit_button = NodePath("../SendButton")
 
 [node name="IntroText" type="Label" parent="TransactionContainer/TransactionBoxes/SolTransactionPanel"]
 layout_mode = 2
@@ -164,7 +165,6 @@ placeholder_text = "Receiver SOL Address..."
 alignment = 1
 script = ExtResource("8_1ogk1")
 min_length = 32
-is_pubkey = true
 
 [node name="AmountInputField" type="LineEdit" parent="TransactionContainer/TransactionBoxes/SolTransactionPanel"]
 layout_mode = 2
@@ -194,13 +194,14 @@ data_input_system = NodePath("DataInputSystem")
 token_type = 1
 send_button = NodePath("SendButton")
 
-[node name="DataInputSystem" type="Node" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel"]
+[node name="DataInputSystem" type="Node" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel" node_paths=PackedStringArray("input_submit_button")]
 script = ExtResource("7_h3u85")
 input_fields = {
 "receiverAddress": NodePath("../ReceiverInputField"),
 "tokenAddress": NodePath("../TokenAddressInputField"),
 "transferAmount": NodePath("../AmountInputField")
 }
+input_submit_button = NodePath("../SendButton")
 
 [node name="IntroText" type="Label" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel"]
 layout_mode = 2
@@ -219,7 +220,6 @@ text = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263"
 placeholder_text = "Enter Token Address..."
 alignment = 1
 script = ExtResource("8_1ogk1")
-is_pubkey = true
 
 [node name="ReceiverInputField" type="LineEdit" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel"]
 layout_mode = 2
@@ -227,7 +227,6 @@ placeholder_text = "Receiver SOL Address..."
 alignment = 1
 script = ExtResource("8_1ogk1")
 min_length = 32
-is_pubkey = true
 
 [node name="AmountInputField" type="LineEdit" parent="TransactionContainer/TransactionBoxes/SplTransactionPanel"]
 layout_mode = 2

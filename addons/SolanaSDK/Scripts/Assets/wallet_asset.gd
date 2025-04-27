@@ -6,7 +6,6 @@ var mint:Pubkey
 var asset_name:String
 var symbol:String
 var image:Texture2D
-var uri:String
 
 var asset_type:AssetManager.AssetType
 
@@ -27,15 +26,13 @@ func set_data(mint_address:Pubkey,metadata:MetaData,asset_data:Dictionary,asset_
 	
 	if asset_data.size()>0:
 		das_metadata = asset_data
-		uri = asset_data["content"]["json_uri"]
 		offchain_metadata = asset_data["content"]["metadata"]
 
 		if asset_data["content"]["links"].has("image"):
 			offchain_metadata["image"] = asset_data["content"]["links"]["image"]
 	else:
-		uri = metadata.get_uri()
-		if uri != null and uri.length() > 0:
-			offchain_metadata = await SolanaService.file_loader.load_token_metadata(uri)
+		if metadata.get_uri() != null and metadata.get_uri().length() > 0:
+			offchain_metadata = await SolanaService.file_loader.load_token_metadata(metadata.get_uri())
 			if offchain_metadata.size() == 0:
 				print("Offchain metadata of %s failed to load" % mint_address.to_string())
 				
@@ -74,8 +71,24 @@ func try_load_image(size:int=256) -> void:
 		push_warning("Couldn't fetch image for mint: %s" % mint.to_string())
 		image = SolanaService.asset_manager.missing_texture_visual
 	on_image_loaded.emit()
-	
+		
+		
 func get_collection_mint() -> Pubkey:
-	return null
-	
+	if das_metadata.size()==0:
+		return null
+		
+	if das_metadata["grouping"].size()==0:
+		return null
+	var collection_group_index:int = -1
+	var collection_found:bool=false
+	for group_type in das_metadata["grouping"]:
+		collection_group_index+=1
+		if group_type["group_key"] == "collection":
+			collection_found=true
+			break
+	if !collection_found or collection_group_index == -1:
+		return null
+		
+	var collection_id:String = das_metadata["grouping"][collection_group_index]["group_value"]
+	return Pubkey.new_from_string(collection_id)
 	
