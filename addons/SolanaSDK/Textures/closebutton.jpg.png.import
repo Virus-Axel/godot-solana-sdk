@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b3003ar1uxa77"
 path.s3tc="res://.godot/imported/closebutton.jpg.png-e6f45080c09c3a518db5b49741061110.s3tc.ctex"
+path.etc2="res://.godot/imported/closebutton.jpg.png-e6f45080c09c3a518db5b49741061110.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://addons/SolanaSDK/Textures/closebutton.jpg.png"
-dest_files=["res://.godot/imported/closebutton.jpg.png-e6f45080c09c3a518db5b49741061110.s3tc.ctex"]
+dest_files=["res://.godot/imported/closebutton.jpg.png-e6f45080c09c3a518db5b49741061110.s3tc.ctex", "res://.godot/imported/closebutton.jpg.png-e6f45080c09c3a518db5b49741061110.etc2.ctex"]
 
 [params]
 

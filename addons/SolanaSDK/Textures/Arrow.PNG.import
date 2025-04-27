@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://3npcx8cx80ui"
 path.s3tc="res://.godot/imported/Arrow.PNG-9f465c876022f4b38199b978cd7d1c2a.s3tc.ctex"
+path.etc2="res://.godot/imported/Arrow.PNG-9f465c876022f4b38199b978cd7d1c2a.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://addons/SolanaSDK/Textures/Arrow.PNG"
-dest_files=["res://.godot/imported/Arrow.PNG-9f465c876022f4b38199b978cd7d1c2a.s3tc.ctex"]
+dest_files=["res://.godot/imported/Arrow.PNG-9f465c876022f4b38199b978cd7d1c2a.s3tc.ctex", "res://.godot/imported/Arrow.PNG-9f465c876022f4b38199b978cd7d1c2a.etc2.ctex"]
 
 [params]
 

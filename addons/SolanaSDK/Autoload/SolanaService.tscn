@@ -1,33 +1,174 @@
-[gd_scene load_steps=16 format=3 uid="uid://b2dmsrk6j12y4"]
+[gd_scene load_steps=18 format=3 uid="uid://b2dmsrk6j12y4"]
 
 [ext_resource type="Script" uid="uid://ditj5e2daevt8" path="res://addons/SolanaSDK/Scripts/Managers/solana_service.gd" id="1_hwc3u"]
 [ext_resource type="Script" uid="uid://67dkrftyxy86" path="res://addons/SolanaSDK/Scripts/TransactionManager/transaction_manager.gd" id="2_v3adq"]
-[ext_resource type="PackedScene" uid="uid://clveiq3atvwet" path="res://addons/SolanaSDK/Scripts/WalletAdapter/WalletAdapterUI.tscn" id="3_4222r"]
+[ext_resource type="PackedScene" uid="uid://clveiq3atvwet" path="res://addons/SolanaSDK/Scripts/WalletAdapter/WalletAdapterUI.tscn" id="3_wfwmi"]
 [ext_resource type="Texture2D" uid="uid://dkyfoudbohuqq" path="res://addons/SolanaSDK/Textures/missingicon.png" id="4_s5tc6"]
+[ext_resource type="Script" uid="uid://c8r41wffhgoeb" path="res://addons/SolanaSDK/Scripts/SessionKeys/session_key_manager.gd" id="4_wfwmi"]
+[ext_resource type="JSON" path="res://addons/SolanaSDK/Scripts/SessionKeys/session_keys2.0.6_idl.json" id="5_38cwu"]
 [ext_resource type="Script" uid="uid://be77h1ww1quiy" path="res://addons/SolanaSDK/Scripts/Managers/wallet_service.gd" id="5_f327g"]
 [ext_resource type="Script" uid="uid://73ttw7wqmnr" path="res://addons/SolanaSDK/Scripts/ThirdPartyTools/Helius/helius_api.gd" id="6_jo0rl"]
 [ext_resource type="Script" uid="uid://byrctw8tril6i" path="res://addons/SolanaSDK/Scripts/Utility/account_inspector.gd" id="6_mv3j8"]
 [ext_resource type="Script" uid="uid://bgkhmfehcfj2e" path="res://addons/SolanaSDK/Scripts/Utility/file_loader.gd" id="7_4sv1b"]
 [ext_resource type="Script" uid="uid://dfliotvqj2v0k" path="res://addons/SolanaSDK/Scripts/Managers/asset_manager.gd" id="8_4oy84"]
-[ext_resource type="Script" uid="uid://deqdbyk7446q3" path="res://addons/SolanaSDK/Scripts/Utility/shdwdrive_creator.gd" id="9_m6qd0"]
+[ext_resource type="Script" uid="uid://dgt3chrkj0wb5" path="res://addons/SolanaSDK/Scripts/Utility/shdwdrive_creator.gd" id="9_m6qd0"]
 [ext_resource type="Script" uid="uid://bd8lgfhd3ttrs" path="res://addons/SolanaSDK/Scripts/Managers/candy_machine_manager.gd" id="9_pob61"]
 [ext_resource type="Script" uid="uid://rpm720dhln8u" path="res://addons/SolanaSDK/Scripts/CoreNFTs/core_manager.gd" id="12_ynxal"]
-[ext_resource type="Script" uid="uid://ctu1bsgkgt8qc" path="res://addons/SolanaSDK/Scripts/CoreNFTs/core_collection_manager.gd" id="13_3jvpm"]
-[ext_resource type="Script" uid="uid://c3q1j4esdrfhw" path="res://addons/SolanaSDK/Scripts/CoreNFTs/core_asset_manager.gd" id="14_6l0nt"]
+[ext_resource type="Script" uid="uid://cvd4bthanfc5x" path="res://addons/SolanaSDK/Scripts/CoreNFTs/core_collection_manager.gd" id="13_3jvpm"]
+[ext_resource type="Script" uid="uid://cvvunp3ydkm4g" path="res://addons/SolanaSDK/Scripts/CoreNFTs/core_asset_manager.gd" id="14_6l0nt"]
 [ext_resource type="Script" uid="uid://bmfal3xr0yeo" path="res://addons/SolanaSDK/Scripts/Utility/oracle_signer.gd" id="15_r1qgx"]
 
 [node name="SolanaService" type="Node"]
 script = ExtResource("1_hwc3u")
 rpc_cluster = 1
-sonic_rpc = "https://www.devnet.sonic.game"
+magicblock_rpc = "https://devnet.magicblock.app/"
 honeycomb_rpc = "https://rpc.test.honeycombprotocol.com/"
 
 [node name="WalletService" type="Node" parent="."]
 script = ExtResource("5_f327g")
-use_generated = true
-wallet_adapter_scn = ExtResource("3_4222r")
+wallet_adapter_scn = ExtResource("3_wfwmi")
 
 [node name="WalletAdapter" type="WalletAdapter" parent="WalletService"]
+
+[node name="SessionKeyManager" type="Node" parent="WalletService"]
+script = ExtResource("4_wfwmi")
+metadata/_custom_type_script = "uid://c8r41wffhgoeb"
+
+[node name="AnchorProgram" type="AnchorProgram" parent="WalletService/SessionKeyManager"]
+pid = "KeyspM2ssCJbqUhQ4k7sveSiY4WjnYsrXkC8oDbwde5"
+json_file = ExtResource("5_38cwu")
+idl = {
+"accounts": [{
+"discriminator": [233.0, 4.0, 115.0, 14.0, 46.0, 21.0, 1.0, 15.0],
+"name": "SessionToken"
+}],
+"address": "KeyspM2ssCJbqUhQ4k7sveSiY4WjnYsrXkC8oDbwde5",
+"errors": [{
+"code": 6000.0,
+"msg": "Requested validity is too long",
+"name": "ValidityTooLong"
+}, {
+"code": 6001.0,
+"msg": "Invalid session token",
+"name": "InvalidToken"
+}, {
+"code": 6002.0,
+"msg": "No session token provided",
+"name": "NoToken"
+}],
+"instructions": [{
+"accounts": [{
+"name": "session_token",
+"pda": {
+"seeds": [{
+"kind": "const",
+"value": [115.0, 101.0, 115.0, 115.0, 105.0, 111.0, 110.0, 95.0, 116.0, 111.0, 107.0, 101.0, 110.0]
+}, {
+"kind": "account",
+"path": "target_program"
+}, {
+"kind": "account",
+"path": "session_signer"
+}, {
+"kind": "account",
+"path": "authority"
+}]
+},
+"writable": true
+}, {
+"name": "session_signer",
+"signer": true,
+"writable": true
+}, {
+"name": "authority",
+"signer": true,
+"writable": true
+}, {
+"docs": ["CHECK the target program is actually a program."],
+"name": "target_program"
+}, {
+"address": "11111111111111111111111111111111",
+"name": "system_program"
+}],
+"args": [{
+"name": "top_up",
+"type": {
+"option": "bool"
+}
+}, {
+"name": "valid_until",
+"type": {
+"option": "i64"
+}
+}, {
+"name": "lamports",
+"type": {
+"option": "u64"
+}
+}],
+"discriminator": [242.0, 193.0, 143.0, 179.0, 150.0, 25.0, 122.0, 227.0],
+"name": "create_session"
+}, {
+"accounts": [{
+"name": "session_token",
+"pda": {
+"seeds": [{
+"kind": "const",
+"value": [115.0, 101.0, 115.0, 115.0, 105.0, 111.0, 110.0, 95.0, 116.0, 111.0, 107.0, 101.0, 110.0]
+}, {
+"account": "SessionToken",
+"kind": "account",
+"path": "session_token.target_program"
+}, {
+"account": "SessionToken",
+"kind": "account",
+"path": "session_token.session_signer"
+}, {
+"account": "SessionToken",
+"kind": "account",
+"path": "session_token.authority"
+}]
+},
+"writable": true
+}, {
+"name": "authority",
+"relations": ["session_token"],
+"writable": true
+}, {
+"address": "11111111111111111111111111111111",
+"name": "system_program"
+}],
+"args": [],
+"discriminator": [86.0, 92.0, 198.0, 120.0, 144.0, 2.0, 7.0, 194.0],
+"name": "revoke_session"
+}],
+"metadata": {
+"description": "Gum Session Protocol (GPL Session)",
+"name": "gpl_session",
+"repository": "https://github.com/magicblock-labs/gum-program-library",
+"spec": "0.1.0",
+"version": "2.0.6"
+},
+"types": [{
+"name": "SessionToken",
+"type": {
+"fields": [{
+"name": "authority",
+"type": "pubkey"
+}, {
+"name": "target_program",
+"type": "pubkey"
+}, {
+"name": "session_signer",
+"type": "pubkey"
+}, {
+"name": "valid_until",
+"type": "i64"
+}],
+"kind": "struct"
+}
+}]
+}
 
 [node name="AssetManager" type="Node" parent="."]
 script = ExtResource("8_4oy84")

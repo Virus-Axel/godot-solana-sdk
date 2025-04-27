@@ -41,7 +41,7 @@ func set_data(asset:WalletAsset) -> void:
 	if symbol_label!=null:
 		symbol_label.text = "$%s" % asset.symbol
 	
-	if asset.image!=null:
+	if asset.image!=null and image_size <= asset.image.get_size().x and image_size <= asset.image.get_size().y:
 		visual.texture = asset.image
 	else:
 		asset.on_image_loaded.connect(handle_image_load_complete,CONNECT_ONE_SHOT)

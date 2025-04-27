@@ -23,3 +23,9 @@ func get_lamport_balance(fetch_new:bool=false) -> float:
 		await refresh_balance()
 	return balance*(10**decimals)
 	
+func get_asset_owner() -> Pubkey:
+	var token_account:Pubkey = await SolanaService.get_largest_account(mint)
+	var account_info:Dictionary = await SolanaService.get_account_info(token_account)
+	var owner_address:Pubkey = account_info["result"]["value"]["owner"]
+	return owner_address
+	

@@ -33,7 +33,7 @@ func mint_asset() -> void:
 	
 	var tx_data:TransactionData = await SolanaService.core_manager.mint_asset(asset_data["name"],asset_data["uri"],null,null,asset_plugins)
 	if tx_data.is_successful():
-		on_asset_minted.emit(tx_data.data["custom_data"]["mint"])
+		on_asset_minted.emit(tx_data.custom_data["mint"])
 		mint_input_system.reset_all_fields()
 		for pair in attribute_pairs:
 			pair.reset()

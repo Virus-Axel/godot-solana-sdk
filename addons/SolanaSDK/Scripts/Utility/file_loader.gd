@@ -34,7 +34,7 @@ func load_token_metadata(uri:String,ignore_whitelist:bool=false) -> Dictionary:
 	
 	while true:
 		response = await HttpRequestHandler.send_get_request(request_link)
-		if response.size()>0:
+		if !response.has("error"):
 			metadata_cache[uri] = response["body"]
 			break
 		else:
@@ -55,6 +55,8 @@ func load_token_image(image_link:String,size:int=512,ignore_whitelist:bool=false
 #		still reload the cached image if requesting bigger size
 		if size <= image.get_size().x or size <= image.get_size().y:
 			return image_cache[image_link]
+		else:
+			print("Cached image is smaller than requested one. Refetching....")
 		
 	if !is_whitelisted(image_link) and !ignore_whitelist:
 		return null
@@ -63,7 +65,7 @@ func load_token_image(image_link:String,size:int=512,ignore_whitelist:bool=false
 	var request_link:String = image_link
 	while true:
 		response = await HttpRequestHandler.send_get_request(request_link,false)
-		if response.size()>0:
+		if !response.has("error"):
 			break
 		else:
 			#if fails, try one more time using cors proxy link	
@@ -74,7 +76,7 @@ func load_token_image(image_link:String,size:int=512,ignore_whitelist:bool=false
 				push_error("Failed to fetch Token Image")
 				break
 				
-	if response.size() == 0:
+	if response.has("error"):
 		return null
 				
 	var content_type:String = parse_image_type(response["headers"])
@@ -166,7 +168,7 @@ func is_webp_animated(raw_image_data:PackedByteArray)->bool:
 	
 func load_3d_model(model_link:String) -> GLTFState:
 	var response:Dictionary = await HttpRequestHandler.send_get_request(model_link)
-	if response.size()==0:
+	if response.has("error"):
 		return null
 	
 	var state:GLTFState = GLTFState.new()
