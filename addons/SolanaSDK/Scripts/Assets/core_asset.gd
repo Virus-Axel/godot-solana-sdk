@@ -41,6 +41,12 @@ func get_collection_mint() -> Pubkey:
 	
 	return null
 	
+func get_asset_owner() -> Pubkey:
+	if das_metadata.size() == 0:
+		return null
+
+	return Pubkey.new_from_string(das_metadata["ownership"]["owner"])
+	
 func get_plugin_data() -> Dictionary:
 	if das_metadata.size()==0:
 		return {}

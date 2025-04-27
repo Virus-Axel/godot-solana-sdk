@@ -22,6 +22,15 @@ func get_collection_mint() -> Pubkey:
 	var nft_collection:MetaDataCollection = metadata.get_collection()
 	return nft_collection.key
 	
+func get_asset_owner() -> Pubkey:
+	if das_metadata.size() > 0:
+		return Pubkey.new_from_string(das_metadata["ownership"]["owner"])
+	
+	var token_account:Pubkey = await SolanaService.get_largest_account(mint)
+	var account_info:Dictionary = await SolanaService.get_account_info(token_account)
+	var owner_address:Pubkey = account_info["result"]["value"]["owner"]
+	return owner_address
+	
 func is_3D_model() -> bool:
 	return get_category() == "vr"
 	

@@ -55,6 +55,8 @@ func load_token_image(image_link:String,size:int=512,ignore_whitelist:bool=false
 #		still reload the cached image if requesting bigger size
 		if size <= image.get_size().x or size <= image.get_size().y:
 			return image_cache[image_link]
+		else:
+			print("Cached image is smaller than requested one. Refetching....")
 		
 	if !is_whitelisted(image_link) and !ignore_whitelist:
 		return null

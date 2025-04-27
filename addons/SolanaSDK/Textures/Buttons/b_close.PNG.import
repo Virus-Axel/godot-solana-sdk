@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cbt5ms6cv0mh2"
 path.s3tc="res://.godot/imported/b_close.PNG-548a91f1297c3e34d9de64097edf5501.s3tc.ctex"
+path.etc2="res://.godot/imported/b_close.PNG-548a91f1297c3e34d9de64097edf5501.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://addons/SolanaSDK/Textures/Buttons/b_close.PNG"
-dest_files=["res://.godot/imported/b_close.PNG-548a91f1297c3e34d9de64097edf5501.s3tc.ctex"]
+dest_files=["res://.godot/imported/b_close.PNG-548a91f1297c3e34d9de64097edf5501.s3tc.ctex", "res://.godot/imported/b_close.PNG-548a91f1297c3e34d9de64097edf5501.etc2.ctex"]
 
 [params]
 

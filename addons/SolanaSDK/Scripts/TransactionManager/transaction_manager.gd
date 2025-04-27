@@ -195,6 +195,9 @@ func handle_transaction_cancel(signer_id:int) -> void:
 	print("Transaction Cancelled")
 	on_tx_signed.emit(false)
 	
+func force_finish_transaction(transaction_data:TransactionData) -> void:
+	on_tx_finish.emit(transaction_data)
+	
 func update_blockhash(transaction:Transaction) -> Transaction:
 	transaction.update_latest_blockhash()
 	var response:Dictionary = await transaction.blockhash_updated

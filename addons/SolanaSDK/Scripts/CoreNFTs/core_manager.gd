@@ -42,7 +42,9 @@ func process_transaction(instructions:Array[Instruction], custom_signer_key:Pubk
 		transaction.queue_free()
 		if tx_bytes.size()==0:
 			push_error("Failed to sign with the oracle keypair!")
-			return TransactionData.new({})
+			var failed_tx:TransactionData = TransactionData.new({},{"error":"failed to receive oracle signature..."})
+			SolanaService.transaction_manager.force_finish_transaction(failed_tx)
+			return failed_tx
 	
 		var signed_transaction:Transaction = await SolanaService.transaction_manager.sign_transaction_serialized(tx_bytes,SolanaService.wallet.get_kp(),signers)
 		tx_data = await SolanaService.transaction_manager.send_transaction(signed_transaction)

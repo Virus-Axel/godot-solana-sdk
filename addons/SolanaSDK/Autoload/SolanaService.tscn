@@ -11,11 +11,11 @@
 [ext_resource type="Script" uid="uid://byrctw8tril6i" path="res://addons/SolanaSDK/Scripts/Utility/account_inspector.gd" id="6_mv3j8"]
 [ext_resource type="Script" uid="uid://bgkhmfehcfj2e" path="res://addons/SolanaSDK/Scripts/Utility/file_loader.gd" id="7_4sv1b"]
 [ext_resource type="Script" uid="uid://dfliotvqj2v0k" path="res://addons/SolanaSDK/Scripts/Managers/asset_manager.gd" id="8_4oy84"]
-[ext_resource type="Script" uid="uid://deqdbyk7446q3" path="res://addons/SolanaSDK/Scripts/Utility/shdwdrive_creator.gd" id="9_m6qd0"]
+[ext_resource type="Script" uid="uid://dgt3chrkj0wb5" path="res://addons/SolanaSDK/Scripts/Utility/shdwdrive_creator.gd" id="9_m6qd0"]
 [ext_resource type="Script" uid="uid://bd8lgfhd3ttrs" path="res://addons/SolanaSDK/Scripts/Managers/candy_machine_manager.gd" id="9_pob61"]
 [ext_resource type="Script" uid="uid://rpm720dhln8u" path="res://addons/SolanaSDK/Scripts/CoreNFTs/core_manager.gd" id="12_ynxal"]
-[ext_resource type="Script" uid="uid://ctu1bsgkgt8qc" path="res://addons/SolanaSDK/Scripts/CoreNFTs/core_collection_manager.gd" id="13_3jvpm"]
-[ext_resource type="Script" uid="uid://c3q1j4esdrfhw" path="res://addons/SolanaSDK/Scripts/CoreNFTs/core_asset_manager.gd" id="14_6l0nt"]
+[ext_resource type="Script" uid="uid://cvd4bthanfc5x" path="res://addons/SolanaSDK/Scripts/CoreNFTs/core_collection_manager.gd" id="13_3jvpm"]
+[ext_resource type="Script" uid="uid://cvvunp3ydkm4g" path="res://addons/SolanaSDK/Scripts/CoreNFTs/core_asset_manager.gd" id="14_6l0nt"]
 [ext_resource type="Script" uid="uid://bmfal3xr0yeo" path="res://addons/SolanaSDK/Scripts/Utility/oracle_signer.gd" id="15_r1qgx"]
 
 [node name="SolanaService" type="Node"]
@@ -26,7 +26,6 @@ honeycomb_rpc = "https://rpc.test.honeycombprotocol.com/"
 
 [node name="WalletService" type="Node" parent="."]
 script = ExtResource("5_f327g")
-use_generated = true
 wallet_adapter_scn = ExtResource("3_wfwmi")
 
 [node name="WalletAdapter" type="WalletAdapter" parent="WalletService"]

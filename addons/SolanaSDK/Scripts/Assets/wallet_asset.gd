@@ -78,4 +78,7 @@ func try_load_image(size:int=256) -> void:
 func get_collection_mint() -> Pubkey:
 	return null
 	
+func get_asset_owner() -> Pubkey:
+	return null
+	
 	
