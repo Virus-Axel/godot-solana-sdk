@@ -1,6 +1,8 @@
 #include "honeycomb/honeycomb.hpp"
 
 #include "honeycomb/types/AddMultiplierMetadataInput_generated.hpp"
+#include "honeycomb/types/AddRemoveRewardsFromRewardPoolActionInput_generated.hpp"
+#include "honeycomb/types/AddSplMultiplierMetadataInput_generated.hpp"
 #include "honeycomb/types/AdvancedTreeConfig_generated.hpp"
 #include "honeycomb/types/Assembled_generated.hpp"
 #include "honeycomb/types/AssemblerConfigInput_generated.hpp"
@@ -45,11 +47,14 @@
 #include "honeycomb/types/CreateCreateMissionTransactionResponse_generated.hpp"
 #include "honeycomb/types/CreateCreateNewResourceTreeTransactionResponse_generated.hpp"
 #include "honeycomb/types/CreateCreateProjectTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateCreateSplStakingPoolTransactionResponse_generated.hpp"
 #include "honeycomb/types/CreateCreateStakingPoolTransactionResponse_generated.hpp"
 #include "honeycomb/types/CreateInitMultipliersTransactionResponse_generated.hpp"
 #include "honeycomb/types/CreateInitResourceTransactionResponse_generated.hpp"
 #include "honeycomb/types/CreateInitializeFaucetTransactionResponse_generated.hpp"
 #include "honeycomb/types/CreateInitializeRecipeTransactionResponse_generated.hpp"
+#include "honeycomb/types/CreateSplRewardPoolArgsInput_generated.hpp"
+#include "honeycomb/types/CreateSplStakingPoolMetadataInput_generated.hpp"
 #include "honeycomb/types/CreateStakingPoolMetadataInput_generated.hpp"
 #include "honeycomb/types/CreateUpdateMissionPoolTransactionResponse_generated.hpp"
 #include "honeycomb/types/CreateUpdateMissionTransactionResponse_generated.hpp"
@@ -130,6 +135,7 @@
 #include "honeycomb/types/ResourceRewardType_generated.hpp"
 #include "honeycomb/types/ResourceStorageParams_generated.hpp"
 #include "honeycomb/types/ResourceStorage_generated.hpp"
+#include "honeycomb/types/RewardPoolConfigApyInput_generated.hpp"
 #include "honeycomb/types/Reward_generated.hpp"
 #include "honeycomb/types/SendTransactionBundlesOptions_generated.hpp"
 #include "honeycomb/types/SendTransactionsOptions_generated.hpp"
@@ -151,8 +157,24 @@
 #include "honeycomb/types/ServiceParamsStaking_generated.hpp"
 #include "honeycomb/types/Service_generated.hpp"
 #include "honeycomb/types/SocialInfo_generated.hpp"
+#include "honeycomb/types/SplMultiplierInput_generated.hpp"
+#include "honeycomb/types/SplMultiplierTypeParamsStakeAmount_generated.hpp"
+#include "honeycomb/types/SplMultiplierTypeParamsStakeDuration_generated.hpp"
+#include "honeycomb/types/SplMultiplierType_generated.hpp"
+#include "honeycomb/types/SplMultiplier_generated.hpp"
+#include "honeycomb/types/SplRewardConfigParamsApy_generated.hpp"
+#include "honeycomb/types/SplRewardConfigParamsNotSet_generated.hpp"
+#include "honeycomb/types/SplRewardConfigParamsStakeWeight_generated.hpp"
+#include "honeycomb/types/SplRewardConfig_generated.hpp"
+#include "honeycomb/types/SplStakeWeightConfig_generated.hpp"
+#include "honeycomb/types/SplStakingPool_generated.hpp"
+#include "honeycomb/types/StakerClaimedParamsApy_generated.hpp"
+#include "honeycomb/types/StakerClaimedParamsNone_generated.hpp"
+#include "honeycomb/types/StakerClaimedParamsStakeWeight_generated.hpp"
+#include "honeycomb/types/StakerClaimed_generated.hpp"
 #include "honeycomb/types/Staker_generated.hpp"
 #include "honeycomb/types/StakingPool_generated.hpp"
+#include "honeycomb/types/StakingRecipient_generated.hpp"
 #include "honeycomb/types/TimeRequirementParams_generated.hpp"
 #include "honeycomb/types/TimeRequirement_generated.hpp"
 #include "honeycomb/types/TransactionBundleResponse_generated.hpp"
@@ -166,6 +188,7 @@
 #include "honeycomb/types/UpdateMissionData_generated.hpp"
 #include "honeycomb/types/UpdateMissionInput_generated.hpp"
 #include "honeycomb/types/UpdateMissionPoolData_generated.hpp"
+#include "honeycomb/types/UpdateSplStakingPoolMetadataInput_generated.hpp"
 #include "honeycomb/types/UpdateStakingPoolMetadataInput_generated.hpp"
 #include "honeycomb/types/UpdateWalletInput_generated.hpp"
 #include "honeycomb/types/UsedByCustom_generated.hpp"
@@ -779,16 +802,13 @@ Variant HoneyComb::createUpdateProfileTransaction(String profile, String payer, 
 	return OK;
 }
 
-Variant HoneyComb::createUpdatePlatformDataTransaction(String profile, String authority, String delegateAuthority, String payer, Variant platformData, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createUpdatePlatformDataTransaction(String profile, String authority, String payer, Variant platformData, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
 
 	add_arg("profile", "String", Pubkey::string_from_variant(profile), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
-	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
 	}
@@ -1399,7 +1419,7 @@ Variant HoneyComb::findMultipliers(Array addresses, Array stakingPools) {
 	return OK;
 }
 
-Variant HoneyComb::createCreateStakingPoolTransaction(String project, String resource, Variant metadata, String authority, Variant multiplier, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createCreateStakingPoolTransaction(String project, String resource, Variant metadata, String authority, Variant multiplier, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1410,9 +1430,6 @@ Variant HoneyComb::createCreateStakingPoolTransaction(String project, String res
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
 	if (multiplier != Variant(nullptr)) {
 		add_arg("multiplier", "InitStakingMultiplierMetadataInput", Object::cast_to<godot::honeycomb_resource::InitStakingMultiplierMetadataInput>(multiplier)->to_dict(), true);
-	}
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
 	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
@@ -1431,7 +1448,7 @@ Variant HoneyComb::createCreateStakingPoolTransaction(String project, String res
 	return OK;
 }
 
-Variant HoneyComb::createUpdateStakingPoolTransaction(String project, String stakingPool, String authority, Variant metadata, String characterModel, String resource, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createUpdateStakingPoolTransaction(String project, String stakingPool, String authority, Variant metadata, String characterModel, String resource, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1447,9 +1464,6 @@ Variant HoneyComb::createUpdateStakingPoolTransaction(String project, String sta
 	}
 	if (resource != "") {
 		add_arg("resource", "String", Pubkey::string_from_variant(resource), true);
-	}
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
 	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
@@ -1468,7 +1482,7 @@ Variant HoneyComb::createUpdateStakingPoolTransaction(String project, String sta
 	return OK;
 }
 
-Variant HoneyComb::createInitMultipliersTransaction(String project, String stakingPool, int32_t decimals, Array multipliers, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createInitMultipliersTransaction(String project, String stakingPool, int32_t decimals, Array multipliers, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1478,9 +1492,6 @@ Variant HoneyComb::createInitMultipliersTransaction(String project, String staki
 	add_arg("decimals", "Int", decimals, false);
 	add_arg("multipliers", "[AddMultiplierMetadataInput!]", multipliers, false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
-	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
 	}
@@ -1498,7 +1509,7 @@ Variant HoneyComb::createInitMultipliersTransaction(String project, String staki
 	return OK;
 }
 
-Variant HoneyComb::createAddMultiplierTransaction(String project, String multiplier, Variant metadata, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createAddMultiplierTransaction(String project, String multiplier, Variant metadata, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1507,9 +1518,6 @@ Variant HoneyComb::createAddMultiplierTransaction(String project, String multipl
 	add_arg("multiplier", "String", Pubkey::string_from_variant(multiplier), false);
 	add_arg("metadata", "AddMultiplierMetadataInput", Object::cast_to<godot::honeycomb_resource::AddMultiplierMetadataInput>(metadata)->to_dict(), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
-	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
 	}
@@ -1549,6 +1557,301 @@ Variant HoneyComb::createStakeCharactersTransactions(PackedStringArray character
 	method_name = "createStakeCharactersTransactions";
 
 	query_fields = "blockhash lastValidBlockHeight transactions";
+	send_query();
+	return OK;
+}
+
+Variant HoneyComb::findSplStakingPools(Array addresses, Array projects, PackedStringArray names, Array stakeTokenMints) {
+	if (pending) {
+		return ERR_BUSY;
+	}
+
+	if (addresses != Array()) {
+		add_arg("addresses", "[Bytes!]", addresses, true);
+	}
+	if (projects != Array()) {
+		add_arg("projects", "[Pubkey!]", projects, true);
+	}
+	if (names != PackedStringArray()) {
+		add_arg("names", "[String!]", names, true);
+	}
+	if (stakeTokenMints != Array()) {
+		add_arg("stakeTokenMints", "[Pubkey!]", stakeTokenMints, true);
+	}
+
+	method_name = "splStakingPools";
+
+	query_fields = "address bump nonce endTime maxStakeDurationSecs merkleTrees { active merkle_trees schema } minStakeDurationSecs multipliers { value multiplierType { kind params { ... on SplMultiplierTypeParamsStakeDuration { __typename minDuration } ... on SplMultiplierTypeParamsStakeAmount { __typename minAmount }  }  }  } name project rewardConfig { kind params { ... on SplRewardConfigParamsApy { rewardTokenMint rewardVault rewardsDuration rewardsPerDuration totalRewardAmount } ... on SplRewardConfigParamsStakeWeight { __typename pools { weight }  }  }  } stake_token_mint startTime totalStakedAmount";
+	send_query();
+	return OK;
+}
+
+Variant HoneyComb::findSplStakingRecipients(Array addresses, Array trees, PackedStringArray stakers, PackedStringArray projects, PackedStringArray splStakingPools, bool includeProof) {
+	if (pending) {
+		return ERR_BUSY;
+	}
+
+	if (addresses != Array()) {
+		add_arg("addresses", "[Bytes!]", addresses, true);
+	}
+	if (trees != Array()) {
+		add_arg("trees", "[Bytes!]", trees, true);
+	}
+	if (stakers != PackedStringArray()) {
+		add_arg("stakers", "[String!]", stakers, true);
+	}
+	if (projects != PackedStringArray()) {
+		add_arg("projects", "[String!]", projects, true);
+	}
+	if (splStakingPools != PackedStringArray()) {
+		add_arg("splStakingPools", "[String!]", splStakingPools, true);
+	}
+	if (includeProof != false) {
+		add_arg("includeProof", "Boolean", includeProof, true);
+	}
+
+	method_name = "splStakingRecipients";
+
+	query_fields = "address leaf_idx lokedTill multiplier proof { canopy_depth leaf leaf_index maxDepth node_index proof root tree_id } rewardsClaimed { kind params { ... on StakerClaimedParamsApy { __typename lastRewardTime } ... on StakerClaimedParamsStakeWeight { __typename amounts }  }  } stakeStartTime staker stakedAmount tree_id";
+	send_query();
+	return OK;
+}
+
+Variant HoneyComb::createCreateSplStakingPoolTransaction(String project, String stakeTokenMint, Variant metadata, String authority, Array multipliers, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+	if (pending) {
+		return ERR_BUSY;
+	}
+
+	add_arg("project", "String", Pubkey::string_from_variant(project), false);
+	add_arg("stakeTokenMint", "String", Pubkey::string_from_variant(stakeTokenMint), false);
+	add_arg("metadata", "CreateSplStakingPoolMetadataInput", Object::cast_to<godot::honeycomb_resource::CreateSplStakingPoolMetadataInput>(metadata)->to_dict(), false);
+	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
+	if (multipliers != Array()) {
+		add_arg("multipliers", "[AddSplMultiplierMetadataInput!]", multipliers, true);
+	}
+	if (payer != "") {
+		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
+	}
+	if (lutAddresses != PackedStringArray()) {
+		add_arg("lutAddresses", "[String!]", lutAddresses, true);
+	}
+	if (computeUnitPrice != -1) {
+		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
+	}
+
+	method_name = "createCreateSplStakingPoolTransaction";
+
+	query_fields = "tx { blockhash lastValidBlockHeight transaction } splStakingPoolAddress";
+	send_query();
+	return OK;
+}
+
+Variant HoneyComb::createUpdateSplStakingPoolTransaction(String project, String splStakingPool, Variant metadata, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+	if (pending) {
+		return ERR_BUSY;
+	}
+
+	add_arg("project", "String", Pubkey::string_from_variant(project), false);
+	add_arg("splStakingPool", "String", Pubkey::string_from_variant(splStakingPool), false);
+	add_arg("metadata", "UpdateSplStakingPoolMetadataInput", Object::cast_to<godot::honeycomb_resource::UpdateSplStakingPoolMetadataInput>(metadata)->to_dict(), false);
+	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
+	if (payer != "") {
+		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
+	}
+	if (lutAddresses != PackedStringArray()) {
+		add_arg("lutAddresses", "[String!]", lutAddresses, true);
+	}
+	if (computeUnitPrice != -1) {
+		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
+	}
+
+	method_name = "createUpdateSplStakingPoolTransaction";
+
+	query_fields = "transaction blockhash lastValidBlockHeight";
+	send_query();
+	return OK;
+}
+
+Variant HoneyComb::createCreateNewSplStakingPoolTreeTransaction(Variant treeConfig, String project, String splStakingPool, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+	if (pending) {
+		return ERR_BUSY;
+	}
+
+	add_arg("treeConfig", "TreeSetupConfig", Object::cast_to<godot::honeycomb_resource::TreeSetupConfig>(treeConfig)->to_dict(), false);
+	add_arg("project", "String", Pubkey::string_from_variant(project), false);
+	add_arg("splStakingPool", "String", Pubkey::string_from_variant(splStakingPool), false);
+	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
+	if (payer != "") {
+		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
+	}
+	if (lutAddresses != PackedStringArray()) {
+		add_arg("lutAddresses", "[String!]", lutAddresses, true);
+	}
+	if (computeUnitPrice != -1) {
+		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
+	}
+
+	method_name = "createCreateNewSplStakingPoolTreeTransaction";
+
+	query_fields = "tx { blockhash lastValidBlockHeight transaction } treeAddress proofBytes space cost maxTreeCapacity";
+	send_query();
+	return OK;
+}
+
+Variant HoneyComb::createAddRemoveSplMultipliersTransaction(String project, String splStakingPool, String authority, Array add, PackedInt32Array remove, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+	if (pending) {
+		return ERR_BUSY;
+	}
+
+	add_arg("project", "String", Pubkey::string_from_variant(project), false);
+	add_arg("splStakingPool", "String", Pubkey::string_from_variant(splStakingPool), false);
+	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
+	if (add != Array()) {
+		add_arg("add", "[AddSplMultiplierMetadataInput!]", add, true);
+	}
+	if (remove != PackedInt32Array()) {
+		add_arg("remove", "[Int!]", remove, true);
+	}
+	if (payer != "") {
+		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
+	}
+	if (lutAddresses != PackedStringArray()) {
+		add_arg("lutAddresses", "[String!]", lutAddresses, true);
+	}
+	if (computeUnitPrice != -1) {
+		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
+	}
+
+	method_name = "createAddRemoveSplMultipliersTransaction";
+
+	query_fields = "transaction blockhash lastValidBlockHeight";
+	send_query();
+	return OK;
+}
+
+Variant HoneyComb::createSplRewardPoolTransaction(String project, String splStakingPool, String rewardTokenMint, Variant rewardConfig, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+	if (pending) {
+		return ERR_BUSY;
+	}
+
+	add_arg("project", "String", Pubkey::string_from_variant(project), false);
+	add_arg("splStakingPool", "String", Pubkey::string_from_variant(splStakingPool), false);
+	add_arg("rewardTokenMint", "String", Pubkey::string_from_variant(rewardTokenMint), false);
+	add_arg("rewardConfig", "CreateSplRewardPoolArgsInput", Object::cast_to<godot::honeycomb_resource::CreateSplRewardPoolArgsInput>(rewardConfig)->to_dict(), false);
+	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
+	if (payer != "") {
+		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
+	}
+	if (lutAddresses != PackedStringArray()) {
+		add_arg("lutAddresses", "[String!]", lutAddresses, true);
+	}
+	if (computeUnitPrice != -1) {
+		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
+	}
+
+	method_name = "createSplRewardPoolTransaction";
+
+	query_fields = "transaction blockhash lastValidBlockHeight";
+	send_query();
+	return OK;
+}
+
+Variant HoneyComb::createAddRemoveRewardsFromRewardPoolTransaction(String project, String splStakingPool, String rewardTokenMint, Variant action, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+	if (pending) {
+		return ERR_BUSY;
+	}
+
+	add_arg("project", "String", Pubkey::string_from_variant(project), false);
+	add_arg("splStakingPool", "String", Pubkey::string_from_variant(splStakingPool), false);
+	add_arg("rewardTokenMint", "String", Pubkey::string_from_variant(rewardTokenMint), false);
+	add_arg("action", "AddRemoveRewardsFromRewardPoolActionInput", Object::cast_to<godot::honeycomb_resource::AddRemoveRewardsFromRewardPoolActionInput>(action)->to_dict(), false);
+	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
+	if (payer != "") {
+		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
+	}
+	if (lutAddresses != PackedStringArray()) {
+		add_arg("lutAddresses", "[String!]", lutAddresses, true);
+	}
+	if (computeUnitPrice != -1) {
+		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
+	}
+
+	method_name = "createAddRemoveRewardsFromRewardPoolTransaction";
+
+	query_fields = "transaction blockhash lastValidBlockHeight";
+	send_query();
+	return OK;
+}
+
+Variant HoneyComb::createStakeSplTokensTransaction(String project, String splStakingPool, int64_t amount, int64_t lockPeriodSecs, String staker, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+	if (pending) {
+		return ERR_BUSY;
+	}
+
+	add_arg("project", "String", Pubkey::string_from_variant(project), false);
+	add_arg("splStakingPool", "String", Pubkey::string_from_variant(splStakingPool), false);
+	add_arg("amount", "BigInt", amount, false);
+	add_arg("lockPeriodSecs", "BigInt", lockPeriodSecs, false);
+	add_arg("staker", "String", Pubkey::string_from_variant(staker), false);
+	add_arg("payer", "String", Pubkey::string_from_variant(payer), false);
+	if (lutAddresses != PackedStringArray()) {
+		add_arg("lutAddresses", "[String!]", lutAddresses, true);
+	}
+	if (computeUnitPrice != -1) {
+		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
+	}
+
+	method_name = "createStakeSplTokensTransaction";
+
+	query_fields = "transaction blockhash lastValidBlockHeight";
+	send_query();
+	return OK;
+}
+
+Variant HoneyComb::createClaimSplRewardsTransaction(String project, String splStakingPool, String staker, String stakingReciept, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+	if (pending) {
+		return ERR_BUSY;
+	}
+
+	add_arg("project", "String", Pubkey::string_from_variant(project), false);
+	add_arg("splStakingPool", "String", Pubkey::string_from_variant(splStakingPool), false);
+	add_arg("staker", "String", Pubkey::string_from_variant(staker), false);
+	add_arg("stakingReciept", "String", Pubkey::string_from_variant(stakingReciept), false);
+	add_arg("payer", "String", Pubkey::string_from_variant(payer), false);
+	if (lutAddresses != PackedStringArray()) {
+		add_arg("lutAddresses", "[String!]", lutAddresses, true);
+	}
+	if (computeUnitPrice != -1) {
+		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
+	}
+
+	method_name = "createClaimSplRewardsTransaction";
+
+	query_fields = "transaction blockhash lastValidBlockHeight";
+	send_query();
+	return OK;
+}
+
+Variant HoneyComb::createUnstakeSplTokensTransaction(String project, String splStakingPool, String staker, String stakingReciept, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+	if (pending) {
+		return ERR_BUSY;
+	}
+
+	add_arg("project", "String", Pubkey::string_from_variant(project), false);
+	add_arg("splStakingPool", "String", Pubkey::string_from_variant(splStakingPool), false);
+	add_arg("staker", "String", Pubkey::string_from_variant(staker), false);
+	add_arg("stakingReciept", "String", Pubkey::string_from_variant(stakingReciept), false);
+	add_arg("payer", "String", Pubkey::string_from_variant(payer), false);
+	if (lutAddresses != PackedStringArray()) {
+		add_arg("lutAddresses", "[String!]", lutAddresses, true);
+	}
+	if (computeUnitPrice != -1) {
+		add_arg("computeUnitPrice", "Int", computeUnitPrice, true);
+	}
+
+	method_name = "createUnstakeSplTokensTransaction";
+
+	query_fields = "transaction blockhash lastValidBlockHeight";
 	send_query();
 	return OK;
 }
@@ -1699,7 +2002,7 @@ Variant HoneyComb::createCreateMissionTransaction(Variant data, PackedStringArra
 	return OK;
 }
 
-Variant HoneyComb::createUpdateMissionTransaction(String missionAddress, String authority, Variant params, String payer, String delegateAuthority, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createUpdateMissionTransaction(String missionAddress, String authority, Variant params, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1709,9 +2012,6 @@ Variant HoneyComb::createUpdateMissionTransaction(String missionAddress, String 
 	add_arg("params", "UpdateMissionInput", Object::cast_to<godot::honeycomb_resource::UpdateMissionInput>(params)->to_dict(), false);
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
-	}
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
 	}
 	if (lutAddresses != PackedStringArray()) {
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
@@ -1878,7 +2178,7 @@ Variant HoneyComb::findHoldings(Array addresses, Array holders, Array trees, boo
 	return OK;
 }
 
-Variant HoneyComb::createCreateNewResourceTransaction(String project, String authority, Variant params, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createCreateNewResourceTransaction(String project, String authority, Variant params, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1886,9 +2186,6 @@ Variant HoneyComb::createCreateNewResourceTransaction(String project, String aut
 	add_arg("project", "String", Pubkey::string_from_variant(project), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
 	add_arg("params", "InitResourceInput", Object::cast_to<godot::honeycomb_resource::InitResourceInput>(params)->to_dict(), false);
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
-	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
 	}
@@ -1926,16 +2223,13 @@ Variant HoneyComb::createImportFungibleResourceTransaction(Variant params, Packe
 	return OK;
 }
 
-Variant HoneyComb::createExportFungibleResourceTransaction(String resource, String authority, String delegateAuthority, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createExportFungibleResourceTransaction(String resource, String authority, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
 
 	add_arg("resource", "String", Pubkey::string_from_variant(resource), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
-	}
 	if (lutAddresses != PackedStringArray()) {
 		add_arg("lutAddresses", "[String!]", lutAddresses, true);
 	}
@@ -1950,7 +2244,7 @@ Variant HoneyComb::createExportFungibleResourceTransaction(String resource, Stri
 	return OK;
 }
 
-Variant HoneyComb::createCreateNewResourceTreeTransaction(String project, String resource, String authority, Variant treeConfig, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createCreateNewResourceTreeTransaction(String project, String resource, String authority, Variant treeConfig, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1959,9 +2253,6 @@ Variant HoneyComb::createCreateNewResourceTreeTransaction(String project, String
 	add_arg("resource", "String", Pubkey::string_from_variant(resource), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
 	add_arg("treeConfig", "TreeSetupConfig", Object::cast_to<godot::honeycomb_resource::TreeSetupConfig>(treeConfig)->to_dict(), false);
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
-	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
 	}
@@ -1979,7 +2270,7 @@ Variant HoneyComb::createCreateNewResourceTreeTransaction(String project, String
 	return OK;
 }
 
-Variant HoneyComb::createMintResourceTransaction(String resource, String owner, String authority, int64_t amount, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createMintResourceTransaction(String resource, String owner, String authority, int64_t amount, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -1988,9 +2279,6 @@ Variant HoneyComb::createMintResourceTransaction(String resource, String owner, 
 	add_arg("owner", "String", Pubkey::string_from_variant(owner), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
 	add_arg("amount", "BigInt", amount, false);
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
-	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
 	}
@@ -2008,7 +2296,7 @@ Variant HoneyComb::createMintResourceTransaction(String resource, String owner, 
 	return OK;
 }
 
-Variant HoneyComb::createBurnResourceTransaction(String resource, int64_t amount, String authority, String owner, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createBurnResourceTransaction(String resource, int64_t amount, String authority, String owner, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2018,9 +2306,6 @@ Variant HoneyComb::createBurnResourceTransaction(String resource, int64_t amount
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
 	if (owner != "") {
 		add_arg("owner", "String", Pubkey::string_from_variant(owner), true);
-	}
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
 	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
@@ -2115,7 +2400,7 @@ Variant HoneyComb::createCreateUnwrapHoldingTransaction(String resource, int64_t
 	return OK;
 }
 
-Variant HoneyComb::createInitializeFaucetTransaction(String resource, int32_t amount, int32_t repeatInterval, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createInitializeFaucetTransaction(String resource, int32_t amount, int32_t repeatInterval, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2124,9 +2409,6 @@ Variant HoneyComb::createInitializeFaucetTransaction(String resource, int32_t am
 	add_arg("amount", "Int", amount, false);
 	add_arg("repeatInterval", "Int", repeatInterval, false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
-	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
 	}
@@ -2168,7 +2450,7 @@ Variant HoneyComb::createClaimFaucetTransaction(String faucet, String owner, Str
 	return OK;
 }
 
-Variant HoneyComb::createInitializeRecipeTransaction(String project, int64_t xp, Array ingredients, Variant meal, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createInitializeRecipeTransaction(String project, int64_t xp, Array ingredients, Variant meal, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2178,9 +2460,6 @@ Variant HoneyComb::createInitializeRecipeTransaction(String project, int64_t xp,
 	add_arg("ingredients", "[IngredientsInput!]", ingredients, false);
 	add_arg("meal", "MealInput", Object::cast_to<godot::honeycomb_resource::MealInput>(meal)->to_dict(), false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
-	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
 	}
@@ -2198,7 +2477,7 @@ Variant HoneyComb::createInitializeRecipeTransaction(String project, int64_t xp,
 	return OK;
 }
 
-Variant HoneyComb::createAddIngredientsTransaction(String recipe, Array ingredients, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createAddIngredientsTransaction(String recipe, Array ingredients, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2206,9 +2485,6 @@ Variant HoneyComb::createAddIngredientsTransaction(String recipe, Array ingredie
 	add_arg("recipe", "String", Pubkey::string_from_variant(recipe), false);
 	add_arg("ingredients", "[IngredientsInput!]", ingredients, false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
-	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
 	}
@@ -2226,7 +2502,7 @@ Variant HoneyComb::createAddIngredientsTransaction(String recipe, Array ingredie
 	return OK;
 }
 
-Variant HoneyComb::createRemoveIngredientsTransaction(String recipe, PackedStringArray ingredients, String authority, String delegateAuthority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
+Variant HoneyComb::createRemoveIngredientsTransaction(String recipe, PackedStringArray ingredients, String authority, String payer, PackedStringArray lutAddresses, int32_t computeUnitPrice) {
 	if (pending) {
 		return ERR_BUSY;
 	}
@@ -2234,9 +2510,6 @@ Variant HoneyComb::createRemoveIngredientsTransaction(String recipe, PackedStrin
 	add_arg("recipe", "String", Pubkey::string_from_variant(recipe), false);
 	add_arg("ingredients", "[String!]", ingredients, false);
 	add_arg("authority", "String", Pubkey::string_from_variant(authority), false);
-	if (delegateAuthority != "") {
-		add_arg("delegateAuthority", "String", Pubkey::string_from_variant(delegateAuthority), true);
-	}
 	if (payer != "") {
 		add_arg("payer", "String", Pubkey::string_from_variant(payer), true);
 	}
@@ -2366,7 +2639,7 @@ void HoneyComb::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_create_profiles_tree_transaction", "treeConfig", "project", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateProfilesTreeTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_new_profile_transaction", "project", "payer", "identity", "info", "lutAddresses", "computeUnitPrice"), &HoneyComb::createNewProfileTransaction, DEFVAL(""), DEFVAL(Variant(nullptr)), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_update_profile_transaction", "profile", "payer", "info", "customData", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUpdateProfileTransaction, DEFVAL(Variant(nullptr)), DEFVAL(Variant(nullptr)), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_update_platform_data_transaction", "profile", "authority", "delegateAuthority", "payer", "platformData", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUpdatePlatformDataTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(Variant(nullptr)), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_update_platform_data_transaction", "profile", "authority", "payer", "platformData", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUpdatePlatformDataTransaction, DEFVAL(""), DEFVAL(Variant(nullptr)), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_new_user_with_profile_transaction", "project", "wallet", "userInfo", "payer", "profileIdentity", "lutAddresses", "computeUnitPrice"), &HoneyComb::createNewUserWithProfileTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("find_assembler_config", "addresses", "tickers", "characterModel", "project"), &HoneyComb::findAssemblerConfig, DEFVAL(Array()), DEFVAL(PackedStringArray()), DEFVAL(Array()), DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("find_character_traits", "addresses", "trees", "includeProof"), &HoneyComb::findCharacterTraits, DEFVAL(Array()), DEFVAL(Array()), DEFVAL(false));
@@ -2389,11 +2662,22 @@ void HoneyComb::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_staking_pools", "addresses", "projects", "names"), &HoneyComb::findStakingPools, DEFVAL(Array()), DEFVAL(Array()), DEFVAL(PackedStringArray()));
 	ClassDB::bind_method(D_METHOD("find_stakers", "addresses", "stakingPools", "wallets"), &HoneyComb::findStakers, DEFVAL(Array()), DEFVAL(Array()), DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("find_multipliers", "addresses", "stakingPools"), &HoneyComb::findMultipliers, DEFVAL(Array()), DEFVAL(Array()));
-	ClassDB::bind_method(D_METHOD("create_create_staking_pool_transaction", "project", "resource", "metadata", "authority", "multiplier", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateStakingPoolTransaction, DEFVAL(Variant(nullptr)), DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_update_staking_pool_transaction", "project", "stakingPool", "authority", "metadata", "characterModel", "resource", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUpdateStakingPoolTransaction, DEFVAL(Variant(nullptr)), DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_init_multipliers_transaction", "project", "stakingPool", "decimals", "multipliers", "authority", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createInitMultipliersTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_add_multiplier_transaction", "project", "multiplier", "metadata", "authority", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createAddMultiplierTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_create_staking_pool_transaction", "project", "resource", "metadata", "authority", "multiplier", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateStakingPoolTransaction, DEFVAL(Variant(nullptr)), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_update_staking_pool_transaction", "project", "stakingPool", "authority", "metadata", "characterModel", "resource", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUpdateStakingPoolTransaction, DEFVAL(Variant(nullptr)), DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_init_multipliers_transaction", "project", "stakingPool", "decimals", "multipliers", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createInitMultipliersTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_add_multiplier_transaction", "project", "multiplier", "metadata", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createAddMultiplierTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_stake_characters_transactions", "characterAddresses", "characterModel", "stakingPool", "project", "feePayer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createStakeCharactersTransactions, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("find_spl_staking_pools", "addresses", "projects", "names", "stakeTokenMints"), &HoneyComb::findSplStakingPools, DEFVAL(Array()), DEFVAL(Array()), DEFVAL(PackedStringArray()), DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("find_spl_staking_recipients", "addresses", "trees", "stakers", "projects", "splStakingPools", "includeProof"), &HoneyComb::findSplStakingRecipients, DEFVAL(Array()), DEFVAL(Array()), DEFVAL(PackedStringArray()), DEFVAL(PackedStringArray()), DEFVAL(PackedStringArray()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("create_create_spl_staking_pool_transaction", "project", "stakeTokenMint", "metadata", "authority", "multipliers", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateSplStakingPoolTransaction, DEFVAL(Array()), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_update_spl_staking_pool_transaction", "project", "splStakingPool", "metadata", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUpdateSplStakingPoolTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_create_new_spl_staking_pool_tree_transaction", "treeConfig", "project", "splStakingPool", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewSplStakingPoolTreeTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_add_remove_spl_multipliers_transaction", "project", "splStakingPool", "authority", "add", "remove", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createAddRemoveSplMultipliersTransaction, DEFVAL(Array()), DEFVAL(PackedInt32Array()), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_spl_reward_pool_transaction", "project", "splStakingPool", "rewardTokenMint", "rewardConfig", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createSplRewardPoolTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_add_remove_rewards_from_reward_pool_transaction", "project", "splStakingPool", "rewardTokenMint", "action", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createAddRemoveRewardsFromRewardPoolTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_stake_spl_tokens_transaction", "project", "splStakingPool", "amount", "lockPeriodSecs", "staker", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createStakeSplTokensTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_claim_spl_rewards_transaction", "project", "splStakingPool", "staker", "stakingReciept", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createClaimSplRewardsTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_unstake_spl_tokens_transaction", "project", "splStakingPool", "staker", "stakingReciept", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUnstakeSplTokensTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_claim_staking_rewards_transactions", "characterAddresses", "characterModel", "feePayer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createClaimStakingRewardsTransactions, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_unstake_characters_transactions", "characterAddresses", "characterModel", "feePayer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUnstakeCharactersTransactions, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("find_missions", "addresses", "missionPools"), &HoneyComb::findMissions, DEFVAL(Array()), DEFVAL(Array()));
@@ -2401,7 +2685,7 @@ void HoneyComb::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_create_mission_pool_transaction", "data", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateMissionPoolTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_update_mission_pool_transaction", "data", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUpdateMissionPoolTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_create_mission_transaction", "data", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateMissionTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_update_mission_transaction", "missionAddress", "authority", "params", "payer", "delegateAuthority", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUpdateMissionTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_update_mission_transaction", "missionAddress", "authority", "params", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createUpdateMissionTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_send_characters_on_mission_transaction", "data", "lutAddresses", "computeUnitPrice"), &HoneyComb::createSendCharactersOnMissionTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_recall_characters_transaction", "data", "lutAddresses", "computeUnitPrice"), &HoneyComb::createRecallCharactersTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("find_resources", "addresses", "projects", "mints"), &HoneyComb::findResources, DEFVAL(Array()), DEFVAL(Array()), DEFVAL(Array()));
@@ -2409,20 +2693,20 @@ void HoneyComb::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_faucets", "addresses", "projects", "resources"), &HoneyComb::findFaucets, DEFVAL(Array()), DEFVAL(Array()), DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("find_recipes", "addresses", "projects"), &HoneyComb::findRecipes, DEFVAL(Array()), DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("find_holdings", "addresses", "holders", "trees", "includeProof"), &HoneyComb::findHoldings, DEFVAL(Array()), DEFVAL(Array()), DEFVAL(Array()), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("create_create_new_resource_transaction", "project", "authority", "params", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_create_new_resource_transaction", "project", "authority", "params", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewResourceTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_import_fungible_resource_transaction", "params", "lutAddresses", "computeUnitPrice"), &HoneyComb::createImportFungibleResourceTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_export_fungible_resource_transaction", "resource", "authority", "delegateAuthority", "lutAddresses", "computeUnitPrice"), &HoneyComb::createExportFungibleResourceTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_create_new_resource_tree_transaction", "project", "resource", "authority", "treeConfig", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewResourceTreeTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_mint_resource_transaction", "resource", "owner", "authority", "amount", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createMintResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_burn_resource_transaction", "resource", "amount", "authority", "owner", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createBurnResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_export_fungible_resource_transaction", "resource", "authority", "lutAddresses", "computeUnitPrice"), &HoneyComb::createExportFungibleResourceTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_create_new_resource_tree_transaction", "project", "resource", "authority", "treeConfig", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateNewResourceTreeTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_mint_resource_transaction", "resource", "owner", "authority", "amount", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createMintResourceTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_burn_resource_transaction", "resource", "amount", "authority", "owner", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createBurnResourceTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_transfer_resource_transaction", "resource", "owner", "recipient", "amount", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createTransferResourceTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_create_wrap_holding_transaction", "resource", "amount", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateWrapHoldingTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_create_unwrap_holding_transaction", "resource", "amount", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createCreateUnwrapHoldingTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_initialize_faucet_transaction", "resource", "amount", "repeatInterval", "authority", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createInitializeFaucetTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_initialize_faucet_transaction", "resource", "amount", "repeatInterval", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createInitializeFaucetTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_claim_faucet_transaction", "faucet", "owner", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createClaimFaucetTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_initialize_recipe_transaction", "project", "xp", "ingredients", "meal", "authority", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createInitializeRecipeTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_add_ingredients_transaction", "recipe", "ingredients", "authority", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createAddIngredientsTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("create_remove_ingredients_transaction", "recipe", "ingredients", "authority", "delegateAuthority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createRemoveIngredientsTransaction, DEFVAL(""), DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_initialize_recipe_transaction", "project", "xp", "ingredients", "meal", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createInitializeRecipeTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_add_ingredients_transaction", "recipe", "ingredients", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createAddIngredientsTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_remove_ingredients_transaction", "recipe", "ingredients", "authority", "payer", "lutAddresses", "computeUnitPrice"), &HoneyComb::createRemoveIngredientsTransaction, DEFVAL(""), DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_init_cooking_process_transactions", "recipe", "authority", "payer", "computeUnitPrice", "lutAddresses"), &HoneyComb::createInitCookingProcessTransactions, DEFVAL(""), DEFVAL(-1), DEFVAL(PackedStringArray()));
 	ClassDB::bind_method(D_METHOD("create_initialize_badge_criteria_transaction", "args", "lutAddresses", "computeUnitPrice"), &HoneyComb::createInitializeBadgeCriteriaTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("create_claim_badge_criteria_transaction", "args", "lutAddresses", "computeUnitPrice"), &HoneyComb::createClaimBadgeCriteriaTransaction, DEFVAL(PackedStringArray()), DEFVAL(-1));

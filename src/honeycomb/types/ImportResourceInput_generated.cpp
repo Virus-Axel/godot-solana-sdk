@@ -70,14 +70,6 @@ String ImportResourceInput::get_payer() const {
 	return this->payer;
 }
 
-void ImportResourceInput::set_delegateAuthority(const String &val) {
-	this->delegateAuthority = val;
-}
-
-String ImportResourceInput::get_delegateAuthority() const {
-	return this->delegateAuthority;
-}
-
 void ImportResourceInput::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_decimals"), &ImportResourceInput::get_decimals);
 	ClassDB::bind_method(D_METHOD("set_decimals", "value"), &ImportResourceInput::set_decimals);
@@ -103,9 +95,6 @@ void ImportResourceInput::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_payer"), &ImportResourceInput::get_payer);
 	ClassDB::bind_method(D_METHOD("set_payer", "value"), &ImportResourceInput::set_payer);
 	ClassDB::add_property("ImportResourceInput", PropertyInfo(Variant::Type::STRING, "payer"), "set_payer", "get_payer");
-	ClassDB::bind_method(D_METHOD("get_delegateAuthority"), &ImportResourceInput::get_delegateAuthority);
-	ClassDB::bind_method(D_METHOD("set_delegateAuthority", "value"), &ImportResourceInput::set_delegateAuthority);
-	ClassDB::add_property("ImportResourceInput", PropertyInfo(Variant::Type::STRING, "delegateAuthority"), "set_delegateAuthority", "get_delegateAuthority");
 	ClassDB::bind_method(D_METHOD("to_dict"), &ImportResourceInput::to_dict);
 }
 Dictionary ImportResourceInput::to_dict() {
@@ -131,9 +120,6 @@ Dictionary ImportResourceInput::to_dict() {
 	}
 	if (!payer.is_empty()) {
 		res["payer"] = payer;
-	}
-	if (!delegateAuthority.is_empty()) {
-		res["delegateAuthority"] = delegateAuthority;
 	}
 	return res;
 }
