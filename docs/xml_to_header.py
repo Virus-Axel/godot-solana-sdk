@@ -1,3 +1,5 @@
+"""Helper functions for Doxygen to Godot documentation porting."""
+
 import xml.etree.ElementTree as ET
 import re
 import os
@@ -9,7 +11,18 @@ TAB = "        "
 DOC_HEADER_NAME = "include/doc_data_godot-solana-sdk.gen.h"
 
 
-def add_refs_to_description(text):
+def add_refs_to_description(text: str) -> str:
+    """ Add reference in Godot docs to custom classes.
+    
+    The references will appear as clickable links in the final documentation in Godot.
+    This function only replaces class names with links for a limited set of classes.
+
+    Args:
+        text (str): Text of Godot documentation to add references to.
+
+    Returns:
+        str: Updated version of Godot documentation.
+    """
     TYPES_TO_REF = [
         "Pubkey",
         "Variant",
@@ -21,7 +34,15 @@ def add_refs_to_description(text):
     return text
 
 
-def build_xml_func(method):
+def build_xml_func(method: dict) -> ET.Element:
+    """ Construct a Godot documentation XML for a class method.
+
+    Args:
+        method (dict): Information about the method, must contain name, brief and detailed keys.
+
+    Returns:
+        ET.Element: XML structure of Godot documentation about the method.
+    """
     root = ET.Element("method", name = method["name"])
     if "deprecated" in method:
         root.set("deprecated", method["deprecated"])
@@ -36,7 +57,7 @@ def build_xml_func(method):
     arg_description = ""
     for i in range(0, len(args)-1, 2):
         arg_description += f'{TAB}[i]{args[i]}[/i]: {args[i+1]}\n'
-    
+
     if len(args) % 2:
         if args[-1] == '':
             arg_description += f'{TAB}[i]return[/i]: {splits[0]}'
@@ -45,13 +66,21 @@ def build_xml_func(method):
 
     brief = method["brief"].rstrip()
     desctiption_text = re.sub(r'(\n)+', r'\n', f'{brief}\n{splits[0]}\n{arg_description}')
-    
+
     description_element.text = add_refs_to_description(desctiption_text)
 
     return root
 
 
-def build_xml(data):
+def build_xml(data: dict) -> str:
+    """Construct Godot documentation XML for a class.
+
+    Args:
+        data (str): Class documentation info. Must contain class_name, brief and methods keys.
+
+    Returns:
+        str: Class documentation XML as string.
+    """
     root = ET.Element("class", name = data["class_name"])
     brief = ET.SubElement(root, "brief_description")
     brief.text = data["brief"]
@@ -67,7 +96,16 @@ def build_xml(data):
     return ET.tostring(root, encoding='unicode', method='xml')
 
 
-def tree_to_text(tree):
+def tree_to_text(tree: ET.Element) -> str:
+    """Extracts texts from elements recursively and concatinates them.
+
+    Args:
+        tree (ET.Element): XML tree to convert.
+
+    Returns:
+        str: Concatinated texts of all tree elements.
+    """
+
     result = ""
     for child in tree:
         if child.tag == "para":
@@ -76,14 +114,30 @@ def tree_to_text(tree):
     return result
 
 
-def get_param_type(tree):
+def get_param_type(tree: ET.Element) -> str:
+    """Get parameter type name as text.
+
+    Args:
+        tree (ET.Element): XML element to get type from.
+
+    Returns:
+        str: Type name as text.
+    """
     if tree.find("ref"):
         return "Variant"
     return tree.text.replace("const", "").replace("&", "").lstrip().rstrip()
 
 
-def tree_to_func(tree):
-    GODOT_ACCESSIBLE = "Godot Accessible!\n \n"
+def tree_to_func(tree: ET.Element) -> dict:
+    """Assembles necessary information from doxygen XML into a dictionary.
+
+    Args:
+        tree (ET.Element): Doxygen XML function element.
+
+    Returns:
+        dict: Assembled dictionary with documentation data.
+    """
+    GODOT_ACCESSIBLE = "Godot Accessible!"
 
     result = {}
 
@@ -109,7 +163,7 @@ def tree_to_func(tree):
     result["params"] = param_list
 
     brief = tree.find("briefdescription")
-    if brief:
+    if len(brief) > 0:
         result["brief"] = tree_to_text(brief)
 
     detailed = tree.find("detaileddescription")
@@ -133,17 +187,26 @@ def tree_to_func(tree):
                 child.remove(child.find("xrefsect"))
 
 
-    if detailed:
+    if len(detailed) > 0:
         result["detailed"] = tree_to_text(detailed)
         if result["detailed"].find(GODOT_ACCESSIBLE) > -1:
             result["detailed"] = result["detailed"].replace(GODOT_ACCESSIBLE, '')
             result["godot"] = True
         else:
             result["godot"] = False
+
     return result
 
 
-def parse_doxy_class(source):
+def parse_doxy_class(source: str) -> str:
+    """Parses a doxygen XML class file.
+
+    Args:
+        source (str): Filename of file to parse.
+
+    Returns:
+        str: Parsed file contents.
+    """
     data = ET.parse(source)
     root = data.getroot()
     result = {}
@@ -168,7 +231,7 @@ def parse_doxy_class(source):
         if(member_type == "function"):
             parsed_func = tree_to_func(memberdef)
 
-            if not "godot" in parsed_func:
+            if "godot" not in parsed_func:
                 continue
             if parsed_func["godot"]:
                 godot_funcs.append(parsed_func)
@@ -181,7 +244,13 @@ def parse_doxy_class(source):
         return build_xml(result)
 
 
-def doxy_to_header(sources, target):
+def doxy_to_header(sources: list[str], target: str):
+    """Create a documentation header file from a list of doxygen xml files.
+
+    Args:
+        sources (list[str]): List of doxygen documentaiont xml files.
+        target (str): Destination header file name.
+    """
     xml_string = ""
     for source in sources:
         xml_string += parse_doxy_class(source)
@@ -189,7 +258,14 @@ def doxy_to_header(sources, target):
     make_doc_header(target, xml_string)
 
 
-def make_doc_header(target, raw_data):
+def make_doc_header(target: str, raw_data: str):
+    """Create a documentation header file from raw data.
+
+    Args:
+        target (str): Destination header file name.
+        raw_data (str): Raw documentation data.
+    """
+    
     dst = str(target)
     g = open(dst, "w", encoding="utf-8")
 
@@ -207,7 +283,16 @@ def make_doc_header(target, raw_data):
 
     g.close()
 
-def get_classes_list(folder_path):
+def get_classes_list(folder_path: str) -> list[str]:
+    """Get a list of class XML file names from a generated doxygen XML folder.
+
+    Args:
+        folder_path (str): Path to doxygen output XML folder.
+
+    Returns:
+        list[str]: List of locations for class documentation files.
+    """
+
     PREFIX = "classgodot_1_1_"
     class_list = []
 
@@ -222,10 +307,9 @@ def get_classes_list(folder_path):
         print("The specified folder path does not exist.")
     except Exception as e:
         print(f"An error occurred: {e}")
-    
+
     return class_list
 
 
 class_list = get_classes_list("docs/xml")
 doxy_to_header(class_list, DOC_HEADER_NAME)
-#doxy_to_header(["docs/xml/classgodot_1_1_pubkey.xml"], DOC_HEADER_NAME)
