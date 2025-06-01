@@ -2,7 +2,7 @@ extends VBoxContainer
 
 const EXAMPLE_ACCOUNT := "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZAMdL4VZHirAn"
 
-const TOTAL_CASES := 9
+const TOTAL_CASES := 10
 var passed_test_mask := 0
 		
 
@@ -235,10 +235,34 @@ func test_das_methods():
 	
 	PASS(8)
 
+# TODO(VirAx): Move to local test accounts when local validator supports DAS methods.
+func fungible_tokens_filter():
+	const DEVNET_URL = "https://api.devnet.solana.com:443"
+	const TEST_OWNER = "dev2gUnXyMLh6WyV9NTBaXeNfo1DTn2R4b69VTGNidF"
+	const BONK_ADDRESS = "HFWX8c7kpa7Lq496ccesyDrRcY27MhsvtK3DsBoAQhvk"
+	
+	var devnet_client = add_solana_client()
+	devnet_client.url_override = DEVNET_URL
+	
+	# Fetch assets without fungible.
+	devnet_client.get_assets_by_owner(TEST_OWNER, 1, 100, false)
+	var assets_data = await devnet_client.http_response_received
+	
+	# BONK address should not be in result.
+	assert(str(assets_data).find(BONK_ADDRESS) == -1)
+	
+	# Fetch assets with fungible.
+	devnet_client.get_assets_by_owner(TEST_OWNER, 1, 100, true)
+	assets_data = await devnet_client.http_response_received
+	
+	# BONK address should be in result.
+	assert(str(assets_data).find(BONK_ADDRESS) > 0)
+	
+	PASS(9)
+
 func _ready():
 	# Disbled since RPC client does not respond with base64 encoding.
 	# test_account_encoding()
-	
 	
 	get_account_info_demo()
 	get_latest_blockhash_demo()
@@ -248,6 +272,7 @@ func _ready():
 	await unsubscribe_account_test()
 	await test_project_settings()
 	test_das_methods()
+	fungible_tokens_filter()
 
 
 func _account_subscribe_callback(_params):

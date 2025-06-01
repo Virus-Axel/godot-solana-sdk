@@ -756,8 +756,9 @@ public:
 	 * @param owner The address of the owner of the assets.
 	 * @param page The index of the "page" to retrieve.
 	 * @param limit The maximum number of assets to retrieve.
+	 * @param show_fungible Includes fungible assets if true.
 	 */
-	void get_assets_by_owner(const Variant &owner, uint32_t page = 1, uint32_t limit = ASSET_DEFAULT_FETCH_LIMIT);
+	void get_assets_by_owner(const Variant &owner, uint32_t page = 1, uint32_t limit = ASSET_DEFAULT_FETCH_LIMIT, bool show_fungible = false);
 
 	/**
 	 * @brief Subscribe to an account to receive notifications when the lamports or data for a given account public key changes.

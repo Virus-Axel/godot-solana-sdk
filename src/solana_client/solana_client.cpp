@@ -756,11 +756,16 @@ void SolanaClient::get_assets_by_group(const String &group_key, const Variant &g
 	quick_http_request(rpc_dict);
 }
 
-void SolanaClient::get_assets_by_owner(const Variant &owner, uint32_t page, uint32_t limit) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::get_assets_by_owner(const Variant &owner, uint32_t page, uint32_t limit, bool show_fungible) { // NOLINT(bugprone-easily-swappable-parameters)
 	Dictionary param_dict;
+	Dictionary options;
+
+	options["showFungible"] = show_fungible;
+
 	param_dict["ownerAddress"] = Pubkey::string_from_variant(owner);
 	param_dict["page"] = page;
 	param_dict["limit"] = limit;
+	param_dict["options"] = options;
 
 	Dictionary rpc_dict = make_rpc_dict("getAssetsByOwner", Array());
 	rpc_dict["params"] = param_dict;
@@ -899,10 +904,10 @@ void SolanaClient::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_asset", "id"), &SolanaClient::get_asset);
 	ClassDB::bind_method(D_METHOD("get_asset_proof", "id"), &SolanaClient::get_asset_proof);
-	ClassDB::bind_method(D_METHOD("get_assets_by_authority", "authority", "page"), &SolanaClient::get_assets_by_authority, DEFVAL(10U), DEFVAL(1U));
-	ClassDB::bind_method(D_METHOD("get_assets_by_creator_address", "creator_address", "only_verified", "page", "limit"), &SolanaClient::get_assets_by_creator_address, DEFVAL(10U), DEFVAL(1U), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_assets_by_group", "group_key", "group_value", "page", "limit"), &SolanaClient::get_assets_by_group, DEFVAL(10U), DEFVAL(1U));
-	ClassDB::bind_method(D_METHOD("get_assets_by_owner", "owner", "page", "limit"), &SolanaClient::get_assets_by_owner, DEFVAL(10U), DEFVAL(1U));
+	ClassDB::bind_method(D_METHOD("get_assets_by_authority", "authority", "page", "limit"), &SolanaClient::get_assets_by_authority, DEFVAL(1U), DEFVAL(10U));
+	ClassDB::bind_method(D_METHOD("get_assets_by_creator_address", "creator_address", "only_verified", "page", "limit"), &SolanaClient::get_assets_by_creator_address, DEFVAL(false), DEFVAL(1U), DEFVAL(10U));
+	ClassDB::bind_method(D_METHOD("get_assets_by_group", "group_key", "group_value", "page", "limit"), &SolanaClient::get_assets_by_group, DEFVAL(1U), DEFVAL(10U));
+	ClassDB::bind_method(D_METHOD("get_assets_by_owner", "owner", "page", "limit", "show_fungible"), &SolanaClient::get_assets_by_owner, DEFVAL(1U), DEFVAL(10U), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("unsubscribe_all", "callback"), &SolanaClient::unsubscribe_all);
 	ClassDB::bind_method(D_METHOD("account_subscribe", "account_key", "callback"), &SolanaClient::account_subscribe);
