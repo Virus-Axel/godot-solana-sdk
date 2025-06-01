@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1748790637018,
+  "lastUpdate": 1748806386079,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1328,6 +1328,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/103f3dcbe654af6bb5b67db0d74716e433a431e7"
         },
         "date": 1748790635463,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.373287671232877,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "be76d250df88e88ff016b0174b8fdd3ef3210c52",
+          "message": "Merge pull request #372 from Virus-Axel/bugfix/documentation_not_showing\n\nFix doxygen to editor doc issue",
+          "timestamp": "2025-06-01T21:21:59+02:00",
+          "tree_id": "23f55e986b56400efd4af727e55e6b30042b64e5",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/be76d250df88e88ff016b0174b8fdd3ef3210c52"
+        },
+        "date": 1748806384058,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
