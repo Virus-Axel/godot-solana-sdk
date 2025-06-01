@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1745777578886,
+  "lastUpdate": 1748790637018,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1299,6 +1299,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/fab099b9acda7bdc2c98821f80a6bba172326adc"
         },
         "date": 1745777577664,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.373287671232877,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "103f3dcbe654af6bb5b67db0d74716e433a431e7",
+          "message": "Merge pull request #371 from Virus-Axel/bugfix/fungible_filter\n\nAdd option to get fungible tokens in get_asset_by_owner",
+          "timestamp": "2025-06-01T16:59:26+02:00",
+          "tree_id": "a5a343586f13c9ea34eb65c57a528f0b042c3e61",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/103f3dcbe654af6bb5b67db0d74716e433a431e7"
+        },
+        "date": 1748790635463,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
