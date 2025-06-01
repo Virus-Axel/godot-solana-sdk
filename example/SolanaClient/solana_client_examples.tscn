@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dsabrl5u643o8"]
 
-[ext_resource type="Script" path="res://SolanaClientExamples.gd" id="1_ldiew"]
+[ext_resource type="Script" uid="uid://ctlkqsv30ud46" path="res://SolanaClientExamples.gd" id="1_ldiew"]
 
 [node name="SolanaClientExamples" type="VBoxContainer"]
 anchors_preset = 15
