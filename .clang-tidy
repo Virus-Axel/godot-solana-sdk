@@ -10,7 +10,9 @@ Checks: '
     -readability-use-anyofallof,
     -abseil-*,
     -android-*,
-    -altera-*
+    -altera-*,
+    -misc-no-recursion,
+    -bugprone-easily-swappable-parameters,
   '
 HeaderFileExtensions: ['', h, hh, hpp, hxx, inc, glsl]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]

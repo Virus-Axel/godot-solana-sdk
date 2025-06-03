@@ -31,8 +31,7 @@ std::unordered_map<StringName, std::vector<StringName>> GenericAnchorResource::e
 std::string prop_name = "aaa";
 std::string instruction_name = "";
 
-bool GenericAnchorResource::_set(const StringName &p_name, const Variant &p_value) { // NOLINT(bugprone-easily-swappable-parameters)
-
+bool GenericAnchorResource::_set(const StringName &p_name, const Variant &p_value) {
 	if (properties.find(p_name) == properties.end()) {
 		return false;
 	}
@@ -803,7 +802,7 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) {
 
 			const String value_field_name = field_type["name"];
 			const Array value_field_types = field_type["fields"];
-			
+
 			for (unsigned int j = 0; j < value_field_types.size(); j++) {
 				const Variant value_field_type = value_field_types[j];
 				const String enum_value_name = value_field_name + String("_value_") + String::num_uint64(j);

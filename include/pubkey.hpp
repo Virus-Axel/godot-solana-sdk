@@ -1,7 +1,6 @@
 #ifndef SOLANA_SDK_PUBKEY_HPP
 #define SOLANA_SDK_PUBKEY_HPP
 
-#include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/resource.hpp>
 
 namespace godot {
@@ -22,13 +21,12 @@ private:
 	// Number of bytes in a pubkey
 	static const unsigned int PUBKEY_BYTES = 32;
 	// maximum length of derived `Pubkey` seed
-	const unsigned int MAX_SEED_LEN = 32;
+	static const unsigned int MAX_SEED_LEN = 32;
 	// Maximum number of seeds
-	const unsigned int MAX_SEEDS = 16;
+	static const unsigned int MAX_SEEDS = 16;
 	// Maximum string length of a base58 encoded pubkey
-	const unsigned int MAX_BASE58_LEN = 44;
+	static const unsigned int MAX_BASE58_LEN = 44;
 
-	const unsigned char PDA_MARKER[22] = "ProgramDerivedAddress";
 
 	String type = "UNIQUE";
 	String seed = "";
@@ -41,7 +39,7 @@ private:
 	Variant wallet_address;
 	Variant token_mint_address;
 
-	bool are_bytes_curve_point() const;
+	[[nodiscard]] bool are_bytes_curve_point() const;
 	static bool is_variant_valid_key(const Variant &variant);
 
 protected:
@@ -71,7 +69,7 @@ public:
 	 *
 	 * Creates an empty invalid Pubkey with empty byte array.
 	 */
-	Pubkey();
+	Pubkey() = default;
 
 	/**
 	 * @brief Constructor for Pubkey.
@@ -80,14 +78,14 @@ public:
 	 * If the decoded bytes length is not 32 an error will be emitted.
 	 * In that case an empty Pubkey is created instead.
 	 */
-	Pubkey(const String &from);
+	explicit Pubkey(const String &from);
 
 	/**
 	 * @brief Constructor for Pubkey.
 	 *
 	 * Creates an empty invalid Pubkey with empty byte array.
 	 */
-	Pubkey(const Variant &from);
+	explicit Pubkey(const Variant &from);
 
 	/**
 	 * @godot
@@ -106,7 +104,7 @@ public:
 	 *
 	 * @return Base58 encoded key.
 	 */
-	String to_string() const;
+	[[nodiscard]] String to_string() const;
 
 	/**
 	 * @godot
@@ -145,7 +143,7 @@ public:
 	 *
 	 * @return The 32 byte key array.
 	 */
-	PackedByteArray to_bytes() const;
+	[[nodiscard]] PackedByteArray to_bytes() const;
 
 	/**
 	 * @godot
@@ -155,7 +153,7 @@ public:
 	 *
 	 * @param p_value Type of Pubkey.
 	 */
-	void set_type(const String p_value);
+	void set_type(const String &p_value);
 
 	/**
 	 * @godot
@@ -165,7 +163,7 @@ public:
 	 *
 	 * @return Type of Pubkey.
 	 */
-	String get_type() const;
+	[[nodiscard]] String get_type() const;
 
 	/**
 	 * @godot
@@ -177,7 +175,7 @@ public:
 	 *
 	 * @param p_value Base Pubkey to derive Pubkey from.
 	 */
-	void set_base(const Variant p_value);
+	void set_base(const Variant &p_value);
 
 	/**
 	 * @godot
@@ -201,7 +199,7 @@ public:
 	 *
 	 * @param p_value owner of the Pubkey.
 	 */
-	void set_owner(const Variant p_value);
+	void set_owner(const Variant &p_value);
 
 	/**
 	 * @godot
@@ -225,7 +223,7 @@ public:
 	 *
 	 * @param p_value Wallet address to set.
 	 */
-	void set_wallet_address(const Variant p_value);
+	void set_wallet_address(const Variant &p_value);
 
 	/**
 	 * @godot
@@ -249,7 +247,7 @@ public:
 	 *
 	 * @param p_value token mint used when generating associated token
 	 */
-	void set_token_mint_address(const Variant p_value);
+	void set_token_mint_address(const Variant &p_value);
 
 	/**
 	 * @godot
@@ -294,7 +292,7 @@ public:
 	 * @param owner_pubkey Owner address of the derived Pubkey. Accepts WalletAdapter, Keypair or a Pubkey.
 	 * @return A new derived Pubkey resource.
 	 */
-	static Variant new_from_seed(Variant basePubkey, String seed, Variant owner_pubkey);
+	static Variant new_from_seed(const Variant &basePubkey, const String &seed, const Variant &owner_pubkey);
 
 	/**
 	 * @godot
@@ -341,7 +339,7 @@ public:
 	 * @param program_id The program ID to derrive from.
 	 * @return A new program derrived Pubkey resource.
 	 */
-	static Variant new_program_address(const PackedStringArray seeds, const Variant &program_id);
+	static Variant new_program_address(const PackedStringArray &seeds, const Variant &program_id);
 
 	/**
 	 * @godot
@@ -367,7 +365,7 @@ public:
 	 * @param program_id The program ID to derrive from.
 	 * @return A new valid program derrived Pubkey resource. Null Variant if unsuccessful.
 	 */
-	static Variant new_pda(const PackedStringArray seeds, const Variant &program_id);
+	static Variant new_pda(const PackedStringArray &seeds, const Variant &program_id);
 
 	/**
 	 * @godot
@@ -381,7 +379,7 @@ public:
 	 * @param program_id The program ID to derrive from.
 	 * @return A new valid program derrived Pubkey resource. Null Variant if unsuccessful.
 	 */
-	static Variant new_pda_bytes(const Array seeds, const Variant &program_id);
+	static Variant new_pda_bytes(const Array &seeds, const Variant &program_id);
 
 	/**
 	 * @godot
@@ -432,7 +430,7 @@ public:
 	 * @param program_id Program id of the program to derrive address from.
 	 * @return true if the constructed Pubkey is valid, false otherwise.
 	 */
-	bool create_program_address(const PackedStringArray seeds, const Variant &program_id);
+	bool create_program_address(const PackedStringArray &seeds, const Variant &program_id);
 
 	/**
 	 * @brief Same as create_program_address but with an array of byte arrays seeds.
@@ -444,7 +442,7 @@ public:
 	 * @param program_id Program id of the program to derrive address from.
 	 * @return true if the constructed Pubkey is valid, false otherwise.
 	 */
-	bool create_program_address_bytes(const Array seeds, const Variant &program_id);
+	bool create_program_address_bytes(const Array &seeds, const Variant &program_id);
 
 	/**
 	 * @godot
@@ -465,7 +463,7 @@ public:
 	 * 
 	 * @param other Pubkey compatible key Variant.
 	 */
-	void operator=(const Variant &other);
+	Pubkey& operator=(const Variant &other);
 
 	/**
 	 * @brief Compare two pubkeys.
@@ -476,7 +474,7 @@ public:
 	 */
 	bool operator==(const Pubkey &other) const;
 
-	~Pubkey();
+	~Pubkey() = default;
 };
 } //namespace godot
 

@@ -145,7 +145,6 @@ public:
 	void set_url_override(const String &p_value);
 
 	// The following functions need to comply with godot layout.
-	/* NOLINTBEGIN(bugprone-easily-swappable-parameters)*/
 	/**
 	 * @_set{Transaction}
 	 */
@@ -155,7 +154,6 @@ public:
 	 * @_get{Transaction}
 	 */
 	bool _get(const StringName &p_name, Variant &r_ret) const;
-	/* NOLINTBEGIN(bugprone-easily-swappable-parameters)*/
 
 	/**
 	 * @setter{signers, p_value}
