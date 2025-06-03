@@ -18,6 +18,7 @@
 #include "instruction.hpp"
 #include "keypair.hpp"
 #include "pubkey.hpp"
+#include "solana_client.hpp"
 #include "utils.hpp"
 #include <instructions/compute_budget.hpp>
 #include <merged_account_metas.hpp>
@@ -245,7 +246,7 @@ void Transaction::_emit_finalized_callback(const Dictionary &params) {
 	emit_signal("finalized");
 }
 
-bool Transaction::_set(const StringName &p_name, const Variant &p_value) { // NOLINT(bugprone-easily-swappable-parameters)
+bool Transaction::_set(const StringName &p_name, const Variant &p_value) {
 	const String name = p_name;
 	if (name == "instructions") {
 		set_instructions(p_value);

@@ -279,7 +279,7 @@ void SolanaClient::get_block_commitment(uint64_t slot_number) {
 	quick_http_request(make_rpc_dict("getBlockCommitment", params));
 }
 
-void SolanaClient::get_blocks(uint64_t start_slot, const Variant &end_slot) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::get_blocks(uint64_t start_slot, const Variant &end_slot) {
 	Array params;
 	params.append(start_slot);
 	if (end_slot.get_type() == Variant::INT) {
@@ -290,7 +290,7 @@ void SolanaClient::get_blocks(uint64_t start_slot, const Variant &end_slot) { //
 	quick_http_request(make_rpc_dict("getBlocks", params));
 }
 
-void SolanaClient::get_blocks_with_limit(uint64_t start_slot, uint64_t end_slot) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::get_blocks_with_limit(uint64_t start_slot, uint64_t end_slot) {
 	Array params;
 	params.append(start_slot);
 	params.append(end_slot);
@@ -362,7 +362,7 @@ void SolanaClient::get_inflation_rate() {
 	quick_http_request(make_rpc_dict("getInflationRate", Array()));
 }
 
-void SolanaClient::get_inflation_reward(const Array &accounts, const Variant &epoch) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::get_inflation_reward(const Array &accounts, const Variant &epoch) {
 	Array params;
 
 	const PackedStringArray account_strings = get_address_strings(accounts);
@@ -423,7 +423,7 @@ void SolanaClient::get_multiple_accounts(const Array &accounts) {
 	quick_http_request(make_rpc_dict("getMultipleAccounts", params));
 }
 
-void SolanaClient::get_program_accounts(const Variant &program_address, const Array &filters, bool with_context) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::get_program_accounts(const Variant &program_address, const Array &filters, bool with_context) {
 	Array params;
 	params.append(Pubkey::string_from_variant(program_address));
 	append_commitment(params);
@@ -451,7 +451,7 @@ void SolanaClient::get_recent_prioritization_fees(const Array &account_addresses
 	quick_http_request(make_rpc_dict("getRecentPrioritizationFees", params));
 }
 
-void SolanaClient::get_signature_for_address(const Variant &address, const String &before, const String &until) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::get_signature_for_address(const Variant &address, const String &before, const String &until) {
 	Array params;
 	params.append(Pubkey::string_from_variant(address));
 	append_commitment(params);
@@ -543,7 +543,7 @@ void SolanaClient::get_token_account_balance(const Variant &token_account) {
 	quick_http_request(make_rpc_dict("getTokenAccountBalance", params));
 }
 
-void SolanaClient::get_token_accounts_by_delegate(const Variant &account_delegate, const Variant &mint, const Variant &program_id) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::get_token_accounts_by_delegate(const Variant &account_delegate, const Variant &mint, const Variant &program_id) {
 	Array params;
 	params.append(Pubkey::string_from_variant(account_delegate));
 
@@ -567,7 +567,7 @@ void SolanaClient::get_token_accounts_by_delegate(const Variant &account_delegat
 	quick_http_request(make_rpc_dict("getTokenAccountsByDelegate", params));
 }
 
-void SolanaClient::get_token_accounts_by_owner(const Variant &owner, const Variant &mint, const Variant &program_id) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::get_token_accounts_by_owner(const Variant &owner, const Variant &mint, const Variant &program_id) {
 	Array params;
 	Dictionary dict_argument;
 
@@ -659,7 +659,7 @@ void SolanaClient::minimum_ledger_slot() {
 	quick_http_request(make_rpc_dict("minimumLedgerSlot", Array()));
 }
 
-void SolanaClient::request_airdrop(const Variant &address, uint64_t lamports) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::request_airdrop(const Variant &address, uint64_t lamports) {
 	Array params;
 
 	params.append(Pubkey::string_from_variant(address));
@@ -720,7 +720,7 @@ void SolanaClient::get_asset_proof(const Variant &asset_id) {
 	quick_http_request(make_rpc_dict("getAssetProof", params));
 }
 
-void SolanaClient::get_assets_by_authority(const Variant &authority, uint32_t page, uint32_t limit) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::get_assets_by_authority(const Variant &authority, uint32_t page, uint32_t limit) {
 	Dictionary param_dict;
 	param_dict["authorityAddress"] = Pubkey::string_from_variant(authority);
 	param_dict["page"] = page;
@@ -732,7 +732,7 @@ void SolanaClient::get_assets_by_authority(const Variant &authority, uint32_t pa
 	quick_http_request(rpc_dict);
 }
 
-void SolanaClient::get_assets_by_creator_address(const Variant &creator_address, bool only_verified, uint32_t page, uint32_t limit) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::get_assets_by_creator_address(const Variant &creator_address, bool only_verified, uint32_t page, uint32_t limit) {
 	Dictionary params_dict;
 	params_dict["creatorAddress"] = Pubkey::string_from_variant(creator_address);
 	params_dict["onlyVerified"] = only_verified;
@@ -744,7 +744,7 @@ void SolanaClient::get_assets_by_creator_address(const Variant &creator_address,
 	quick_http_request(rpc_dict);
 }
 
-void SolanaClient::get_assets_by_group(const String &group_key, const Variant &group_value, uint32_t page, uint32_t limit) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::get_assets_by_group(const String &group_key, const Variant &group_value, uint32_t page, uint32_t limit) {
 	Dictionary params_dict;
 	params_dict["groupKey"] = group_key;
 	params_dict["groupValue"] = Pubkey::string_from_variant(group_value);
@@ -756,7 +756,7 @@ void SolanaClient::get_assets_by_group(const String &group_key, const Variant &g
 	quick_http_request(rpc_dict);
 }
 
-void SolanaClient::get_assets_by_owner(const Variant &owner, uint32_t page, uint32_t limit) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::get_assets_by_owner(const Variant &owner, uint32_t page, uint32_t limit) {
 	Dictionary param_dict;
 	param_dict["ownerAddress"] = Pubkey::string_from_variant(owner);
 	param_dict["page"] = page;
@@ -767,7 +767,7 @@ void SolanaClient::get_assets_by_owner(const Variant &owner, uint32_t page, uint
 	quick_http_request(rpc_dict);
 }
 
-void SolanaClient::account_subscribe(const Variant &account_key, const Callable &callback) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::account_subscribe(const Variant &account_key, const Callable &callback) {
 	Array params;
 	params.append(Pubkey::string_from_variant(account_key));
 	add_to_param_dict(params, "encoding", encoding);
@@ -784,7 +784,7 @@ void SolanaClient::signature_subscribe(const String &signature, const Callable &
 	get_current_ws_client()->enqueue_ws_request(make_rpc_dict("signatureSubscribe", params), callback, ws_callback, parse_url(get_real_ws_url()));
 }
 
-void SolanaClient::program_subscribe(const Variant &program_id, const Callable &callback) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::program_subscribe(const Variant &program_id, const Callable &callback) {
 	Array params;
 	params.append(Pubkey::string_from_variant(program_id));
 	append_commitment(params);
@@ -1088,7 +1088,7 @@ void SolanaClient::disable_min_context_slot() {
 	SolanaClient::min_context_slot = 0;
 }
 
-void SolanaClient::enable_account_filter(uint64_t offset, uint64_t length) { // NOLINT(bugprone-easily-swappable-parameters)
+void SolanaClient::enable_account_filter(uint64_t offset, uint64_t length) {
 	SolanaClient::account_filter_enabled = true;
 	SolanaClient::filter_offset = offset;
 	SolanaClient::filter_length = length;
