@@ -8,6 +8,7 @@
 #include "instructions/spl_token.hpp"
 #include "instructions/system_program.hpp"
 #include "solana_utils.hpp"
+#include "meta_data/creator.hpp"
 
 namespace godot {
 
