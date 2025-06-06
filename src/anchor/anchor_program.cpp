@@ -1,15 +1,30 @@
 #include "anchor/anchor_program.hpp"
 
+#include <cstdint>
+
 #include "anchor/generic_anchor_node.hpp"
+#include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/classes/json.hpp"
+#include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/classes/stream_peer_gzip.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/error_macros.hpp"
+#include "godot_cpp/core/memory.hpp"
+#include "godot_cpp/core/object.hpp"
+#include "godot_cpp/godot.hpp"
+#include "godot_cpp/templates/list.hpp"
+#include "godot_cpp/variant/callable.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+
+#include "account_meta.hpp"
 #include "instruction.hpp"
 #include "pubkey.hpp"
 #include "sha256.hpp"
 #include "solana_client.hpp"
 #include "solana_utils.hpp"
-
-#include "godot_cpp/variant/utility_functions.hpp"
-#include <godot_cpp/classes/json.hpp>
-#include <godot_cpp/classes/stream_peer_gzip.hpp>
+#include "utils.hpp"
 
 namespace godot {
 
@@ -1178,7 +1193,7 @@ void AnchorProgram::fetch_account_callback(const Dictionary &rpc_result) {
 	emit_signal("account_fetched", result);
 }
 
-Error AnchorProgram::fetch_all_accounts(const String name, const Array &additional_filters) {
+Error AnchorProgram::fetch_all_accounts(const String &name, const Array &additional_filters) {
 	if (!pending_accounts_name.is_empty()) {
 		return Error::ERR_ALREADY_IN_USE;
 	}
@@ -1192,7 +1207,7 @@ Error AnchorProgram::fetch_all_accounts(const String name, const Array &addition
 
 	filters.insert(0, type_filter);
 
-	Callable callback(this, "fetch_all_accounts_callback");
+	const Callable callback(this, "fetch_all_accounts_callback");
 	fetch_client->connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
 	fetch_client->get_program_accounts(get_pid(), filters, false);
 
@@ -1200,45 +1215,45 @@ Error AnchorProgram::fetch_all_accounts(const String name, const Array &addition
 }
 
 void AnchorProgram::fetch_all_accounts_callback(const Dictionary &rpc_result) {
-	String name = pending_accounts_name;
+	const String name = pending_accounts_name;
 	pending_accounts_name = "";
 
 	Dictionary ref_struct = find_idl_account(name);
 
 	if (ref_struct.is_empty()) {
-		ERR_FAIL_EDMSG("Account name was not found in IDL.");
+		ERR_FAIL_EDMSG_CUSTOM("Account name was not found in IDL.");
 	}
 
 	if (!rpc_result.has("result")) {
 		emit_signal("accounts_fetched", Dictionary());
-		ERR_FAIL_COND_EDMSG(rpc_result.has("error"), String(rpc_result["error"]));
-		ERR_FAIL_EDMSG("Unexpected RPC response, no result.");
+		ERR_FAIL_COND_EDMSG_CUSTOM(rpc_result.has("error"), String(rpc_result["error"]));
+		ERR_FAIL_EDMSG_CUSTOM("Unexpected RPC response, no result.");
 	}
 
 	if (rpc_result["result"].get_type() != Variant::ARRAY) {
 		emit_signal("accounts_fetched", Dictionary());
-		ERR_FAIL_EDMSG("Unexpected RPC response, result is not an array.");
+		ERR_FAIL_EDMSG_CUSTOM("Unexpected RPC response, result is not an array.");
 	}
 
 	Array accounts = rpc_result["result"];
 	Dictionary result_accounts;
-	const Array fields = ((Dictionary)ref_struct["type"])["fields"];
+	const Array fields = static_cast<Dictionary>(ref_struct["type"])["fields"];
 	for (int i = 0; i < accounts.size(); i++) {
 		Dictionary account_entry = accounts[i];
-		String pubkey = account_entry["pubkey"];
+		const String pubkey = account_entry["pubkey"];
 		Dictionary account_data = account_entry["account"];
 
 		Array data_tuple = account_data["data"];
-		String encoded_data = data_tuple[0];
+		const String encoded_data = data_tuple[0];
 
 		PackedByteArray account_bytes = SolanaUtils::bs64_decode(encoded_data);
-		account_bytes = account_bytes.slice(8);
+		account_bytes = account_bytes.slice(DISCRIMINATOR_LENGTH);
 
 		Dictionary parsed_account;
 		for (int j = 0; j < fields.size(); j++) {
 			int data_offset = 0;
-			const Variant val = deserialize_variant(account_bytes, ((Dictionary)fields[j])["type"], data_offset);
-			parsed_account[((Dictionary)fields[j])["name"]] = val;
+			const Variant val = deserialize_variant(account_bytes, static_cast<Dictionary>(fields[j])["type"], data_offset);
+			parsed_account[static_cast<Dictionary>(fields[j])["name"]] = val;
 			account_bytes = account_bytes.slice(data_offset);
 		}
 
