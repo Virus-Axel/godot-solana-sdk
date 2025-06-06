@@ -422,7 +422,7 @@ public:
 	 * @param additional_filters Account filters.
 	 * @return Error status of operation.
 	 */
-	Error fetch_all_accounts(const String name, const Array &additional_filters = Array());
+	Error fetch_all_accounts(const String &name, const Array &additional_filters = Array());
 };
 
 } //namespace godot
