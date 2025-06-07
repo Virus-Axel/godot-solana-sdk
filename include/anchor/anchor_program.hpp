@@ -36,32 +36,28 @@ private:
 	SolanaClient *idl_client = nullptr;
 	SolanaClient *fetch_client = nullptr;
 
-	bool detect_writable(const Dictionary &account) const;
-	bool detect_is_signer(const Dictionary &account) const;
-	bool detect_optional(const Dictionary &account) const;
+	static bool is_int(const Variant &var);
+	static bool is_float(const Variant &var);
+	static bool detect_writable(const Dictionary &account);
+	static bool detect_is_signer(const Dictionary &account);
+	static bool detect_optional(const Dictionary &account);
 	static PackedByteArray evaluate_discriminant(const Dictionary &discriminant_info);
+	static Variant idl_address(const Variant &pid);
 
-	static bool is_typed_primitive(const Dictionary &dict);
-	static PackedByteArray serialize_typed_primitive(const Dictionary &dict);
-	Variant idl_address(const Variant &pid);
 	bool load_from_pid(const String &pid);
 	void idl_from_pid_callback(const Dictionary &rpc_result);
 	void fetch_account_callback(const Dictionary &rpc_result);
 	void fetch_all_accounts_callback(const Dictionary &rpc_result);
 	void extract_idl_from_rpc_response(const Dictionary &rpc_result);
 	void extract_idl_from_data(const Array &data_info);
+	Dictionary parse_account_data(const Dictionary &account_data, const Dictionary &reference, bool emit_decoded_account = false);
 
-	bool is_int(const Variant &var);
-	bool is_float(const Variant &var);
-	static bool is_option(const Variant &var);
-	bool check_type(const Variant &expected_type, const Variant &value);
-	bool validate_instruction_arguments(const String &instruction_name, const Array &arguments);
-	void register_instruction_builders();
-	PackedByteArray discriminator_by_name(const String &name, const String &namespace_string) const;
+	static PackedByteArray discriminator_by_name(const String &name, const String &namespace_string);
+	PackedByteArray get_instruction_discriminant(const Dictionary &instruction_info, const String &name) const;
 
 	Dictionary find_idl_type(const String &name);
 
-	Variant deserialize_variant(const PackedByteArray &bytes, const Variant &type, int &consumed_bytes);
+	Variant deserialize_variant(const PackedByteArray &bytes, const Variant &type, uint32_t &consumed_bytes);
 
 	static Variant decorate_instruction_argument(const Variant &anchor_type, const Variant &argument);
 
@@ -95,14 +91,6 @@ public:
 	static Variant get_address_from_idl(const Dictionary &idl);
 
 	/**
-	 * @brief Serializes a Variant.
-	 *
-	 * @param var Variant to serialize.
-	 * @return PackedByteArray Byte serialization.
-	 */
-	static PackedByteArray serialize_variant(const Variant &var);
-
-	/**
 	 * @brief Sets the idl of the anchor program.
 	 *
 	 * @param idl IDL of the anchor program.
@@ -128,7 +116,7 @@ public:
 	 *
 	 * @return bool property value.
 	 */
-	bool get_try_from_pid();
+	bool get_try_from_pid() const;
 
 	/**
 	 * @brief Set the try from json file property
@@ -142,7 +130,7 @@ public:
 	 *
 	 * @return bool property value.
 	 */
-	bool get_try_from_json_file();
+	bool get_try_from_json_file() const;
 
 	/**
 	 * @brief Set the url override property
@@ -167,7 +155,7 @@ public:
 	 *
 	 * @return String Base 58 encoded program address.
 	 */
-	String get_pid();
+	String get_pid() const;
 
 	/**
 	 * @brief Get the program name from the idl.
@@ -190,7 +178,7 @@ public:
 	 *
 	 * @return Variant JSON object property.
 	 */
-	Variant get_json_file();
+	Variant get_json_file() const;
 
 	/**
 	 * @brief Constructs a type decorated f32 Dictionary.
@@ -319,14 +307,6 @@ public:
 	static String get_int_type_info(const Variant &anchor_type);
 
 	/**
-	 * @brief Get the godot type of an anchor type.
-	 *
-	 * @param anchor_type Anchor type information.
-	 * @return Variant::Type Corresponding godot type.
-	 */
-	static Variant::Type get_godot_type(const Variant &anchor_type);
-
-	/**
 	 * @brief Get the godot class hint from an anchor type.
 	 *
 	 * @param anchor_type Anchor type.
@@ -353,7 +333,7 @@ public:
 	 * @param consumed_bytes Amount of bytes read from the byte serialization.
 	 * @return Variant Reconstructed type.
 	 */
-	Variant deserialize_dict(const PackedByteArray &bytes, const Dictionary &type, int &consumed_bytes);
+	Variant deserialize_dict(const PackedByteArray &bytes, const Dictionary &type, uint32_t &consumed_bytes);
 
 	/**
 	 * @brief Find an account anchor specification from name.
@@ -399,7 +379,7 @@ public:
 	 * @return Variant Instruction object.
 	 * @return null on failure.
 	 */
-	Variant build_instruction(String name, Array accounts, Variant arguments) const;
+	Variant build_instruction(const String &name, const Array &accounts, const Variant &arguments) const;
 
 	/**
 	 * @brief Fetch account of specified account type.
@@ -411,7 +391,7 @@ public:
 	 * @param account Account addres.
 	 * @return Error status of operation.
 	 */
-	Error fetch_account(const String name, const Variant &account);
+	Error fetch_account(const String &name, const Variant &account);
 
 	/**
 	 * @brief Fetches all accounts of an account type.

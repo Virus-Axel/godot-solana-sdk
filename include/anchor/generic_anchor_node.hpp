@@ -57,7 +57,7 @@ private:
 	}
 	void emit_account_data(const PackedByteArray &account_data) {
 		const Dictionary fetch_account = Object::cast_to<AnchorProgram>(anchor_program)->find_idl_account(pending_fetch_account);
-		int consumed_bytes = 0;
+		uint32_t consumed_bytes = 0;
 		emit_signal("account_fetched", Object::cast_to<AnchorProgram>(anchor_program)->deserialize_dict(account_data, fetch_account["type"], consumed_bytes));
 	}
 

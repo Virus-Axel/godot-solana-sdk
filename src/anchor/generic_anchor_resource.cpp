@@ -16,6 +16,7 @@
 
 #include "account_meta.hpp"
 #include "anchor/anchor_program.hpp"
+#include "anchor/idl_utils.hpp"
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
 
@@ -810,7 +811,7 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) {
 					continue;
 				}
 
-				const Variant::Type enum_value_godot_type = AnchorProgram::get_godot_type(value_field_type);
+				const Variant::Type enum_value_godot_type = IdlUtils::get_godot_type(value_field_type);
 				const String enum_value_hint_string = AnchorProgram::get_godot_class_hint(value_field_type);
 				const PropertyHint enum_value_hint = AnchorProgram::get_godot_hint(value_field_type);
 				const String extra_type_info = AnchorProgram::get_int_type_info(value_field_type);
@@ -833,7 +834,7 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) {
 			}
 		}
 	} else {
-		const Variant::Type property_godot_type = AnchorProgram::get_godot_type(property_data["type"]);
+		const Variant::Type property_godot_type = IdlUtils::get_godot_type(property_data["type"]);
 		const String hint_string = AnchorProgram::get_godot_class_hint(property_data["type"]);
 		const PropertyHint hint = AnchorProgram::get_godot_hint(property_data["type"]);
 		const String type_info = AnchorProgram::get_int_type_info(property_data["type"]);
@@ -906,37 +907,37 @@ PackedByteArray GenericAnchorResource::serialize() {
 			else{
 				result.append_array({0,0,0,0});
 			}*/
-			result.append_array(AnchorProgram::serialize_variant(enabler_info.value));
+			result.append_array(IdlUtils::serialize_variant(enabler_info.value));
 		}
 		if (property.enabled) {
 			if (property.property_info.hint != PROPERTY_HINT_ENUM) {
 				if (property.value.get_type() == Variant::INT || property.value.get_type() == Variant::FLOAT) {
 					if (property.type_info == "u8") {
-						result.append_array(AnchorProgram::serialize_variant(AnchorProgram::u8(property.value)));
+						result.append_array(IdlUtils::serialize_variant(AnchorProgram::u8(property.value)));
 					} else if (property.type_info == "u16") {
-						result.append_array(AnchorProgram::serialize_variant(AnchorProgram::u16(property.value)));
+						result.append_array(IdlUtils::serialize_variant(AnchorProgram::u16(property.value)));
 					} else if (property.type_info == "u32") {
-						result.append_array(AnchorProgram::serialize_variant(AnchorProgram::u32(property.value)));
+						result.append_array(IdlUtils::serialize_variant(AnchorProgram::u32(property.value)));
 					} else if (property.type_info == "u64") {
-						result.append_array(AnchorProgram::serialize_variant(AnchorProgram::u64(property.value)));
+						result.append_array(IdlUtils::serialize_variant(AnchorProgram::u64(property.value)));
 					} else if (property.type_info == "s8") {
-						result.append_array(AnchorProgram::serialize_variant(AnchorProgram::s8(property.value)));
+						result.append_array(IdlUtils::serialize_variant(AnchorProgram::s8(property.value)));
 					} else if (property.type_info == "s16") {
-						result.append_array(AnchorProgram::serialize_variant(AnchorProgram::s16(property.value)));
+						result.append_array(IdlUtils::serialize_variant(AnchorProgram::s16(property.value)));
 					} else if (property.type_info == "s32") {
-						result.append_array(AnchorProgram::serialize_variant(AnchorProgram::s32(property.value)));
+						result.append_array(IdlUtils::serialize_variant(AnchorProgram::s32(property.value)));
 					} else if (property.type_info == "s64") {
-						result.append_array(AnchorProgram::serialize_variant(AnchorProgram::s64(property.value)));
+						result.append_array(IdlUtils::serialize_variant(AnchorProgram::s64(property.value)));
 					} else if (property.type_info == "f32") {
-						result.append_array(AnchorProgram::serialize_variant(AnchorProgram::f32(property.value)));
+						result.append_array(IdlUtils::serialize_variant(AnchorProgram::f32(property.value)));
 					} else if (property.type_info == "f64") {
-						result.append_array(AnchorProgram::serialize_variant(AnchorProgram::f64(property.value)));
+						result.append_array(IdlUtils::serialize_variant(AnchorProgram::f64(property.value)));
 					}
 				} else {
-					result.append_array(AnchorProgram::serialize_variant(property.value));
+					result.append_array(IdlUtils::serialize_variant(property.value));
 				}
 			} else {
-				result.append_array(AnchorProgram::serialize_variant(AnchorProgram::u8(property.value)));
+				result.append_array(IdlUtils::serialize_variant(AnchorProgram::u8(property.value)));
 			}
 		}
 	}
@@ -1057,7 +1058,7 @@ PackedByteArray GenericAnchorResource::serialize_core_mint_args() {
 			}
 			++counter;
 		} else if (property.second.enabled) {
-			result.append_array(AnchorProgram::serialize_variant(property.second.value));
+			result.append_array(IdlUtils::serialize_variant(property.second.value));
 		}
 	}
 

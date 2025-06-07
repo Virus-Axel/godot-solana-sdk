@@ -160,6 +160,31 @@ public:
 	 */
 	static unsigned int short_u16_decode(const PackedByteArray &bytes, int *cursor);
 
+	/**
+	 * @brief Check if RPC response has returned a value.
+	 * 
+	 * @param rpc_response Response to check in.
+	 * @return true if value is in response Dictionary.
+	 * @return false if value is not in response Dictionary.
+	 */
+	static bool rpc_response_has_value(const Dictionary &rpc_response);
+
+	/**
+	 * @brief Get the RPC response value.
+	 * 
+	 * @param rpc_response RPC response to get value from.
+	 * @return Dictionary RPC response value.
+	 */
+	static Dictionary get_rpc_response_value(const Dictionary &rpc_response);
+
+	/**
+	 * @brief Produce a hash from an array of String array as contents.
+	 * 
+	 * @param contents String array to feed to the hash algorithm.
+	 * @return PackedByteArray SHA256 Hash as byte array.
+	 */
+	static PackedByteArray sha256_hash_array(const PackedStringArray &contents);
+
 	~SolanaUtils() = default;
 };
 } //namespace godot
