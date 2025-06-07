@@ -16,6 +16,7 @@
 
 #include "account_meta.hpp"
 #include "anchor/anchor_program.hpp"
+#include "anchor/idl_utils.hpp"
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
 
@@ -810,7 +811,7 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) {
 					continue;
 				}
 
-				const Variant::Type enum_value_godot_type = AnchorProgram::get_godot_type(value_field_type);
+				const Variant::Type enum_value_godot_type = IdlUtils::get_godot_type(value_field_type);
 				const String enum_value_hint_string = AnchorProgram::get_godot_class_hint(value_field_type);
 				const PropertyHint enum_value_hint = AnchorProgram::get_godot_hint(value_field_type);
 				const String extra_type_info = AnchorProgram::get_int_type_info(value_field_type);
@@ -833,7 +834,7 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) {
 			}
 		}
 	} else {
-		const Variant::Type property_godot_type = AnchorProgram::get_godot_type(property_data["type"]);
+		const Variant::Type property_godot_type = IdlUtils::get_godot_type(property_data["type"]);
 		const String hint_string = AnchorProgram::get_godot_class_hint(property_data["type"]);
 		const PropertyHint hint = AnchorProgram::get_godot_hint(property_data["type"]);
 		const String type_info = AnchorProgram::get_int_type_info(property_data["type"]);

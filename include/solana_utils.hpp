@@ -160,6 +160,9 @@ public:
 	 */
 	static unsigned int short_u16_decode(const PackedByteArray &bytes, int *cursor);
 
+	static bool rpc_response_has_value(const Dictionary &rpc_response);
+	static Dictionary get_rpc_response_value(const Dictionary &rpc_response);
+
 	~SolanaUtils() = default;
 };
 } //namespace godot

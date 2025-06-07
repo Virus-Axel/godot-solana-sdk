@@ -50,14 +50,14 @@ private:
 	void fetch_all_accounts_callback(const Dictionary &rpc_result);
 	void extract_idl_from_rpc_response(const Dictionary &rpc_result);
 	void extract_idl_from_data(const Array &data_info);
+	Dictionary parse_account_data(const Dictionary &account_data, const Dictionary &reference, bool emit_decoded_account = false);
 
 	bool is_int(const Variant &var);
 	bool is_float(const Variant &var);
 	static bool is_option(const Variant &var);
-	bool check_type(const Variant &expected_type, const Variant &value);
-	bool validate_instruction_arguments(const String &instruction_name, const Array &arguments);
 	void register_instruction_builders();
 	PackedByteArray discriminator_by_name(const String &name, const String &namespace_string) const;
+	PackedByteArray get_instruction_discriminant(const Dictionary &instruction_info, const String &name) const;
 
 	Dictionary find_idl_type(const String &name);
 
@@ -319,14 +319,6 @@ public:
 	static String get_int_type_info(const Variant &anchor_type);
 
 	/**
-	 * @brief Get the godot type of an anchor type.
-	 *
-	 * @param anchor_type Anchor type information.
-	 * @return Variant::Type Corresponding godot type.
-	 */
-	static Variant::Type get_godot_type(const Variant &anchor_type);
-
-	/**
 	 * @brief Get the godot class hint from an anchor type.
 	 *
 	 * @param anchor_type Anchor type.
@@ -399,7 +391,7 @@ public:
 	 * @return Variant Instruction object.
 	 * @return null on failure.
 	 */
-	Variant build_instruction(String name, Array accounts, Variant arguments) const;
+	Variant build_instruction(const String &name, const Array &accounts, const Variant &arguments) const;
 
 	/**
 	 * @brief Fetch account of specified account type.
@@ -411,7 +403,7 @@ public:
 	 * @param account Account addres.
 	 * @return Error status of operation.
 	 */
-	Error fetch_account(const String name, const Variant &account);
+	Error fetch_account(const String &name, const Variant &account);
 
 	/**
 	 * @brief Fetches all accounts of an account type.

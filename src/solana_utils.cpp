@@ -248,6 +248,20 @@ unsigned int SolanaUtils::short_u16_decode(const PackedByteArray &bytes, int *cu
 	}
 	return value;
 }
+// NOLINTEND (cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+
+bool SolanaUtils::rpc_response_has_value(const Dictionary &rpc_response){
+	ERR_FAIL_COND_V_CUSTOM(!rpc_response.has("result"), false);
+	Dictionary result_dict = rpc_response["result"];
+	ERR_FAIL_COND_V_CUSTOM(!result_dict.has("value"), false);
+	true;
+}
+
+Dictionary SolanaUtils::get_rpc_response_value(const Dictionary &rpc_response){
+	ERR_FAIL_COND_V_CUSTOM(!rpc_response.has("result"), Dictionary());
+	Dictionary result_dict = rpc_response["result"];
+	ERR_FAIL_COND_V_CUSTOM(!result_dict.has("value"), Dictionary());
+	return result_dict["value"];
+}
 
 } //namespace godot
-// NOLINTEND (cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
