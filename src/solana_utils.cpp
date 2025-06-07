@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "sha256.hpp"
 #include "godot_cpp/core/class_db.hpp"
 
 #include "utils.hpp"
@@ -248,6 +249,42 @@ unsigned int SolanaUtils::short_u16_decode(const PackedByteArray &bytes, int *cu
 	}
 	return value;
 }
+// NOLINTEND (cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+
+bool SolanaUtils::rpc_response_has_value(const Dictionary &rpc_response){
+	ERR_FAIL_COND_V_CUSTOM(!rpc_response.has("result"), false);
+	Dictionary result_dict = rpc_response["result"];
+	ERR_FAIL_COND_V_CUSTOM(!result_dict.has("value"), false);
+	return true;
+}
+
+Dictionary SolanaUtils::get_rpc_response_value(const Dictionary &rpc_response){
+	ERR_FAIL_COND_V_CUSTOM(!rpc_response.has("result"), Dictionary());
+	Dictionary result_dict = rpc_response["result"];
+	ERR_FAIL_COND_V_CUSTOM(!result_dict.has("value"), Dictionary());
+	return result_dict["value"];
+}
+
+PackedByteArray SolanaUtils::sha256_hash_array(const PackedStringArray &contents){
+	SHA256 hasher;
+
+	for(unsigned int i = 0; i < contents.size(); i++){
+		hasher.update(contents[i].to_ascii_buffer().ptr(), contents[i].length());
+	}
+
+	PackedByteArray result;
+	result.resize(HASH_LENGTH);
+
+	uint8_t *hash = hasher.digest();
+
+	// NOLINTBEGIN(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	for (unsigned int i = 0; i < HASH_LENGTH; i++) {
+		result[i] = hash[i];
+	}
+	delete[] hash;
+	// NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
+	return result;
+}
 
 } //namespace godot
-// NOLINTEND (cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)

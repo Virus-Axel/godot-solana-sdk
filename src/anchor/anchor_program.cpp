@@ -11,7 +11,6 @@
 #include "godot_cpp/core/error_macros.hpp"
 #include "godot_cpp/core/memory.hpp"
 #include "godot_cpp/core/object.hpp"
-#include "godot_cpp/godot.hpp"
 #include "godot_cpp/templates/list.hpp"
 #include "godot_cpp/variant/callable.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
@@ -19,100 +18,61 @@
 #include "godot_cpp/variant/string.hpp"
 
 #include "account_meta.hpp"
+#include "anchor/idl_utils.hpp"
+#include "hash.hpp"
 #include "instruction.hpp"
 #include "pubkey.hpp"
-#include "sha256.hpp"
 #include "solana_client.hpp"
 #include "solana_utils.hpp"
 #include "utils.hpp"
 
 namespace godot {
 
-bool AnchorProgram::detect_writable(const Dictionary &account) const {
+bool AnchorProgram::detect_writable(const Dictionary &account) {
 	if (account.has("isMut")) {
 		return account["isMut"];
-	} else if (account.has("writable")) {
-		return account["writable"];
-	} else {
-		return false;
 	}
+	if (account.has("writable")) {
+		return account["writable"];
+	}
+
+	return false;
 }
 
-bool AnchorProgram::detect_is_signer(const Dictionary &account) const {
+bool AnchorProgram::detect_is_signer(const Dictionary &account) {
 	if (account.has("isSigner")) {
 		return account["isSigner"];
-	} else if (account.has("signer")) {
-		return account["signer"];
-	} else {
-		return false;
 	}
+	if (account.has("signer")) {
+		return account["signer"];
+	}
+
+	return false;
 }
 
-bool AnchorProgram::detect_optional(const Dictionary &account) const {
+bool AnchorProgram::detect_optional(const Dictionary &account) {
 	if (account.has("isOptional")) {
 		return account["isOptional"];
-	} else if (account.has("optional")) {
-		return account["optional"];
-	} else {
-		return false;
 	}
+	if (account.has("optional")) {
+		return account["optional"];
+	}
+
+	return false;
 }
 
 PackedByteArray AnchorProgram::evaluate_discriminant(const Dictionary &discriminant_info) {
-	ERR_FAIL_COND_V(!discriminant_info.has("type"), {});
-	ERR_FAIL_COND_V(!discriminant_info.has("value"), {});
+	ERR_FAIL_COND_V_CUSTOM(!discriminant_info.has("type"), {});
+	ERR_FAIL_COND_V_CUSTOM(!discriminant_info.has("value"), {});
 	ERR_FAIL_COND_V_EDMSG_CUSTOM(discriminant_info["type"] != "u8", {}, "Only u8 discriminants are supported");
 
 	return { static_cast<uint8_t>(discriminant_info["value"]) };
 }
 
-bool AnchorProgram::is_typed_primitive(const Dictionary &dict) {
-	return (dict.has("dataType") && dict.has("value") && dict.keys().size() && dict["dataType"] != String("option"));
-}
-
-PackedByteArray AnchorProgram::serialize_typed_primitive(const Dictionary &dict) {
-	PackedByteArray result;
-	if (dict["dataType"] == "u8") {
-		result.append(dict["value"]);
-	} else if (dict["dataType"] == "u16") {
-		result.resize(2);
-		result.encode_u16(0, dict["value"]);
-	} else if (dict["dataType"] == "u32") {
-		result.resize(4);
-		result.encode_u32(0, dict["value"]);
-	} else if (dict["dataType"] == "u64") {
-		result.resize(8);
-		result.encode_u64(0, dict["value"]);
-	} else if (dict["dataType"] == "i8") {
-		result.resize(1);
-		result.encode_s8(0, dict["value"]);
-	} else if (dict["dataType"] == "i16") {
-		result.resize(2);
-		result.encode_s16(0, dict["value"]);
-	} else if (dict["dataType"] == "i32") {
-		result.resize(4);
-		result.encode_s32(0, dict["value"]);
-	} else if (dict["dataType"] == "i64") {
-		result.resize(8);
-		result.encode_s64(0, dict["value"]);
-	} else if (dict["dataType"] == "f32") {
-		result.resize(4);
-		result.encode_half(0, dict["value"]);
-	} else if (dict["dataType"] == "f64") {
-		result.resize(8);
-		result.encode_double(0, dict["value"]);
-	}
-
-	return result;
-}
-
 Dictionary AnchorProgram::find_idl_type(const String &name) {
-	if (!((Dictionary)idl).has("types")) {
-		internal::gdextension_interface_print_warning("IDL does not contain \"types\" key", "find_idl_type", __FILE__, __LINE__, false);
-		return Dictionary();
-	}
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(!idl.has("types"), {}, "IDL does not contain \"types\" key");
 
-	Array types = ((Dictionary)idl)["types"];
+	Array types = static_cast<Array>(idl["types"]);
 	for (unsigned int i = 0; i < types.size(); i++) {
 		const Dictionary type = types[i];
 		if (type["name"] == name) {
@@ -120,10 +80,10 @@ Dictionary AnchorProgram::find_idl_type(const String &name) {
 		}
 	}
 
-	return Dictionary();
+	return {};
 }
 
-Variant AnchorProgram::deserialize_dict(const PackedByteArray &bytes, const Dictionary &type, int &consumed_bytes) {
+Variant AnchorProgram::deserialize_dict(const PackedByteArray &bytes, const Dictionary &type, uint32_t &consumed_bytes) {
 	Dictionary result;
 
 	if (type.has("kind")) {
@@ -132,161 +92,158 @@ Variant AnchorProgram::deserialize_dict(const PackedByteArray &bytes, const Dict
 			PackedByteArray temp_bytes = bytes;
 			for (unsigned int i = 0; i < fields.size(); i++) {
 				const Dictionary type_ref = fields[i];
-				int byte_offset = 0;
+				uint32_t byte_offset = 0;
 				const Variant val = deserialize_variant(temp_bytes, type_ref["type"], byte_offset);
 				consumed_bytes += byte_offset;
 				temp_bytes = temp_bytes.slice(byte_offset);
 				result[type_ref["name"]] = val;
 			}
-		} else if (type["kind"] == String("enum")) {
+
+			return result;
+		}
+		if (type["kind"] == String("enum")) {
 			consumed_bytes += 1;
 			return bytes[0];
-		} else {
-			internal::gdextension_interface_print_warning("Unsupported Object", "deserialize_variant", __FILE__, __LINE__, true);
-			return nullptr;
 		}
-	} else if (type.has("defined")) {
+		ERR_FAIL_V_EDMSG_CUSTOM(nullptr, "Unsupported Object");
+	}
+	if (type.has("defined")) {
 		const String struct_name = type["defined"];
 		const Dictionary idl_type = find_idl_type(struct_name);
-		ERR_FAIL_COND_V_EDMSG(idl_type.is_empty(), nullptr, "Could not find type " + struct_name);
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(idl_type.is_empty(), nullptr, "Could not find type " + struct_name);
 		return deserialize_dict(bytes, idl_type["type"], consumed_bytes);
-	} else if (type.has("vec")) {
+	}
+	if (type.has("vec")) {
 		const Variant struct_type = type["vec"];
 		Array values;
 		const unsigned int array_length = bytes.decode_u32(0);
 		consumed_bytes += 4;
 		PackedByteArray temp_bytes = bytes.slice(4);
 		for (unsigned int i = 0; i < array_length; i++) {
-			int byte_offset = 0;
+			uint32_t byte_offset = 0;
 			const Variant val = deserialize_variant(temp_bytes, struct_type, byte_offset);
 			values.append(val);
 			temp_bytes = temp_bytes.slice(byte_offset);
 			consumed_bytes += byte_offset;
 		}
 		return values;
-	} else if (type.has("option")) {
+	}
+	if (type.has("option")) {
 		const Variant struct_type = type["option"];
 		consumed_bytes += 1;
 		if (bytes[0] == 0) {
 			return nullptr;
-		} else {
+		}
+		{
 			return deserialize_variant(bytes.slice(1), struct_type, consumed_bytes);
 		}
-	} else if (type.has("array")) {
-		String element_type = ((Array)type["array"])[0];
-		const unsigned int array_length = ((Array)type["array"])[1];
+	}
+	if (type.has("array")) {
+		const Array info_array = static_cast<Array>(type["array"]);
+		const String element_type = static_cast<String>(info_array[0]);
+		const auto array_length = static_cast<uint32_t>(info_array[1]);
 		Array ret;
 		PackedByteArray temp_bytes = bytes;
 		for (unsigned int i = 0; i < array_length; i++) {
-			int byte_offset = 0;
+			uint32_t byte_offset = 0;
 			ret.append(deserialize_variant(temp_bytes, element_type, byte_offset));
 			consumed_bytes += byte_offset;
 			temp_bytes = temp_bytes.slice(byte_offset);
 		}
 		return ret;
-	} else {
-		internal::gdextension_interface_print_warning("Unsupported Object", "deserialize_variant", __FILE__, __LINE__, true);
-		return nullptr;
 	}
 
-	return result;
+	ERR_FAIL_V_EDMSG_CUSTOM(nullptr, "Unsupported Object");
 }
 
-Variant AnchorProgram::deserialize_variant(const PackedByteArray &bytes, const Variant &type, int &consumed_bytes) {
+Variant AnchorProgram::deserialize_variant(const PackedByteArray &bytes, const Variant &type, uint32_t &consumed_bytes) {
 	if (type == "u8") {
-		consumed_bytes += 1;
+		consumed_bytes += sizeof(uint8_t);
 		return bytes.decode_u8(0);
-	} else if (type == "u16") {
-		consumed_bytes += 2;
-		return bytes.decode_u16(0);
-	} else if (type == "u32") {
-		consumed_bytes += 4;
-		return bytes.decode_u32(0);
-	} else if (type == "u64") {
-		consumed_bytes += 8;
-		return bytes.decode_u64(0);
-	} else if (type == "i8") {
-		consumed_bytes += 1;
-		return bytes.decode_s8(0);
-	} else if (type == "i16") {
-		consumed_bytes += 2;
-		return bytes.decode_s16(0);
-	} else if (type == "i32") {
-		consumed_bytes += 4;
-		return bytes.decode_s32(0);
-	} else if (type == "i64") {
-		consumed_bytes += 8;
-		return bytes.decode_s64(0);
-	} else if (type == "f32") {
-		consumed_bytes += 4;
-		return bytes.decode_half(0);
-	} else if (type == "f64") {
-		consumed_bytes += 8;
-		return bytes.decode_double(0);
-	} else if (type == "string") {
-		const int data_length = bytes.decode_u32(0);
-		ERR_FAIL_COND_V_EDMSG(bytes.size() < data_length, nullptr, "Invalid data format.");
-		consumed_bytes += 4 + data_length;
-		return bytes.slice(4, 4 + data_length).get_string_from_ascii();
-	} else if (((String)type).to_lower() == "publickey") {
-		consumed_bytes += 32;
-		return Pubkey::new_from_bytes(bytes.slice(0, 32));
-	} else if (type == "bool") {
-		consumed_bytes += 1;
-		ERR_FAIL_COND_V_EDMSG(bytes.size() < 1, nullptr, "Invalid data format.");
-		return bytes[0] == 1;
-	} else if (type.get_type() == Variant::DICTIONARY) {
-		return deserialize_dict(bytes, type, consumed_bytes);
-	} else {
-		internal::gdextension_interface_print_warning("Unsupported Object", "deserialize_variant", __FILE__, __LINE__, true);
-		return nullptr;
 	}
+	if (type == "u16") {
+		consumed_bytes += sizeof(uint16_t);
+		return bytes.decode_u16(0);
+	}
+	if (type == "u32") {
+		consumed_bytes += sizeof(uint32_t);
+		return bytes.decode_u32(0);
+	}
+	if (type == "u64") {
+		consumed_bytes += sizeof(uint64_t);
+		return bytes.decode_u64(0);
+	}
+	if (type == "i8") {
+		consumed_bytes += sizeof(int8_t);
+		return bytes.decode_s8(0);
+	}
+	if (type == "i16") {
+		consumed_bytes += sizeof(int16_t);
+		return bytes.decode_s16(0);
+	}
+	if (type == "i32") {
+		consumed_bytes += sizeof(int32_t);
+		return bytes.decode_s32(0);
+	}
+	if (type == "i64") {
+		consumed_bytes += sizeof(int64_t);
+		return bytes.decode_s64(0);
+	}
+	if (type == "f32") {
+		consumed_bytes += sizeof(float);
+		return bytes.decode_half(0);
+	}
+	if (type == "f64") {
+		consumed_bytes += sizeof(double);
+		return bytes.decode_double(0);
+	}
+	if (type == "string") {
+		const uint32_t data_length = bytes.decode_u32(0);
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(bytes.size() < data_length, nullptr, "Invalid data format.");
+		consumed_bytes += sizeof(uint32_t) + data_length;
+		return bytes.slice(sizeof(uint32_t), static_cast<int64_t>(sizeof(uint32_t) + data_length)).get_string_from_ascii();
+	}
+	if (static_cast<String>(type).to_lower() == "publickey") {
+		consumed_bytes += PUBKEY_LENGTH;
+		return Pubkey::new_from_bytes(bytes.slice(0, PUBKEY_LENGTH));
+	}
+	if (type == "bool") {
+		consumed_bytes += 1;
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(bytes.size() < 1, nullptr, "Invalid data format.");
+		return bytes[0] == 1;
+	}
+	if (type.get_type() == Variant::DICTIONARY) {
+		return deserialize_dict(bytes, type, consumed_bytes);
+	}
+	ERR_FAIL_V_EDMSG_CUSTOM(nullptr, "Unsupported Object");
 }
 
 Variant AnchorProgram::decorate_instruction_argument(const Variant &anchor_type, const Variant &argument) {
-	if (is_option(anchor_type)) {
+	if (IdlUtils::is_option(anchor_type)) {
 		return option(argument);
 	}
-	const Variant::Type godot_type = get_godot_type(anchor_type);
+
+	const Variant::Type godot_type = IdlUtils::get_godot_type(anchor_type);
+
 	if (godot_type == Variant::INT) {
-		if (anchor_type == "u8") {
-			return u8(argument);
-		}
-		if (anchor_type == "u16") {
-			return u16(argument);
-		}
-		if (anchor_type == "u32") {
-			return u32(argument);
-		}
-		if (anchor_type == "u64") {
-			return u64(argument);
-		}
-		if (anchor_type == "s8") {
-			return s8(argument);
-		}
-		if (anchor_type == "s16") {
-			return s16(argument);
-		}
-		if (anchor_type == "s32") {
-			return s32(argument);
-		}
-		if (anchor_type == "s64") {
-			return s64(argument);
-		}
-	} else if (godot_type == Variant::FLOAT) {
-		if (anchor_type == "f32") {
-			return f32(argument);
-		}
-		if (anchor_type == "f64") {
-			return f64(argument);
-		}
+		const Dictionary decorated_int = IdlUtils::get_decorated_integer(anchor_type, argument);
+		ERR_FAIL_COND_V_CUSTOM(decorated_int.is_empty(), argument);
+
+		return decorated_int;
 	}
+
+	if (godot_type == Variant::FLOAT) {
+		const Dictionary decorated_float = IdlUtils::get_decorated_float(anchor_type, argument);
+		ERR_FAIL_COND_V_CUSTOM(decorated_float.is_empty(), argument);
+
+		return decorated_float;
+	}
+
 	return argument;
 }
 
-AnchorProgram::AnchorProgram() {
-	idl_client = memnew(SolanaClient);
-	fetch_client = memnew(SolanaClient);
+AnchorProgram::AnchorProgram() :
+		idl_client(memnew_custom(SolanaClient)), fetch_client(memnew_custom(SolanaClient)) {
 	idl_client->set_async_override(true);
 	fetch_client->set_async_override(true);
 }
@@ -309,160 +266,58 @@ Variant AnchorProgram::get_address_from_idl(const Dictionary &idl) {
 	return nullptr;
 }
 
-PackedByteArray AnchorProgram::serialize_variant(const Variant &var) {
-	PackedByteArray result;
-	switch (var.get_type()) {
-		case Variant::INT:
-			result.resize(8);
-			result.encode_s64(0, (int64_t)var);
-			break;
-		case Variant::BOOL:
-			result.append((bool)var);
-			break;
-
-		case Variant::FLOAT:
-			result.resize(8);
-			result.encode_float(0, var);
-			break;
-
-		case Variant::STRING:
-			result.resize(4);
-			result.encode_u32(0, ((String)var).length());
-			result.append_array(((String)var).to_ascii_buffer());
-			break;
-
-		case Variant::PACKED_BYTE_ARRAY:
-			result.resize(4);
-			result.encode_u32(0, (static_cast<PackedByteArray>(var).size()));
-			result.append_array(static_cast<PackedByteArray>(var));
-			break;
-
-		case Variant::ARRAY:
-			result.resize(4);
-			result.encode_u32(0, ((Array)var).size());
-			for (unsigned int i = 0; i < ((Array)var).size(); i++) {
-				result.append_array(serialize_variant(((Array)var)[i]));
-			}
-			break;
-
-		case Variant::DICTIONARY:
-			if (is_typed_primitive(var)) {
-				result.append_array(serialize_typed_primitive(var));
-			} else if (is_option(var)) {
-				const Variant val = ((Dictionary)var)["value"];
-				if (val.get_type() == Variant::NIL) {
-					result.append(0);
-				} else {
-					result.append(1);
-					result.append_array(serialize_variant(val));
-				}
-			} else {
-				for (unsigned int i = 0; i < ((Dictionary)var).values().size(); i++) {
-					result.append_array(serialize_variant(((Dictionary)var).values()[i]));
-				}
-			}
-			break;
-
-		case Variant::OBJECT:
-			if (Pubkey::is_pubkey(var)) {
-				result.append_array(Object::cast_to<Pubkey>(var)->to_bytes());
-			} else if (static_cast<Object *>(var)->has_method("serialize")) {
-				result.append_array(static_cast<Object *>(var)->callv("serialize", Array()));
-			} else {
-				internal::gdextension_interface_print_warning("Unsupported Object", "serialize_variant", __FILE__, __LINE__, true);
-			}
-			break;
-
-		case Variant::NIL:
-			break;
-
-		default:
-			const String message = String("Unsupported Variant ") + String::num_int64(var.get_type()) + String(", please report this issue at https://github.com/Virus-Axel/godot-solana-sdk/issues/new");
-			internal::gdextension_interface_print_warning(message.ascii(), "serialize_variant", __FILE__, __LINE__, true);
-			break;
-	}
-
-	return result;
-}
-
-void AnchorProgram::register_instruction_builders() {
-}
-
-PackedByteArray AnchorProgram::discriminator_by_name(const String &name, const String &namespace_string) const {
-	SHA256 hasher;
-	hasher.update(namespace_string.to_ascii_buffer().ptr(), namespace_string.length());
-	if (name == "mint_v_1") {
-		String another_name = "mint_v1";
-		hasher.update(another_name.to_ascii_buffer().ptr(), another_name.length());
+PackedByteArray AnchorProgram::discriminator_by_name(const String &name, const String &namespace_string) {
+	PackedStringArray contents;
+	contents.push_back(namespace_string);
+	if (name == "mint_v_1") { // TODO(VirAx): Build a more generic version to mitigate this artifact.
+		const String another_name = "mint_v1";
+		contents.append(another_name);
 	} else {
-		hasher.update(name.to_ascii_buffer().ptr(), name.length());
+		contents.append(name);
 	}
 
-	uint8_t *hash = hasher.digest();
-	PackedByteArray discriminator;
+	const PackedByteArray hash = SolanaUtils::sha256_hash_array(contents);
 
-	discriminator.resize(DISCRIMINATOR_LENGTH);
+	ERR_FAIL_COND_V_CUSTOM(hash.size() != HASH_LENGTH, {});
 
-	for (unsigned int i = 0; i < DISCRIMINATOR_LENGTH; i++) {
-		discriminator[i] = hash[i];
+	return hash.slice(0, DISCRIMINATOR_LENGTH);
+}
+
+PackedByteArray AnchorProgram::get_instruction_discriminant(const Dictionary &instruction_info, const String &name) const {
+	if (instruction_info.has("discriminant")) {
+		return evaluate_discriminant(instruction_info["discriminant"]);
 	}
 
-	return discriminator;
+	return discriminator_by_name(name.to_snake_case(), global_prefix);
 }
 
 Dictionary AnchorProgram::find_idl_instruction(const String &name) const {
-	if (!((Dictionary)idl).has("instructions")) {
-		internal::gdextension_interface_print_warning("IDL does not contain \"instructions\" key", "find_idl_instruction", __FILE__, __LINE__, false);
-		return Dictionary();
-	}
-
-	Array instructions = ((Dictionary)idl)["instructions"];
-	for (unsigned int i = 0; i < instructions.size(); i++) {
-		const Dictionary instruction = instructions[i];
-		if (instruction["name"] == name) {
-			return instruction;
-		}
-	}
-
-	return Dictionary();
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(!static_cast<Dictionary>(idl).has("instructions"), {}, "IDL does not contain \"instructions\" key");
+	return IdlUtils::find_name_in_key_array(idl, "instructions", name);
 }
 
 Dictionary AnchorProgram::find_idl_account(const String &name) {
-	if (!((Dictionary)idl).has("accounts")) {
-		internal::gdextension_interface_print_warning("IDL does not contain \"accounts\" key", "find_idl_account", __FILE__, __LINE__, false);
-		return Dictionary();
-	}
-
-	Array accounts = ((Dictionary)idl)["accounts"];
-	for (unsigned int i = 0; i < accounts.size(); i++) {
-		const Dictionary account = accounts[i];
-		if (String(account["name"]) == name) {
-			return account;
-		}
-	}
-
-	return Dictionary();
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(!static_cast<Dictionary>(idl).has("accounts"), {}, "IDL does not contain \"accounts\" key");
+	return IdlUtils::find_name_in_key_array(idl, "accounts", name);
 }
 
 Variant AnchorProgram::idl_address(const Variant &pid) {
 	const Array seed;
-	Variant program_signer = Pubkey::new_pda(seed, pid);
+	const Variant program_signer = Pubkey::new_pda(seed, pid);
 	return Pubkey::new_from_seed(program_signer, "anchor:idl", pid);
 }
 
 bool AnchorProgram::load_from_pid(const String &pid) {
-	if (pid.length() < 32) {
-		return false;
-	}
+	ERR_FAIL_COND_V_CUSTOM(pid.length() < 32, false);
 
-	Callable callback(this, "idl_from_pid_callback");
+	const Callable callback(this, "idl_from_pid_callback");
 	idl_client->connect("http_response_received", callback);
 	idl_client->get_account_info(pid);
 	return false;
 }
 
 void AnchorProgram::idl_from_pid_callback(const Dictionary &rpc_result) {
-	Callable callback(this, "idl_from_pid_callback");
+	const Callable callback(this, "idl_from_pid_callback");
 	if (idl_client->is_connected("http_response_received", callback)) {
 		idl_client->disconnect("http_response_received", callback);
 	}
@@ -470,24 +325,21 @@ void AnchorProgram::idl_from_pid_callback(const Dictionary &rpc_result) {
 	if (!rpc_result.has("result")) {
 		return;
 	}
-	if (!((Dictionary)rpc_result["result"]).has("value")) {
+	if (!static_cast<Dictionary>(rpc_result["result"]).has("value")) {
 		return;
 	}
 
-	Dictionary account = ((Dictionary)rpc_result["result"])["value"];
+	Dictionary account = static_cast<Dictionary>(rpc_result["result"])["value"];
 	String idl_address = pid;
 
-	if ((bool)account["executable"]) {
+	if (static_cast<bool>(account["executable"])) {
 		idl_address = Pubkey::string_from_variant(AnchorProgram::idl_address(Pubkey::new_from_string(pid)));
 
-		Callable callback(this, "idl_from_pid_callback");
+		const Callable callback(this, "idl_from_pid_callback");
 		idl_client->connect("http_response_received", callback);
 		idl_client->get_account_info(idl_address);
 	} else {
-		if (!account.has("data")) {
-			internal::gdextension_interface_print_warning("Program does not have an associated anchor account.", "load_from_pid", __FILE__, __LINE__, true);
-			return;
-		}
+		ERR_FAIL_COND_EDMSG_CUSTOM(!account.has("data"), "Program does not have an associated anchor account.");
 
 		const Array data_info = account["data"];
 
@@ -496,21 +348,19 @@ void AnchorProgram::idl_from_pid_callback(const Dictionary &rpc_result) {
 }
 
 void AnchorProgram::extract_idl_from_data(const Array &data_info) {
-	const PackedByteArray data = SolanaUtils::bs64_decode(data_info[0]);
+	ERR_FAIL_COND_EDMSG_CUSTOM(data_info.is_empty(), "Data input is empty");
 
+	const PackedByteArray data = SolanaUtils::bs64_decode(data_info[0]);
 	const int DATA_OFFSET = 44;
 
-	if (data.size() <= DATA_OFFSET) {
-		internal::gdextension_interface_print_warning("Invalid associated Anchor account.", "load_from_pid", __FILE__, __LINE__, true);
-		return;
-	}
+	ERR_FAIL_COND_EDMSG_CUSTOM(data.size() <= DATA_OFFSET, "Invalid associated Anchor account.");
 
 	const int LENGTH_OFFSET = 40;
 	const uint32_t compressed_length = data.decode_u32(LENGTH_OFFSET);
 
 	const PackedByteArray compressed_data = data.slice(DATA_OFFSET, DATA_OFFSET + compressed_length);
 
-	StreamPeerGZIP *stream = memnew(StreamPeerGZIP);
+	StreamPeerGZIP *stream = memnew_custom(StreamPeerGZIP);
 	stream->start_decompression(true);
 
 	stream->put_data(compressed_data);
@@ -524,10 +374,10 @@ void AnchorProgram::extract_idl_from_data(const Array &data_info) {
 	Array result = stream->get_data(DECOMPRESSED_LENGTH);
 	memfree(stream);
 
-	const int error_code = result[0];
-	PackedByteArray decompressed_data = result[1];
+	// TODO(VirAx): Check error code at result[0].
+	const PackedByteArray decompressed_data = result[1];
 
-	Dictionary json_data = JSON::parse_string(decompressed_data.get_string_from_ascii());
+	const Dictionary json_data = JSON::parse_string(decompressed_data.get_string_from_ascii());
 	idl = json_data;
 
 	this->try_from_pid = true;
@@ -535,15 +385,37 @@ void AnchorProgram::extract_idl_from_data(const Array &data_info) {
 	emit_signal("idl_fetched");
 }
 
+Dictionary AnchorProgram::parse_account_data(const Dictionary &account_data, const Dictionary &reference, bool emit_decoded_account) {
+	Array data_tuple = account_data["data"];
+	const String encoded_data = data_tuple[0];
+
+	PackedByteArray account_bytes = SolanaUtils::bs64_decode(encoded_data);
+
+	if (emit_decoded_account) {
+		emit_signal("account_data_fetched", account_data);
+	}
+
+	account_bytes = account_bytes.slice(DISCRIMINATOR_LENGTH);
+
+	Dictionary parsed_account;
+
+	const Array fields = static_cast<Dictionary>(reference["type"])["fields"];
+	for (int j = 0; j < fields.size(); j++) {
+		uint32_t data_offset = 0;
+		const Variant val = deserialize_variant(account_bytes, static_cast<Dictionary>(fields[j])["type"], data_offset);
+		parsed_account[static_cast<Dictionary>(fields[j])["name"]] = val;
+		account_bytes = account_bytes.slice(data_offset);
+	}
+
+	return parsed_account;
+}
+
 bool AnchorProgram::is_int(const Variant &var) {
 	if (var.get_type() == Variant::INT) {
 		return true;
-	} else if (var.get_type() == Variant::DICTIONARY) {
-		if (((Dictionary)var).has("dataType")) {
-			const String data_type = ((Dictionary)var)["dataType"];
-			return (data_type == "u8" || data_type == "i8" || data_type == "u16" || data_type == "i16" ||
-					data_type == "u32" || data_type == "i32" || data_type == "u64" || data_type == "i64");
-		}
+	}
+	if (var.get_type() == Variant::DICTIONARY) {
+		return IdlUtils::type_contains_any(var, { "u8", "u16", "u32", "u64", "i8", "i16", "i32", "i64" });
 	}
 	return false;
 }
@@ -551,60 +423,11 @@ bool AnchorProgram::is_int(const Variant &var) {
 bool AnchorProgram::is_float(const Variant &var) {
 	if (var.get_type() == Variant::FLOAT) {
 		return true;
-	} else if (var.get_type() == Variant::DICTIONARY) {
-		if (((Dictionary)var).has("dataType")) {
-			const String data_type = ((Dictionary)var)["dataType"];
-			return (data_type == "f32" || data_type == "f64");
-		}
+	}
+	if (var.get_type() == Variant::DICTIONARY) {
+		return IdlUtils::type_contains_any(var, { "f32", "f64" });
 	}
 	return false;
-}
-
-bool AnchorProgram::is_option(const Variant &var) {
-	if (var.get_type() == Variant::FLOAT) {
-		return true;
-	} else if (var.get_type() == Variant::DICTIONARY) {
-		if (((Dictionary)var).has("dataType")) {
-			const String data_type = ((Dictionary)var)["dataType"];
-			return (data_type == "option");
-		}
-	}
-	return false;
-}
-
-bool AnchorProgram::check_type(const Variant &expected_type, const Variant &value) {
-	if (expected_type.get_type() == Variant::DICTIONARY) {
-		return (value.get_type() == Variant::DICTIONARY || value.get_type() == Variant::ARRAY);
-	} else if (expected_type.get_type() == Variant::STRING) {
-		if (expected_type == "u8" || expected_type == "i8" || expected_type == "u16" || expected_type == "i16" ||
-				expected_type == "u32" || expected_type == "i32" || expected_type == "u64" || expected_type == "i64") {
-			return is_int(value);
-		} else if (expected_type == "f32" || expected_type == "f64") {
-			return is_float(value);
-		}
-	}
-
-	// TODO(Virax): Implement IDL type check.
-
-	return false;
-}
-
-bool AnchorProgram::validate_instruction_arguments(const String &instruction_name, const Array &arguments) {
-	/*Dictionary instruction = find_idl_instruction(instruction_name);
-	if(instruction.is_empty()){
-		return false;
-	}
-
-	const Array other_args = instruction["args"];
-
-	if(arguments.size() != other_args.size()){
-		return false;
-	}
-	for(unsigned int i = 0; i < other_args.size(); i++){
-		const Variant expected_type = other_args[i]["type"];
-		// TODO(Virax): Fix check type and call it here. Check IDL defined classes.
-	}*/
-	return true;
 }
 
 void AnchorProgram::_bind_methods() {
@@ -634,7 +457,7 @@ void AnchorProgram::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_json_file", "json_file"), &AnchorProgram::set_json_file);
 
-	ClassDB::bind_static_method("AnchorProgram", D_METHOD("serialize_variant", "var"), &AnchorProgram::serialize_variant);
+	ClassDB::bind_static_method("AnchorProgram", D_METHOD("serialize_variant", "var"), &IdlUtils::serialize_variant); // TODO(VirAx): Move this in major version.
 
 	ClassDB::bind_static_method("AnchorProgram", D_METHOD("f32", "val"), &AnchorProgram::f32);
 	ClassDB::bind_static_method("AnchorProgram", D_METHOD("f64", "val"), &AnchorProgram::f64);
@@ -647,32 +470,31 @@ void AnchorProgram::_bind_methods() {
 	ClassDB::bind_static_method("AnchorProgram", D_METHOD("u32", "val"), &AnchorProgram::u32);
 	ClassDB::bind_static_method("AnchorProgram", D_METHOD("u64", "val"), &AnchorProgram::u64);
 	ClassDB::bind_static_method("AnchorProgram", D_METHOD("option", "val"), &AnchorProgram::option);
-
-	//ClassDB::add_property("AnchorProgram", PropertyInfo(Variant::STRING, "pid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), "set_pid", "get_pid");
-	//ClassDB::add_property("AnchorProgram", PropertyInfo(Variant::BOOL, "try_from_pid", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), "set_try_from_pid", "get_try_from_pid");
-	//ClassDB::add_property("AnchorProgram", PropertyInfo(Variant::OBJECT, "json_file", PROPERTY_HINT_RESOURCE_TYPE, "JSON", PROPERTY_USAGE_DEFAULT), "set_json_file", "get_json_file");
-	//ClassDB::add_property("AnchorProgram", PropertyInfo(Variant::BOOL, "try_from_json_file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT), "set_try_from_json_file", "get_try_from_json_file");
-	//ClassDB::add_property("AnchorProgram", PropertyInfo(Variant::DICTIONARY, "idl", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR + PROPERTY_USAGE_READ_ONLY), "set_idl", "get_idl");
 }
 
 bool AnchorProgram::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
+	const String name = p_name;
 	if (name == "pid") {
 		set_pid(p_value);
 		return true;
-	} else if (name == "try_from_pid") {
+	}
+	if (name == "try_from_pid") {
 		set_try_from_pid(p_value);
 		return true;
-	} else if (name == "json_file") {
+	}
+	if (name == "json_file") {
 		set_json_file(p_value);
 		return true;
-	} else if (name == "try_from_json_file") {
+	}
+	if (name == "try_from_json_file") {
 		set_try_from_json_file(p_value);
 		return true;
-	} else if (name == "idl") {
+	}
+	if (name == "idl") {
 		set_idl(p_value);
 		return true;
-	} else if (name == "url_override") {
+	}
+	if (name == "url_override") {
 		set_url_override(p_value);
 		return true;
 	}
@@ -680,23 +502,28 @@ bool AnchorProgram::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool AnchorProgram::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
+	const String name = p_name;
 	if (name == "pid") {
 		r_ret = pid;
 		return true;
-	} else if (name == "try_from_pid") {
+	}
+	if (name == "try_from_pid") {
 		r_ret = try_from_pid;
 		return true;
-	} else if (name == "json_file") {
+	}
+	if (name == "json_file") {
 		r_ret = json_file;
 		return true;
-	} else if (name == "try_from_json_file") {
+	}
+	if (name == "try_from_json_file") {
 		r_ret = try_from_json_file;
 		return true;
-	} else if (name == "idl") {
+	}
+	if (name == "idl") {
 		r_ret = idl;
 		return true;
-	} else if (name == "url_override") {
+	}
+	if (name == "url_override") {
 		r_ret = url_override;
 		return true;
 	}
@@ -757,7 +584,7 @@ void AnchorProgram::set_try_from_pid(const bool try_from_pid) {
 	}
 }
 
-bool AnchorProgram::get_try_from_pid() {
+bool AnchorProgram::get_try_from_pid() const {
 	return try_from_pid;
 }
 
@@ -784,7 +611,7 @@ void AnchorProgram::set_try_from_json_file(const bool try_from_json_file) {
 	}
 }
 
-bool AnchorProgram::get_try_from_json_file() {
+bool AnchorProgram::get_try_from_json_file() const {
 	return try_from_json_file;
 }
 
@@ -793,7 +620,7 @@ void AnchorProgram::set_pid(const String &pid) {
 	this->pid = pid;
 }
 
-String AnchorProgram::get_pid() {
+String AnchorProgram::get_pid() const {
 	return pid;
 }
 
@@ -806,7 +633,7 @@ void AnchorProgram::set_json_file(const Variant &json_file) {
 	this->json_file = json_file;
 }
 
-Variant AnchorProgram::get_json_file() {
+Variant AnchorProgram::get_json_file() const {
 	return json_file;
 }
 
@@ -946,51 +773,6 @@ String AnchorProgram::get_int_type_info(const Variant &anchor_type) {
 	return "";
 }
 
-Variant::Type AnchorProgram::get_godot_type(const Variant &anchor_type) {
-	if (anchor_type.get_type() == Variant::DICTIONARY) {
-		const Dictionary anchor_type_dict = anchor_type;
-		if (anchor_type_dict.has("option")) {
-			return AnchorProgram::get_godot_type(anchor_type_dict["option"]);
-		}
-		if (anchor_type_dict.has("kind")) {
-			if (anchor_type_dict["kind"] == "enum") {
-				return Variant::INT;
-			} else {
-				return Variant::OBJECT;
-			}
-		}
-		if (anchor_type_dict.has("defined") || anchor_type_dict.has("type")) {
-			return Variant::OBJECT;
-		}
-		if (anchor_type_dict.has("array") || anchor_type_dict.has("vec")) {
-			return Variant::ARRAY;
-		}
-	} else if (anchor_type.get_type() == Variant::STRING) {
-		const String type_string = anchor_type;
-		if (type_string == "publicKey") {
-			return Variant::OBJECT;
-		}
-		if (type_string == "string") {
-			return Variant::STRING;
-		}
-		if (type_string == "u8" || type_string == "u16" || type_string == "u32" || type_string == "u64" ||
-				type_string == "i8" || type_string == "i16" || type_string == "i32" || type_string == "i64") {
-			return Variant::INT;
-		}
-		if (type_string == "f32" || type_string == "f64") {
-			return Variant::FLOAT;
-		}
-		if (type_string == "bool") {
-			return Variant::BOOL;
-		}
-		if (type_string == "bytes") {
-			return Variant::PACKED_BYTE_ARRAY;
-		}
-	}
-	WARN_PRINT_ONCE_ED("Unknown anchor type");
-	return Variant::NIL;
-}
-
 String AnchorProgram::get_godot_class_hint(const Variant &anchor_type) {
 	if (anchor_type.get_type() == Variant::DICTIONARY) {
 		const Dictionary anchor_type_dict = anchor_type;
@@ -1064,7 +846,7 @@ Variant AnchorProgram::build_argument_dictionary(const Array &arguments, const S
 
 	Dictionary result;
 
-	ERR_FAIL_COND_V(arguments.size() != anchor_arguments.size(), nullptr);
+	ERR_FAIL_COND_V_CUSTOM(arguments.size() != anchor_arguments.size(), nullptr);
 	for (unsigned int i = 0; i < anchor_arguments.size(); i++) {
 		const Dictionary anchor_argument = anchor_arguments[i];
 		result[anchor_argument["name"]] = decorate_instruction_argument(anchor_argument["type"], arguments[i]);
@@ -1073,36 +855,32 @@ Variant AnchorProgram::build_argument_dictionary(const Array &arguments, const S
 	return result;
 }
 
-Variant AnchorProgram::build_instruction(String name, Array accounts, Variant arguments) const {
-	ERR_FAIL_COND_V_EDMSG(idl.is_empty(), nullptr, "IDL is empty, try loading from PID or JSON file.");
+Variant AnchorProgram::build_instruction(const String &name, const Array &accounts, const Variant &arguments) const {
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(idl.is_empty(), nullptr, "IDL is empty, try loading from PID or JSON file.");
 	const Dictionary instruction_info = find_idl_instruction(name);
 
-	ERR_FAIL_COND_V_EDMSG(instruction_info.is_empty(), nullptr, (String("IDL does not contain an instruction named ") + name + ".").ascii());
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(instruction_info.is_empty(), nullptr, (String("IDL does not contain an instruction named ") + name + ".").ascii());
 
 	if (GenericAnchorNode::has_extra_accounts(get_idl_name(), name)) {
-		ERR_FAIL_COND_V_EDMSG(((Array)instruction_info["accounts"]).size() > accounts.size(), nullptr, "Unexpected amount or accounts");
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(((Array)instruction_info["accounts"]).size() > accounts.size(), nullptr, "Unexpected amount or accounts");
 	} else {
-		ERR_FAIL_COND_V_EDMSG(((Array)instruction_info["accounts"]).size() != accounts.size(), nullptr, "Unexpected amount or accounts");
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(((Array)instruction_info["accounts"]).size() != accounts.size(), nullptr, "Unexpected amount or accounts");
 	}
 
-	Instruction *result = memnew(Instruction);
+	Variant result = memnew_custom(Instruction);
+	auto *result_ptr = Object::cast_to<Instruction>(result);
 
-	PackedByteArray data;
-	if (instruction_info.has("discriminant")) {
-		data = evaluate_discriminant(instruction_info["discriminant"]);
-	} else {
-		data = discriminator_by_name(name.to_snake_case(), global_prefix);
-	}
+	PackedByteArray data = get_instruction_discriminant(instruction_info, name);
 
 	String use_pid = pid;
 
 	if (idl.has("address") && pid.length() != PUBKEY_LENGTH) {
 		use_pid = idl["address"];
 	}
-	result->set_program_id(Pubkey::new_from_string(use_pid));
-	data.append_array(serialize_variant(arguments));
+	result_ptr->set_program_id(Pubkey::new_from_string(use_pid));
+	data.append_array(IdlUtils::serialize_variant(arguments));
 
-	result->set_data(data);
+	result_ptr->set_data(data);
 
 	Array ref_accounts = instruction_info["accounts"];
 
@@ -1112,30 +890,30 @@ Variant AnchorProgram::build_instruction(String name, Array accounts, Variant ar
 		const bool writable = detect_writable(ref_accounts[i]);
 		const bool is_signer = detect_is_signer(ref_accounts[i]);
 		if (is_optional && accounts[i].get_type() == Variant::NIL) {
-			// optional accounts are passed in as pid, no signer, immutable
+			// Unspecified optional accounts are passed in as pid, no signer, immutable.
 			const Variant pid_key = Pubkey::new_from_string(use_pid);
-			result->append_meta(*memnew(AccountMeta(pid_key, false, false)));
+			result_ptr->append_meta(*memnew_custom(AccountMeta(pid_key, false, false)));
 			continue;
 		}
-		result->append_meta(*memnew(AccountMeta(accounts[i], is_signer, writable)));
+		result_ptr->append_meta(*memnew_custom(AccountMeta(accounts[i], is_signer, writable)));
 	}
 
 	// Extra accounts
 	for (unsigned int i = ref_accounts.size(); i < accounts.size(); i++) {
 		ERR_FAIL_COND_V_EDMSG_CUSTOM(accounts[i].get_type() != Variant::OBJECT, result, "Unknown object");
 		ERR_FAIL_COND_V_EDMSG_CUSTOM(!static_cast<Object *>(accounts[i])->is_class("AccountMeta"), result, "Extra Args are supposed to be AccountMetas");
-		result->append_meta(*memnew(AccountMeta(accounts[i])));
+		result_ptr->append_meta(*memnew_custom(AccountMeta(accounts[i])));
 	}
 
 	return result;
 }
 
-Error AnchorProgram::fetch_account(const String name, const Variant &account) {
+Error AnchorProgram::fetch_account(const String &name, const Variant &account) {
 	if (!pending_account_name.is_empty()) {
 		return Error::ERR_ALREADY_IN_USE;
 	}
 	pending_account_name = name;
-	Callable callback(this, "fetch_account_callback");
+	const Callable callback(this, "fetch_account_callback");
 	fetch_client->connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
 	fetch_client->get_account_info(Pubkey::string_from_variant(account));
 
@@ -1143,54 +921,23 @@ Error AnchorProgram::fetch_account(const String name, const Variant &account) {
 }
 
 void AnchorProgram::fetch_account_callback(const Dictionary &rpc_result) {
-	String name = pending_account_name;
+	const String name = pending_account_name;
 	pending_account_name = "";
 
-	Dictionary ref_struct = find_idl_account(name);
+	const Dictionary ref_struct = find_idl_account(name);
 
-	if (ref_struct.is_empty()) {
-		ERR_FAIL_EDMSG("Account name was not found in IDL.");
+	ERR_FAIL_COND_EDMSG_CUSTOM(ref_struct.is_empty(), "Account name was not found in IDL.");
+
+	ERR_FAIL_COND_EDMSG_CUSTOM(!SolanaUtils::rpc_response_has_value(rpc_result), "Unexpected RPC response");
+	const Variant value = SolanaUtils::get_rpc_response_value(rpc_result);
+	if (value.get_type() == Variant::DICTIONARY) {
+		emit_signal("account_fetched", parse_account_data(value, ref_struct, true));
 	}
 
-	if (!rpc_result.has("result")) {
-		emit_signal("account_fetched", Dictionary());
-		ERR_FAIL_COND_EDMSG(rpc_result.has("error"), String(rpc_result["error"]));
-		ERR_FAIL_EDMSG("Unexpected RPC response, no result.");
-	}
+	emit_signal("account_fetched", Dictionary());
+	ERR_FAIL_COND_EDMSG_CUSTOM(value.get_type() != Variant::NIL, "Unexpected RPC response, unknown value type.");
 
-	Dictionary result_dict = rpc_result["result"];
-	if (!result_dict.has("value")) {
-		emit_signal("account_fetched", Dictionary());
-		ERR_FAIL_EDMSG("Unexpected RPC response, no value.");
-	}
-	Variant value = result_dict["value"];
-	if (value.get_type() != Variant::DICTIONARY) {
-		if (value.get_type() == Variant::NIL) {
-			emit_signal("account_fetched", Dictionary());
-			return;
-		}
-		emit_signal("account_fetched", Dictionary());
-		ERR_FAIL_EDMSG("Unexpected RPC response, unknown value type.");
-	}
-
-	Dictionary account_dict = value;
-	Array account_data_tuple = account_dict["data"];
-	String encoded_data = account_data_tuple[0];
-	PackedByteArray account_data = SolanaUtils::bs64_decode(encoded_data);
-	emit_signal("account_data_fetched", account_data);
-	account_data = account_data.slice(8);
-
-	const Array fields = ((Dictionary)ref_struct["type"])["fields"];
-
-	Dictionary result;
-	for (unsigned int i = 0; i < fields.size(); i++) {
-		int data_offset = 0;
-		const Variant val = deserialize_variant(account_data, ((Dictionary)fields[i])["type"], data_offset);
-		result[((Dictionary)fields[i])["name"]] = val;
-		account_data = account_data.slice(data_offset);
-	}
-
-	emit_signal("account_fetched", result);
+	// Null type passes through here.
 }
 
 Error AnchorProgram::fetch_all_accounts(const String &name, const Array &additional_filters) {
@@ -1241,23 +988,9 @@ void AnchorProgram::fetch_all_accounts_callback(const Dictionary &rpc_result) {
 	for (int i = 0; i < accounts.size(); i++) {
 		Dictionary account_entry = accounts[i];
 		const String pubkey = account_entry["pubkey"];
-		Dictionary account_data = account_entry["account"];
+		const Dictionary account_data = account_entry["account"];
 
-		Array data_tuple = account_data["data"];
-		const String encoded_data = data_tuple[0];
-
-		PackedByteArray account_bytes = SolanaUtils::bs64_decode(encoded_data);
-		account_bytes = account_bytes.slice(DISCRIMINATOR_LENGTH);
-
-		Dictionary parsed_account;
-		for (int j = 0; j < fields.size(); j++) {
-			int data_offset = 0;
-			const Variant val = deserialize_variant(account_bytes, static_cast<Dictionary>(fields[j])["type"], data_offset);
-			parsed_account[static_cast<Dictionary>(fields[j])["name"]] = val;
-			account_bytes = account_bytes.slice(data_offset);
-		}
-
-		result_accounts[pubkey] = parsed_account;
+		result_accounts[pubkey] = parse_account_data(account_data, ref_struct);
 	}
 
 	emit_signal("accounts_fetched", result_accounts);
