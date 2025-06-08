@@ -78,9 +78,7 @@ PackedByteArray Instruction::serialize() {
 	}
 	result.append_array(data);
 	for (unsigned int i = 0; i < accounts.size(); i++) {
-		const Pubkey key = accounts[i];
-
-		result.append_array(key.to_bytes());
+		result.append_array(Pubkey::bytes_from_variant(accounts[i]));
 	}
 
 	return result;

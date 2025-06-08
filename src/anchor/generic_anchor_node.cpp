@@ -71,7 +71,7 @@ void GenericAnchorNode::_process(double p_delta) {
 	Object::cast_to<AnchorProgram>(anchor_program)->_process(p_delta);
 }
 
-GDExtensionClassInstancePtr GenericAnchorNode::_recreate_instance_func(void *data, GDExtensionObjectPtr obj) { // NOLINT(bugprone-easily-swappable-parameters)
+GDExtensionClassInstancePtr GenericAnchorNode::_recreate_instance_func(void *data, GDExtensionObjectPtr obj) {
 	if constexpr (!std::is_abstract_v<GenericAnchorNode>) {
 #ifdef HOT_RELOAD_ENABLED
 		//Wrapped::_constructing_recreate_owner = obj;

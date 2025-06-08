@@ -1,14 +1,13 @@
 #include "register_types.hpp"
 
 #include "gdextension_interface.h"
-#include "godot_cpp/classes/editor_interface.hpp"
 #include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/classes/global_constants.hpp"
 #include "godot_cpp/classes/json.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
-#include "godot_cpp/variant/callable_method_pointer.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
@@ -79,10 +78,10 @@ void add_setting(const String &name, Variant::Type type, const Variant &default_
 }
 
 void load_user_programs() {
-	Variant idl_locations = ProjectSettings::get_singleton()->get_setting(String(CUSTOM_IDL_LOCATION_SETTING.c_str()));
+	const Variant idl_locations = ProjectSettings::get_singleton()->get_setting(String(CUSTOM_IDL_LOCATION_SETTING.c_str()));
 	ERR_FAIL_COND_EDMSG_CUSTOM(idl_locations.get_type() != Variant::PACKED_STRING_ARRAY, "Could not find setting for idl locations");
 	const PackedStringArray idl_filenames = static_cast<PackedStringArray>(idl_locations);
-	for (const auto idl_filename : idl_filenames) {
+	for (const auto &idl_filename : idl_filenames) {
 		AddCustomIdlDialog::load_idl(idl_filename);
 	}
 }

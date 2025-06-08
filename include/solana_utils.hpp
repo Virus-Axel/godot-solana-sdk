@@ -22,6 +22,11 @@ namespace godot {
 	ERR_PRINT_ONCE_ED(m_msg)                                               \
 	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
 
+#define ERR_FAIL_COND_V_CUSTOM(m_cond, m_retval)                           \
+	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
+	ERR_FAIL_COND_V(m_cond, m_retval)                                      \
+	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
+
 #define ERR_FAIL_V_EDMSG_CUSTOM(m_retval, m_msg)                           \
 	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
 	ERR_FAIL_V_EDMSG(m_retval, m_msg)                                      \
@@ -89,7 +94,6 @@ class SolanaUtils : public Node {
 
 private:
 protected:
-
 	/**
 	 * @bindmethods{SolanaUtils, Node}
 	 */
@@ -109,7 +113,7 @@ public:
 	SolanaUtils();
 	/**
 	 * @brief Decode base58 encoded string into bytes.
-	 * 
+	 *
 	 * @param str Base58 encoded string to decode.
 	 * @return PackedByteArray Decoded bytes.
 	 */
@@ -117,7 +121,7 @@ public:
 
 	/**
 	 * @brief Encode a byte array into a base58 encoded string.
-	 * 
+	 *
 	 * @param input Byte array to encode.
 	 * @return String Base58 encoded String.
 	 */
@@ -125,7 +129,7 @@ public:
 
 	/**
 	 * @brief Encode a byte array int a base64 encoded string.
-	 * 
+	 *
 	 * @param bytes Byte array to encode.
 	 * @return String Base64 encoded String.
 	 */
@@ -133,7 +137,7 @@ public:
 
 	/**
 	 * @brief Decode a base64 encoded string into bytes.
-	 * 
+	 *
 	 * @param input Base64 encoded string to decode.
 	 * @return PackedByteArray Decoded bytes.
 	 */
@@ -141,7 +145,7 @@ public:
 
 	/**
 	 * @brief Short vec encode a 16 bit integer.
-	 * 
+	 *
 	 * @param value integer to encode.
 	 * @return PackedByteArray Short vec encoded byte array.
 	 */
@@ -149,12 +153,37 @@ public:
 
 	/**
 	 * @brief Decode short vec bytes int an integer.
-	 * 
+	 *
 	 * @param bytes Short vec encoded bytes.
 	 * @param cursor Pointer to an integer that saves abount of bytes required.
 	 * @return unsigned int Decoded integer.
 	 */
 	static unsigned int short_u16_decode(const PackedByteArray &bytes, int *cursor);
+
+	/**
+	 * @brief Check if RPC response has returned a value.
+	 * 
+	 * @param rpc_response Response to check in.
+	 * @return true if value is in response Dictionary.
+	 * @return false if value is not in response Dictionary.
+	 */
+	static bool rpc_response_has_value(const Dictionary &rpc_response);
+
+	/**
+	 * @brief Get the RPC response value.
+	 * 
+	 * @param rpc_response RPC response to get value from.
+	 * @return Dictionary RPC response value.
+	 */
+	static Dictionary get_rpc_response_value(const Dictionary &rpc_response);
+
+	/**
+	 * @brief Produce a hash from an array of String array as contents.
+	 * 
+	 * @param contents String array to feed to the hash algorithm.
+	 * @return PackedByteArray SHA256 Hash as byte array.
+	 */
+	static PackedByteArray sha256_hash_array(const PackedStringArray &contents);
 
 	~SolanaUtils() = default;
 };

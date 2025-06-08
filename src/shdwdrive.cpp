@@ -314,7 +314,7 @@ void ShdwDrive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("upload_file_to_storage", "filename", "storage_owner_keypair", "storage_account"), &ShdwDrive::upload_file_to_storage);
 }
 
-Variant ShdwDrive::create_storage_account(const Variant &owner_keypair, const String &name, const Variant &size) { // NOLINT(bugprone-easily-swappable-parameters)
+Variant ShdwDrive::create_storage_account(const Variant &owner_keypair, const String &name, const Variant &size) {
 	this->owner_keypair = owner_keypair;
 	this->storage_name = name;
 	if (size.get_type() == Variant::INT) {
@@ -347,7 +347,7 @@ Variant ShdwDrive::fetch_storage_key_by_name_callback(const String &storage_name
 	return nullptr;
 }
 
-Variant ShdwDrive::fetch_storage_key_by_name(const Variant &owner_keypair, const String &storage_name) { // NOLINT(bugprone-easily-swappable-parameters)
+Variant ShdwDrive::fetch_storage_key_by_name(const Variant &owner_keypair, const String &storage_name) {
 	ERR_FAIL_COND_V_EDMSG_CUSTOM(storage_key_list.size() != storage_name_list.size(), nullptr, "Internal Error when fetching storages.");
 	const int64_t index = storage_name_list.find(storage_name);
 
@@ -421,7 +421,7 @@ Variant ShdwDrive::new_stake_account_pubkey(const Variant &storage_account) {
 	return Pubkey::new_pda_bytes(seeds, get_pid());
 }
 
-Variant ShdwDrive::new_storage_account_pubkey(const Variant &owner_key, uint64_t account_seed) { // NOLINT(bugprone-easily-swappable-parameters)
+Variant ShdwDrive::new_storage_account_pubkey(const Variant &owner_key, uint64_t account_seed) {
 	Array seeds;
 	seeds.append(String("storage-account").to_ascii_buffer());
 	seeds.append(Pubkey::bytes_from_variant(owner_key));
@@ -525,7 +525,7 @@ String ShdwDrive::get_filename_hash(const String &filename) {
 	return res.hex_encode();
 }
 
-void ShdwDrive::upload_file_to_storage(const String &filename, const Variant &storage_owner_keypair, const Variant &storage_account) { // NOLINT(bugprone-easily-swappable-parameters)
+void ShdwDrive::upload_file_to_storage(const String &filename, const Variant &storage_owner_keypair, const Variant &storage_account) {
 	const String boundary = "--GODOTSOLANASDKBOUNDARY";
 
 	const PackedByteArray file_content = FileAccess::get_file_as_bytes(filename);
