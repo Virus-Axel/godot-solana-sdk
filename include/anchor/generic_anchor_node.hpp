@@ -1,12 +1,23 @@
 #ifndef GODOT_SOLANA_SDK_GENERIC_ANCHOR_NODE_HPP
 #define GODOT_SOLANA_SDK_GENERIC_ANCHOR_NODE_HPP
 
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#include "gdextension_interface.h"
+#include "godot_cpp/classes/global_constants.hpp"
 #include "godot_cpp/classes/input_event.hpp"
 #include "godot_cpp/classes/node.hpp"
-#include "godot_cpp/variant/utility_functions.hpp"
+#include "godot_cpp/classes/wrapped.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/object.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
-#include "anchor/anchor_program.hpp"
 #include "custom_class_management/generic_node.hpp"
 
 namespace godot {
@@ -19,7 +30,7 @@ public:
 	/**
 	 * @setter{arg_count, count}
 	 */
-	void set_arg_count(unsigned int count) {
+	void set_arg_count(int count) {
 		set_argument_count(count);
 	}
 };
@@ -29,6 +40,11 @@ public:
  */
 class GenericAnchorNode : public GenericNode {
 private:
+	using self_type = GenericAnchorNode; ///< This type.
+	using parent_type = Node; ///< Parent type.
+
+	Variant anchor_program = nullptr; ///< Specific Anchor program.
+
 	static std::unordered_map<StringName, Dictionary> loaded_idls;
 	static std::vector<StringName *> names;
 	static std::string string_name;
@@ -47,19 +63,11 @@ private:
 	static StringName get_fetcher_name(const StringName &account_name);
 	static const StringName *_get_extension_class_name();
 
-	void operator=(const GenericAnchorNode & /*p_rval*/) {}
+	Variant generic_instruction_bind();
+	Error generic_fetch_account_bind(const Variant &account_key);
+	void emit_account_data(const PackedByteArray &account_data);
 
-	Variant generic_instruction_bind() {
-		return Variant();
-	}
-	Error generic_fetch_account_bind(const Variant &account_key) {
-		return Error::OK;
-	}
-	void emit_account_data(const PackedByteArray &account_data) {
-		const Dictionary fetch_account = Object::cast_to<AnchorProgram>(anchor_program)->find_idl_account(pending_fetch_account);
-		uint32_t consumed_bytes = 0;
-		emit_signal("account_fetched", Object::cast_to<AnchorProgram>(anchor_program)->deserialize_dict(account_data, fetch_account["type"], consumed_bytes));
-	}
+	static void bind_method(MethodBind &method_bind, GDExtensionClassMethodCall call_function, GDExtensionClassMethodPtrCall ptr_call_function, const StringName &p_class_name);
 
 	friend class ClassDB;
 	friend class Wrapped;
@@ -70,7 +78,7 @@ protected:
 	 *
 	 * @param p_delta Elapsed time since last performed process.
 	 */
-	void _process(double p_delta);
+	void _process(double p_delta) override;
 
 	/**
 	 * @brief Bind methods of GenericAnchorNode Node.
@@ -78,8 +86,17 @@ protected:
 	static void _bind_methods();
 
 public:
-	typedef GenericAnchorNode self_type; ///< This type.
-	typedef Node parent_type; ///< Parent type.
+	GenericAnchorNode() = default;
+
+	/**
+	 * @brief @setter{anchor_program, anchor_program}
+	 */
+	void set_anchor_program(const Variant &anchor_program);
+
+	/**
+	 * @brief @getter{anchor_program, Variant}
+	 */
+	[[nodiscard]] Variant get_anchor_program() const;
 
 	/**
 	 * @brief Get the class name of the Node.
@@ -106,10 +123,6 @@ public:
 	 * @return false otherwise.
 	 */
 	static bool has_extra_accounts(const StringName &program, const StringName &instruction);
-
-	Variant anchor_program = nullptr; ///< Specific Anchor program.
-
-	GenericAnchorNode() = default;
 
 	/**
 	 * @brief Extract the accounts from a list of args.
@@ -165,8 +178,8 @@ public:
 	 *
 	 * @return Variant Program ID Pubkey.
 	 */
-	Variant get_pid() const;
-	~GenericAnchorNode() = default;
+	[[nodiscard]] Variant get_pid() const;
+	~GenericAnchorNode() override = default;
 };
 } //namespace godot
 

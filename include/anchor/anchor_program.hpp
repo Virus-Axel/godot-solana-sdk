@@ -1,7 +1,18 @@
 #ifndef SOLANA_SDK_ANCHOR_PROGRAM
 #define SOLANA_SDK_ANCHOR_PROGRAM
 
+#include <cstdint>
+
+#include "godot_cpp/classes/global_constants.hpp"
 #include "godot_cpp/classes/node.hpp"
+#include "godot_cpp/classes/wrapped.hpp"
+#include "godot_cpp/core/property_info.hpp"
+#include "godot_cpp/templates/list.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/string_name.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
 #include "solana_client.hpp"
@@ -20,9 +31,6 @@ const int DISCRIMINATOR_LENGTH = 8;
 class AnchorProgram : public Node {
 	GDCLASS(AnchorProgram, Node)
 private:
-	const String global_prefix = "global:";
-	const String account_prefix = "account:";
-
 	Dictionary idl;
 	String pid;
 	String url_override = "";
@@ -48,12 +56,11 @@ private:
 	void idl_from_pid_callback(const Dictionary &rpc_result);
 	void fetch_account_callback(const Dictionary &rpc_result);
 	void fetch_all_accounts_callback(const Dictionary &rpc_result);
-	void extract_idl_from_rpc_response(const Dictionary &rpc_result);
 	void extract_idl_from_data(const Array &data_info);
 	Dictionary parse_account_data(const Dictionary &account_data, const Dictionary &reference, bool emit_decoded_account = false);
 
 	static PackedByteArray discriminator_by_name(const String &name, const String &namespace_string);
-	PackedByteArray get_instruction_discriminant(const Dictionary &instruction_info, const String &name) const;
+	[[nodiscard]] PackedByteArray get_instruction_discriminant(const Dictionary &instruction_info, const String &name) const;
 
 	Dictionary find_idl_type(const String &name);
 
@@ -102,35 +109,35 @@ public:
 	 *
 	 * @return Dictionary IDL of the anchor program.
 	 */
-	Dictionary get_idl() const;
+	[[nodiscard]] Dictionary get_idl() const;
 
 	/**
 	 * @brief Set the try from pid property.
 	 *
 	 * @param try_from_pid property value to set.
 	 */
-	void set_try_from_pid(const bool try_from_pid);
+	void set_try_from_pid(bool try_from_pid);
 
 	/**
 	 * @brief Get the try from pid property.
 	 *
 	 * @return bool property value.
 	 */
-	bool get_try_from_pid() const;
+	[[nodiscard]] bool get_try_from_pid() const;
 
 	/**
 	 * @brief Set the try from json file property
 	 *
 	 * @param try_from_json_file property value to set.
 	 */
-	void set_try_from_json_file(const bool try_from_json_file);
+	void set_try_from_json_file(bool try_from_json_file);
 
 	/**
 	 * @brief Get the try from json file property
 	 *
 	 * @return bool property value.
 	 */
-	bool get_try_from_json_file() const;
+	[[nodiscard]] bool get_try_from_json_file() const;
 
 	/**
 	 * @brief Set the url override property
@@ -155,14 +162,14 @@ public:
 	 *
 	 * @return String Base 58 encoded program address.
 	 */
-	String get_pid() const;
+	[[nodiscard]] String get_pid() const;
 
 	/**
 	 * @brief Get the program name from the idl.
 	 *
 	 * @return String program name.
 	 */
-	String get_idl_name() const;
+	[[nodiscard]] String get_idl_name() const;
 
 	/**
 	 * @brief Set the json file property.
@@ -178,7 +185,7 @@ public:
 	 *
 	 * @return Variant JSON object property.
 	 */
-	Variant get_json_file() const;
+	[[nodiscard]] Variant get_json_file() const;
 
 	/**
 	 * @brief Constructs a type decorated f32 Dictionary.
@@ -351,7 +358,7 @@ public:
 	 * @return Dictionary Found instruction specification.
 	 * @return Dictionary Empty dictinary if no instruction was found.
 	 */
-	Dictionary find_idl_instruction(const String &name) const;
+	[[nodiscard]] Dictionary find_idl_instruction(const String &name) const;
 
 	/**
 	 * @brief Build a argument dictionary for instructions.
@@ -365,7 +372,7 @@ public:
 	 * @return Variant Dictionary with arguments.
 	 * @return Variant null on failure.
 	 */
-	Variant build_argument_dictionary(const Array &arguments, const StringName &instruction_name) const;
+	[[nodiscard]] Variant build_argument_dictionary(const Array &arguments, const StringName &instruction_name) const;
 
 	/**
 	 * @brief Build an instruction from parameters.
@@ -379,7 +386,7 @@ public:
 	 * @return Variant Instruction object.
 	 * @return null on failure.
 	 */
-	Variant build_instruction(const String &name, const Array &accounts, const Variant &arguments) const;
+	[[nodiscard]] Variant build_instruction(const String &name, const Array &accounts, const Variant &arguments) const;
 
 	/**
 	 * @brief Fetch account of specified account type.
