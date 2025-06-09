@@ -1,21 +1,29 @@
 #include "anchor/generic_anchor_node.hpp"
 
+#include <cstddef>
 #include <cstdint>
+#include <string>
+#include <type_traits>
+#include <unordered_map>
+#include <vector>
 
 #include "gdextension_interface.h"
+#include "godot_cpp/classes/global_constants.hpp"
 #include "godot_cpp/classes/node.hpp"
 #include "godot_cpp/classes/wrapped.hpp"
-#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/error_macros.hpp"
 #include "godot_cpp/core/memory.hpp"
+#include "godot_cpp/core/method_bind.hpp"
 #include "godot_cpp/core/property_info.hpp"
+#include "godot_cpp/godot.hpp"
 #include "godot_cpp/templates/list.hpp"
+#include "godot_cpp/variant/callable_method_pointer.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/string_name.hpp"
-#include "godot_cpp/variant/utility_functions.hpp"
 
 #include "anchor/anchor_program.hpp"
 #include "anchor/generic_anchor_resource.hpp"
-#include "custom_class_management/generic_node.hpp"
+#include "custom_class_management/generic_type.hpp"
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
 
@@ -63,6 +71,69 @@ const StringName *GenericAnchorNode::_get_extension_class_name() {
 	return &string_name;
 }
 
+Variant GenericAnchorNode::generic_instruction_bind() {
+	return Variant();
+}
+Error GenericAnchorNode::generic_fetch_account_bind(const Variant &account_key) {
+	return Error::OK;
+}
+
+void GenericAnchorNode::emit_account_data(const PackedByteArray &account_data) {
+	const Dictionary fetch_account = Object::cast_to<AnchorProgram>(anchor_program)->find_idl_account(pending_fetch_account);
+	uint32_t consumed_bytes = 0;
+	emit_signal("account_fetched", Object::cast_to<AnchorProgram>(anchor_program)->deserialize_dict(account_data, fetch_account["type"], consumed_bytes));
+}
+
+GDExtensionClassMethodInfo GenericAnchorNode::get_method_bind_info(MethodBind &method_bind, GDExtensionClassMethodCall call_function, GDExtensionClassMethodPtrCall ptr_call_function) {
+	const std::vector<PropertyInfo> return_value_and_arguments_info = method_bind.get_arguments_info_list();
+	std::vector<GDExtensionPropertyInfo> return_value_and_arguments_gdextension_info;
+	return_value_and_arguments_gdextension_info.reserve(return_value_and_arguments_info.size());
+	for (const auto &argument_info : return_value_and_arguments_info) {
+		return_value_and_arguments_gdextension_info.push_back(
+				GDExtensionPropertyInfo{
+						static_cast<GDExtensionVariantType>(argument_info.type),
+						argument_info.name._native_ptr(),
+						argument_info.class_name._native_ptr(),
+						argument_info.hint,
+						argument_info.hint_string._native_ptr(),
+						argument_info.usage,
+				});
+	}
+
+	GDExtensionPropertyInfo *return_value_info = return_value_and_arguments_gdextension_info.data();
+
+	std::vector<GDExtensionClassMethodArgumentMetadata> return_value_and_arguments_metadata = method_bind.get_arguments_metadata_list();
+	GDExtensionClassMethodArgumentMetadata *return_value_metadata = return_value_and_arguments_metadata.data();
+	GDExtensionPropertyInfo *arguments_info = return_value_and_arguments_gdextension_info.data() + 1;
+	GDExtensionClassMethodArgumentMetadata *arguments_metadata = return_value_and_arguments_metadata.data() + 1;
+
+	std::vector<GDExtensionVariantPtr> def_args;
+	const std::vector<Variant> &def_args_val = method_bind.get_default_arguments();
+	def_args.resize(def_args_val.size());
+	for (size_t i = 0; i < def_args_val.size(); i++) {
+		def_args[i] = (GDExtensionVariantPtr)&def_args_val[i];
+	}
+
+	const StringName name = method_bind.get_name();
+	const GDExtensionClassMethodInfo method_info = {
+		name._native_ptr(),
+		static_cast<void *>(&method_bind),
+		call_function,
+		ptr_call_function,
+		method_bind.get_hint_flags(),
+		static_cast<GDExtensionBool>(method_bind.has_return()),
+		return_value_info,
+		*return_value_metadata,
+		static_cast<uint32_t>(method_bind.get_argument_count()),
+		arguments_info,
+		arguments_metadata,
+		static_cast<uint32_t>(method_bind.get_default_argument_count()),
+		def_args.data(),
+	};
+
+	return method_info;
+}
+
 bool GenericAnchorNode::has_extra_accounts(const StringName &program, const StringName &instruction) {
 	return (program == StringName("candy_guard")) && (instruction == StringName("mintV1"));
 }
@@ -88,6 +159,14 @@ GDExtensionClassInstancePtr GenericAnchorNode::_recreate_instance_func(void *dat
 
 StringName GenericAnchorNode::get_fetcher_name(const StringName &account_name) {
 	return "fetch_" + account_name;
+}
+
+void GenericAnchorNode::set_anchor_program(const Variant &anchor_program) {
+	this->anchor_program = anchor_program;
+}
+
+Variant GenericAnchorNode::get_anchor_program() const {
+	return anchor_program;
 }
 
 const StringName &GenericAnchorNode::get_class_static() {
@@ -338,138 +417,52 @@ void GenericAnchorNode::bind_pid_getter(const StringName &p_class_name) {
 	method_bind->set_argument_names(args);
 	method_bind->set_name("get_pid");
 
-	const std::vector<PropertyInfo> return_value_and_arguments_info = method_bind->get_arguments_info_list();
-	std::vector<GDExtensionPropertyInfo> return_value_and_arguments_gdextension_info;
-	return_value_and_arguments_gdextension_info.reserve(return_value_and_arguments_info.size());
-	for (const auto &argument_info : return_value_and_arguments_info) {
-		return_value_and_arguments_gdextension_info.push_back(
-				GDExtensionPropertyInfo{
-						static_cast<GDExtensionVariantType>(argument_info.type),
-						argument_info.name._native_ptr(),
-						argument_info.class_name._native_ptr(),
-						argument_info.hint,
-						argument_info.hint_string._native_ptr(),
-						argument_info.usage,
-				});
-	}
-
-	GDExtensionPropertyInfo *return_value_info = return_value_and_arguments_gdextension_info.data();
-
-	std::vector<GDExtensionClassMethodArgumentMetadata> return_value_and_arguments_metadata = method_bind->get_arguments_metadata_list();
-	GDExtensionClassMethodArgumentMetadata *return_value_metadata = return_value_and_arguments_metadata.data();
-	GDExtensionPropertyInfo *arguments_info = return_value_and_arguments_gdextension_info.data() + 1;
-	GDExtensionClassMethodArgumentMetadata *arguments_metadata = return_value_and_arguments_metadata.data() + 1;
-
-	std::vector<GDExtensionVariantPtr> def_args;
-	const std::vector<Variant> &def_args_val = method_bind->get_default_arguments();
-	def_args.resize(def_args_val.size());
-	for (size_t i = 0; i < def_args_val.size(); i++) {
-		def_args[i] = (GDExtensionVariantPtr)&def_args_val[i];
-	}
-
 	const StringName name = method_bind->get_name();
-	const GDExtensionClassMethodInfo method_info = {
-		name._native_ptr(),
-		method_bind,
-		MethodBind::bind_call,
-		MethodBind::bind_ptrcall,
-		method_bind->get_hint_flags(),
-		static_cast<GDExtensionBool>(method_bind->has_return()),
-		return_value_info,
-		*return_value_metadata,
-		static_cast<uint32_t>(method_bind->get_argument_count()),
-		arguments_info,
-		arguments_metadata,
-		static_cast<uint32_t>(method_bind->get_default_argument_count()),
-		def_args.data(),
-	};
+	const GDExtensionClassMethodInfo method_info = get_method_bind_info(*method_bind, MethodBind::bind_call, MethodBind::bind_ptrcall);
 	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, p_class_name._native_ptr(), &method_info);
 }
 
 void GenericAnchorNode::bind_account_fetcher(const StringName &p_class_name, const Dictionary &anchor_account) {
-	ERR_FAIL_COND_EDMSG(!anchor_account.has("name"), "Anchor instruction does not have name");
+	ERR_FAIL_COND_EDMSG_CUSTOM(!anchor_account.has("name"), "Anchor instruction does not have name");
 	const String account_name = anchor_account["name"];
 
-	MethodBindHack *method_bind = (MethodBindHack *)create_method_bind(&GenericAnchorNode::generic_fetch_account_bind);
+	MethodBindHack *method_bind = static_cast<MethodBindHack *>(create_method_bind(&GenericAnchorNode::generic_fetch_account_bind));
 
 	//std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
 	std::vector<StringName> args;
-	args.push_back("account_key");
+	args.emplace_back("account_key");
 
-	method_bind->set_arg_count(args.size());
+	method_bind->set_arg_count(static_cast<int>(args.size()));
 	method_bind->set_argument_names(args);
 	method_bind->set_name(get_fetcher_name(account_name));
 
-	const std::vector<PropertyInfo> return_value_and_arguments_info = method_bind->get_arguments_info_list();
-	std::vector<GDExtensionPropertyInfo> return_value_and_arguments_gdextension_info;
-	return_value_and_arguments_gdextension_info.reserve(return_value_and_arguments_info.size());
-	for (const auto &argument_info : return_value_and_arguments_info) {
-		return_value_and_arguments_gdextension_info.push_back(
-				GDExtensionPropertyInfo{
-						static_cast<GDExtensionVariantType>(argument_info.type),
-						argument_info.name._native_ptr(),
-						argument_info.class_name._native_ptr(),
-						argument_info.hint,
-						argument_info.hint_string._native_ptr(),
-						argument_info.usage,
-				});
-	}
-
-	GDExtensionPropertyInfo *return_value_info = return_value_and_arguments_gdextension_info.data();
-
-	std::vector<GDExtensionClassMethodArgumentMetadata> return_value_and_arguments_metadata = method_bind->get_arguments_metadata_list();
-	GDExtensionClassMethodArgumentMetadata *return_value_metadata = return_value_and_arguments_metadata.data();
-	GDExtensionPropertyInfo *arguments_info = return_value_and_arguments_gdextension_info.data() + 1;
-	GDExtensionClassMethodArgumentMetadata *arguments_metadata = return_value_and_arguments_metadata.data() + 1;
-
-	std::vector<GDExtensionVariantPtr> def_args;
-	const std::vector<Variant> &def_args_val = method_bind->get_default_arguments();
-	def_args.resize(def_args_val.size());
-	for (size_t i = 0; i < def_args_val.size(); i++) {
-		def_args[i] = (GDExtensionVariantPtr)&def_args_val[i];
-	}
-
-	auto *lambda = new auto([](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error) {
+	auto lambda = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt /*p_argument_count*/, GDExtensionVariantPtr r_return, GDExtensionCallError * /*r_error*/) {
 		if (p_instance == nullptr) {
 			return;
 		}
-		MethodBind *va = (MethodBind *)p_method_userdata;
-		const String stored_instruction_name = va->get_name();
-		AnchorProgram *program = Object::cast_to<AnchorProgram>(static_cast<GenericAnchorNode *>(p_instance)->anchor_program);
+		auto *method_data = static_cast<MethodBind *>(p_method_userdata);
+		const String stored_instruction_name = method_data->get_name();
+		auto *program = Object::cast_to<AnchorProgram>(static_cast<GenericAnchorNode *>(p_instance)->anchor_program);
 
-		const Variant *var = reinterpret_cast<const Variant *>(p_args[0]);
-		//ERR_FAIL_COND_EDMSG(var->get_type() == Variant::STRING_NAME, "Parameter is not string name.");
-		//const Variant *var2 = reinterpret_cast<const Variant *>(p_args[1]);
-		ERR_FAIL_COND_EDMSG(var->get_type() != Variant::OBJECT, "Parameter is not object.");
-		ERR_FAIL_COND_EDMSG(static_cast<Object *>(*var)->get_class() != "Pubkey", "Parameter is not Pubkey");
+		const auto *var = static_cast<const Variant *>(p_args[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-		static_cast<GenericAnchorNode *>(p_instance)->pending_fetch_account = account_fetch_method_accounts[va->get_name()];
-		Variant ret = program->fetch_account(account_fetch_method_accounts[va->get_name()], *var);
+		ERR_FAIL_COND_EDMSG_LAMBDA(var->get_type() != Variant::OBJECT, "Parameter is not object.");
+		ERR_FAIL_COND_EDMSG_LAMBDA(static_cast<Object *>(*var)->get_class() != "Pubkey", "Parameter is not Pubkey");
+
+		static_cast<GenericAnchorNode *>(p_instance)->pending_fetch_account = account_fetch_method_accounts[method_data->get_name()];
+		const Variant ret = program->fetch_account(account_fetch_method_accounts[method_data->get_name()], *var);
 		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
-	});
+	};
 	(*lambda)(nullptr, nullptr, nullptr, 0, nullptr, nullptr);
 
-	auto *lambda2 = new auto([](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_return) {
-		Variant ret = {};
+	auto lambda2 = [](void * /*p_method_userdata*/, GDExtensionClassInstancePtr /*p_instance*/,
+						   const GDExtensionConstTypePtr * /*p_args*/, GDExtensionTypePtr r_return) {
+		const Variant ret = {};
 		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
-	});
+	};
 
 	const StringName name = method_bind->get_name();
-	const GDExtensionClassMethodInfo method_info = {
-		name._native_ptr(),
-		method_bind,
-		*lambda,
-		*lambda2,
-		method_bind->get_hint_flags(),
-		static_cast<GDExtensionBool>(method_bind->has_return()),
-		return_value_info,
-		*return_value_metadata,
-		static_cast<uint32_t>(method_bind->get_argument_count()),
-		arguments_info,
-		arguments_metadata,
-		static_cast<uint32_t>(method_bind->get_default_argument_count()),
-		def_args.data(),
-	};
+	const GDExtensionClassMethodInfo method_info = get_method_bind_info(*method_bind, lambda, lambda2);
 	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, p_class_name._native_ptr(), &method_info);
 }
 
@@ -488,7 +481,7 @@ void GenericAnchorNode::bind_signal(const StringName &p_class_name, const Method
 		});
 	}
 
-	internal::gdextension_interface_classdb_register_extension_class_signal(internal::library, p_class_name._native_ptr(), p_signal.name._native_ptr(), parameters.data(), parameters.size());
+	internal::gdextension_interface_classdb_register_extension_class_signal(internal::library, p_class_name._native_ptr(), p_signal.name._native_ptr(), parameters.data(), static_cast<GDExtensionInt>(parameters.size()));
 }
 
 Variant GenericAnchorNode::get_pid() const {
