@@ -288,7 +288,8 @@ PackedByteArray AnchorProgram::get_instruction_discriminant(const Dictionary &in
 		return evaluate_discriminant(instruction_info["discriminant"]);
 	}
 
-	return discriminator_by_name(name.to_snake_case(), global_prefix);
+	const String GLOBAL_PREFIX = "global:";
+	return discriminator_by_name(name.to_snake_case(), GLOBAL_PREFIX);
 }
 
 Dictionary AnchorProgram::find_idl_instruction(const String &name) const {
@@ -948,7 +949,10 @@ Error AnchorProgram::fetch_all_accounts(const String &name, const Array &additio
 	Array filters = additional_filters.duplicate();
 	Dictionary memcmp_filter;
 	memcmp_filter["offset"] = 0;
-	memcmp_filter["bytes"] = SolanaUtils::bs58_encode(discriminator_by_name(name, account_prefix));
+
+	const String ACCOUNT_PREFIX = "account:";
+
+	memcmp_filter["bytes"] = SolanaUtils::bs58_encode(discriminator_by_name(name, ACCOUNT_PREFIX));
 	Dictionary type_filter;
 	type_filter["memcmp"] = memcmp_filter;
 

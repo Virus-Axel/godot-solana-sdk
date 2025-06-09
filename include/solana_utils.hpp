@@ -67,6 +67,15 @@ namespace godot {
 	WARN_PRINT_ONCE_ED(m_msg)                                              \
 	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
 
+#define ERR_FAIL_COND_EDMSG_LAMBDA(m_cond, m_msg)                                                                        \
+	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/                                               \
+	if (unlikely(m_cond)) {                                                                                              \
+		::godot::_err_print_error("lambda", __FILE__, __LINE__, "Condition \"" _STR(m_cond) "\" is true.", m_msg, true); \
+		return;                                                                                                          \
+	} else                                                                                                               \
+		((void)0)                                                                                                        \
+	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
+
 template <typename T>
 inline void append_array(Array &arr, T arg) {
 	arr.push_back(arg);
@@ -162,7 +171,7 @@ public:
 
 	/**
 	 * @brief Check if RPC response has returned a value.
-	 * 
+	 *
 	 * @param rpc_response Response to check in.
 	 * @return true if value is in response Dictionary.
 	 * @return false if value is not in response Dictionary.
@@ -171,7 +180,7 @@ public:
 
 	/**
 	 * @brief Get the RPC response value.
-	 * 
+	 *
 	 * @param rpc_response RPC response to get value from.
 	 * @return Dictionary RPC response value.
 	 */
@@ -179,7 +188,7 @@ public:
 
 	/**
 	 * @brief Produce a hash from an array of String array as contents.
-	 * 
+	 *
 	 * @param contents String array to feed to the hash algorithm.
 	 * @return PackedByteArray SHA256 Hash as byte array.
 	 */
