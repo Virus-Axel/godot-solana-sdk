@@ -67,7 +67,7 @@ private:
 	Error generic_fetch_account_bind(const Variant &account_key);
 	void emit_account_data(const PackedByteArray &account_data);
 
-	static GDExtensionClassMethodInfo get_method_bind_info(MethodBind &method_bind, GDExtensionClassMethodCall call_function, GDExtensionClassMethodPtrCall ptr_call_function);
+	static void bind_method(MethodBind &method_bind, GDExtensionClassMethodCall call_function, GDExtensionClassMethodPtrCall ptr_call_function, const StringName &p_class_name);
 
 	friend class ClassDB;
 	friend class Wrapped;

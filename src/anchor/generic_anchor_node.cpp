@@ -84,7 +84,7 @@ void GenericAnchorNode::emit_account_data(const PackedByteArray &account_data) {
 	emit_signal("account_fetched", Object::cast_to<AnchorProgram>(anchor_program)->deserialize_dict(account_data, fetch_account["type"], consumed_bytes));
 }
 
-GDExtensionClassMethodInfo GenericAnchorNode::get_method_bind_info(MethodBind &method_bind, GDExtensionClassMethodCall call_function, GDExtensionClassMethodPtrCall ptr_call_function) {
+void GenericAnchorNode::bind_method(MethodBind &method_bind, GDExtensionClassMethodCall call_function, GDExtensionClassMethodPtrCall ptr_call_function, const StringName& p_class_name) {
 	const std::vector<PropertyInfo> return_value_and_arguments_info = method_bind.get_arguments_info_list();
 	std::vector<GDExtensionPropertyInfo> return_value_and_arguments_gdextension_info;
 	return_value_and_arguments_gdextension_info.reserve(return_value_and_arguments_info.size());
@@ -130,8 +130,7 @@ GDExtensionClassMethodInfo GenericAnchorNode::get_method_bind_info(MethodBind &m
 		static_cast<uint32_t>(method_bind.get_default_argument_count()),
 		def_args.data(),
 	};
-
-	return method_info;
+	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, p_class_name._native_ptr(), &method_info);
 }
 
 bool GenericAnchorNode::has_extra_accounts(const StringName &program, const StringName &instruction) {
@@ -360,8 +359,7 @@ void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, 
 	};
 
 	const StringName name = method_bind->get_name();
-	const GDExtensionClassMethodInfo method_info = get_method_bind_info(*method_bind, lambda, lambda2);
-	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, p_class_name._native_ptr(), &method_info);
+	bind_method(*method_bind, lambda, lambda2, p_class_name);
 }
 
 void GenericAnchorNode::bind_pid_getter(const StringName &p_class_name) {
@@ -375,8 +373,7 @@ void GenericAnchorNode::bind_pid_getter(const StringName &p_class_name) {
 	method_bind->set_name("get_pid");
 
 	const StringName name = method_bind->get_name();
-	const GDExtensionClassMethodInfo method_info = get_method_bind_info(*method_bind, MethodBind::bind_call, MethodBind::bind_ptrcall);
-	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, p_class_name._native_ptr(), &method_info);
+	bind_method(*method_bind, MethodBind::bind_call, MethodBind::bind_ptrcall, p_class_name);
 }
 
 void GenericAnchorNode::bind_account_fetcher(const StringName &p_class_name, const Dictionary &anchor_account) {
@@ -419,8 +416,7 @@ void GenericAnchorNode::bind_account_fetcher(const StringName &p_class_name, con
 	};
 
 	const StringName name = method_bind->get_name();
-	const GDExtensionClassMethodInfo method_info = get_method_bind_info(*method_bind, lambda, lambda2);
-	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, p_class_name._native_ptr(), &method_info);
+	bind_method(*method_bind, lambda, lambda2, p_class_name);
 }
 
 void GenericAnchorNode::bind_signal(const StringName &p_class_name, const MethodInfo &p_signal) {
