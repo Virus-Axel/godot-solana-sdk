@@ -309,7 +309,7 @@ void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, 
 	ERR_FAIL_COND_EDMSG_CUSTOM(!anchor_instruction.has("name"), "Anchor instruction does not have name");
 	const String instruction_name = anchor_instruction["name"];
 
-	auto *method_bind = dynamic_cast<MethodBindHack*>(create_method_bind(&GenericAnchorNode::generic_instruction_bind));
+	auto *method_bind = static_cast<MethodBindHack*>(create_method_bind(&GenericAnchorNode::generic_instruction_bind));
 
 	//std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
 	std::vector<StringName> args;
@@ -363,7 +363,7 @@ void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, 
 }
 
 void GenericAnchorNode::bind_pid_getter(const StringName &p_class_name) {
-	auto *method_bind = dynamic_cast<MethodBindHack*>(create_method_bind(&GenericAnchorNode::get_pid));
+	auto *method_bind = static_cast<MethodBindHack*>(create_method_bind(&GenericAnchorNode::get_pid));
 
 	//std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
 	const std::vector<StringName> args;
@@ -380,7 +380,7 @@ void GenericAnchorNode::bind_account_fetcher(const StringName &p_class_name, con
 	ERR_FAIL_COND_EDMSG_CUSTOM(!anchor_account.has("name"), "Anchor instruction does not have name");
 	const String account_name = anchor_account["name"];
 
-	auto *method_bind = dynamic_cast<MethodBindHack *>(create_method_bind(&GenericAnchorNode::generic_fetch_account_bind));
+	auto *method_bind = static_cast<MethodBindHack *>(create_method_bind(&GenericAnchorNode::generic_fetch_account_bind));
 
 	//std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
 	std::vector<StringName> args;
