@@ -111,7 +111,7 @@ void GenericAnchorNode::bind_method(MethodBind &method_bind, GDExtensionClassMet
 	const std::vector<Variant> &def_args_val = method_bind.get_default_arguments();
 	def_args.resize(def_args_val.size());
 	for (size_t i = 0; i < def_args_val.size(); i++) {
-		def_args[i] = (GDExtensionVariantPtr)&def_args_val[i];
+		def_args[i] = def_args_val[i];
 	}
 
 	const StringName name = method_bind.get_name();
@@ -182,11 +182,11 @@ Array GenericAnchorNode::split_accounts(const Array &args, const StringName &ins
 	const Dictionary idl = program->get_idl();
 	const String program_name = program->get_idl_name();
 
-	ERR_FAIL_COND_V(!idl.has("instructions"), Array());
+	ERR_FAIL_COND_V_CUSTOM(!idl.has("instructions"), Array());
 	const Array instructions = idl["instructions"];
 
 	const Dictionary instruction = program->find_idl_instruction(instruction_name);
-	ERR_FAIL_COND_V(!instruction.has("accounts"), Array());
+	ERR_FAIL_COND_V_CUSTOM(!instruction.has("accounts"), Array());
 	const Array accounts = instruction["accounts"];
 
 	if (has_extra_accounts(program_name, instruction_name)) {
@@ -204,25 +204,25 @@ Array GenericAnchorNode::split_args(const Array &args, const StringName &instruc
 	const Dictionary idl = program->get_idl();
 	const String program_name = program->get_idl_name();
 
-	ERR_FAIL_COND_V(!idl.has("instructions"), Array());
+	ERR_FAIL_COND_V_CUSTOM(!idl.has("instructions"), Array());
 	const Array instructions = idl["instructions"];
 
 	const Dictionary instruction = program->find_idl_instruction(instruction_name);
-	ERR_FAIL_COND_V(!instruction.has("accounts"), Array());
+	ERR_FAIL_COND_V_CUSTOM(!instruction.has("accounts"), Array());
 	const Array accounts = instruction["accounts"];
 	if (has_extra_accounts(program_name, instruction_name)) {
 		return args.slice(accounts.size() + 1);
-	} else {
-		return args.slice(accounts.size());
 	}
+
+	return args.slice(accounts.size());
 }
 
 void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
-	ERR_FAIL_COND_EDMSG(!idl.has("name"), "IDL does not contain a name.");
+	ERR_FAIL_COND_EDMSG_CUSTOM(!idl.has("name"), "IDL does not contain a name.");
 
 	const Variant custom_pid = AnchorProgram::get_address_from_idl(idl);
 
-	ERR_FAIL_COND_EDMSG(custom_pid.get_type() != Variant::OBJECT, "IDL does not contain a PID.");
+	ERR_FAIL_COND_EDMSG_CUSTOM(custom_pid.get_type() != Variant::OBJECT, "IDL does not contain a PID.");
 
 	//ClassDB::register_class<GenericAnchorResource>();
 
@@ -244,15 +244,15 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 	loaded_idls[idl["name"]] = idl;
 	const String class_name = idl["name"];
 
-	names.push_back(memnew(StringName(class_name)));
+	names.push_back(memnew_custom(StringName(class_name)));
 	set_class_name(class_name);
 
 	// Register this class with Godot
-	GDExtensionClassCreationInfo4 class_info = {
-		false, // GDExtensionBool is_virtual;
-		false, // GDExtensionBool is_abstract;
-		true, // GDExtensionBool is_exposed;
-		true, // GDExtensionBool is_runtime;
+	const GDExtensionClassCreationInfo4 class_info = {
+		static_cast<GDExtensionBool>(false), // GDExtensionBool is_virtual;
+		static_cast<GDExtensionBool>(false), // GDExtensionBool is_abstract;
+		static_cast<GDExtensionBool>(true), // GDExtensionBool is_exposed;
+		static_cast<GDExtensionBool>(true), // GDExtensionBool is_runtime;
 		nullptr,
 		set_bind, // GDExtensionClassSet set_func;
 		get_bind, // GDExtensionClassGet get_func;
@@ -271,11 +271,11 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 		&get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
 		nullptr, // GDExtensionClassGetVirtualCallData get_virtual_call_data_func;
 		nullptr, // GDExtensionClassCallVirtualWithData call_virtual_func;
-		(void *)names[names.size() - 1], // void *class_userdata;
+		static_cast<void *>(names[names.size() - 1]), // void *class_userdata;
 	};
 
-	StringName name = String(class_name);
-	StringName parent_name = "Node";
+	const StringName name = String(class_name);
+	const StringName parent_name = "Node";
 	internal::gdextension_interface_classdb_register_extension_class4(internal::library, name._native_ptr(), parent_name._native_ptr(), &class_info);
 
 	bind_signal(class_name, MethodInfo("account_fetched", PropertyInfo(Variant::DICTIONARY, "account_info")));
@@ -306,10 +306,10 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 }
 
 void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, const Dictionary &anchor_instruction) {
-	ERR_FAIL_COND_EDMSG(!anchor_instruction.has("name"), "Anchor instruction does not have name");
+	ERR_FAIL_COND_EDMSG_CUSTOM(!anchor_instruction.has("name"), "Anchor instruction does not have name");
 	const String instruction_name = anchor_instruction["name"];
 
-	MethodBindHack *method_bind = (MethodBindHack *)create_method_bind(&GenericAnchorNode::generic_instruction_bind);
+	auto *method_bind = dynamic_cast<MethodBindHack*>(create_method_bind(&GenericAnchorNode::generic_instruction_bind));
 
 	//std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
 	std::vector<StringName> args;
@@ -317,19 +317,19 @@ void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, 
 	const Array instruction_args = anchor_instruction["args"];
 	for (unsigned int i = 0; i < instruction_accounts.size(); i++) {
 		const Dictionary account_data = instruction_accounts[i];
-		ERR_FAIL_COND_MSG(!account_data.has("name"), "Account data does not have name");
+		ERR_FAIL_COND_EDMSG_CUSTOM(!account_data.has("name"), "Account data does not have name");
 		args.push_back(account_data["name"]);
 	}
 	if (has_extra_accounts(p_class_name, instruction_name)) {
-		args.push_back("extra_accounts");
+		args.emplace_back("extra_accounts");
 	}
 	for (unsigned int i = 0; i < instruction_args.size(); i++) {
 		const Dictionary arg_data = instruction_args[i];
-		ERR_FAIL_COND_MSG(!arg_data.has("name"), "Account data does not have name");
+		ERR_FAIL_COND_EDMSG_CUSTOM(!arg_data.has("name"), "Account data does not have name");
 		args.push_back(arg_data["name"]);
 	}
 
-	method_bind->set_arg_count(args.size());
+	method_bind->set_arg_count(static_cast<int>(args.size()));
 	method_bind->set_argument_names(args);
 	method_bind->set_name(instruction_name);
 
@@ -337,7 +337,7 @@ void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, 
 		if (p_instance == nullptr) {
 			return;
 		}
-		MethodBind *method_data = static_cast<MethodBind*>(p_method_userdata);
+		auto *method_data = static_cast<MethodBind*>(p_method_userdata);
 		const String stored_instruction_name = method_data->get_name();
 		const AnchorProgram *program = Object::cast_to<AnchorProgram>(static_cast<GenericAnchorNode *>(p_instance)->anchor_program);
 		Array accounts_and_args;
