@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1749410846871,
+  "lastUpdate": 1750699843720,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1386,6 +1386,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/7948098185376110608939f100de8e75f6fbf078"
         },
         "date": 1749410845508,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.366438356164384,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "01f36f0e411ae2b6fd6cb3073a309e308d215102",
+          "message": "Merge pull request #376 from Virus-Axel/refactor/generic_node\n\nFix clang tidy warnings in generic anchor nodes",
+          "timestamp": "2025-06-23T19:21:50+02:00",
+          "tree_id": "f61348924799cf9a51bc55889e478cd6dba82e4e",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/01f36f0e411ae2b6fd6cb3073a309e308d215102"
+        },
+        "date": 1750699841735,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
