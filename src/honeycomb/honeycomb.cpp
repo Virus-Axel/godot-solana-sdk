@@ -284,8 +284,6 @@ void HoneyComb::bind_non_changing_methods() {
 	ClassDB::bind_method(D_METHOD("set_honeycomb_url", "url"), &HoneyComb::set_honeycomb_url);
 }
 
-HoneyComb::~HoneyComb() {
-}
 } //namespace godot
 
 // Function to process and deserialize wrapped objects
