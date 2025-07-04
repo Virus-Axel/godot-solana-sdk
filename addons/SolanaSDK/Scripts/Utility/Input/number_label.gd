@@ -5,15 +5,36 @@ enum NumberFormatMode {COMMA, LETTER}
 @export var format_mode:NumberFormatMode
 @export var decimal_amount:int = 0
 
-var number_value
+@export var audio_player:AudioStreamPlayer
+@export var pitch_increment:float = 0.02
+
+var original_pitch:float
+
+var number_value = 0
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	if audio_player!=null:
+		original_pitch = audio_player.pitch_scale
 	pass # Replace with function body.
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
+	
+func lerp_to_value(end_number,increment_value,increment_duration:float=0.06) -> void:
+	var increment_sign = 1 if end_number > number_value else -1
+	while true:
+		set_value(number_value+(increment_value*increment_sign))
+		if (increment_sign< 0 and number_value < end_number) or (increment_sign > 0 and number_value > end_number):
+			set_value(end_number)
+			break
+			
+		if audio_player!=null:
+			audio_player.pitch_scale += pitch_increment * increment_sign
+			audio_player.pitch_scale = clampf(audio_player.pitch_scale,original_pitch*0.5,original_pitch*1.5)
+			audio_player.play()
+			
+		await get_tree().create_timer(increment_duration).timeout
+	
+	if audio_player!=null:
+		audio_player.pitch_scale = original_pitch
 	
 func set_value(number) -> void:
 	number_value = number
@@ -75,3 +96,4 @@ func zeros_to_letter(number) -> String:
 
 func get_number_value():
 	return number_value
+	

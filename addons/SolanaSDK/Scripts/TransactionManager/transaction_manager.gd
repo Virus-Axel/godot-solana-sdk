@@ -9,6 +9,7 @@ class_name TransactionManager
 @export var helius_api:HeliusAPI
 @export var fallback_compute_unit_limit = 800000
 @export var fallback_compute_unit_price = 8000
+@export var transaction_overlay_ui_scn:PackedScene
 
 enum Commitment{PROCESSED,CONFIRMED,FINALIZED}
 
@@ -26,6 +27,9 @@ signal on_tx_cancelled
 signal on_tx_confirmed(success:bool)
 
 func setup() -> void:
+	if transaction_overlay_ui_scn!=null:
+		var overlay_instance = transaction_overlay_ui_scn.instantiate()
+		add_child(overlay_instance)
 #	temporary solution. Don't use custom fees if using phantom
 	#var selected_provider_id:int = SolanaService.wallet.get_wallet_provider_id()
 	#if selected_provider_id == 0:

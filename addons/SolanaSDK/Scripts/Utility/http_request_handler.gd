@@ -15,6 +15,7 @@ func send_get_request(request_link:String,parse_body_to_json:bool=true,custom_he
 	var response_dict = parse_http_response(raw_response,parse_body_to_json)
 	if !is_valid(response_dict):
 		print("FAILED TO VALIDATE GET REQUEST: ", response_dict)
+		#print("FAILED TO VALIDATE GET REQUEST")
 		var error_data:Dictionary = {"error":"INCORRECT REQUEST"}
 		if response_dict["body"] != null and parse_body_to_json and response_dict["body"].has("error"):
 			error_data = response_dict["body"]
@@ -34,7 +35,8 @@ func send_post_request(body, headers:Array,endpoint:String,parse_body_to_json:bo
 	http_request.queue_free()
 	var response_dict = parse_http_response(raw_response,parse_body_to_json)
 	if !is_valid(response_dict):
-		print("FAILED TO VALIDATE POST REQUEST: ", response_dict)
+		#print("FAILED TO VALIDATE POST REQUEST: ", response_dict)
+		print("FAILED TO VALIDATE POST REQUEST")
 		var error_data:Dictionary = {"error":"INCORRECT REQUEST"}
 		if response_dict["body"] != null and parse_body_to_json and response_dict["body"].has("error"):
 			error_data = response_dict["body"]

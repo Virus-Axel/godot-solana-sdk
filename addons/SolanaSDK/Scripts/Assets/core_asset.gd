@@ -4,7 +4,7 @@ class_name CoreAsset
 #this is a state of a model, it can be used to instantiate a 3D node whenever using this:
 #	var model:Node = gltf_document.generate_scene(state)
 #	add_child(model)
-var model_state:GLTFState
+@export var model_state:GLTFState
 	
 func get_category() -> String:
 	if offchain_metadata.size() == 0:

@@ -6,6 +6,7 @@
 [ext_resource type="AudioStream" uid="uid://cojs82uu73ctv" path="res://Sounds/UI/buttonpress.mp3" id="7_e5287"]
 [ext_resource type="Texture2D" uid="uid://cidquspubtjjb" path="res://Textures/Socials/webicon.png" id="9_43s7o"]
 
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vqr1a"]
 
 [node name="MintSuccessDisplayDemo" type="Control" node_paths=PackedStringArray("displayable_asset", "loading_screen")]
