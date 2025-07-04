@@ -1,19 +1,19 @@
-extends Node
+extends Resource
 class_name WalletAsset
 
-var mint:Pubkey
+@export var mint:Pubkey
 
-var asset_name:String
-var symbol:String
-var image:Texture2D
-var uri:String
+@export var asset_name:String
+@export var symbol:String
+@export var image:Texture2D
+@export var uri:String
 
-var asset_type:AssetManager.AssetType
+@export var asset_type:AssetManager.AssetType
 
-var metadata:MetaData
-var offchain_metadata:Dictionary
+@export var metadata:MetaData
+@export var offchain_metadata:Dictionary
 
-var das_metadata:Dictionary
+@export var das_metadata:Dictionary
 
 signal on_data_loaded
 signal on_image_loaded

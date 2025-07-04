@@ -3,12 +3,15 @@ class_name AssetSelector
 
 @export var displayable_asset:DisplayableAsset
 @export var display_system_scn:PackedScene
+@export var custom_entry_scn:PackedScene
+@export var automatic_asset_load:bool=false
 #set if you want for asset to be invisible before something is clicked
 @export var asset_content:Control
 @export var select_label:Label
 @export var is_optional:bool=false
 
 var selected_asset:WalletAsset
+signal on_display_opened(display:AssetDisplaySystem)
 signal on_selected(selected_asset:WalletAsset)
 
 # Called when the node enters the scene tree for the first time.
@@ -26,7 +29,13 @@ func show_display_system(_selected_asset:DisplayableAsset) -> void:
 	get_tree().root.add_child(display_system)
 		
 	display_system.on_asset_selected.connect(select_asset)
-	display_system.load_all_owned_assets()
+	
+	if custom_entry_scn!=null:
+		display_system.display_entry_scn = custom_entry_scn
+		
+	on_display_opened.emit(display_system)
+	
+	display_system.display_owned_assets()
 
 func select_asset(display_selection:WalletAsset) -> void:
 	if select_label != null:

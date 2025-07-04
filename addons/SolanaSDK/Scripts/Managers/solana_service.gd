@@ -205,7 +205,7 @@ func get_ata_balance(associated_token_account:String) -> float:
 	client.get_token_account_balance(associated_token_account)
 	var response_dict:Dictionary = await client.http_response_received
 	client.queue_free()
-	
+
 	if response_dict.has("error"):
 		push_error("Failed to ata balance")
 		return 0
@@ -306,7 +306,6 @@ func fetch_all_program_accounts_of_type(program:AnchorProgram,account_type:Strin
 	
 #DAS ONLY!
 func get_asset_data(asset_id:Pubkey) -> Dictionary:
-	print("GETTING ASSET DATA: ",asset_id.to_string())
 	if das_compatible_rpc == "":
 		push_error("Can't get asset data - DAS compatible RPC is not configured")
 		return {}

@@ -3,13 +3,14 @@ class_name DisplayableAsset
 
 @export var visual:TextureRect
 @export var image_size = 512
-@export_file("*.png","*.jpg") var default_image_path:String
+#@export_file("*.png","*.jpg") var default_image_path:String
 
 @export var name_label:Label
 @export var max_name_length:int=-1
 @export var symbol_label:Label
 
 @export var select_button:BaseButton
+@export var unavailable_overlay:Control
 
 @export_category("Displayable Token Settings")
 @export var balance_label:NumberLabel
@@ -31,21 +32,22 @@ func _ready() -> void:
 		
 	if select_button!=null:
 		select_button.pressed.connect(handle_select)
-	pass # Replace with function body.
+	set_interactive(true)
 
 	
-func set_data(asset:WalletAsset) -> void:
+func set_data(asset:WalletAsset) -> void:	
 	self.asset = asset
 	if name_label!=null:
 		name_label.text = truncate_name(asset.asset_name)
 	if symbol_label!=null:
-		symbol_label.text = "$%s" % asset.symbol
+		symbol_label.text = asset.symbol
 	
-	if asset.image!=null and image_size <= asset.image.get_size().x and image_size <= asset.image.get_size().y:
-		visual.texture = asset.image
-	else:
-		asset.on_image_loaded.connect(handle_image_load_complete,CONNECT_ONE_SHOT)
-		asset.try_load_image(image_size)
+	if visual!=null:
+		if asset.image!=null and image_size <= asset.image.get_size().x and image_size <= asset.image.get_size().y:
+			visual.texture = asset.image
+		else:
+			asset.on_image_loaded.connect(handle_image_load_complete,CONNECT_ONE_SHOT)
+			asset.try_load_image(image_size)
 			
 	if asset is Token:
 		var token = asset as Token
@@ -113,7 +115,9 @@ func reset_to_default():
 		visual.texture = default_tex
 	if name_label!=null:
 		name_label.text = default_name
-		
-	#if default_image_path.length()>0:
-		#visual.texture = load(default_image_path)
 	
+func set_interactive(interactive:bool) -> void:
+	if select_button!=null:
+		select_button.disabled = !interactive
+	if unavailable_overlay!=null:
+		unavailable_overlay.visible = !interactive

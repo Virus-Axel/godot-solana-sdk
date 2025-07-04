@@ -30,8 +30,8 @@ func load_token_metadata(uri:String,ignore_whitelist:bool=false) -> Dictionary:
 		return {}
 		
 	var response:Dictionary
-	var request_link:String = uri
-	
+	var request_link:String = try_reroute(uri)
+	print(request_link)
 	while true:
 		response = await HttpRequestHandler.send_get_request(request_link)
 		if !response.has("error"):
@@ -62,7 +62,7 @@ func load_token_image(image_link:String,size:int=512,ignore_whitelist:bool=false
 		return null
 		
 	var response:Dictionary
-	var request_link:String = image_link
+	var request_link:String = try_reroute(image_link)
 	while true:
 		response = await HttpRequestHandler.send_get_request(request_link,false)
 		if !response.has("error"):
@@ -182,3 +182,8 @@ func load_3d_model(model_link:String) -> GLTFState:
 		return null
 	
 	return state
+	
+func try_reroute(uri:String) -> String:
+	if uri.find("ipfs.io") != -1:
+		return uri.replace("ipfs.io", "dweb.link")
+	return uri

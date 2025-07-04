@@ -15,9 +15,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_rs44u")
-display_type = Array[int]([2])
-container = NodePath("TokenPanel/MarginContainer/VBoxContainer/ScrollContainer/TokenContainer")
 display_entry_scn = ExtResource("2_gxoe0")
+container = NodePath("TokenPanel/MarginContainer/VBoxContainer/ScrollContainer/TokenContainer")
 close_on_select = true
 no_asset_overlay = NodePath("TokenPanel/MarginContainer/NoAssetsOverlay")
 

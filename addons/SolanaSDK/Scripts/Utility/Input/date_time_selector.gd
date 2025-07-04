@@ -55,7 +55,7 @@ func generate_date_option_fields() -> void:
 		for i in range(max_year_from_now):
 			year_option.add_item(str(time["year"]+i),i)
 			
-		var months:Array = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+		var months:Array = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
 		for i in range(months.size()):
 			month_option.add_item(months[i],i)
 		

@@ -27,13 +27,25 @@ signal on_page_load_finished
 
 func _ready() -> void:
 	if no_entries_overlay!=null:
-		no_entries_overlay.visible=true
+		no_entries_overlay.visible=false
 	
 	if refresh_button!=null:
 		refresh_button.pressed.connect(refresh_account_list)
 		
 	if page_loader!=null:
 		page_loader.on_page_changed.connect(load_page)
+		
+func clear_display() -> void:
+	if curr_page_container!=null:
+		curr_page_container.queue_free()
+		
+	list_data = {}
+	sort_data = {}
+	raw_accounts = {}
+	paged_accounts.clear()
+	curr_page = 0
+	page_loading=false
+	
 		
 func set_list(program:AnchorProgram,account_keyword:String,filter:Array=[],page_limit:int=5, spawn_accounts:bool=true) -> void:
 	list_data = {
@@ -59,12 +71,15 @@ func set_sort_data(sort_keyword:String,ascending:bool=true,max_entries:int=-1) -
 func add_filter_parameter(filter_keyword:String,value_to_check_against,check_type:String) -> void:
 	filter_data[filter_keyword] = {
 		"checkType":check_type,
-		"value":value_to_check_against
+		"value":value_to_check_against,
 	}
 	
 func remove_filter_parameter(filter_keyword:String) -> void:
 	if filter_data.has(filter_keyword):
 		filter_data.erase(filter_keyword)
+		
+func clear_all_filters() -> void:
+	filter_data.clear()
 	
 	
 func refresh_account_list(fetch_new:bool=true) -> void:
@@ -79,6 +94,7 @@ func refresh_account_list(fetch_new:bool=true) -> void:
 	
 	if fetch_new or raw_accounts.size()==0:
 		raw_accounts = await SolanaService.fetch_all_program_accounts_of_type(list_data["program"],list_data["acc_key"],list_data["filter"])
+	
 	if raw_accounts.size() == 0:
 		if curr_page_container!=null and !page_loading:
 			curr_page_container.queue_free()
@@ -169,13 +185,13 @@ func load_page(page_id:int) -> void:
 		
 func filter_accounts(accounts:Dictionary) -> Dictionary:
 	var filtered_accounts:Dictionary = accounts.duplicate()
+	#var filtered_accounts:Dictionary
 	for filter_key in filter_data.keys():
 		var check_type:String = filter_data[filter_key]["checkType"]
 		var filter_compare_value = filter_data[filter_key]["value"]
 		
-		for key in filtered_accounts.keys():
-			#print(filtered_accounts[key])
-			var account_filter_value = get_dict_value_from_path(filtered_accounts[key],filter_key)
+		for key in filtered_accounts.keys().duplicate():
+			var account_filter_value = get_dict_value_from_path(accounts[key],filter_key)
 			var pass_filter:bool
 			match check_type:
 				"equals":
@@ -187,7 +203,8 @@ func filter_accounts(accounts:Dictionary) -> Dictionary:
 				"lower":
 					pass_filter = (account_filter_value < filter_compare_value)
 			
-			if !pass_filter:
+			# Remove account if it fails a required filter or any filter (depending on logic)
+			if not pass_filter:
 				filtered_accounts.erase(key)
 				
 	return filtered_accounts
