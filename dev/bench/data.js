@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1750699843720,
+  "lastUpdate": 1751625455457,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1420,6 +1420,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.366438356164384,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "102485601+ZenRepublic@users.noreply.github.com",
+            "name": "Zen Republic",
+            "username": "ZenRepublic"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fe20e08abc0ba38123eb745a8c7bc91c59d0102f",
+          "message": "Improve function structure on mainly asset_manager (#377)",
+          "timestamp": "2025-07-04T12:28:36+02:00",
+          "tree_id": "0fb7f7382ea2fd3de83b900eda64fbca34df79e0",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/fe20e08abc0ba38123eb745a8c7bc91c59d0102f"
+        },
+        "date": 1751625453866,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.36986301369863,
             "unit": "Percent"
           }
         ]
