@@ -181,7 +181,7 @@ func add_wallet():
 # Test: Remove Wallet
 func remove_wallet():
 	var update_wallet_input: UpdateWalletInput = load("res://resources/new_update_wallet_input.tres").duplicate(true)
-	update_wallet_input.remove = user.wallets.wallets[-1]
+	update_wallet_input.remove = [user.wallets.wallets[-1]]
 	update_wallet_input.add = []
 
 	client.create_update_user_transaction(
