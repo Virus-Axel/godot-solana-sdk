@@ -24,6 +24,7 @@ example/addons/
 test-ledger/
 
 addons/SolanaSDK/bin/
+addons/SolanaSDK/WalletAdapterAndroid
 
 .vscode/
 .godot/

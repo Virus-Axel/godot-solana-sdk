@@ -1,0 +1,19 @@
+import os
+
+env = Environment(ENV=os.environ)
+
+PLUGIN_NAME = 'WalletAdapterAndroid'
+OUTPUT_FOLDER = 'plugin/build/outputs/aar'
+
+aar_library_debug = os.path.join(OUTPUT_FOLDER, PLUGIN_NAME + f'{PLUGIN_NAME}-debug.aar')
+aar_library_release = os.path.join(OUTPUT_FOLDER, f'{PLUGIN_NAME}-release.aar')
+
+gradle_assemble_action = env.Action("cd android && ./gradlew assemble", cmdstr="Running Gradle wrapper")
+
+gradle_command = env.Command(
+    target=[aar_library_debug, aar_library_release],
+    source=None,
+    action=gradle_assemble_action,
+)
+
+Return('gradle_command')

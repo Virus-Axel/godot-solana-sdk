@@ -9,6 +9,8 @@
 #include "godot_cpp/variant/array.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
+#include "godot_cpp/classes/jni_singleton.hpp"
+#include "godot_cpp/classes/engine.hpp"
 
 #include "keypair.hpp"
 #include "pubkey.hpp"
@@ -33,11 +35,27 @@ Array WalletAdapter::get_all_wallets() {
 	return build_array("Alpha", "Avana", "BitKeep", "Bitpie", "Clover", "Coin98", "Coinbase", "Coinhub", "Fractal", "Huobi", "HyperPay", "Keystone", "Krystal", "Ledger", "Math", "Neko", "Nightly", "Nufi", "Onto", "Particle", "Phantom", "SafePal", "Saifu", "Salmon", "Sky", "Solflare", "Solong", "Spot", "Tokenary", "TokenPocket", "Torus", "Trezor", "Trust", "UnsafeBurner", "WalletConnect", "Xdefi", "Backpack");
 }
 
+Variant WalletAdapter::get_android_plugin(){
+	if(Engine::get_singleton()->has_singleton("WalletAdapterAndroid")){
+		return Engine::get_singleton()->get_singleton("WalletAdapterAndroid");
+	}
+	else{
+		return nullptr;
+	}
+}
+
 void WalletAdapter::clear_state() {
 	wallet_state = State::IDLE;
 
 #ifdef WEB_ENABLED
 	JavaScriptBridge::get_singleton()->eval("Module.bridge.clear_state()");
+#endif
+
+#ifdef ANDROID_ENABLED
+	Variant android_plugin = get_android_plugin();
+	if (android_plugin.get_type() != Variant::NIL) {
+		android_plugin.call("clearState");
+	}
 #endif
 }
 
@@ -119,6 +137,16 @@ PackedByteArray WalletAdapter::get_message_signature() {
 	}
 
 #endif
+
+#ifdef ANDROID_ENABLED
+	Variant android_plugin = get_android_plugin();
+	if (android_plugin.get_type() == Variant::NIL) {
+		WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
+		return message_signature;
+	}
+
+	message_signature = android_plugin.call("getMessageSignature");
+#endif
 	return message_signature;
 }
 
@@ -159,7 +187,40 @@ void WalletAdapter::poll_connection() {
 
 			const PackedByteArray decoded_bytes = SolanaUtils::bs58_decode(connected_pubkey);
 			connected_key = decoded_bytes;
+			// Axel, here we have a problem, it processes when in signing, so we get a reset.
+			clear_state();
+			emit_signal("connection_established");
+			break;
+		}
+		default:
+			connected = false;
+			clear_state();
+			emit_signal("connection_error");
+			break;
+	}
+#endif
 
+#ifdef ANDROID_ENABLED
+	Variant android_plugin = get_android_plugin();
+	if (android_plugin.get_type() == Variant::NIL){
+		WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
+		connected = false;
+		clear_state();
+		emit_signal("connection_error");
+		return;
+	}
+
+	const int wallet_connect_status = android_plugin.call("getConnectionStatus");
+
+	switch (wallet_connect_status) {
+		case 0:
+			return;
+			break;
+
+		case 1: {
+			connected = true;
+			const PackedByteArray decoded_bytes = android_plugin.call("getConnectedKey");
+			connected_key = decoded_bytes;
 			clear_state();
 			emit_signal("connection_established");
 			break;
@@ -218,6 +279,43 @@ void WalletAdapter::poll_message_signing() {
 			break;
 	}
 #endif
+
+#ifdef ANDROID_ENABLED
+	Variant android_plugin = get_android_plugin();
+	if (android_plugin.get_type() == Variant::NIL) {
+		WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
+		clear_state();
+		emit_signal("signing_failed");
+		return;
+	}
+
+	const int wallet_signing_status = android_plugin.call("getSigningStatus");
+	switch (wallet_signing_status) {
+		case 0:
+			return;
+			break;
+
+		case 1: {
+			dirty_transaction = false;
+			clear_state();
+			const PackedByteArray signed_transaction = get_message_signature();
+			const uint32_t SIGNATURE_OFFSET = 1 + SIGNATURE_LENGTH * active_signer_index;
+
+			if (signed_transaction.size() < SIGNATURE_OFFSET + SIGNATURE_LENGTH) {
+				emit_signal("signing_failed");
+				return;
+			}
+
+			const PackedByteArray message_signature = signed_transaction.slice(SIGNATURE_OFFSET, SIGNATURE_OFFSET + SIGNATURE_LENGTH);
+			emit_signal("message_signed", message_signature);
+			break;
+		}
+		default:
+			clear_state();
+			emit_signal("signing_failed");
+			break;
+	}
+#endif
 }
 
 void WalletAdapter::_process(double delta) { // NOLINT(misc-unused-parameters)
@@ -266,6 +364,16 @@ void WalletAdapter::connect_wallet() {
 #ifdef WEB_ENABLED
 	JavaScriptBridge::get_singleton()->eval(get_connect_script());
 #endif
+
+#ifdef ANDROID_ENABLED
+	Variant android_plugin = get_android_plugin();
+	if (android_plugin.get_type() == Variant::NIL){
+		WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
+		return;
+	}
+
+	android_plugin.call("connectWallet");
+#endif
 }
 
 bool WalletAdapter::is_connected() const {
@@ -293,6 +401,20 @@ void WalletAdapter::sign_message(const PackedByteArray &serialized_message, cons
 	store_serialized_message(serialized_message);
 
 	JavaScriptBridge::get_singleton()->eval(get_sign_transaction_script(active_signer_index));
+
+#endif
+
+#ifdef ANDROID_ENABLED
+
+	Variant android_plugin = get_android_plugin();
+	if (android_plugin.get_type() == Variant::NIL){
+		WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
+		return;
+	}
+
+	wallet_state = State::SIGNING;
+
+	android_plugin.call("signTransaction", serialized_message);
 
 #endif
 }

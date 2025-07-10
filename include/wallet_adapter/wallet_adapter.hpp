@@ -2,8 +2,10 @@
 #define SOLANA_SDK_WALLET_ADAPTER_HPP
 
 #include "solana_utils.hpp"
+
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/wrapped.hpp>
+#include <godot_cpp/classes/jni_singleton.hpp>
 
 namespace godot {
 
@@ -74,6 +76,7 @@ private:
 	State wallet_state = State::IDLE;
 	WalletType wallet_type = PHANTOM;
 
+	static Variant get_android_plugin();
 	void clear_state();
 	static void store_serialized_message(const PackedByteArray &serialized_message);
 	static String wallet_name_from_type(WalletType wallet_type);
