@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1751625455457,
+  "lastUpdate": 1752256509974,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1449,6 +1449,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.36986301369863,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "09dec88457c706b901dec5eb05f52073421e7b40",
+          "message": "Add export plugin for android wallet adapter (#380)\n\nWalletAdapter node is only usable for web target. These implementations\nadd a kotlin library with mobile adapter standard connect and transaction\nsigning.",
+          "timestamp": "2025-07-11T19:46:41+02:00",
+          "tree_id": "c6e33981e23f4629702a9a5dffa6a714d169f0d8",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/09dec88457c706b901dec5eb05f52073421e7b40"
+        },
+        "date": 1752256508653,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.366438356164384,
             "unit": "Percent"
           }
         ]
