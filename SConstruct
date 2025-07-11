@@ -4,6 +4,7 @@ import os
 import re
 import platform
 import subprocess
+import shutil
 from docs.xml_to_header import doxy_to_header, get_classes_list
 from tools.js_to_header import js_to_cpp_header
 from tools.json_to_header import json_to_header
@@ -422,3 +423,38 @@ else:
     test_validator_command = solana_env.Command(
         "test-validator", validator_programs, test_validator_action
     )
+
+    gradle_command = env.SConscript('android/SConscript', exports={'env': env})
+    
+    ANDROID_PLUGIN_DESTINATION = 'addons/SolanaSDK/WalletAdapterAndroid/'
+    ANDROID_PLUGIN_SOURCE = 'android/plugin/WalletAdapterAndroid/'
+    
+    android_plugin_files = [
+        "android/plugin/WalletAdapterAndroid/bin/debug/WalletAdapterAndroid-debug.aar",
+        "android/plugin/WalletAdapterAndroid/bin/release/WalletAdapterAndroid-release.aar",
+    ]
+    
+    def copy_aar_action(source, target, env):
+        shutil.rmtree(ANDROID_PLUGIN_DESTINATION, ignore_errors=True)
+        shutil.copytree(ANDROID_PLUGIN_SOURCE, ANDROID_PLUGIN_DESTINATION)
+        return None
+    
+    env.Command(ANDROID_PLUGIN_DESTINATION, android_plugin_files + [gradle_command], copy_aar_action)
+    
+    BIN_DESTINATION = "addons/SolanaSDK/bin/"
+    BIN_SOURCE = "bin/"
+    def copy_bin_action(source, target, env):
+        shutil.rmtree(BIN_DESTINATION, ignore_errors=True)
+        shutil.copytree(BIN_SOURCE, BIN_DESTINATION)
+        return None
+    
+    bin_target = env.Command(BIN_DESTINATION, library, copy_bin_action)
+    
+    GDEXT_FILE = 'bin/godot-solana-sdk.gdextension'
+    gdext_target = env.Command(GDEXT_FILE, env.File("godot-solana-sdk.gdextension"), Copy(GDEXT_FILE, "godot-solana-sdk.gdextension"))
+
+    Depends(gdext_target, bin_target)
+    AlwaysBuild(bin_target)
+    AlwaysBuild(gdext_target)
+
+    env.Alias("addon", [ANDROID_PLUGIN_DESTINATION, gdext_target])

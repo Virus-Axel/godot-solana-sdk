@@ -2,11 +2,17 @@
 @tool
 extends EditorPlugin
 
-var solana_service_path:String = "res://addons/SolanaSDK/Autoload/SolanaService.tscn"
-var http_request_handler_path:String = "res://addons/SolanaSDK/Autoload/HttpRequestHandler.tscn"
+const SOLANA_PLUGIN_NAME := "SolanaSDK"
+
+var solana_service_path:String = "res://addons/" + SOLANA_PLUGIN_NAME + "/Autoload/SolanaService.tscn"
+var http_request_handler_path:String = "res://addons/" + SOLANA_PLUGIN_NAME + "/Autoload/HttpRequestHandler.tscn"
+var export_plugin : AndroidExportPlugin
+
+
 func _enter_tree():
-	# This method is called when the editor starts
-	
+	export_plugin = AndroidExportPlugin.new()
+	add_export_plugin(export_plugin)
+
 	var autoload_script_paths:Array[String]
 	autoload_script_paths.append(solana_service_path)
 	autoload_script_paths.append(http_request_handler_path)
@@ -20,3 +26,34 @@ func _enter_tree():
 			add_autoload_singleton(script_name,script)
 			# Save the changes to the Project Settings
 			ProjectSettings.save()
+
+
+func _exit_tree():
+	# Clean-up of the plugin goes here.
+	remove_export_plugin(export_plugin)
+	export_plugin = null
+
+
+class AndroidExportPlugin extends EditorExportPlugin:
+	var _plugin_name = "WalletAdapterAndroid"
+
+	func _supports_platform(platform):
+		if platform is EditorExportPlatformAndroid:
+			return true
+		return false
+
+	func _get_android_libraries(platform, debug):
+		if debug:
+			return PackedStringArray([SOLANA_PLUGIN_NAME + "/" + _plugin_name + "/bin/debug/" + _plugin_name + "-debug.aar"])
+		else:
+			return PackedStringArray([SOLANA_PLUGIN_NAME + "/" + _plugin_name + "/bin/release/" + _plugin_name + "-release.aar"])
+
+	func _get_android_dependencies(platform, debug):
+		# TODO: Add remote dependices here.
+		if debug:
+			return PackedStringArray([])
+		else:
+			return PackedStringArray([])
+
+	func _get_name():
+		return _plugin_name
