@@ -210,11 +210,20 @@ jobs:
         name: ${{ github.event.repository.name }}
         path: ./bin
 
+    - name: Set up Python
+      uses: actions/setup-python@v2
+
+    - name: Set up SCons
+      shell: bash
+      run: |
+        python -c "import sys; print(sys.version)"
+        python -m pip install scons==4.8
+
     - name: Package Solanakit
       shell: sh
       run: |
-        ls -l bin/
-        cp -r bin addons/SolanaSDK/
+        scons WalletAdapterAndroid
+        scons assemble
       
     - name: Upload SolanaKit
       uses: actions/upload-artifact@v4

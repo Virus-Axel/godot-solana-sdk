@@ -457,4 +457,5 @@ else:
     AlwaysBuild(bin_target)
     AlwaysBuild(gdext_target)
 
+    env.Command("assemble", GDEXT_FILE, [copy_bin_action, copy_aar_action])
     env.Alias("addon", [ANDROID_PLUGIN_DESTINATION, gdext_target])
