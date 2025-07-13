@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1752256509974,
+  "lastUpdate": 1752410155707,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1473,6 +1473,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/09dec88457c706b901dec5eb05f52073421e7b40"
         },
         "date": 1752256508653,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.366438356164384,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7f8037527df62502885f7f792f89d6ab0337a0c3",
+          "message": "Merge pull request #388 from Virus-Axel/bugfix/android_plugin_build\n\nAdd WalletAdapterAndroid to build action",
+          "timestamp": "2025-07-13T14:27:27+02:00",
+          "tree_id": "20f55a39e1f505e09a81c1aa82797ec85aad9e83",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/7f8037527df62502885f7f792f89d6ab0337a0c3"
+        },
+        "date": 1752410154242,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
