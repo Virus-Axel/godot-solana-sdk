@@ -1,8 +1,10 @@
 name: Deploy Docs
 on:
-  push:
-    branches:
-    - master
+  workflow_dispatch
+# TODO(VirAx): Enable this when deploy job is fixed.
+#  push:
+#    branches:
+#    - master
 permissions:
   contents: write
 

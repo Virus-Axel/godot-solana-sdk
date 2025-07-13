@@ -10,10 +10,12 @@ aar_library_release = os.path.join(OUTPUT_FOLDER, f'{PLUGIN_NAME}-release.aar')
 
 gradle_assemble_action = env.Action("cd android && ./gradlew assemble", cmdstr="Running Gradle wrapper")
 
-gradle_command = env.Command(
+gradle_command_raw = env.Command(
     target=[aar_library_debug, aar_library_release],
     source=None,
     action=gradle_assemble_action,
 )
+
+gradle_command = env.Alias('WalletAdapterAndroid', gradle_command_raw)
 
 Return('gradle_command')
