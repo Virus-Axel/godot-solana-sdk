@@ -38,8 +38,6 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
 
     override fun getPluginName() = BuildConfig.GODOT_PLUGIN_NAME
 
-    override fun getPluginGDExtensionLibrariesPaths() = setOf("res://addons/${BuildConfig.GODOT_PLUGIN_NAME}/plugin.gdextension")
-
     @UsedByGodot
     fun connectWallet(){
         godot.getActivity()?.let {
