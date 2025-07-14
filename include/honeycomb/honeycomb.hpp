@@ -47,6 +47,10 @@ private:
 
 protected:
 	HoneyComb();
+	/**
+	 * @brief Binds methods and properties to Godot.
+	 * This function is required by Godot's NativeScript API.
+	 */
 	static void _bind_methods();
 	~HoneyComb() {
 		if (api_request) {
