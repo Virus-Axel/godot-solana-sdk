@@ -49,11 +49,27 @@ class AndroidExportPlugin extends EditorExportPlugin:
 			return PackedStringArray([SOLANA_PLUGIN_NAME + "/" + _plugin_name + "/bin/release/" + _plugin_name + "-release.aar"])
 
 	func _get_android_dependencies(platform, debug):
-		# TODO: Add remote dependices here.
 		if debug:
-			return PackedStringArray([])
+			return PackedStringArray([
+						"com.solanamobile:mobile-wallet-adapter-clientlib-ktx:2.0.3",
+						"com.solanamobile:rpc-core:0.2.8",
+						"com.solanamobile:rpc-solana:0.2.8",
+						"com.solanamobile:rpc-ktordriver:0.2.8",
+						"androidx.compose.ui:ui:1.4.3",
+						"androidx.compose.material:material:1.4.3",
+						"androidx.compose.ui:ui-tooling-preview:1.4.3",
+						"androidx.activity:activity-compose:1.8.0",
+						])
 		else:
-			return PackedStringArray([])
+			return PackedStringArray([
+						"com.solanamobile:mobile-wallet-adapter-clientlib-ktx:2.0.3",
+						"com.solanamobile:rpc-core:0.2.8",
+						"com.solanamobile:rpc-solana:0.2.8",
+						"com.solanamobile:rpc-ktordriver:0.2.8",
+						"androidx.compose.ui:ui:1.4.3",
+						"androidx.compose.material:material:1.4.3",
+						"androidx.compose.ui:ui-tooling-preview:1.4.3",
+						"androidx.activity:activity-compose:1.8.0",])
 
 	func _get_name():
 		return _plugin_name
