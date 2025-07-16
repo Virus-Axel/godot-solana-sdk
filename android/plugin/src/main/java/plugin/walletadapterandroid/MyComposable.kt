@@ -25,6 +25,7 @@ var myStoredTransaction: ByteArray? = null
 var myMessageSignature: ByteArray? = null
 var myMessageSigningStatus: Int = 0
 var myConnectedKey: ByteArray? = null
+var myConnectCluster: Int = 0
 
 var authToken: String? = null
 
@@ -40,6 +41,12 @@ fun connectWallet(sender: ActivityResultSender) {
         )
 
         val walletAdapter = MobileWalletAdapter(connectionIdentity)
+        when (myConnectCluster) {
+            0 -> walletAdapter.blockchain = Solana.Devnet
+            1 -> walletAdapter.blockchain = Solana.Mainnet
+            2 -> walletAdapter.blockchain = Solana.Testnet
+            else -> walletAdapter.blockchain = Solana.Devnet
+        }
         val result = walletAdapter.connect(sender)
 
         when (result) {
@@ -73,6 +80,12 @@ fun signTransaction(sender: ActivityResultSender) {
         )
 
         val walletAdapter = MobileWalletAdapter(connectionIdentity)
+        when (myConnectCluster) {
+            0 -> walletAdapter.blockchain = Solana.Devnet
+            1 -> walletAdapter.blockchain = Solana.Mainnet
+            2 -> walletAdapter.blockchain = Solana.Testnet
+            else -> walletAdapter.blockchain = Solana.Devnet
+        }
 
         if(authToken != null){
             walletAdapter.authToken = authToken

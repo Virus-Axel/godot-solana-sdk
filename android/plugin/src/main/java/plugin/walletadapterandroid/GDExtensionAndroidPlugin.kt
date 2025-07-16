@@ -6,6 +6,7 @@ import plugin.walletadapterandroid.myStoredTransaction
 import plugin.walletadapterandroid.myMessageSignature
 import plugin.walletadapterandroid.myMessageSigningStatus
 import plugin.walletadapterandroid.myConnectedKey
+import plugin.walletadapterandroid.myConnectCluster
 import com.solana.mobilewalletadapter.clientlib.protocol.MobileWalletAdapterClient.AuthorizationResult
 
 import android.util.Log
@@ -41,7 +42,8 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
     override fun getPluginGDExtensionLibrariesPaths() = setOf("res://addons/${BuildConfig.GODOT_PLUGIN_NAME}/plugin.gdextension")
 
     @UsedByGodot
-    fun connectWallet(){
+    fun connectWallet(cluster: Int) {
+        myConnectCluster = cluster
         godot.getActivity()?.let {
             val intent = Intent(it, ComposeWalletActivity::class.java)
             it.startActivity(intent)
