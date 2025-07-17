@@ -7,11 +7,14 @@
 #include "godot_cpp/classes/wrapped.hpp"
 
 #include "dialogs/add_custom_idl.hpp"
+#include "dialogs/mint_manager.hpp"
 
 namespace godot {
 
 typedef enum {
 	IDL_TO_NODE = 0,
+	MINT_MANAGER = 1,
+	MAX_MENU_ID = 2
 } MenuID;
 
 /**
@@ -23,6 +26,8 @@ class MenuBarHelper : public Node {
 private:
 	static PopupMenu *solana_menu_group;
 	static AddCustomIdlDialog *add_custom_idl_dialog;
+	static GenericDialog *mint_manager_dialog;
+	static Dictionary *menu_items;
 	static void initialize_dialogs(Node *parent);
 
 protected:

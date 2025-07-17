@@ -3,9 +3,9 @@
 extends EditorPlugin
 
 const SOLANA_PLUGIN_NAME := "SolanaSDK"
-
-var solana_service_path:String = "res://addons/" + SOLANA_PLUGIN_NAME + "/Autoload/SolanaService.tscn"
-var http_request_handler_path:String = "res://addons/" + SOLANA_PLUGIN_NAME + "/Autoload/HttpRequestHandler.tscn"
+var solana_plugin_basepath = get_script().resource_path.get_base_dir()
+var solana_service_path:String = solana_plugin_basepath + "/Autoload/SolanaService.tscn"
+var http_request_handler_path:String = solana_plugin_basepath + "/Autoload/HttpRequestHandler.tscn"
 var export_plugin : AndroidExportPlugin
 
 
