@@ -9,6 +9,12 @@
 
 namespace godot {
 
+enum Blockchain {
+	MAINNET = 0,
+	DEVNET = 1,
+	TESTNET = 2,
+};
+
 enum WalletType {
 	ALPHA,
 	AVANA,
@@ -75,6 +81,7 @@ private:
 	PackedByteArray connected_key;
 	State wallet_state = State::IDLE;
 	WalletType wallet_type = PHANTOM;
+	Blockchain mobile_blockchain = Blockchain::MAINNET;
 
 	static Variant get_android_plugin();
 	void clear_state();
@@ -186,6 +193,16 @@ public:
 	 * @return Array Array of wallet type IDs.
 	 */
 	static Array get_available_wallets();
+
+	/**
+	 * @setter{mobile_blockchain}
+	 */
+	void set_mobile_blockchain(int mobile_blockchain);
+
+	/**
+	 * @getter{mobile_blockchain, int}
+	 */
+	int get_mobile_blockchain();
 
 	/**
 	 * @setter{wallet_type}

@@ -11,6 +11,7 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "godot_cpp/classes/jni_singleton.hpp"
 #include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/classes/project_settings.hpp"
 
 #include "keypair.hpp"
 #include "pubkey.hpp"
@@ -343,9 +344,16 @@ void WalletAdapter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connected_key"), &WalletAdapter::get_connected_key);
 	ClassDB::bind_method(D_METHOD("set_wallet_type", "wallet_type"), &WalletAdapter::set_wallet_type);
 	ClassDB::bind_method(D_METHOD("get_wallet_type"), &WalletAdapter::get_wallet_type);
+	ClassDB::bind_method(D_METHOD("set_mobile_blockchain", "mobile_blockchain"), &WalletAdapter::set_mobile_blockchain);
+	ClassDB::bind_method(D_METHOD("get_mobile_blockchain"), &WalletAdapter::get_mobile_blockchain);
 	ClassDB::bind_static_method("WalletAdapter", D_METHOD("get_available_wallets"), &WalletAdapter::get_available_wallets);
 
+	ClassDB::add_property_group("WalletAdapter", "Web", "");
 	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::INT, "wallet_type", PROPERTY_HINT_ENUM, String(",").join(get_all_wallets()), PROPERTY_USAGE_DEFAULT), "set_wallet_type", "get_wallet_type");
+
+	ClassDB::add_property_group("WalletAdapter", "Mobile", "mobile_");
+	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::INT, "mobile_blockchain", PROPERTY_HINT_ENUM, "DEVNET, MAINNET, TESTNET", PROPERTY_USAGE_DEFAULT), "set_mobile_blockchain", "get_mobile_blockchain");
+	//ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::INT, "wallet_type", PROPERTY_HINT_ENUM, String(",").join(get_all_wallets()), PROPERTY_USAGE_DEFAULT), "set_wallet_type", "get_wallet_type");
 }
 
 WalletAdapter::WalletAdapter() {
@@ -372,7 +380,7 @@ void WalletAdapter::connect_wallet() {
 		return;
 	}
 
-	android_plugin.call("connectWallet");
+	android_plugin.call("connectWallet", mobile_blockchain);
 #endif
 }
 
@@ -382,6 +390,14 @@ bool WalletAdapter::is_connected() const {
 
 Variant WalletAdapter::get_connected_key() {
 	return Pubkey::new_from_bytes(connected_key);
+}
+
+void WalletAdapter::set_mobile_blockchain(int mobile_blockchain) {
+	this->mobile_blockchain = static_cast<Blockchain>(mobile_blockchain);
+}
+
+int WalletAdapter::get_mobile_blockchain() {
+	return mobile_blockchain;
 }
 
 void WalletAdapter::set_wallet_type(int wallet_type) {
