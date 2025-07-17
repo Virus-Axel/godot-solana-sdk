@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1752410155707,
+  "lastUpdate": 1752750975727,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1507,6 +1507,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.366438356164384,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1ffaab801a2082c977316f5a730af0991bd0c99e",
+          "message": "Merge pull request #391 from Virus-Axel/bugfix/missing_android_library\n\nFix missing dependency issue",
+          "timestamp": "2025-07-17T13:07:42+02:00",
+          "tree_id": "3a441a8d33d4c3548f9ed645aeca0e1b75daedbd",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/1ffaab801a2082c977316f5a730af0991bd0c99e"
+        },
+        "date": 1752750973793,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.367697594501718,
             "unit": "Percent"
           }
         ]
