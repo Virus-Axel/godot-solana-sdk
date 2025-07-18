@@ -181,10 +181,14 @@ public:
 	/**
 	 * @brief Get the RPC response value.
 	 *
+	 * @note If there is not result/value in the response, a nullptr will be returned.
+	 * This can be mixed up with a real null value. Use rpc_response_has_value to distinguish the
+	 * scenarios.
+	 * 
 	 * @param rpc_response RPC response to get value from.
 	 * @return Dictionary RPC response value.
 	 */
-	static Dictionary get_rpc_response_value(const Dictionary &rpc_response);
+	static Variant get_rpc_response_value(const Dictionary &rpc_response);
 
 	/**
 	 * @brief Produce a hash from an array of String array as contents.
