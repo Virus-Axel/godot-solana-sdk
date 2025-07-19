@@ -7,6 +7,11 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.runner }}
+    container:
+      image: ghcr.io/virus-axel/run_container:latest
+      credentials:
+        username: ${{ secrets.GHCR_USERNAME }}
+        password: ${{ secrets.GHCR_TOKEN }}
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -37,34 +42,6 @@ jobs:
             threads: True
 
     steps:
-      - name: (Web) Install emsdk toolchain
-        if: ${{ startsWith(matrix.identifier, 'web-') }}
-        uses: mymindstorm/setup-emsdk@v14
-        with:
-          # Make sure to set a version number!
-          version: 3.1.64
-
-      - name: (Web) Install node
-        if: ${{ startsWith(matrix.identifier, 'web-') }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: (Web) Update npm
-        if: ${{ startsWith(matrix.identifier, 'web-') }}
-        run: |
-          npm install -g npm@11
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-
-      - name: Set up SCons
-        shell: bash
-        run: |
-          python -c "import sys; print(sys.version)"
-          python -m pip install scons==4.8
-          scons --version
-
       - name: Checkout project
         uses: actions/checkout@v2
         with:
@@ -109,6 +86,11 @@ jobs:
 
   run:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/virus-axel/run_container:latest
+      credentials:
+        username: ${{ secrets.GHCR_USERNAME }}
+        password: ${{ secrets.GHCR_TOKEN }}
     needs: [check_example_directories]
     strategy:
       fail-fast: false
@@ -127,35 +109,23 @@ jobs:
           name: ${{ github.event.repository.name }}
           path: ./bin
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-
-      - name: Set up SCons
-        shell: bash
-        run: |
-          python -c "import sys; print(sys.version)"
-          python -m pip install scons==4.8
-          scons --version
-
       - uses: chickensoft-games/setup-godot@v1
         name: 🤖 Setup Godot
         with:
-              version: 4.4.0
-              use-dotnet: false
-              include-templates: true
+          version: 4.4.1
+          use-dotnet: false
+          include-templates: true
 
       - name: Prepare project 
         shell: bash
         run: |
+          solana config get
+          pwd
+          echo ~
           cp godot-solana-sdk.gdextension bin/
           cd ${{matrix.dir}}
           ln -s ../../bin
           godot --headless --import --path .
-
-      - name: Setup Solana tools
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash
-          echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
       - name: Load Test Accounts
         id: test_accounts
@@ -184,27 +154,16 @@ jobs:
           echo "VALIDATOR_ARGS=${str}" >> "$GITHUB_OUTPUT"
 
       - name: Setup Local Validator
-        uses: switchboard-xyz/solana-local-validator-action@v0.1
-        with:
-          solana-version: v1.18.22
-          cluster: devnet
-          args: "${{steps.test_accounts.outputs.VALIDATOR_ARGS}}"
-      
-      - name: (Web) Download Puppeteer
-        if: ${{ endsWith(matrix.dir, 'Web/') }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-        
-      - name: (Web) Update npm
-        if: ${{ endsWith(matrix.dir, 'Web/') }}
         run: |
-          npm install -g npm@11
+          solana-keygen new --no-bip39-passphrase
+          scons test-validator --disable_prompts
+          for attempt in {1..30}; do sleep 1; if curl -sS http://localhost:8899 -X POST -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1, "method":"getBlockHeight"}'; then echo ready; break; fi; echo waiting...; done
 
       - name: (Web) Setup Puppeteer
         if: ${{ endsWith(matrix.dir, 'Web/') }}
         run: |
           cd .github/workflows/puppeteer
+          npm install -g npm@11
           npm init -y
           npm install puppeteer
 
@@ -225,6 +184,9 @@ jobs:
       - name: (Web) Test project in browser
         if: ${{ endsWith(matrix.dir, 'Web/') }}
         run: |
+          solana config get
+          pwd
+          echo ~
           python3 .github/workflows/puppeteer/serve.py --no-browser --root `pwd`/${{matrix.dir}}tmp &
           cd .github/workflows/puppeteer
           node puppeteer.js | (grep 'ALL TESTS PASSED')

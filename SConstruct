@@ -32,8 +32,10 @@ def run_validator(target, source, env):
 
     BLUE = "\033[94m"   # ANSI escape code for blue text
     RESET = "\033[0m"   # Reset to default color
-    input(f"\r{BLUE}Press Enter to exit...{RESET}\n")
-    process.terminate()  # Gracefully stop the process
+
+    if not env.GetOption('disable_prompts'):
+        input(f"\r{BLUE}Press Enter to exit...{RESET}\n")
+        process.terminate()  # Gracefully stop the process
 
     return None  # No file output expected
 
@@ -199,6 +201,12 @@ AddOption(
     action="store_true",
     help="Build in containers for all platforms.",
 )
+AddOption('--disable_prompts',
+          dest="disable_prompts",
+          default=False,
+          action="store_true",
+          help='Disable all input prompts')
+
 
 env = SConscript("godot-cpp/SConstruct")
 
@@ -415,6 +423,9 @@ else:
     solana_env['TEST_VALIDATOR'] = os.environ.get("SOLANA_TEST_VALIDATOR", "solana-test-validator")
     account_files = Glob(f'{TEST_VALIDATOR_PATH}/accounts/*.json')
     print(account_files)
+    
+    
+    
     solana_env["ACCOUNT_ARGS"] = [
         item for f in account_files for item in ("--account", os.path.splitext(os.path.basename(str(f)))[0], str(f))
     ]
