@@ -258,10 +258,11 @@ bool SolanaUtils::rpc_response_has_value(const Dictionary &rpc_response){
 	return true;
 }
 
-Dictionary SolanaUtils::get_rpc_response_value(const Dictionary &rpc_response){
-	ERR_FAIL_COND_V_CUSTOM(!rpc_response.has("result"), Dictionary());
+Variant SolanaUtils::get_rpc_response_value(const Dictionary &rpc_response){
+	ERR_FAIL_COND_V_CUSTOM(!rpc_response.has("result"), nullptr);
 	Dictionary result_dict = rpc_response["result"];
-	ERR_FAIL_COND_V_CUSTOM(!result_dict.has("value"), Dictionary());
+	ERR_FAIL_COND_V_CUSTOM(!result_dict.has("value"), nullptr);
+
 	return result_dict["value"];
 }
 

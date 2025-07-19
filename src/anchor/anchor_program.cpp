@@ -387,11 +387,15 @@ void AnchorProgram::extract_idl_from_data(const Array &data_info) {
 }
 
 Dictionary AnchorProgram::parse_account_data(const Dictionary &account_data, const Dictionary &reference, bool emit_decoded_account) {
+	ERR_FAIL_COND_V_CUSTOM(!account_data.has("data"), Dictionary());
 	Array data_tuple = account_data["data"];
+
+	ERR_FAIL_COND_V_CUSTOM(data_tuple.is_empty(), Dictionary());
 	const String encoded_data = data_tuple[0];
 
 	PackedByteArray account_bytes = SolanaUtils::bs64_decode(encoded_data);
 
+	ERR_FAIL_COND_V_CUSTOM(account_bytes.is_empty(), Dictionary());
 	if (emit_decoded_account) {
 		emit_signal("account_data_fetched", account_data);
 	}
@@ -931,13 +935,13 @@ void AnchorProgram::fetch_account_callback(const Dictionary &rpc_result) {
 
 	ERR_FAIL_COND_EDMSG_CUSTOM(!SolanaUtils::rpc_response_has_value(rpc_result), "Unexpected RPC response");
 	const Variant value = SolanaUtils::get_rpc_response_value(rpc_result);
+
 	if (value.get_type() == Variant::DICTIONARY) {
 		emit_signal("account_fetched", parse_account_data(value, ref_struct, true));
 	}
 
 	emit_signal("account_fetched", Dictionary());
 	ERR_FAIL_COND_EDMSG_CUSTOM(value.get_type() != Variant::NIL, "Unexpected RPC response, unknown value type.");
-
 	// Null type passes through here.
 }
 
