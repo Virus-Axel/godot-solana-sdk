@@ -93,6 +93,16 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Get godot-cpp commit SHA
+        id: godotcpp
+        run: echo "sha=$(git -C godot-cpp rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache godot-cpp bindings
+        uses: actions/cache@v4
+        with:
+          path: .godot/
+          key: godot-cpp-${{ matrix.identifier }}-${{ steps.godotcpp.outputs.sha }}
+
       - name: Compile extension
         shell: sh
 
@@ -159,6 +169,16 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
+
+      - name: Get godot-cpp commit SHA
+        id: godotcpp
+        run: echo "sha=$(git -C godot-cpp rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache godot-cpp bindings
+        uses: actions/cache@v4
+        with:
+          path: .godot/
+          key: godot-cpp-${{ matrix.identifier }}-${{ steps.godotcpp.outputs.sha }}
 
       - name: Compile extension
         shell: sh

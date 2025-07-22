@@ -200,6 +200,7 @@ void RpcSingleHttpRequestClient::process(const double delta) {
 			break;
 		default:
 			finalize_faulty();
+			UtilityFunctions::print(status);
 			ERR_PRINT_ONCE_ED_CUSTOM("Cannot connect");
 			return;
 			break;

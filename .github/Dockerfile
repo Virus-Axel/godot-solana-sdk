@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
@@ -18,7 +18,7 @@ RUN update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32
     && update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
 
 # Install SCons
-RUN pip3 install --no-cache-dir scons==4.8
+RUN pip install --no-cache-dir --break-system-packages scons==4.8
 
 # Define Godot version and paths
 ENV GODOT_VERSION=4.4.1
@@ -58,13 +58,13 @@ RUN curl -L https://github.com/anza-xyz/agave/releases/download/v${SOLANA_VERSIO
       -o /tmp/solana.tar.bz2 && \
     tar -xjf /tmp/solana.tar.bz2 -C /tmp && \
     mv /tmp/solana-release/bin/* ${SOLANA_BIN_DIR}/ && \
-    chmod +x ${SOLANA_BIN_DIR}/solana* && \
+    chmod +x ${SOLANA_BIN_DIR}/solana/* && \
     rm -rf /tmp/solana.tar.bz2 /tmp/solana-release
 
 # Remove conflicting system Node.js (v12) before installing newer version
-RUN apt-get purge -y nodejs libnode-dev && \
-    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
-    apt-get install -y nodejs
+#RUN apt-get purge -y nodejs libnode-dev && \
+#    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+#    apt-get install -y nodejs
 #    npm install -g npm@11 puppeteer
 
 
@@ -90,15 +90,6 @@ RUN ls $ANDROID_SDK_ROOT/cmdline-tools/latest && \
         "cmdline-tools;latest" \
         "cmake;3.10.2.4988404" \
         "ndk;23.2.8568313"
-
-# Install Rust using rustup (non-interactive)
-ENV RUSTUP_HOME=/usr/local/rustup \
-    CARGO_HOME=/usr/local/cargo \
-    PATH=/usr/local/cargo/bin:$PATH
-
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path --default-toolchain stable
-
-RUN cargo install --git https://github.com/FrankC01/solana-gadgets --rev 9f742d455586a3cae2a31b85d0bb1c8709c143ab scfsd
 
 CMD ["/bin/bash"]
 

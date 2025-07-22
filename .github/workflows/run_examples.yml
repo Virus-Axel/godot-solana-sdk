@@ -7,11 +7,6 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.runner }}
-    container:
-      image: ghcr.io/virus-axel/run_container:latest
-      credentials:
-        username: ${{ secrets.GHCR_USERNAME }}
-        password: ${{ secrets.GHCR_TOKEN }}
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -42,10 +37,48 @@ jobs:
             threads: True
 
     steps:
+      - name: (Web) Install emsdk toolchain
+        if: ${{ startsWith(matrix.identifier, 'web-') }}
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          # Make sure to set a version number!
+          version: 3.1.64
+
+      - name: (Web) Install node
+        if: ${{ startsWith(matrix.identifier, 'web-') }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: (Web) Update npm
+        if: ${{ startsWith(matrix.identifier, 'web-') }}
+        run: |
+          npm install -g npm@11
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+
+      - name: Set up SCons
+        shell: bash
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons==4.8
+          scons --version
+
       - name: Checkout project
         uses: actions/checkout@v2
         with:
           submodules: recursive
+
+      - name: Get godot-cpp commit SHA
+        id: godotcpp
+        run: echo "sha=$(git -C godot-cpp rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache godot-cpp bindings
+        uses: actions/cache@v4
+        with:
+          path: .godot/
+          key: godot-cpp-${{ matrix.identifier }}-${{ steps.godotcpp.outputs.sha }}
 
       - name: Compile extension
         shell: sh
@@ -109,19 +142,26 @@ jobs:
           name: ${{ github.event.repository.name }}
           path: ./bin
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+
+      - name: Set up SCons
+        shell: bash
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons==4.8
+          scons --version
+
       - uses: chickensoft-games/setup-godot@v1
         name: 🤖 Setup Godot
         with:
-          version: 4.4.1
-          use-dotnet: false
-          include-templates: true
+              version: 4.4.1
+              use-dotnet: false
+              include-templates: true
 
       - name: Prepare project 
         shell: bash
         run: |
-          solana config get
-          pwd
-          echo ~
           cp godot-solana-sdk.gdextension bin/
           cd ${{matrix.dir}}
           ln -s ../../bin
@@ -153,17 +193,21 @@ jobs:
           str="${str} --bpf-program CMAGAKJ67e9hRZgfC5SFTbZH8MgEmtqazKXjmkaJjWTJ ${{matrix.dir}}test_accounts/candy_guard.so"
           echo "VALIDATOR_ARGS=${str}" >> "$GITHUB_OUTPUT"
 
-      - name: Setup Local Validator
+      - name: (Web) Download Puppeteer
+        if: ${{ endsWith(matrix.dir, 'Web/') }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+        
+      - name: (Web) Update npm
+        if: ${{ endsWith(matrix.dir, 'Web/') }}
         run: |
-          solana-keygen new --no-bip39-passphrase
-          scons test-validator --disable_prompts
-          for attempt in {1..30}; do sleep 1; if curl -sS http://localhost:8899 -X POST -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1, "method":"getBlockHeight"}'; then echo ready; break; fi; echo waiting...; done
+          npm install -g npm@11
 
       - name: (Web) Setup Puppeteer
         if: ${{ endsWith(matrix.dir, 'Web/') }}
         run: |
           cd .github/workflows/puppeteer
-          npm install -g npm@11
           npm init -y
           npm install puppeteer
 
@@ -184,18 +228,24 @@ jobs:
       - name: (Web) Test project in browser
         if: ${{ endsWith(matrix.dir, 'Web/') }}
         run: |
-          solana config get
-          pwd
-          echo ~
+          solana-keygen new -s --no-bip39-passphrase
+          scons test-validator --disable_prompts
+          for attempt in {1..30}; do sleep 1; if curl -sS http://localhost:8899 -X POST -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1, "method":"getBlockHeight"}'; then echo ready; break; fi; echo waiting...; done
           python3 .github/workflows/puppeteer/serve.py --no-browser --root `pwd`/${{matrix.dir}}tmp &
           cd .github/workflows/puppeteer
-          node puppeteer.js | (grep 'ALL TESTS PASSED')
+          output=$(node puppeteer.js)
+          echo "$output"
+          echo "$output" | grep -q 'ALL TESTS PASSED'
           exit $?
 
       - name: Test project
         if: ${{ endsWith(matrix.dir, 'Web/') == false }}
         shell: bash
         run: |
+          solana-keygen new -s --no-bip39-passphrase
+          scons test-validator --disable_prompts
+          for attempt in {1..30}; do sleep 1; if curl -sS http://localhost:8899 -X POST -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","id":1, "method":"getBlockHeight"}'; then echo ready; break; fi; echo waiting...; done
           cd ${{matrix.dir}}
+          ps -ax
           godot --headless --path . --quit-after 5000 | ( ! grep FAIL)
           exit $?
