@@ -152,11 +152,6 @@ jobs:
           ln -s ../../bin
           godot --headless --import --path .
 
-      - name: Setup Solana tools
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash
-          echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
-
       - name: Load Test Accounts
         id: test_accounts
         run: |
