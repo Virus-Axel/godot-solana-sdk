@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1752935204913,
+  "lastUpdate": 1753376682911,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1565,6 +1565,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.363013698630137,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bf4fe331e07703f4b6c663f4079c8e8f6137305e",
+          "message": "Merge pull request #395 from Virus-Axel/bugfix/cache_workflows\n\nOptimize workfolws with cache and docker container",
+          "timestamp": "2025-07-24T18:56:17+02:00",
+          "tree_id": "f872edad2fcfc7e2a1d869a3e80aa0e6175e114c",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/bf4fe331e07703f4b6c663f4079c8e8f6137305e"
+        },
+        "date": 1753376681613,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.36986301369863,
             "unit": "Percent"
           }
         ]
