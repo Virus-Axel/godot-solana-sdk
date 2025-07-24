@@ -27,13 +27,42 @@ def build_so(target, source, env):
 
 def run_validator(target, source, env):
     """Start solana-test-validator and terminate it on keypress."""
-    validator_args = ['--ledger', f'{TEST_VALIDATOR_PATH}/test-ledger', '-r', '--quiet']
+    validator_args = [
+        '--ledger', f'{TEST_VALIDATOR_PATH}/test-ledger',
+        '-r',
+        '--quiet',
+        '--bind-address', '0.0.0.0',
+        '--rpc-port', '8899',
+        '--deactivate-feature', 'EaQpmC6GtRssaZ3PCUM5YksGqUdMLeZ46BQXYtHYakDS',
+        '--deactivate-feature', 'zk1snxsc6Fh3wsGNbbHAJNHiJoYgF29mMnTSusGx5EJ',
+        '--deactivate-feature', '2KKG3C6RBnxQo9jVVrbzsoSh41TDXLK7gBc9gduyxSzW',
+        '--deactivate-feature', 'zkNLP7EQALfC1TYeB3biDU7akDckj8iPkvh9y2Mt2K3',
+        '--deactivate-feature', 'DT4n6ABDqs6w4bnfwrXT9rsprcPf6cdDga1egctaPkLC',
+        '--deactivate-feature', '8oBxsYqnCvUTGzgEpxPcnVf7MLbWWPYddE33PftFeBBd',
+        '--deactivate-feature', 'Gz1aLrbeQ4Q6PTSafCZcGWZXz91yVRi7ASFzFEr1U4sa',
+        '--deactivate-feature', '5TuppMutoyzhUSfuYdhgzD47F92GL1g89KpCZQKqedxP',
+        '--deactivate-feature', '9onWzzvCzNC2jfhxxeqRgs5q7nFAAKpCUvkj6T6GJK9i',
+        '--deactivate-feature', 'EBq48m8irRKuE7ZnMTLvLg2UuGSqhe8s8oMqnmja1fJw',
+        '--deactivate-feature', 'capRxUrBjNkkCpjrJxPGfPaWijB7q3JoDfsWXAnt46r',
+        '--deactivate-feature', 'G6ANXD6ptCSyNd9znZm7j4dEczAJCfx7Cy43oBx3rKHJ',
+        '--deactivate-feature', 'EenyoWx9UMXYKpR8mW5Jmfmy2fRjzUtM7NduYMY8bx33',
+        '--deactivate-feature', 'BZn14Liea52wtBwrXUxTv6vojuTTmfc7XGEDTXrvMD7b',
+        '--deactivate-feature', '7XRJcS5Ud5vxGB54JbK9N2vBZVwnwdBNeJW1ibRgD9gx',
+        '--deactivate-feature', 'zkiTNuzBKxrCLMKehzuQeKZyLtX2yvFcEKMML8nExU8',
+        '--deactivate-feature', 'qywiJyZmqTKspFg2LeuUHqcA5nNvBgobqb9UprywS9N',
+        '--deactivate-feature', '41tVp5qR1XwWRt5WifvtSQyuxtqQWJgEK8w91AtBqSwP',
+        '--deactivate-feature', 'GvDsGDkH5gyzwpDhxNixx8vtx1kwYHH13RiNAPw27zXb',
+        '--deactivate-feature', 'chaie9S2zVfuxJKNRGkyTDokLwWxx6kD2ZLsqQHaDD8',
+        '--ticks-per-slot', '2',
+    ]
     process = subprocess.Popen([env['TEST_VALIDATOR']] + validator_args + env["PROGRAM_ARGS"] + env['ACCOUNT_ARGS'])
 
     BLUE = "\033[94m"   # ANSI escape code for blue text
     RESET = "\033[0m"   # Reset to default color
-    input(f"\r{BLUE}Press Enter to exit...{RESET}\n")
-    process.terminate()  # Gracefully stop the process
+
+    if not env.GetOption('disable_prompts'):
+        input(f"\r{BLUE}Press Enter to exit...{RESET}\n")
+        process.terminate()  # Gracefully stop the process
 
     return None  # No file output expected
 
@@ -199,6 +228,12 @@ AddOption(
     action="store_true",
     help="Build in containers for all platforms.",
 )
+AddOption('--disable_prompts',
+          dest="disable_prompts",
+          default=False,
+          action="store_true",
+          help='Disable all input prompts')
+
 
 env = SConscript("godot-cpp/SConstruct")
 
@@ -415,6 +450,9 @@ else:
     solana_env['TEST_VALIDATOR'] = os.environ.get("SOLANA_TEST_VALIDATOR", "solana-test-validator")
     account_files = Glob(f'{TEST_VALIDATOR_PATH}/accounts/*.json')
     print(account_files)
+    
+    
+    
     solana_env["ACCOUNT_ARGS"] = [
         item for f in account_files for item in ("--account", os.path.splitext(os.path.basename(str(f)))[0], str(f))
     ]
