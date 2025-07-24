@@ -29,7 +29,7 @@ const PLUGIN_PATH = process.env.GITHUB_WORKSPACE + '/solana-wallet-mock/extensio
         await gamePage.goto('http://localhost:8060/tmp_js_export.html');
 
         // Timeout before closing the browser.
-        await new Promise(resolve => setTimeout(resolve, 35000));
+        await new Promise(resolve => setTimeout(resolve, 50000));
         await browser.close();
     }
     catch (e) {
