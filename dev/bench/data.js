@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1753376682911,
+  "lastUpdate": 1753469342970,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1589,6 +1589,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/bf4fe331e07703f4b6c663f4079c8e8f6137305e"
         },
         "date": 1753376681613,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.36986301369863,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7fb43380aa5b30cd5f39e226bf1cc015bed0240d",
+          "message": "Merge pull request #396 from Virus-Axel/bugfix/y_points_error\n\nRemove error message on valid y points",
+          "timestamp": "2025-07-25T20:40:45+02:00",
+          "tree_id": "00934ca017607e9494f5a5c0dfb64ae877603807",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/7fb43380aa5b30cd5f39e226bf1cc015bed0240d"
+        },
+        "date": 1753469341431,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
