@@ -38,6 +38,7 @@ private:
 	bool is_pending() const;
 	bool has_request() const;
 	bool is_response_valid(const Dictionary &response) const;
+	bool is_timed_out() const;
 
 	Error connect_to();
 	Error send_next_request();

@@ -65,12 +65,6 @@ void RpcSingleHttpRequestClient::initiate_connection() {
 
 void RpcSingleHttpRequestClient::update_timeouts(const double delta) {
 	request_queue.front().timeout -= delta;
-
-	// Remove timed out requests.
-	if (request_queue.front().timeout < 0.0) {
-		finalize_faulty();
-		ERR_FAIL_EDMSG_CUSTOM("Request timed out.");
-	}
 }
 
 bool RpcSingleHttpRequestClient::is_pending() const {
@@ -103,6 +97,10 @@ bool RpcSingleHttpRequestClient::is_response_valid(const Dictionary &response) c
 	}
 
 	return true;
+}
+
+bool RpcSingleHttpRequestClient::is_timed_out() const {
+	return request_queue.front().timeout < 0.0;
 }
 
 Error RpcSingleHttpRequestClient::connect_to() {
@@ -179,6 +177,12 @@ void RpcSingleHttpRequestClient::process(const double delta) {
 		initiate_connection();
 	} else {
 		update_timeouts(delta);
+		
+		// Remove timed out requests.
+		if (is_timed_out()) {
+			finalize_faulty();
+			ERR_FAIL_EDMSG_CUSTOM("Request timed out.");
+		}
 	}
 
 	poll();
