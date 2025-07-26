@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1753469342970,
+  "lastUpdate": 1753512491588,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1618,6 +1618,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/7fb43380aa5b30cd5f39e226bf1cc015bed0240d"
         },
         "date": 1753469341431,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.36986301369863,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fdfa096971af8bda4f84261996be4764bb0afa51",
+          "message": "Merge pull request #397 from Virus-Axel/bugfix/timeout_crash\n\nFix bug causing crash on timeouts",
+          "timestamp": "2025-07-26T08:39:39+02:00",
+          "tree_id": "d97b58a6b1d5f63f832fa4f5b6f177aae540dbbc",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/fdfa096971af8bda4f84261996be4764bb0afa51"
+        },
+        "date": 1753512490087,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
