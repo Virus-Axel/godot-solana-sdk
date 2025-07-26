@@ -35,7 +35,6 @@
 #include "hash.hpp"
 #include "honeycomb/enums_generated.hpp"
 #include "honeycomb/honeycomb.hpp"
-#include "honeycomb/honeycomb_generated.hpp"
 #include "honeycomb/types/index_generated.hpp"
 #include "instruction.hpp"
 #include "keypair.hpp"

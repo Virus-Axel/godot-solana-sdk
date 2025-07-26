@@ -36,9 +36,7 @@ AlignAfterOpenBracket: DontAlign
 #   AlignCaseColons: false
 # AlignEscapedNewlines: Right
 AlignOperands: DontAlign
-AlignTrailingComments:
-  Kind: Never
-  OverEmptyLines: 0
+AlignTrailingComments: false
 # AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: false
 # AllowShortBlocksOnASingleLine: Never
@@ -176,7 +174,7 @@ PackConstructorInitializers: NextLine
 # ReflowComments: true
 # RemoveBracesLLVM: false
 # RemoveParentheses: Leave
-RemoveSemicolon: true
+# RemoveSemicolon: true
 # RequiresClausePosition: OwnLine
 # RequiresExpressionIndentation: OuterScope
 # SeparateDefinitionBlocks: Leave

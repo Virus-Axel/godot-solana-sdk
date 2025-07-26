@@ -37,6 +37,20 @@ using MultiplierTypeParams = std::variant<
 		MultiplierTypeParamsCreator,
 		MultiplierTypeParamsCollection>;
 
+using SplMultiplierTypeParams = std::variant<
+		SplMultiplierTypeParamsStakeDuration,
+		SplMultiplierTypeParamsStakeAmount>;
+
+using SplRewardConfigParams = std::variant<
+		SplRewardConfigParamsApy,
+		SplRewardConfigParamsStakeWeight,
+		SplRewardConfigParamsNotSet>;
+
+using StakerClaimedParams = std::variant<
+		StakerClaimedParamsApy,
+		StakerClaimedParamsStakeWeight,
+		StakerClaimedParamsNone>;
+
 using OutputHolding = std::variant<
 		Holding,
 		OutputHoldingTree>;
