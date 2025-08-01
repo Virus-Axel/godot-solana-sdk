@@ -6,7 +6,6 @@ class_name TransactionManager
 ## wallet adapters automatically add unit limit of 800000 and unit price of 8000
 @export var use_custom_priority_fee:bool
 ## used to fetch estimated unit price. if you don't configure it with your own rpc key, fallback value will be used
-@export var helius_api:HeliusAPI
 @export var fallback_compute_unit_limit = 800000
 @export var fallback_compute_unit_price = 8000
 @export var transaction_overlay_ui_scn:PackedScene
@@ -53,16 +52,24 @@ func create_transaction(instructions:Array[Instruction],payer) -> Transaction:
 	transaction = await update_blockhash(transaction)
 	
 	if use_custom_priority_fee and SolanaService.rpc_cluster == SolanaService.RpcCluster.MAINNET:
+		print("Using custom priority fee with following values:")
+		
 		var consumed_units:int = await get_compute_units_used(transaction,20)
 		transaction.set_unit_limit(consumed_units)
-		var estimated_fee = await get_needed_unit_price(transaction)
-		transaction.set_unit_price(estimated_fee)
-		print("Using custom priority fee with following values:")
 		print("Compute Unit Limit: ",consumed_units)
-		print("Microlamports fee per Compute Unit: ",estimated_fee)
+		transaction.set_unit_price(fallback_compute_unit_price)
+		print("Microlamports fee per Compute Unit: ",fallback_compute_unit_price)
 
 	return transaction
 	
+func set_custom_priority_fee(tx:Transaction, calculated_fee:int) -> Transaction:
+	if calculated_fee == 0:
+		print("Failed to override Compute Unit Price")
+		return tx
+		
+	tx.set_unit_price(calculated_fee)
+	print("Overriden lamport fee per Compute Unit: ",calculated_fee)
+	return tx
 
 #for simple transaction with one signer
 func sign_and_send(transaction:Transaction,tx_commitment:Commitment=Commitment.CONFIRMED,custom_signer=null) -> TransactionData:
@@ -84,16 +91,13 @@ func sign_and_send(transaction:Transaction,tx_commitment:Commitment=Commitment.C
 	
 func send_transaction(tx:Transaction,tx_commitment:Commitment=Commitment.CONFIRMED) -> TransactionData:
 	print(tx.serialize())
-	#trying to force a staked connection if network is considered congested	
-	if helius_api!=null and SolanaService.rpc_cluster == SolanaService.RpcCluster.MAINNET:
-		if helius_api.is_network_congested(tx.get_unit_price()):
-			var staked_url = helius_api.get_rpc_url(true)
-			if staked_url != "":
-				print("CONGESTION IDENTIFIED, USING STAKED CONNECTION RPC!")
-				print(staked_url)
-				ProjectSettings.set_setting("solana_sdk/client/default_url",staked_url)
-				#tx.set_url_override(staked_url)
-		
+	
+	#	if solflare, make sure minimum unity price is 100000
+	var wallet_provider_id = SolanaService.wallet.get_wallet_provider_id()
+	if wallet_provider_id == 1:
+		tx.set_unit_price(max(tx.get_unit_price(),100000))
+			
+			
 	tx.send()
 	var response:Dictionary = await tx.transaction_response_received
 	var tx_data:TransactionData = TransactionData.new(response)
@@ -228,23 +232,6 @@ func get_compute_units_used(transaction:Transaction, inflate_percentage:int=0) -
 		consumed_units += consumed_units*inflate_amount
 		
 	return consumed_units
-	
-func get_needed_unit_price(transaction:Transaction) -> int:
-	var estimated_unit_price:int = 0
-	if helius_api!=null:
-		estimated_unit_price = await helius_api.get_estimated_priority_fee(transaction)
-		
-	if estimated_unit_price == 0:
-		print("Failed to fetch estimated priority fee, using default value...")
-		estimated_unit_price = fallback_compute_unit_price
-	
-#	if solflare, make sure minimum price is 100000
-	var wallet_provider_id = SolanaService.wallet.get_wallet_provider_id()
-	if wallet_provider_id == 1:
-		estimated_unit_price = max(estimated_unit_price,100000)
-		
-	estimated_unit_price += estimated_unit_price*failed_consecutive_tx_count
-	return estimated_unit_price
 	
 	
 func transfer_sol(receiver:Pubkey,amount:float,tx_commitment=Commitment.CONFIRMED, custom_sender:Keypair=null) -> TransactionData:
