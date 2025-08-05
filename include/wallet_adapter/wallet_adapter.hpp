@@ -72,6 +72,9 @@ private:
 	bool connected = false;
 	bool dirty_transaction = false;
 	uint32_t active_signer_index = 0;
+	String mobile_identity_uri = "https://solana.com";
+	String mobile_icon_path = "favicon.ico";
+	String mobile_identity_name = "Solana";
 	enum State {
 		IDLE = 0,
 		CONNECTING = 1,
@@ -213,6 +216,36 @@ public:
 	 * @getter{wallet_type, int}
 	 */
 	int get_wallet_type();
+
+	/**
+	 * @setter{mobile_identity_name}
+	 */
+	void set_mobile_identity_name(const String &mobile_identity_name);
+
+	/**
+	 * @getter{mobile_identity_name, String}
+	 */
+	String get_mobile_identity_name();
+
+	/**
+	 * @setter{mobile_identity_uri}
+	 */
+	void set_mobile_identity_uri(const String &mobile_identity_uri);
+
+	/**
+	 * @getter{mobile_identity_uri, String}
+	 */
+	String get_mobile_identity_uri();
+
+	/**
+	 * @setter{mobile_icon_path}
+	 */
+	void set_mobile_icon_path(const String &mobile_icon_path);
+
+	/**
+	 * @getter{mobile_icon_path, String}
+	 */
+	String get_mobile_icon_path();
 
 	/**
 	 * @brief Sign a Transaction message.

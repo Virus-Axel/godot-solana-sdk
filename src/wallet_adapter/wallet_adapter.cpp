@@ -344,6 +344,12 @@ void WalletAdapter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connected_key"), &WalletAdapter::get_connected_key);
 	ClassDB::bind_method(D_METHOD("set_wallet_type", "wallet_type"), &WalletAdapter::set_wallet_type);
 	ClassDB::bind_method(D_METHOD("get_wallet_type"), &WalletAdapter::get_wallet_type);
+	ClassDB::bind_method(D_METHOD("set_mobile_identity_uri", "mobile_identity_uri"), &WalletAdapter::set_mobile_identity_uri);
+	ClassDB::bind_method(D_METHOD("get_mobile_identity_uri"), &WalletAdapter::get_mobile_identity_uri);
+	ClassDB::bind_method(D_METHOD("set_mobile_identity_name", "mobile_identity_name"), &WalletAdapter::set_mobile_identity_name);
+	ClassDB::bind_method(D_METHOD("get_mobile_identity_name"), &WalletAdapter::get_mobile_identity_name);
+	ClassDB::bind_method(D_METHOD("set_mobile_icon_path", "mobile_icon_path"), &WalletAdapter::set_mobile_icon_path);
+	ClassDB::bind_method(D_METHOD("get_mobile_icon_path"), &WalletAdapter::get_mobile_icon_path);
 	ClassDB::bind_method(D_METHOD("set_mobile_blockchain", "mobile_blockchain"), &WalletAdapter::set_mobile_blockchain);
 	ClassDB::bind_method(D_METHOD("get_mobile_blockchain"), &WalletAdapter::get_mobile_blockchain);
 	ClassDB::bind_static_method("WalletAdapter", D_METHOD("get_available_wallets"), &WalletAdapter::get_available_wallets);
@@ -353,7 +359,9 @@ void WalletAdapter::_bind_methods() {
 
 	ClassDB::add_property_group("WalletAdapter", "Mobile", "mobile_");
 	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::INT, "mobile_blockchain", PROPERTY_HINT_ENUM, "DEVNET, MAINNET, TESTNET", PROPERTY_USAGE_DEFAULT), "set_mobile_blockchain", "get_mobile_blockchain");
-	//ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::INT, "wallet_type", PROPERTY_HINT_ENUM, String(",").join(get_all_wallets()), PROPERTY_USAGE_DEFAULT), "set_wallet_type", "get_wallet_type");
+	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::STRING, "mobile_identity_uri"), "set_mobile_identity_uri", "get_mobile_identity_uri");
+	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::STRING, "mobile_identity_name"), "set_mobile_identity_name", "get_mobile_identity_name");
+	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::STRING, "mobile_icon_path"), "set_mobile_icon_path", "get_mobile_icon_path");
 }
 
 WalletAdapter::WalletAdapter() {
@@ -380,7 +388,7 @@ void WalletAdapter::connect_wallet() {
 		return;
 	}
 
-	android_plugin.call("connectWallet", mobile_blockchain);
+	android_plugin.call("connectWallet", mobile_blockchain, mobile_identity_uri, mobile_icon_path, mobile_identity_name);
 #endif
 }
 
@@ -406,6 +414,30 @@ void WalletAdapter::set_wallet_type(int wallet_type) {
 
 int WalletAdapter::get_wallet_type() {
 	return wallet_type;
+}
+
+void WalletAdapter::set_mobile_identity_name(const String& mobile_identity_name) {
+	this->mobile_identity_name = mobile_identity_name;
+}
+
+String WalletAdapter::get_mobile_identity_name() {
+	return mobile_identity_name;
+}
+
+void WalletAdapter::set_mobile_identity_uri(const String& mobile_identity_uri) {
+	this->mobile_identity_uri = mobile_identity_uri;
+}
+
+String WalletAdapter::get_mobile_identity_uri() {
+	return mobile_identity_uri;
+}
+
+void WalletAdapter::set_mobile_icon_path(const String& mobile_icon_path) {
+	this->mobile_icon_path = mobile_icon_path;
+}
+
+String WalletAdapter::get_mobile_icon_path() {
+	return mobile_icon_path;
 }
 
 void WalletAdapter::sign_message(const PackedByteArray &serialized_message, const uint32_t index) {

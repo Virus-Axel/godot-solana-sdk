@@ -26,6 +26,9 @@ var myMessageSignature: ByteArray? = null
 var myMessageSigningStatus: Int = 0
 var myConnectedKey: ByteArray? = null
 var myConnectCluster: Int = 0
+var myIdentityUri: Uri = Uri.EMPTY
+var myIconUri: Uri = Uri.EMPTY
+var myIdentityName: String = ""
 
 var authToken: String? = null
 
@@ -35,9 +38,9 @@ fun connectWallet(sender: ActivityResultSender) {
     LaunchedEffect(Unit) {
         
         val connectionIdentity = ConnectionIdentity(
-            identityUri = Uri.parse("https://solana.com"),
-            iconUri = Uri.parse("favicon.ico"),
-            identityName = "Solana"
+            identityUri = myIdentityUri,
+            iconUri = myIconUri,
+            identityName = myIdentityName
         )
 
         val walletAdapter = MobileWalletAdapter(connectionIdentity)
