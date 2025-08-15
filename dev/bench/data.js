@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1753512491588,
+  "lastUpdate": 1755294740375,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1647,6 +1647,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/fdfa096971af8bda4f84261996be4764bb0afa51"
         },
         "date": 1753512490087,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.36986301369863,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2b8f7892ddb98b0f2c6c45555ca8c8a8277ca245",
+          "message": "Merge pull request #400 from Virus-Axel/feature/mwa_identity_props\n\nAdd properties for MWA identity",
+          "timestamp": "2025-08-15T23:43:57+02:00",
+          "tree_id": "da3132fb2c073be135a227e7f6e855143d1730ce",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/2b8f7892ddb98b0f2c6c45555ca8c8a8277ca245"
+        },
+        "date": 1755294738895,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
