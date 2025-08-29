@@ -13,42 +13,42 @@ jobs:
         include:
           - identifier: linux-debug
             name: Linux Debug
-            runner: ubuntu-20.04
+            runner: ubuntu-latest
             target: template_debug
             platform: linux
             arch: x86_64
             threads: True
           - identifier: linux-release
             name: Linux Release
-            runner: ubuntu-20.04
+            runner: ubuntu-latest
             target: template_release
             platform: linux
             arch: x86_64
             threads: True
           - identifier: windows-debug
             name: Windows Debug
-            runner: ubuntu-20.04
+            runner: ubuntu-latest
             target: template_debug
             platform: windows
             arch: x86_64
             threads: True
           - identifier: windows-release
             name: Windows Release
-            runner: ubuntu-20.04
+            runner: ubuntu-latest
             target: template_release
             platform: windows
             arch: x86_64
             threads: True
           - identifier: android-debug
             name: Android Debug
-            runner: ubuntu-20.04
+            runner: ubuntu-latest
             target: template_debug
             platform: android
             arch: arm64
             threads: True
           - identifier: android-release
             name: Android Release
-            runner: ubuntu-20.04
+            runner: ubuntu-latest
             target: template_release
             platform: android
             arch: arm64
@@ -83,28 +83,28 @@ jobs:
             threads: True
           - identifier: web-debug-nothreads
             name: Web Debug (Single Thread)
-            runner: ubuntu-20.04
+            runner: ubuntu-latest
             target: template_debug
             platform: web
             arch: wasm32
             threads: False
           - identifier: web-release-nothreads
             name: Web Release (Single Thread)
-            runner: ubuntu-20.04
+            runner: ubuntu-latest
             target: template_release
             platform: web
             arch: wasm32
             threads: False
           - identifier: web-debug
             name: Web Debug
-            runner: ubuntu-20.04
+            runner: ubuntu-latest
             target: template_debug
             platform: web
             arch: wasm32
             threads: True
           - identifier: web-release
             name: Web Release
-            runner: ubuntu-20.04
+            runner: ubuntu-latest
             target: template_release
             platform: web
             arch: wasm32
@@ -122,7 +122,7 @@ jobs:
         if: ${{ startsWith(matrix.identifier, 'android-') }}
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 21
 
       - name: (Android) Set up Android SDK
         if: ${{ startsWith(matrix.identifier, 'android-') }}
