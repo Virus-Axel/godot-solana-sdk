@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755294740375,
+  "lastUpdate": 1756585132684,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1681,6 +1681,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.36986301369863,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "77b84abe401f0db147dba13cf0724652e48816bf",
+          "message": "Merge pull request #402 from Virus-Axel/feature/dialog_from_scene\n\nAdd generic menu item loader",
+          "timestamp": "2025-08-30T22:09:50+02:00",
+          "tree_id": "9dd2139d2aacb691c78ab85f05df310506ecd819",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/77b84abe401f0db147dba13cf0724652e48816bf"
+        },
+        "date": 1756585131164,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.363013698630137,
             "unit": "Percent"
           }
         ]
