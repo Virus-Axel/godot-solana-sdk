@@ -349,6 +349,7 @@ public:
 	 *
 	 * @param wallet_address Wallet address to associate token address from. Can be Keypair, Pubkey and WalletAdapter.
 	 * @param token_mint_address Token mint address. Can be Keypair, Pubkey and WalletAdapter.
+	 * @param token_program_id Token program id to use. Default is the SPL Token Program id.
 	 * @return A new associated token account Pubkey resource.
 	 */
 	static Variant new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address, const Variant &token_program_id);

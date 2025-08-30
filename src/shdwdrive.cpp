@@ -323,8 +323,6 @@ void ShdwDrive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cached_storage_accounts"), &ShdwDrive::get_cached_storage_accounts);
 
 	ClassDB::bind_method(D_METHOD("upload_file_to_storage", "filename", "storage_owner_keypair", "storage_account"), &ShdwDrive::upload_file_to_storage);
-	ClassDB::bind_method(D_METHOD("upload_small_file", "bucket", "filepath", "signer", "directory"), &ShdwDrive::upload_small_file);
-
 	
 	ClassDB::add_property("ShdwDrive", PropertyInfo(Variant::BOOL, "simulate_only"), "set_simulate_only", "get_simulate_only");
 }
@@ -548,112 +546,6 @@ String ShdwDrive::get_filename_hash(const String &filename) {
 	// NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 	return res.hex_encode();
-}
-
-void ShdwDrive::create_folder(const String &bucket, const String &folder_name, const String &signer, const String &signature) {
-	 // Ensure folder name ends with slash
-    String normalized_name = folder_name.ends_with("/") ? folder_name : folder_name + String("/");
-
-    // Message formatting (for signing - here signature is passed in)
-    String message = "Shadow Drive Signed Message:\nCreate folder\nBucket: " + bucket + "\nFolder name: " + normalized_name;
-
-    // Build JSON body
-    Dictionary body;
-    body["bucket"] = bucket;
-    body["folder_name"] = normalized_name;
-    body["message"] = signature;
-    body["signer"] = signer;
-
-    String json_body = JSON::stringify(body);
-
-    Array headers;
-    headers.append("Content-Type: application/json");
-
-	Variant upload_request = memnew(HTTPRequest);
-
-	const String SHDW_DRIVE_ENDPOINT_V2 = "https://v2.shdwdrive.com";
-	Object::cast_to<HTTPRequest>(upload_request)->request(
-        SHDW_DRIVE_ENDPOINT_V2 + String("/v1/folder/create"),
-        headers,
-        HTTPClient::METHOD_POST,
-        json_body
-    );
-}
-
-void ShdwDrive::upload_small_file(String bucket, String file_path, const Variant &signer, String directory) {
-	const String boundary = "--GODOTSOLANASDKBOUNDARY";
-	directory = directory.strip_edges(true, true).replace("///", "/").replace("//", "/");
-	if (directory.length() > 0 && !directory.ends_with("/")) {
-		directory += "/";
-	}
-
-	// Extract file name
-	String file_name = file_path.get_file();
-	String full_path = directory.length() > 0 ? directory + file_name : file_name;
-
-	// Compute SHA256(file_name)
-	String hash_hex = get_filename_hash(file_name);
-
-	Array arr;
-	arr.append(Pubkey::string_from_variant(bucket));
-	arr.append(hash_hex);
-	String message_to_sign = String("Shadow Drive Signed Message:\nStorage Account: {0}\nUpload file with hash: {1}").format(arr);
-	const Variant signer_keypair = Keypair::new_from_variant(signer);
-	const PackedByteArray signature = Object::cast_to<Keypair>(signer_keypair)->sign_message(message_to_sign.to_ascii_buffer());
-
-	ERR_FAIL_COND_EDMSG_CUSTOM(!FileAccess::file_exists(file_path), "File does not exist: " + file_path);
-
-	PackedByteArray request_body;
-	request_body.append_array(create_form_line(boundary));
-	request_body.append_array(create_form_line(R"(Content-Disposition: form-data; name="file"; filename=")" + file_name + "\""));
-	request_body.append_array(create_form_line("Content-Type: application/octet-stream"));
-	request_body.append_array(create_form_line(""));
-	request_body.append_array(create_form_line(FileAccess::get_file_as_bytes(file_path)));
-	request_body.append_array(create_form_line(boundary));
-	request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"message\""));
-	request_body.append_array(create_form_line(""));
-	request_body.append_array(create_form_line(SolanaUtils::bs58_encode(signature)));
-	request_body.append_array(create_form_line(boundary));
-	request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"signer\""));
-	request_body.append_array(create_form_line(""));
-	request_body.append_array(create_form_line(Pubkey::string_from_variant(signer)));
-	request_body.append_array(create_form_line(boundary));
-	request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"storage_account\""));
-	request_body.append_array(create_form_line(""));
-	request_body.append_array(create_form_line(bucket));
-	request_body.append_array(create_form_line(boundary));
-	request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"directory\""));
-	request_body.append_array(create_form_line(""));
-	request_body.append_array(create_form_line(directory));
-	request_body.append_array(create_form_line(boundary));
-	request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"name\""));
-	request_body.append_array(create_form_line(""));
-	request_body.append_array(create_form_line(file_name));
-	request_body.append_array(create_form_line(boundary));
-	request_body.append_array(create_form_line("Content-Disposition: form-data; name=\"fullPath\""));
-	request_body.append_array(create_form_line(""));
-	request_body.append_array(create_form_line(full_path));
-	request_body.append_array(create_form_line(boundary + String("--")));
-
-	PackedStringArray headers;
-	headers.append(String("Content-Type: multipart/form-data;boundary=") + boundary.substr(2));
-	/// @cond
-	// Disabling doxygen due to misinterpretation on the header.
-	headers.append(String("accept: */*"));
-	/// @endcond
-	headers.append("accept-encoding: gzip, br, deflate");
-	headers.append(String("content-length: ") + String::num_int64(request_body.size()));
-
-	Variant upload_request = memnew(HTTPRequest);
-
-	HTTPRequest* request_ptr = Object::cast_to<HTTPRequest>(upload_request);
-	add_child(request_ptr, false, INTERNAL_MODE_BACK);
-
-	const Callable upload_file_response = Callable(this, "upload_file_callback");
-	request_ptr->connect("request_completed", upload_file_response, CONNECT_ONE_SHOT);
-
-	const String SHDW_DRIVE_ENDPOINT_V2 = "https://v2.shdwdrive.com";
-	request_ptr->request_raw(SHDW_DRIVE_ENDPOINT_V2 + String("/v1/object/upload"), headers, HTTPClient::METHOD_POST, request_body);
 }
 
 void ShdwDrive::upload_file_to_storage(const String &filename, const Variant &storage_owner_keypair, const Variant &storage_account) {

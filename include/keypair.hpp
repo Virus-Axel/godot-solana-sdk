@@ -127,6 +127,13 @@ public:
 	 */
 	static Variant new_from_file(const String &filename);
 
+	/**
+	 * @brief Creates a new Keypair from a Variant.
+	 * 
+	 * @param variant A variant of a compatible keypair type.
+	 * @return Variant New Keypair resource.
+	 * @return nullptr if the variant is not a compatible type.
+	 */
 	static Variant new_from_variant(const Variant &variant);
 
 	/**
@@ -152,6 +159,17 @@ public:
 	 */
 	static bool is_keypair(const Variant &object);
 
+	/**
+	 * @brief Check if the provided Variant is a compatible type with Keypair.
+	 * 
+	 * The compatible types are:
+	 * - Keypair
+	 * - JSON
+	 * 
+	 * @param object The Variant to check.
+	 * @return true if the variant is a compatible type.
+	 * @return false if the variant is not a compatible type.
+	 */
 	static bool is_compatible_type(const Variant &object);
 
 	/**

@@ -112,6 +112,11 @@ public:
 	 */
 	[[nodiscard]] Dictionary get_idl() const;
 
+	/**
+	 * @brief Get the accounts discriminator length.
+	 * 
+	 * @return uint32_t Length of the accounts discriminator.
+	 */
 	[[nodiscard]] uint32_t get_accounts_discriminator_length() const;
 
 	/**
@@ -153,6 +158,11 @@ public:
 	 */
 	void set_url_override(const String &url_override);
 
+	/**
+	 * @brief Set the accounts discriminator length.
+	 * 
+	 * @param accounts_discriminator_length Length of the accounts discriminator.
+	 */
 	void set_accounts_discriminator_length(const uint32_t accounts_discriminator_length);
 
 	/**

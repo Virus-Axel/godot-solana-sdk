@@ -172,7 +172,14 @@ public:
 	 */
 	void _process(double delta) override;
 
+	/**
+	 * @setter{simulate_only}
+	 */
 	void set_simulate_only(const bool simulate_only);
+
+	/**
+	 * @getter{simulate_only, bool}
+	 */
 	bool get_simulate_only() const;
 
 	/**
@@ -319,9 +326,6 @@ public:
 	 * @param storage_account Storage account key.
 	 */
 	void upload_file_to_storage(const String &filename, const Variant &storage_owner_keypair, const Variant &storage_account);
-
-	void create_folder(const String &bucket, const String &folder_name, const String &signer, const String &signature);
-	void upload_small_file(String bucket, String file_path, const Variant &signer, String directory);
 
 	/**
 	 * @brief Get the ShdwDrive program ID.

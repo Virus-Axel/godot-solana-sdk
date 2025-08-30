@@ -80,6 +80,16 @@ protected:
      */
     static Variant _freeze_account(const Variant& token_program_pid, const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey, const Variant& freeze_authority); 
 
+    /**
+     * @brief Create an Instruction that sets a new authority on a mint account.
+     * 
+     * @param token_program_pid Token program to use.
+     * @param mint_account Mint account to change authority of. @writable
+     * @param current_authority Current authority of mint account. @signer
+     * @param new_authority Authority to set. Use nullptr to remove authority.
+     * @param authority_type Type of authority to set. 1 = MintTokens, 2 = FreezeAccount, 3 = AccountOwner, 4 = CloseAccount.
+     * @return Variant set authority Instruction.
+     */
     static Variant _set_authority(const Variant& token_program_pid, const Variant& mint_account, const Variant& current_authority, const Variant& new_authority, const uint8_t authority_type);
 
     /**
@@ -182,6 +192,15 @@ public:
      */
     static Variant freeze_account(const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey, const Variant& freeze_authority); 
 
+    /**
+     * @brief Same as _set_authority but with program ID set to Spl token program ID.
+     * 
+     * @param mint_account Mint account to change authority of. @writable
+     * @param current_authority Current authority of mint account. @signer
+     * @param new_authority Authority to set. Use nullptr to remove authority.
+     * @param authority_type Type of authority to set. 1 = MintTokens, 2 = FreezeAccount, 3 = AccountOwner, 4 = CloseAccount.
+     * @return Variant set authority Instruction.
+     */
     static Variant set_authority(const Variant& mint_account, const Variant& current_authority, const Variant& new_authority, const uint8_t authority_type);
 
     /**
