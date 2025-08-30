@@ -300,6 +300,7 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 	}
 
 	bind_pid_getter(class_name);
+	bind_anchor_program_getter(class_name);
 
 	// call bind_methods etc. to register all members of the class
 	initialize_class();
@@ -371,6 +372,20 @@ void GenericAnchorNode::bind_pid_getter(const StringName &p_class_name) {
 	method_bind->set_arg_count(static_cast<int>(args.size()));
 	method_bind->set_argument_names(args);
 	method_bind->set_name("get_pid");
+
+	const StringName name = method_bind->get_name();
+	bind_method(*method_bind, MethodBind::bind_call, MethodBind::bind_ptrcall, p_class_name);
+}
+
+void GenericAnchorNode::bind_anchor_program_getter(const StringName &p_class_name) {
+	auto *method_bind = static_cast<MethodBindHack*>(create_method_bind(&GenericAnchorNode::get_anchor_program));
+
+	//std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
+	const std::vector<StringName> args;
+
+	method_bind->set_arg_count(static_cast<int>(args.size()));
+	method_bind->set_argument_names(args);
+	method_bind->set_name("get_anchor_program");
 
 	const StringName name = method_bind->get_name();
 	bind_method(*method_bind, MethodBind::bind_call, MethodBind::bind_ptrcall, p_class_name);

@@ -73,8 +73,8 @@ void Instruction::append_meta(const AccountMeta &meta) {
 PackedByteArray Instruction::serialize() {
 	PackedByteArray result;
 
-	if (program_id.has_method("get_bytes")) {
-		result.append_array(Object::cast_to<Pubkey>(program_id)->to_bytes());
+	if (program_id.get_type() == Variant::OBJECT) {
+		result.append_array(Pubkey::bytes_from_variant(program_id));
 	}
 	result.append_array(data);
 	for (unsigned int i = 0; i < accounts.size(); i++) {

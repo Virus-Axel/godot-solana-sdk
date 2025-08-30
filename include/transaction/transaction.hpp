@@ -49,7 +49,6 @@ private:
 	String latest_blockhash_string = "";
 	String result_signature = "";
 	String latest_commitment = "";
-	String url_override = "";
 
 	SolanaClient *send_client = nullptr;
 	SolanaClient *blockhash_client = nullptr;
@@ -138,11 +137,6 @@ public:
 	 * @getter{payer, Variant}
 	 */
 	Variant get_payer();
-
-	/**
-	 * @setter{url_override, p_value}
-	 */
-	void set_url_override(const String &p_value);
 
 	// The following functions need to comply with godot layout.
 	/**

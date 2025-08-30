@@ -22,7 +22,7 @@ Variant AssociatedTokenAccountProgram::create_associated_token_account(const Var
     result->set_program_id(new_pid);
     result->set_data(data);
 
-    Variant ata = Pubkey::new_associated_token_address(wallet_address, mint_address);
+    Variant ata = Pubkey::new_associated_token_address(wallet_address, mint_address, token_program_id);
 
     result->append_meta(*memnew(AccountMeta(payer, true, true)));
     result->append_meta(*memnew(AccountMeta(ata, false, true)));

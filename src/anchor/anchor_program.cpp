@@ -397,19 +397,19 @@ Dictionary AnchorProgram::parse_account_data(const Dictionary &account_data, con
 
 	ERR_FAIL_COND_V_CUSTOM(account_bytes.is_empty(), Dictionary());
 	if (emit_decoded_account) {
-		emit_signal("account_data_fetched", account_data);
+		emit_signal("account_data_fetched", account_bytes);
 	}
 
-	account_bytes = account_bytes.slice(DISCRIMINATOR_LENGTH);
+	account_bytes = account_bytes.slice(accounts_discriminator_length);
 
 	Dictionary parsed_account;
 
 	const Array fields = static_cast<Dictionary>(reference["type"])["fields"];
+	uint32_t data_offset = 0;
 	for (int j = 0; j < fields.size(); j++) {
-		uint32_t data_offset = 0;
-		const Variant val = deserialize_variant(account_bytes, static_cast<Dictionary>(fields[j])["type"], data_offset);
+
+		const Variant val = deserialize_variant(account_bytes.slice(data_offset), static_cast<Dictionary>(fields[j])["type"], data_offset);
 		parsed_account[static_cast<Dictionary>(fields[j])["name"]] = val;
-		account_bytes = account_bytes.slice(data_offset);
 	}
 
 	return parsed_account;
@@ -451,10 +451,12 @@ void AnchorProgram::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_try_from_pid", "try_from_pid"), &AnchorProgram::set_try_from_pid);
 	ClassDB::bind_method(D_METHOD("get_try_from_json_file"), &AnchorProgram::get_try_from_json_file);
 	ClassDB::bind_method(D_METHOD("set_try_from_json_file", "try_from_json_file"), &AnchorProgram::set_try_from_json_file);
+	ClassDB::bind_method(D_METHOD("set_accounts_discriminator_length", "accounts_discriminator_length"), &AnchorProgram::set_accounts_discriminator_length);
 
 	ClassDB::bind_method(D_METHOD("get_pid"), &AnchorProgram::get_pid);
 	ClassDB::bind_method(D_METHOD("set_pid", "pid"), &AnchorProgram::set_pid);
 	ClassDB::bind_method(D_METHOD("get_json_file"), &AnchorProgram::get_json_file);
+	ClassDB::bind_method(D_METHOD("get_accounts_discriminator_length"), &AnchorProgram::get_accounts_discriminator_length);
 
 	ClassDB::bind_method(D_METHOD("build_instruction", "instruction_name", "accounts", "arguments"), &AnchorProgram::build_instruction);
 	ClassDB::bind_method(D_METHOD("fetch_account", "name", "account_address"), &AnchorProgram::fetch_account);
@@ -503,6 +505,10 @@ bool AnchorProgram::_set(const StringName &p_name, const Variant &p_value) {
 		set_url_override(p_value);
 		return true;
 	}
+	if (name == "accounts_discriminator_length") {
+		set_accounts_discriminator_length(p_value);
+		return true;
+	}
 	return false;
 }
 
@@ -532,6 +538,10 @@ bool AnchorProgram::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = url_override;
 		return true;
 	}
+	if (name == "accounts_discriminator_length") {
+		r_ret = accounts_discriminator_length;
+		return true;
+	}
 	return false;
 }
 
@@ -559,6 +569,7 @@ void AnchorProgram::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::BOOL, "try_from_json_file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	}
 	p_list->push_back(PropertyInfo(Variant::DICTIONARY, "idl", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE + PROPERTY_USAGE_EDITOR + PROPERTY_USAGE_READ_ONLY));
+	p_list->push_back(PropertyInfo(Variant::INT, "accounts_discriminator_length", PROPERTY_HINT_RANGE));
 }
 
 void AnchorProgram::set_idl(const Dictionary &idl) {
@@ -570,8 +581,16 @@ void AnchorProgram::set_url_override(const String &url_override) {
 	idl_client->set_url_override(url_override);
 }
 
+void AnchorProgram::set_accounts_discriminator_length(const uint32_t accounts_discriminator_length) {
+	this->accounts_discriminator_length = accounts_discriminator_length;
+}
+
 Dictionary AnchorProgram::get_idl() const {
 	return idl;
+}
+
+uint32_t AnchorProgram::get_accounts_discriminator_length() const {
+	return accounts_discriminator_length;
 }
 
 void AnchorProgram::set_try_from_pid(const bool try_from_pid) {
@@ -938,6 +957,7 @@ void AnchorProgram::fetch_account_callback(const Dictionary &rpc_result) {
 
 	if (value.get_type() == Variant::DICTIONARY) {
 		emit_signal("account_fetched", parse_account_data(value, ref_struct, true));
+		return;
 	}
 
 	emit_signal("account_fetched", Dictionary());

@@ -140,6 +140,14 @@ void ShdwDrive::_process(double delta) {
 	fetch_all_storage_accounts_client->_process(delta);
 }
 
+void ShdwDrive::set_simulate_only(const bool simulate_only) {
+	this->simulate_only = simulate_only;
+}
+
+bool ShdwDrive::get_simulate_only() const {
+	return simulate_only;
+}
+
 void ShdwDrive::send_fetch_account_infos() {
 	ERR_FAIL_COND_EDMSG_CUSTOM(user_info == nullptr, "User info is not fetched.");
 
@@ -291,12 +299,15 @@ void ShdwDrive::_bind_methods() {
 	ClassDB::add_signal("ShdwDrive", MethodInfo("storage_account_response", PropertyInfo(Variant::DICTIONARY, "response")));
 	ClassDB::add_signal("ShdwDrive", MethodInfo("upload_response", PropertyInfo(Variant::DICTIONARY, "response")));
 	ClassDB::add_signal("ShdwDrive", MethodInfo("all_storage_accounts_fetched"));
+	ClassDB::add_signal("ShdwDrive", MethodInfo("simulation_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
 
 	ClassDB::bind_static_method("ShdwDrive", D_METHOD("new_user_info_pubkey", "base_key"), &ShdwDrive::new_user_info_pubkey);
 	ClassDB::bind_static_method("ShdwDrive", D_METHOD("new_storage_config_pubkey"), &ShdwDrive::new_storage_config_pubkey);
 	ClassDB::bind_static_method("ShdwDrive", D_METHOD("new_stake_account_pubkey", "base_key"), &ShdwDrive::new_stake_account_pubkey);
 	ClassDB::bind_static_method("ShdwDrive", D_METHOD("new_storage_account_pubkey", "base_key", "account_seed"), &ShdwDrive::new_storage_account_pubkey);
 
+	ClassDB::bind_method(D_METHOD("get_simulate_only"), &ShdwDrive::get_simulate_only);
+	ClassDB::bind_method(D_METHOD("set_simulate_only", "simulate_only"), &ShdwDrive::set_simulate_only);
 	ClassDB::bind_method(D_METHOD("send_fetch_account_infos"), &ShdwDrive::send_fetch_account_infos);
 	ClassDB::bind_method(D_METHOD("get_all_storage_accounts", "owner_key"), &ShdwDrive::get_all_storage_accounts);
 	ClassDB::bind_method(D_METHOD("fetch_userinfo_callback", "params"), &ShdwDrive::fetch_userinfo_callback);
@@ -312,6 +323,8 @@ void ShdwDrive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cached_storage_accounts"), &ShdwDrive::get_cached_storage_accounts);
 
 	ClassDB::bind_method(D_METHOD("upload_file_to_storage", "filename", "storage_owner_keypair", "storage_account"), &ShdwDrive::upload_file_to_storage);
+	
+	ClassDB::add_property("ShdwDrive", PropertyInfo(Variant::BOOL, "simulate_only"), "set_simulate_only", "get_simulate_only");
 }
 
 Variant ShdwDrive::create_storage_account(const Variant &owner_keypair, const String &name, const Variant &size) {
@@ -369,14 +382,24 @@ void ShdwDrive::send_create_storage_tx() {
 
 	create_storage_account_transaction->set_payer(owner_keypair);
 	create_storage_account_transaction->add_instruction(instruction);
-	create_storage_account_transaction->update_latest_blockhash();
 
-	Array partially_signers;
-	partially_signers.append(owner_keypair);
+	if (simulate_only) {
+		create_storage_account_transaction->connect("http_response_received", callable_mp(this, &ShdwDrive::emit_simulation_response), CONNECT_ONE_SHOT);
 
-	const Callable callback = Callable(this, "send_create_storage_tx_signed");
-	create_storage_account_transaction->connect("signer_state_changed", callback, CONNECT_ONE_SHOT);
-	create_storage_account_transaction->partially_sign(partially_signers);
+		const PackedByteArray serialized_transaction = create_storage_account_transaction->serialize();
+		const String encoded_transaction = SolanaUtils::bs64_encode(serialized_transaction);
+		create_storage_account_transaction->simulate_transaction(encoded_transaction, false, true, build_array(owner_keypair));
+	} else {
+		create_storage_account_transaction->update_latest_blockhash();
+
+		Array partially_signers;
+		partially_signers.append(owner_keypair);
+
+		const Callable callback = Callable(this, "send_create_storage_tx_signed");
+
+		create_storage_account_transaction->connect("signer_state_changed", callback, CONNECT_ONE_SHOT);
+		create_storage_account_transaction->partially_sign(partially_signers);
+	}
 }
 
 void ShdwDrive::send_create_storage_tx_signed() {
@@ -453,7 +476,7 @@ Variant ShdwDrive::initialize_account(const InitParams &initialize_params) {
 	result->set_data(data);
 
 	const Variant TOKEN_MINT = Pubkey::new_from_string("SHDWyBxihqiCj6YekG2GUr7wqKLeLAMK1gHZck9pL6y");
-	const Variant ata_account = Pubkey::new_associated_token_address(owner_keypair, TOKEN_MINT);
+	const Variant ata_account = Pubkey::new_associated_token_address(owner_keypair, TOKEN_MINT, TokenProgram::get_pid());
 	const Variant STORAGE_CONFIG = new_storage_config_pubkey();
 	const Variant USER_INFO_PUBKEY = new_user_info_pubkey(owner_keypair);
 
@@ -595,6 +618,10 @@ void ShdwDrive::upload_file_callback(int result, int response_code, const Packed
 	}
 	const Dictionary response = JSON::parse_string(body.get_string_from_ascii());
 	emit_signal("upload_response", response);
+}
+
+void ShdwDrive::emit_simulation_response(const Dictionary &response) {
+	emit_signal("simulation_response_received", response);
 }
 
 Variant ShdwDrive::get_pid() {

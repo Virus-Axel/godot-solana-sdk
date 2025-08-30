@@ -1,0 +1,141 @@
+[gd_scene load_steps=3 format=3 uid="uid://bp2hydh66qxfq"]
+
+[ext_resource type="Script" uid="uid://d1upngjnkjot8" path="res://addons/SolanaSDK/Dialogs/arweave_manager.gd" id="1_qgh4u"]
+[ext_resource type="PackedScene" uid="uid://f8ayiyhqtnvl" path="res://addons/SolanaSDK/Scenes/TransactionSimulator.tscn" id="2_clqex"]
+
+[node name="ArweaveManager" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_qgh4u")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.129412, 0.14902, 0.180392, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -14.0
+offset_bottom = -13.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Upload File to Arweave.
+Pay with Solana wallet."
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "No payer selected"
+editable = false
+expand_to_text_length = true
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "Select Payer"
+
+[node name="PayerDialog" type="FileDialog" parent="VBoxContainer/HBoxContainer2"]
+auto_translate_mode = 1
+title = "Open a File"
+ok_button_text = "Open"
+file_mode = 0
+filters = PackedStringArray("*.json", "*.tres", "*.res")
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "No file selected"
+editable = false
+expand_to_text_length = true
+
+[node name="FileDialog" type="FileDialog" parent="VBoxContainer/HBoxContainer"]
+auto_translate_mode = 1
+title = "Open a File"
+ok_button_text = "Open"
+file_mode = 0
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "Select File"
+
+[node name="HSeparator3" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="TextEdit" type="TextEdit" parent="VBoxContainer"]
+visible = false
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 2
+wrap_mode = 1
+
+[node name="TransactionSimulator" parent="VBoxContainer" instance=ExtResource("2_clqex")]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CreateButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+disabled = true
+text = "Upload (Mainnet)"
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="VBoxContainer/HBoxContainer3"]
+layout_mode = 2
+text = "Arweave URL:"
+
+[node name="Label" type="TextEdit" parent="VBoxContainer/HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 3
+editable = false
+scroll_fit_content_height = true
+
+[node name="HTTPRequest_sim" type="HTTPRequest" parent="."]
+
+[node name="HTTPRequest_real" type="HTTPRequest" parent="."]
+
+[node name="SolanaClient" type="SolanaClient" parent="."]
+commitment = "finalized"
+
+[node name="SolanaClient2" type="SolanaClient" parent="."]
+commitment = "finalized"
+
+[connection signal="ready" from="." to="." method="_on_ready"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer2/Button" to="." method="_on_button_pressed2"]
+[connection signal="file_selected" from="VBoxContainer/HBoxContainer2/PayerDialog" to="." method="_on_payer_dialog_file_selected"]
+[connection signal="file_selected" from="VBoxContainer/HBoxContainer/FileDialog" to="." method="_on_file_dialog_file_selected"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/CreateButton" to="." method="_on_create_button_pressed"]

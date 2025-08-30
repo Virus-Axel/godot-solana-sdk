@@ -41,7 +41,6 @@ void Transaction::_bind_methods() {
 	ClassDB::add_signal("Transaction", MethodInfo("blockhash_update_failed", PropertyInfo(Variant::DICTIONARY, "result")));
 	ClassDB::add_signal("Transaction", MethodInfo("signer_state_changed"));
 
-	ClassDB::bind_method(D_METHOD("set_url_override", "url_override"), &Transaction::set_url_override);
 	ClassDB::bind_static_method("Transaction", D_METHOD("new_from_bytes", "bytes"), &Transaction::new_from_bytes);
 
 	ClassDB::bind_method(D_METHOD("get_instructions"), &Transaction::get_instructions);
@@ -129,6 +128,7 @@ void Transaction::create_message() {
 		const Variant payer_meta = AccountMeta::new_account_meta(payer, true, true);
 		merged_metas.add(payer_meta);
 	}
+
 	merged_metas.from_instructions(instruction_list);
 	message.create(merged_metas, payer);
 	message.compile_instructions(instruction_list);
@@ -169,10 +169,20 @@ void Transaction::sign_at_index(const uint32_t index) {
 		Array params;
 		params.append(Variant::get_type_name(signers[index].get_type()));
 		WARN_PRINT_ONCE_ED(String("Signer is not an object. It is a {0}").format(params));
-	} else if (signers[index].has_method("verify_signature")) {
+	} else if (Keypair::is_keypair(signers[index])) {
 		auto *signer_keypair = Object::cast_to<Keypair>(signers[index]);
 
 		const PackedByteArray signature = signer_keypair->sign_message(serialize_message());
+		signatures[index] = signature;
+		ready_signature_amount++;
+		emit_signal("signer_state_changed");
+		check_fully_signed();
+	}
+	else if (Keypair::is_compatible_type(signers[index])) {
+		auto signer_keypair = Keypair::new_from_variant(signers[index]);
+		ERR_FAIL_COND_EDMSG_CUSTOM(signer_keypair.get_type() != Variant::OBJECT, "Signer is not a Keypair or compatible type.");
+
+		const PackedByteArray signature = Object::cast_to<Keypair>(signer_keypair)->sign_message(serialize_message());
 		signatures[index] = signature;
 		ready_signature_amount++;
 		emit_signal("signer_state_changed");
@@ -264,10 +274,6 @@ bool Transaction::_set(const StringName &p_name, const Variant &p_value) {
 		set_external_payer(p_value);
 		return true;
 	}
-	if (name == "url_override") {
-		set_url_override(p_value);
-		return true;
-	}
 	if (name == "unit_limit") {
 		unit_limit = p_value;
 		return true;
@@ -309,10 +315,6 @@ bool Transaction::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = external_payer;
 		return true;
 	}
-	if (name == "url_override") {
-		r_ret = url_override;
-		return true;
-	}
 	if (name == "unit_limit") {
 		r_ret = unit_limit;
 		return true;
@@ -346,7 +348,6 @@ bool Transaction::are_all_bytes_zeroes(const PackedByteArray &bytes) {
 }
 
 void Transaction::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::STRING, "url_override"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "skip_preflight"));
 	if (append_budget_instructions) {
 		p_list->push_back(PropertyInfo(Variant::INT, "unit_limit"));
@@ -402,7 +403,6 @@ Transaction::Transaction() :
 		subscribe_client(memnew_custom(SolanaClient)), blockhash_client(memnew_custom(SolanaClient)), send_client(memnew_custom(SolanaClient)) {
 	// Override because we call process functions ourselves.
 	set_async_override(true);
-	set_url_override(url_override);
 }
 
 void Transaction::_ready() {
@@ -450,10 +450,6 @@ void Transaction::set_payer(const Variant &p_value) {
 
 Variant Transaction::get_payer() {
 	return payer;
-}
-
-void Transaction::set_url_override(const String &p_value) {
-	url_override = p_value;
 }
 
 void Transaction::set_external_payer(bool p_value) {

@@ -431,6 +431,7 @@ else:
         'MPCG': 'Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g',
         'MPMD': 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
         'CMV3': 'CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR',
+        'shdwdrive': '2e1wdyNhUvE76y6yUCvah2KaviavMJYKoRun8acMRBZZ',
     }
 
     solana_env = Environment(ENV=os.environ)

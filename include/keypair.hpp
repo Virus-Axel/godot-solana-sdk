@@ -88,6 +88,7 @@ public:
 	 * @return A new Keypair resource created from seed.
 	 */
 	static Variant new_from_seed(const String &seed);
+
 	/**
 	 * @godot
 	 * @brief Creates a new Keypair from a seed byte array.
@@ -99,6 +100,7 @@ public:
 	 * @return A new Keypair resource created from seed.
 	 */
 	static Variant new_from_seed(const PackedByteArray &seed);
+
 	/**
 	 * @godot
 	 * @brief Creates a Keypair from a byte array.
@@ -111,6 +113,7 @@ public:
 	 * @return A new Keypair resource created from seed.
 	 */
 	static Variant new_from_bytes(const Variant &bytes);
+
 	/**
 	 * @godot
 	 * @brief Creates a new Keypair resource from a file containing an exported keypair.
@@ -123,6 +126,16 @@ public:
 	 * @return A new Keypair imported from the file.
 	 */
 	static Variant new_from_file(const String &filename);
+
+	/**
+	 * @brief Creates a new Keypair from a Variant.
+	 * 
+	 * @param variant A variant of a compatible keypair type.
+	 * @return Variant New Keypair resource.
+	 * @return nullptr if the variant is not a compatible type.
+	 */
+	static Variant new_from_variant(const Variant &variant);
+
 	/**
 	 * @godot
 	 * @brief Creates a new random Keypair.
@@ -135,6 +148,7 @@ public:
 	 * @return The randomly generated Keypair.
 	 */
 	static Variant new_random();
+
 	/**
 	 * @brief Checks if the provided Variant is a Keypair.
 	 *
@@ -144,6 +158,19 @@ public:
 	 * @return true if the variant is a Keypair resource, false otherwise.
 	 */
 	static bool is_keypair(const Variant &object);
+
+	/**
+	 * @brief Check if the provided Variant is a compatible type with Keypair.
+	 * 
+	 * The compatible types are:
+	 * - Keypair
+	 * - JSON
+	 * 
+	 * @param object The Variant to check.
+	 * @return true if the variant is a compatible type.
+	 * @return false if the variant is not a compatible type.
+	 */
+	static bool is_compatible_type(const Variant &object);
 
 	/**
 	 * @brief Creates a new Pubkey resource from the public parts of the Keypair.
@@ -158,6 +185,7 @@ public:
 	 * @param p_value New value of base58 encoded String.
 	 */
 	void set_public_string(const String &p_value);
+
 	/**
 	 * @brief Get the base58 encoded string representing the public parts.
 	 *
@@ -174,6 +202,7 @@ public:
 	 * @param p_value New value of the public parts byte array.
 	 */
 	void set_public_bytes(const PackedByteArray &p_value);
+
 	/**
 	 * @brief Get the byte array representing the public parts.
 	 *
@@ -190,6 +219,7 @@ public:
 	 * @param p_value A base58 encoded String of a 64 byte array.
 	 */
 	void set_private_string(const String &p_value);
+
 	/**
 	 * @brief Get the base58 encoded string representing the private parts.
 	 *
@@ -206,6 +236,7 @@ public:
 	 * @param p_value New value of the private parts byte array.
 	 */
 	void set_private_bytes(const PackedByteArray &p_value);
+
 	/**
 	 * @brief Get the byte array representing the private parts.
 	 *
@@ -222,6 +253,7 @@ public:
 	 * @return PackedByteArray 64 byte signature.
 	 */
 	PackedByteArray sign_message(const PackedByteArray &message);
+
 	/**
 	 * @brief Checks if the message signature is from this Keypair.
 	 *
@@ -239,6 +271,7 @@ public:
 	 * @param p_value Sets unique indicator.
 	 */
 	void set_unique(const bool p_value);
+
 	/**
 	 * @brief Get Keypair unique indicator.
 	 *
@@ -252,6 +285,7 @@ public:
 	 * @param p_value 32 byte seed.
 	 */
 	void set_seed(const PackedByteArray &p_value);
+
 	/**
 	 * @brief Get the ed25519 seed.
 	 *
@@ -264,6 +298,7 @@ public:
 	 *
 	 */
 	void random();
+
 	/**
 	 * @brief Constructs this keypair from the internal seed property.
 	 *

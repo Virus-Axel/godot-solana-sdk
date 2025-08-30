@@ -66,7 +66,7 @@ void Pubkey::_bind_methods() {
 	ClassDB::bind_static_method("Pubkey", D_METHOD("new_from_string", "from"), &Pubkey::new_from_string);
 	ClassDB::bind_static_method("Pubkey", D_METHOD("new_from_bytes", "from"), &Pubkey::new_from_bytes);
 	ClassDB::bind_static_method("Pubkey", D_METHOD("new_program_address", "seeds", "program_id"), &Pubkey::new_program_address);
-	ClassDB::bind_static_method("Pubkey", D_METHOD("new_associated_token_address", "wallet_address", "token_mint_address"), &Pubkey::new_associated_token_address);
+	ClassDB::bind_static_method("Pubkey", D_METHOD("new_associated_token_address", "wallet_address", "token_mint_address", "token_program_id"), &Pubkey::new_associated_token_address);
 	ClassDB::bind_static_method("Pubkey", D_METHOD("new_pda", "seeds", "program_id"), &Pubkey::new_pda);
 	ClassDB::bind_static_method("Pubkey", D_METHOD("new_pda_bytes", "seeds", "program_id"), &Pubkey::new_pda_bytes);
 	ClassDB::bind_static_method("Pubkey", D_METHOD("new_random"), &Pubkey::new_random);
@@ -298,8 +298,10 @@ Variant Pubkey::new_from_variant(const Variant &from) {
 	if (Pubkey::is_pubkey(from)) {
 		return from.duplicate(true);
 	}
-	if (Keypair::is_keypair(from)) {
-		return new_from_bytes(Object::cast_to<Keypair>(from)->get_public_bytes());
+	if (Keypair::is_compatible_type(from)) {
+		const Variant keypair = Keypair::new_from_variant(from);
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(keypair.get_type() != Variant::OBJECT, nullptr, "Bug: Keypair from variant and compatibility check mismatch");
+		return new_from_bytes(Object::cast_to<Keypair>(keypair)->get_public_bytes());
 	}
 	if (AccountMeta::is_account_meta(from)) {
 		return Object::cast_to<AccountMeta>(from)->get_key();
@@ -419,6 +421,7 @@ PackedByteArray Pubkey::bytes_from_variant(const Variant &other) {
 		bytes.resize(PUBKEY_BYTES);
 		return bytes;
 	}
+
 	if (static_cast<Object *>(other)->get_class() == "JSON") {
 		const Variant keypair = Keypair::new_from_bytes(PackedByteArray(Object::cast_to<JSON>(other)->get_data()));
 		return Object::cast_to<Keypair>(keypair)->get_public_bytes();
@@ -468,11 +471,11 @@ String Pubkey::string_from_variant(const Variant &other) {
 	ERR_FAIL_V_EDMSG_CUSTOM("", "Bug: Unknown object. Please report.");
 }
 
-Variant Pubkey::new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address) {
+Variant Pubkey::new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address, const Variant &token_program_id) {
 	TypedArray<PackedByteArray> arr;
 
 	arr.append(Pubkey::bytes_from_variant(wallet_address));
-	arr.append(Pubkey::bytes_from_variant(TokenProgram::get_pid()));
+	arr.append(Pubkey::bytes_from_variant(token_program_id));
 	arr.append(Pubkey::bytes_from_variant(token_mint_address));
 	arr.append(PackedByteArray());
 

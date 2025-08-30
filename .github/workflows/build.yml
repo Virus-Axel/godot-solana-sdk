@@ -6,11 +6,6 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.runner }}
-    container:
-      image: ghcr.io/virus-axel/run_container:latest
-      credentials:
-        username: ${{ secrets.GHCR_USERNAME }}
-        password: ${{ secrets.GHCR_TOKEN }}
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -86,45 +81,6 @@ jobs:
             platform: web
             arch: wasm32
             threads: True
-    steps:
-
-      - name: Checkout project
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-
-      - name: Get godot-cpp commit SHA
-        id: godotcpp
-        run: echo "sha=$(git -C godot-cpp rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache godot-cpp bindings
-        uses: actions/cache@v4
-        with:
-          path: .godot/
-          key: godot-cpp-${{ matrix.identifier }}-${{ steps.godotcpp.outputs.sha }}
-
-      - name: Compile extension
-        shell: sh
-
-        run: |
-          scons threads='${{ matrix.threads }}' target='${{ matrix.target }}' platform='${{ matrix.platform }}' arch='${{ matrix.arch }}' -j2
-          cp godot-solana-sdk.gdextension bin/
-          ls -l */bin/
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ github.event.repository.name }}-${{ matrix.identifier }}
-          path: |
-            ${{ github.workspace }}/bin/
-
-  build-apple:
-    runs-on: ${{ matrix.runner }}
-    name: ${{ matrix.name }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
           - identifier: macos-debug
             runner: macos-latest
             name: 🍎 macOS (universal) Debug
@@ -153,8 +109,51 @@ jobs:
             platform: ios
             arch: arm64
             threads: True
-
     steps:
+
+      - name: (Windows) Install mingw64
+        if: ${{ startsWith(matrix.identifier, 'windows-') }}
+        shell: sh
+        run: |
+          sudo apt-get install mingw-w64
+          sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+          sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+
+      - name: (Android) Set up Java 21
+        if: ${{ startsWith(matrix.identifier, 'android-') }}
+        uses: actions/setup-java@v4
+        with:  
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: (Android) Set up Android SDK
+        if: ${{ startsWith(matrix.identifier, 'android-') }}
+        uses: android-actions/setup-android@v2
+
+      - name: (Android) Install Android Tools
+        if: ${{ startsWith(matrix.identifier, 'android-') }}
+        shell: sh
+        run: |
+          "$ANDROID_SDK_ROOT"/cmdline-tools/latest/bin/sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "build-tools;30.0.3" "platforms;android-29" "cmdline-tools;latest" "cmake;3.10.2.4988404" "ndk;23.2.8568313"
+
+
+      - name: (Web) Install emsdk toolchain
+        if: ${{ startsWith(matrix.identifier, 'web-') }}
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.64
+
+      - name: (Web) Install node
+        if: ${{ startsWith(matrix.identifier, 'web-') }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: (Web) Update npm
+        if: ${{ startsWith(matrix.identifier, 'web-') }}
+        run: |
+          npm install -g npm@11
+
       - name: Set up Python
         uses: actions/setup-python@v2
 
@@ -163,7 +162,6 @@ jobs:
         run: |
           python -c "import sys; print(sys.version)"
           python -m pip install scons==4.8
-          scons --version
 
       - name: Checkout project
         uses: actions/checkout@v2
@@ -182,7 +180,6 @@ jobs:
 
       - name: Compile extension
         shell: sh
-
         run: |
           scons threads='${{ matrix.threads }}' target='${{ matrix.target }}' platform='${{ matrix.platform }}' arch='${{ matrix.arch }}' -j2
           cp godot-solana-sdk.gdextension bin/
@@ -199,7 +196,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build
-      - build-apple
     steps:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
