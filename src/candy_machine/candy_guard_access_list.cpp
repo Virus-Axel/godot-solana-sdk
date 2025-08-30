@@ -238,16 +238,16 @@ TypedArray<AccountMeta> result;
 		result.append(memnew(AccountMeta(limit_authority, false, true)));
 	}
 	if (enable_token_payment) {
-		const Variant token_payment_ata = Pubkey::new_associated_token_address(payer, token_payment_mint);
+		const Variant token_payment_ata = Pubkey::new_associated_token_address(payer, token_payment_mint, TokenProgram::get_pid());
 		result.append(memnew(AccountMeta(token_payment_ata, false, true)));
 		result.append(memnew(AccountMeta(token_payment_destination, false, true)));
 	}
 	if (enable_token_gate) {
-		const Variant token_gate_ata = Pubkey::new_associated_token_address(payer, token_gate_mint);
+		const Variant token_gate_ata = Pubkey::new_associated_token_address(payer, token_gate_mint, TokenProgram::get_pid());
 		result.append(memnew(AccountMeta(token_gate_ata, false, true)));
 	}
 	if (enable_token_burn) {
-		const Variant token_burn_ata = Pubkey::new_associated_token_address(payer, token_burn_mint);
+		const Variant token_burn_ata = Pubkey::new_associated_token_address(payer, token_burn_mint, TokenProgram::get_pid());
 		result.append(memnew(AccountMeta(token_burn_ata, false, true)));
 		result.append(memnew(AccountMeta(token_burn_mint, false, true)));
 	}

@@ -132,7 +132,7 @@ Variant MplCandyGuard::mint(
 	const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
 	const Variant candy_machine_creator = MplCandyMachine::new_candy_machine_authority_pda(candy_machine_id);
 
-	const Variant associated_token_account = Pubkey::new_associated_token_address(payer, mint);
+	const Variant associated_token_account = Pubkey::new_associated_token_address(payer, mint, TokenProgram::get_pid());
 
 	result->set_program_id(new_pid);
 	result->set_data(data);

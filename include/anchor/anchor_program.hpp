@@ -39,6 +39,7 @@ private:
 	bool try_from_pid = false;
 	Variant json_file;
 	bool try_from_json_file = false;
+	uint32_t accounts_discriminator_length = 8;
 	Array instructions;
 
 	SolanaClient *idl_client = nullptr;
@@ -111,6 +112,8 @@ public:
 	 */
 	[[nodiscard]] Dictionary get_idl() const;
 
+	[[nodiscard]] uint32_t get_accounts_discriminator_length() const;
+
 	/**
 	 * @brief Set the try from pid property.
 	 *
@@ -149,6 +152,8 @@ public:
 	 * @note Here the url must contain scheme, address and port at least.
 	 */
 	void set_url_override(const String &url_override);
+
+	void set_accounts_discriminator_length(const uint32_t accounts_discriminator_length);
 
 	/**
 	 * @brief Set the pid address.

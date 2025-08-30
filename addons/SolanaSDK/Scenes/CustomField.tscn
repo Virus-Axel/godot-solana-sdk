@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=3 uid="uid://bppw647rns1us"]
+
+[ext_resource type="Script" uid="uid://bi6nx7m2iqva1" path="res://addons/SolanaSDK/Scenes/custom_field.gd" id="1_txxdj"]
+
+[node name="HBoxContainer" type="HBoxContainer"]
+script = ExtResource("1_txxdj")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+text = "Field:"
+
+[node name="LineEdit" type="LineEdit" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label2" type="Label" parent="."]
+layout_mode = 2
+text = "Value:"
+
+[node name="LineEdit2" type="LineEdit" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VSeparator" type="VSeparator" parent="."]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 2
+text = "- Delete"
+
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

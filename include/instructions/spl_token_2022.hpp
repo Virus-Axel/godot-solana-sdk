@@ -123,6 +123,8 @@ public:
      */
     static Variant freeze_account(const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey, const Variant& freeze_authority); 
 
+    static Variant set_authority(const Variant& mint_account, const Variant& current_authority, const Variant& new_authority, const uint8_t authority_type);
+
     /**
      * @brief Get the program ID of TokenProgram.
      * 

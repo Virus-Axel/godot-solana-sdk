@@ -30,6 +30,7 @@
 #include "compiled_instruction.hpp"
 #include "compute_budget.hpp"
 #include "dialogs/add_custom_idl.hpp"
+#include "dialogs/generic_dialog.hpp"
 #include "dialogs/menubar_helper.hpp"
 #include "doc_data_godot-solana-sdk.gen.h"
 #include "hash.hpp"
@@ -143,6 +144,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 
 	ClassDB::register_class<MenuBarHelper>();
 	ClassDB::register_class<AddCustomIdlDialog>();
+	ClassDB::register_class<GenericDialog>();
 	ClassDB::register_class<GenericAnchorResource>();
 
 	add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");

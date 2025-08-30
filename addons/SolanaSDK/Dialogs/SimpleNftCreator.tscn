@@ -1,0 +1,274 @@
+[gd_scene load_steps=3 format=3 uid="uid://cvmlrvw4umcyf"]
+
+[ext_resource type="Script" uid="uid://dssuoxrro6ue1" path="res://addons/SolanaSDK/Dialogs/simple_nft_creator.gd" id="1_jbae7"]
+[ext_resource type="PackedScene" uid="uid://f8ayiyhqtnvl" path="res://addons/SolanaSDK/Scenes/TransactionSimulator.tscn" id="2_lxgic"]
+
+[node name="MyScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jbae7")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.129412, 0.14902, 0.180392, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 100.0
+offset_right = -94.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Simple NFT Creator.
+Creates a token, example: 
+CGMoNFgBpx6Sz35JYfkgHUYY9RG6RQLFLeDesBhX5Xau"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "No payer selected"
+editable = false
+expand_to_text_length = true
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "Select Payer"
+
+[node name="PayerDialog" type="FileDialog" parent="VBoxContainer/HBoxContainer2"]
+title = "Open a File"
+ok_button_text = "Open"
+file_mode = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "No file selected"
+editable = false
+expand_to_text_length = true
+
+[node name="FileDialog" type="FileDialog" parent="VBoxContainer/HBoxContainer"]
+title = "Open a File"
+ok_button_text = "Open"
+file_mode = 0
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "Select File"
+
+[node name="HSeparator3" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="TokenSettings" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/TokenSettings"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/TokenSettings/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Token Name:"
+
+[node name="TextEdit" type="LineEdit" parent="VBoxContainer/TokenSettings/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.65
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer/TokenSettings"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/TokenSettings/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Token Symbol:"
+
+[node name="TextEdit" type="LineEdit" parent="VBoxContainer/TokenSettings/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.65
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="VBoxContainer/TokenSettings"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/TokenSettings/HBoxContainer4"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Description (Optional):"
+
+[node name="TextEdit" type="LineEdit" parent="VBoxContainer/TokenSettings/HBoxContainer4"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.65
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer/TokenSettings"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/TokenSettings/HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Token URI:"
+
+[node name="TextEdit" type="LineEdit" parent="VBoxContainer/TokenSettings/HBoxContainer3"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.65
+text = "<Generated Arweave URL>"
+alignment = 1
+editable = false
+
+[node name="HSeparator5" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "+ Add Field"
+
+[node name="CustomFields" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="SimulateButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+disabled = true
+text = "Simulate"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+visible = false
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/HBoxContainer3"]
+layout_mode = 2
+text = "Upload Metadata
+to Arweave"
+
+[node name="TransactionSimulator" parent="VBoxContainer/ScrollContainer/VBoxContainer/HBoxContainer3" instance=ExtResource("2_lxgic")]
+layout_mode = 2
+size_flags_horizontal = 10
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/HBoxContainer4"]
+layout_mode = 2
+text = "Upload File
+to Arweave"
+
+[node name="TransactionSimulator" parent="VBoxContainer/ScrollContainer/VBoxContainer/HBoxContainer4" instance=ExtResource("2_lxgic")]
+layout_mode = 2
+size_flags_horizontal = 10
+
+[node name="HBoxContainer5" type="HBoxContainer" parent="VBoxContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/ScrollContainer/VBoxContainer/HBoxContainer5"]
+layout_mode = 2
+text = "Create Onchain
+Token"
+
+[node name="TransactionSimulator" parent="VBoxContainer/ScrollContainer/VBoxContainer/HBoxContainer5" instance=ExtResource("2_lxgic")]
+layout_mode = 2
+size_flags_horizontal = 10
+
+[node name="HSeparator4" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="CreateButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+disabled = true
+text = "Create"
+
+[node name="LineEdit" type="TextEdit" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "* Please note that this is mainnet only. Clicking create will send transactions on Solana Mainnet."
+editable = false
+wrap_mode = 1
+
+[node name="Transaction" type="Transaction" parent="."]
+url_override = "https://api.mainnet-beta.solana.com:443"
+ws_url = "wss://api.mainnet-beta.solana.com:443"
+
+[node name="OptionButton" type="OptionButton" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -184.0
+offset_top = 17.0
+offset_right = -21.0
+offset_bottom = 54.0
+grow_horizontal = 0
+disabled = true
+selected = 1
+item_count = 4
+popup/item_0/text = "Devnet"
+popup/item_0/id = 0
+popup/item_1/text = "Mainnet"
+popup/item_1/id = 1
+popup/item_2/text = "Testnet"
+popup/item_2/id = 2
+popup/item_3/text = "Localhost"
+popup/item_3/id = 3
+
+[node name="SolanaClient" type="SolanaClient" parent="."]
+
+[node name="ShdwDrive" type="ShdwDrive" parent="."]
+
+[node name="token_flash_sale" type="token_flash_sale" parent="."]
+
+[node name="WalletAdapter" type="WalletAdapter" parent="."]
+
+[node name="HTTPRequest_sim" type="HTTPRequest" parent="."]
+
+[node name="HTTPRequest_real" type="HTTPRequest" parent="."]
+
+[node name="SolanaClient2" type="SolanaClient" parent="."]
+commitment = "finalized"
+
+[connection signal="pressed" from="VBoxContainer/HBoxContainer2/Button" to="." method="_on_button_pressed2"]
+[connection signal="file_selected" from="VBoxContainer/HBoxContainer2/PayerDialog" to="." method="_on_payer_dialog_file_selected"]
+[connection signal="file_selected" from="VBoxContainer/HBoxContainer/FileDialog" to="." method="_on_file_dialog_file_selected"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/Button" to="." method="_create_custom_field"]
+[connection signal="pressed" from="VBoxContainer/SimulateButton" to="." method="_on_simulate_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/CreateButton" to="." method="_on_create_button_pressed"]
+[connection signal="item_selected" from="OptionButton" to="." method="_on_option_button_item_selected"]

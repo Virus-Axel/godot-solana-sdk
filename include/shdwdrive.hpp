@@ -120,6 +120,7 @@ private:
 	static const std::string PID;
 
 	bool new_user = false;
+	bool simulate_only = false;
 	Variant owner_keypair;
 	String storage_name;
 	uint64_t storage_size = 0;
@@ -151,6 +152,8 @@ private:
 	void fetch_storage_account_callback(const Dictionary &params);
 	void upload_file_callback(int result, int response_code, const PackedStringArray &headers, const PackedByteArray &body);
 
+	void emit_simulation_response(const Dictionary &response);
+
 	static uint64_t human_size_to_bytes(const String &human_size);
 
 	static Variant get_uploader();
@@ -168,6 +171,9 @@ public:
 	 * @_process
 	 */
 	void _process(double delta) override;
+
+	void set_simulate_only(const bool simulate_only);
+	bool get_simulate_only() const;
 
 	/**
 	 * @brief Get an Array of cached storage accounts.
@@ -313,6 +319,9 @@ public:
 	 * @param storage_account Storage account key.
 	 */
 	void upload_file_to_storage(const String &filename, const Variant &storage_owner_keypair, const Variant &storage_account);
+
+	void create_folder(const String &bucket, const String &folder_name, const String &signer, const String &signature);
+	void upload_small_file(String bucket, String file_path, const Variant &signer, String directory);
 
 	/**
 	 * @brief Get the ShdwDrive program ID.

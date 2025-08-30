@@ -80,6 +80,8 @@ protected:
      */
     static Variant _freeze_account(const Variant& token_program_pid, const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey, const Variant& freeze_authority); 
 
+    static Variant _set_authority(const Variant& token_program_pid, const Variant& mint_account, const Variant& current_authority, const Variant& new_authority, const uint8_t authority_type);
+
     /**
      * @bindmethods{TokenProgram, Node}
      */
@@ -179,6 +181,8 @@ public:
      * @return Variant Freeze account instruction.
      */
     static Variant freeze_account(const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey, const Variant& freeze_authority); 
+
+    static Variant set_authority(const Variant& mint_account, const Variant& current_authority, const Variant& new_authority, const uint8_t authority_type);
 
     /**
      * @brief Get the program ID of TokenProgram.

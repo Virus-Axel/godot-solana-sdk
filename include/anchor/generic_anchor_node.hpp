@@ -60,6 +60,7 @@ private:
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
 
 	static void bind_pid_getter(const StringName &p_class_name);
+	static void bind_anchor_program_getter(const StringName &p_class_name);
 	static StringName get_fetcher_name(const StringName &account_name);
 	static const StringName *_get_extension_class_name();
 

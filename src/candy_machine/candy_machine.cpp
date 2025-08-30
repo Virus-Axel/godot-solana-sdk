@@ -156,7 +156,7 @@ Variant MplCandyMachine::mint(
 	const Variant MINT_MASTER_EDITION = MplTokenMetadata::new_associated_metadata_pubkey_master_edition(mint);
 	result->append_meta(*memnew(AccountMeta(MINT_MASTER_EDITION, false, true)));
 
-	const Variant associated_token_account = Pubkey::new_associated_token_address(receiver, mint);
+	const Variant associated_token_account = Pubkey::new_associated_token_address(receiver, mint, TokenProgram::get_pid());
 	result->append_meta(*memnew(AccountMeta(associated_token_account, false, true)));
 
 	const Variant TOKEN_RECORD = TokenProgram::new_token_record_address(associated_token_account, mint);

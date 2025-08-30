@@ -106,7 +106,7 @@ AccountMeta::AccountMeta(const Variant &pid, bool signer, bool writeable) {
 }
 
 AccountMeta::AccountMeta(const Variant &other) {
-	if (other.has_method("get_pubkey")) {
+	if (AccountMeta::is_account_meta(other)) {
 		const AccountMeta *meta_ptr = Object::cast_to<AccountMeta>(other);
 		if (Object::cast_to<AccountMeta>(other)->get_is_signer()) {
 			this->key = meta_ptr->get_signer();
@@ -126,6 +126,9 @@ void AccountMeta::create_new(const Variant &account_key, bool is_signer, bool wr
 }
 
 bool AccountMeta::is_account_meta(const Variant &other) {
+	if(other.get_type() != Variant::OBJECT) {
+		return false;
+	}
 	return ((Object *)other)->is_class("AccountMeta");
 }
 

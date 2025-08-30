@@ -220,6 +220,25 @@ Variant Keypair::new_from_file(const String &filename){
     return new_from_bytes(PackedByteArray(bytes));
 }
 
+Variant Keypair::new_from_variant(const Variant &variant){
+    if (variant.get_type() == Variant::Type::OBJECT) {
+        const Object *object = static_cast<const Object *>(variant);
+        if (object->is_class("Keypair")) {
+            return variant;
+        } else if (object->is_class("JSON")) {
+            PackedByteArray bytes = Object::cast_to<JSON>(object)->get_data();
+            return new_from_bytes(bytes);
+        }
+    } else if (variant.get_type() == Variant::Type::PACKED_BYTE_ARRAY) {
+        return new_from_bytes(variant);
+    } else if (variant.get_type() == Variant::Type::STRING) {
+        const PackedByteArray bytes = SolanaUtils::bs58_decode(variant);
+        return new_from_bytes(bytes);
+    }
+
+    return nullptr;
+}
+
 Variant Keypair::new_random(){
     Keypair *res = memnew(Keypair);
     res->random();
@@ -228,6 +247,15 @@ Variant Keypair::new_random(){
 
 bool Keypair::is_keypair(const Variant& object){
     return ((Object*)object)->is_class("Keypair");
+}
+
+bool Keypair::is_compatible_type(const Variant &object){
+    if(object.get_type() == Variant::Type::OBJECT) {
+        const Object* object_ptr = static_cast<const Object*>(object);
+        return object_ptr->is_class("Keypair") ||
+               object_ptr->is_class("JSON");
+    }
+    return false;
 }
 
 Variant Keypair::to_pubkey(){

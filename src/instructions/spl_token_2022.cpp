@@ -25,6 +25,7 @@ void TokenProgram2022::_bind_methods(){
     ClassDB::bind_static_method("TokenProgram2022", D_METHOD("mint_to", "mint_pubkey", "account_pubkey", "owner_pubkey", "mint_authority", "amount"), &TokenProgram2022::mint_to);
     ClassDB::bind_static_method("TokenProgram2022", D_METHOD("transfer_checked", "source_pubkey", "mint_pubkey", "destination_pubkey", "source_authority", "amount", "decimals"), &TokenProgram2022::transfer_checked);
     ClassDB::bind_static_method("TokenProgram2022", D_METHOD("freeze_account", "account_pubkey", "mint_pubkey", "owner_pubkey", "freeze_authority"), &TokenProgram2022::freeze_account);
+    ClassDB::bind_static_method("TokenProgram2022", D_METHOD("set_authority", "mint_account", "current_authority", "new_authority", "authority_type"), &TokenProgram2022::set_authority);
 
     ClassDB::bind_static_method("TokenProgram2022", D_METHOD("get_pid"), &TokenProgram2022::get_pid);
     ClassDB::bind_static_method("TokenProgram2022", D_METHOD("initialize_metadata_pointer", "payer", "mint_keypair"), &TokenProgram2022::initialize_metadata_pointer);
@@ -60,6 +61,11 @@ Variant TokenProgram2022::transfer_checked(const Variant& source_pubkey, const V
 Variant TokenProgram2022::freeze_account(const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey, const Variant& freeze_authority){
     const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
     return _freeze_account(new_pid, account_pubkey, mint_pubkey, owner_pubkey, freeze_authority);
+}
+
+Variant TokenProgram2022::set_authority(const Variant& mint_account, const Variant& current_authority, const Variant& new_authority, const uint8_t authority_type){
+    const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
+    return _set_authority(new_pid, mint_account, current_authority, new_authority, authority_type);
 }
 
 Variant TokenProgram2022::initialize_metadata_pointer(const Variant& payer, const Variant& mint_keypair){

@@ -11,6 +11,7 @@
 #include "instruction.hpp"
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
+#include "keypair.hpp"
 
 Variant MergedAccountMetas::preferred_signer(const Variant &left, const Variant &right) {
 	Object *left_object = nullptr;
@@ -32,10 +33,10 @@ Variant MergedAccountMetas::preferred_signer(const Variant &left, const Variant 
 	}
 
 	// Keypair is prefferred over WalletAdapter since they can instantly sign.
-	if (left_object->is_class("Keypair")) {
+	if (Keypair::is_compatible_type(left)) {
 		return left;
 	}
-	if (right_object->is_class("Keypair")) {
+	if (Keypair::is_compatible_type(right)) {
 		return right;
 	}
 	if (left_object->is_class("WalletAdapter")) {
