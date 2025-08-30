@@ -160,10 +160,28 @@ jobs:
           ln -s ../../bin
           godot --headless --import --path .
 
+      - name: Cache Solana tools
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.local/share/solana/install/active_release/bin
+          key: solana-tools
+
       - name: Setup Solana tools
         run: |
-          curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash
+          if [ ! -d "/home/runner/.local/share/solana/install/active_release/bin" ]; then
+            curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash
+          fi
           echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Get cache key of test directories
+        id: testdircache
+        run: echo "sha=$(git ls-files ${{ matrix.dir }} | sort | xargs md5sum | md5sum | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Test Accounts
+        uses: actions/cache@v4
+        with:
+          path: test_accounts/
+          key: test-accounts-${{ matrix.dir }}-${{ steps.testdircache.outputs.sha }}
 
       - name: Load Test Accounts
         id: test_accounts
@@ -177,18 +195,37 @@ jobs:
           done
           fi
           mkdir -p test_accounts
+          
+          if [ ! -f "test_accounts/CMV3.so" ]; then
           solana program dump --url mainnet-beta CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR test_accounts/CMV3.so
+          fi
           str="${str} --bpf-program CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR ${{matrix.dir}}test_accounts/CMV3.so"
+          
+          if [ ! -f "test_accounts/MPMD.so" ]; then
           solana program dump --url mainnet-beta metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s test_accounts/MPMD.so
+          fi
           str="${str} --bpf-program metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s ${{matrix.dir}}test_accounts/MPMD.so"
+          
+          if [ ! -f "test_accounts/MPCG.so" ]; then
           solana program dump --url mainnet-beta Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g test_accounts/MPCG.so
+          fi
           str="${str} --bpf-program Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g ${{matrix.dir}}test_accounts/MPCG.so"
+          
+          if [ ! -f "test_accounts/mpl_core_program.so" ]; then
           solana program dump --url mainnet-beta CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d test_accounts/mpl_core_program.so
+          fi
           str="${str} --bpf-program CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d ${{matrix.dir}}test_accounts/mpl_core_program.so"
+          
+          if [ ! -f "test_accounts/candy_machine_core.so" ]; then
           solana program dump --url mainnet-beta CMACYFENjoBMHzapRXyo1JZkVS6EtaDDzkjMrmQLvr4J test_accounts/candy_machine_core.so
+          fi
           str="${str} --bpf-program CMACYFENjoBMHzapRXyo1JZkVS6EtaDDzkjMrmQLvr4J ${{matrix.dir}}test_accounts/candy_machine_core.so"
+          
+          if [ ! -f "test_accounts/candy_guard.so" ]; then
           solana program dump --url mainnet-beta CMAGAKJ67e9hRZgfC5SFTbZH8MgEmtqazKXjmkaJjWTJ test_accounts/candy_guard.so
+          fi
           str="${str} --bpf-program CMAGAKJ67e9hRZgfC5SFTbZH8MgEmtqazKXjmkaJjWTJ ${{matrix.dir}}test_accounts/candy_guard.so"
+          
           echo "VALIDATOR_ARGS=${str}" >> "$GITHUB_OUTPUT"
 
       - name: Setup Local Validator
