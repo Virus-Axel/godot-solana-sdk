@@ -17,6 +17,7 @@
 #include "message.hpp"
 #include "solana_client.hpp"
 #include "solana_utils.hpp"
+#include "wallet_adapter/wallet_adapter.hpp"
 
 namespace godot {
 
@@ -50,6 +51,8 @@ private:
 	uint32_t ready_signature_amount = 0;
 
 	Message message;
+
+	WalletAdapter *signer_controller = nullptr;
 
 	Array address_lookup_tables;
 	Array instructions;
