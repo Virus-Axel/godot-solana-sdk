@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1756585132684,
+  "lastUpdate": 1756650700593,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1710,6 +1710,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.363013698630137,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "89e5785ba39c60ae9c90804fc800fbf5c50d193f",
+          "message": "Merge pull request #403 from Virus-Axel/feature/sync_idl_on_change\n\nAdd resyncing of JSON file in AnchorProgram Node",
+          "timestamp": "2025-08-31T16:23:18+02:00",
+          "tree_id": "baba72d01525ad8c43ffc4852e986e6c2fee60fb",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/89e5785ba39c60ae9c90804fc800fbf5c50d193f"
+        },
+        "date": 1756650699323,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.36986301369863,
             "unit": "Percent"
           }
         ]
