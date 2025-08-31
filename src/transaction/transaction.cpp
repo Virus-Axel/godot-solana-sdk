@@ -86,10 +86,9 @@ void Transaction::_signer_signed(const PackedByteArray &signature, const int32_t
 }
 
 void Transaction::_signer_failed() {
-	auto *controller = Object::cast_to<WalletAdapter>(payer);
-	controller->disconnect("message_signed", callable_mp(this, &Transaction::_signer_signed));
+	signer_controller->disconnect("message_signed", callable_mp(this, &Transaction::_signer_signed));
 
-	emit_signal("signing_failed", controller->get_active_signer_index());
+	emit_signal("signing_failed", signer_controller->get_active_signer_index());
 }
 
 bool Transaction::is_phantom_payer() const {
@@ -178,6 +177,7 @@ void Transaction::sign_at_index(const uint32_t index) {
 		check_fully_signed();
 	} else if (signers[index].has_method("sign_message")) {
 		auto *controller = Object::cast_to<WalletAdapter>(signers[index]);
+		signer_controller = controller;
 
 		controller->connect("message_signed", callable_mp(this, &Transaction::_signer_signed).bindv(build_array(index)), CONNECT_ONE_SHOT);
 		controller->connect("signing_failed", callable_mp(this, &Transaction::_signer_failed), CONNECT_ONE_SHOT);

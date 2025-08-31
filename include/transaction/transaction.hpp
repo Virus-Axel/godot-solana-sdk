@@ -6,6 +6,7 @@
 #include "instruction.hpp"
 #include "pubkey.hpp"
 #include <message.hpp>
+#include <wallet_adapter/wallet_adapter.hpp>
 
 #include <godot_cpp/classes/node.hpp>
 #include <solana_client.hpp>
@@ -32,6 +33,8 @@ private:
 	uint32_t ready_signature_amount = 0;
 
 	Message message;
+
+	WalletAdapter *signer_controller = nullptr;
 
 	Array address_lookup_tables;
 	Array instructions;
