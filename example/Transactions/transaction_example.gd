@@ -4,7 +4,7 @@ extends VBoxContainer
 @onready var payer: Keypair = Keypair.new_from_file("res://payer.json")
 const LAMPORTS_PER_SOL = 1000000000
 
-const TOTAL_CASES := 15
+const TOTAL_CASES := 16
 var passed_test_mask := 0
 
 
@@ -290,6 +290,27 @@ func send_transaction_from_scene_tree():
 	
 	PASS(14)
 
+func transaction_simulation_error_signal():
+	var account_key = Keypair.new_random()
+	var invalid_payer = Keypair.new_random()
+	var ix: Instruction = SystemProgram.create_account(invalid_payer, account_key, 1000000, 10, SystemProgram.get_pid())
+	var tx = Transaction.new()
+	add_child(tx)
+	tx.set_payer(invalid_payer)
+	tx.set_instructions([ix])
+
+	tx.update_latest_blockhash()
+	tx.sign_and_send()
+
+	var message_and_data = await tx.transaction_simulation_failed
+
+	assert(message_and_data[0] == "Attempt to debit an account but found no record of a prior credit.")
+	assert(message_and_data[1].has_all(["accounts", "err", "innerInstructions", "logs", "replacementBlockhash", "returnData", "unitsConsumed"]))
+
+	remove_child(tx)
+
+	PASS(15)
+
 
 func _ready():
 	# Use a local cluster for unlimited Solana airdrops.
@@ -309,6 +330,7 @@ func _ready():
 	string_as_account_input()
 	handle_set_payer_on_deserialized_transaction()
 	send_transaction_from_scene_tree()
+	transaction_simulation_error_signal()
 
 
 func _on_timeout_timeout():
