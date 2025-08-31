@@ -2,16 +2,16 @@
 
 #include <cstdint>
 
+#include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/global_constants.hpp"
 #include "godot_cpp/classes/java_script_bridge.hpp"
+#include "godot_cpp/classes/jni_singleton.hpp"
+#include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/object.hpp"
 #include "godot_cpp/variant/array.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
-#include "godot_cpp/classes/jni_singleton.hpp"
-#include "godot_cpp/classes/engine.hpp"
-#include "godot_cpp/classes/project_settings.hpp"
 
 #include "keypair.hpp"
 #include "pubkey.hpp"
@@ -36,11 +36,10 @@ Array WalletAdapter::get_all_wallets() {
 	return build_array("Alpha", "Avana", "BitKeep", "Bitpie", "Clover", "Coin98", "Coinbase", "Coinhub", "Fractal", "Huobi", "HyperPay", "Keystone", "Krystal", "Ledger", "Math", "Neko", "Nightly", "Nufi", "Onto", "Particle", "Phantom", "SafePal", "Saifu", "Salmon", "Sky", "Solflare", "Solong", "Spot", "Tokenary", "TokenPocket", "Torus", "Trezor", "Trust", "UnsafeBurner", "WalletConnect", "Xdefi", "Backpack");
 }
 
-Variant WalletAdapter::get_android_plugin(){
-	if(Engine::get_singleton()->has_singleton("WalletAdapterAndroid")){
+Variant WalletAdapter::get_android_plugin() {
+	if (Engine::get_singleton()->has_singleton("WalletAdapterAndroid")) {
 		return Engine::get_singleton()->get_singleton("WalletAdapterAndroid");
-	}
-	else{
+	} else {
 		return nullptr;
 	}
 }
@@ -203,7 +202,7 @@ void WalletAdapter::poll_connection() {
 
 #ifdef ANDROID_ENABLED
 	Variant android_plugin = get_android_plugin();
-	if (android_plugin.get_type() == Variant::NIL){
+	if (android_plugin.get_type() == Variant::NIL) {
 		WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
 		connected = false;
 		clear_state();
@@ -383,7 +382,7 @@ void WalletAdapter::connect_wallet() {
 
 #ifdef ANDROID_ENABLED
 	Variant android_plugin = get_android_plugin();
-	if (android_plugin.get_type() == Variant::NIL){
+	if (android_plugin.get_type() == Variant::NIL) {
 		WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
 		return;
 	}
@@ -416,7 +415,7 @@ int WalletAdapter::get_wallet_type() {
 	return wallet_type;
 }
 
-void WalletAdapter::set_mobile_identity_name(const String& mobile_identity_name) {
+void WalletAdapter::set_mobile_identity_name(const String &mobile_identity_name) {
 	this->mobile_identity_name = mobile_identity_name;
 }
 
@@ -424,7 +423,7 @@ String WalletAdapter::get_mobile_identity_name() {
 	return mobile_identity_name;
 }
 
-void WalletAdapter::set_mobile_identity_uri(const String& mobile_identity_uri) {
+void WalletAdapter::set_mobile_identity_uri(const String &mobile_identity_uri) {
 	this->mobile_identity_uri = mobile_identity_uri;
 }
 
@@ -432,7 +431,7 @@ String WalletAdapter::get_mobile_identity_uri() {
 	return mobile_identity_uri;
 }
 
-void WalletAdapter::set_mobile_icon_path(const String& mobile_icon_path) {
+void WalletAdapter::set_mobile_icon_path(const String &mobile_icon_path) {
 	this->mobile_icon_path = mobile_icon_path;
 }
 
@@ -455,7 +454,7 @@ void WalletAdapter::sign_message(const PackedByteArray &serialized_message, cons
 #ifdef ANDROID_ENABLED
 
 	Variant android_plugin = get_android_plugin();
-	if (android_plugin.get_type() == Variant::NIL){
+	if (android_plugin.get_type() == Variant::NIL) {
 		WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
 		return;
 	}
@@ -482,4 +481,4 @@ uint32_t WalletAdapter::get_active_signer_index() const {
 	return active_signer_index;
 }
 
-} //namespace godot
+} // namespace godot
