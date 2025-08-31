@@ -3,9 +3,12 @@
 #include <cstdint>
 
 #include "anchor/generic_anchor_node.hpp"
+#include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/classes/file_access.hpp"
 #include "godot_cpp/classes/global_constants.hpp"
 #include "godot_cpp/classes/json.hpp"
 #include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/classes/stream_peer_gzip.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/error_macros.hpp"
@@ -251,6 +254,15 @@ AnchorProgram::AnchorProgram() :
 void AnchorProgram::_process(double delta) {
 	idl_client->_process(delta);
 	fetch_client->_process(delta);
+
+	if (try_from_json_file && Engine::get_singleton()->is_editor_hint()) {
+		if (resync_time_s > 0) {
+			resync_time_s -= delta;
+		} else {
+			sync_json_file();
+			resync_time_s = RESYNC_TIME_S;
+		}
+	}
 }
 
 Variant AnchorProgram::get_address_from_idl(const Dictionary &idl) {
@@ -407,7 +419,6 @@ Dictionary AnchorProgram::parse_account_data(const Dictionary &account_data, con
 	const Array fields = static_cast<Dictionary>(reference["type"])["fields"];
 	uint32_t data_offset = 0;
 	for (int j = 0; j < fields.size(); j++) {
-
 		const Variant val = deserialize_variant(account_bytes.slice(data_offset), static_cast<Dictionary>(fields[j])["type"], data_offset);
 		parsed_account[static_cast<Dictionary>(fields[j])["name"]] = val;
 	}
@@ -569,7 +580,38 @@ void AnchorProgram::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::BOOL, "try_from_json_file", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 	}
 	p_list->push_back(PropertyInfo(Variant::DICTIONARY, "idl", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE + PROPERTY_USAGE_EDITOR + PROPERTY_USAGE_READ_ONLY));
-	p_list->push_back(PropertyInfo(Variant::INT, "accounts_discriminator_length", PROPERTY_HINT_RANGE));
+	p_list->push_back(PropertyInfo(Variant::INT, "accounts_discriminator_length", PROPERTY_HINT_RANGE, "0,65535"));
+}
+
+void AnchorProgram::sync_json_file() {
+	if (json_file.get_type() != Variant::OBJECT) {
+		WARN_PRINT_ONCE("json_file is not an Object.");
+		idl = Dictionary();
+		last_write_time = 0;
+		this->json_file = Variant();
+		return;
+	}
+	if (!static_cast<Object *>(this->json_file)->is_class("JSON")) {
+		WARN_PRINT_ONCE("json_file is not a valid JSON resource.");
+		idl = Dictionary();
+		last_write_time = 0;
+		this->json_file = Variant();
+		return;
+	}
+
+	const JSON *json_file = Object::cast_to<JSON>(this->json_file);
+
+	const uint64_t write_time = FileAccess::get_modified_time(json_file->get_path());
+
+	if (write_time != last_write_time) {
+		last_write_time = write_time;
+		idl = json_file->get_data();
+		if (idl.has("address")) {
+			set_pid(idl["address"]);
+		} else {
+			WARN_PRINT_ONCE("Could not find Program ID from IDL.");
+		}
+	}
 }
 
 void AnchorProgram::set_idl(const Dictionary &idl) {
@@ -622,17 +664,7 @@ void AnchorProgram::set_try_from_json_file(const bool try_from_json_file) {
 		return;
 	}
 
-	if (json_file.get_type() == Variant::OBJECT) {
-		const JSON *json_file = Object::cast_to<JSON>(this->json_file);
-		idl = json_file->get_data();
-		if (idl.has("address")) {
-			set_pid(idl["address"]);
-		} else {
-			WARN_PRINT_ONCE("Could not find Program ID from IDL.");
-		}
-	} else {
-		idl = Dictionary();
-	}
+	sync_json_file();
 }
 
 bool AnchorProgram::get_try_from_json_file() const {
