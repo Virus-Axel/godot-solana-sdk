@@ -20,6 +20,7 @@
 namespace godot {
 
 const int DISCRIMINATOR_LENGTH = 8;
+const float RESYNC_TIME_S = 6.0;
 
 /**
  * @brief Describes an anchor node from an IDL specification.
@@ -44,6 +45,9 @@ private:
 
 	SolanaClient *idl_client = nullptr;
 	SolanaClient *fetch_client = nullptr;
+
+	double resync_time_s = RESYNC_TIME_S;
+	uint64_t last_write_time = 0;
 
 	static bool is_int(const Variant &var);
 	static bool is_float(const Variant &var);
@@ -72,6 +76,7 @@ private:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void sync_json_file();
 
 protected:
 	/**
