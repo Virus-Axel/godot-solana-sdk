@@ -339,12 +339,6 @@ void WalletAdapter::_bind_methods() {
 
 	ClassDB::add_property_group("WalletAdapter", "Web", "");
 	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::INT, "wallet_type", PROPERTY_HINT_ENUM, String(",").join(get_all_wallets()), PROPERTY_USAGE_DEFAULT), "set_wallet_type", "get_wallet_type");
-
-	ClassDB::add_property_group("WalletAdapter", "Mobile", "mobile_");
-	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::INT, "mobile_blockchain", PROPERTY_HINT_ENUM, "DEVNET, MAINNET, TESTNET", PROPERTY_USAGE_DEFAULT), "set_mobile_blockchain", "get_mobile_blockchain");
-	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::STRING, "mobile_identity_uri"), "set_mobile_identity_uri", "get_mobile_identity_uri");
-	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::STRING, "mobile_identity_name"), "set_mobile_identity_name", "get_mobile_identity_name");
-	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::STRING, "mobile_icon_path"), "set_mobile_icon_path", "get_mobile_icon_path");
 }
 
 WalletAdapter::WalletAdapter() {
