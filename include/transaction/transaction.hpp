@@ -84,6 +84,8 @@ private:
 	void _emit_confirmed_callback(const Dictionary &params);
 	void _emit_finalized_callback(const Dictionary &params);
 
+	void check_transaction_simulation(const Dictionary &params);
+
 protected:
 	/**
 	 * @brief @bindmethods{Transaction, Node}

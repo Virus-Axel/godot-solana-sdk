@@ -40,6 +40,7 @@ void Transaction::_bind_methods() {
 	ClassDB::add_signal("Transaction", MethodInfo("blockhash_updated", PropertyInfo(Variant::DICTIONARY, "result")));
 	ClassDB::add_signal("Transaction", MethodInfo("blockhash_update_failed", PropertyInfo(Variant::DICTIONARY, "result")));
 	ClassDB::add_signal("Transaction", MethodInfo("signer_state_changed"));
+	ClassDB::add_signal("Transaction", MethodInfo("transaction_simulation_failed", PropertyInfo(Variant::STRING, "message"), PropertyInfo(Variant::DICTIONARY, "data")));
 
 	ClassDB::bind_static_method("Transaction", D_METHOD("new_from_bytes", "bytes"), &Transaction::new_from_bytes);
 
@@ -254,6 +255,23 @@ void Transaction::_emit_finalized_callback(const Dictionary &params) {
 	(void)params; // Unused.
 	active_subscriptions--;
 	emit_signal("finalized");
+}
+
+void Transaction::check_transaction_simulation(const Dictionary &params){
+	const String simulation_failed_indicator = "Transaction simulation failed:";
+	if (!params.has("error")) {
+		return;
+	}
+	const Dictionary error = params["error"];
+	if (!error.has("message")) {
+		return;
+	}
+	const String message = error["message"];
+	if (!message.begins_with(simulation_failed_indicator)) {
+		return;
+	}
+
+	emit_signal("transaction_simulation_failed", message.replace(simulation_failed_indicator, "").lstrip(" "), error["data"]);
 }
 
 bool Transaction::_set(const StringName &p_name, const Variant &p_value) {
@@ -547,6 +565,9 @@ void Transaction::send_callback(Dictionary params) {
 		result_signature = params["result"];
 		copy_connection_state();
 		subscribe_to_signature();
+	}
+	else{
+		check_transaction_simulation(params);
 	}
 	emit_signal("transaction_response_received", params);
 }
