@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1756650700593,
+  "lastUpdate": 1756663737488,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1739,6 +1739,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.36986301369863,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5f82699aca8724daf2fc5533ca665b73469895d5",
+          "message": "Merge pull request #405 from Virus-Axel/feature/simulate_transaction_error\n\nAdd signal for transaction simulation failed",
+          "timestamp": "2025-08-31T20:00:31+02:00",
+          "tree_id": "0f93dc8f739d703aaa1b21582e96cf35f7714eee",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/5f82699aca8724daf2fc5533ca665b73469895d5"
+        },
+        "date": 1756663735554,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.366438356164384,
             "unit": "Percent"
           }
         ]
