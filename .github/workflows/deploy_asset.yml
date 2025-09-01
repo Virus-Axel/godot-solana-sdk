@@ -1,0 +1,29 @@
+name: Deploy Godot Plugin
+on:
+    workflow_dispatch:
+    #TODO(VirAx): Add tag trigger when asset is approved.
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-asset:
+    runs-on: ubuntu-latest
+    name: Publish addon to Godot Asset Library
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Godot Asset Lib
+      id: GODOT_ASSET_LIBRARY_PASS
+      uses: deep-entertainment/godot-asset-lib-action@v0.4.0
+
+      with:
+        action: addEdit
+        username: Virus-Axel
+        password: ${{ secrets.GODOT_ASSET_LIBRARY_PASS }}
+        assetId: 18325
+        assetTemplate: .github/workflows/asset_template.json.hb
+        baseUrl: https://godotengine.org/asset-library
+
