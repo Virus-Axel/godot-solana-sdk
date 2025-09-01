@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1756663737488,
+  "lastUpdate": 1756735294220,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1763,6 +1763,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/5f82699aca8724daf2fc5533ca665b73469895d5"
         },
         "date": 1756663735554,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.366438356164384,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "62d87ae1c5347fe7cecdf88ade0517917b59f7c1",
+          "message": "Merge pull request #406 from Virus-Axel/feature/autodeploy_addon\n\nAdd auto-deployment of addon package",
+          "timestamp": "2025-09-01T15:52:12+02:00",
+          "tree_id": "51edae0f087cdc61a7eb11fb65ba9e3935c04aeb",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/62d87ae1c5347fe7cecdf88ade0517917b59f7c1"
+        },
+        "date": 1756735292030,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
