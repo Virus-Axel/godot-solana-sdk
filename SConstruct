@@ -486,15 +486,12 @@ else:
         shutil.rmtree(BIN_DESTINATION, ignore_errors=True)
         shutil.copytree(BIN_SOURCE, BIN_DESTINATION)
         return None
-    
+
     bin_target = env.Command(BIN_DESTINATION, library, copy_bin_action)
-    
-    GDEXT_FILE = 'bin/godot-solana-sdk.gdextension'
-    gdext_target = env.Command(GDEXT_FILE, env.File("godot-solana-sdk.gdextension"), Copy(GDEXT_FILE, "godot-solana-sdk.gdextension"))
 
     Depends(gdext_target, bin_target)
     AlwaysBuild(bin_target)
     AlwaysBuild(gdext_target)
 
-    env.Command("assemble", GDEXT_FILE, [copy_bin_action, copy_aar_action])
+    env.Command("assemble", None, [copy_bin_action, copy_aar_action])
     env.Alias("addon", [ANDROID_PLUGIN_DESTINATION, gdext_target])
