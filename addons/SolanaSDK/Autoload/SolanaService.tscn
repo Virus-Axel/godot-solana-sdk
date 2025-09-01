@@ -1,13 +1,12 @@
-[gd_scene load_steps=20 format=3 uid="uid://b2dmsrk6j12y4"]
+[gd_scene load_steps=19 format=3 uid="uid://b2dmsrk6j12y4"]
 
 [ext_resource type="Script" uid="uid://ditj5e2daevt8" path="res://addons/SolanaSDK/Scripts/Managers/solana_service.gd" id="1_hwc3u"]
 [ext_resource type="Script" uid="uid://67dkrftyxy86" path="res://addons/SolanaSDK/Scripts/TransactionManager/transaction_manager.gd" id="2_v3adq"]
-[ext_resource type="PackedScene" uid="uid://clveiq3atvwet" path="res://addons/SolanaSDK/Scripts/WalletAdapter/WalletAdapterUI.tscn" id="3_0sdjq"]
+[ext_resource type="PackedScene" uid="uid://clveiq3atvwet" path="res://addons/SolanaSDK/Scripts/WalletAdapter/WalletAdapterUI.tscn" id="3_wfwmi"]
 [ext_resource type="Texture2D" uid="uid://dkyfoudbohuqq" path="res://addons/SolanaSDK/Textures/missingicon.png" id="4_s5tc6"]
 [ext_resource type="Script" uid="uid://c8r41wffhgoeb" path="res://addons/SolanaSDK/Scripts/SessionKeys/session_key_manager.gd" id="4_wfwmi"]
 [ext_resource type="JSON" path="res://addons/SolanaSDK/Scripts/SessionKeys/session_keys2.0.6_idl.json" id="5_38cwu"]
 [ext_resource type="Script" uid="uid://be77h1ww1quiy" path="res://addons/SolanaSDK/Scripts/Managers/wallet_service.gd" id="5_f327g"]
-[ext_resource type="Script" uid="uid://73ttw7wqmnr" path="res://addons/SolanaSDK/Scripts/ThirdPartyTools/Helius/helius_api.gd" id="6_jo0rl"]
 [ext_resource type="Script" uid="uid://byrctw8tril6i" path="res://addons/SolanaSDK/Scripts/Utility/account_inspector.gd" id="6_mv3j8"]
 [ext_resource type="Script" uid="uid://bgkhmfehcfj2e" path="res://addons/SolanaSDK/Scripts/Utility/file_loader.gd" id="7_4sv1b"]
 [ext_resource type="Script" uid="uid://dfliotvqj2v0k" path="res://addons/SolanaSDK/Scripts/Managers/AssetManager/asset_manager.gd" id="8_4oy84"]
@@ -17,18 +16,20 @@
 [ext_resource type="Script" uid="uid://bntcjwq5hyna5" path="res://addons/SolanaSDK/Scripts/Managers/token_manager.gd" id="13_0sdjq"]
 [ext_resource type="Script" uid="uid://ctu1bsgkgt8qc" path="res://addons/SolanaSDK/Scripts/CoreNFTs/core_collection_manager.gd" id="13_3jvpm"]
 [ext_resource type="Script" uid="uid://c3q1j4esdrfhw" path="res://addons/SolanaSDK/Scripts/CoreNFTs/core_asset_manager.gd" id="14_6l0nt"]
-[ext_resource type="PackedScene" uid="uid://blmw46he11fxs" path="res://addons/SolanaSDK/Scripts/TransactionManager/TransactionOverlayUI.tscn" id="15_0sdjq"]
+[ext_resource type="PackedScene" uid="uid://blmw46he11fxs" path="res://addons/SolanaSDK/Scripts/TransactionManager/TransactionOverlayUI.tscn" id="15_38cwu"]
 [ext_resource type="Script" uid="uid://bmfal3xr0yeo" path="res://addons/SolanaSDK/Scripts/Utility/oracle_signer.gd" id="15_r1qgx"]
 
 [node name="SolanaService" type="Node"]
 script = ExtResource("1_hwc3u")
+mainnet_rpc = "https://api.mainnet-beta.solana.com"
+devnet_rpc = "https://api.devnet.solana.com"
 magicblock_rpc = "https://devnet.magicblock.app/"
 honeycomb_rpc = "https://rpc.test.honeycombprotocol.com/"
 
 [node name="WalletService" type="Node" parent="."]
 script = ExtResource("5_f327g")
 use_generated = true
-wallet_adapter_scn = ExtResource("3_0sdjq")
+wallet_adapter_scn = ExtResource("3_wfwmi")
 
 [node name="WalletAdapter" type="WalletAdapter" parent="WalletService"]
 
@@ -199,13 +200,12 @@ use_localhost = true
 script = ExtResource("13_0sdjq")
 metadata/_custom_type_script = "uid://bntcjwq5hyna5"
 
-[node name="TransactionManager" type="Node" parent="." node_paths=PackedStringArray("helius_api")]
+[node name="TransactionManager" type="Node" parent="."]
 script = ExtResource("2_v3adq")
 use_custom_priority_fee = true
-helius_api = NodePath("../HeliusAPI")
 fallback_compute_unit_limit = 200000
 fallback_compute_unit_price = 100000
-transaction_overlay_ui_scn = ExtResource("15_0sdjq")
+transaction_overlay_ui_scn = ExtResource("15_38cwu")
 
 [node name="FileLoader" type="Node" parent="."]
 script = ExtResource("7_4sv1b")
@@ -216,8 +216,3 @@ script = ExtResource("6_mv3j8")
 
 [node name="CandyMachineManager" type="Node" parent="."]
 script = ExtResource("9_pob61")
-
-[node name="HeliusAPI" type="Node" parent="."]
-script = ExtResource("6_jo0rl")
-priority_fee_level = 3
-fee_to_consider_congested = 0
