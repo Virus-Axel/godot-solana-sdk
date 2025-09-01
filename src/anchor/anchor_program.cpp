@@ -27,7 +27,6 @@
 #include "pubkey.hpp"
 #include "solana_client.hpp"
 #include "solana_utils.hpp"
-#include "utils.hpp"
 
 namespace godot {
 

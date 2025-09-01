@@ -8,12 +8,13 @@
 #include "instructions/mpl_token_metadata.hpp"
 #include "instructions/spl_token.hpp"
 #include "instructions/system_program.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 void CandyGuardAccessList::_bind_methods() {
 }
 
-String CandyGuardAccessList::get_label() const{
+String CandyGuardAccessList::get_label() const {
 	return label;
 }
 
@@ -213,7 +214,7 @@ CandyGuardAccessList &CandyGuardAccessList::get_group(const String &label) {
 }
 
 TypedArray<AccountMeta> CandyGuardAccessList::get_mint_arg_accounts(const Variant &payer, const Variant &machine_key, const Variant &guard_key) {
-TypedArray<AccountMeta> result;
+	TypedArray<AccountMeta> result;
 
 	if (enable_third_party_signer) {
 		result.append(memnew(AccountMeta(signer_key, true, true)));

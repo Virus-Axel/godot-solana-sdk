@@ -2,7 +2,6 @@
 #define SOLANA_SDK_KEYPAIR_HPP
 
 #include "ed25519.h"
-#include "utils.hpp"
 #include <godot_cpp/classes/resource.hpp>
 
 namespace godot {

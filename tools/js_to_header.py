@@ -37,13 +37,13 @@ def js_to_cpp_header(
     header_content = (
         f"#ifndef {variable_name.upper()}_H\n#define {variable_name.upper()}_H\n\n"
     )
-    header_content += f"const char {variable_name}[] =\n"
+    header_content += f"//NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)\nconst char {variable_name}[] =\n"
     for chunk in chunks:
         # Replace special characters
         for char, replacement in special_characters.items():
             chunk = chunk.replace(char, replacement)
         header_content += f'    "{chunk}"\n'
-    header_content += "    ;\n\n#endif"
+    header_content += "    ;\n//NOLINTEND(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) \n\n#endif"
 
     # Write to the header file
     with open(header_file, "w", encoding="utf8") as header_f:

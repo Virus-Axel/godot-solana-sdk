@@ -1,4 +1,4 @@
-#include "message.hpp"
+#include "transaction/message.hpp"
 
 #include <cstdint>
 
@@ -15,6 +15,8 @@
 #include "solana_utils.hpp"
 
 const unsigned char V0_INDICATOR = 128;
+
+namespace godot {
 
 void Message::compile_instruction(const Variant &instruction) {
 	auto *element = Object::cast_to<Instruction>(instruction);
@@ -253,3 +255,5 @@ TypedArray<CompiledInstruction> Message::get_compiled_instructions() const {
 int Message::get_amount_signers() const {
 	return num_required_signatures;
 }
+
+} //namespace godot

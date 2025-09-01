@@ -14,7 +14,6 @@
 #include "meta_data/collection.hpp"
 #include "meta_data/creator.hpp"
 #include "meta_data/uses.hpp"
-#include "utils.hpp"
 
 namespace godot {
 

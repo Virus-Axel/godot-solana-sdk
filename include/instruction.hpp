@@ -4,7 +4,6 @@
 #include "account_meta.hpp"
 #include "hash.hpp"
 #include "pubkey.hpp"
-#include "utils.hpp"
 #include <vector>
 
 #include <godot_cpp/classes/node.hpp>

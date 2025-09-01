@@ -171,6 +171,6 @@ public:
 	~Message() = default;
 };
 
-} //namespace godot
+} // namespace godot
 
 #endif

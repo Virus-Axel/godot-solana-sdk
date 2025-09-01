@@ -23,7 +23,7 @@ jobs:
         action: addEdit
         username: Virus-Axel
         password: ${{ secrets.GODOT_ASSET_LIBRARY_PASS }}
-        assetId: 18325
+        assetId: 4282
         assetTemplate: .github/workflows/asset_template.json.hb
         baseUrl: https://godotengine.org/asset-library
 

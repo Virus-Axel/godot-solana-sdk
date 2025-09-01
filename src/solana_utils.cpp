@@ -2,10 +2,10 @@
 
 #include <algorithm>
 
-#include "sha256.hpp"
 #include "godot_cpp/core/class_db.hpp"
 
-#include "utils.hpp"
+#include "hash.hpp"
+#include "sha256.hpp"
 
 namespace godot {
 
@@ -182,7 +182,7 @@ String SolanaUtils::bs64_encode(PackedByteArray bytes) {
 }
 
 PackedByteArray SolanaUtils::bs64_decode(String input) {
-	if(input.is_empty()){
+	if (input.is_empty()) {
 		return PackedByteArray();
 	}
 
@@ -251,14 +251,14 @@ unsigned int SolanaUtils::short_u16_decode(const PackedByteArray &bytes, int *cu
 }
 // NOLINTEND (cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
-bool SolanaUtils::rpc_response_has_value(const Dictionary &rpc_response){
+bool SolanaUtils::rpc_response_has_value(const Dictionary &rpc_response) {
 	ERR_FAIL_COND_V_CUSTOM(!rpc_response.has("result"), false);
 	Dictionary result_dict = rpc_response["result"];
 	ERR_FAIL_COND_V_CUSTOM(!result_dict.has("value"), false);
 	return true;
 }
 
-Variant SolanaUtils::get_rpc_response_value(const Dictionary &rpc_response){
+Variant SolanaUtils::get_rpc_response_value(const Dictionary &rpc_response) {
 	ERR_FAIL_COND_V_CUSTOM(!rpc_response.has("result"), nullptr);
 	Dictionary result_dict = rpc_response["result"];
 	ERR_FAIL_COND_V_CUSTOM(!result_dict.has("value"), nullptr);
@@ -266,10 +266,10 @@ Variant SolanaUtils::get_rpc_response_value(const Dictionary &rpc_response){
 	return result_dict["value"];
 }
 
-PackedByteArray SolanaUtils::sha256_hash_array(const PackedStringArray &contents){
+PackedByteArray SolanaUtils::sha256_hash_array(const PackedStringArray &contents) {
 	SHA256 hasher;
 
-	for(unsigned int i = 0; i < contents.size(); i++){
+	for (unsigned int i = 0; i < contents.size(); i++) {
 		hasher.update(contents[i].to_ascii_buffer().ptr(), contents[i].length());
 	}
 

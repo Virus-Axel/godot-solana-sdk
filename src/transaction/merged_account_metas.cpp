@@ -9,9 +9,11 @@
 
 #include "account_meta.hpp"
 #include "instruction.hpp"
+#include "keypair.hpp"
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
-#include "keypair.hpp"
+
+namespace godot {
 
 Variant MergedAccountMetas::preferred_signer(const Variant &left, const Variant &right) {
 	Object *left_object = nullptr;
@@ -178,3 +180,5 @@ int64_t MergedAccountMetas::find(const AccountMeta &account_meta) const {
 	}
 	return -1;
 }
+
+} //namespace godot

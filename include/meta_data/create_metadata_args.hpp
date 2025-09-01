@@ -3,6 +3,7 @@
 
 #include <cstdint>
 
+#include "godot_cpp/classes/resource.hpp"
 #include "godot_cpp/classes/wrapped.hpp"
 #include "godot_cpp/core/property_info.hpp"
 #include "godot_cpp/templates/list.hpp"
@@ -12,7 +13,7 @@
 #include "godot_cpp/variant/string_name.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
-#include <godot_cpp/classes/resource.hpp>
+#include "solana_utils.hpp"
 
 namespace godot {
 

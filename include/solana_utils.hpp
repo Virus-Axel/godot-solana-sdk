@@ -1,12 +1,27 @@
 #ifndef GODOT_SOLANA_SDK_SOLANA_UTILS_HPP
 #define GODOT_SOLANA_SDK_SOLANA_UTILS_HPP
 
-#include <godot_cpp/classes/node.hpp>
-#include <hash.hpp>
+#include <string>
+
+#include "godot_cpp/classes/node.hpp"
+#include "godot_cpp/classes/wrapped.hpp"
+#include "godot_cpp/core/defs.hpp"
+#include "godot_cpp/core/error_macros.hpp"
+#include "godot_cpp/core/memory.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/packed_string_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/variant.hpp"
 
 namespace godot {
 
 // Wrap the regular godot macros with lint rules disabled.
+
+#define GDCLASS_CUSTOM(...)                                                                                                                                                                                   \
+	/* NOLINTBEGIN(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast)*/ \
+	GDCLASS(__VA_ARGS__) /* NOLINTEND(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast) */
 
 #define memnew_custom(...)                            \
 	/* NOLINTBEGIN(cppcoreguidelines-owning-memory)*/ \
@@ -76,6 +91,8 @@ namespace godot {
 		((void)0)                                                                                                        \
 	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
 
+#define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
+
 template <typename T>
 inline void append_array(Array &arr, T arg) {
 	arr.push_back(arg);
@@ -93,6 +110,74 @@ inline Array build_array(T arg1, Args... args) {
 	append_array(arr, arg1, args...);
 	return arr;
 }
+
+const char mapping[] = {
+	'A',
+	'B',
+	'C',
+	'D',
+	'E',
+	'F',
+	'G',
+	'H',
+	'I',
+	'J',
+	'K',
+	'L',
+	'M',
+	'N',
+	'O',
+	'P',
+	'Q',
+	'R',
+	'S',
+	'T',
+	'U',
+	'V',
+	'W',
+	'X',
+	'Y',
+	'Z',
+	'a',
+	'b',
+	'c',
+	'd',
+	'e',
+	'f',
+	'g',
+	'h',
+	'i',
+	'j',
+	'k',
+	'l',
+	'm',
+	'n',
+	'o',
+	'p',
+	'q',
+	'r',
+	's',
+	't',
+	'u',
+	'v',
+	'w',
+	'x',
+	'y',
+	'z',
+	'0',
+	'1',
+	'2',
+	'3',
+	'4',
+	'5',
+	'6',
+	'7',
+	'8',
+	'9',
+	'+',
+	'/',
+	'=',
+};
 
 /**
  * @class SolanaUtils
@@ -184,7 +269,7 @@ public:
 	 * @note If there is not result/value in the response, a nullptr will be returned.
 	 * This can be mixed up with a real null value. Use rpc_response_has_value to distinguish the
 	 * scenarios.
-	 * 
+	 *
 	 * @param rpc_response RPC response to get value from.
 	 * @return Dictionary RPC response value.
 	 */
@@ -198,7 +283,7 @@ public:
 	 */
 	static PackedByteArray sha256_hash_array(const PackedStringArray &contents);
 
-	~SolanaUtils() = default;
+	~SolanaUtils() override = default;
 };
 } //namespace godot
 

@@ -13,6 +13,9 @@ Checks: '
     -altera-*,
     -misc-no-recursion,
     -bugprone-easily-swappable-parameters,
+    -cppcoreguidelines-special-member-functions,
+    -hicpp-special-member-functions,
+    -llvm-header-guard,
   '
 HeaderFileExtensions: ['', h, hh, hpp, hxx, inc, glsl]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]

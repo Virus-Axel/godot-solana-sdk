@@ -5,7 +5,6 @@
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/global_constants.hpp"
 #include "godot_cpp/classes/java_script_bridge.hpp"
-#include "godot_cpp/classes/jni_singleton.hpp"
 #include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/object.hpp"
@@ -22,15 +21,16 @@
 
 namespace godot {
 
-bool WalletAdapter::is_wallet_installed(WalletType wallet_type) {
 #ifdef WEB_ENABLED
+bool WalletAdapter::is_wallet_installed(WalletType wallet_type) {
 	const Array params = build_array(wallet_name_from_type(wallet_type));
 	const String script = String("Module.bridge.isWalletInstalled('{0}')").format(params);
 	const Variant ready_state = JavaScriptBridge::get_singleton()->eval(script);
 	return static_cast<bool>(ready_state);
-#endif
+
 	return false;
 }
+#endif
 
 Array WalletAdapter::get_all_wallets() {
 	return build_array("Alpha", "Avana", "BitKeep", "Bitpie", "Clover", "Coin98", "Coinbase", "Coinhub", "Fractal", "Huobi", "HyperPay", "Keystone", "Krystal", "Ledger", "Math", "Neko", "Nightly", "Nufi", "Onto", "Particle", "Phantom", "SafePal", "Saifu", "Salmon", "Sky", "Solflare", "Solong", "Spot", "Tokenary", "TokenPocket", "Torus", "Trezor", "Trust", "UnsafeBurner", "WalletConnect", "Xdefi", "Backpack");
@@ -39,9 +39,9 @@ Array WalletAdapter::get_all_wallets() {
 Variant WalletAdapter::get_android_plugin() {
 	if (Engine::get_singleton()->has_singleton("WalletAdapterAndroid")) {
 		return Engine::get_singleton()->get_singleton("WalletAdapterAndroid");
-	} else {
-		return nullptr;
 	}
+
+	return nullptr;
 }
 
 void WalletAdapter::clear_state() {
@@ -81,36 +81,34 @@ String WalletAdapter::wallet_name_from_type(WalletType wallet_type) {
 	return WALLET_NAMES[wallet_type];
 }
 
-String WalletAdapter::get_sign_transaction_script(uint32_t signer_index) {
 #ifdef WEB_ENABLED
+String WalletAdapter::get_sign_transaction_script(uint32_t signer_index) {
 	const Array params = build_array(signer_index);
 	const String result = String::utf8("Module.bridge.signTransactionProcedure({0})");
 	return result.format(params);
-#endif
+
 	return "";
 }
+#endif
 
-String WalletAdapter::get_sign_message_script(const String &message) {
 #ifdef WEB_ENABLED
+String WalletAdapter::get_sign_message_script(const String &message) {
 	const String result = String::utf8("Module.bridge.signMessageProcedure('{0}')");
 	return result.format(build_array(message));
-#endif
-	return "";
 }
+#endif
 
-String WalletAdapter::get_connect_script() const {
 #ifdef WEB_ENABLED
+String WalletAdapter::get_connect_script() const {
 	const String result = String::utf8("Module.bridge.connectWalletProcedure('{0}')");
 
 	const String wallet_name = wallet_name_from_type(wallet_type);
 	return result.format(build_array(wallet_name));
-#endif
-	return "";
 }
+#endif
 
-void WalletAdapter::store_serialized_message(const PackedByteArray &serialized_message) {
 #ifdef WEB_ENABLED
-
+void WalletAdapter::store_serialized_message(const PackedByteArray &serialized_message) {
 	String script = "Module.serialized_message = [";
 	for (const uint8_t &value : serialized_message) {
 		script += String::num_int64(value);
@@ -119,9 +117,8 @@ void WalletAdapter::store_serialized_message(const PackedByteArray &serialized_m
 	script += "];";
 
 	JavaScriptBridge::get_singleton()->eval(script);
-
-#endif
 }
+#endif
 
 PackedByteArray WalletAdapter::get_message_signature() {
 	PackedByteArray message_signature;
@@ -155,9 +152,8 @@ PackedByteArray WalletAdapter::get_modified_transaction() {
 }
 
 Array WalletAdapter::get_available_wallets() {
-	Array available_wallets;
-
 #ifdef WEB_ENABLED
+	Array available_wallets;
 
 	for (int i = 0; i < WalletType::MAX_TYPES; i++) {
 		Array params;
@@ -167,10 +163,11 @@ Array WalletAdapter::get_available_wallets() {
 			available_wallets.append(i);
 		}
 	}
-
-#endif
-
 	return available_wallets;
+
+#else
+	return {};
+#endif
 }
 
 void WalletAdapter::poll_connection() {
@@ -299,7 +296,7 @@ void WalletAdapter::poll_message_signing() {
 			dirty_transaction = false;
 			clear_state();
 			const PackedByteArray signed_transaction = get_message_signature();
-			const uint32_t SIGNATURE_OFFSET = 1 + SIGNATURE_LENGTH * active_signer_index;
+			const uint32_t SIGNATURE_OFFSET = (SIGNATURE_LENGTH * active_signer_index) + 1;
 
 			if (signed_transaction.size() < SIGNATURE_OFFSET + SIGNATURE_LENGTH) {
 				emit_signal("signing_failed");
@@ -440,11 +437,12 @@ String WalletAdapter::get_mobile_icon_path() {
 }
 
 void WalletAdapter::sign_message(const PackedByteArray &serialized_message, const uint32_t index) {
-#ifdef WEB_ENABLED
 	active_signer_index = index;
-	dirty_transaction = false;
-
 	wallet_state = State::SIGNING;
+	dirty_transaction = false;
+	(void)serialized_message;
+
+#ifdef WEB_ENABLED
 	store_serialized_message(serialized_message);
 
 	JavaScriptBridge::get_singleton()->eval(get_sign_transaction_script(active_signer_index));
@@ -458,8 +456,6 @@ void WalletAdapter::sign_message(const PackedByteArray &serialized_message, cons
 		WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
 		return;
 	}
-
-	wallet_state = State::SIGNING;
 
 	android_plugin.call("signTransaction", serialized_message);
 

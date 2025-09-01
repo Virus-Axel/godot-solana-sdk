@@ -14,7 +14,6 @@
 #include "meta_data/uses.hpp"
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
-#include "utils.hpp"
 
 namespace godot {
 

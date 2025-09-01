@@ -1,8 +1,14 @@
 #ifndef GODOT_SOLANA_SDK_MERGED_ACCOUNT_METAS_HPP
 #define GODOT_SOLANA_SDK_MERGED_ACCOUNT_METAS_HPP
-#include <account_meta.hpp>
-#include <godot_cpp/classes/node.hpp>
-#include <instruction.hpp>
+
+#include <cstdint>
+
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/typed_array.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "account_meta.hpp"
+#include "instruction.hpp"
 
 namespace godot {
 

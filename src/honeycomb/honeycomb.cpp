@@ -1,9 +1,24 @@
 #include "honeycomb/honeycomb.hpp"
 
+#include <iostream>
+
+#include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/classes/http_client.hpp"
 #include "godot_cpp/classes/json.hpp"
-#include "pubkey.hpp"
-#include "solana_utils.hpp"
-#include "transaction.hpp"
+#include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/error_macros.hpp"
+#include "godot_cpp/core/memory.hpp"
+#include "godot_cpp/variant/callable.hpp"
+#include "godot_cpp/variant/callable_method_pointer.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/packed_int32_array.hpp"
+#include "godot_cpp/variant/packed_string_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "transaction/transaction.hpp"
 
 namespace godot {
 
@@ -286,7 +301,6 @@ void HoneyComb::bind_non_changing_methods() {
 
 HoneyComb::~HoneyComb() {
 }
-} //namespace godot
 
 // Function to process and deserialize wrapped objects
 Variant HoneyComb::process_wrapped_objects(const Variant &value) {
@@ -315,3 +329,5 @@ Variant HoneyComb::process_wrapped_objects(const Variant &value) {
 	}
 	return value;
 }
+
+} //namespace godot

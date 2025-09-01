@@ -4,7 +4,6 @@
 #include "godot_cpp/classes/node.hpp"
 
 #include "pubkey.hpp"
-#include "utils.hpp"
 
 namespace godot {
 

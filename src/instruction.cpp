@@ -2,8 +2,6 @@
 #include "keypair.hpp"
 #include "solana_utils.hpp"
 
-#include "utils.hpp"
-
 #include <algorithm>
 #include <vector>
 

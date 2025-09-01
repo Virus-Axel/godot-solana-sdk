@@ -19,7 +19,6 @@
 #include "keypair.hpp"
 #include "pubkey.hpp"
 #include "solana_client.hpp"
-#include "utils.hpp"
 #include <instructions/compute_budget.hpp>
 #include <merged_account_metas.hpp>
 #include <message.hpp>
