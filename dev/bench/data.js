@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1756735294220,
+  "lastUpdate": 1756837129366,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1792,6 +1792,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/62d87ae1c5347fe7cecdf88ade0517917b59f7c1"
         },
         "date": 1756735292030,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.366438356164384,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Virus-Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Virus-Axel",
+            "username": "Virus-Axel"
+          },
+          "distinct": true,
+          "id": "59a883542f8914876c37e4223a96ce2c765797a4",
+          "message": "Fix clang tidy errors",
+          "timestamp": "2025-09-02T20:10:10+02:00",
+          "tree_id": "01cb4570bb0d07a6a6a892abe715cc3a7e28c57d",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/59a883542f8914876c37e4223a96ce2c765797a4"
+        },
+        "date": 1756837128074,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
