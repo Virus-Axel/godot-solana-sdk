@@ -2,6 +2,9 @@ name: Deploy Godot Plugin
 on:
     workflow_dispatch:
     #TODO(VirAx): Add tag trigger when asset is approved.
+    push:
+      tags:
+        - 'v*'
 
 permissions:
   contents: write
@@ -15,6 +18,19 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v5
 
+    - name: Extract Version
+      run: |
+        TAG_NAME="${GITHUB_REF##*/}"
+        if [[ ! "$TAG_NAME" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+          echo "Tag $TAG_NAME is not in vx.y.z format" >&2
+          exit 1
+        fi
+
+        VERSION="${TAG_NAME#v}"
+        echo "ADDON_VERSION=$VERSION" >> "$GITHUB_ENV"
+        echo "RELEASE_TAG=$TAG_NAME" >> "$GITHUB_ENV"
+        exit 1
+
     - name: Godot Asset Lib
       id: GODOT_ASSET_LIBRARY_PASS
       uses: deep-entertainment/godot-asset-lib-action@v0.4.0
@@ -25,5 +41,5 @@ jobs:
         password: ${{ secrets.GODOT_ASSET_LIBRARY_PASS }}
         assetId: 4282
         assetTemplate: .github/workflows/asset_template.json.hb
-        baseUrl: https://godotengine.org/asset-library
+        baseUrl: https://godotengine.org/asset-library/api
 
