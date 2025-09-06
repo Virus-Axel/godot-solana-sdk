@@ -1,16 +1,24 @@
 #ifndef GODOT_SOLANA_SDK_HONEYCOMB_HPP
 #define GODOT_SOLANA_SDK_HONEYCOMB_HPP
 
+#include "godot_cpp/classes/http_request.hpp"
+#include "godot_cpp/classes/node.hpp"
+#include "godot_cpp/classes/resource.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/packed_string_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
 #include "honeycomb/honeycomb_generated.hpp"
+#include "solana_utils.hpp"
 #include "transaction.hpp"
-#include <godot_cpp/classes/http_request.hpp>
-#include <godot_cpp/classes/node.hpp>
-#include <godot_cpp/classes/resource.hpp>
 
 namespace godot {
 
 class HoneyComb : public Node {
-	GDCLASS(HoneyComb, Node)
+	GDCLASS_CUSTOM(HoneyComb, Node)
 private:
 	bool pending = false;
 	Node *child = nullptr;
@@ -29,7 +37,7 @@ private:
 	String build();
 	void send_query();
 
-	void bind_method_from_ref(const String ref);
+	void bind_method_from_ref(const String &ref);
 	void add_arg(const String &name, const String &type_name, const Variant &value, bool optional = false);
 	void query_response_callback(int result, int response_code, const PackedStringArray &headers, const PackedByteArray &body);
 	void query_response_function(const Dictionary &response);
@@ -42,10 +50,11 @@ private:
 protected:
 	HoneyComb();
 	static void _bind_methods();
-	~HoneyComb();
 
 public:
-	HONEYCOMB_METHOD_DEFS
+	~HoneyComb() override;
+
+	HONEYCOMB_METHOD_DEFS // NOLINT(*)
 };
 
 } //namespace godot

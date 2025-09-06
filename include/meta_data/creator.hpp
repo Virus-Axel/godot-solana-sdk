@@ -8,13 +8,15 @@
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
+#include "solana_utils.hpp"
+
 namespace godot {
 
 /**
  * @brief Contains token metadata creator information.
  */
 class MetaDataCreator : public Resource {
-	GDCLASS(MetaDataCreator, Resource)
+	GDCLASS_CUSTOM(MetaDataCreator, Resource)
 private:
 	Variant address;
 	bool verified = false;

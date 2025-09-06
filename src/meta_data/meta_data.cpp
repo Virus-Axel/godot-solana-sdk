@@ -17,6 +17,45 @@
 
 namespace godot {
 
+void MetaData::copy_grouping(const Dictionary &dict) {
+	ERR_FAIL_COND_CUSTOM(!dict.has("grouping"));
+	const Array groups = dict["grouping"];
+	for (unsigned int i = 0; i < groups.size(); i++) {
+		const Dictionary group = groups[i];
+		if (group.has("group_key")) {
+			if (group["group_key"] == "collection" && group.has("group_value")) {
+				const Variant new_collection = memnew_custom(MetaDataCollection);
+				const Variant collection_key = Pubkey::new_from_string(group["group_value"]);
+				Object::cast_to<MetaDataCollection>(new_collection)->set_key(collection_key);
+
+				set_collection(new_collection);
+			}
+		}
+	}
+}
+
+void MetaData::copy_creators(const Dictionary &dict) {
+	ERR_FAIL_COND_CUSTOM(!dict.has("creators"));
+	const Array creator_array = dict["creators"];
+	for (unsigned int i = 0; i < creator_array.size(); i++) {
+		Dictionary creator = creator_array[i];
+		const Variant metadata_creator = memnew_custom(MetaDataCreator);
+
+		if (creator.has("address")) {
+			Object::cast_to<MetaDataCreator>(metadata_creator)->set_address(creator["address"]);
+		}
+		if (creator.has("address")) {
+			Object::cast_to<MetaDataCreator>(metadata_creator)->set_share(creator["share"]);
+		}
+		if (creator.has("address")) {
+			Object::cast_to<MetaDataCreator>(metadata_creator)->set_verified(creator["verified"]);
+		}
+
+		add_creator(metadata_creator);
+	}
+	enable_creators = creators.size() > 0;
+}
+
 bool MetaData::_set(const StringName &p_name, const Variant &p_value) {
 	const String property_name = p_name;
 	if (property_name == "name") {
@@ -260,54 +299,18 @@ void MetaData::copy_from_dict(const Dictionary &other) {
 		set_mint(mint_pubkey);
 	}
 
-	if (other.has("royalty")) {
-		Dictionary royalty = other["royalty"];
-		if (royalty.has("primary_sale_happened")) {
-			set_primary_sale_happened(royalty["primary_sale_happened"]);
-		}
-		if (royalty.has("basis_points")) {
-			set_seller_fee_basis_points(royalty["basis_points"]);
-		}
+	if (SolanaUtils::nested_dict_has_keys(other, "royalty/primary_sale_happened")) {
+		set_token_name(SolanaUtils::get_nested_value(other, "royalty/primary_sale_happened"));
+	}
+	if (SolanaUtils::nested_dict_has_keys(other, "royalty/basis_points")) {
+		set_token_name(SolanaUtils::get_nested_value(other, "royalty/basis_points"));
 	}
 	if (other.has("mutable")) {
 		set_is_mutable(other["mutable"]);
 	}
-	if (other.has("creators")) {
-		Array creator_array = other["creators"];
-		for (unsigned int i = 0; i < creator_array.size(); i++) {
-			Dictionary creator = creator_array[i];
-			const Variant metadata_creator = memnew_custom(MetaDataCreator);
 
-			if (creator.has("address")) {
-				Object::cast_to<MetaDataCreator>(metadata_creator)->set_address(creator["address"]);
-			}
-			if (creator.has("address")) {
-				Object::cast_to<MetaDataCreator>(metadata_creator)->set_share(creator["share"]);
-			}
-			if (creator.has("address")) {
-				Object::cast_to<MetaDataCreator>(metadata_creator)->set_verified(creator["verified"]);
-			}
-
-			add_creator(metadata_creator);
-		}
-		enable_creators = creators.size() > 0;
-	}
-
-	if (other.has("grouping")) {
-		Array groups = other["grouping"];
-		for (unsigned int i = 0; i < groups.size(); i++) {
-			const Dictionary group = groups[i];
-			if (group.has("group_key")) {
-				if (group["group_key"] == "collection" && group.has("group_value")) {
-					const Variant new_collection = memnew_custom(MetaDataCollection);
-					const Variant collection_key = Pubkey::new_from_string(group["group_value"]);
-					Object::cast_to<MetaDataCollection>(new_collection)->set_key(collection_key);
-
-					set_collection(new_collection);
-				}
-			}
-		}
-	}
+	copy_creators(other);
+	copy_grouping(other);
 
 	if (!other.has("content")) {
 		return;
@@ -318,26 +321,25 @@ void MetaData::copy_from_dict(const Dictionary &other) {
 		set_uri(content["json_uri"]);
 	}
 
-	if (content.has("metadata")) {
-		Dictionary metadata = content["metadata"];
-		if (metadata.has("name")) {
-			set_token_name(metadata["name"]);
-		}
-		if (metadata.has("symbol")) {
-			set_symbol(metadata["symbol"]);
-		}
-		if (metadata.has("token_standard")) {
-			if (metadata["token_standard"] == "NonFungible") {
-				set_token_standard(0);
-			} else if (metadata["token_standard"] == "FungibleAsset") {
-				set_token_standard(1);
-			} else if (metadata["token_standard"] == "Fungible") {
-				set_token_standard(2);
-			} else if (metadata["token_standard"] == "NonFungibleEdition") {
-				set_token_standard(3);
-			} else if (metadata["token_standard"] == "ProgrammableNonFungible") {
-				set_token_standard(4);
-			}
+	if (SolanaUtils::nested_dict_has_keys(content, "metadata/name")) {
+		set_token_name(SolanaUtils::get_nested_value(content, "metadata/name"));
+	}
+	if (SolanaUtils::nested_dict_has_keys(content, "metadata/symbol")) {
+		set_symbol(SolanaUtils::get_nested_value(content, "metadata/symbol"));
+	}
+	if (SolanaUtils::nested_dict_has_keys(content, "metadata/token_standard")) {
+		const String token_standard = SolanaUtils::get_nested_value(content, "metadata/token_standard");
+
+		if (token_standard == "NonFungible") {
+			set_token_standard(0);
+		} else if (token_standard == "FungibleAsset") {
+			set_token_standard(1);
+		} else if (token_standard == "Fungible") {
+			set_token_standard(2);
+		} else if (token_standard == "NonFungibleEdition") {
+			set_token_standard(3);
+		} else if (token_standard == "ProgrammableNonFungible") {
+			set_token_standard(4);
 		}
 	}
 

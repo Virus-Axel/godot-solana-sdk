@@ -14,6 +14,7 @@
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/memory.hpp"
 #include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/callable_method_pointer.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "sha256.hpp"
 
@@ -323,7 +324,7 @@ void ShdwDrive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cached_storage_accounts"), &ShdwDrive::get_cached_storage_accounts);
 
 	ClassDB::bind_method(D_METHOD("upload_file_to_storage", "filename", "storage_owner_keypair", "storage_account"), &ShdwDrive::upload_file_to_storage);
-	
+
 	ClassDB::add_property("ShdwDrive", PropertyInfo(Variant::BOOL, "simulate_only"), "set_simulate_only", "get_simulate_only");
 }
 
@@ -378,7 +379,7 @@ Variant ShdwDrive::fetch_storage_key_by_name(const Variant &owner_keypair, const
 void ShdwDrive::send_create_storage_tx() {
 	ERR_FAIL_COND_CUSTOM((user_info == nullptr) && (new_user == false));
 
-	const Variant instruction = initialize_account({ .owner_keypair = owner_keypair, .name = this->storage_name, .storage = this->storage_size });
+	const Variant instruction = initialize_account(owner_keypair, this->storage_name, this->storage_size);
 
 	create_storage_account_transaction->set_payer(owner_keypair);
 	create_storage_account_transaction->add_instruction(instruction);
@@ -388,7 +389,7 @@ void ShdwDrive::send_create_storage_tx() {
 
 		const PackedByteArray serialized_transaction = create_storage_account_transaction->serialize();
 		const String encoded_transaction = SolanaUtils::bs64_encode(serialized_transaction);
-		create_storage_account_transaction->simulate_transaction(encoded_transaction, false, true, build_array(owner_keypair));
+		create_storage_account_transaction->simulate_transaction(encoded_transaction, false, true, Array::make(owner_keypair));
 	} else {
 		create_storage_account_transaction->update_latest_blockhash();
 
@@ -456,7 +457,7 @@ Variant ShdwDrive::new_storage_account_pubkey(const Variant &owner_key, uint64_t
 	return Pubkey::new_pda_bytes(seeds, get_pid());
 }
 
-Variant ShdwDrive::initialize_account(const InitParams &initialize_params) {
+Variant ShdwDrive::initialize_account(const Variant &owner_keypair, const String &storage_name, const uint64_t storage) {
 	Instruction *result = memnew_custom(Instruction);
 
 	PackedByteArray data = initialize_accountv2_discriminator();
@@ -464,11 +465,11 @@ Variant ShdwDrive::initialize_account(const InitParams &initialize_params) {
 	const int32_t DISCRIMINATOR_LENGTH = 12;
 
 	data.resize(INITIALIZE_ACCOUNT_DATA_SIZE);
-	data.encode_u32(DISCRIMINATOR_LENGTH, initialize_params.name.length());
-	data.append_array(initialize_params.name.to_ascii_buffer());
+	data.encode_u32(DISCRIMINATOR_LENGTH, storage_name.length());
+	data.append_array(storage_name.to_ascii_buffer());
 	PackedByteArray storage_bytes;
 	storage_bytes.resize(sizeof(uint64_t));
-	storage_bytes.encode_u64(0, static_cast<int64_t>(initialize_params.storage));
+	storage_bytes.encode_u64(0, static_cast<int64_t>(storage));
 	data.append_array(storage_bytes);
 
 	const Variant new_pid = memnew_custom(Pubkey(String(PID.c_str())));
@@ -522,10 +523,10 @@ PackedByteArray ShdwDrive::create_form_line(const PackedByteArray &content) {
 	return result;
 }
 
-String ShdwDrive::get_upload_message(const UploadParams &upload_params) {
+String ShdwDrive::get_upload_message(const Variant &account_key, const String &filename_hash) {
 	Array arr;
-	arr.append(Pubkey::string_from_variant(upload_params.account_key));
-	arr.append(upload_params.filename_hash);
+	arr.append(Pubkey::string_from_variant(account_key));
+	arr.append(filename_hash);
 	return String("Shadow Drive Signed Message:\nStorage Account: {0}\nUpload files with hash: {1}").format(arr);
 }
 
@@ -564,7 +565,7 @@ void ShdwDrive::upload_file_to_storage(const String &filename, const Variant &st
 
 	const String filename_hash = get_filename_hash(name_without_path);
 
-	const String upload_message = get_upload_message({ .account_key = storage_account, .filename_hash = filename_hash });
+	const String upload_message = get_upload_message(storage_account, filename_hash);
 
 	const PackedByteArray signature = Object::cast_to<Keypair>(storage_owner_keypair)->sign_message(upload_message.to_ascii_buffer());
 

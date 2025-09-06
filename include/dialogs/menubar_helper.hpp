@@ -1,27 +1,30 @@
 #ifndef GODOT_SOLANA_SDK_MENUBAR_HELPER_HPP
 #define GODOT_SOLANA_SDK_MENUBAR_HELPER_HPP
+
+#include <cstdint>
+
 #include "godot_cpp/classes/editor_plugin.hpp"
-#include "godot_cpp/classes/http_client.hpp"
 #include "godot_cpp/classes/node.hpp"
 #include "godot_cpp/classes/popup_menu.hpp"
-#include "godot_cpp/classes/wrapped.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
 
 #include "dialogs/add_custom_idl.hpp"
 #include "dialogs/generic_dialog.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 
-typedef enum {
+using MenuID = enum: uint8_t {
 	IDL_TO_NODE = 0,
 	MINT_MANAGER = 1,
 	MAX_MENU_ID = 2
-} MenuID;
+};
 
 /**
  * @brief Helper class to inject objects to the Godot menu bar.
  */
 class MenuBarHelper : public Node {
-	GDCLASS(MenuBarHelper, Node);
+	GDCLASS_CUSTOM(MenuBarHelper, Node);
 
 private:
 	static PopupMenu *solana_menu_group;
@@ -62,10 +65,9 @@ public:
 	 * @brief Cleans up resources related to MenuBar.
 	 */
 	static void deinitialize_dialogs();
-	~MenuBarHelper() = default;
+	~MenuBarHelper() override = default;
 };
 
-//void add_menu_item(const PopupMenu *menu);
 } //namespace godot
 
 #endif

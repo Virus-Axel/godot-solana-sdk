@@ -1,3 +1,5 @@
+// NOLINTBEGIN
+
 #include "honeycomb/honeycomb.hpp"
 
 #include <iostream>
@@ -256,7 +258,7 @@ String HoneyComb::build() {
 
 	return query;
 }
-void HoneyComb::bind_method_from_ref(const String ref) {
+void HoneyComb::bind_method_from_ref(const String &ref) {
 }
 
 PackedStringArray HoneyComb::get_headers() {
@@ -331,3 +333,5 @@ Variant HoneyComb::process_wrapped_objects(const Variant &value) {
 }
 
 } //namespace godot
+
+// NOLINTEND

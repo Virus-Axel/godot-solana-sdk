@@ -85,7 +85,8 @@ Dictionary AnchorProgram::find_idl_type(const String &name) {
 	return {};
 }
 
-Variant AnchorProgram::deserialize_dict(const PackedByteArray &bytes, const Dictionary &type, uint32_t &consumed_bytes) {
+// TODO(VirAx): Reduce complexity.
+Variant AnchorProgram::deserialize_dict(const PackedByteArray &bytes, const Dictionary &type, uint32_t &consumed_bytes) { // NOLINT(readability-function-cognitive-complexity)
 	Dictionary result;
 
 	if (type.has("kind")) {
@@ -294,7 +295,7 @@ PackedByteArray AnchorProgram::discriminator_by_name(const String &name, const S
 	return hash.slice(0, DISCRIMINATOR_LENGTH);
 }
 
-PackedByteArray AnchorProgram::get_instruction_discriminant(const Dictionary &instruction_info, const String &name) const {
+PackedByteArray AnchorProgram::get_instruction_discriminant(const Dictionary &instruction_info, const String &name) {
 	if (instruction_info.has("discriminant")) {
 		return evaluate_discriminant(instruction_info["discriminant"]);
 	}
@@ -582,7 +583,8 @@ void AnchorProgram::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "accounts_discriminator_length", PROPERTY_HINT_RANGE, "0,65535"));
 }
 
-void AnchorProgram::sync_json_file() {
+// TODO(VirAx): Reduce complexity.
+void AnchorProgram::sync_json_file() { // NOLINT(readability-function-cognitive-complexity)
 	if (json_file.get_type() != Variant::OBJECT) {
 		WARN_PRINT_ONCE("json_file is not an Object.");
 		idl = Dictionary();

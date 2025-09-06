@@ -14,6 +14,7 @@
 #include "meta_data/collection.hpp"
 #include "meta_data/creator.hpp"
 #include "meta_data/uses.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -130,25 +131,25 @@ void CreateMetaDataArgs::_get_property_list(List<PropertyInfo> *p_list) const {
 void CreateMetaDataArgs::set_token_name(const String &token_name) {
 	name = token_name;
 }
-String CreateMetaDataArgs::get_token_name() const{
+String CreateMetaDataArgs::get_token_name() const {
 	return name;
 }
 void CreateMetaDataArgs::set_symbol(const String &symbol) {
 	this->symbol = symbol;
 }
-String CreateMetaDataArgs::get_symbol() const{
+String CreateMetaDataArgs::get_symbol() const {
 	return symbol;
 }
 void CreateMetaDataArgs::set_uri(const String &uri) {
 	this->uri = uri;
 }
-String CreateMetaDataArgs::get_uri() const{
+String CreateMetaDataArgs::get_uri() const {
 	return uri;
 }
 void CreateMetaDataArgs::set_seller_fee_basis_points(const uint16_t seller_fee_basis_points) {
 	this->seller_fee_basis_points = seller_fee_basis_points;
 }
-uint16_t CreateMetaDataArgs::get_seller_fee_basis_points() const{
+uint16_t CreateMetaDataArgs::get_seller_fee_basis_points() const {
 	return seller_fee_basis_points;
 }
 /*
@@ -165,11 +166,11 @@ void CreateMetaDataArgs::add_creator(const Variant &creator) {
 	creators.append(creator);
 }
 
-Array CreateMetaDataArgs::get_creators() const{
+Array CreateMetaDataArgs::get_creators() const {
 	return creators;
 }
 
-Variant CreateMetaDataArgs::get_collection() const{
+Variant CreateMetaDataArgs::get_collection() const {
 	return collection;
 }
 

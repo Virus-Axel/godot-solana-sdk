@@ -4,7 +4,6 @@
 #include <cstdint>
 
 #include "godot_cpp/classes/resource.hpp"
-#include "godot_cpp/classes/wrapped.hpp"
 #include "godot_cpp/core/property_info.hpp"
 #include "godot_cpp/templates/list.hpp"
 #include "godot_cpp/variant/array.hpp"
@@ -21,7 +20,7 @@ namespace godot {
  * @brief Arguments used when creating metadata.
  */
 class CreateMetaDataArgs : public Resource {
-	GDCLASS(CreateMetaDataArgs, Resource)
+	GDCLASS_CUSTOM(CreateMetaDataArgs, Resource)
 
 private:
 	bool enable_creators = false;
@@ -84,7 +83,7 @@ public:
 	 *
 	 * @return String Token name property.
 	 */
-	String get_token_name() const;
+	[[nodiscard]] String get_token_name() const;
 
 	/**
 	 * @brief Set the symbol property.
@@ -98,7 +97,7 @@ public:
 	 *
 	 * @return String Symbol property.
 	 */
-	String get_symbol() const;
+	[[nodiscard]] String get_symbol() const;
 
 	/**
 	 * @brief Set the URI property.
@@ -112,7 +111,7 @@ public:
 	 *
 	 * @return String URI property.
 	 */
-	String get_uri() const;
+	[[nodiscard]] String get_uri() const;
 
 	/**
 	 * @brief Set the seller fee basis points property.
@@ -140,7 +139,7 @@ public:
 	 *
 	 * @return Array creator property.
 	 */
-	Array get_creators() const;
+	[[nodiscard]] Array get_creators() const;
 
 	/**
 	 * @brief Set the collection property.
@@ -154,7 +153,7 @@ public:
 	 *
 	 * @return Variant Collection property.
 	 */
-	Variant get_collection() const;
+	[[nodiscard]] Variant get_collection() const;
 
 	/**
 	 * @brief Serialize the CreateMetaDataArgs.

@@ -69,7 +69,7 @@ public:
 	 * @return true if the accounts have the same addresses.
 	 * @return false if the account do not have the same addresses.
 	 */
-	bool is_key_at_index(const Variant &key, int64_t index) const;
+	[[nodiscard]] bool is_key_at_index(const Variant &key, int64_t index) const;
 
 	/**
 	 * @brief Checks if account meta list is empty.
@@ -77,7 +77,7 @@ public:
 	 * @return true if list is empty.
 	 * @return false if list is not empty.
 	 */
-	bool is_empty() const;
+	[[nodiscard]] bool is_empty() const;
 
 	/**
 	 * @brief Finds the index of an account meta.
@@ -86,14 +86,14 @@ public:
 	 * @return Index of account meta
 	 * @return -1 if the account meta was not found.
 	 */
-	int64_t find(const AccountMeta &account_meta) const;
+	[[nodiscard]] int64_t find(const AccountMeta &account_meta) const;
 
 	/**
 	 * @brief Get the internal account meta list.
 	 *
 	 * @return List of account metas.
 	 */
-	TypedArray<AccountMeta> get_list() const;
+	[[nodiscard]] TypedArray<AccountMeta> get_list() const;
 
 	/**
 	 * @brief Gets the list of signing key objects.
@@ -105,7 +105,7 @@ public:
 	 *
 	 * @return Array
 	 */
-	Array get_signers() const;
+	[[nodiscard]] Array get_signers() const;
 
 	/**
 	 * @brief Supply missing signers to the account meta list.

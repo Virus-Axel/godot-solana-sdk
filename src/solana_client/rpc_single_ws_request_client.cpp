@@ -100,7 +100,7 @@ void RpcSingleWsRequestClient::unsubscribe_all(const Callable &callback, const D
 		if (subscriptions[i].callback == callback) {
 			const String unsubscribe_method_name = subscriptions[i].method_name.replace("Subscribe", "Unsubscribe");
 
-			const Array params = build_array(subscriptions[i].identifier);
+			const Array params = Array::make(subscriptions[i].identifier);
 			Dictionary request_body = SolanaClient::make_rpc_dict(unsubscribe_method_name, params);
 
 			request_queue.push_back(WsRequestData{ request_body, url, timeout, request_body["id"], Callable(), Callable() });
@@ -138,16 +138,16 @@ void RpcSingleWsRequestClient::remove_subscription(unsigned int index) {
 void RpcSingleWsRequestClient::call_subscription_callback(unsigned int query_id, const Dictionary &params) {
 	for (auto &subscription : subscriptions) {
 		if (subscription.identifier == query_id) {
-			const Array args = build_array(params);
+			const Array args = Array::make(params);
 			subscription.callback.callv(args);
 		}
 	}
 }
 
-void RpcSingleWsRequestClient::call_confirmation_callback(unsigned int index, const Dictionary &params) {
-	const Array args = build_array(params);
-	if (request_queue[index].confirmation_callback.is_valid()) {
-		request_queue[index].confirmation_callback.callv(args);
+void RpcSingleWsRequestClient::call_confirmation_callback(unsigned int query_id, const Dictionary &params) {
+	const Array args = Array::make(params);
+	if (request_queue[query_id].confirmation_callback.is_valid()) {
+		request_queue[query_id].confirmation_callback.callv(args);
 	}
 }
 

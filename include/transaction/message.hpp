@@ -1,11 +1,18 @@
 #ifndef SOLANA_SDK_MESSAGE_HPP
 #define SOLANA_SDK_MESSAGE_HPP
 
-#include <compiled_instruction.hpp>
-#include <godot_cpp/classes/node.hpp>
-#include <instruction.hpp>
+#include <cstdint>
 
-#include "keypair.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/typed_array.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "compiled_instruction.hpp"
+#include "instruction.hpp"
+#include "merged_account_metas.hpp"
+#include "pubkey.hpp"
 
 namespace godot {
 
@@ -102,14 +109,14 @@ public:
 	 *
 	 * @return Array of the compiled transactions.
 	 */
-	TypedArray<CompiledInstruction> get_compiled_instructions() const;
+	[[nodiscard]] TypedArray<CompiledInstruction> get_compiled_instructions() const;
 
 	/**
 	 * @brief Get the amount of required signers.
 	 *
 	 * @return Amount of required signers.
 	 */
-	int get_amount_signers() const;
+	[[nodiscard]] int get_amount_signers() const;
 
 	/**
 	 * @brief Get the objects marked as signers
@@ -167,7 +174,7 @@ public:
 	 * @return true if the message is considered valid.
 	 * @return false if the message is considered invalid.
 	 */
-	bool is_valid() const;
+	[[nodiscard]] bool is_valid() const;
 	~Message() = default;
 };
 

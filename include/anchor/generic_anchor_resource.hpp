@@ -1,14 +1,33 @@
 #ifndef GODOT_SOLANA_SDK_GENERIC_ANCHOR_RESOURCE_HPP
 #define GODOT_SOLANA_SDK_GENERIC_ANCHOR_RESOURCE_HPP
 
-#include "godot_cpp/classes/node.hpp"
+#include <cstdint>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#include "gdextension_interface.h"
+#include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/classes/resource.hpp"
+#include "godot_cpp/classes/wrapped.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/error_macros.hpp"
+#include "godot_cpp/core/property_info.hpp"
+#include "godot_cpp/templates/list.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/callable.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/packed_string_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/string_name.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
-#include "anchor/anchor_program.hpp"
 #include "custom_class_management/generic_type.hpp"
 
 namespace godot {
 
+// NOLINTBEGIN(modernize-use-using)
 typedef void (*BindMethodFunc)();
 using NotificationMethod = void (Wrapped::*)(int);
 typedef bool (Wrapped::*SetMethod)(const StringName &p_name, const Variant &p_property);
@@ -22,7 +41,7 @@ typedef String (Wrapped::*ToStringMethod)() const;
 /**
  * @brief Keeps value and properties of a custom property.
  */
-typedef struct {
+typedef struct { // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
 	PropertyInfo property_info; ///< Property info.
 	Variant value; ///< Property value.
 	bool optional; ///< Determines if property is optional.
@@ -31,13 +50,13 @@ typedef struct {
 	String type_info; ///< Type info string.
 } ResourcePropertyInfo;
 
+// NOLINTEND(modernize-use-using)
+
 /**
  * @brief A generic node that can take form of any type from an anchor IDL.
  */
 class GenericAnchorResource : public GenericType<Resource> {
 private:
-	const String OPTIONAL_PROPERTY_PREFIX = "enable_";
-
 	static std::vector<StringName *> names;
 	static std::vector<Callable> static_class_names;
 	static std::string string_name;
@@ -46,6 +65,8 @@ private:
 	static std::unordered_map<StringName, Array> enum_field_map;
 	static std::unordered_map<StringName, GDExtensionClassCallVirtual> virtual_methods;
 	static std::unordered_map<StringName, std::vector<StringName>> extra_props;
+
+	const String OPTIONAL_PROPERTY_PREFIX = "enable_"; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
 	std::unordered_map<StringName, ResourcePropertyInfo> properties;
 
@@ -73,10 +94,9 @@ private:
 	static void bind_resource_property(const StringName &p_class_name, const PropertyInfo &property_info, const StringName &setter_name = "", const StringName &getter_name = "");
 
 	static String get_enum_hint(const StringName &enum_type);
-	static Variant godot_type_defval(const Variant::Type type_name);
-	static PackedStringArray names_from_array(const Array fields);
+	static Variant godot_type_defval(Variant::Type type_name);
+	static PackedStringArray names_from_array(const Array &fields);
 
-	void operator=(const GenericAnchorResource & /*p_rval*/) {}
 	friend class ClassDB;
 	friend class Wrapped;
 
@@ -89,7 +109,7 @@ protected:
 	 * @return true If class is an extension class.
 	 * @return false Otherwise.
 	 */
-	virtual bool _is_extension_class() const override;
+	bool _is_extension_class() const override;
 
 	/**
 	 * @brief Get extension class name.
@@ -178,7 +198,7 @@ protected:
 	 * @param p_what Notification type.
 	 * @param p_reversed Reversed.
 	 */
-	virtual void _notificationv(int32_t p_what, bool p_reversed = false);
+	virtual void _notificationv(int32_t p_what, bool p_reversed);
 
 	/**
 	 * @brief Bind methods of GenericAnchorNode Node.
@@ -186,8 +206,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	typedef GenericAnchorResource self_type; ///< This type.
-	typedef Resource parent_type; ///< Parent type.
+	using self_type = GenericAnchorResource; ///< This type.
+	using parent_type = Resource; ///< Parent type.
 
 	/**
 	 * @brief Initializes a class
@@ -419,20 +439,6 @@ public:
 	 */
 	PackedByteArray serialize();
 
-	/**
-	 * @brief Template method prototype.
-	 */
-	void say_hi() {
-		std::cout << "HI" << std::endl;
-	}
-
-	/**
-	 * @brief Template method prototype.
-	 */
-	void say_hii(const Variant &other) {
-		std::cout << "HI" << std::endl;
-	}
-
 	// TODO(Virax): Add support for generic getters and setters.
 
 	/**
@@ -440,7 +446,7 @@ public:
 	 *
 	 * @return Variant nullptr.
 	 */
-	Variant no_get() {
+	Variant no_get() { // NOLINT(readability-convert-member-functions-to-static)
 		WARN_PRINT_ED("Getter is undefined, read property directly instead");
 		return nullptr;
 	}
@@ -450,7 +456,8 @@ public:
 	 *
 	 * @param value Not used.
 	 */
-	void no_set(const Variant &value) {
+	void no_set(const Variant &value) { // NOLINT(readability-convert-member-functions-to-static)
+		(void)value;
 		WARN_PRINT_ED("Setter is undefined, assign property directly instead");
 	}
 
@@ -468,7 +475,7 @@ public:
 	 */
 	PackedByteArray serialize_core_mint_args();
 
-	~GenericAnchorResource() = default;
+	~GenericAnchorResource() override = default;
 };
 } //namespace godot
 

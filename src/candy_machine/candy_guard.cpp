@@ -1,5 +1,17 @@
 #include "candy_machine/candy_guard.hpp"
 
+#include <cstdint>
+#include <string>
+
+#include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/typed_array.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "account_meta.hpp"
 #include "candy_machine/candy_guard_access_list.hpp"
 #include "candy_machine/candy_machine.hpp"
 #include "instruction.hpp"
@@ -7,19 +19,15 @@
 #include "instructions/mpl_token_metadata.hpp"
 #include "instructions/spl_token.hpp"
 #include "instructions/system_program.hpp"
-#include "anchor/generic_anchor_resource.hpp"
+#include "pubkey.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 
-const std::string MplCandyGuard::ID = "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g";
+const std::string MplCandyGuard::PID = "Guard1JwRhJkVH6XZhzoYxeBVQe872VH6QggF4BWmS9g";
 
 PackedByteArray MplCandyGuard::wrap_discriminator() {
-	const unsigned char DISCRIMINATOR_ARRAY[] = { 178, 40, 10, 189, 228, 129, 186, 140 };
-	PackedByteArray result;
-	for (unsigned int i = 0; i < 8; i++) {
-		result.append(DISCRIMINATOR_ARRAY[i]);
-	}
-	return result;
+	return { 178, 40, 10, 189, 228, 129, 186, 140 }; // NOLINT(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 }
 
 PackedByteArray MplCandyGuard::serialize_label(const String &label) {
@@ -31,7 +39,10 @@ PackedByteArray MplCandyGuard::serialize_label(const String &label) {
 		result.append(0);
 		return result;
 	}
-	result.resize(5);
+
+	const int32_t BASE_DATA_SIZE = 5;
+
+	result.resize(BASE_DATA_SIZE);
 	result[0] = 1;
 	result.encode_u32(1, MAX_LABEL_SIZE);
 
@@ -68,45 +79,45 @@ Variant MplCandyGuard::new_limit_counter_pda(const uint8_t mint_guard_id, const 
 }
 
 Variant MplCandyGuard::initialize(const Variant &owner, const Variant &candy_guard_authority, const Variant &payer, const Variant &candy_guard_acl) {
-	Instruction *result = memnew(Instruction);
+	Instruction *result = memnew_custom(Instruction);
 
 	PackedByteArray data = MplCandyMachine::initialize_discriminator();
 	data.append_array(Object::cast_to<CandyGuardAccessList>(candy_guard_acl)->serialize());
 
-	const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
+	const Variant new_pid = memnew_custom(Pubkey(String(PID.c_str())));
 	result->set_program_id(new_pid);
 	result->set_data(data);
 
 	const Variant CANDY_MACHINE_PDA = new_associated_candy_guard_key(owner);
-	result->append_meta(*memnew(AccountMeta(CANDY_MACHINE_PDA, false, true)));
-	result->append_meta(*memnew(AccountMeta(owner, true, false)));
+	result->append_meta(*memnew_custom(AccountMeta(CANDY_MACHINE_PDA, false, true)));
+	result->append_meta(*memnew_custom(AccountMeta(owner, true, false)));
 
-	result->append_meta(*memnew(AccountMeta(candy_guard_authority, false, false)));
-	result->append_meta(*memnew(AccountMeta(payer, true, false)));
+	result->append_meta(*memnew_custom(AccountMeta(candy_guard_authority, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(payer, true, false)));
 
 	const Variant SYSTEM_PID = SystemProgram::get_pid();
-	result->append_meta(*memnew(AccountMeta(SYSTEM_PID, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(SYSTEM_PID, false, false)));
 
 	return result;
 }
 
 Variant MplCandyGuard::wrap(const Variant &candy_guard_id, const Variant &guard_authority, const Variant &candy_machine_id, const Variant &candy_machine_authority) {
-	Instruction *result = memnew(Instruction);
+	Instruction *result = memnew_custom(Instruction);
 
-	PackedByteArray data = wrap_discriminator();
+	const PackedByteArray data = wrap_discriminator();
 
-	const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
+	const Variant new_pid = memnew_custom(Pubkey(String(PID.c_str())));
 
 	result->set_program_id(new_pid);
 	result->set_data(data);
 
-	result->append_meta(*memnew(AccountMeta(candy_guard_id, false, false)));
-	result->append_meta(*memnew(AccountMeta(guard_authority, true, false)));
-	result->append_meta(*memnew(AccountMeta(candy_machine_id, false, true)));
+	result->append_meta(*memnew_custom(AccountMeta(candy_guard_id, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(guard_authority, true, false)));
+	result->append_meta(*memnew_custom(AccountMeta(candy_machine_id, false, true)));
 
 	const Variant CANDY_MACHINE_ID = MplCandyMachine::get_pid();
-	result->append_meta(*memnew(AccountMeta(CANDY_MACHINE_ID, false, false)));
-	result->append_meta(*memnew(AccountMeta(candy_machine_authority, true, false)));
+	result->append_meta(*memnew_custom(AccountMeta(CANDY_MACHINE_ID, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(candy_machine_authority, true, false)));
 
 	return result;
 }
@@ -122,14 +133,14 @@ Variant MplCandyGuard::mint(
 		const Variant &collection_update_authority,
 		const Variant &candy_guard_acl,
 		const String &label) {
-	Instruction *result = memnew(Instruction);
+	Instruction *result = memnew_custom(Instruction);
 
 	PackedByteArray data = MplCandyMachine::mint2_discriminator();
 
 	data.append_array(Object::cast_to<CandyGuardAccessList>(candy_guard_acl)->get_group(label).serialize_mint_settings());
 	data.append_array(serialize_label(label));
 
-	const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
+	const Variant new_pid = memnew_custom(Pubkey(String(PID.c_str())));
 	const Variant candy_machine_creator = MplCandyMachine::new_candy_machine_authority_pda(candy_machine_id);
 
 	const Variant associated_token_account = Pubkey::new_associated_token_address(payer, mint, TokenProgram::get_pid());
@@ -137,37 +148,37 @@ Variant MplCandyGuard::mint(
 	result->set_program_id(new_pid);
 	result->set_data(data);
 
-	result->append_meta(*memnew(AccountMeta(guard_account_id, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(guard_account_id, false, false)));
 
 	const Variant CANDY_MACHINE_ID = MplCandyMachine::get_pid();
-	result->append_meta(*memnew(AccountMeta(CANDY_MACHINE_ID, false, false)));
-	result->append_meta(*memnew(AccountMeta(candy_machine_id, false, true)));
-	result->append_meta(*memnew(AccountMeta(candy_machine_creator, false, true)));
+	result->append_meta(*memnew_custom(AccountMeta(CANDY_MACHINE_ID, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(candy_machine_id, false, true)));
+	result->append_meta(*memnew_custom(AccountMeta(candy_machine_creator, false, true)));
 
-	result->append_meta(*memnew(AccountMeta(payer, true, true)));
-	result->append_meta(*memnew(AccountMeta(receiver, true, true)));
-	result->append_meta(*memnew(AccountMeta(mint, true, true)));
-	result->append_meta(*memnew(AccountMeta(nft_mint_authority, true, false)));
+	result->append_meta(*memnew_custom(AccountMeta(payer, true, true)));
+	result->append_meta(*memnew_custom(AccountMeta(receiver, true, true)));
+	result->append_meta(*memnew_custom(AccountMeta(mint, true, true)));
+	result->append_meta(*memnew_custom(AccountMeta(nft_mint_authority, true, false)));
 
 	const Variant MINT_METADATA = MplTokenMetadata::new_associated_metadata_pubkey(mint);
 	const Variant MINT_MASTER_EDITION = MplTokenMetadata::new_associated_metadata_pubkey_master_edition(mint);
-	result->append_meta(*memnew(AccountMeta(MINT_METADATA, false, true)));
-	result->append_meta(*memnew(AccountMeta(MINT_MASTER_EDITION, false, true)));
+	result->append_meta(*memnew_custom(AccountMeta(MINT_METADATA, false, true)));
+	result->append_meta(*memnew_custom(AccountMeta(MINT_MASTER_EDITION, false, true)));
 
-	result->append_meta(*memnew(AccountMeta(associated_token_account, false, true)));
+	result->append_meta(*memnew_custom(AccountMeta(associated_token_account, false, true)));
 	const Variant TOKEN_RECORD = TokenProgram::new_token_record_address(associated_token_account, mint);
-	result->append_meta(*memnew(AccountMeta(TOKEN_RECORD, false, true)));
+	result->append_meta(*memnew_custom(AccountMeta(TOKEN_RECORD, false, true)));
 
 	const Variant DELEGATE_RECORD = TokenProgram::new_delegate_record_address(collection_update_authority, collection_mint, candy_machine_creator, TokenProgram::MetaDataDelegateRole::COLLECTION);
-	result->append_meta(*memnew(AccountMeta(DELEGATE_RECORD, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(DELEGATE_RECORD, false, false)));
 
-	result->append_meta(*memnew(AccountMeta(collection_mint, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(collection_mint, false, false)));
 
 	const Variant COLLECTION_METADATA = MplTokenMetadata::new_associated_metadata_pubkey(collection_mint);
 	const Variant COLLECTION_MASTER_EDITION = MplTokenMetadata::new_associated_metadata_pubkey_master_edition(collection_mint);
-	result->append_meta(*memnew(AccountMeta(COLLECTION_METADATA, false, true)));
-	result->append_meta(*memnew(AccountMeta(COLLECTION_MASTER_EDITION, false, false)));
-	result->append_meta(*memnew(AccountMeta(collection_update_authority, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(COLLECTION_METADATA, false, true)));
+	result->append_meta(*memnew_custom(AccountMeta(COLLECTION_MASTER_EDITION, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(collection_update_authority, false, false)));
 
 	const Variant METADATA_PID = MplTokenMetadata::get_pid();
 	const Variant TOKEN_PID = TokenProgram::get_pid();
@@ -175,25 +186,25 @@ Variant MplCandyGuard::mint(
 	const Variant SYSTEM_PID = SystemProgram::get_pid();
 	const Variant SYSVAR_INSTRUCTIONS = Pubkey::new_from_string("Sysvar1nstructions1111111111111111111111111");
 	const Variant SYSVAR_SLOTHASHES = Pubkey::new_from_string("SysvarS1otHashes111111111111111111111111111");
-	result->append_meta(*memnew(AccountMeta(METADATA_PID, false, false)));
-	result->append_meta(*memnew(AccountMeta(TOKEN_PID, false, false)));
-	result->append_meta(*memnew(AccountMeta(ASSOCIATED_TOKEN_PID, false, false)));
-	result->append_meta(*memnew(AccountMeta(SYSTEM_PID, false, false)));
-	result->append_meta(*memnew(AccountMeta(SYSVAR_INSTRUCTIONS, false, false)));
-	result->append_meta(*memnew(AccountMeta(SYSVAR_SLOTHASHES, false, false)));
-	result->append_meta(*memnew(AccountMeta(new_pid, false, false)));
-	result->append_meta(*memnew(AccountMeta(new_pid, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(METADATA_PID, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(TOKEN_PID, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(ASSOCIATED_TOKEN_PID, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(SYSTEM_PID, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(SYSVAR_INSTRUCTIONS, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(SYSVAR_SLOTHASHES, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(new_pid, false, false)));
+	result->append_meta(*memnew_custom(AccountMeta(new_pid, false, false)));
 
 	TypedArray<AccountMeta> mint_arg_accounts = Object::cast_to<CandyGuardAccessList>(candy_guard_acl)->get_group(label).get_mint_arg_accounts(receiver, candy_machine_id, guard_account_id);
 	for (unsigned int i = 0; i < mint_arg_accounts.size(); i++) {
-		result->append_meta(*memnew(AccountMeta(mint_arg_accounts[i])));
+		result->append_meta(*memnew_custom(AccountMeta(mint_arg_accounts[i])));
 	}
 
 	return result;
 }
 
 Variant MplCandyGuard::get_pid() {
-	return Pubkey::new_from_string(ID.c_str());
+	return Pubkey::new_from_string(PID.c_str());
 }
 
 Variant MplCandyGuard::new_associated_candy_guard_key(const Variant &candy_machine_key) {

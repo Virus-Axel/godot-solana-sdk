@@ -1,12 +1,15 @@
 #ifndef SOLANA_SDK_MPL_CANDY_MACHINE_DATA
 #define SOLANA_SDK_MPL_CANDY_MACHINE_DATA
 
-#include "godot_cpp/classes/node.hpp"
+#include <cstdint>
+
 #include "godot_cpp/classes/resource.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
-#include "account_meta.hpp"
-#include "solana_client.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -14,7 +17,7 @@ namespace godot {
  * @brief Details about Candy Machines used by Candy Machine program.
  */
 class CandyMachineData : public Resource {
-	GDCLASS(CandyMachineData, Resource)
+	GDCLASS_CUSTOM(CandyMachineData, Resource)
 private:
 	uint32_t token_standard = 0;
 	PackedByteArray features;
@@ -44,196 +47,196 @@ protected:
 public:
 	/**
 	 * @brief Set the token standard property.
-	 * 
+	 *
 	 * @param value Property value.
 	 */
-	void set_token_standard(const uint32_t value);
+	void set_token_standard(uint32_t value);
 
 	/**
 	 * @brief Get the token standard property.
-	 * 
+	 *
 	 * @return uint32_t token standard.
 	 */
-	uint32_t get_token_standard();
+	[[nodiscard]] uint32_t get_token_standard() const;
 
 	/**
 	 * @brief Set the features byte array property.
-	 * 
+	 *
 	 * @param value Property value.
 	 */
 	void set_features(const PackedByteArray &value);
 
 	/**
 	 * @brief Get the features property.
-	 * 
+	 *
 	 * @return PackedByteArray feature property.
 	 */
-	PackedByteArray get_features();
+	[[nodiscard]] PackedByteArray get_features() const;
 
 	/**
 	 * @brief Set the authority property.
-	 * 
+	 *
 	 * @param value Property value.
 	 */
 	void set_authority(const Variant &value);
 
 	/**
 	 * @brief Get the authority property.
-	 * 
+	 *
 	 * @return Variant authority property.
 	 */
-	Variant get_authority();
+	[[nodiscard]] Variant get_authority() const;
 
 	/**
 	 * @brief Set the mint authority property.
-	 * 
+	 *
 	 * @param value Property value.
 	 */
 	void set_mint_authority(const Variant &value);
 
 	/**
 	 * @brief Get the mint authority property.
-	 * 
+	 *
 	 * @return Variant mint authority property.
 	 */
-	Variant get_mint_authority();
+	[[nodiscard]] Variant get_mint_authority() const;
 
 	/**
 	 * @brief Set the items available property.
-	 * 
+	 *
 	 * @param value Property value.
 	 */
-	void set_items_available(const uint64_t value);
+	void set_items_available(uint64_t value);
 
 	/**
 	 * @brief Get the items available property.
-	 * 
+	 *
 	 * @return uint64_t items available property.
 	 */
-	uint64_t get_items_available();
+	[[nodiscard]] uint64_t get_items_available() const;
 
 	/**
 	 * @brief Set the collection mint property.
-	 * 
+	 *
 	 * @param value Property value.
 	 */
 	void set_collection_mint(const Variant &value);
 
 	/**
 	 * @brief Get the collection mint property.
-	 * 
+	 *
 	 * @return Variant collection mint property.
 	 */
-	Variant get_collection_mint();
+	[[nodiscard]] Variant get_collection_mint() const;
 
 	/**
 	 * @brief Set the items redeemed property.
-	 * 
+	 *
 	 * @param value Property value.
 	 */
-	void set_items_redeemed(const uint64_t value);
+	void set_items_redeemed(uint64_t value);
 
 	/**
 	 * @brief Get the items redeemed property.
-	 * 
+	 *
 	 * @return uint64_t items redeemed property.
 	 */
-	uint64_t get_items_redeemed();
+	[[nodiscard]] uint64_t get_items_redeemed() const;
 
 	/**
 	 * @brief Set the symbol property.
-	 * 
+	 *
 	 * @param value Property value.
 	 */
 	void set_symbol(const String &value);
 
 	/**
 	 * @brief Get the symbol property.
-	 * 
+	 *
 	 * @return String symbol property.
 	 */
-	String get_symbol();
+	[[nodiscard]] String get_symbol() const;
 
 	/**
 	 * @brief Set the seller fee basis points property.
-	 * 
+	 *
 	 * @param value Property value.
 	 */
-	void set_seller_fee_basis_points(const uint32_t value);
+	void set_seller_fee_basis_points(uint32_t value);
 
 	/**
 	 * @brief Get the seller fee basis point property.
-	 * 
+	 *
 	 * @return uint32_t seller fee basis points property.
 	 */
-	uint32_t get_seller_fee_basis_points();
+	[[nodiscard]] uint32_t get_seller_fee_basis_points() const;
 
 	/**
 	 * @brief Set the max supply property.
-	 * 
+	 *
 	 * @param value Property value.
 	 */
-	void set_max_supply(const uint64_t value);
+	void set_max_supply(uint64_t value);
 
 	/**
 	 * @brief Get the max supply property.
-	 * 
+	 *
 	 * @return uint64_t max supply property.
 	 */
-	uint64_t get_max_supply();
+	[[nodiscard]] uint64_t get_max_supply() const;
 
 	/**
 	 * @brief Set the is mutable property.
-	 * 
+	 *
 	 * @param value Property value.
 	 */
-	void set_is_mutable(const bool value);
+	void set_is_mutable(bool value);
 
 	/**
 	 * @brief Get the is mutable property.
-	 * 
+	 *
 	 * @return bool is mutable property.
 	 */
-	bool get_is_mutable();
+	[[nodiscard]] bool get_is_mutable() const;
 
 	/**
 	 * @brief Set the creators property.
-	 * 
+	 *
 	 * @param value Property value.
 	 */
 	void set_creators(const Array &value);
 
 	/**
 	 * @brief Get the creators property.
-	 * 
+	 *
 	 * @return Array creators property.
 	 */
-	Array get_creators();
+	[[nodiscard]] Array get_creators() const;
 
 	/**
 	 * @brief Set the consig line settings property.
-	 * 
+	 *
 	 * @param config_line_setting Property value.
 	 */
 	void set_config_line_setting(const Variant &config_line_setting);
 
 	/**
 	 * @brief Get the config line setting property.
-	 * 
+	 *
 	 * @return Variant config line setting property.
 	 */
-	Variant get_config_line_setting();
+	[[nodiscard]] Variant get_config_line_setting() const;
 
 	/**
 	 * @brief Serialize candy machine data.
-	 * 
+	 *
 	 * @return PackedByteArray byte array.
 	 */
 	PackedByteArray serialize();
 
 	/**
 	 * @brief Get the space for candy property.
-	 * 
+	 *
 	 * @return unsigned int space for candy property.
 	 */
 	unsigned int get_space_for_candy();

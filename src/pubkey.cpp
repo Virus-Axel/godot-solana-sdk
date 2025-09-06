@@ -20,12 +20,11 @@
 #include "curve25519.hpp"
 #include "keypair.hpp"
 #include "solana_utils.hpp"
-#include "spl_token.hpp"
 #include "wallet_adapter.hpp"
 
 namespace godot {
 
-const uint8_t PDA_MARKER[] = "ProgramDerivedAddress";
+const uint8_t PDA_MARKER[] = "ProgramDerivedAddress"; //NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 bool Pubkey::are_bytes_curve_point() const {
 	return is_y_point_valid(bytes.ptr());
@@ -398,7 +397,7 @@ PackedByteArray Pubkey::bytes_from_variant(const Variant &other) {
 		return other;
 	}
 	if (other.get_type() != Variant::Type::OBJECT) {
-		const Array params = build_array(Variant::get_type_name(other.get_type()));
+		const Array params = Array::make(Variant::get_type_name(other.get_type()));
 		ERR_FAIL_V_EDMSG_CUSTOM(PackedByteArray(), String("Bug: Unknown object: {0}. Please report.").format(params));
 	}
 
@@ -427,7 +426,7 @@ PackedByteArray Pubkey::bytes_from_variant(const Variant &other) {
 		return Object::cast_to<Keypair>(keypair)->get_public_bytes();
 	}
 
-	const Array params = build_array(static_cast<Object *>(other)->get_class());
+	const Array params = Array::make(static_cast<Object *>(other)->get_class());
 	ERR_FAIL_V_EDMSG_CUSTOM(PackedByteArray(), String("Bug: Unknown object {0}. Please report.").format(params));
 }
 

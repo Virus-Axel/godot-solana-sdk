@@ -7,19 +7,19 @@
 
 #include "gdextension_interface.h"
 #include "godot_cpp/classes/input_event.hpp"
-#include "godot_cpp/classes/node.hpp"
-#include "godot_cpp/classes/ref.hpp"
 #include "godot_cpp/classes/wrapped.hpp"
+#include "godot_cpp/core/memory.hpp"
+#include "godot_cpp/core/property_info.hpp"
+#include "godot_cpp/templates/list.hpp"
 #include "godot_cpp/variant/packed_string_array.hpp"
 #include "godot_cpp/variant/string_name.hpp"
 
 #include "solana_utils.hpp"
 
-#define GET_VIRTUAL_METHOD(m_class, m_method)                                                                      \
-	[](GDExtensionObjectPtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr p_ret) -> void { \
-		call_with_ptr_args(static_cast<m_class *>(p_instance), &m_class::m_method, p_args, p_ret);                 \
+#define GET_VIRTUAL_METHOD(m_class, m_method) /* NOLINT(cppcoreguidelines-macro-usage)*/                                                   \
+	[](GDExtensionObjectPtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr p_ret) -> void {                         \
+		call_with_ptr_args(static_cast<m_class *>(p_instance), &m_class::m_method, p_args, p_ret); /* NOLINT(bugprone-macro-parentheses)*/ \
 	}
-
 namespace godot {
 
 using BindMethodFunc = void (*)();
@@ -34,13 +34,13 @@ using ToStringMethod = godot::String (Wrapped::*)() const;
 
 /**
  * @brief Extensible type that can be modified with custom behavior.
- * 
+ *
  * @tparam BaseType Type that will be inherited from.
  */
 template <typename BaseType>
 class GenericType : public BaseType {
 private:
-	static std::string current_class_name;
+	inline static std::string current_class_name;
 
 	void operator=(const GenericType &other) {} // NOLINT(cert-oop54-cpp) - Handled by godot
 
@@ -51,7 +51,7 @@ protected:
 
 	/**
 	 * @brief Call bound notification function.
-	 * 
+	 *
 	 * @param p_what Notification type.
 	 * @param p_reversed Reversed.
 	 */
@@ -61,17 +61,17 @@ protected:
 
 	/**
 	 * @brief Check if class is an extension class.
-	 * 
+	 *
 	 * @return true If class is an extension class.
 	 * @return false Otherwise.
 	 */
-	bool _is_extension_class() const override {
+	[[nodiscard]] bool _is_extension_class() const override {
 		return true;
 	}
 
 	/**
 	 * @brief Get extension class name.
-	 * 
+	 *
 	 * @return const StringName* Pointer to class name.
 	 */
 	static const StringName *_get_extension_class_name() {
@@ -81,27 +81,28 @@ protected:
 
 	/**
 	 * @brief Get the virtual methods mapped to class name.
-	 * 
+	 *
 	 * @param p_userdata Pointer to class name.
 	 * @param p_name Virtual function name.
 	 * @param p_hash Not used.
-	 * @return GDExtensionClassCallVirtual 
+	 * @return GDExtensionClassCallVirtual
 	 */
 	static GDExtensionClassCallVirtual get_virtual_func(void *p_userdata, GDExtensionConstStringNamePtr p_name, uint32_t p_hash) {
 		// This is called by Godot the first time it calls a virtual function, and it caches the result, per object instance.
 		// Because of this, it can happen from different threads at once.
 		// It should be ok not using any mutex as long as we only READ data.
-		const StringName *class_name = reinterpret_cast<const StringName *>(p_userdata);
-		const StringName *name = reinterpret_cast<const StringName *>(p_name);
+		(void)p_hash;
+		const auto *class_name = reinterpret_cast<const StringName *>(p_userdata); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		const auto *name = reinterpret_cast<const StringName *>(p_name); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
-		ERR_FAIL_COND_V_MSG(virtual_methods.find(*name) == virtual_methods.end(), nullptr, String("Virtual method '{0}' doesn't exist.").format(Array::make(*name)));
+		ERR_FAIL_COND_V_MSG_CUSTOM(virtual_methods.find(*name) == virtual_methods.end(), nullptr, String("Virtual method '{0}' doesn't exist.").format(Array::make(*name))); // NOLINT(clang-diagnostic-undefined-var-template)
 
 		return virtual_methods[*name];
 	}
 
 	/**
 	 * @brief Get _bind_methods method.
-	 * 
+	 *
 	 * @return BindMethodFunc _bind_methods method.
 	 */
 	static BindMethodFunc _get_bind_methods() {
@@ -110,7 +111,7 @@ protected:
 
 	/**
 	 * @brief Get _notification method.
-	 * 
+	 *
 	 * @return NotificationMethod _notification method.
 	 */
 	static NotificationMethod _get_notification() {
@@ -119,7 +120,7 @@ protected:
 
 	/**
 	 * @brief Get _set method.
-	 * 
+	 *
 	 * @return SetMethod _set method.
 	 */
 	static SetMethod _get_set() {
@@ -128,7 +129,7 @@ protected:
 
 	/**
 	 * @brief Get _get method.
-	 * 
+	 *
 	 * @return GetMethod _get method.
 	 */
 	static GetMethod _get_get() {
@@ -137,7 +138,7 @@ protected:
 
 	/**
 	 * @brief Get _get_property_list method.
-	 * 
+	 *
 	 * @return GetPropertyListMethod _get_property_list method.
 	 */
 	static GetPropertyListMethod _get_get_property_list() {
@@ -146,7 +147,7 @@ protected:
 
 	/**
 	 * @brief Get _property_can_revert method.
-	 * 
+	 *
 	 * @return PropertyCanRevertMethod _property_can_revert method.
 	 */
 	static PropertyCanRevertMethod _get_property_can_revert() {
@@ -155,7 +156,7 @@ protected:
 
 	/**
 	 * @brief Get _property_get_revert method.
-	 * 
+	 *
 	 * @return PropertyGetRevertMethod _property_get_revert method.
 	 */
 	static PropertyGetRevertMethod _get_property_get_revert() {
@@ -164,7 +165,7 @@ protected:
 
 	/**
 	 * @brief Get _validate_property method.
-	 * 
+	 *
 	 * @return ValidatePropertyMethod _validate_property method.
 	 */
 	static ValidatePropertyMethod _get_validate_property() {
@@ -173,7 +174,7 @@ protected:
 
 	/**
 	 * @brief Get _to_string method.
-	 * 
+	 *
 	 * @return ToStringMethod _to_string method.
 	 */
 	static ToStringMethod _get_to_string() {
@@ -188,7 +189,7 @@ public:
 
 	/**
 	 * @brief Initializes a class
-	 * 
+	 *
 	 * Exposed method for increased control over godot bindings.
 	 */
 	static void initialize_class() {
@@ -207,7 +208,7 @@ public:
 
 	/**
 	 * @brief Get the class name of the generic type.
-	 * 
+	 *
 	 * @return const StringName& Class name.
 	 */
 	static const StringName &get_class_static() {
@@ -217,7 +218,7 @@ public:
 
 	/**
 	 * @brief Set the class name of a particular type.
-	 * 
+	 *
 	 * @param name class name to set.
 	 */
 	static void set_class_name(const String &name) {
@@ -226,7 +227,7 @@ public:
 
 	/**
 	 * @brief Get the parent class name.
-	 * 
+	 *
 	 * @return const StringName& Parent class name.
 	 */
 	static const StringName &get_parent_class_static() {
@@ -235,9 +236,9 @@ public:
 
 	/**
 	 * @brief Bind notification function
-	 * 
+	 *
 	 * Exposed bind notification function for extra control over class methods.
-	 * 
+	 *
 	 * @param p_instance Pointer to instance.
 	 * @param p_what Notification type.
 	 * @param p_reversed reversed.
@@ -259,7 +260,7 @@ public:
 
 	/**
 	 * @brief Set the bind method function.
-	 * 
+	 *
 	 * @param p_instance Instance pointer.
 	 * @param p_name Property name.
 	 * @param p_value Property value.
@@ -281,10 +282,10 @@ public:
 
 	/**
 	 * @brief Get the bind method function.
-	 * 
+	 *
 	 * @param p_instance Instance pointer
 	 * @param p_name Name of property.
-	 * @param r_ret Return variant pointer. 
+	 * @param r_ret Return variant pointer.
 	 * @return GDExtensionBool 0 on success.
 	 * @return GDExtensionBool 1 on failure.
 	 */
@@ -303,7 +304,7 @@ public:
 
 	/**
 	 * @brief Checks if get_property_list function has been overridden.
-	 * 
+	 *
 	 * @return true if get_property_list has been overridden.
 	 * @return false otherwise.
 	 */
@@ -313,7 +314,7 @@ public:
 
 	/**
 	 * @brief Get the property list bind method function.
-	 * 
+	 *
 	 * @param p_instance Instance pointer.
 	 * @param r_count Return counter.
 	 * @return const GDExtensionPropertyInfo* Property list.
@@ -340,13 +341,13 @@ public:
 		if (p_instance != nullptr) {
 			auto *cls = static_cast<GenericType *>(p_instance);
 			cls->plist_owned.clear();
-			internal::free_c_property_list(const_cast<GDExtensionPropertyInfo *>(p_list));
+			internal::free_c_property_list(const_cast<GDExtensionPropertyInfo *>(p_list)); // NOLINT(cppcoreguidelines-pro-type-const-cast)
 		}
 	}
 
 	/**
 	 * @brief Check if property_can_revert_bind was overridden.
-	 * 
+	 *
 	 * @param p_instance Instance pointer.
 	 * @param p_name Name of property.
 	 * @return GDExtensionBool true if property_can_revert_bind is overridden.
@@ -365,7 +366,7 @@ public:
 
 	/**
 	 * @brief Check if property_get_revert is overridden.
-	 * 
+	 *
 	 * @param p_instance Instance pointer.
 	 * @param p_name Name of pointer.
 	 * @param r_ret Pointer to property.
@@ -385,7 +386,7 @@ public:
 
 	/**
 	 * @brief Check if validate_property has been overridden.
-	 * 
+	 *
 	 * @param p_instance Instance pointer.
 	 * @param p_property Pointer to property.
 	 * @return GDExtensionBool true if validate_property is overridden.
@@ -408,7 +409,7 @@ public:
 
 	/**
 	 * @brief Get to_string return.
-	 * 
+	 *
 	 * @param p_instance Instance pointer.
 	 * @param r_is_valid Indicates that to_string is overridden.
 	 * @param r_out to_string output.
@@ -449,7 +450,7 @@ public:
 
 	/**
 	 * @brief Placeholder method.
-	 * 
+	 *
 	 * @return GDExtensionBool 1.
 	 */
 	static GDExtensionBool _gde_binding_reference_callback(void * /*p_token*/, void * /*p_instance*/, GDExtensionBool /*p_reference*/) {

@@ -190,7 +190,7 @@ void Transaction::sign_at_index(const uint32_t index) {
 	} else if (signers[index].has_method("sign_message")) {
 		auto *controller = Object::cast_to<WalletAdapter>(signers[index]);
 
-		controller->connect("message_signed", callable_mp(this, &Transaction::_signer_signed).bindv(build_array(index)), CONNECT_ONE_SHOT);
+		controller->connect("message_signed", callable_mp(this, &Transaction::_signer_signed).bindv(Array::make(index)), CONNECT_ONE_SHOT);
 		controller->connect("signing_failed", callable_mp(this, &Transaction::_signer_failed), CONNECT_ONE_SHOT);
 		controller->sign_message(serialize(), index);
 	} else {

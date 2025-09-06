@@ -5,7 +5,6 @@
 
 #include "godot_cpp/classes/global_constants.hpp"
 #include "godot_cpp/classes/node.hpp"
-#include "godot_cpp/classes/wrapped.hpp"
 #include "godot_cpp/core/property_info.hpp"
 #include "godot_cpp/templates/list.hpp"
 #include "godot_cpp/variant/array.hpp"
@@ -16,6 +15,7 @@
 #include "godot_cpp/variant/variant.hpp"
 
 #include "solana_client.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -30,7 +30,7 @@ const float RESYNC_TIME_S = 6.0;
  * Program nodes.
  */
 class AnchorProgram : public Node {
-	GDCLASS(AnchorProgram, Node)
+	GDCLASS_CUSTOM(AnchorProgram, Node)
 private:
 	Dictionary idl;
 	String pid;
@@ -40,7 +40,7 @@ private:
 	bool try_from_pid = false;
 	Variant json_file;
 	bool try_from_json_file = false;
-	uint32_t accounts_discriminator_length = 8;
+	uint32_t accounts_discriminator_length = DISCRIMINATOR_LENGTH;
 	Array instructions;
 
 	SolanaClient *idl_client = nullptr;
@@ -65,7 +65,7 @@ private:
 	Dictionary parse_account_data(const Dictionary &account_data, const Dictionary &reference, bool emit_decoded_account = false);
 
 	static PackedByteArray discriminator_by_name(const String &name, const String &namespace_string);
-	[[nodiscard]] PackedByteArray get_instruction_discriminant(const Dictionary &instruction_info, const String &name) const;
+	[[nodiscard]] static PackedByteArray get_instruction_discriminant(const Dictionary &instruction_info, const String &name);
 
 	Dictionary find_idl_type(const String &name);
 
@@ -119,7 +119,7 @@ public:
 
 	/**
 	 * @brief Get the accounts discriminator length.
-	 * 
+	 *
 	 * @return uint32_t Length of the accounts discriminator.
 	 */
 	[[nodiscard]] uint32_t get_accounts_discriminator_length() const;
@@ -165,10 +165,10 @@ public:
 
 	/**
 	 * @brief Set the accounts discriminator length.
-	 * 
+	 *
 	 * @param accounts_discriminator_length Length of the accounts discriminator.
 	 */
-	void set_accounts_discriminator_length(const uint32_t accounts_discriminator_length);
+	void set_accounts_discriminator_length(uint32_t accounts_discriminator_length);
 
 	/**
 	 * @brief Set the pid address.

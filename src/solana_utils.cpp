@@ -3,6 +3,8 @@
 #include <algorithm>
 
 #include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/variant/dictionary.hpp"
+#include "godot_cpp/variant/packed_string_array.hpp"
 
 #include "hash.hpp"
 #include "sha256.hpp"
@@ -236,7 +238,7 @@ PackedByteArray SolanaUtils::short_u16_encode(const unsigned int value) {
 	return result;
 }
 
-unsigned int SolanaUtils::short_u16_decode(const PackedByteArray &bytes, int *cursor) {
+unsigned int SolanaUtils::short_u16_decode(const PackedByteArray &bytes, uint32_t *cursor) {
 	unsigned int value = 0;
 	int initial_cursor = *cursor;
 	for (int i = 0; i < 3 && (*cursor) < bytes.size(); ++i) {
@@ -253,7 +255,7 @@ unsigned int SolanaUtils::short_u16_decode(const PackedByteArray &bytes, int *cu
 
 bool SolanaUtils::rpc_response_has_value(const Dictionary &rpc_response) {
 	ERR_FAIL_COND_V_CUSTOM(!rpc_response.has("result"), false);
-	Dictionary result_dict = rpc_response["result"];
+	const Dictionary result_dict = rpc_response["result"];
 	ERR_FAIL_COND_V_CUSTOM(!result_dict.has("value"), false);
 	return true;
 }
@@ -269,8 +271,8 @@ Variant SolanaUtils::get_rpc_response_value(const Dictionary &rpc_response) {
 PackedByteArray SolanaUtils::sha256_hash_array(const PackedStringArray &contents) {
 	SHA256 hasher;
 
-	for (unsigned int i = 0; i < contents.size(); i++) {
-		hasher.update(contents[i].to_ascii_buffer().ptr(), contents[i].length());
+	for (const auto &content : contents) {
+		hasher.update(content.to_ascii_buffer().ptr(), content.length());
 	}
 
 	PackedByteArray result;
@@ -286,6 +288,36 @@ PackedByteArray SolanaUtils::sha256_hash_array(const PackedStringArray &contents
 	// NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 	return result;
+}
+
+Variant SolanaUtils::get_nested_value(const Dictionary &dict, const String &path) {
+	const PackedStringArray keys = path.split("/", false);
+
+	ERR_FAIL_COND_V_CUSTOM(keys.is_empty(), nullptr);
+
+	Variant intermediate_dict = dict;
+	for (const auto &key : keys) {
+		ERR_FAIL_COND_V_CUSTOM(!static_cast<Dictionary>(intermediate_dict).has(key), nullptr);
+		ERR_FAIL_COND_V_CUSTOM(static_cast<Dictionary>(intermediate_dict)[key].get_type() != Variant::DICTIONARY, nullptr);
+		intermediate_dict = static_cast<Variant>(static_cast<Dictionary>(intermediate_dict)[key]);
+	}
+
+	return intermediate_dict;
+}
+
+bool SolanaUtils::nested_dict_has_keys(const Dictionary &dict, const String &path) {
+	const PackedStringArray keys = path.split("/", false);
+
+	ERR_FAIL_COND_V_CUSTOM(keys.is_empty(), false);
+
+	Variant intermediate_dict = dict;
+	for (const auto &key : keys) {
+		ERR_FAIL_COND_V_CUSTOM(!static_cast<Dictionary>(intermediate_dict).has(key), false);
+		ERR_FAIL_COND_V_CUSTOM(static_cast<Dictionary>(intermediate_dict)[key].get_type() != Variant::DICTIONARY, false);
+		intermediate_dict = static_cast<Variant>(static_cast<Dictionary>(intermediate_dict)[key]);
+	}
+
+	return true;
 }
 
 } //namespace godot

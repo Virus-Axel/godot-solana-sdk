@@ -10,7 +10,6 @@
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/object.hpp"
 #include "godot_cpp/variant/array.hpp"
-#include "godot_cpp/variant/callable_method_pointer.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/string.hpp"

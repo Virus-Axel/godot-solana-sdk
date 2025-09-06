@@ -160,7 +160,7 @@ void RpcSingleHttpRequestClient::finalize_request(const Dictionary &response) {
 	HTTPClient::close();
 
 	if (request_queue.front().callback.is_valid()) {
-		const Array params = build_array(response);
+		const Array params = Array::make(response);
 		request_queue.front().callback.callv(params);
 	}
 

@@ -1,10 +1,11 @@
 #ifndef GODOT_SOLANA_META_DATA_COLLECTION_HPP
 #define GODOT_SOLANA_META_DATA_COLLECTION_HPP
 
-#include "godot_cpp/classes/wrapped.hpp"
+#include "godot_cpp/classes/resource.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/variant.hpp"
-#include "godot_cpp/classes/resource.hpp"
+
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -12,7 +13,7 @@ namespace godot {
  * @brief Contains token metadata collection information.
  */
 class MetaDataCollection : public Resource {
-	GDCLASS(MetaDataCollection, Resource)
+	GDCLASS_CUSTOM(MetaDataCollection, Resource)
 
 private:
 	Variant key;

@@ -1,11 +1,20 @@
 #ifndef SOLANA_SDK_MPL_CANDY_GUARD_ACCESS_LIST
 #define SOLANA_SDK_MPL_CANDY_GUARD_ACCESS_LIST
 
-#include <account_meta.hpp>
-#include <godot_cpp/classes/node.hpp>
-#include <godot_cpp/classes/resource.hpp>
-#include <godot_cpp/variant/variant.hpp>
-#include <solana_client.hpp>
+#include <cstdint>
+
+#include "godot_cpp/classes/resource.hpp"
+#include "godot_cpp/core/property_info.hpp"
+#include "godot_cpp/templates/list.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/string_name.hpp"
+#include "godot_cpp/variant/typed_array.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "account_meta.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -13,7 +22,7 @@ namespace godot {
  * @brief Guard access list for candy guard program.
  */
 class CandyGuardAccessList : public Resource {
-	GDCLASS(CandyGuardAccessList, Resource)
+	GDCLASS_CUSTOM(CandyGuardAccessList, Resource)
 private:
 	String label = "default";
 	bool top_level = true;
@@ -106,44 +115,44 @@ protected:
 public:
 	/**
 	 * @brief Get the label property
-	 * 
+	 *
 	 * @return String Label property.
 	 */
-	String get_label() const;
+	[[nodiscard]] String get_label() const;
 
 	/**
 	 * @brief Serialize the Candy guard access list.
-	 * 
+	 *
 	 * @return PackedByteArray Serialized byte array.
 	 */
-	PackedByteArray serialize() const;
+	[[nodiscard]] PackedByteArray serialize() const;
 
 	/**
 	 * @brief Serialize into mint settings.
-	 * 
+	 *
 	 * Mint settings are needed in some cases instructions.
-	 * 
+	 *
 	 * @return PackedByteArray Serialized byte array.
 	 */
-	PackedByteArray serialize_mint_settings() const;
+	[[nodiscard]] PackedByteArray serialize_mint_settings() const;
 
 	/**
 	 * @brief Serialized guard groups.
-	 * 
+	 *
 	 * @return PackedByteArray Serialized byte array.
 	 */
-	PackedByteArray serialize_groups() const;
+	[[nodiscard]] PackedByteArray serialize_groups() const;
 
 	/**
 	 * @brief Serialize guard settings.
 	 *
 	 * @return PackedByteArray Serialized byte array.
 	 */
-	PackedByteArray serialize_guard_settings() const;
+	[[nodiscard]] PackedByteArray serialize_guard_settings() const;
 
 	/**
 	 * @brief Get CandyGuardAccessList group from a group label.
-	 * 
+	 *
 	 * @param label Group label
 	 * @return CandyGuardAccessList& Reference to a group in a candy guard access list.
 	 */
@@ -151,7 +160,7 @@ public:
 
 	/**
 	 * @brief Get the mint arg account array.
-	 * 
+	 *
 	 * @param payer Payer of the mint transaction.
 	 * @param machine_key Candy machine key.
 	 * @param guard_key Guard key.
