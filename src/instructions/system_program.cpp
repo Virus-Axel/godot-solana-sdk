@@ -1,12 +1,22 @@
 #include "system_program.hpp"
 
+#include <cstdint>
+#include <string>
+
+#include "account_meta.hpp"
+#include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
 #include "instruction.hpp"
-#include "keypair.hpp"
+#include "pubkey.hpp"
 #include "solana_utils.hpp"
 
 namespace godot {
 
-const std::string SystemProgram::ID = "11111111111111111111111111111111";
+const std::string SystemProgram::PID = "11111111111111111111111111111111";
 
 void SystemProgram::_bind_methods() {
 	ClassDB::bind_static_method("SystemProgram", D_METHOD("transfer", "sender_pubkey", "reciever_pubkey", "lamports"), &SystemProgram::transfer);
@@ -17,42 +27,52 @@ void SystemProgram::_bind_methods() {
 }
 
 Variant SystemProgram::create_account(const Variant &from_keypair, const Variant &to_keypair, const uint64_t lamports, const uint64_t space, const Variant &owner) {
-	Instruction *result = memnew(Instruction);
+	Instruction *result = memnew_custom(Instruction);
 	PackedByteArray data;
 	data.resize(CREATE_ACCOUNT_DATA_SIZE);
 
+	const int64_t LAMPORTS_LOCATION = 4;
+	const int64_t SPACE_LOCATION = 12;
+	const int64_t OWNER_LOCATION = 20;
+
 	data.encode_u32(0, MethodNumber::CREATE_ACCOUNT);
-	data.encode_u64(4, lamports);
-	data.encode_u64(12, space);
+	data.encode_u64(LAMPORTS_LOCATION, static_cast<int64_t>(lamports));
+	data.encode_u64(SPACE_LOCATION, static_cast<int64_t>(space));
 
 	PackedByteArray owner_bytes = Pubkey::bytes_from_variant(owner);
 	for (unsigned int i = 0; i < owner_bytes.size(); i++) {
-		data[20 + i] = owner_bytes[i];
+		data[OWNER_LOCATION + i] = owner_bytes[i];
 	}
 
-	const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
+	const Variant new_pid = memnew_custom(Pubkey(String(PID.c_str())));
 	result->set_program_id(new_pid);
 	result->set_data(data);
 
-	result->append_meta(*memnew(AccountMeta(from_keypair, true, true)));
-	result->append_meta(*memnew(AccountMeta(to_keypair, true, true)));
+	result->append_meta(*memnew_custom(AccountMeta(from_keypair, true, true)));
+	result->append_meta(*memnew_custom(AccountMeta(to_keypair, true, true)));
 
 	return result;
 }
 
 Variant SystemProgram::create_account_with_seed(const Variant &from_keypair, const Variant &base_keypair, const String &seed, const uint64_t lamports, const uint64_t space, const Variant &owner) {
-	Variant result = memnew(Instruction);
+	Variant result = memnew_custom(Instruction);
 	PackedByteArray data;
 	data.resize(CREATE_ACCOUNT_WITH_SEED_DATA_SIZE + seed.length());
 
 	data.encode_u32(0, MethodNumber::CREATE_ACCOUNT_WITH_SEED);
-	data.encode_u64(36, seed.length());
+
+	const int64_t SEED_LENGTH_LOCATION = 36;
+	const int64_t SEED_LOCATION = 44;
+
+	data.encode_u64(SEED_LENGTH_LOCATION, seed.length());
 	for (unsigned int i = 0; i < seed.length(); i++) {
-		data[44 + i] = seed.to_ascii_buffer()[i];
+		data[SEED_LOCATION + i] = seed.to_ascii_buffer()[i];
 	}
 
-	data.encode_u64(44 + seed.length(), lamports);
-	data.encode_u64(52 + seed.length(), space);
+	const int64_t LAMPORTS_LOCATION = 44 + seed.length();
+	const int64_t SPACE_LOCATION = 52 + seed.length();
+	data.encode_u64(LAMPORTS_LOCATION, static_cast<int64_t>(lamports));
+	data.encode_u64(SPACE_LOCATION, static_cast<int64_t>(space));
 
 	PackedByteArray owner_bytes = Pubkey::bytes_from_variant(owner);
 	PackedByteArray base_bytes = Pubkey::bytes_from_variant(base_keypair);
@@ -60,44 +80,46 @@ Variant SystemProgram::create_account_with_seed(const Variant &from_keypair, con
 	ERR_FAIL_COND_V_EDMSG_CUSTOM(owner_bytes.size() != PUBKEY_LENGTH, nullptr, "Invalid owner.");
 	ERR_FAIL_COND_V_EDMSG_CUSTOM(base_bytes.size() != PUBKEY_LENGTH, nullptr, "Invalid owner.");
 
-	for (unsigned int i = 0; i < 32; i++) {
-		data[60 + seed.length() + i] = owner_bytes[i];
-		data[4 + i] = base_bytes[i];
+	for (unsigned int i = 0; i < PUBKEY_LENGTH; i++) {
+		const int64_t OWNER_LOCATION = 60 + seed.length();
+		const int64_t BASE_LOCATION = 4;
+		data[OWNER_LOCATION + i] = owner_bytes[i];
+		data[BASE_LOCATION + i] = base_bytes[i];
 	}
 
-	Variant created_account_key = Pubkey::new_from_seed(base_keypair, seed, owner);
+	const Variant created_account_key = Pubkey::new_from_seed(base_keypair, seed, owner);
 
-	const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
+	const Variant new_pid = memnew_custom(Pubkey(String(PID.c_str())));
 	Object::cast_to<Instruction>(result)->set_program_id(new_pid);
 	Object::cast_to<Instruction>(result)->set_data(data);
 
-	Object::cast_to<Instruction>(result)->append_meta(*memnew(AccountMeta(from_keypair, true, true)));
-	Object::cast_to<Instruction>(result)->append_meta(*memnew(AccountMeta(created_account_key, false, true)));
-	Object::cast_to<Instruction>(result)->append_meta(*memnew(AccountMeta(base_keypair, true, false)));
+	Object::cast_to<Instruction>(result)->append_meta(*memnew_custom(AccountMeta(from_keypair, true, true)));
+	Object::cast_to<Instruction>(result)->append_meta(*memnew_custom(AccountMeta(created_account_key, false, true)));
+	Object::cast_to<Instruction>(result)->append_meta(*memnew_custom(AccountMeta(base_keypair, true, false)));
 
 	return result;
 }
 
 Variant SystemProgram::transfer(const Variant &sender, const Variant &reciever, const uint64_t lamports) {
-	Instruction *result = memnew(Instruction);
+	Instruction *result = memnew_custom(Instruction);
 	PackedByteArray data;
 	data.resize(TRANSFER_DATA_SIZE);
 
 	data[0] = 2;
-	data.encode_u64(4, lamports);
+	data.encode_u64(4, static_cast<int64_t>(lamports));
 
-	const Variant new_pid = memnew(Pubkey(String(ID.c_str())));
+	const Variant new_pid = memnew_custom(Pubkey(String(PID.c_str())));
 	result->set_program_id(new_pid);
 	result->set_data(data);
 
-	result->append_meta(*memnew(AccountMeta(sender, true, true)));
-	result->append_meta(*memnew(AccountMeta(reciever, false, true)));
+	result->append_meta(*memnew_custom(AccountMeta(sender, true, true)));
+	result->append_meta(*memnew_custom(AccountMeta(reciever, false, true)));
 
 	return result;
 }
 
 Variant SystemProgram::get_pid() {
-	return memnew(Pubkey(String(ID.c_str())));
+	return memnew_custom(Pubkey(String(PID.c_str())));
 }
 
 } //namespace godot

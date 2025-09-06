@@ -20,7 +20,7 @@ private:
 	static PackedByteArray metadata_update_discriminator();
 	static PackedByteArray metadata_initialize_discriminator();
 
-	static const std::string ID;
+	static const std::string PID;
 
 protected:
 	/**
@@ -121,11 +121,10 @@ public:
 	 *
 	 * @param account_pubkey Account to freeze. @writable
 	 * @param mint_pubkey Mint key.
-	 * @param owner_pubkey Unused TODO(Virax): remove
 	 * @param freeze_authority Freeze authority of account. @signer
 	 * @return Variant Freeze account instruction.
 	 */
-	static Variant freeze_account(const Variant &account_pubkey, const Variant &mint_pubkey, const Variant &owner_pubkey, const Variant &freeze_authority);
+	static Variant freeze_account(const Variant &account_pubkey, const Variant &mint_pubkey, const Variant &freeze_authority);
 
 	/**
 	 * @brief Same as _set_authority but with program ID set to Spl token 2022 program ID.
@@ -143,7 +142,7 @@ public:
 	 *
 	 * @return Variant Program ID Pubkey.
 	 */
-	static unsigned int get_mint_account_size_from_data(const String &name, const String symbol, const String uri, const Dictionary custom_data);
+	static unsigned int get_mint_account_size_from_data(const String &name, const String &symbol, const String &uri, const Dictionary &custom_data);
 };
 
 } //namespace godot

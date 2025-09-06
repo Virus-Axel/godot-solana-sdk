@@ -53,9 +53,9 @@ namespace godot {
 	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
 
 #define ERR_FAIL_COND_EDMSG_CUSTOM(m_cond, m_msg)                          \
-	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
+	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return, readability-simplify-boolean-expr)*/ \
 	ERR_FAIL_COND_EDMSG(m_cond, m_msg)                                     \
-	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
+	/* NOLINTEND(llvm-else-after-return,readability-else-after-return, readability-simplify-boolean-expr) */
 
 #define ERR_FAIL_COND_CUSTOM(m_cond)                                                                         \
 	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return,readability-simplify-boolean-expr)*/ \
@@ -282,6 +282,25 @@ public:
 	 * @return PackedByteArray SHA256 Hash as byte array.
 	 */
 	static PackedByteArray sha256_hash_array(const PackedStringArray &contents);
+
+	/**
+	 * @brief Get an element from nested dictionaries.
+	 * 
+	 * @param dict Dictionary containing sub-dictionaries.
+	 * @param path Path pointing to the value in the form of "path/to/value".
+	 * @return Variant Value at the path.
+	 */
+	static Variant get_nested_value(const Dictionary& dict, const String& path);
+
+	/**
+	 * @brief Check if path of keys exists within nested dictionaries.
+	 * 
+	 * @param dict Dictionary containing sub-dictionaries.
+	 * @param path Path pointing to the value in the form of "path/to/value".
+	 * @return true if path exist.
+	 * @return false if path does not exist.
+	 */
+	static bool nested_dict_has_keys(const Dictionary& dict, const String& path);
 
 	~SolanaUtils() override = default;
 };

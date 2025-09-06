@@ -21,9 +21,9 @@ class Keypair : public Resource {
 	GDCLASS(Keypair, Resource)
 
 private:
-	const int PUBLIC_KEY_LENGTH = 32;
-	const int PRIVATE_KEY_LENGTH = 64;
-	const int SEED_LENGTH = 32;
+	static const int PUBLIC_KEY_LENGTH = 32;
+	static const int PRIVATE_KEY_LENGTH = 64;
+	static const int SEED_LENGTH = 32;
 
 	bool unique = true;
 	String public_string = "";
@@ -276,7 +276,7 @@ public:
 	 *
 	 * @return true if the Keypair is unique type, false otherwise.
 	 */
-	bool get_unique();
+	bool get_unique() const;
 
 	/**
 	 * @brief Set the ed25519 seed.
@@ -315,7 +315,7 @@ public:
 	 */
 	void save_to_file(const String &filename);
 
-	~Keypair();
+	~Keypair() = default;
 };
 } //namespace godot
 

@@ -14,7 +14,7 @@ namespace godot {
 class MplTokenMetadata : public SolanaClient {
 	GDCLASS(MplTokenMetadata, SolanaClient)
 private:
-	static const std::string ID;
+	static const std::string PID;
 
 	bool pending_fetch = false;
 

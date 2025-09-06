@@ -12,7 +12,7 @@ namespace godot{
 class TokenProgram : public Node{
     GDCLASS(TokenProgram, Node)
 private:
-    static const std::string ID;
+    static const std::string PID;
 
 protected:
 
@@ -74,11 +74,10 @@ protected:
      * @param token_program_pid Token program to mint with.
      * @param account_pubkey Account to freeze. @writable
      * @param mint_pubkey Mint key.
-     * @param owner_pubkey Unused TODO(Virax): remove 
      * @param freeze_authority Freeze authority of account. @signer
      * @return Variant Freeze account instruction.
      */
-    static Variant _freeze_account(const Variant& token_program_pid, const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey, const Variant& freeze_authority); 
+    static Variant _freeze_account(const Variant& token_program_pid, const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& freeze_authority); 
 
     /**
      * @brief Create an Instruction that sets a new authority on a mint account.
@@ -186,11 +185,10 @@ public:
      * 
      * @param account_pubkey Account to freeze. @writable
      * @param mint_pubkey Mint key.
-     * @param owner_pubkey Unused TODO(Virax): remove 
      * @param freeze_authority Freeze authority of account. @signer
      * @return Variant Freeze account instruction.
      */
-    static Variant freeze_account(const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& owner_pubkey, const Variant& freeze_authority); 
+    static Variant freeze_account(const Variant& account_pubkey, const Variant& mint_pubkey, const Variant& freeze_authority); 
 
     /**
      * @brief Same as _set_authority but with program ID set to Spl token program ID.

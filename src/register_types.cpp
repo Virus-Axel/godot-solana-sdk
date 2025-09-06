@@ -37,7 +37,7 @@
 #include "honeycomb/enums_generated.hpp"
 #include "honeycomb/honeycomb.hpp"
 #include "honeycomb/honeycomb_generated.hpp"
-#include "honeycomb/types/index_generated.hpp"
+#include "honeycomb/honeycomb_types.hpp" // NOLINT(misc-include-cleaner)
 #include "instruction.hpp"
 #include "keypair.hpp"
 #include "meta_data/collection.hpp"

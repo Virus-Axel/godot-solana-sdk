@@ -24,7 +24,7 @@ private:
     static const int CREATE_ACCOUNT_DATA_SIZE = 52;
     static const int CREATE_ACCOUNT_WITH_SEED_DATA_SIZE = 92;
 
-    static const std::string ID;
+    static const std::string PID;
 
 protected:
     /**

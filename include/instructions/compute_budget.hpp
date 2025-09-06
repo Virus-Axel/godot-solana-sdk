@@ -12,7 +12,7 @@ namespace godot {
 class ComputeBudget : public Node {
 	GDCLASS(ComputeBudget, Node)
 private:
-	static const std::string ID;
+	static const std::string PID;
 
 protected:
 	/**

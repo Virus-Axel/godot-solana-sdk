@@ -14,6 +14,7 @@
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/memory.hpp"
 #include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/callable_method_pointer.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "sha256.hpp"
 
@@ -323,7 +324,7 @@ void ShdwDrive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cached_storage_accounts"), &ShdwDrive::get_cached_storage_accounts);
 
 	ClassDB::bind_method(D_METHOD("upload_file_to_storage", "filename", "storage_owner_keypair", "storage_account"), &ShdwDrive::upload_file_to_storage);
-	
+
 	ClassDB::add_property("ShdwDrive", PropertyInfo(Variant::BOOL, "simulate_only"), "set_simulate_only", "get_simulate_only");
 }
 

@@ -20,12 +20,11 @@
 #include "curve25519.hpp"
 #include "keypair.hpp"
 #include "solana_utils.hpp"
-#include "spl_token.hpp"
 #include "wallet_adapter.hpp"
 
 namespace godot {
 
-const uint8_t PDA_MARKER[] = "ProgramDerivedAddress";
+const uint8_t PDA_MARKER[] = "ProgramDerivedAddress"; //NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 bool Pubkey::are_bytes_curve_point() const {
 	return is_y_point_valid(bytes.ptr());
