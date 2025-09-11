@@ -1,17 +1,23 @@
 #include "instruction.hpp"
-#include "keypair.hpp"
+
+#include <cstdint>
+
+#include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/error_macros.hpp"
+#include "godot_cpp/core/memory.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/typed_array.hpp"
+
+#include "account_meta.hpp"
+#include "compiled_instruction.hpp"
+#include "compute_budget.hpp"
+#include "merged_account_metas.hpp"
+#include "pubkey.hpp"
 #include "solana_utils.hpp"
 
-#include <algorithm>
-#include <vector>
-
-#include "instructions/compute_budget.hpp"
-#include <godot_cpp/core/class_db.hpp>
-#include <message.hpp>
-
 namespace godot {
-
-using internal::gdextension_interface_print_warning;
 
 bool Instruction::is_serializable() {
 	if (program_id.get_type() != Variant::OBJECT) {
@@ -39,12 +45,10 @@ void Instruction::_bind_methods() {
 	ClassDB::add_property("Instruction", PropertyInfo(Variant::ARRAY, "accounts", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("AccountMeta")), "set_accounts", "get_accounts");
 }
 
-Instruction::Instruction() {
-}
-
 void Instruction::set_program_id(const Variant &p_value) {
 	program_id = p_value;
 }
+
 Variant Instruction::get_program_id() const {
 	return program_id;
 }
@@ -65,7 +69,7 @@ TypedArray<AccountMeta> Instruction::get_accounts() const {
 }
 
 void Instruction::append_meta(const AccountMeta &meta) {
-	accounts.append(memnew(AccountMeta(meta)));
+	accounts.append(memnew_custom(AccountMeta(meta)));
 }
 
 PackedByteArray Instruction::serialize() {
@@ -82,31 +86,38 @@ PackedByteArray Instruction::serialize() {
 	return result;
 }
 
-Instruction::~Instruction() {
-}
-
 CompiledInstruction::CompiledInstruction() {
 	accounts = PackedByteArray();
 	data = PackedByteArray();
 }
 
-int CompiledInstruction::create_from_bytes(const PackedByteArray &bytes) {
-	const unsigned int MINIMUM_COMPILED_INSTRUCTION_SIZE = 3;
-	ERR_FAIL_COND_V_EDMSG(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE, 0, "Invalid compiled instruction.");
+uint16_t CompiledInstruction::create_from_bytes(const PackedByteArray &bytes) {
+	const uint16_t MAX_TRANSACTION_SIZE = 1232;
+	ERR_FAIL_COND_V_CUSTOM(bytes.size() > MAX_TRANSACTION_SIZE, 0);
 
-	int cursor = 0;
-	program_id_index = bytes[cursor++];
+	const unsigned int MINIMUM_COMPILED_INSTRUCTION_SIZE = 3;
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE, 0, "Invalid compiled instruction.");
+
+	uint32_t cursor = 0;
+	const uint8_t compiled_program_id_index = bytes[cursor++];
 
 	const unsigned int accounts_len = SolanaUtils::short_u16_decode(bytes, &cursor);
 
-	ERR_FAIL_COND_V_EDMSG(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE + accounts_len, 0, "Invalid compiled instruction.");
-	accounts = bytes.slice(cursor, cursor + accounts_len);
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE + accounts_len, 0, "Invalid compiled instruction.");
+	const PackedByteArray compiled_accounts = bytes.slice(cursor, cursor + accounts_len);
 	cursor += accounts_len;
 
 	const unsigned int data_len = SolanaUtils::short_u16_decode(bytes, &cursor);
 
-	ERR_FAIL_COND_V_EDMSG(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE + accounts_len + data_len, 0, "Invalid compiled instruction.");
-	data = bytes.slice(cursor, cursor + data_len);
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE + accounts_len + data_len, 0, "Invalid compiled instruction.");
+	ERR_FAIL_COND_V_CUSTOM(cursor + data_len > MAX_TRANSACTION_SIZE, 0);
+	// Check data_len and account_len separately as they can cause overflow. 
+	ERR_FAIL_COND_V_CUSTOM(data_len > MAX_TRANSACTION_SIZE, 0);
+	ERR_FAIL_COND_V_CUSTOM(accounts_len > MAX_TRANSACTION_SIZE, 0);
+
+	this->data = bytes.slice(cursor, cursor + data_len);
+	this->accounts = compiled_accounts;
+	this->program_id_index = compiled_program_id_index;
 
 	return cursor + data_len;
 }
@@ -115,13 +126,13 @@ void CompiledInstruction::compile(const Instruction *instruction, const MergedAc
 	const TypedArray<AccountMeta> &account_metas = instruction->get_accounts();
 
 	data = instruction->get_data();
-	AccountMeta *pid_meta = memnew(AccountMeta(instruction->get_program_id(), false, false));
+	AccountMeta *pid_meta = memnew_custom(AccountMeta(instruction->get_program_id(), false, false));
 	program_id_index = merged_metas.find(*pid_meta);
 
 	memfree(pid_meta);
 
 	for (unsigned int j = 0; j < account_metas.size(); j++) {
-		AccountMeta *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
+		auto *account_meta = Object::cast_to<AccountMeta>(account_metas[j]);
 		accounts.push_back(merged_metas.find(*account_meta));
 	}
 }
@@ -149,20 +160,14 @@ bool CompiledInstruction::is_compute_price(const MergedAccountMetas &merged_meta
 	return (merged_metas.is_key_at_index(ComputeBudget::get_pid(), program_id_index));
 }
 
-PackedByteArray CompiledInstruction::serialize() {
+PackedByteArray CompiledInstruction::serialize() const {
 	PackedByteArray result;
 
 	result.append(program_id_index);
 	result.append_array(SolanaUtils::short_u16_encode(accounts.size()));
-
-	for (unsigned int i = 0; i < accounts.size(); i++) {
-		result.append(accounts[i]);
-	}
-
+	result.append_array(accounts);
 	result.append_array(SolanaUtils::short_u16_encode(data.size()));
-	for (unsigned int i = 0; i < data.size(); i++) {
-		result.append(data[i]);
-	}
+	result.append_array(data);
 
 	return result;
 }
@@ -173,9 +178,6 @@ void CompiledInstruction::set_data(const PackedByteArray &data) {
 
 PackedByteArray CompiledInstruction::get_data() const {
 	return data;
-}
-
-CompiledInstruction::~CompiledInstruction() {
 }
 
 } //namespace godot

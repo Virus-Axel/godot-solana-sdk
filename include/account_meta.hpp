@@ -1,9 +1,11 @@
 #ifndef SOLANA_SDK_ACCOUNT_META_HPP
 #define SOLANA_SDK_ACCOUNT_META_HPP
 
-#include "godot_cpp/classes/node.hpp"
+#include "godot_cpp/classes/resource.hpp"
+#include "godot_cpp/variant/string_name.hpp"
+#include "godot_cpp/variant/variant.hpp"
 
-#include "pubkey.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -16,7 +18,7 @@ namespace godot {
  * when signing for example.
  */
 class AccountMeta : public Resource {
-	GDCLASS(AccountMeta, Resource)
+	GDCLASS_CUSTOM(AccountMeta, Resource)
 
 private:
 	bool is_signer = false;
@@ -46,7 +48,7 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 
 public:
-	AccountMeta();
+	AccountMeta() = default;
 
 	/**
 	 * @brief Construct a new Account Meta object from components.
@@ -62,7 +64,7 @@ public:
 	 *
 	 * @param other Other AccountMeta to copy.
 	 */
-	AccountMeta(const Variant &other);
+	explicit AccountMeta(const Variant &other);
 
 	/**
 	 * @brief Set key part of object.
@@ -78,7 +80,7 @@ public:
 	 *
 	 * @return Variant Pubkey part of AccountMeta's key component.
 	 */
-	Variant get_pubkey() const;
+	[[nodiscard]] Variant get_pubkey() const;
 
 	/**
 	 * @brief Gets key or a keypair object.
@@ -88,7 +90,7 @@ public:
 	 *
 	 * @return Variant key or Keypair.
 	 */
-	Variant get_signer() const;
+	[[nodiscard]] Variant get_signer() const;
 
 	/**
 	 * @brief Set the key component of the AccountMeta.
@@ -102,14 +104,14 @@ public:
 	 *
 	 * @return Variant Key component.
 	 */
-	Variant get_key() const;
+	[[nodiscard]] Variant get_key() const;
 
 	/**
 	 * @brief Set the is signer property.
 	 *
 	 * @param p_value is signer value.
 	 */
-	void set_is_signer(const bool p_value);
+	void set_is_signer(bool p_value);
 
 	/**
 	 * @brief Get the is signer property.
@@ -117,14 +119,14 @@ public:
 	 * @return true if AccountMeta is signer.
 	 * @return false if AccountMeta is not signer
 	 */
-	bool get_is_signer() const;
+	[[nodiscard]] bool get_is_signer() const;
 
 	/**
 	 * @brief Set the writeable property
 	 *
 	 * @param p_value writable property value.
 	 */
-	void set_writeable(const bool p_value);
+	void set_writeable(bool p_value);
 
 	/**
 	 * @brief Get the writeable property.
@@ -132,17 +134,7 @@ public:
 	 * @return true if AccountMeta is writeable.
 	 * @return false if AccountMeta is readonly.
 	 */
-	bool get_writeable() const;
-
-	/**
-	 * @brief Constructs this AccountMeta from components.
-	 *
-	 * @note This does not allocate any new memory.
-	 * @param account_key Key component.
-	 * @param is_signer Specifies if key is signer.
-	 * @param writeable Specifies if key is writeable.
-	 */
-	void create_new(const Variant &account_key, bool is_signer, bool writeable);
+	[[nodiscard]] bool get_writeable() const;
 
 	/**
 	 * @brief Checks if Variant is of type AccountMeta object.
@@ -174,7 +166,7 @@ public:
 	 */
 	bool operator==(const AccountMeta &other) const;
 
-	~AccountMeta();
+	~AccountMeta() override;
 };
 } //namespace godot
 

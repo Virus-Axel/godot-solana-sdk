@@ -2,7 +2,10 @@
 #define SOLANA_SDK_ADDRESS_LOOKUP_TABLE_HPP
 
 #include "godot_cpp/classes/resource.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/variant.hpp"
+
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -10,7 +13,7 @@ namespace godot {
  * @brief Address lookup table used in versioned transactions.
  */
 class AddressLookupTable : public Resource {
-	GDCLASS(AddressLookupTable, Resource)
+	GDCLASS_CUSTOM(AddressLookupTable, Resource)
 private:
 	Variant address;
 	PackedByteArray writable_indices;
@@ -27,7 +30,7 @@ public:
 
 	/**
 	 * @brief Construct a new Address Lookup Table object from bytes
-	 * 
+	 *
 	 * @param bytes Byte serialization of an address lookup table.
 	 * @param consumed_bytes Total amount of bytes read will be written to this variable.
 	 */
@@ -35,11 +38,11 @@ public:
 
 	/**
 	 * @brief Serializes the address lookup table.
-	 * 
+	 *
 	 * @return PackedByteArray byte serialization.
 	 */
 	PackedByteArray serialize();
-	~AddressLookupTable() = default;
+	~AddressLookupTable() override = default;
 };
 } //namespace godot
 

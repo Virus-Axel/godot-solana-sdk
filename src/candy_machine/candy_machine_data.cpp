@@ -1,13 +1,18 @@
 #include "candy_machine/candy_machine_data.hpp"
 
+#include <cstdint>
+
+#include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/error_macros.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
 #include "candy_machine/config_line.hpp"
-#include "instruction.hpp"
-#include "instructions/associated_token_account.hpp"
-#include "instructions/mpl_token_metadata.hpp"
-#include "instructions/spl_token.hpp"
-#include "instructions/system_program.hpp"
-#include "solana_utils.hpp"
 #include "meta_data/creator.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -71,84 +76,84 @@ void CandyMachineData::_bind_methods() {
 void CandyMachineData::set_token_standard(const uint32_t value) {
 	token_standard = value;
 }
-uint32_t CandyMachineData::get_token_standard() {
+uint32_t CandyMachineData::get_token_standard() const {
 	return token_standard;
 }
 
 void CandyMachineData::set_features(const PackedByteArray &value) {
 	features = value;
 }
-PackedByteArray CandyMachineData::get_features() {
+PackedByteArray CandyMachineData::get_features() const {
 	return features;
 }
 
 void CandyMachineData::set_authority(const Variant &value) {
 	authority = value;
 }
-Variant CandyMachineData::get_authority() {
+Variant CandyMachineData::get_authority() const {
 	return authority;
 }
 
 void CandyMachineData::set_mint_authority(const Variant &value) {
 	mint_authority = value;
 }
-Variant CandyMachineData::get_mint_authority() {
+Variant CandyMachineData::get_mint_authority() const {
 	return mint_authority;
 }
 
 void CandyMachineData::set_collection_mint(const Variant &value) {
 	collection_mint = value;
 }
-Variant CandyMachineData::get_collection_mint() {
+Variant CandyMachineData::get_collection_mint() const {
 	return collection_mint;
 }
 
 void CandyMachineData::set_items_redeemed(const uint64_t value) {
 	items_redeemed = value;
 }
-uint64_t CandyMachineData::get_items_redeemed() {
+uint64_t CandyMachineData::get_items_redeemed() const {
 	return items_redeemed;
 }
 
 void CandyMachineData::set_items_available(const uint64_t value) {
 	items_available = value;
 }
-uint64_t CandyMachineData::get_items_available() {
+uint64_t CandyMachineData::get_items_available() const {
 	return items_available;
 }
 
 void CandyMachineData::set_symbol(const String &value) {
 	symbol = value;
 }
-String CandyMachineData::get_symbol() {
+String CandyMachineData::get_symbol() const {
 	return symbol;
 }
 
 void CandyMachineData::set_seller_fee_basis_points(const uint32_t value) {
 	seller_fee_basis_points = value;
 }
-uint32_t CandyMachineData::get_seller_fee_basis_points() {
+uint32_t CandyMachineData::get_seller_fee_basis_points() const {
 	return seller_fee_basis_points;
 }
 
 void CandyMachineData::set_max_supply(const uint64_t value) {
 	max_supply = value;
 }
-uint64_t CandyMachineData::get_max_supply() {
+uint64_t CandyMachineData::get_max_supply() const {
 	return max_supply;
 }
 
 void CandyMachineData::set_is_mutable(const bool value) {
 	is_mutable = value;
 }
-bool CandyMachineData::get_is_mutable() {
+bool CandyMachineData::get_is_mutable() const {
 	return is_mutable;
 }
 
 void CandyMachineData::set_creators(const Array &value) {
 	creators = value;
 }
-Array CandyMachineData::get_creators() {
+Array CandyMachineData::get_creators() const {
 	return creators;
 }
 
@@ -156,29 +161,30 @@ void CandyMachineData::set_config_line_setting(const Variant &config_line_settin
 	this->config_line_setting = config_line_setting;
 }
 
-Variant CandyMachineData::get_config_line_setting() {
+Variant CandyMachineData::get_config_line_setting() const {
 	return config_line_setting;
 }
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 PackedByteArray CandyMachineData::serialize() {
-	const int CANDY_DATA_LENGTH = 8 + 4 + symbol.length() + 2 + 8 + 1 + 4 + 34 * creators.size(); // No config line nor hidden setting.
+	const int64_t CANDY_DATA_LENGTH = 8 + 4 + symbol.length() + 2 + 8 + 1 + 4 + (34 * creators.size()); // No config line nor hidden setting.
 	PackedByteArray result;
 	result.resize(CANDY_DATA_LENGTH);
 
-	result.encode_u64(0, items_available);
+	result.encode_u64(0, static_cast<int64_t>(items_available));
 	result.encode_u32(8, symbol.length());
 	for (unsigned int i = 0; i < symbol.length(); i++) {
 		result[12 + i] = symbol[i];
 	}
-	int cursor = 12 + symbol.length();
+	int64_t cursor = 12 + symbol.length();
 	result.encode_u16(cursor, seller_fee_basis_points);
-	cursor += 2;
-	result.encode_u64(cursor, max_supply);
-	cursor += 8;
-	result[cursor] = (int)is_mutable;
+	cursor += sizeof(uint16_t);
+	result.encode_u64(cursor, static_cast<int64_t>(max_supply));
+	cursor += sizeof(uint64_t);
+	result[cursor] = static_cast<uint8_t>(is_mutable);
 	cursor++;
 	result.encode_u32(cursor, creators.size());
-	cursor += 4;
+	cursor += sizeof(uint32_t);;
 	for (unsigned int i = 0; i < creators.size(); i++) {
 		PackedByteArray creator_bytes = Object::cast_to<MetaDataCreator>(creators[i])->serialize();
 		for (unsigned int j = 0; j < creator_bytes.size(); j++) {
@@ -191,7 +197,7 @@ PackedByteArray CandyMachineData::serialize() {
 		result.append(0);
 	} else {
 		result.append(1);
-		ConfigLineSetting *config_line_setting_ptr = Object::cast_to<ConfigLineSetting>(config_line_setting);
+		auto *config_line_setting_ptr = Object::cast_to<ConfigLineSetting>(config_line_setting);
 		result.append_array(config_line_setting_ptr->serialize());
 	}
 
@@ -200,25 +206,28 @@ PackedByteArray CandyMachineData::serialize() {
 
 	return result;
 }
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
 unsigned int CandyMachineData::get_config_line_size() {
 	if (config_line_setting.get_type() == Variant::OBJECT) {
-		ERR_FAIL_COND_V_EDMSG(!((Object *)config_line_setting)->is_class("ConfigLineSetting"), 0, "Parameter is not a ConfigLine");
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(!((Object *)config_line_setting)->is_class("ConfigLineSetting"), 0, "Parameter is not a ConfigLine");
 		return Object::cast_to<ConfigLineSetting>(config_line_setting)->get_name_length() +
 				Object::cast_to<ConfigLineSetting>(config_line_setting)->get_uri_length();
-	} else {
-		return 0;
 	}
+
+	return 0;
 }
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 unsigned int CandyMachineData::get_space_for_candy() {
 	// TODO(Virax): Change when hidden settings is supported.
-	const unsigned int HIDDEN_SECTION = 8 + 8 + 32 + 32 + 32 + 8 + 8 + 4 + 10 + 2 + 8 + 1 + 4 + 5 * 34 + 1 + 4 + 32 + 4 + 4 + 200 + 4 + 1 + 1 + 4 + 32 + 4 + 200 + 32;
+	const unsigned int HIDDEN_SECTION = 8 + 8 + 32 + 32 + 32 + 8 + 8 + 4 + 10 + 2 + 8 + 1 + 4 + (5 * 34) + 1 + 4 + 32 + 4 + 4 + 200 + 4 + 1 + 1 + 4 + 32 + 4 + 200 + 32;
 	return HIDDEN_SECTION +
 			4 +
-			items_available * get_config_line_size() +
-			items_available / 8 +
+			(items_available * get_config_line_size()) +
+			(items_available / 8) +
 			1 +
-			items_available * 4;
+			(items_available * 4);
 }
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 } //namespace godot

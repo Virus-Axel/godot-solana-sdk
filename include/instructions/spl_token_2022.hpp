@@ -1,12 +1,15 @@
 #ifndef SOLANA_SDK_SPL_TOKEN_2022
 #define SOLANA_SDK_SPL_TOKEN_2022
 
+#include <cstdint>
+#include <string>
+
 #include "godot_cpp/classes/node.hpp"
-#include "godot_cpp/classes/wrapped.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
+#include "solana_utils.hpp"
 #include "spl_token.hpp"
 
 namespace godot {
@@ -15,12 +18,12 @@ namespace godot {
  * @brief Instruction Builder for Solana Token2022 Program.
  */
 class TokenProgram2022 : public TokenProgram {
-	GDCLASS(TokenProgram2022, Node)
+	GDCLASS_CUSTOM(TokenProgram2022, Node)
 private:
 	static PackedByteArray metadata_update_discriminator();
 	static PackedByteArray metadata_initialize_discriminator();
 
-	static const std::string ID;
+	static const std::string PID;
 
 protected:
 	/**
@@ -78,7 +81,7 @@ public:
 	 * @return Variant Initialize mint instruction.
 	 * @return Variant Null Variant on failure.
 	 */
-	static Variant initialize_mint(const Variant &mint_pubkey, const Variant &mint_authority, const Variant &freeze_authority = nullptr, const uint32_t decimals = 9);
+	static Variant initialize_mint(const Variant &mint_pubkey, const Variant &mint_authority, const Variant &freeze_authority = nullptr, uint32_t decimals = DEFAULT_TOKEN_DECIMALS);
 
 	/**
 	 * @brief Same as _initialize_account but with program ID set to Spl token 2022 program ID.
@@ -121,11 +124,10 @@ public:
 	 *
 	 * @param account_pubkey Account to freeze. @writable
 	 * @param mint_pubkey Mint key.
-	 * @param owner_pubkey Unused TODO(Virax): remove
 	 * @param freeze_authority Freeze authority of account. @signer
 	 * @return Variant Freeze account instruction.
 	 */
-	static Variant freeze_account(const Variant &account_pubkey, const Variant &mint_pubkey, const Variant &owner_pubkey, const Variant &freeze_authority);
+	static Variant freeze_account(const Variant &account_pubkey, const Variant &mint_pubkey, const Variant &freeze_authority);
 
 	/**
 	 * @brief Same as _set_authority but with program ID set to Spl token 2022 program ID.
@@ -136,14 +138,14 @@ public:
 	 * @param authority_type Type of authority to set. 1 = MintTokens, 2 = FreezeAccount, 3 = AccountOwner, 4 = CloseAccount.
 	 * @return Variant set authority Instruction.
 	 */
-	static Variant set_authority(const Variant &mint_account, const Variant &current_authority, const Variant &new_authority, const uint8_t authority_type);
+	static Variant set_authority(const Variant &mint_account, const Variant &current_authority, const Variant &new_authority, uint8_t authority_type);
 
 	/**
 	 * @brief Get the program ID of TokenProgram.
 	 *
 	 * @return Variant Program ID Pubkey.
 	 */
-	static unsigned int get_mint_account_size_from_data(const String &name, const String symbol, const String uri, const Dictionary custom_data);
+	static unsigned int get_mint_account_size_from_data(const String &name, const String &symbol, const String &uri, const Dictionary &custom_data);
 };
 
 } //namespace godot

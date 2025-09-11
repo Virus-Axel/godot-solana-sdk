@@ -4,7 +4,6 @@
 #include <string>
 
 #include "godot_cpp/classes/node.hpp"
-#include "godot_cpp/classes/wrapped.hpp"
 #include "godot_cpp/variant/callable.hpp"
 #include "godot_cpp/variant/callable_method_pointer.hpp"
 #include "godot_cpp/variant/packed_string_array.hpp"
@@ -12,6 +11,7 @@
 
 #include "rpc_multi_http_request_client.hpp"
 #include "rpc_single_ws_request_client.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -30,7 +30,7 @@ const uint32_t WSS_PORT = 443;
  * RPC endpoints. The SolanaClient also manages the web socket interface.
  */
 class SolanaClient : public Node {
-	GDCLASS(SolanaClient, Node)
+	GDCLASS_CUSTOM(SolanaClient, Node)
 
 private:
 	float timeout = DEFAULT_TIMEOUT_SECONDS;

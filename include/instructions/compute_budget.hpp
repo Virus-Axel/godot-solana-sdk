@@ -1,8 +1,13 @@
 #ifndef SOLANA_SDK_COMPUTE_BUDGET_HPP
 #define SOLANA_SDK_COMPUTE_BUDGET_HPP
 
-#include <godot_cpp/classes/node.hpp>
-#include <instruction.hpp>
+#include <cstdint>
+#include <string>
+
+#include "godot_cpp/classes/node.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -10,9 +15,9 @@ namespace godot {
  * @brief Instruction builder for Compute Budget program.
  */
 class ComputeBudget : public Node {
-	GDCLASS(ComputeBudget, Node)
+	GDCLASS_CUSTOM(ComputeBudget, Node)
 private:
-	static const std::string ID;
+	static const std::string PID;
 
 protected:
 	/**
@@ -32,7 +37,7 @@ public:
 	 * @param unit_limit Unit limit.
 	 * @return Variant Compute unit limit Instruction.
 	 */
-	static Variant set_compute_unit_limit(const uint32_t unit_limit);
+	static Variant set_compute_unit_limit(uint32_t unit_limit);
 
 	/**
 	 * @brief Create a compute unit price instruction.
@@ -40,7 +45,7 @@ public:
 	 * @param unit_price compute price.
 	 * @return Variant Compute unit Instruction.
 	 */
-	static Variant set_compute_unit_price(const uint32_t unit_price);
+	static Variant set_compute_unit_price(uint32_t unit_price);
 
 	/**
 	 * @brief Get the Compute Budget program ID.

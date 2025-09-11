@@ -31,6 +31,7 @@ namespace godot {
 
 template class GenericType<Node>;
 
+// NOLINTBEGIN(modernize-use-using)
 typedef void (*BindMethodFunc)();
 using NotificationMethod = void (Wrapped::*)(int);
 typedef bool (Wrapped::*SetMethod)(const StringName &p_name, const Variant &p_property);
@@ -40,6 +41,7 @@ typedef bool (Wrapped::*PropertyCanRevertMethod)(const StringName &p_name) const
 typedef bool (Wrapped::*PropertyGetRevertMethod)(const StringName &p_name, Variant &) const;
 typedef void (Wrapped::*ValidatePropertyMethod)(PropertyInfo &p_property) const;
 typedef String (Wrapped::*ToStringMethod)() const;
+// NOLINTEND(modernize-use-using)
 
 // TODO(Virax): Delete this memory as well.
 std::unordered_map<StringName, Dictionary> GenericAnchorNode::loaded_idls;
@@ -49,11 +51,13 @@ std::unordered_map<StringName, GDExtensionClassCallVirtual> GenericAnchorNode::v
 std::unordered_map<StringName, StringName> GenericAnchorNode::account_fetch_method_accounts;
 
 void GenericAnchorNode::bind_resources(const Array &resources, const String &class_name) {
+	(void) class_name;
 	for (uint32_t i = 0; i < resources.size(); i++) {
 	}
 }
 
-GDExtensionObjectPtr GenericAnchorNode::_create_instance_func(void *data, GDExtensionBool p_notify_postinitialize) {
+GDExtensionObjectPtr GenericAnchorNode::_create_instance_func(void *data, GDExtensionBool p_notify_postinitialize) { // NOLINT(readability-convert-member-functions-to-static)
+	(void) p_notify_postinitialize;
 	const String instance_class = *static_cast<StringName *>(data);
 	GenericAnchorNode *new_object = memnew_custom(GenericAnchorNode);
 	new_object->anchor_program = memnew_custom(AnchorProgram);
@@ -71,10 +75,12 @@ const StringName *GenericAnchorNode::_get_extension_class_name() {
 	return &string_name;
 }
 
-Variant GenericAnchorNode::generic_instruction_bind() {
-	return Variant();
+Variant GenericAnchorNode::generic_instruction_bind() { // NOLINT(readability-convert-member-functions-to-static)
+	return {};
 }
-Error GenericAnchorNode::generic_fetch_account_bind(const Variant &account_key) {
+
+Error GenericAnchorNode::generic_fetch_account_bind(const Variant &account_key) { // NOLINT(readability-convert-member-functions-to-static)
+	(void) account_key;
 	return Error::OK;
 }
 
@@ -84,7 +90,7 @@ void GenericAnchorNode::emit_account_data(const PackedByteArray &account_data) {
 	emit_signal("account_fetched", Object::cast_to<AnchorProgram>(anchor_program)->deserialize_dict(account_data, fetch_account["type"], consumed_bytes));
 }
 
-void GenericAnchorNode::bind_method(MethodBind &method_bind, GDExtensionClassMethodCall call_function, GDExtensionClassMethodPtrCall ptr_call_function, const StringName& p_class_name) {
+void GenericAnchorNode::bind_method(MethodBind &method_bind, GDExtensionClassMethodCall call_function, GDExtensionClassMethodPtrCall ptr_call_function, const StringName &p_class_name) {
 	const std::vector<PropertyInfo> return_value_and_arguments_info = method_bind.get_arguments_info_list();
 	std::vector<GDExtensionPropertyInfo> return_value_and_arguments_gdextension_info;
 	return_value_and_arguments_gdextension_info.reserve(return_value_and_arguments_info.size());
@@ -104,8 +110,8 @@ void GenericAnchorNode::bind_method(MethodBind &method_bind, GDExtensionClassMet
 
 	std::vector<GDExtensionClassMethodArgumentMetadata> return_value_and_arguments_metadata = method_bind.get_arguments_metadata_list();
 	GDExtensionClassMethodArgumentMetadata *return_value_metadata = return_value_and_arguments_metadata.data();
-	GDExtensionPropertyInfo *arguments_info = return_value_and_arguments_gdextension_info.data() + 1;
-	GDExtensionClassMethodArgumentMetadata *arguments_metadata = return_value_and_arguments_metadata.data() + 1;
+	GDExtensionPropertyInfo *arguments_info = return_value_and_arguments_gdextension_info.data() + 1; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	GDExtensionClassMethodArgumentMetadata *arguments_metadata = return_value_and_arguments_metadata.data() + 1; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 	std::vector<GDExtensionVariantPtr> def_args;
 	const std::vector<Variant> &def_args_val = method_bind.get_default_arguments();
@@ -142,11 +148,13 @@ void GenericAnchorNode::_process(double p_delta) {
 }
 
 GDExtensionClassInstancePtr GenericAnchorNode::_recreate_instance_func(void *data, GDExtensionObjectPtr obj) {
+	(void)data;
+	(void)obj;
 	if constexpr (!std::is_abstract_v<GenericAnchorNode>) {
 #ifdef HOT_RELOAD_ENABLED
 		//Wrapped::_constructing_recreate_owner = obj;
-		GenericAnchorNode *new_instance = (GenericAnchorNode *)memalloc(sizeof(GenericAnchorNode));
-		memnew_placement(new_instance, GenericAnchorNode);
+		auto *new_instance = (GenericAnchorNode *)memalloc(sizeof(GenericAnchorNode)); // NOLINT(google-readability-casting,cppcoreguidelines-pro-type-cstyle-cast)
+		memnew_placement(new_instance, GenericAnchorNode); // NOLINT(cppcoreguidelines-owning-memory)
 		return new_instance;
 #else
 		return nullptr;
@@ -310,7 +318,7 @@ void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, 
 	ERR_FAIL_COND_EDMSG_CUSTOM(!anchor_instruction.has("name"), "Anchor instruction does not have name");
 	const String instruction_name = anchor_instruction["name"];
 
-	auto *method_bind = static_cast<MethodBindHack*>(create_method_bind(&GenericAnchorNode::generic_instruction_bind));
+	auto *method_bind = static_cast<MethodBindHack *>(create_method_bind(&GenericAnchorNode::generic_instruction_bind)); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
 
 	//std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
 	std::vector<StringName> args;
@@ -335,15 +343,16 @@ void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, 
 	method_bind->set_name(instruction_name);
 
 	auto lambda = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error) {
+		(void)r_error;
 		if (p_instance == nullptr) {
 			return;
 		}
-		auto *method_data = static_cast<MethodBind*>(p_method_userdata);
+		auto *method_data = static_cast<MethodBind *>(p_method_userdata);
 		const String stored_instruction_name = method_data->get_name();
 		const AnchorProgram *program = Object::cast_to<AnchorProgram>(static_cast<GenericAnchorNode *>(p_instance)->anchor_program);
 		Array accounts_and_args;
 		for (unsigned int i = 0; i < p_argument_count; i++) {
-			const auto *var = static_cast<const Variant *>(p_args[i]);
+			const auto *var = static_cast<const Variant *>(p_args[i]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			accounts_and_args.append(*var);
 		}
 		const Array accounts = static_cast<GenericAnchorNode *>(p_instance)->split_accounts(accounts_and_args, stored_instruction_name);
@@ -354,7 +363,7 @@ void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, 
 	};
 	(*lambda)(nullptr, nullptr, nullptr, 0, nullptr, nullptr);
 
-	auto lambda2 = [](void */*p_method_userdata*/, GDExtensionClassInstancePtr /*p_instance*/, const GDExtensionConstTypePtr */*p_args*/, GDExtensionTypePtr r_return) {
+	auto lambda2 = [](void * /*p_method_userdata*/, GDExtensionClassInstancePtr /*p_instance*/, const GDExtensionConstTypePtr * /*p_args*/, GDExtensionTypePtr r_return) {
 		const Variant ret = {};
 		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
 	};
@@ -364,7 +373,7 @@ void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, 
 }
 
 void GenericAnchorNode::bind_pid_getter(const StringName &p_class_name) {
-	auto *method_bind = static_cast<MethodBindHack*>(create_method_bind(&GenericAnchorNode::get_pid));
+	auto *method_bind = static_cast<MethodBindHack *>(create_method_bind(&GenericAnchorNode::get_pid)); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
 
 	//std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
 	const std::vector<StringName> args;
@@ -378,7 +387,7 @@ void GenericAnchorNode::bind_pid_getter(const StringName &p_class_name) {
 }
 
 void GenericAnchorNode::bind_anchor_program_getter(const StringName &p_class_name) {
-	auto *method_bind = static_cast<MethodBindHack*>(create_method_bind(&GenericAnchorNode::get_anchor_program));
+	auto *method_bind = static_cast<MethodBindHack *>(create_method_bind(&GenericAnchorNode::get_anchor_program)); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
 
 	//std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
 	const std::vector<StringName> args;
@@ -395,9 +404,8 @@ void GenericAnchorNode::bind_account_fetcher(const StringName &p_class_name, con
 	ERR_FAIL_COND_EDMSG_CUSTOM(!anchor_account.has("name"), "Anchor instruction does not have name");
 	const String account_name = anchor_account["name"];
 
-	auto *method_bind = static_cast<MethodBindHack *>(create_method_bind(&GenericAnchorNode::generic_fetch_account_bind));
+	auto *method_bind = static_cast<MethodBindHack *>(create_method_bind(&GenericAnchorNode::generic_fetch_account_bind)); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
 
-	//std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
 	std::vector<StringName> args;
 	args.emplace_back("account_key");
 

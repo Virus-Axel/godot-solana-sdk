@@ -1,10 +1,11 @@
 #include "candy_machine/config_line.hpp"
 
-#include "instruction.hpp"
-#include "instructions/associated_token_account.hpp"
-#include "instructions/mpl_token_metadata.hpp"
-#include "instructions/spl_token.hpp"
-#include "instructions/system_program.hpp"
+#include <cstdint>
+
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/variant.hpp"
 
 namespace godot {
 
@@ -21,20 +22,17 @@ void ConfigLine::_bind_methods() {
 	ClassDB::add_property("ConfigLine", PropertyInfo(Variant::STRING, "uri"), "set_uri", "get_uri");
 }
 
-ConfigLine::ConfigLine() {
-}
-
 void ConfigLine::set_name(const String &value) {
 	this->name = value;
 }
-String ConfigLine::get_name() {
+String ConfigLine::get_name() const {
 	return name;
 }
 
 void ConfigLine::set_uri(const String &value) {
 	this->uri = value;
 }
-String ConfigLine::get_uri() {
+String ConfigLine::get_uri() const {
 	return uri;
 }
 
@@ -50,8 +48,6 @@ PackedByteArray ConfigLine::serialize() {
 	result.append_array(uri.to_ascii_buffer());
 
 	return result;
-}
-ConfigLine::~ConfigLine() {
 }
 
 void ConfigLineSetting::_bind_methods() {
@@ -79,74 +75,68 @@ void ConfigLineSetting::_bind_methods() {
 	ClassDB::add_property("ConfigLineSetting", PropertyInfo(Variant::BOOL, "is_sequential"), "set_is_sequential", "get_is_sequential");
 }
 
-ConfigLineSetting::ConfigLineSetting() {
-}
-
 void ConfigLineSetting::set_prefix_name(const String &value) {
 	prefix_name = value;
 }
-String ConfigLineSetting::get_prefix_name() {
+String ConfigLineSetting::get_prefix_name() const {
 	return prefix_name;
 }
 
 void ConfigLineSetting::set_name_length(const uint32_t value) {
 	name_length = value;
 }
-uint32_t ConfigLineSetting::get_name_length() {
+uint32_t ConfigLineSetting::get_name_length() const {
 	return name_length;
 }
 
 void ConfigLineSetting::set_prefix_uri(const String &value) {
 	prefix_uri = value;
 }
-String ConfigLineSetting::get_prefix_uri() {
+String ConfigLineSetting::get_prefix_uri() const {
 	return prefix_uri;
 }
 
 void ConfigLineSetting::set_uri_length(const uint32_t value) {
 	uri_length = value;
 }
-uint32_t ConfigLineSetting::get_uri_length() {
+uint32_t ConfigLineSetting::get_uri_length() const {
 	return uri_length;
 }
 
 void ConfigLineSetting::set_is_sequential(const bool value) {
 	is_sequential = value;
 }
-bool ConfigLineSetting::get_is_sequential() {
+bool ConfigLineSetting::get_is_sequential() const {
 	return is_sequential;
 }
 
 PackedByteArray ConfigLineSetting::serialize() {
 	PackedByteArray result;
-	int cursor = 0;
+	int64_t cursor = 0;
 
 	result.resize((4 + prefix_name.length() + 4 + 4 + prefix_uri.length() + 4 + 1));
 
 	result.encode_u32(cursor, prefix_name.length());
-	cursor += 4;
+	cursor += sizeof(uint32_t);
 	for (unsigned int i = 0; i < prefix_name.length(); i++) {
 		result[cursor + i] = prefix_name[i];
 	}
 	cursor += prefix_name.length();
 
 	result.encode_u32(cursor, name_length);
-	cursor += 4;
+	cursor += sizeof(uint32_t);
 	result.encode_u32(cursor, prefix_uri.length());
-	cursor += 4;
+	cursor += sizeof(uint32_t);
 	for (unsigned int i = 0; i < prefix_uri.length(); i++) {
 		result[cursor + i] = prefix_uri[i];
 	}
 
 	cursor += prefix_uri.length();
 	result.encode_u32(cursor, uri_length);
-	cursor += 4;
-	result[cursor] = (int)is_sequential;
+	cursor += sizeof(uint32_t);
+	result[cursor] = static_cast<uint8_t>(is_sequential);
 
 	return result;
-}
-
-ConfigLineSetting::~ConfigLineSetting() {
 }
 
 } //namespace godot

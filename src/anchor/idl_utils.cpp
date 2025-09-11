@@ -108,7 +108,6 @@ PackedByteArray IdlUtils::serialize_variant_array(const Array &value) {
 
 bool IdlUtils::is_option(const Variant &var) {
 	if (var.get_type() == Variant::FLOAT) {
-        WARN_PRINT_ED("OOOOOOOOOO");
 		return true;
 	}
 	if (var.get_type() == Variant::DICTIONARY) {
@@ -154,8 +153,6 @@ Variant::Type IdlUtils::get_godot_type(const Variant &anchor_type) {
 	if (anchor_type.get_type() == Variant::STRING) {
 		return godot_type_from_string(static_cast<String>(anchor_type));
 	}
-
-    WARN_PRINT_ED("NIL");
 
 	return Variant::NIL;
 }

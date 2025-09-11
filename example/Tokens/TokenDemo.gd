@@ -144,7 +144,7 @@ func freeze_account_demo():
 	var tx := Transaction.new()
 	add_child(tx)
 
-	var ix: Instruction = TokenProgram.freeze_account(mint_account_keypair, mint_keypair, payer, payer)
+	var ix: Instruction = TokenProgram.freeze_account(mint_account_keypair, mint_keypair, payer)
 	tx.add_instruction(ix)
 	
 	tx.set_payer(payer)

@@ -3,11 +3,12 @@
 
 #include <cstdint>
 
-#include "godot_cpp/classes/wrapped.hpp"
 #include "godot_cpp/core/property_info.hpp"
 #include "godot_cpp/templates/list.hpp"
 #include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/variant/string.hpp>
+
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -15,7 +16,7 @@ namespace godot {
  * @brief Contains token metadata.
  */
 class MetaData : public Resource {
-	GDCLASS(MetaData, Resource)
+	GDCLASS_CUSTOM(MetaData, Resource)
 private:
 	bool enable_creators = false;
 	bool enable_collection = false;
@@ -41,6 +42,9 @@ private:
 	Variant token_standard;
 	Variant collection_details;
 	Variant programmable_config;
+
+	void copy_grouping(const Dictionary& dict);
+	void copy_creators(const Dictionary& dict);
 
 protected:
 	/**

@@ -1,11 +1,16 @@
 #include "account_meta.hpp"
 
-#include <godot_cpp/core/class_db.hpp>
-#include <keypair.hpp>
+#include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/error_macros.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "keypair.hpp"
+#include "pubkey.hpp"
+#include "solana_utils.hpp"
 
 namespace godot {
-
-using internal::gdextension_interface_print_warning;
 
 void AccountMeta::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_is_signer"), &AccountMeta::get_is_signer);
@@ -17,13 +22,12 @@ void AccountMeta::_bind_methods() {
 	ClassDB::add_property("AccountMeta", PropertyInfo(Variant::BOOL, "is_signer"), "set_is_signer", "get_is_signer");
 	ClassDB::add_property("AccountMeta", PropertyInfo(Variant::BOOL, "writeable"), "set_writeable", "get_writeable");
 	ClassDB::add_property("AccountMeta", PropertyInfo(Variant::OBJECT, "key", PROPERTY_HINT_RESOURCE_TYPE, "Pubkey,Keypair,PhantomController", PROPERTY_USAGE_DEFAULT), "set_pubkey", "get_pubkey");
-	ClassDB::bind_method(D_METHOD("create_new", "account_key", "is_signer", "writeable"), &AccountMeta::create_new);
 
 	ClassDB::bind_static_method("AccountMeta", D_METHOD("new_account_meta", "account_key", "is_signer", "writeable"), &AccountMeta::new_account_meta);
 }
 
 bool AccountMeta::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
+	const String name = p_name;
 	if (name == "is_signer") {
 		set_is_signer(p_value);
 	} else if (name == "writeable") {
@@ -36,7 +40,7 @@ bool AccountMeta::_set(const StringName &p_name, const Variant &p_value) {
 	return true;
 }
 bool AccountMeta::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
+	const String name = p_name;
 	if (name == "is_signer") {
 		r_ret = is_signer;
 	} else if (name == "writeable") {
@@ -54,20 +58,19 @@ void AccountMeta::set_pubkey(const Variant &p_value) {
 }
 
 Variant AccountMeta::get_pubkey() const {
-	//return key.duplicate(true);
 	return Pubkey::new_from_variant(key);
 }
 
 Variant AccountMeta::get_signer() const {
 	if (key.has_method("get_public_bytes")) {
-		Keypair *res = memnew(Keypair());
+		Keypair *res = memnew_custom(Keypair());
 		res->set_public_bytes(Object::cast_to<Keypair>(key)->get_public_bytes());
 		res->set_private_bytes(Object::cast_to<Keypair>(key)->get_private_bytes());
 
 		return res;
-	} else {
-		return key;
 	}
+
+	return key;
 }
 
 void AccountMeta::set_key(const Variant &p_value) {
@@ -94,16 +97,8 @@ bool AccountMeta::get_writeable() const {
 	return writeable;
 }
 
-AccountMeta::AccountMeta() :
-		Resource() {
-}
-
-AccountMeta::AccountMeta(const Variant &pid, bool signer, bool writeable) {
-	//const Pubkey *temp = memnew(Pubkey(pid));
-	this->key = pid;
-	this->is_signer = signer;
-	this->writeable = writeable;
-}
+AccountMeta::AccountMeta(const Variant &pid, bool signer, bool writeable) :
+		writeable(writeable), key(Variant(pid)), is_signer(signer) {}
 
 AccountMeta::AccountMeta(const Variant &other) {
 	if (AccountMeta::is_account_meta(other)) {
@@ -116,24 +111,19 @@ AccountMeta::AccountMeta(const Variant &other) {
 		this->is_signer = meta_ptr->get_is_signer();
 		this->writeable = meta_ptr->get_writeable();
 	} else {
-		internal::gdextension_interface_print_warning("Assigning AccountMeta with an unexpected object.", "assignment constructor", __FILE__, __LINE__, false);
+		WARN_PRINT_ED("Assigning AccountMeta with an unexpected object.");
 	}
-}
-
-void AccountMeta::create_new(const Variant &account_key, bool is_signer, bool writeable) {
-	Object *account_key_cast = account_key;
-	Pubkey *account_key_ptr = Object::cast_to<Pubkey>(account_key_cast);
 }
 
 bool AccountMeta::is_account_meta(const Variant &other) {
-	if(other.get_type() != Variant::OBJECT) {
+	if (other.get_type() != Variant::OBJECT) {
 		return false;
 	}
-	return ((Object *)other)->is_class("AccountMeta");
+	return static_cast<Object *>(other)->is_class("AccountMeta");
 }
 
 Variant AccountMeta::new_account_meta(const Variant &account_key, bool is_signer, bool writeable) {
-	AccountMeta *result = memnew(AccountMeta);
+	AccountMeta *result = memnew_custom(AccountMeta);
 
 	result->set_is_signer(is_signer);
 	result->set_writeable(writeable);

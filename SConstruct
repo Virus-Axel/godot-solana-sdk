@@ -407,13 +407,14 @@ else:
     # Define targets related to Clang tidy.
 
     lint_sources = sources + wallet_sources + instruction_sources + other_sources
+    hand_written_lint_sources = [s for s in lint_sources if not str(s).endswith("_generated.cpp")]
 
     lint_env = Environment()  # SConscript("godot-cpp/SConstruct")
     lint_env["CLANG_TIDY"] = os.environ.get("CLANG_TIDY", "clang-tidy")
     lint_env["CLANG_FORMAT"] = os.environ.get("CLANG_FORMAT", "clang-tidy")
     lint_env.Tool("compilation_db")
 
-    lint_filenames = [str(f) for f in lint_sources]
+    lint_filenames = [str(f) for f in hand_written_lint_sources]
     build_defines = ["-DWEB_ENABLED"]
     extra_arg = f'--extra-arg {" ".join(build_defines)}' if build_defines else ""
     tidy_command = f'{lint_env["CLANG_TIDY"]} -p compile_commands.json {extra_arg} {" ".join(lint_filenames)}'

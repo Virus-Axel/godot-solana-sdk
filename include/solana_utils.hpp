@@ -1,6 +1,7 @@
 #ifndef GODOT_SOLANA_SDK_SOLANA_UTILS_HPP
 #define GODOT_SOLANA_SDK_SOLANA_UTILS_HPP
 
+#include <cstdint>
 #include <string>
 
 #include "godot_cpp/classes/node.hpp"
@@ -19,9 +20,11 @@ namespace godot {
 
 // Wrap the regular godot macros with lint rules disabled.
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 #define GDCLASS_CUSTOM(...)                                                                                                                                                                                   \
-	/* NOLINTBEGIN(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast)*/ \
-	GDCLASS(__VA_ARGS__) /* NOLINTEND(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast) */
+	/* NOLINTBEGIN(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast,bugprone-unhandled-self-assignment,cppcoreguidelines-pro-type-cstyle-cast)*/ \
+	GDCLASS(__VA_ARGS__) /* NOLINTEND(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast,bugprone-unhandled-self-assignment,cppcoreguidelines-pro-type-cstyle-cast) */
 
 #define memnew_custom(...)                            \
 	/* NOLINTBEGIN(cppcoreguidelines-owning-memory)*/ \
@@ -53,9 +56,9 @@ namespace godot {
 	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
 
 #define ERR_FAIL_COND_EDMSG_CUSTOM(m_cond, m_msg)                          \
-	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \
+	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return, readability-simplify-boolean-expr)*/ \
 	ERR_FAIL_COND_EDMSG(m_cond, m_msg)                                     \
-	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
+	/* NOLINTEND(llvm-else-after-return,readability-else-after-return, readability-simplify-boolean-expr) */
 
 #define ERR_FAIL_COND_CUSTOM(m_cond)                                                                         \
 	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return,readability-simplify-boolean-expr)*/ \
@@ -93,6 +96,8 @@ namespace godot {
 
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 template <typename T>
 inline void append_array(Array &arr, T arg) {
 	arr.push_back(arg);
@@ -104,87 +109,24 @@ inline void append_array(Array &arr, T arg1, Args... args) {
 	append_array(arr, args...);
 }
 
-template <typename T, typename... Args>
-inline Array build_array(T arg1, Args... args) {
-	Array arr;
-	append_array(arr, arg1, args...);
-	return arr;
-}
-
-const char mapping[] = {
-	'A',
-	'B',
-	'C',
-	'D',
-	'E',
-	'F',
-	'G',
-	'H',
-	'I',
-	'J',
-	'K',
-	'L',
-	'M',
-	'N',
-	'O',
-	'P',
-	'Q',
-	'R',
-	'S',
-	'T',
-	'U',
-	'V',
-	'W',
-	'X',
-	'Y',
-	'Z',
-	'a',
-	'b',
-	'c',
-	'd',
-	'e',
-	'f',
-	'g',
-	'h',
-	'i',
-	'j',
-	'k',
-	'l',
-	'm',
-	'n',
-	'o',
-	'p',
-	'q',
-	'r',
-	's',
-	't',
-	'u',
-	'v',
-	'w',
-	'x',
-	'y',
-	'z',
-	'0',
-	'1',
-	'2',
-	'3',
-	'4',
-	'5',
-	'6',
-	'7',
-	'8',
-	'9',
-	'+',
-	'/',
-	'=',
-};
+// clang-format off
+const char mapping[] = { // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	'A','B','C','D','E','F','G','H','I','J',
+	'K','L','M','N','O','P','Q','R','S','T',
+	'U','V','W','X','Y','Z','a','b','c','d',
+	'e','f','g','h','i','j','k','l','m','n',
+	'o','p','q','r','s','t','u','v','w','x',
+	'y','z','0','1','2','3','4','5','6','7',
+	'8','9','+','/','=',
+}; 
+// clang-format on
 
 /**
  * @class SolanaUtils
  * @brief Utility class for various purposes like encoding and decoding.
  */
 class SolanaUtils : public Node {
-	GDCLASS(SolanaUtils, Node)
+	GDCLASS_CUSTOM(SolanaUtils, Node)
 
 private:
 protected:
@@ -194,10 +136,13 @@ protected:
 	static void _bind_methods();
 
 public:
+	// TODO(VirAx): Find a better way to do this.
+	// NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members,misc-non-private-member-variables-in-classes)
 	const String MAINNET_URL = "https://api.mainnet.solana.com"; ///< Mainnet RPC Endpoint URL.
 	const String DEVNET_URL = "https://api.devnet.solana.com"; ///< Devnet RPC Endpoint URL.
 	const String TESTNET_URL = "https://api.testnet.solana.com"; ///< Testnet RPC Endpoint URL.
 	const String LOCALHOST_URL = "http://127.0.0.1:8899"; ///< Localnet RPC Endpoint URL.
+	// NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members,misc-non-private-member-variables-in-classes)
 
 	static const std::string ZERO_ENCODED_32; ///< Base58 encoded 32 lengthed byte array of 0's.
 
@@ -252,7 +197,7 @@ public:
 	 * @param cursor Pointer to an integer that saves abount of bytes required.
 	 * @return unsigned int Decoded integer.
 	 */
-	static unsigned int short_u16_decode(const PackedByteArray &bytes, int *cursor);
+	static unsigned int short_u16_decode(const PackedByteArray &bytes, uint32_t *cursor);
 
 	/**
 	 * @brief Check if RPC response has returned a value.
@@ -282,6 +227,25 @@ public:
 	 * @return PackedByteArray SHA256 Hash as byte array.
 	 */
 	static PackedByteArray sha256_hash_array(const PackedStringArray &contents);
+
+	/**
+	 * @brief Get an element from nested dictionaries.
+	 * 
+	 * @param dict Dictionary containing sub-dictionaries.
+	 * @param path Path pointing to the value in the form of "path/to/value".
+	 * @return Variant Value at the path.
+	 */
+	static Variant get_nested_value(const Dictionary& dict, const String& path);
+
+	/**
+	 * @brief Check if path of keys exists within nested dictionaries.
+	 * 
+	 * @param dict Dictionary containing sub-dictionaries.
+	 * @param path Path pointing to the value in the form of "path/to/value".
+	 * @return true if path exist.
+	 * @return false if path does not exist.
+	 */
+	static bool nested_dict_has_keys(const Dictionary& dict, const String& path);
 
 	~SolanaUtils() override = default;
 };

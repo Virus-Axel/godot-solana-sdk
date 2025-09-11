@@ -1,7 +1,17 @@
 #ifndef SOLANA_SDK_PUBKEY_HPP
 #define SOLANA_SDK_PUBKEY_HPP
 
-#include <godot_cpp/classes/resource.hpp>
+#include "godot_cpp/classes/resource.hpp"
+#include "godot_cpp/core/property_info.hpp"
+#include "godot_cpp/templates/list.hpp"
+#include "godot_cpp/variant/array.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/packed_string_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/string_name.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -15,7 +25,7 @@ const unsigned int PUBKEY_LENGTH = 32;
  * The Pubkey class stores the 32 bytes and also a base58 encoded representation of the bytes.
  */
 class Pubkey : public Resource {
-	GDCLASS(Pubkey, Resource)
+	GDCLASS_CUSTOM(Pubkey, Resource)
 
 private:
 	// Number of bytes in a pubkey
@@ -26,7 +36,6 @@ private:
 	static const unsigned int MAX_SEEDS = 16;
 	// Maximum string length of a base58 encoded pubkey
 	static const unsigned int MAX_BASE58_LEN = 44;
-
 
 	String type = "UNIQUE";
 	String seed = "";
@@ -57,7 +66,7 @@ protected:
 	 * @_get{Pubkey}
 	 */
 	bool _get(const StringName &p_name, Variant &r_ret) const;
-	
+
 	/**
 	 * @_get_property_list
 	 */
@@ -461,21 +470,21 @@ public:
 
 	/**
 	 * @brief Assign this Pubkey from a Variant.
-	 * 
+	 *
 	 * @param other Pubkey compatible key Variant.
 	 */
-	Pubkey& operator=(const Variant &other);
+	Pubkey &operator=(const Variant &other);
 
 	/**
 	 * @brief Compare two pubkeys.
-	 * 
+	 *
 	 * @param other Pubkey to compare to.
 	 * @return true If Pubkeys are equal.
 	 * @return false If Pubkeys are not equal.
 	 */
 	bool operator==(const Pubkey &other) const;
 
-	~Pubkey() = default;
+	~Pubkey() override = default;
 };
 } //namespace godot
 

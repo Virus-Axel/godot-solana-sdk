@@ -20,7 +20,7 @@ Checks: '
 HeaderFileExtensions: ['', h, hh, hpp, hxx, inc, glsl]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]
 HeaderFilterRegex: (include)/
-ExcludeHeaderFilterRegex: godot-cpp/
+ExcludeHeaderFilterRegex: (godot-cpp/|.*_generated\.hpp|include/doc_data_godot-solana-sdk.gen.h|anchor/generated/)
 FormatStyle: file
 CheckOptions:
   cppcoreguidelines-pro-type-member-init.IgnoreArrays: true

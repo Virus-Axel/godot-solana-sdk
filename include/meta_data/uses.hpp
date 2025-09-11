@@ -4,8 +4,9 @@
 #include <cstdint>
 
 #include "godot_cpp/classes/resource.hpp"
-#include "godot_cpp/classes/wrapped.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
+
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -13,7 +14,7 @@ namespace godot {
  * @brief Contains token metadata uses information.
  */
 class MetaDataUses : public Resource {
-	GDCLASS(MetaDataUses, Resource)
+	GDCLASS_CUSTOM(MetaDataUses, Resource)
 
 private:
 	enum UseMethod : uint8_t{

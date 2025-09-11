@@ -1,18 +1,12 @@
 #ifndef CUSTOM_CLASS_MANAGEMENT_GENERIC_NODE_HPP
 #define CUSTOM_CLASS_MANAGEMENT_GENERIC_NODE_HPP
 
-#include <cstdint>
-#include <string>
-
-#include "gdextension_interface.h"
 #include "godot_cpp/classes/input_event.hpp"
 #include "godot_cpp/classes/node.hpp"
 #include "godot_cpp/classes/ref.hpp"
-#include "godot_cpp/classes/wrapped.hpp"
 #include "godot_cpp/variant/packed_string_array.hpp"
 #include "godot_cpp/variant/string_name.hpp"
 
-#include "solana_utils.hpp"
 #include "custom_class_management/generic_type.hpp"
 
 namespace godot{

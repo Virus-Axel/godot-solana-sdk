@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include "gdextension_interface.h"
+#include "godot_cpp/classes/ref_counted.hpp" // NOLINT(misc-include-cleaner,misc-header-include-cycle)
 #include "godot_cpp/variant/string_name.hpp"
 
 namespace godot {

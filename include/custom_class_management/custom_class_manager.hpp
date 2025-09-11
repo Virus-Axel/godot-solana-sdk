@@ -4,7 +4,6 @@
 #include <unordered_map>
 
 #include "gdextension_interface.h"
-#include "godot_cpp/classes/ref.hpp"
 #include "godot_cpp/variant/string_name.hpp"
 
 namespace godot {

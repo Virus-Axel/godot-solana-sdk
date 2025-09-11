@@ -1,8 +1,15 @@
 #ifndef SOLANA_SDK_KEYPAIR_HPP
 #define SOLANA_SDK_KEYPAIR_HPP
 
-#include "ed25519.h"
-#include <godot_cpp/classes/resource.hpp>
+#include "godot_cpp/classes/resource.hpp"
+#include "godot_cpp/core/property_info.hpp"
+#include "godot_cpp/templates/list.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/string_name.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "solana_utils.hpp"
 
 namespace godot {
 
@@ -18,12 +25,12 @@ const int SIGNATURE_LENGTH = 64;
  * smart contract authority to modify the account data and balances.
  */
 class Keypair : public Resource {
-	GDCLASS(Keypair, Resource)
+	GDCLASS_CUSTOM(Keypair, Resource)
 
 private:
-	const int PUBLIC_KEY_LENGTH = 32;
-	const int PRIVATE_KEY_LENGTH = 64;
-	const int SEED_LENGTH = 32;
+	static const int PUBLIC_KEY_LENGTH = 32;
+	static const int PRIVATE_KEY_LENGTH = 64;
+	static const int SEED_LENGTH = 32;
 
 	bool unique = true;
 	String public_string = "";
@@ -60,9 +67,9 @@ protected:
 	 */
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 
-    /**
-     * @_get_property_list
-     */
+	/**
+	 * @_get_property_list
+	 */
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
@@ -74,7 +81,7 @@ public:
 	 * @param seed Ed25519 Seed.
 	 * @note seed is what may be confused with a private key.
 	 */
-	Keypair(const PackedByteArray &seed);
+	explicit Keypair(const PackedByteArray &seed);
 
 	/**
 	 * @godot
@@ -128,7 +135,7 @@ public:
 
 	/**
 	 * @brief Creates a new Keypair from a Variant.
-	 * 
+	 *
 	 * @param variant A variant of a compatible keypair type.
 	 * @return Variant New Keypair resource.
 	 * @return nullptr if the variant is not a compatible type.
@@ -160,11 +167,11 @@ public:
 
 	/**
 	 * @brief Check if the provided Variant is a compatible type with Keypair.
-	 * 
+	 *
 	 * The compatible types are:
 	 * - Keypair
 	 * - JSON
-	 * 
+	 *
 	 * @param object The Variant to check.
 	 * @return true if the variant is a compatible type.
 	 * @return false if the variant is not a compatible type.
@@ -207,7 +214,7 @@ public:
 	 *
 	 * @return PackedByteArray array representing the public parts.
 	 */
-	PackedByteArray get_public_bytes() const;
+	[[nodiscard]] PackedByteArray get_public_bytes() const;
 
 	/**
 	 * @brief Set the the private parts of the Keypair from a base58 encoded string representation.
@@ -269,14 +276,14 @@ public:
 	 *
 	 * @param p_value Sets unique indicator.
 	 */
-	void set_unique(const bool p_value);
+	void set_unique(bool p_value);
 
 	/**
 	 * @brief Get Keypair unique indicator.
 	 *
 	 * @return true if the Keypair is unique type, false otherwise.
 	 */
-	bool get_unique();
+	[[nodiscard]] bool get_unique() const;
 
 	/**
 	 * @brief Set the ed25519 seed.
@@ -315,7 +322,7 @@ public:
 	 */
 	void save_to_file(const String &filename);
 
-	~Keypair();
+	~Keypair() override = default;
 };
 } //namespace godot
 

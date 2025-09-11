@@ -23,7 +23,7 @@ namespace godot {
 
 #ifdef WEB_ENABLED
 bool WalletAdapter::is_wallet_installed(WalletType wallet_type) {
-	const Array params = build_array(wallet_name_from_type(wallet_type));
+	const Array params = Array::make(wallet_name_from_type(wallet_type));
 	const String script = String("Module.bridge.isWalletInstalled('{0}')").format(params);
 	const Variant ready_state = JavaScriptBridge::get_singleton()->eval(script);
 	return static_cast<bool>(ready_state);
@@ -33,7 +33,7 @@ bool WalletAdapter::is_wallet_installed(WalletType wallet_type) {
 #endif
 
 Array WalletAdapter::get_all_wallets() {
-	return build_array("Alpha", "Avana", "BitKeep", "Bitpie", "Clover", "Coin98", "Coinbase", "Coinhub", "Fractal", "Huobi", "HyperPay", "Keystone", "Krystal", "Ledger", "Math", "Neko", "Nightly", "Nufi", "Onto", "Particle", "Phantom", "SafePal", "Saifu", "Salmon", "Sky", "Solflare", "Solong", "Spot", "Tokenary", "TokenPocket", "Torus", "Trezor", "Trust", "UnsafeBurner", "WalletConnect", "Xdefi", "Backpack");
+	return Array::make("Alpha", "Avana", "BitKeep", "Bitpie", "Clover", "Coin98", "Coinbase", "Coinhub", "Fractal", "Huobi", "HyperPay", "Keystone", "Krystal", "Ledger", "Math", "Neko", "Nightly", "Nufi", "Onto", "Particle", "Phantom", "SafePal", "Saifu", "Salmon", "Sky", "Solflare", "Solong", "Spot", "Tokenary", "TokenPocket", "Torus", "Trezor", "Trust", "UnsafeBurner", "WalletConnect", "Xdefi", "Backpack");
 }
 
 Variant WalletAdapter::get_android_plugin() {
@@ -83,7 +83,7 @@ String WalletAdapter::wallet_name_from_type(WalletType wallet_type) {
 
 #ifdef WEB_ENABLED
 String WalletAdapter::get_sign_transaction_script(uint32_t signer_index) {
-	const Array params = build_array(signer_index);
+	const Array params = Array::make(signer_index);
 	const String result = String::utf8("Module.bridge.signTransactionProcedure({0})");
 	return result.format(params);
 
@@ -94,7 +94,7 @@ String WalletAdapter::get_sign_transaction_script(uint32_t signer_index) {
 #ifdef WEB_ENABLED
 String WalletAdapter::get_sign_message_script(const String &message) {
 	const String result = String::utf8("Module.bridge.signMessageProcedure('{0}')");
-	return result.format(build_array(message));
+	return result.format(Array::make(message));
 }
 #endif
 
@@ -103,7 +103,7 @@ String WalletAdapter::get_connect_script() const {
 	const String result = String::utf8("Module.bridge.connectWalletProcedure('{0}')");
 
 	const String wallet_name = wallet_name_from_type(wallet_type);
-	return result.format(build_array(wallet_name));
+	return result.format(Array::make(wallet_name));
 }
 #endif
 
