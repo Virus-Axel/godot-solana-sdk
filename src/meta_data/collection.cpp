@@ -24,14 +24,14 @@ void MetaDataCollection::_bind_methods() {
 void MetaDataCollection::set_key(const Variant &p_value) {
 	key = p_value;
 }
-Variant MetaDataCollection::get_key() const{
+Variant MetaDataCollection::get_key() const {
 	return key;
 }
 
 void MetaDataCollection::set_verified(const bool p_value) {
 	verified = p_value;
 }
-bool MetaDataCollection::get_verified() const{
+bool MetaDataCollection::get_verified() const {
 	return verified;
 }
 

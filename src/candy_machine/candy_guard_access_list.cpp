@@ -206,7 +206,7 @@ PackedByteArray CandyGuardAccessList::serialize_guard_settings() const {
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
 CandyGuardAccessList &CandyGuardAccessList::get_group(const String &label) {
-	if (label == "default"){
+	if (label == "default") {
 		return *this;
 	}
 

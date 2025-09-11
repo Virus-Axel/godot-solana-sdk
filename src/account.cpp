@@ -8,10 +8,10 @@
 namespace godot {
 
 void Account::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("create_new", "lamports", "space", "owner"), &Account::create_new);
+	ClassDB::bind_method(D_METHOD("create_new", "lamports", "space", "owner"), &Account::create_new);
 }
 
-void Account::create_new(uint64_t lamports, uint64_t space, const Variant& owner){
+void Account::create_new(uint64_t lamports, uint64_t space, const Variant &owner) {
 }
 
 } //namespace godot

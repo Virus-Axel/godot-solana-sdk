@@ -305,11 +305,11 @@ public:
 
 	/**
 	 * @brief Create a new Instruction that initializes an account.
-	 * 
+	 *
 	 * @param owner_keypair Owner keypair of the storage account. @signer
 	 * @param storage_name Name of the storage account.
 	 * @param storage Storage size in bytes.
-	 * @return Variant New initialize Instruction. 
+	 * @return Variant New initialize Instruction.
 	 */
 	Variant initialize_account(const Variant &owner_keypair, const String &storage_name, uint64_t storage);
 

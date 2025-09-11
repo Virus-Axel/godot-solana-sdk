@@ -51,13 +51,13 @@ std::unordered_map<StringName, GDExtensionClassCallVirtual> GenericAnchorNode::v
 std::unordered_map<StringName, StringName> GenericAnchorNode::account_fetch_method_accounts;
 
 void GenericAnchorNode::bind_resources(const Array &resources, const String &class_name) {
-	(void) class_name;
+	(void)class_name;
 	for (uint32_t i = 0; i < resources.size(); i++) {
 	}
 }
 
 GDExtensionObjectPtr GenericAnchorNode::_create_instance_func(void *data, GDExtensionBool p_notify_postinitialize) { // NOLINT(readability-convert-member-functions-to-static)
-	(void) p_notify_postinitialize;
+	(void)p_notify_postinitialize;
 	const String instance_class = *static_cast<StringName *>(data);
 	GenericAnchorNode *new_object = memnew_custom(GenericAnchorNode);
 	new_object->anchor_program = memnew_custom(AnchorProgram);
@@ -80,7 +80,7 @@ Variant GenericAnchorNode::generic_instruction_bind() { // NOLINT(readability-co
 }
 
 Error GenericAnchorNode::generic_fetch_account_bind(const Variant &account_key) { // NOLINT(readability-convert-member-functions-to-static)
-	(void) account_key;
+	(void)account_key;
 	return Error::OK;
 }
 

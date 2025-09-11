@@ -111,7 +111,7 @@ uint16_t CompiledInstruction::create_from_bytes(const PackedByteArray &bytes) {
 
 	ERR_FAIL_COND_V_EDMSG_CUSTOM(bytes.size() < MINIMUM_COMPILED_INSTRUCTION_SIZE + accounts_len + data_len, 0, "Invalid compiled instruction.");
 	ERR_FAIL_COND_V_CUSTOM(cursor + data_len > MAX_TRANSACTION_SIZE, 0);
-	// Check data_len and account_len separately as they can cause overflow. 
+	// Check data_len and account_len separately as they can cause overflow.
 	ERR_FAIL_COND_V_CUSTOM(data_len > MAX_TRANSACTION_SIZE, 0);
 	ERR_FAIL_COND_V_CUSTOM(accounts_len > MAX_TRANSACTION_SIZE, 0);
 

@@ -409,18 +409,29 @@ else:
     lint_sources = sources + wallet_sources + instruction_sources + other_sources
     hand_written_lint_sources = [s for s in lint_sources if not str(s).endswith("_generated.cpp")]
 
+    lint_headers = Glob("include/*.hpp") + Glob("include/*/*.hpp") + Glob("include/**/*.hpp")
+    hand_written_lint_headers = [s for s in lint_headers if not str(s).endswith("_generated.hpp")]
+
     lint_env = Environment()  # SConscript("godot-cpp/SConstruct")
     lint_env["CLANG_TIDY"] = os.environ.get("CLANG_TIDY", "clang-tidy")
-    lint_env["CLANG_FORMAT"] = os.environ.get("CLANG_FORMAT", "clang-tidy")
+    lint_env["CLANG_FORMAT"] = os.environ.get("CLANG_FORMAT", "clang-format")
+    lint_env["COMPILE_COMMANDS"] = os.environ.get("COMPILE_COMMANDS", "compile_commands.json")
     lint_env.Tool("compilation_db")
 
     lint_filenames = [str(f) for f in hand_written_lint_sources]
+    lint_header_filenames = [str(f) for f in hand_written_lint_headers]
     build_defines = ["-DWEB_ENABLED"]
     extra_arg = f'--extra-arg {" ".join(build_defines)}' if build_defines else ""
-    tidy_command = f'{lint_env["CLANG_TIDY"]} -p compile_commands.json {extra_arg} {" ".join(lint_filenames)}'
+    tidy_command = f'{lint_env["CLANG_TIDY"]} -p {lint_env["COMPILE_COMMANDS"]} {extra_arg} {" ".join(lint_filenames)}'
     clang_tidy_action = lint_env.Action([tidy_command])
     clang_tidy_command = lint_env.Command(
         "lint", "compile_commands.json", clang_tidy_action
+    )
+    
+    format_command = f'{lint_env["CLANG_FORMAT"]} {" ".join(lint_filenames)} {" ".join(lint_header_filenames)} --Werror --dry-run --ferror-limit=0 -style=file'
+    clang_format_action = lint_env.Action([format_command])
+    clang_format_command = lint_env.Command(
+        "check-format", None, clang_format_action
     )
 
     # Define test validator target

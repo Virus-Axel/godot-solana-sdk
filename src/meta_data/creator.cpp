@@ -26,21 +26,21 @@ void MetaDataCreator::_bind_methods() {
 void MetaDataCreator::set_address(const Variant &p_value) {
 	address = p_value;
 }
-Variant MetaDataCreator::get_address() const{
+Variant MetaDataCreator::get_address() const {
 	return address;
 }
 
 void MetaDataCreator::set_verified(const bool p_value) {
 	verified = p_value;
 }
-bool MetaDataCreator::get_verified() const{
+bool MetaDataCreator::get_verified() const {
 	return verified;
 }
 
 void MetaDataCreator::set_share(const uint32_t p_value) {
 	share = p_value;
 }
-uint32_t MetaDataCreator::get_share() const{
+uint32_t MetaDataCreator::get_share() const {
 	return share;
 }
 
