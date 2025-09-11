@@ -116,35 +116,35 @@ BindMethodFunc GenericAnchorResource::_get_bind_methods() {
 }
 
 NotificationMethod GenericAnchorResource::_get_notification() {
-	return (void (::godot::Wrapped::*)(int))&GenericAnchorResource::_notification; // NOLINT(google-readability-casting)
+	return (void(::godot::Wrapped::*)(int)) & GenericAnchorResource::_notification; // NOLINT(google-readability-casting)
 }
 
 SetMethod GenericAnchorResource::_get_set() {
-	return (bool (Wrapped::*)(const StringName &p_name, const Variant &p_property))&GenericAnchorResource::_set; // NOLINT(google-readability-casting)
+	return (bool(Wrapped::*)(const StringName &p_name, const Variant &p_property)) & GenericAnchorResource::_set; // NOLINT(google-readability-casting)
 }
 
 GetMethod GenericAnchorResource::_get_get() {
-	return (bool (Wrapped::*)(const StringName &p_name, Variant &r_ret) const) & GenericAnchorResource::_get; // NOLINT(google-readability-casting)
+	return (bool(Wrapped::*)(const StringName &p_name, Variant &r_ret) const) & GenericAnchorResource::_get; // NOLINT(google-readability-casting)
 }
 
 GetPropertyListMethod GenericAnchorResource::_get_get_property_list() {
-	return (void (Wrapped::*)(List<PropertyInfo> *p_list) const) & GenericAnchorResource::_get_property_list; // NOLINT(google-readability-casting)
+	return (void(Wrapped::*)(List<PropertyInfo> * p_list) const) & GenericAnchorResource::_get_property_list; // NOLINT(google-readability-casting)
 }
 
 PropertyCanRevertMethod GenericAnchorResource::_get_property_can_revert() {
-	return (bool (Wrapped::*)(const StringName &p_name) const) & GenericAnchorResource::_property_can_revert; // NOLINT(google-readability-casting)
+	return (bool(Wrapped::*)(const StringName &p_name) const) & GenericAnchorResource::_property_can_revert; // NOLINT(google-readability-casting)
 }
 
 PropertyGetRevertMethod GenericAnchorResource::_get_property_get_revert() {
-	return (bool (Wrapped::*)(const StringName &p_name, Variant &) const) & GenericAnchorResource::_property_get_revert; // NOLINT(google-readability-casting)
+	return (bool(Wrapped::*)(const StringName &p_name, Variant &) const) & GenericAnchorResource::_property_get_revert; // NOLINT(google-readability-casting)
 }
 
 ValidatePropertyMethod GenericAnchorResource::_get_validate_property() {
-	return (void (Wrapped::*)(PropertyInfo &p_property) const) & GenericAnchorResource::_validate_property; // NOLINT(google-readability-casting)
+	return (void(Wrapped::*)(PropertyInfo & p_property) const) & GenericAnchorResource::_validate_property; // NOLINT(google-readability-casting)
 }
 
 ToStringMethod GenericAnchorResource::_get_to_string() {
-	return (String (Wrapped::*)() const) & GenericAnchorResource::_to_string; // NOLINT(google-readability-casting)
+	return (String(Wrapped::*)() const)&GenericAnchorResource::_to_string; // NOLINT(google-readability-casting)
 }
 
 void GenericAnchorResource::initialize_class() {

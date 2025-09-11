@@ -184,7 +184,7 @@ PackedByteArray CandyMachineData::serialize() {
 	result[cursor] = static_cast<uint8_t>(is_mutable);
 	cursor++;
 	result.encode_u32(cursor, creators.size());
-	cursor += sizeof(uint32_t);;
+	cursor += sizeof(uint32_t);
 	for (unsigned int i = 0; i < creators.size(); i++) {
 		PackedByteArray creator_bytes = Object::cast_to<MetaDataCreator>(creators[i])->serialize();
 		for (unsigned int j = 0; j < creator_bytes.size(); j++) {

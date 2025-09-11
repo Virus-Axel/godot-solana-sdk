@@ -106,7 +106,7 @@ public:
 	/**
 	 * @brief Role of delegate in metadata.
 	 */
-	enum MetaDataDelegateRole: uint8_t {
+	enum MetaDataDelegateRole : uint8_t {
 		AUTHORITY = 0, ///< Authority role.
 		COLLECTION = 1, ///< Collection role.
 		USE = 2, ///< Use role.

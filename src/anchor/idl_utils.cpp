@@ -127,8 +127,8 @@ PackedByteArray IdlUtils::serialize_dictionary(const Dictionary &value) {
 		return serialize_option(value);
 	}
 
-    PackedByteArray result;
-    const Array entries = value.values();
+	PackedByteArray result;
+	const Array entries = value.values();
 	for (unsigned int i = 0; i < entries.size(); i++) {
 		result.append_array(serialize_variant(entries[i]));
 	}

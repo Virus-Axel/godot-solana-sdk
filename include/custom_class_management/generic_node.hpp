@@ -9,7 +9,7 @@
 
 #include "custom_class_management/generic_type.hpp"
 
-namespace godot{
+namespace godot {
 
 /**
  * @brief Extensible node that can be extended and modified.

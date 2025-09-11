@@ -527,7 +527,7 @@ bool Pubkey::create_program_address_bytes(const Array &seeds, const Variant &pro
 	delete[] hash_ptr;
 	// NOLINTEND(cppcoreguidelines-owning-memory,cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-	if(is_y_point_valid(new_bytes.ptr())){
+	if (is_y_point_valid(new_bytes.ptr())) {
 		return false;
 	}
 

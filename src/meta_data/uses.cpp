@@ -32,14 +32,14 @@ uint32_t MetaDataUses::get_use_method() const {
 void MetaDataUses::set_total(const uint64_t p_value) {
 	total = p_value;
 }
-uint64_t MetaDataUses::get_total() const{
+uint64_t MetaDataUses::get_total() const {
 	return total;
 }
 
 void MetaDataUses::set_remaining(const uint64_t p_value) {
 	remaining = p_value;
 }
-uint64_t MetaDataUses::get_remaining() const{
+uint64_t MetaDataUses::get_remaining() const {
 	return remaining;
 }
 

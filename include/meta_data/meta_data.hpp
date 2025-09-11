@@ -43,8 +43,8 @@ private:
 	Variant collection_details;
 	Variant programmable_config;
 
-	void copy_grouping(const Dictionary& dict);
-	void copy_creators(const Dictionary& dict);
+	void copy_grouping(const Dictionary &dict);
+	void copy_creators(const Dictionary &dict);
 
 protected:
 	/**

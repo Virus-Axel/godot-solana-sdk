@@ -23,7 +23,7 @@ const std::string TokenProgram::PID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5
 Variant TokenProgram::_initialize_mint(const Variant &token_program_pid, const Variant &mint_pubkey, const Variant &mint_authority, const Variant &freeze_authority, const uint32_t decimals) {
 	Variant result = memnew_custom(Instruction);
 	PackedByteArray data;
-	
+
 	const int64_t BASE_DATA_LENGTH = 35;
 	const int64_t OPTIONAL_AUTHORITY_LOCATION = 34;
 

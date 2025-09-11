@@ -22,7 +22,7 @@ namespace godot {
 
 // NOLINTBEGIN(cppcoreguidelines-macro-usage)
 
-#define GDCLASS_CUSTOM(...)                                                                                                                                                                                   \
+#define GDCLASS_CUSTOM(...)                                                                                                                                                                                                                                                             \
 	/* NOLINTBEGIN(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast,bugprone-unhandled-self-assignment,cppcoreguidelines-pro-type-cstyle-cast)*/ \
 	GDCLASS(__VA_ARGS__) /* NOLINTEND(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast,bugprone-unhandled-self-assignment,cppcoreguidelines-pro-type-cstyle-cast) */
 
@@ -55,9 +55,9 @@ namespace godot {
 	ERR_FAIL_COND_V_EDMSG(m_cond, m_retval, m_msg)                         \
 	/* NOLINTEND(llvm-else-after-return,readability-else-after-return) */
 
-#define ERR_FAIL_COND_EDMSG_CUSTOM(m_cond, m_msg)                          \
+#define ERR_FAIL_COND_EDMSG_CUSTOM(m_cond, m_msg)                                                             \
 	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return, readability-simplify-boolean-expr)*/ \
-	ERR_FAIL_COND_EDMSG(m_cond, m_msg)                                     \
+	ERR_FAIL_COND_EDMSG(m_cond, m_msg)                                                                        \
 	/* NOLINTEND(llvm-else-after-return,readability-else-after-return, readability-simplify-boolean-expr) */
 
 #define ERR_FAIL_COND_CUSTOM(m_cond)                                                                         \
@@ -96,7 +96,6 @@ namespace godot {
 
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 
-
 // NOLINTEND(cppcoreguidelines-macro-usage)
 template <typename T>
 inline void append_array(Array &arr, T arg) {
@@ -118,7 +117,7 @@ const char mapping[] = { // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-
 	'o','p','q','r','s','t','u','v','w','x',
 	'y','z','0','1','2','3','4','5','6','7',
 	'8','9','+','/','=',
-}; 
+};
 // clang-format on
 
 /**
@@ -230,22 +229,22 @@ public:
 
 	/**
 	 * @brief Get an element from nested dictionaries.
-	 * 
+	 *
 	 * @param dict Dictionary containing sub-dictionaries.
 	 * @param path Path pointing to the value in the form of "path/to/value".
 	 * @return Variant Value at the path.
 	 */
-	static Variant get_nested_value(const Dictionary& dict, const String& path);
+	static Variant get_nested_value(const Dictionary &dict, const String &path);
 
 	/**
 	 * @brief Check if path of keys exists within nested dictionaries.
-	 * 
+	 *
 	 * @param dict Dictionary containing sub-dictionaries.
 	 * @param path Path pointing to the value in the form of "path/to/value".
 	 * @return true if path exist.
 	 * @return false if path does not exist.
 	 */
-	static bool nested_dict_has_keys(const Dictionary& dict, const String& path);
+	static bool nested_dict_has_keys(const Dictionary &dict, const String &path);
 
 	~SolanaUtils() override = default;
 };

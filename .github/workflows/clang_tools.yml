@@ -74,8 +74,10 @@ jobs:
 
       - name: Check Static Analysis
         run: |
-          sed -i 's/-fno-gnu-unique//g' compile_commands.json
-          CLANG_TIDY=clang-tidy-19 scons lint
+          scons compile_commands.json
+          mkdir tmp
+          sed 's/-fno-gnu-unique//g' compile_commands.json > tmp/compile_commands.json
+          COMPILE_COMMANDS=tmp/ CLANG_TIDY=clang-tidy-19 scons lint
 
       - name : Check Formatting
         run: |

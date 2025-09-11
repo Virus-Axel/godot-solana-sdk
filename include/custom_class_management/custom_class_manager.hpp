@@ -20,9 +20,9 @@ public:
 
 	/**
 	 * @brief Registers virtual methods.
-	 * 
+	 *
 	 * @warning This method does not do anything at the moment, don't use.
-	 * 
+	 *
 	 * @param class_name Name of the class.
 	 */
 	void register_virtual_methods(const StringName &class_name);

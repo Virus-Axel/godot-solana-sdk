@@ -14,7 +14,7 @@
 
 namespace godot {
 
-using MenuID = enum: uint8_t {
+using MenuID = enum : uint8_t {
 	IDL_TO_NODE = 0,
 	MINT_MANAGER = 1,
 	MAX_MENU_ID = 2

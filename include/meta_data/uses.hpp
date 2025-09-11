@@ -17,7 +17,7 @@ class MetaDataUses : public Resource {
 	GDCLASS_CUSTOM(MetaDataUses, Resource)
 
 private:
-	enum UseMethod : uint8_t{
+	enum UseMethod : uint8_t {
 		Burn = 0,
 		Multiple = 1,
 		Single = 2,

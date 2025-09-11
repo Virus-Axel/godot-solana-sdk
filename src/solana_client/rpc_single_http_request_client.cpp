@@ -177,7 +177,7 @@ void RpcSingleHttpRequestClient::process(const double delta) {
 		initiate_connection();
 	} else {
 		update_timeouts(delta);
-		
+
 		// Remove timed out requests.
 		if (is_timed_out()) {
 			finalize_faulty();

@@ -177,8 +177,7 @@ void Transaction::sign_at_index(const uint32_t index) {
 		ready_signature_amount++;
 		emit_signal("signer_state_changed");
 		check_fully_signed();
-	}
-	else if (Keypair::is_compatible_type(signers[index])) {
+	} else if (Keypair::is_compatible_type(signers[index])) {
 		auto signer_keypair = Keypair::new_from_variant(signers[index]);
 		ERR_FAIL_COND_EDMSG_CUSTOM(signer_keypair.get_type() != Variant::OBJECT, "Signer is not a Keypair or compatible type.");
 
@@ -256,7 +255,7 @@ void Transaction::_emit_finalized_callback(const Dictionary &params) {
 	emit_signal("finalized");
 }
 
-void Transaction::check_transaction_simulation(const Dictionary &params){
+void Transaction::check_transaction_simulation(const Dictionary &params) {
 	const String simulation_failed_indicator = "Transaction simulation failed:";
 	if (!params.has("error")) {
 		return;
@@ -564,8 +563,7 @@ void Transaction::send_callback(Dictionary params) {
 		result_signature = params["result"];
 		copy_connection_state();
 		subscribe_to_signature();
-	}
-	else{
+	} else {
 		check_transaction_simulation(params);
 	}
 	emit_signal("transaction_response_received", params);
