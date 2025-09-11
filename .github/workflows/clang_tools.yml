@@ -1,0 +1,82 @@
+name: Clang Tools
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  clang-checks:
+    runs-on: ubuntu-latest
+    name: Run checks
+
+    env:
+        identifier: web-debug
+        target: template_debug
+        platform: web
+        arch: wasm32
+        threads: True
+
+    steps:
+
+      - name: Install emsdk toolchain
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.64
+
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Update npm
+        run: |
+          npm install -g npm@11
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+
+      - name: Set up SCons
+        shell: bash
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -m pip install scons==4.8
+          scons --version
+
+      - name: Install Clang 19 (tidy + format)
+        run: |
+          sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" 19 all
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy-19 clang-format-19
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-19 100
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-19 100
+
+      - name: Checkout project
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Get godot-cpp commit SHA
+        id: godotcpp
+        run: echo "sha=$(git -C godot-cpp rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache godot-cpp bindings
+        uses: actions/cache@v4
+        with:
+          path: .godot/
+          key: godot-cpp-${{ env.identifier }}-${{ steps.godotcpp.outputs.sha }}
+
+      - name: Compile extension
+        shell: sh
+
+        run: |
+          scons threads='${{ env.threads }}' target='${{ env.target }}' platform='${{ env.platform }}' arch='${{ env.arch }}' -j2
+          cp godot-solana-sdk.gdextension bin/
+
+      - name: Check Static Analysis
+        run: |
+          sed -i 's/-fno-gnu-unique//g' compile_commands.json
+          CLANG_TIDY=clang-tidy-19 scons lint
+
+      - name : Check Formatting
+        run: |
+          CLANG_FORMAT=clang-format-19 scons check-format
