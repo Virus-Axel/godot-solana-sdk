@@ -91,8 +91,7 @@ func send_transaction(tx:Transaction,tx_commitment:Commitment=Commitment.CONFIRM
 			if staked_url != "":
 				print("CONGESTION IDENTIFIED, USING STAKED CONNECTION RPC!")
 				print(staked_url)
-				ProjectSettings.set_setting("solana_sdk/client/default_url",staked_url)
-				#tx.set_url_override(staked_url)
+				tx.set_url_override(staked_url)
 		
 	tx.send()
 	var response:Dictionary = await tx.transaction_response_received

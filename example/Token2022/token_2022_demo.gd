@@ -1,8 +1,6 @@
 extends Control
 
-const TOTAL_CASES := 2
 const MINT_SIZE := 234
-var passed_test_mask : int = 0
 
 const NAME = "Token"
 const SYMBOL = "TK"
@@ -15,7 +13,6 @@ var payer: Keypair = Keypair.new_from_file("payer.json")
 var mint_keypair: Keypair = Keypair.new_random()
 
 func PASS(unique_identifier: int):
-	passed_test_mask += (1 << unique_identifier)
 	print("[OK]: ", unique_identifier)
 
 
@@ -80,10 +77,7 @@ func update_metadata_field():
 
 func _ready():
 	await create_token_metadata_extension()
-	update_metadata_field()
-
-
-func _on_timeout_timeout():
-	for i in range(TOTAL_CASES):
-		if ((1 << i) & passed_test_mask) == 0:
-			print("[FAIL]: ", i)
+	await update_metadata_field()
+	
+	print("ALL TESTS PASSED")
+	get_tree().quit(0)

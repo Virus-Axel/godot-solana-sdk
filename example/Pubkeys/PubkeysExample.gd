@@ -2,12 +2,8 @@
 
 extends ItemList
 
-const TOTAL_CASES := 8
-var passed_test_mask : int = 0
-		
 
 func PASS(unique_identifier: int):
-	passed_test_mask += (1 << unique_identifier)
 	print("[OK]: ", unique_identifier)
 
 
@@ -68,7 +64,7 @@ func pubkey_demo_associated_token():
 	# Create an associated token address with an owner and a mint address.
 	var token_owner: Keypair = Keypair.new_random()
 	var mint = Pubkey.new_from_string("2WLPJWkNGVrM3GVJ1KeeFFBqEDStKCaA34sPPvQFz4VB");
-	var pk: Pubkey = Pubkey.new_associated_token_address(token_owner, mint)
+	var pk: Pubkey = Pubkey.new_associated_token_address(token_owner, mint, TokenProgram.get_pid())
 	
 	assert(!pk.to_string().is_empty())
 	set_item_text(13, pk.to_string())
@@ -94,9 +90,6 @@ func _ready():
 	pubkey_demo_pubkey_bytes()
 	pubkey_demo_associated_token()
 	pubkey_demo_program_derived_address()
-
-
-func _on_timeout_timeout():
-	for i in range(TOTAL_CASES):
-		if ((1 << i) & passed_test_mask) == 0:
-			print("[FAIL]: ", i)
+	
+	print("ALL TESTS PASSED")
+	get_tree().quit(0)

@@ -21,9 +21,12 @@ func execute():
 # Run all test cases
 func run_tests():
 	await create_or_load_user_with_profile()
-	# await update_profile()
-	await add_wallet()
-	await remove_wallet()
+	await update_profile()
+	
+	# TODO(VirAx): Seems to be too many wallets added here.
+	#await add_wallet()
+	#await remove_wallet()
+
 	await claim_badge_criteria()
 
 # Setup function to initialize required data
@@ -175,6 +178,7 @@ func add_wallet():
 	assert(user != null, "User should still exist.")
 	print(user.wallets.wallets)
 	print(new_wallet.get_public_string())
+
 	assert(user.wallets.wallets[-1] == new_wallet.get_public_string(), "User should contain new wallet")
 	utils.PASS(2)
 

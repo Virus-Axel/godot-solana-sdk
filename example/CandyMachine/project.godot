@@ -15,6 +15,15 @@ run/main_scene="res://candy_machine_demo.tscn"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+SolanaService="*res://addons/SolanaSDK/Autoload/SolanaService.tscn"
+HttpRequestHandler="*res://addons/SolanaSDK/Autoload/HttpRequestHandler.tscn"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/SolanaSDK/plugin.cfg")
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

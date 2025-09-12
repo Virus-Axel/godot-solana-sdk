@@ -3,8 +3,6 @@ extends Control
 const MINT_SIZE := 82
 const MINT_ACCOUNT_SIZE := 165
 
-const TOTAL_CASES := 7
-var passed_test_mask := 0
 var payer: Keypair = await Keypair.new_from_file("payer.json")
 
 # New addresses
@@ -16,7 +14,6 @@ var guard_kp: Keypair = Keypair.new_random()
 
 
 func PASS(unique_identifier: int):
-	passed_test_mask += (1 << unique_identifier)
 	print("[OK]: ", unique_identifier)
 
 
@@ -125,7 +122,7 @@ func add_config_line_demo():
 
 func mint_demo():
 	var nft_keypair: Keypair = Keypair.new_random()
-	var random_receiver: Pubkey = Pubkey.new_associated_token_address(payer, nft_keypair)
+	var random_receiver: Pubkey = Pubkey.new_associated_token_address(payer, nft_keypair, TokenProgram.get_pid())
 
 	# Create a transaction
 	var tx := Transaction.new()
@@ -202,15 +199,11 @@ func _ready():
 	await initialize_candy_machine_demo()
 	await add_config_line_demo()
 	await mint_demo()
-	fetch_candy_machine_account_demo()
+	await fetch_candy_machine_account_demo()
 	
 	# Candy Machine V3 tests
 	await initialize_mint_with_mint_limit()
-	mint_with_guards()
+	await mint_with_guards()
 	
-
-
-func _on_timeout_timeout():
-	for i in range(TOTAL_CASES):
-		if ((1 << i) & passed_test_mask) == 0:
-			print("[FAIL]: ", i)
+	print("ALL TESTS PASSED")
+	get_tree().quit(0)

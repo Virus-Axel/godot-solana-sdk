@@ -16,6 +16,15 @@ config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
 config/property_name=0
 
+[autoload]
+
+SolanaService="*res://addons/SolanaSDK/Autoload/SolanaService.tscn"
+HttpRequestHandler="*res://addons/SolanaSDK/Autoload/HttpRequestHandler.tscn"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/SolanaSDK/plugin.cfg")
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

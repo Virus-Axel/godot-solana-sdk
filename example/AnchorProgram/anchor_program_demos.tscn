@@ -60,11 +60,6 @@ idl = {
 "version": "0.0.1"
 }
 
-[node name="Timeout" type="Timer" parent="."]
-wait_time = 10.0
-one_shot = true
-autostart = true
-
 [node name="GridContainer" type="GridContainer" parent="."]
 layout_mode = 2
 size_flags_vertical = 3
@@ -87,5 +82,3 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 columns = 2
-
-[connection signal="timeout" from="Timeout" to="." method="_on_timeout_timeout"]

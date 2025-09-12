@@ -38,12 +38,5 @@ horizontal_alignment = 1
 
 [node name="SolanaClient" type="SolanaClient" parent="."]
 
-[node name="Timeout" type="Timer" parent="."]
-wait_time = 30.0
-one_shot = true
-autostart = true
-
 [node name="Transaction" type="Transaction" parent="."]
 payer = ExtResource("2_kiqg8")
-
-[connection signal="timeout" from="Timeout" to="." method="_on_timeout_timeout"]

@@ -11,6 +11,9 @@ func _ready():
 	await run_character_wrap_tests()
 	await run_mission_tests()
 	await run_staking_tests()
+	
+	print("ALL TESTS PASSED")
+	get_tree().quit(0)
 	 
 
 func before_all():
