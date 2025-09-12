@@ -9,5 +9,5 @@
   "download_commit": "https://github.com/Virus-Axel/godot-solana-sdk/releases/download/{{ env.RELEASE_TAG }}/addons.zip",
   "browse_url": "{{ context.repository.html_url }}",
   "issues_url": "{{ context.repository.html_url }}/issues",
-  "icon_url": "https://private-user-images.githubusercontent.com/14315050/327160810-1d4c4ff8-0763-4ad2-82f6-4ea3d66cde96.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTY2NTM5MzYsIm5iZiI6MTc1NjY1MzYzNiwicGF0aCI6Ii8xNDMxNTA1MC8zMjcxNjA4MTAtMWQ0YzRmZjgtMDc2My00YWQyLTgyZjYtNGVhM2Q2NmNkZTk2LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA4MzElMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwODMxVDE1MjAzNlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTdmYTg1M2E4NzMzMWVhYzBkYmVlMWRiNDMxNzM3YTE0MTljNDNkZmMyMTI1OGNhMTc1YWUzOTI4ZGVlMzUxYTQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.1ZxkVacBiamO9vGeC027dl0OU-63QK6UOtajppVkfYg"
+  "icon_url": "https://i.postimg.cc/Y0LTkfvd/Godot-Solana-SDKLogo.png"
 }
