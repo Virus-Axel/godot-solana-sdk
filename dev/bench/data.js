@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757664051498,
+  "lastUpdate": 1757682765509,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1971,6 +1971,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.366438356164384,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8e6e1d7dd74f7bccb0dc6a5fb7704f3b6274f21b",
+          "message": "Merge pull request #412 from Virus-Axel/workflow/test_with_addon\n\nReplace extension binaries with addon in tests",
+          "timestamp": "2025-09-12T15:04:22+02:00",
+          "tree_id": "61e9b2f3baab85596e116a366959fadd283058d9",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/8e6e1d7dd74f7bccb0dc6a5fb7704f3b6274f21b"
+        },
+        "date": 1757682763974,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.36986301369863,
             "unit": "Percent"
           }
         ]
