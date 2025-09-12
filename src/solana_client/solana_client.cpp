@@ -450,12 +450,12 @@ void SolanaClient::get_recent_prioritization_fees(const Array &account_addresses
 	quick_http_request(make_rpc_dict("getRecentPrioritizationFees", params));
 }
 
-void SolanaClient::get_signature_for_address(const Variant &address, const String &before, const String &until) {
+void SolanaClient::get_signature_for_address(const Variant &address, const String &before, const String &until, const uint16_t limit) {
 	Array params;
 	params.append(Pubkey::string_from_variant(address));
 	append_commitment(params);
 	append_min_context_slot(params);
-	append_limit(params);
+	add_to_param_dict(params, "limit", limit);
 	if (!before.is_empty()) {
 		add_to_param_dict(params, "before", before);
 	}
@@ -878,7 +878,7 @@ void SolanaClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_program_accounts", "program_address", "filters", "with_context"), &SolanaClient::get_program_accounts, DEFVAL(Array()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_recent_performance_samples"), &SolanaClient::get_recent_performance_samples);
 	ClassDB::bind_method(D_METHOD("get_recent_prioritization_fees", "account_addresses"), &SolanaClient::get_recent_prioritization_fees);
-	ClassDB::bind_method(D_METHOD("get_signature_for_address", "address", "before", "until"), &SolanaClient::get_signature_for_address);
+	ClassDB::bind_method(D_METHOD("get_signature_for_address", "address", "before", "until", "limit"), &SolanaClient::get_signature_for_address, DEFVAL(""), DEFVAL(""), DEFVAL(1000U));
 	ClassDB::bind_method(D_METHOD("get_signature_statuses", "signatures", "search_transaction_history"), &SolanaClient::get_signature_statuses);
 	ClassDB::bind_method(D_METHOD("get_slot"), &SolanaClient::get_slot);
 	ClassDB::bind_method(D_METHOD("get_slot_leader"), &SolanaClient::get_slot_leader);

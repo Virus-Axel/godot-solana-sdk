@@ -570,8 +570,9 @@ public:
 	 * @param address Addresses to get signatures from.
 	 * @param before Start searching backwards from this transaction signature.
 	 * @param until Search until this transaction signature.
+	 * @param limit Maximum number of signatures to return (up to 1000). Default: 1000
 	 */
-	void get_signature_for_address(const Variant &address, const String &before = "", const String &until = "");
+	void get_signature_for_address(const Variant &address, const String &before = "", const String &until = "", uint16_t limit = 1000);
 
 	/**
 	 * @brief Get the statuses of a list of signatures.
