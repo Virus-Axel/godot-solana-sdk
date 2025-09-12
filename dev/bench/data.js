@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757662856291,
+  "lastUpdate": 1757664051498,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1942,6 +1942,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.36986301369863,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Virus-Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Virus-Axel",
+            "username": "Virus-Axel"
+          },
+          "distinct": true,
+          "id": "655a2491c4fe1a1fc3d9889cc9704c1f415c138f",
+          "message": "Remove project setting override from SolanaService",
+          "timestamp": "2025-09-12T09:52:18+02:00",
+          "tree_id": "3d97f009883cc803c8974c9303113d1ba90c518a",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/655a2491c4fe1a1fc3d9889cc9704c1f415c138f"
+        },
+        "date": 1757664050123,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.366438356164384,
             "unit": "Percent"
           }
         ]
