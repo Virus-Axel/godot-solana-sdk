@@ -14,7 +14,7 @@ func refresh_balance() -> void:
 	
 	if token_account == null:
 		#token_account = Pubkey.new_associated_token_address(Pubkey.new_from_string("9DLXWVfBA6pwJHxJ6MJ7tVQR19xbRpFTStEEJqtypxyH"),mint)
-		token_account = Pubkey.new_associated_token_address(SolanaService.wallet.get_pubkey(),mint)
+		token_account = Pubkey.new_associated_token_address(SolanaService.wallet.get_pubkey(),mint, TokenProgram.get_pid())
 		
 	balance = await SolanaService.get_ata_balance(token_account.to_string())
 

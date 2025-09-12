@@ -20,6 +20,9 @@ namespace godot {
 
 const std::string TokenProgram::PID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
+const uint8_t TOKEN_MINT_SIZE = 82;
+const uint8_t TOKEN_ACCOUNT_SIZE = 165;
+
 Variant TokenProgram::_initialize_mint(const Variant &token_program_pid, const Variant &mint_pubkey, const Variant &mint_authority, const Variant &freeze_authority, const uint32_t decimals) {
 	Variant result = memnew_custom(Instruction);
 	PackedByteArray data;
@@ -192,6 +195,9 @@ void TokenProgram::_bind_methods() {
 
 	ClassDB::bind_static_method("TokenProgram", D_METHOD("new_token_record_address", "omner", "mint"), &TokenProgram::new_token_record_address);
 	ClassDB::bind_static_method("TokenProgram", D_METHOD("get_pid"), &TokenProgram::get_pid);
+
+	BIND_CONSTANT(TOKEN_MINT_SIZE);
+	BIND_CONSTANT(TOKEN_ACCOUNT_SIZE);
 }
 
 // TODO(Virax): Data is unexplained. Fix this

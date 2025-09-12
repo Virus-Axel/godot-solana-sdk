@@ -914,6 +914,10 @@ void SolanaClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("program_subscribe", "program_id", "callback"), &SolanaClient::program_subscribe);
 	ClassDB::bind_method(D_METHOD("root_subscribe", "callback"), &SolanaClient::root_subscribe);
 	ClassDB::bind_method(D_METHOD("slot_subscribe", "callback"), &SolanaClient::slot_subscribe);
+	ClassDB::bind_static_method("SolanaClient", D_METHOD("get_solana_mainnet_url"), &SolanaClient::get_solana_mainnet_url);
+	ClassDB::bind_static_method("SolanaClient", D_METHOD("get_solana_testnet_url"), &SolanaClient::get_solana_testnet_url);
+	ClassDB::bind_static_method("SolanaClient", D_METHOD("get_solana_devnet_url"), &SolanaClient::get_solana_devnet_url);
+	ClassDB::bind_static_method("SolanaClient", D_METHOD("get_default_localnet_url"), &SolanaClient::get_default_localnet_url);
 
 	ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "url_override", PROPERTY_HINT_NONE), "set_url_override", "get_url_override");
 	ClassDB::add_property("SolanaClient", PropertyInfo(Variant::STRING, "ws_url", PROPERTY_HINT_NONE), "set_ws_url", "get_ws_url");
@@ -932,6 +936,22 @@ void SolanaClient::_ready() {
 
 SolanaClient::SolanaClient() :
 		transaction_detail("full") {
+}
+
+String SolanaClient::get_solana_mainnet_url() {
+	return "https://api.mainnet-beta.solana.com";
+}
+
+String SolanaClient::get_solana_testnet_url() {
+	return "https://api.testnet.solana.com";
+}
+
+String SolanaClient::get_solana_devnet_url() {
+	return "https://api.devnet.solana.com";
+}
+
+String SolanaClient::get_default_localnet_url() {
+	return "http://localhost:8899";
 }
 
 Dictionary SolanaClient::parse_url(const String &url) {

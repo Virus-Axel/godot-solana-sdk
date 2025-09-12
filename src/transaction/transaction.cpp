@@ -64,6 +64,10 @@ void Transaction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_message"), &Transaction::create_message);
 	ClassDB::bind_method(D_METHOD("send"), &Transaction::send);
 	ClassDB::bind_method(D_METHOD("partially_sign", "latest_blockhash"), &Transaction::partially_sign);
+
+	BIND_CONSTANT(DEFAULT_UNIT_LIMIT);
+	BIND_CONSTANT(DEFAULT_UNIT_PRICE);
+	BIND_CONSTANT(SIGNATURE_LENGTH);
 }
 
 void Transaction::_signer_signed(const PackedByteArray &signature, const int32_t index) {

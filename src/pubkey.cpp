@@ -90,6 +90,10 @@ void Pubkey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_from_string", "from"), &Pubkey::create_from_string);
 	ClassDB::bind_method(D_METHOD("create_program_address", "seeds", "program_id"), &Pubkey::create_program_address);
 	ClassDB::bind_method(D_METHOD("get_associated_token_address", "wallet_pubkey", "token_mint_pubkey"), &Pubkey::get_associated_token_address);
+
+	BIND_CONSTANT(PUBKEY_BYTES);
+	BIND_CONSTANT(MAX_SEED_LEN);
+	BIND_CONSTANT(MAX_SEEDS);
 }
 
 bool Pubkey::_set(const StringName &p_name, const Variant &p_value) {

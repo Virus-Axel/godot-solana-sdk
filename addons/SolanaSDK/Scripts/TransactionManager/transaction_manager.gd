@@ -284,7 +284,7 @@ func transfer_token(token_mint:Pubkey,receiver:Pubkey,amount:float,tx_commitment
 	#check if an ATA for this token exists in wallet. if not, add initalize as instruction
 	var receiver_ata:Pubkey = await SolanaService.get_associated_token_account(receiver.to_string(),token_mint.to_string())
 	if receiver_ata == null:
-		receiver_ata = Pubkey.new_associated_token_address(receiver,token_mint)
+		receiver_ata = Pubkey.new_associated_token_address(receiver,token_mint, TokenProgram.get_pid())
 		var init_ata_ix:Instruction = AssociatedTokenAccountProgram.create_associated_token_account(
 			sender_keypair,
 			receiver,

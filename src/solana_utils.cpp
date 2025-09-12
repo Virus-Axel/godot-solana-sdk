@@ -1,6 +1,7 @@
 #include "solana_utils.hpp"
 
 #include <algorithm>
+#include <cstdint>
 
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
@@ -10,6 +11,8 @@
 #include "sha256.hpp"
 
 namespace godot {
+
+const uint32_t LAMPORTS_PER_SOL = 1000000000UL;
 
 // NOLINTBEGIN (cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 // clang-format off
@@ -60,6 +63,8 @@ void SolanaUtils::_bind_methods() {
 	ClassDB::bind_static_method("SolanaUtils", D_METHOD("bs58_decode", "input"), &SolanaUtils::bs58_decode);
 	ClassDB::bind_static_method("SolanaUtils", D_METHOD("bs64_encode", "input"), &SolanaUtils::bs64_encode);
 	ClassDB::bind_static_method("SolanaUtils", D_METHOD("bs64_decode", "input"), &SolanaUtils::bs64_decode);
+
+	BIND_CONSTANT(LAMPORTS_PER_SOL);
 }
 
 SolanaUtils::SolanaUtils() {
