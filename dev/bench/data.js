@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757682765509,
+  "lastUpdate": 1757685115365,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1995,6 +1995,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/8e6e1d7dd74f7bccb0dc6a5fb7704f3b6274f21b"
         },
         "date": 1757682763974,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.36986301369863,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Virus-Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Virus-Axel",
+            "username": "Virus-Axel"
+          },
+          "distinct": true,
+          "id": "ac503f6a738cf56fdf9a317d5a83978c57cade0c",
+          "message": "Fix icon in deploy asset workflow",
+          "timestamp": "2025-09-12T15:43:20+02:00",
+          "tree_id": "915ef66fc97dc84026af31da9810f58af449fd8f",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/ac503f6a738cf56fdf9a317d5a83978c57cade0c"
+        },
+        "date": 1757685113662,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
