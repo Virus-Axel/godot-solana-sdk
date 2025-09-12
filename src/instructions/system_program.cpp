@@ -24,6 +24,62 @@ void SystemProgram::_bind_methods() {
 	ClassDB::bind_static_method("SystemProgram", D_METHOD("create_account_with_seed", "from_keypair", "base_keypair", "seed", "lamports", "space", "owner"), &SystemProgram::create_account_with_seed);
 
 	ClassDB::bind_static_method("SystemProgram", D_METHOD("get_pid"), &SystemProgram::get_pid);
+
+	ClassDB::bind_static_method("SystemProgram", D_METHOD("get_sysvar_clock_pubkey"), &SystemProgram::get_sysvar_clock_pubkey);
+	ClassDB::bind_static_method("SystemProgram", D_METHOD("get_sysvar_epoch_schedule_pubkey"), &SystemProgram::get_sysvar_epoch_schedule_pubkey);
+	ClassDB::bind_static_method("SystemProgram", D_METHOD("get_sysvar_fees_pubkey"), &SystemProgram::get_sysvar_fees_pubkey);
+	ClassDB::bind_static_method("SystemProgram", D_METHOD("get_sysvar_instructions_pubkey"), &SystemProgram::get_sysvar_instructions_pubkey);
+	ClassDB::bind_static_method("SystemProgram", D_METHOD("get_sysvar_recent_blockhashes_pubkey"), &SystemProgram::get_sysvar_recent_blockhashes_pubkey);
+	ClassDB::bind_static_method("SystemProgram", D_METHOD("get_sysvar_rent_pubkey"), &SystemProgram::get_sysvar_rent_pubkey);
+	ClassDB::bind_static_method("SystemProgram", D_METHOD("get_sysvar_slot_hashes_pubkey"), &SystemProgram::get_sysvar_slot_hashes_pubkey);
+	ClassDB::bind_static_method("SystemProgram", D_METHOD("get_sysvar_slot_history_pubkey"), &SystemProgram::get_sysvar_slot_history_pubkey);
+	ClassDB::bind_static_method("SystemProgram", D_METHOD("get_sysvar_stake_history_pubkey"), &SystemProgram::get_sysvar_stake_history_pubkey);
+	ClassDB::bind_static_method("SystemProgram", D_METHOD("get_sysvar_epoch_rewards_pubkey"), &SystemProgram::get_sysvar_epoch_rewards_pubkey);
+	ClassDB::bind_static_method("SystemProgram", D_METHOD("get_last_restart_slot_pubkey"), &SystemProgram::get_last_restart_slot_pubkey);
+}
+
+Variant SystemProgram::get_sysvar_clock_pubkey() {
+	return Pubkey::new_from_string("SysvarC1ock11111111111111111111111111111111");
+}
+
+Variant SystemProgram::get_sysvar_epoch_schedule_pubkey() {
+	return Pubkey::new_from_string("SysvarEpochSchedu1e111111111111111111111111");
+}
+
+Variant SystemProgram::get_sysvar_fees_pubkey() {
+	return Pubkey::new_from_string("SysvarFees111111111111111111111111111111111");
+}
+
+Variant SystemProgram::get_sysvar_instructions_pubkey() {
+	return Pubkey::new_from_string("Sysvar1nstructions1111111111111111111111111");
+}
+
+Variant SystemProgram::get_sysvar_recent_blockhashes_pubkey() {
+	return Pubkey::new_from_string("SysvarRecentB1ockHashes11111111111111111111");
+}
+
+Variant SystemProgram::get_sysvar_rent_pubkey() {
+	return Pubkey::new_from_string("SysvarRent111111111111111111111111111111111");
+}
+
+Variant SystemProgram::get_sysvar_slot_hashes_pubkey() {
+	return Pubkey::new_from_string("SysvarS1otHashes111111111111111111111111111");
+}
+
+Variant SystemProgram::get_sysvar_slot_history_pubkey() {
+	return Pubkey::new_from_string("SysvarS1otHistory11111111111111111111111111");
+}
+
+Variant SystemProgram::get_sysvar_stake_history_pubkey() {
+	return Pubkey::new_from_string("SysvarStakeHistory1111111111111111111111111");
+}
+
+Variant SystemProgram::get_sysvar_epoch_rewards_pubkey() {
+	return Pubkey::new_from_string("SysvarEpochRewards1111111111111111111111111");
+}
+
+Variant SystemProgram::get_last_restart_slot_pubkey() {
+	return Pubkey::new_from_string("SysvarLastRestartS1ot1111111111111111111111");
 }
 
 Variant SystemProgram::create_account(const Variant &from_keypair, const Variant &to_keypair, const uint64_t lamports, const uint64_t space, const Variant &owner) {

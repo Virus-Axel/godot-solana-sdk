@@ -108,6 +108,34 @@ public:
 	SolanaClient();
 
 	/**
+	 * @brief Get the official solana mainnet-beta url "https://api.mainnet-beta.solana.com".
+	 *
+	 * @return String with the solana mainnet-beta url.
+	 */
+	static String get_solana_mainnet_url();
+
+	/**
+	 * @brief Get the official solana testnet url "https://api.testnet.solana.com".
+	 *
+	 * @return String with the solana testnet url.
+	 */
+	static String get_solana_testnet_url();
+
+	/**
+	 * @brief Get the official solana devnet url "https://api.devnet.solana.com".
+	 *
+	 * @return String with the solana devnet url.
+	 */
+	static String get_solana_devnet_url();
+
+	/**
+	 * @brief Get the standard localnet url "http://localhost:8899".
+	 *
+	 * @return String with the standard localnet url.
+	 */
+	static String get_default_localnet_url();
+
+	/**
 	 * @brief Parses a URL string into its components
 	 *
 	 * Parses scheme, userinfo, host, port, path, query and fragment from a URL string.

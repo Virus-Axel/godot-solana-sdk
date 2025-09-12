@@ -37,6 +37,83 @@ protected:
 
 public:
 	/**
+	 * @brief Get the sysvar clock pubkey Pubkey
+	 *
+	 * @return Variant with the sysvar clock Pubkey
+	 */
+	static Variant get_sysvar_clock_pubkey();
+
+	/**
+	 * @brief Get the sysvar epoch schedule pubkey Pubkey
+	 *
+	 * @return Variant with the sysvar epoch schedule Pubkey
+	 */
+	static Variant get_sysvar_epoch_schedule_pubkey();
+
+	/**
+	 * @brief Get the sysvar fees pubkey Pubkey
+	 *
+	 * @return Variant with the sysvar fees Pubkey
+	 */
+	static Variant get_sysvar_fees_pubkey();
+
+	/**
+	 * @brief Get the sysvar instructions pubkey Pubkey
+	 *
+	 * @return Variant with the sysvar instructions Pubkey
+	 */
+	static Variant get_sysvar_instructions_pubkey();
+
+	/**
+	 * @brief Get the sysvar recent blockhashes pubkey Pubkey
+	 *
+	 * @return Variant with the sysvar recent blockhashes Pubkey
+	 */
+	static Variant get_sysvar_recent_blockhashes_pubkey();
+
+	/**
+	 * @brief Get the sysvar rent pubkey Pubkey
+	 *
+	 * @return Variant with the sysvar rent Pubkey
+	 */
+	static Variant get_sysvar_rent_pubkey();
+
+	/**
+	 * @brief Get the sysvar slot hashes pubkey Pubkey
+	 *
+	 * @return Variant with the sysvar slot hashes Pubkey
+	 */
+	static Variant get_sysvar_slot_hashes_pubkey();
+
+	/**
+	 * @brief Get the sysvar slot history pubkey Pubkey
+	 *
+	 * @return Variant with the sysvar slot history Pubkey
+	 */
+	static Variant get_sysvar_slot_history_pubkey();
+
+	/**
+	 * @brief Get the sysvar stake history pubkey Pubkey
+	 *
+	 * @return Variant with the sysvar stake history Pubkey
+	 */
+	static Variant get_sysvar_stake_history_pubkey();
+
+	/**
+	 * @brief Get the sysvar epoch rewards pubkey Pubkey
+	 *
+	 * @return Variant with the sysvar epoch rewards Pubkey
+	 */
+	static Variant get_sysvar_epoch_rewards_pubkey();
+
+	/**
+	 * @brief Get the sysvar restart pubkey Pubkey
+	 *
+	 * @return Variant with the restart sysvar Pubkey
+	 */
+	static Variant get_last_restart_slot_pubkey();
+
+	/**
 	 * @brief Create an Instruction that creates a new account.
 	 *
 	 * @param from_keypair Payer of the transaction. @signer @writable
