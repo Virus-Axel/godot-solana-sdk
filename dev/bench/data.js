@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1757614028455,
+  "lastUpdate": 1757662856291,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -1913,6 +1913,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.374570446735395,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "940cc5c7e6087cb90004b3002ec84d48a8645e18",
+          "message": "Merge pull request #411 from Virus-Axel/feature/bind_constants\n\nBind constants and helpers for commonly used objects",
+          "timestamp": "2025-09-12T09:32:15+02:00",
+          "tree_id": "2b7ce9aeaa4fa04337512cee9bf961fd6d55b0da",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/940cc5c7e6087cb90004b3002ec84d48a8645e18"
+        },
+        "date": 1757662854365,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.36986301369863,
             "unit": "Percent"
           }
         ]
