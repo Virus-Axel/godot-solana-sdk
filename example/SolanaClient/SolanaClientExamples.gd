@@ -2,12 +2,12 @@ extends VBoxContainer
 
 const EXAMPLE_ACCOUNT := "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZAMdL4VZHirAn"
 
-const TOTAL_CASES := 10
-var passed_test_mask := 0
-		
+signal callbacks_done		
+var _account_subscribe_ok = false
+var _signature_subscribe_ok = false
+var _account_encoding_subscribe_ok = false
 
 func PASS(unique_identifier: int):
-	passed_test_mask += (1 << unique_identifier)
 	print("[OK]: ", unique_identifier)
 
 
@@ -260,8 +260,15 @@ func fungible_tokens_filter():
 	
 	PASS(9)
 
+
+func _process(_delta: float):
+	if  _account_subscribe_ok and _signature_subscribe_ok and _account_encoding_subscribe_ok:
+		emit_signal("callbacks_done")
+		
+
 func _ready():
 	# Disbled since RPC client does not respond with base64 encoding.
+	_account_encoding_subscribe_ok = true
 	# test_account_encoding()
 	
 	get_account_info_demo()
@@ -273,15 +280,23 @@ func _ready():
 	await test_project_settings()
 	test_das_methods()
 	fungible_tokens_filter()
+	
+	await callbacks_done
+	
+	print("ALL TESTS PASSED")
+	get_tree().quit(0)
 
 
 func _account_subscribe_callback(_params):
+	_account_subscribe_ok = true
 	PASS(4)
 
 func _signature_subscribe_callback(_params):
+	_signature_subscribe_ok = true
 	PASS(5)
 
 func _acconunt_encoding_test_callback(_params):
+	_account_encoding_subscribe_ok = true
 	PASS(7)
 
 func _should_not_be_called(params):
@@ -289,9 +304,3 @@ func _should_not_be_called(params):
 
 func _dummy_callback(_params):
 	pass
-
-
-func _on_timeout_timeout():
-	for i in range(TOTAL_CASES):
-		if ((1 << i) & passed_test_mask) == 0:
-			print("[FAIL]: ", i)

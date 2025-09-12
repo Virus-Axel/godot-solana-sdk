@@ -7,6 +7,7 @@ const LAMPORTS_PER_SOL = 1000000000
 const TOTAL_CASES := 16
 var passed_test_mask := 0
 
+signal transaction_tests_passed
 
 func PASS(unique_identifier: int):
 	passed_test_mask += (1 << unique_identifier)
@@ -321,6 +322,7 @@ func _ready():
 	# Await the airdrop, SolanaClient.get_signature_statuses() can be used.
 	await get_tree().create_timer(5).timeout
 	
+	# Transaction tests are ran asynchronously. Might change in the future.
 	transaction_example_transfer()
 	create_account_example()
 	transaction_with_confirmation_1()
@@ -332,8 +334,14 @@ func _ready():
 	send_transaction_from_scene_tree()
 	transaction_simulation_error_signal()
 
+	await transaction_tests_passed
+	
+	print("ALL TESTS PASSED")
+	get_tree().quit(0)
 
-func _on_timeout_timeout():
+func _process(delta: float) -> void:
 	for i in range(TOTAL_CASES):
 		if ((1 << i) & passed_test_mask) == 0:
-			print("[FAIL]: ", i)
+			return
+	
+	emit_signal("transaction_tests_passed")

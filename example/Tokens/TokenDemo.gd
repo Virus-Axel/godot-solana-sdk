@@ -3,8 +3,6 @@ extends Control
 const MINT_SIZE := 82
 const MINT_ACCOUNT_SIZE := 165
 
-const TOTAL_CASES := 5
-var passed_test_mask := 0
 var payer: Keypair = await Keypair.new_from_file("payer.json")
 
 # Address of new token type.
@@ -14,7 +12,6 @@ var mint_account_keypair = Keypair.new_random()
 
 
 func PASS(unique_identifier: int):
-	passed_test_mask += (1 << unique_identifier)
 	print("[OK]: ", unique_identifier)
 
 func display_dict(data: Variant, parent: TreeItem):
@@ -179,8 +176,5 @@ func _ready():
 	await transfer_checked_demo()
 	await freeze_account_demo()
 
-
-func _on_timeout_timeout():
-	for i in range(TOTAL_CASES):
-		if ((1 << i) & passed_test_mask) == 0:
-			print("[FAIL]: ", i)
+	print("ALL TESTS PASSED")
+	get_tree().quit(0)

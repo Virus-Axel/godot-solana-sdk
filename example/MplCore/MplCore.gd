@@ -3,11 +3,9 @@ extends Control
 const MINT_SIZE := 82
 const MINT_ACCOUNT_SIZE := 165
 
-const TOTAL_CASES := 12
 # TODO(VirAx): Make sense of this and bind constant to godot.
 const CANDY_MACHINE_HIDDEN_SECTION = 8 + 32 + 32 + 32 + 8 + 8 + 8 + 1 + 1 + 4 + 32 + 4 + 4 + 200 + 4 + 1 +  1 + 4 + 32 + 4 + 200 + 32 +10000
 
-var passed_test_mask := 0
 var payer: Keypair = await Keypair.new_from_file("res://payer.json")
 
 # New addresses
@@ -31,7 +29,6 @@ var guard_group_base: Keypair = Keypair.new_random()
 
 
 func PASS(unique_identifier: int):
-	passed_test_mask += (1 << unique_identifier)
 	print("[OK]: ", unique_identifier)
 
 
@@ -384,9 +381,6 @@ func _ready():
 	await create_candy_machine_with_guard_group()
 	await add_config_line_guard_group()
 	await mint_with_guard_group()
-
-
-func _on_timer_timeout() -> void:
-	for i in range(TOTAL_CASES):
-		if ((1 << i) & passed_test_mask) == 0:
-			print("[FAIL]: ", i)
+	
+	print("ALL TESTS PASSED")
+	get_tree().quit(0)

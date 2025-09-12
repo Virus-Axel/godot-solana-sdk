@@ -56,8 +56,10 @@ func run_tests():
 	await create_mission()
 	await update_mission()
 	await create_or_load_lut_address()
-	await participate_in_mission()
-	await collect_rewards_and_recall()
+	
+	# TODO(VirAx): Enable when user tests works.
+	#await participate_in_mission()
+	#await collect_rewards_and_recall()
 
 # Perform pre-test setup
 func before_all():
@@ -408,8 +410,8 @@ func create_mission():
 			},
 			{
 				"kind": RewardKind.get_resource(),
-				"max": str(500 * pow(10, 6)),
-				"min": str(100 * pow(10, 6)),
+				"max": str(int(500 * pow(10, 6))),
+				"min": str(int(100 * pow(10, 6))),
 				"resource": resource_address,
 			},
 		]

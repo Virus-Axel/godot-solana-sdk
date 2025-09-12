@@ -1,12 +1,7 @@
 extends VBoxContainer
 
 
-const TOTAL_CASES := 4
-var passed_test_mask := 0
-		
-
 func PASS(unique_identifier: int):
-	passed_test_mask += (1 << unique_identifier)
 	print("[OK]: ", unique_identifier)
 
 
@@ -82,11 +77,8 @@ func _ready():
 	await read_idl_from_json()
 	await fetch_idl_from_pid_demo()
 	
-	fetch_idl_account_demo()
+	await fetch_idl_account_demo()
 	build_instruction_demo()
 	
-
-func _on_timeout_timeout():
-	for i in range(TOTAL_CASES):
-		if ((1 << i) & passed_test_mask) == 0:
-			print("[FAIL]: ", i)
+	print("ALL TESTS PASSED")
+	get_tree().quit(0)

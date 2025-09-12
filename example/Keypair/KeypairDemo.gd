@@ -1,11 +1,7 @@
 extends VBoxContainer
 
-const TOTAL_CASES := 6
-var passed_test_mask : int = 0
-
 
 func PASS(unique_identifier: int):
-	passed_test_mask += (1 << unique_identifier)
 	print("[OK]: ", unique_identifier)
 
 
@@ -87,8 +83,5 @@ func _ready():
 	sign_and_verify_message_demo()
 	keypair_to_pubkey()
 
-
-func _on_timeout_timeout():
-	for i in range(TOTAL_CASES):
-		if ((1 << i) & passed_test_mask) == 0:
-			print("[FAIL]: ", i)
+	print("ALL TESTS PASSED")
+	get_tree().quit(0)

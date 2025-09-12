@@ -11,11 +11,4 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_1361b")
 
-[node name="Timeout" type="Timer" parent="."]
-wait_time = 10.0
-one_shot = true
-autostart = true
-
 [node name="MplCandyMachine" type="MplCandyMachine" parent="."]
-
-[connection signal="timeout" from="Timeout" to="." method="_on_timeout_timeout"]

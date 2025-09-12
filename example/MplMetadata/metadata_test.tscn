@@ -13,9 +13,4 @@ script = ExtResource("1_a7ae3")
 
 [node name="MplTokenMetadata" type="MplTokenMetadata" parent="."]
 
-[node name="Timeout" type="Timer" parent="."]
-wait_time = 15.0
-autostart = true
-
 [connection signal="metadata_fetched" from="MplTokenMetadata" to="." method="_on_mpl_token_metadata_metadata_fetched"]
-[connection signal="timeout" from="Timeout" to="." method="_on_timeout_timeout"]

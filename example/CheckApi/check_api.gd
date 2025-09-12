@@ -27,4 +27,6 @@ func check_all_node_methods(node: Node):
 func _ready() -> void:
 	for child in get_children():
 		check_all_node_methods(child)
-	print("PASS")
+
+	print("ALL TESTS PASSED")
+	get_tree().quit(0)

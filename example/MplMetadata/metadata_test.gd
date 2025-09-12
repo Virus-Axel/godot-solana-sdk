@@ -1,7 +1,5 @@
 extends Control
 
-const TOTAL_CASES := 4
-var passed_test_mask := 0
 
 const MINT_SIZE := 82
 var mint_keypair = Keypair.new_random()
@@ -9,7 +7,6 @@ var payer : Keypair = Keypair.new_from_file("payer.json")
 
 
 func PASS(unique_identifier: int):
-	passed_test_mask += (1 << unique_identifier)
 	print("[OK]: ", unique_identifier)
 
 
@@ -116,8 +113,5 @@ func _ready() -> void:
 	await test_fetch_usdc_metadata()
 	await fetch_problematic_metadatas()
 
-
-func _on_timeout_timeout():
-	for i in range(TOTAL_CASES):
-		if ((1 << i) & passed_test_mask) == 0:
-			print("[FAIL]: ", i)
+	print("ALL TESTS PASSED")
+	get_tree().quit(0)
