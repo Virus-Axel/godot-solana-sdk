@@ -65,7 +65,6 @@ func set_rpc_cluster(new_cluster:RpcCluster)->void:
 		RpcCluster.HONEYNET:
 			active_rpc = honeycomb_rpc
 			
-	ProjectSettings.set_setting("solana_sdk/client/default_url",active_rpc)
 	rpc_cluster = new_cluster
 	
 	if is_rpc_das_compatible(active_rpc):
