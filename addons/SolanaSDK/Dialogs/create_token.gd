@@ -2,6 +2,7 @@
 extends Control
 
 func update_todo():
+	$MarginContainer/VBoxContainer/TransactionSender.text = ""
 	var todo_text = ""
 	if not $MarginContainer/VBoxContainer/KeypairSelector.is_valid_keypair():
 		todo_text += "- No valid token keypair selected\n"
@@ -64,11 +65,16 @@ func setup_transaction():
 	$Transaction.instructions = await get_create_instructions()
 
 func _on_create_button_pressed() -> void:
+	$MarginContainer/VBoxContainer/HBoxContainer/CreateButton.disabled = true
+	$MarginContainer/VBoxContainer/HBoxContainer/SimulateButton.disabled = true
 	setup_transaction()
 	
+	$MarginContainer/VBoxContainer/TransactionSender.text = "Updating Blockhash..."
 	$Transaction.update_latest_blockhash()
-	$Transaction.sign_and_send()
-
+	await $Transaction.blockhash_updated
+	$Transaction.sign()
+	$MarginContainer/VBoxContainer/TransactionSender.send_transaction($Transaction)
+	
 
 
 func _on_keypair_selector_invalid_keypair_selected() -> void:
@@ -79,10 +85,6 @@ func _on_keypair_selector_invalid_keypair_selected() -> void:
 func _on_keypair_selector_2_invalid_keypair_selected() -> void:
 	push_error("Invalid Keypair selected")
 	update_todo()
-
-
-func _on_transaction_transaction_response_received(result: Dictionary) -> void:
-	print(result)
 
 
 func _on_simulate_button_pressed() -> void:
