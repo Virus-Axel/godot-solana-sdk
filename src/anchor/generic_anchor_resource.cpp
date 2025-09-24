@@ -23,6 +23,7 @@
 #include "account_meta.hpp"
 #include "anchor/anchor_program.hpp"
 #include "anchor/idl_utils.hpp"
+#include "pubkey.hpp"
 #include "solana_utils.hpp"
 
 namespace godot {
@@ -116,35 +117,35 @@ BindMethodFunc GenericAnchorResource::_get_bind_methods() {
 }
 
 NotificationMethod GenericAnchorResource::_get_notification() {
-	return (void(::godot::Wrapped::*)(int)) & GenericAnchorResource::_notification; // NOLINT(google-readability-casting)
+	return (void (::godot::Wrapped::*)(int))&GenericAnchorResource::_notification; // NOLINT(google-readability-casting)
 }
 
 SetMethod GenericAnchorResource::_get_set() {
-	return (bool(Wrapped::*)(const StringName &p_name, const Variant &p_property)) & GenericAnchorResource::_set; // NOLINT(google-readability-casting)
+	return (bool (Wrapped::*)(const StringName &p_name, const Variant &p_property))&GenericAnchorResource::_set; // NOLINT(google-readability-casting)
 }
 
 GetMethod GenericAnchorResource::_get_get() {
-	return (bool(Wrapped::*)(const StringName &p_name, Variant &r_ret) const) & GenericAnchorResource::_get; // NOLINT(google-readability-casting)
+	return (bool (Wrapped::*)(const StringName &p_name, Variant &r_ret) const) & GenericAnchorResource::_get; // NOLINT(google-readability-casting)
 }
 
 GetPropertyListMethod GenericAnchorResource::_get_get_property_list() {
-	return (void(Wrapped::*)(List<PropertyInfo> * p_list) const) & GenericAnchorResource::_get_property_list; // NOLINT(google-readability-casting)
+	return (void (Wrapped::*)(List<PropertyInfo> *p_list) const) & GenericAnchorResource::_get_property_list; // NOLINT(google-readability-casting)
 }
 
 PropertyCanRevertMethod GenericAnchorResource::_get_property_can_revert() {
-	return (bool(Wrapped::*)(const StringName &p_name) const) & GenericAnchorResource::_property_can_revert; // NOLINT(google-readability-casting)
+	return (bool (Wrapped::*)(const StringName &p_name) const) & GenericAnchorResource::_property_can_revert; // NOLINT(google-readability-casting)
 }
 
 PropertyGetRevertMethod GenericAnchorResource::_get_property_get_revert() {
-	return (bool(Wrapped::*)(const StringName &p_name, Variant &) const) & GenericAnchorResource::_property_get_revert; // NOLINT(google-readability-casting)
+	return (bool (Wrapped::*)(const StringName &p_name, Variant &) const) & GenericAnchorResource::_property_get_revert; // NOLINT(google-readability-casting)
 }
 
 ValidatePropertyMethod GenericAnchorResource::_get_validate_property() {
-	return (void(Wrapped::*)(PropertyInfo & p_property) const) & GenericAnchorResource::_validate_property; // NOLINT(google-readability-casting)
+	return (void (Wrapped::*)(PropertyInfo &p_property) const) & GenericAnchorResource::_validate_property; // NOLINT(google-readability-casting)
 }
 
 ToStringMethod GenericAnchorResource::_get_to_string() {
-	return (String(Wrapped::*)() const)&GenericAnchorResource::_to_string; // NOLINT(google-readability-casting)
+	return (String (Wrapped::*)() const) & GenericAnchorResource::_to_string; // NOLINT(google-readability-casting)
 }
 
 void GenericAnchorResource::initialize_class() {
@@ -716,7 +717,11 @@ void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
 	bind_mint_methods(class_name);
 
 	MethodBind *method_bind = create_method_bind(&GenericAnchorResource::serialize);
+	MethodBind *from_dict_method_bind = create_method_bind(&GenericAnchorResource::from_dictionary);
+	MethodBind *from_bytes_method_bind = create_method_bind(&GenericAnchorResource::from_bytes);
 	bind_resource_method(get_class_static(), D_METHOD("serialize"), method_bind);
+	bind_resource_method(get_class_static(), D_METHOD("from_dictionary", "dictionary"), from_dict_method_bind);
+	bind_resource_method(get_class_static(), D_METHOD("from_bytes", "bytes"), from_bytes_method_bind);
 }
 
 void GenericAnchorResource::bind_mint_methods(const StringName &class_name) {
@@ -899,6 +904,82 @@ Array GenericAnchorResource::get_property_values(const StringName &class_name) {
 		result.append(pair.second.value);
 	}
 	return result;
+}
+
+void GenericAnchorResource::from_dictionary(const Variant &other) { // NOLINT(readability-function-cognitive-complexity)
+	const Dictionary dict = other;
+	const Array keys = dict.keys();
+
+	for (int64_t i = 0; i < keys.size(); i++) {
+		properties[keys[i]].value = dict[keys[i]];
+	}
+}
+
+void GenericAnchorResource::from_bytes(const Variant &other) { // NOLINT(readability-function-cognitive-complexity)
+	const PackedByteArray bytes = other;
+
+	Dictionary dict;
+	int64_t offset = 0;
+
+	for (const auto &property_name : property_order[local_name]) {
+		ResourcePropertyInfo &property = properties[property_name];
+		if (!property.serialize) {
+			continue;
+		}
+		if (property.optional) {
+			ResourcePropertyInfo &enabler_info = properties["enable_" + property.property_info.name];
+			enabler_info.value = bytes.decode_u8(offset) != 0;
+			offset += 1;
+		}
+		if (property.enabled) {
+			if (property.property_info.hint != PROPERTY_HINT_ENUM) {
+				if (property.property_info.type == Variant::INT || property.property_info.type == Variant::FLOAT) {
+					if (property.type_info == "u8") {
+						property.value = bytes.decode_u8(offset);
+						offset += sizeof(uint8_t);
+					} else if (property.type_info == "u16") {
+						property.value = bytes.decode_u16(offset);
+					} else if (property.type_info == "u32") {
+						property.value = bytes.decode_u32(offset);
+						offset += sizeof(uint32_t);
+					} else if (property.type_info == "u64") {
+						property.value = bytes.decode_u64(offset);
+						offset += sizeof(uint64_t);
+					} else if (property.type_info == "s8") {
+						property.value = bytes.decode_s8(offset);
+						offset += sizeof(int8_t);
+					} else if (property.type_info == "s16") {
+						property.value = bytes.decode_s16(offset);
+						offset += sizeof(int16_t);
+					} else if (property.type_info == "s32") {
+						property.value = bytes.decode_s32(offset);
+						offset += sizeof(int32_t);
+					} else if (property.type_info == "s64") {
+						property.value = bytes.decode_s64(offset);
+						offset += sizeof(int64_t);
+					} else if (property.type_info == "f32") {
+						property.value = bytes.decode_float(offset);
+						offset += sizeof(float);
+					} else if (property.type_info == "f64") {
+						property.value = bytes.decode_double(offset);
+						offset += sizeof(double);
+					}
+				} else if (property.property_info.type == Variant::STRING) {
+					const int64_t str_length = bytes.decode_u32(offset);
+					offset += sizeof(uint32_t);
+					property.value = bytes.slice(offset, offset + str_length).get_string_from_ascii();
+					offset += str_length;
+				} else if (property.property_info.class_name == String("Pubkey")) {
+					property.value = Pubkey::new_from_bytes(bytes.slice(offset, offset + PUBKEY_LENGTH));
+					offset += PUBKEY_LENGTH;
+				} else {
+					UtilityFunctions::push_warning("from_bytes is not implemented for type: " + String(Variant::get_type_name(property.property_info.type)));
+				}
+			} else {
+				UtilityFunctions::push_warning("from_bytes is not implemented for type: " + String(Variant::get_type_name(property.property_info.type)));
+			}
+		}
+	}
 }
 
 // TODO(VirAx): Refactor and reuse code.

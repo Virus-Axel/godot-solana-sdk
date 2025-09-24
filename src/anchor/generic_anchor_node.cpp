@@ -249,6 +249,15 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 		}
 	}
 
+	if (idl.has("accounts")) {
+		const Array types = idl["accounts"];
+		for (unsigned int i = 0; i < types.size(); i++) {
+			if (!AnchorProgram::is_enum(types[i])) {
+				GenericAnchorResource::bind_anchor_resource(types[i]);
+			}
+		}
+	}
+
 	loaded_idls[idl["name"]] = idl;
 	const String class_name = idl["name"];
 

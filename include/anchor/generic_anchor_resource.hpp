@@ -432,6 +432,9 @@ public:
 	 */
 	static Array get_property_values(const StringName &class_name);
 
+	void from_dictionary(const Variant& other);
+	void from_bytes(const Variant& other);
+
 	/**
 	 * @brief Serializes properties.
 	 *
