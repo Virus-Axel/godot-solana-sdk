@@ -18,11 +18,11 @@
 #include "godot_cpp/godot.hpp"
 #include "godot_cpp/templates/list.hpp"
 #include "godot_cpp/variant/string_name.hpp"
-#include "godot_cpp/variant/typed_array.hpp"
+#include "godot_cpp/variant/utility_functions.hpp"
 
-#include "account_meta.hpp"
 #include "anchor/anchor_program.hpp"
 #include "anchor/idl_utils.hpp"
+#include "candy_machine_core/candy_guard_core.hpp" // NOLINT(misc-include-cleaner)
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
 
@@ -91,12 +91,13 @@ bool GenericAnchorResource::_get(const StringName &p_name, Variant &r_ret) const
 	return true;
 }
 
+template <typename NoteType>
 GDExtensionObjectPtr GenericAnchorResource::_create_instance_func(void *data, GDExtensionBool p_notify_postinitialize) {
 	(void)p_notify_postinitialize;
 	const String instance_class = *static_cast<StringName *>(data);
 
 	set_class_name(instance_class);
-	GenericAnchorResource *new_object = memnew_custom(GenericAnchorResource);
+	NoteType *new_object = memnew_custom(NoteType);
 	new_object->local_name = instance_class;
 	new_object->properties = property_database[instance_class];
 
@@ -179,6 +180,7 @@ GDExtensionClassInstancePtr GenericAnchorResource::_recreate_instance_func(void 
 	}
 }
 
+template <typename NodeType>
 void GenericAnchorResource::bind_resource_class(const StringName &p_class_name, const StringName &parent_name) {
 	const GDExtensionClassCreationInfo4 class_info = {
 		static_cast<GDExtensionBool>(false), // GDExtensionBool is_virtual;
@@ -197,7 +199,7 @@ void GenericAnchorResource::bind_resource_class(const StringName &p_class_name, 
 		GenericAnchorResource::to_string_bind, // GDExtensionClassToString to_string_func;
 		nullptr, // GDExtensionClassReference reference_func;
 		nullptr, // GDExtensionClassUnreference unreference_func;
-		&GenericAnchorResource::_create_instance_func, // GDExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
+		&GenericAnchorResource::_create_instance_func<NodeType>, // GDExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
 		GenericAnchorResource::free, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
 		&GenericAnchorResource::_recreate_instance_func, // GDExtensionClassRecreateInstance recreate_instance_func;
 		&ClassDB::get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
@@ -648,6 +650,10 @@ void GenericAnchorResource::_notificationv(int32_t p_what, bool p_reversed) {
 void GenericAnchorResource::_bind_methods() {
 }
 
+String GenericAnchorResource::get_local_name() const {
+	return local_name;
+}
+
 void GenericAnchorResource::bind_anchor_enum(const Dictionary &enum_data) {
 	ERR_FAIL_COND_EDMSG_CUSTOM(!enum_data.has("name"), "Enum data struct does not contain a name.");
 	ERR_FAIL_COND_EDMSG_CUSTOM(!enum_data.has("type"), "Enum data struct does not contain a type.");
@@ -673,6 +679,9 @@ void GenericAnchorResource::bind_anchor_enum(const Dictionary &enum_data) {
 	}
 }
 
+template void GenericAnchorResource::bind_anchor_resource<GenericAnchorResource>(const Dictionary &idl);
+template void GenericAnchorResource::bind_anchor_resource<CandyGuardCore>(const Dictionary &idl);
+template <typename NodeType>
 void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
 	ERR_FAIL_COND_EDMSG_CUSTOM(!resource.has("name"), "Resource struct does not contain a name.");
 	ERR_FAIL_COND_CUSTOM(resource.has("vec"));
@@ -708,7 +717,7 @@ void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
 	set_class_name(class_name);
 
 	names.push_back(memnew_custom(StringName(class_name)));
-	bind_resource_class(*names[names.size() - 1], "Resource");
+	bind_resource_class<NodeType>(*names[names.size() - 1], "Resource");
 	initialize_class();
 
 	for (unsigned int i = 0; i < fields.size(); i++) {
@@ -725,11 +734,6 @@ void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
 }
 
 void GenericAnchorResource::bind_mint_methods(const StringName &class_name) {
-	MethodBind *serialize_core_mint_bind = create_method_bind(&GenericAnchorResource::serialize_core_mint_args);
-	bind_resource_method(class_name, D_METHOD("serialize_core_mint_args"), serialize_core_mint_bind);
-
-	MethodBind *get_extra_account_metas_bind = create_method_bind(&GenericAnchorResource::get_extra_account_metas);
-	bind_resource_method(class_name, D_METHOD("get_extra_account_metas"), get_extra_account_metas_bind);
 }
 
 void GenericAnchorResource::bind_virtual_method(const StringName &class_name, const StringName &method_name) {
@@ -918,7 +922,6 @@ void GenericAnchorResource::from_dictionary(const Variant &other) { // NOLINT(re
 void GenericAnchorResource::from_bytes(const Variant &other) { // NOLINT(readability-function-cognitive-complexity)
 	const PackedByteArray bytes = other;
 
-	Dictionary dict;
 	int64_t offset = 0;
 
 	for (const auto &property_name : property_order[local_name]) {
@@ -1027,130 +1030,6 @@ PackedByteArray GenericAnchorResource::serialize() { // NOLINT(readability-funct
 			}
 		}
 	}
-
-	return result;
-}
-
-Array GenericAnchorResource::get_extra_account_metas() {
-	TypedArray<AccountMeta> result;
-
-	if (is_property_enabled("enable_thirdPartySigner")) {
-		result.append(memnew_custom(AccountMeta(properties["thirdPartySigner"].value.get("signerKey"), true, true)));
-	}
-	if (is_property_enabled("enable_gatekeeper")) {
-		result.append(memnew_custom(AccountMeta(properties["gatekeeper"].value.get("gatekeeperNetwork"), false, false)));
-	}
-	if (is_property_enabled("enable_nftPayment")) {
-		result.append(memnew_custom(AccountMeta(properties["nftPayment"].value.get("destination"), false, true)));
-	}
-	if (is_property_enabled("enable_nftGate")) {
-		result.append(memnew_custom(AccountMeta(properties["nftGate"].value.get("requiredCollection"), false, false)));
-	}
-	if (is_property_enabled("enable_nftBurn")) {
-		result.append(memnew_custom(AccountMeta(properties["nftBurn"].value.get("requiredCollection"), false, true)));
-	}
-	if (is_property_enabled("enable_solPayment")) {
-		result.append(memnew_custom(AccountMeta(properties["solPayment"].value.get("destination"), false, true)));
-	}
-	if (is_property_enabled("enable_nftMintLimit")) {
-		// TODO(VIRAX): Find the correct key here
-		//const Variant limit_authority = MplCandyGuard::new_limit_counter_pda(static_cast<uint8_t>(limit_id), payer, machine_key, guard_key);
-		result.append(memnew_custom(AccountMeta(properties["nftMintLimit"].value.get("requiredCollection"), false, true)));
-	}
-	if (is_property_enabled("enable_tokenPayment")) {
-		result.append(memnew_custom(AccountMeta(properties["tokenPayment"].value.get("mint"), false, true)));
-		result.append(memnew_custom(AccountMeta(properties["tokenPayment"].value.get("destinationAta"), false, true)));
-	}
-	if (is_property_enabled("enable_tokenGate")) {
-		// TODO(VirAx): Different from old guard. Verify this
-		result.append(memnew_custom(AccountMeta(properties["tokenGate"].value.get("mint"), false, true)));
-	}
-	if (is_property_enabled("enable_tokenBurn")) {
-		// TODO(VirAx): Different from old guard. Verify this
-		result.append(memnew_custom(AccountMeta(properties["tokenBurn"].value.get("mint"), false, true)));
-	}
-	if (is_property_enabled("enable_freezeSolPayment")) {
-		result.append(memnew_custom(AccountMeta(properties["freezeSolPayment"].value.get("destination"), false, true)));
-	}
-	if (is_property_enabled("enable_freezeTokenPayment")) {
-		result.append(memnew_custom(AccountMeta(properties["freezeTokenPayment"].value.get("mint"), false, false)));
-		result.append(memnew_custom(AccountMeta(properties["freezeTokenPayment"].value.get("destinationAta"), false, true)));
-	}
-	if (is_property_enabled("enable_programGate")) {
-		for (unsigned int i = 0; i < static_cast<Array>(properties["programGate"].value.get("additional")).size(); i++) {
-			result.append(memnew_custom(AccountMeta(static_cast<Array>(properties["programGate"].value.get("additional"))[i], false, false)));
-		}
-	}
-
-	return result;
-}
-
-// TODO(VirAx): Refactor and reuse code.
-PackedByteArray GenericAnchorResource::serialize_core_mint_args() { // NOLINT(readability-function-cognitive-complexity)
-	PackedByteArray result;
-
-	if (local_name == "CandyGuardData") {
-		result.append_array(Object::cast_to<GenericAnchorResource>(properties["default"].value)->serialize_core_mint_args());
-
-		PackedByteArray group_size_stream;
-		group_size_stream.resize(4);
-
-		if (properties["enable_groups"].value) {
-			const Array &groups = properties["groups"].value;
-			const uint32_t group_size = groups.size();
-			group_size_stream.encode_u32(0, group_size);
-			result.append_array(group_size_stream);
-
-			for (unsigned int i = 0; i < groups.size(); i++) {
-				const Variant group = groups[i];
-				ERR_FAIL_COND_V_EDMSG_CUSTOM(group.get_type() != Variant::OBJECT, PackedByteArray(), "Group is not an object.");
-				ERR_FAIL_COND_V_EDMSG_CUSTOM(!static_cast<Object *>(group)->is_class("Group"), PackedByteArray(), "Group is not a Group resource.");
-
-				auto *class_ptr = Object::cast_to<GenericAnchorResource>(group);
-
-				PackedByteArray fix_size_label = String(class_ptr->properties["label"].value).to_ascii_buffer();
-
-				const int MAX_LABEL_SIZE = 6;
-				fix_size_label.resize(MAX_LABEL_SIZE);
-
-				result.append_array(fix_size_label);
-				result.append_array(Object::cast_to<GenericAnchorResource>(class_ptr->properties["guards"].value)->serialize_core_mint_args());
-			}
-		} else {
-			result.append_array(group_size_stream);
-		}
-
-		return result;
-	}
-
-	uint8_t counter = 0;
-	uint64_t enabled_map = 0;
-
-	result.resize(sizeof(enabled_map));
-
-	for (const auto &property : properties) {
-		if (property.first == StringName("enable_groups")) {
-			continue;
-		}
-		if (property.first.begins_with("enable_")) {
-			std::vector<StringName> guard_names = property_order[local_name];
-			if (property.second.value) {
-				uint8_t index = 0;
-				for (size_t i = 0; i < guard_names.size() / 2; i++) {
-					if (guard_names[i * 2U] == property.first) {
-						index = i;
-						break;
-					}
-				}
-				enabled_map += (1ULL << index);
-			}
-			++counter;
-		} else if (property.second.enabled) {
-			result.append_array(IdlUtils::serialize_variant(property.second.value));
-		}
-	}
-
-	result.encode_u64(0, static_cast<int64_t>(enabled_map));
 
 	return result;
 }

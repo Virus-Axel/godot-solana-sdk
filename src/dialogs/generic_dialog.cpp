@@ -11,6 +11,7 @@
 #include "godot_cpp/variant/utility_functions.hpp"
 
 #include "anchor/generic_anchor_node.hpp"
+#include "anchor/generic_anchor_resource.hpp"
 
 namespace godot {
 
@@ -31,7 +32,7 @@ void GenericDialog::clear() {
 void GenericDialog::load_idl(const String &filename) {
 	const Ref<FileAccess> file = FileAccess::open(filename, FileAccess::ModeFlags::READ);
 	const Dictionary content = JSON::parse_string(file->get_as_text());
-	GenericAnchorNode::bind_anchor_node(content);
+	GenericAnchorNode::bind_anchor_node<GenericAnchorNode, GenericAnchorResource>(content);
 }
 
 void GenericDialog::idl_selected_callback(const String &filename) {

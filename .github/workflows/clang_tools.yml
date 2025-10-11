@@ -46,9 +46,9 @@ jobs:
         run: |
           sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)" 19 all
           sudo apt-get update
-          sudo apt-get install -y clang-tidy-19 clang-format-19
+          sudo apt-get install -y clang-tidy-19 clang-format-20
           sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-19 100
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-19 100
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-20 100
 
       - name: Checkout project
         uses: actions/checkout@v2
@@ -81,4 +81,4 @@ jobs:
 
       - name : Check Formatting
         run: |
-          CLANG_FORMAT=clang-format-19 scons check-format
+          CLANG_FORMAT=clang-format-20 scons check-format

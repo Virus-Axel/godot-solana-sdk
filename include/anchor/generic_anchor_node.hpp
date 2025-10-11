@@ -56,6 +56,7 @@ private:
 
 	static void bind_resources(const Array &resources, const String &class_name);
 
+	template <typename NodeType>
 	static GDExtensionObjectPtr _create_instance_func(void *data, GDExtensionBool p_notify_postinitialize);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
 
@@ -72,6 +73,16 @@ private:
 
 	friend class ClassDB;
 	friend class Wrapped;
+
+	template <typename ResourceType>
+	static void bind_types(const Dictionary &idl);
+
+	template <typename ResourceType>
+	static void bind_accounts(const Dictionary &idl);
+
+	static void bind_instructions(const StringName &class_name, const Dictionary &idl);
+
+	static void bind_account_fetchers(const StringName &class_name, const Dictionary &idl);
 
 protected:
 	/**
@@ -148,6 +159,7 @@ public:
 	 *
 	 * @param idl IDL of anchor node.
 	 */
+	template <typename NodeType, typename ResourceType>
 	static void bind_anchor_node(const Dictionary &idl);
 
 	/**

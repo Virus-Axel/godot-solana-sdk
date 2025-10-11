@@ -61,18 +61,15 @@ private:
 	static std::vector<Callable> static_class_names;
 	static std::string string_name;
 	static std::unordered_map<StringName, std::unordered_map<StringName, ResourcePropertyInfo>> property_database;
-	static std::unordered_map<StringName, std::vector<StringName>> property_order;
 	static std::unordered_map<StringName, Array> enum_field_map;
 	static std::unordered_map<StringName, GDExtensionClassCallVirtual> virtual_methods;
 	static std::unordered_map<StringName, std::vector<StringName>> extra_props;
 
 	const String OPTIONAL_PROPERTY_PREFIX = "enable_"; // NOLINT(cppcoreguidelines-avoid-const-or-ref-data-members)
 
-	std::unordered_map<StringName, ResourcePropertyInfo> properties;
-
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
-	//void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	void _validate_property(PropertyInfo &p_property) const {
 		if (properties.find(p_property.name) == properties.end()) {
 			return;
@@ -84,11 +81,12 @@ private:
 		}
 	}
 
+	template <typename NoteType>
 	static GDExtensionObjectPtr _create_instance_func(void *data, GDExtensionBool p_notify_postinitialize);
 	static GDExtensionClassInstancePtr _recreate_instance_func(void *data, GDExtensionObjectPtr obj);
 
+	template <typename NodeType>
 	static void bind_resource_class(const StringName &p_class_name, const StringName &parent_name);
-	static void bind_resource_method(const StringName &p_class_name, const MethodDefinition &method_prototype, MethodBind *p_method);
 	static void bind_resource_getter(const StringName &p_class_name, const MethodDefinition &method_prototype, const StringName &property_name);
 	static void bind_resource_setter(const StringName &p_class_name, const MethodDefinition &method_prototype, const StringName &property_name);
 	static void bind_resource_property(const StringName &p_class_name, const PropertyInfo &property_info, const StringName &setter_name = "", const StringName &getter_name = "");
@@ -103,6 +101,14 @@ private:
 	String local_name = "";
 
 protected:
+	// NOLINTBEGIN(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes)
+	std::unordered_map<StringName, ResourcePropertyInfo> properties; ///< Local property database.
+	using self_type = GenericAnchorResource; ///< This type.
+	using parent_type = Resource; ///< Parent type.
+
+	static std::unordered_map<StringName, std::vector<StringName>> property_order; ///< Property order for each class.
+	// NOLINTEND(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes)
+
 	/**
 	 * @brief Check if class is an extension class.
 	 *
@@ -205,9 +211,22 @@ protected:
 	 */
 	static void _bind_methods();
 
+	/**
+	 * @brief Get the local class name of the Resource.
+	 *
+	 * @return String Local name.
+	 */
+	String get_local_name() const;
+
 public:
-	using self_type = GenericAnchorResource; ///< This type.
-	using parent_type = Resource; ///< Parent type.
+	/**
+	 * @brief Binds a method to a Resource class.
+	 *
+	 * @param p_class_name Name of class to bind method to.
+	 * @param method_prototype Prototype of method to bind.
+	 * @param p_method Pointer to method to bind.
+	 */
+	static void bind_resource_method(const StringName &p_class_name, const MethodDefinition &method_prototype, MethodBind *p_method);
 
 	/**
 	 * @brief Initializes a class
@@ -380,6 +399,7 @@ public:
 	 *
 	 * @param resource Anchor resource specification.
 	 */
+	template <typename NodeType>
 	static void bind_anchor_resource(const Dictionary &resource);
 
 	/**
@@ -432,8 +452,19 @@ public:
 	 */
 	static Array get_property_values(const StringName &class_name);
 
-	void from_dictionary(const Variant& other);
-	void from_bytes(const Variant& other);
+	/**
+	 * @brief Deserializes properties from a dictionary.
+	 *
+	 * @param other Dictionary to deserialize from.
+	 */
+	void from_dictionary(const Variant &other);
+
+	/**
+	 * @brief Deserializes properties from a byte array.
+	 *
+	 * @param other Byte array to deserialize from.
+	 */
+	void from_bytes(const Variant &other);
 
 	/**
 	 * @brief Serializes properties.
@@ -463,20 +494,6 @@ public:
 		(void)value;
 		WARN_PRINT_ED("Setter is undefined, assign property directly instead");
 	}
-
-	/**
-	 * @brief Get the extra account metas for certain Candy Guard instructions.
-	 *
-	 * @return Array List of extra account metas.
-	 */
-	Array get_extra_account_metas();
-
-	/**
-	 * @brief Serialize core mint args for certain Candy Guard instructions.
-	 *
-	 * @return PackedByteArray Serialized bytes.
-	 */
-	PackedByteArray serialize_core_mint_args();
 
 	~GenericAnchorResource() override = default;
 };
