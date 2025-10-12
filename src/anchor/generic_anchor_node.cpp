@@ -23,6 +23,7 @@
 
 #include "anchor/anchor_program.hpp"
 #include "anchor/generic_anchor_resource.hpp"
+#include "candy_machine_core/candy_guard_core.hpp" // NOLINT(misc-include-cleaner)
 #include "custom_class_management/generic_type.hpp"
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
@@ -56,10 +57,11 @@ void GenericAnchorNode::bind_resources(const Array &resources, const String &cla
 	}
 }
 
+template <typename NodeType>
 GDExtensionObjectPtr GenericAnchorNode::_create_instance_func(void *data, GDExtensionBool p_notify_postinitialize) { // NOLINT(readability-convert-member-functions-to-static)
 	(void)p_notify_postinitialize;
 	const String instance_class = *static_cast<StringName *>(data);
-	GenericAnchorNode *new_object = memnew_custom(GenericAnchorNode);
+	NodeType *new_object = memnew_custom(GenericAnchorNode);
 	new_object->anchor_program = memnew_custom(AnchorProgram);
 	new_object->local_name = instance_class;
 	const Variant custom_pid = AnchorProgram::get_address_from_idl(loaded_idls[instance_class]);
@@ -225,15 +227,8 @@ Array GenericAnchorNode::split_args(const Array &args, const StringName &instruc
 	return args.slice(accounts.size());
 }
 
-void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
-	ERR_FAIL_COND_EDMSG_CUSTOM(!idl.has("name"), "IDL does not contain a name.");
-
-	const Variant custom_pid = AnchorProgram::get_address_from_idl(idl);
-
-	ERR_FAIL_COND_EDMSG_CUSTOM(custom_pid.get_type() != Variant::OBJECT, "IDL does not contain a PID.");
-
-	//ClassDB::register_class<GenericAnchorResource>();
-
+template <typename ResourceType>
+void GenericAnchorNode::bind_types(const Dictionary &idl) {
 	if (idl.has("types")) {
 		const Array types = idl["types"];
 		// Bind enum constants first.
@@ -244,10 +239,59 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 		}
 		for (unsigned int i = 0; i < types.size(); i++) {
 			if (!AnchorProgram::is_enum(types[i])) {
-				GenericAnchorResource::bind_anchor_resource(types[i]);
+				GenericAnchorResource::bind_anchor_resource<ResourceType>(types[i]);
 			}
 		}
 	}
+}
+
+template <typename ResourceType>
+void GenericAnchorNode::bind_accounts(const Dictionary &idl) {
+	if (idl.has("accounts")) {
+		const Array types = idl["accounts"];
+		for (unsigned int i = 0; i < types.size(); i++) {
+			if (!AnchorProgram::is_enum(types[i])) {
+				GenericAnchorResource::bind_anchor_resource<ResourceType>(types[i]);
+			}
+		}
+	}
+}
+
+void GenericAnchorNode::bind_instructions(const StringName &class_name, const Dictionary &idl) {
+	if (idl.has("instructions")) {
+		const Array instructions = idl["instructions"];
+		for (unsigned int i = 0; i < instructions.size(); i++) {
+			const Dictionary instruction = instructions[i];
+			bind_instruction_caller(class_name, instruction);
+		}
+	}
+}
+
+void GenericAnchorNode::bind_account_fetchers(const StringName &class_name, const Dictionary &idl) {
+	if (idl.has("accounts")) {
+		const Array accounts = idl["accounts"];
+		for (unsigned int i = 0; i < accounts.size(); i++) {
+			const Dictionary account = accounts[i];
+			const StringName account_name = account["name"];
+			const StringName account_fetcher_name = get_fetcher_name(account_name);
+			account_fetch_method_accounts[account_fetcher_name] = account_name;
+			bind_account_fetcher(class_name, account);
+		}
+	}
+}
+
+template void GenericAnchorNode::bind_anchor_node<GenericAnchorNode, CandyGuardCore>(const Dictionary &idl);
+template void GenericAnchorNode::bind_anchor_node<GenericAnchorNode, GenericAnchorResource>(const Dictionary &idl);
+template <typename NodeType, typename ResourceType>
+void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
+	ERR_FAIL_COND_EDMSG_CUSTOM(!idl.has("name"), "IDL does not contain a name.");
+
+	const Variant custom_pid = AnchorProgram::get_address_from_idl(idl);
+
+	ERR_FAIL_COND_EDMSG_CUSTOM(custom_pid.get_type() != Variant::OBJECT, "IDL does not contain a PID.");
+
+	bind_types<ResourceType>(idl);
+	bind_accounts<ResourceType>(idl);
 
 	loaded_idls[idl["name"]] = idl;
 	const String class_name = idl["name"];
@@ -273,7 +317,7 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 		to_string_bind, // GDExtensionClassToString to_string_func;
 		nullptr, // GDExtensionClassReference reference_func;
 		nullptr, // GDExtensionClassUnreference unreference_func;
-		&_create_instance_func, // GDExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
+		&_create_instance_func<NodeType>, // GDExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
 		free, // GDExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
 		&_recreate_instance_func, // GDExtensionClassRecreateInstance recreate_instance_func;
 		&get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
@@ -288,24 +332,8 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 
 	bind_signal(class_name, MethodInfo("account_fetched", PropertyInfo(Variant::DICTIONARY, "account_info")));
 
-	if (idl.has("instructions")) {
-		const Array instructions = idl["instructions"];
-		for (unsigned int i = 0; i < instructions.size(); i++) {
-			const Dictionary instruction = instructions[i];
-			bind_instruction_caller(class_name, instruction);
-		}
-	}
-
-	if (idl.has("accounts")) {
-		const Array accounts = idl["accounts"];
-		for (unsigned int i = 0; i < accounts.size(); i++) {
-			const Dictionary account = accounts[i];
-			const StringName account_name = account["name"];
-			const StringName account_fetcher_name = get_fetcher_name(account_name);
-			account_fetch_method_accounts[account_fetcher_name] = account_name;
-			bind_account_fetcher(class_name, account);
-		}
-	}
+	bind_instructions(class_name, idl);
+	bind_account_fetchers(class_name, idl);
 
 	bind_pid_getter(class_name);
 	bind_anchor_program_getter(class_name);

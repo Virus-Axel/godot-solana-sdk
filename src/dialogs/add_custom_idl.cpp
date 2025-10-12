@@ -20,6 +20,7 @@
 #include "godot_cpp/variant/utility_functions.hpp"
 
 #include "anchor/generic_anchor_node.hpp"
+#include "anchor/generic_anchor_resource.hpp"
 #include "solana_utils.hpp"
 
 namespace godot {
@@ -58,7 +59,7 @@ void AddCustomIdlDialog::clear() {
 void AddCustomIdlDialog::load_idl(const String &filename) {
 	const Ref<FileAccess> file = FileAccess::open(filename, FileAccess::ModeFlags::READ);
 	const Dictionary content = JSON::parse_string(file->get_as_text());
-	GenericAnchorNode::bind_anchor_node(content);
+	GenericAnchorNode::bind_anchor_node<GenericAnchorNode, GenericAnchorResource>(content);
 }
 
 void AddCustomIdlDialog::idl_selected_callback(const String &filename) {

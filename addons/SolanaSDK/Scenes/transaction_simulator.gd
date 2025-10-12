@@ -83,6 +83,10 @@ func _on_solana_client_2_http_response_received(response: Dictionary) -> void:
 		display_error("Unexpected response: " + str(response))
 		return
 
+	if typeof(response["result"]["value"]) != TYPE_DICTIONARY:
+		display_error("Unexpected response: " + str(response))
+		return
+
 	if not response["result"]["value"].has_all(["lamports", "data"]):
 		display_error("Unexpected response: " + str(response))
 		return

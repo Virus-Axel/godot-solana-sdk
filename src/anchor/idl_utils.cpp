@@ -8,6 +8,7 @@
 #include "godot_cpp/variant/string.hpp"
 
 #include "anchor/anchor_program.hpp"
+#include "keypair.hpp"
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
 
@@ -138,6 +139,9 @@ PackedByteArray IdlUtils::serialize_dictionary(const Dictionary &value) {
 PackedByteArray IdlUtils::serialize_object(const Variant &value) {
 	if (Pubkey::is_pubkey(value)) {
 		return Pubkey::bytes_from_variant(value);
+	}
+	if (Keypair::is_compatible_type(value)) {
+		return Pubkey::bytes_from_variant(Keypair::new_from_variant(value));
 	}
 	if (static_cast<Object *>(value)->has_method("serialize")) {
 		return static_cast<Object *>(value)->callv("serialize", Array());

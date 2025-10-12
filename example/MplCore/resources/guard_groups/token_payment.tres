@@ -1,0 +1,22 @@
+[gd_resource type="CandyGuardData" load_steps=6 format=3 uid="uid://7t48siu3x7na"]
+
+[sub_resource type="TokenPayment" id="TokenPayment_bx6np"]
+amount = 1
+
+[sub_resource type="GuardSet" id="GuardSet_d1ps6"]
+enable_tokenPayment = true
+tokenPayment = SubResource("TokenPayment_bx6np")
+
+[sub_resource type="TokenPayment" id="TokenPayment_d1ps6"]
+
+[sub_resource type="GuardSet" id="GuardSet_07dxj"]
+enable_tokenPayment = true
+tokenPayment = SubResource("TokenPayment_d1ps6")
+
+[sub_resource type="Group" id="Group_vjrth"]
+label = "bot_tax"
+guards = SubResource("GuardSet_07dxj")
+
+[resource]
+default = SubResource("GuardSet_d1ps6")
+groups = Array[Group]([SubResource("Group_vjrth")])

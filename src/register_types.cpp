@@ -16,7 +16,6 @@
 #include "account_meta.hpp"
 #include "address_lookup_table.hpp"
 #include "anchor/anchor_program.hpp"
-#include "anchor/generated/candy_guard.hpp"
 #include "anchor/generated/candy_machine_core.hpp"
 #include "anchor/generated/mpl_core.hpp"
 #include "anchor/generic_anchor_node.hpp"
@@ -27,6 +26,7 @@
 #include "candy_machine/candy_machine.hpp"
 #include "candy_machine/candy_machine_data.hpp"
 #include "candy_machine/config_line.hpp"
+#include "candy_machine_core/candy_guard_core.hpp"
 #include "compiled_instruction.hpp"
 #include "compute_budget.hpp"
 #include "dialogs/add_custom_idl.hpp"
@@ -89,7 +89,7 @@ void load_user_programs() {
 
 void load_idl_from_string(const String &json_content) {
 	const Dictionary content = JSON::parse_string(json_content);
-	GenericAnchorNode::bind_anchor_node(content);
+	GenericAnchorNode::bind_anchor_node<GenericAnchorNode, GenericAnchorResource>(content);
 }
 
 void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
@@ -152,9 +152,10 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	add_setting("solana_sdk/client/default_ws_port", Variant::Type::INT, WSS_PORT);
 	add_setting("solana_sdk/anchor/custom_anchor_programs", Variant::Type::PACKED_STRING_ARRAY, PackedStringArray());
 
-	load_idl_from_string(String(candy_guard_idl.c_str()));
+	CandyGuardCore::register_from_idl();
 	load_idl_from_string(String(candy_machine_core_idl.c_str()));
 	load_idl_from_string(String(mpl_core_idl.c_str()));
+
 	load_user_programs();
 
 	// Leave memory allocated and free in unregister_singleton.
