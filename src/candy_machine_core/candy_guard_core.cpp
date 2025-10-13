@@ -76,8 +76,10 @@ Array CandyGuardCore::get_extra_account_metas(const Variant &owner) {
 		result.append(memnew_custom(AccountMeta(properties["tokenGate"].value.get("mint"), false, true)));
 	}
 	if (is_property_enabled("enable_tokenBurn")) {
-		// TODO(VirAx): Different from old guard. Verify this
+		const Variant sender_ata = Pubkey::new_associated_token_address(owner, properties["tokenBurn"].value.get("mint"), TokenProgram::get_pid());
+		result.append(memnew_custom(AccountMeta(sender_ata, false, true)));
 		result.append(memnew_custom(AccountMeta(properties["tokenBurn"].value.get("mint"), false, true)));
+		result.append(AccountMeta::new_account_meta(TokenProgram::get_pid(), false, false));
 	}
 	if (is_property_enabled("enable_freezeSolPayment")) {
 		result.append(memnew_custom(AccountMeta(properties["freezeSolPayment"].value.get("destination"), false, true)));
