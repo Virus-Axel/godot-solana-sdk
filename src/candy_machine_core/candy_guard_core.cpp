@@ -20,8 +20,13 @@
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
 #include "spl_token.hpp"
+#include "instructions/mpl_token_metadata.hpp"
+#include "anchor/anchor_program.hpp"
+#include "instructions/associated_token_account.hpp"
 
 namespace godot {
+
+std::string CandyGuardCore::PID;
 
 void CandyGuardCore::bind_mint_methods(const StringName &class_name) {
 	MethodBind *serialize_core_mint_bind = create_method_bind(&CandyGuardCore::serialize_core_mint_args);
@@ -31,12 +36,26 @@ void CandyGuardCore::bind_mint_methods(const StringName &class_name) {
 	bind_resource_method(class_name, D_METHOD("get_extra_account_metas", "owner"), get_extra_account_metas_bind);
 }
 
+void CandyGuardCore::bind_guard_methods(){
+	MethodBind *nft_payment_bind = create_method_bind(&CandyGuardCore::get_extra_accounts_nft_payment);
+	bind_resource_method("NftPayment", D_METHOD("get_extra_account_metas", "owner", "payment_mint", "pnft"), nft_payment_bind);
+}
+
+Variant CandyGuardCore::get_pid(){
+	return Pubkey::new_from_string(String(CandyGuardCore::PID.c_str()));
+}
+
 void CandyGuardCore::register_from_idl() {
 	const Dictionary content = JSON::parse_string(String(candy_guard_idl.c_str()));
 	GenericAnchorNode::bind_anchor_node<GenericAnchorNode, CandyGuardCore>(content);
+	const Variant idl_address = AnchorProgram::get_address_from_idl(content);
+
+	ERR_FAIL_COND_CUSTOM(idl_address.get_type() != Variant::OBJECT);
+	PID = Object::cast_to<Pubkey>(idl_address)->to_string().ascii();
 
 	bind_mint_methods("CandyGuardData");
 	bind_mint_methods("GuardSet");
+	bind_guard_methods();
 }
 
 Array CandyGuardCore::get_extra_account_metas(const Variant &owner) {
@@ -49,6 +68,7 @@ Array CandyGuardCore::get_extra_account_metas(const Variant &owner) {
 		result.append(memnew_custom(AccountMeta(properties["gatekeeper"].value.get("gatekeeperNetwork"), false, false)));
 	}
 	if (is_property_enabled("enable_nftPayment")) {
+		const Variant sender_ata = Pubkey::new_associated_token_address(owner, properties["nftPayment"].value.get("mint"), TokenProgram::get_pid());
 		result.append(memnew_custom(AccountMeta(properties["nftPayment"].value.get("destination"), false, true)));
 	}
 	if (is_property_enabled("enable_nftGate")) {
@@ -94,6 +114,32 @@ Array CandyGuardCore::get_extra_account_metas(const Variant &owner) {
 		}
 	}
 
+	return result;
+}
+
+Array CandyGuardCore::get_extra_accounts_nft_payment(const Variant &owner, const Variant &payment_mint, bool pnft, const Variant &creator) {
+	Array result;
+	const Variant payment_token_account = Pubkey::new_associated_token_address(owner, payment_mint, TokenProgram::get_pid());
+	result.append(memnew(AccountMeta(payment_token_account, false, true)));
+	result.append(AccountMeta::new_account_meta(MplTokenMetadata::new_associated_metadata_pubkey(payment_mint), false, true));
+	result.append(AccountMeta::new_account_meta(payment_mint, false, false));
+	result.append(AccountMeta::new_account_meta(properties["destination"].value, false, false));
+	//result.append(AccountMeta::new_account_meta(Pubkey::new_associated_token_address(properties["destination"].value, payment_mint, TokenProgram::get_pid()), false, false));
+	const Variant destination_ata = Pubkey::new_associated_token_address(properties["destination"].value, payment_mint, TokenProgram::get_pid());
+	result.append(AccountMeta::new_account_meta(destination_ata, false, true));
+	result.append(AccountMeta::new_account_meta(AssociatedTokenAccountProgram::get_pid(), false, false));
+	result.append(AccountMeta::new_account_meta(TokenProgram::get_pid(), false, false));
+	result.append(AccountMeta::new_account_meta(MplTokenMetadata::get_pid(), false, false));
+
+	if (pnft) {
+		TokenProgram::new_token_record_address(payment_mint, owner);
+		result.append(AccountMeta::new_account_meta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(payment_mint), false, false));
+		result.append(AccountMeta::new_account_meta(TokenProgram::new_token_record_address(payment_token_account, payment_mint), false, true));
+		result.append(AccountMeta::new_account_meta(TokenProgram::new_token_record_address(destination_ata, payment_mint), false, true));
+		result.append(AccountMeta::new_account_meta(Pubkey::new_from_string("auth9SigNpDKz4sJJ1DfCTuZrZNSAgh9sFD3rboVmgg"), false, false));
+		const Variant rule_set_account = Pubkey::new_pda_bytes(Array::make(String("rule_set").to_ascii_buffer(), Pubkey::bytes_from_variant(creator)), MplTokenMetadata::get_pid());
+		result.append(AccountMeta::new_account_meta(rule_set_account, false, false));
+	}
 	return result;
 }
 

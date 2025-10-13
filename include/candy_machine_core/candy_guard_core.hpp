@@ -13,7 +13,11 @@ namespace godot {
  */
 class CandyGuardCore : public GenericAnchorResource {
 private:
+	static std::string PID;
 	static void bind_mint_methods(const StringName &class_name);
+	static void bind_guard_methods();
+
+	static Variant get_pid();
 
 public:
 	/**
@@ -27,6 +31,17 @@ public:
 	 * @return Array List of extra account metas.
 	 */
 	Array get_extra_account_metas(const Variant &owner = nullptr);
+
+	/**
+	 * @brief Get the extra accounts for nft payment guard object.
+	 * 
+	 * @param owner Owner of the payment NFT.
+	 * @param payment_mint Payment mint address.
+	 * @param pnft Indicates if the payment is a programmable NFT.
+	 * @param creator Creator of the payment NFT.
+	 * @return Array List of extra account metas.
+	 */
+	Array get_extra_accounts_nft_payment(const Variant &owner, const Variant &payment_mint, bool pnft = false, const Variant &creator = nullptr);
 
 	/**
 	 * @brief Serializes core mint args for certain Candy Guard resource.

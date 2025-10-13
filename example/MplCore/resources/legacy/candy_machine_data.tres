@@ -1,0 +1,24 @@
+[gd_resource type="CandyMachineData" load_steps=4 format=3 uid="uid://dgroc4gnyxfai"]
+
+[sub_resource type="ConfigLineSetting" id="ConfigLineSetting_ckrsi"]
+prefix_name = "test_prefix#"
+name_length = 15
+prefix_uri = "abc"
+uri_length = 22
+is_sequential = true
+
+[sub_resource type="Pubkey" id="Pubkey_s0f5r"]
+type = "CUSTOM"
+value = "11111111111111111111111111111111"
+bytes = PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+[sub_resource type="MetaDataCreator" id="MetaDataCreator_hghpc"]
+address = SubResource("Pubkey_s0f5r")
+share = 100
+
+[resource]
+items_available = 2
+symbol = "GSS"
+seller_fee_basis_points = 800
+creators = [SubResource("MetaDataCreator_hghpc")]
+config_line_setting = SubResource("ConfigLineSetting_ckrsi")

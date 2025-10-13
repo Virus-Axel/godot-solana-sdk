@@ -1,0 +1,5 @@
+[gd_resource type="ConfigLine" format=3 uid="uid://cgit4a336ni8s"]
+
+[resource]
+name = "test_nft1"
+uri = "test_uri1"

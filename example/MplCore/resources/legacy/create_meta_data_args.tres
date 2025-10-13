@@ -1,0 +1,17 @@
+[gd_resource type="CreateMetaDataArgs" load_steps=3 format=3 uid="uid://btl13f5nawmjc"]
+
+[sub_resource type="Pubkey" id="Pubkey_l1rv4"]
+type = "CUSTOM"
+value = "11111111111111111111111111111111"
+bytes = PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+[sub_resource type="MetaDataCreator" id="MetaDataCreator_jnqs3"]
+address = SubResource("Pubkey_l1rv4")
+share = 100
+
+[resource]
+name = "my_coin"
+symbol = "mc"
+uri = "abc"
+enable_creators = true
+creators = [SubResource("MetaDataCreator_jnqs3")]
