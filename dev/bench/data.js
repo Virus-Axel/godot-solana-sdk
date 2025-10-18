@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1760289623402,
+  "lastUpdate": 1760795125359,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -2058,6 +2058,35 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.366438356164384,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "eae5dc1aa33b5e756b90aa343358808afbed7ec0",
+          "message": "Merge pull request #418 from Virus-Axel/bugfix/mpl_core_guard\n\nBugfix/mpl core guard",
+          "timestamp": "2025-10-18T15:37:16+02:00",
+          "tree_id": "f92633827d052a3427a13ff5d94707bb7434b826",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/eae5dc1aa33b5e756b90aa343358808afbed7ec0"
+        },
+        "date": 1760795123260,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.39041095890411,
             "unit": "Percent"
           }
         ]
