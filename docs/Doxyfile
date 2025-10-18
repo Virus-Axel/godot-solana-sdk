@@ -294,7 +294,9 @@ ALIASES               += "_process=@brief Called each frame in scene tree.^^^^@p
 ALIASES               += "_ready=@brief Called when Node enters scene tree.^^"
 ALIASES               += "_set{1}=@brief Set property of \1.^^^^@param p_name Property to set.^^@param p_value Value to set.^^@return true if operation is successful.^^@return false if operation failed.^^"
 ALIASES               += "_get{1}=@brief Get property of \1.^^^^@param p_name Property to get.^^@param r_ret Variant to write property value to.^^@return true if operation is successful.^^@return false if operation failed.^^"
+ALIASES               += "_to_string=@brief Get formatted string.^^^^@return String Formatted representation of the class.^^"
 ALIASES               += "_get_property_list=@brief Get list of properties.^^^^@param p_list List of properties.^^"
+
 ALIASES               += "signer=**Signer**^^"
 ALIASES               += "writable=**Writable**^^"
 ALIASES               += "pda{1+}=Program Derrived Address with seeds [\1]^^"

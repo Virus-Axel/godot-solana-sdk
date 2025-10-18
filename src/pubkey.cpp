@@ -144,6 +144,10 @@ bool Pubkey::_get(const StringName &p_name, Variant &r_ret) const {
 	return true;
 }
 
+String Pubkey::_to_string() const {
+	return vformat("[Pubkey:%s]", to_string().utf8().get_data());
+}
+
 void Pubkey::from_string(const String &p_value) {
 	value = p_value;
 

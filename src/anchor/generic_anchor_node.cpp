@@ -401,17 +401,38 @@ void GenericAnchorNode::bind_instruction_caller(const StringName &p_class_name, 
 }
 
 void GenericAnchorNode::bind_pid_getter(const StringName &p_class_name) {
-	auto *method_bind = static_cast<MethodBindHack *>(create_method_bind(&GenericAnchorNode::get_pid)); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
+	auto *method_bind = static_cast<MethodBindHack *>(create_static_method_bind(&GenericAnchorNode::get_pid)); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
 
-	//std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
 	const std::vector<StringName> args;
 
 	method_bind->set_arg_count(static_cast<int>(args.size()));
 	method_bind->set_argument_names(args);
 	method_bind->set_name("get_pid");
+	method_bind->set_instance_class(p_class_name);
 
-	const StringName name = method_bind->get_name();
-	bind_method(*method_bind, MethodBind::bind_call, MethodBind::bind_ptrcall, p_class_name);
+	auto call_function = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error) {
+		(void)p_instance;
+		(void)p_args;
+		(void)p_argument_count;
+		(void)r_error;
+		auto *method_data = static_cast<MethodBind *>(p_method_userdata);
+		const Dictionary program_idl = loaded_idls[method_data->get_instance_class()];
+		const Variant ret = AnchorProgram::get_address_from_idl(program_idl);
+
+		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
+	};
+
+	auto ptr_call_function = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_return) {
+		(void)p_instance;
+		(void)p_args;
+		auto *method_data = static_cast<MethodBind *>(p_method_userdata);
+		const Dictionary program_idl = loaded_idls[method_data->get_instance_class()];
+
+		const Variant ret = AnchorProgram::get_address_from_idl(program_idl);
+		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
+	};
+
+	bind_method(*method_bind, call_function, ptr_call_function, p_class_name);
 }
 
 void GenericAnchorNode::bind_anchor_program_getter(const StringName &p_class_name) {
@@ -488,14 +509,14 @@ void GenericAnchorNode::bind_signal(const StringName &p_class_name, const Method
 	internal::gdextension_interface_classdb_register_extension_class_signal(internal::library, p_class_name._native_ptr(), p_signal.name._native_ptr(), parameters.data(), static_cast<GDExtensionInt>(parameters.size()));
 }
 
-Variant GenericAnchorNode::get_pid() const {
-	const Dictionary idl = Object::cast_to<AnchorProgram>(anchor_program)->get_idl();
+Variant GenericAnchorNode::get_pid() {
+	/*const Dictionary idl = Object::cast_to<AnchorProgram>(anchor_program)->get_idl();
 
 	ERR_FAIL_COND_V_EDMSG_CUSTOM(!idl.has("metadata"), nullptr, "IDL does not have metadata");
 	const Dictionary metadata = idl["metadata"];
 	ERR_FAIL_COND_V_EDMSG_CUSTOM(!metadata.has("address"), nullptr, "Metadata does not have address");
-
-	return Pubkey::new_from_string(metadata["address"]);
+	*/
+	return Pubkey::new_random();
 }
 
 } //namespace godot

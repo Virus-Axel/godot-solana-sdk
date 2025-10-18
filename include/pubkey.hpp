@@ -68,6 +68,11 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 
 	/**
+	 * @_to_string
+	 */
+	String _to_string() const;
+
+	/**
 	 * @_get_property_list
 	 */
 	void _get_property_list(List<PropertyInfo> *p_list) const;

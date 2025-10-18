@@ -1,6 +1,8 @@
 #ifndef CANDY_GUARD_CORE_CANDY_GUARD_CORE_HPP
 #define CANDY_GUARD_CORE_CANDY_GUARD_CORE_HPP
 
+#include <string>
+
 #include "anchor/generic_anchor_resource.hpp"
 #include "godot_cpp/variant/string_name.hpp"
 
@@ -34,7 +36,7 @@ public:
 
 	/**
 	 * @brief Get the extra accounts for nft payment guard object.
-	 * 
+	 *
 	 * @param owner Owner of the payment NFT.
 	 * @param payment_mint Payment mint address.
 	 * @param pnft Indicates if the payment is a programmable NFT.

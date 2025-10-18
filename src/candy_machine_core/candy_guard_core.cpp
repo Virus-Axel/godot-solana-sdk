@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "godot_cpp/classes/json.hpp"
@@ -13,16 +14,16 @@
 #include "godot_cpp/variant/variant.hpp"
 
 #include "account_meta.hpp"
+#include "anchor/anchor_program.hpp"
 #include "anchor/generated/candy_guard.hpp"
 #include "anchor/generic_anchor_node.hpp"
 #include "anchor/generic_anchor_resource.hpp"
 #include "anchor/idl_utils.hpp"
+#include "instructions/associated_token_account.hpp"
+#include "instructions/mpl_token_metadata.hpp"
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
 #include "spl_token.hpp"
-#include "instructions/mpl_token_metadata.hpp"
-#include "anchor/anchor_program.hpp"
-#include "instructions/associated_token_account.hpp"
 
 namespace godot {
 
@@ -36,12 +37,12 @@ void CandyGuardCore::bind_mint_methods(const StringName &class_name) {
 	bind_resource_method(class_name, D_METHOD("get_extra_account_metas", "owner"), get_extra_account_metas_bind);
 }
 
-void CandyGuardCore::bind_guard_methods(){
+void CandyGuardCore::bind_guard_methods() {
 	MethodBind *nft_payment_bind = create_method_bind(&CandyGuardCore::get_extra_accounts_nft_payment);
 	bind_resource_method("NftPayment", D_METHOD("get_extra_account_metas", "owner", "payment_mint", "pnft"), nft_payment_bind);
 }
 
-Variant CandyGuardCore::get_pid(){
+Variant CandyGuardCore::get_pid() {
 	return Pubkey::new_from_string(String(CandyGuardCore::PID.c_str()));
 }
 
@@ -120,11 +121,10 @@ Array CandyGuardCore::get_extra_account_metas(const Variant &owner) {
 Array CandyGuardCore::get_extra_accounts_nft_payment(const Variant &owner, const Variant &payment_mint, bool pnft, const Variant &creator) {
 	Array result;
 	const Variant payment_token_account = Pubkey::new_associated_token_address(owner, payment_mint, TokenProgram::get_pid());
-	result.append(memnew(AccountMeta(payment_token_account, false, true)));
+	result.append(AccountMeta::new_account_meta(payment_token_account, false, true));
 	result.append(AccountMeta::new_account_meta(MplTokenMetadata::new_associated_metadata_pubkey(payment_mint), false, true));
 	result.append(AccountMeta::new_account_meta(payment_mint, false, false));
 	result.append(AccountMeta::new_account_meta(properties["destination"].value, false, false));
-	//result.append(AccountMeta::new_account_meta(Pubkey::new_associated_token_address(properties["destination"].value, payment_mint, TokenProgram::get_pid()), false, false));
 	const Variant destination_ata = Pubkey::new_associated_token_address(properties["destination"].value, payment_mint, TokenProgram::get_pid());
 	result.append(AccountMeta::new_account_meta(destination_ata, false, true));
 	result.append(AccountMeta::new_account_meta(AssociatedTokenAccountProgram::get_pid(), false, false));
@@ -132,7 +132,6 @@ Array CandyGuardCore::get_extra_accounts_nft_payment(const Variant &owner, const
 	result.append(AccountMeta::new_account_meta(MplTokenMetadata::get_pid(), false, false));
 
 	if (pnft) {
-		TokenProgram::new_token_record_address(payment_mint, owner);
 		result.append(AccountMeta::new_account_meta(MplTokenMetadata::new_associated_metadata_pubkey_master_edition(payment_mint), false, false));
 		result.append(AccountMeta::new_account_meta(TokenProgram::new_token_record_address(payment_token_account, payment_mint), false, true));
 		result.append(AccountMeta::new_account_meta(TokenProgram::new_token_record_address(destination_ata, payment_mint), false, true));
