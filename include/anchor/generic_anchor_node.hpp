@@ -191,7 +191,7 @@ public:
 	 *
 	 * @return Variant Program ID Pubkey.
 	 */
-	[[nodiscard]] Variant get_pid() const;
+	static Variant get_pid();
 	~GenericAnchorNode() override = default;
 };
 } //namespace godot

@@ -1,0 +1,27 @@
+[gd_resource type="CandyGuardData" load_steps=8 format=3 uid="uid://bnaxfvste3p4x"]
+
+[sub_resource type="NftPayment" id="NftPayment_ablne"]
+
+[sub_resource type="GuardSet" id="GuardSet_udgue"]
+nftPayment = SubResource("NftPayment_ablne")
+
+[sub_resource type="NftPayment" id="NftPayment_udgue"]
+
+[sub_resource type="GuardSet" id="GuardSet_08ypk"]
+enable_nftPayment = true
+nftPayment = SubResource("NftPayment_udgue")
+
+[sub_resource type="Group" id="Group_w5xr4"]
+label = "nft"
+guards = SubResource("GuardSet_08ypk")
+
+[sub_resource type="GuardSet" id="GuardSet_ablne"]
+
+[sub_resource type="Group" id="Group_ablne"]
+label = "free"
+guards = SubResource("GuardSet_ablne")
+
+[resource]
+default = SubResource("GuardSet_udgue")
+enable_groups = true
+groups = Array[Group]([SubResource("Group_w5xr4"), SubResource("Group_ablne")])
