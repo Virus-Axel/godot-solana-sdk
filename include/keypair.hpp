@@ -68,6 +68,11 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 
 	/**
+	 * @_to_string
+	 */
+	String _to_string() const;
+
+	/**
 	 * @_get_property_list
 	 */
 	void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -197,7 +202,7 @@ public:
 	 *
 	 * @return base58 encoded string representing the public parts.
 	 */
-	String get_public_string();
+	String get_public_string() const;
 
 	/**
 	 * @brief Set the public parts from a byte array.

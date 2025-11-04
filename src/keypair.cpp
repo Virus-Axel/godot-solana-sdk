@@ -123,6 +123,10 @@ bool Keypair::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
+String Keypair::_to_string() const {
+	return vformat("[Keypair:%s]", get_public_string());
+}
+
 Keypair::Keypair() {
 	seed.resize(SEED_LENGTH);
 	private_bytes.resize(PRIVATE_KEY_LENGTH);
@@ -296,7 +300,7 @@ void Keypair::set_public_string(const String &p_value) {
 	ERR_FAIL_COND_EDMSG_CUSTOM(decoded_value.size() != PUBLIC_KEY_LENGTH, "Public key must be 32 bytes");
 }
 
-String Keypair::get_public_string() {
+String Keypair::get_public_string() const{
 	return public_string;
 }
 
