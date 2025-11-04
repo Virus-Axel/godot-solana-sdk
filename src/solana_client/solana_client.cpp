@@ -811,7 +811,7 @@ void SolanaClient::unsubscribe_all(const Callable &callback) {
 }
 
 void SolanaClient::_bind_methods() {
-	ClassDB::add_signal("SolanaClient", MethodInfo("socket_response_received"));
+	ClassDB::add_signal("SolanaClient", MethodInfo("socket_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
 	ClassDB::add_signal("SolanaClient", MethodInfo("http_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
 
 	ClassDB::bind_static_method("SolanaClient", D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
