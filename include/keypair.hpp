@@ -32,7 +32,9 @@ private:
 	static const int PRIVATE_KEY_LENGTH = 64;
 	static const int SEED_LENGTH = 32;
 
-	bool unique = true;
+	bool unique = false;
+	bool random = false;
+	bool from_seed = false;
 	String public_string = "";
 	PackedByteArray public_bytes;
 
@@ -70,7 +72,7 @@ protected:
 	/**
 	 * @_to_string
 	 */
-	String _to_string() const;
+	[[nodiscard]] String _to_string() const;
 
 	/**
 	 * @_get_property_list
@@ -202,7 +204,7 @@ public:
 	 *
 	 * @return base58 encoded string representing the public parts.
 	 */
-	String get_public_string() const;
+	[[nodiscard]] String get_public_string() const;
 
 	/**
 	 * @brief Set the public parts from a byte array.
@@ -291,6 +293,26 @@ public:
 	[[nodiscard]] bool get_unique() const;
 
 	/**
+	 * @setter{random, p_value}
+	 */
+	void set_random(bool p_value);
+
+	/**
+	 * @getter{random, bool}
+	 */
+	[[nodiscard]] bool get_random() const;
+
+	/**
+	 * @setter{from_seed, p_value}
+	 */
+	void set_from_seed(bool p_value);
+
+	/**
+	 * @getter{from_seed, bool}
+	 */
+	[[nodiscard]] bool get_from_seed() const;
+
+	/**
 	 * @brief Set the ed25519 seed.
 	 *
 	 * @param p_value 32 byte seed.
@@ -308,13 +330,13 @@ public:
 	 * @brief Constructs this keypair randomly.
 	 *
 	 */
-	void random();
+	void create_random();
 
 	/**
 	 * @brief Constructs this keypair from the internal seed property.
 	 *
 	 */
-	void from_seed();
+	void create_from_seed();
 
 	/**
 	 * @godot
