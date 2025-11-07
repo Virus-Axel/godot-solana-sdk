@@ -313,12 +313,18 @@ Variant SolanaUtils::get_nested_value(const Dictionary &dict, const String &path
 bool SolanaUtils::nested_dict_has_keys(const Dictionary &dict, const String &path) {
 	const PackedStringArray keys = path.split("/", false);
 
-	ERR_FAIL_COND_V_CUSTOM(keys.is_empty(), false);
+	if (keys.is_empty(), false) {
+		return false;
+	}
 
 	Variant intermediate_dict = dict;
 	for (const auto &key : keys) {
-		ERR_FAIL_COND_V_CUSTOM(!static_cast<Dictionary>(intermediate_dict).has(key), false);
-		ERR_FAIL_COND_V_CUSTOM(static_cast<Dictionary>(intermediate_dict)[key].get_type() != Variant::DICTIONARY, false);
+		if (!static_cast<Dictionary>(intermediate_dict).has(key)) {
+			return false;
+		}
+		if (static_cast<Dictionary>(intermediate_dict)[key].get_type() != Variant::DICTIONARY) {
+			return false;
+		}
 		intermediate_dict = static_cast<Variant>(static_cast<Dictionary>(intermediate_dict)[key]);
 	}
 
