@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1762543183112,
+  "lastUpdate": 1762543254607,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -2140,6 +2140,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/ad224d9d11328ad12055a5636f748e6959be8968"
         },
         "date": 1762543181447,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.36986301369863,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "21808a9908d9c323bd1534c3ee9b4b5e9be56118",
+          "message": "Update Solana SDK addon version to 1.4.2",
+          "timestamp": "2025-11-07T20:12:32+01:00",
+          "tree_id": "3ad085b2ea4fc05d43cad3b9a2b4c7ea5b79d735",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/21808a9908d9c323bd1534c3ee9b4b5e9be56118"
+        },
+        "date": 1762543253316,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
