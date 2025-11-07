@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1762538670541,
+  "lastUpdate": 1762543183112,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -2111,6 +2111,35 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/6f2322759115d0f712e9258141fd7df02364c341"
         },
         "date": 1762538668985,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.36986301369863,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ad224d9d11328ad12055a5636f748e6959be8968",
+          "message": "Merge pull request #420 from Virus-Axel/bugfix/minor_fixes\n\nRemove error message from dict key check",
+          "timestamp": "2025-11-07T20:11:06+01:00",
+          "tree_id": "1ddee856d3f939baebebb8c85cbb725db73ae1a6",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/ad224d9d11328ad12055a5636f748e6959be8968"
+        },
+        "date": 1762543181447,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
