@@ -132,7 +132,7 @@ public:
 	void _process(double delta) override;
 
 	/**
-	 * @brief @setter{instruction, p_value}
+	 * @setter{instruction, p_value}
 	 */
 	void set_instructions(const Array &p_value);
 

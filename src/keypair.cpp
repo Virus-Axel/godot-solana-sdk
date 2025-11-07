@@ -48,19 +48,38 @@ void Keypair::_bind_methods() {
 }
 
 void Keypair::_get_property_list(List<PropertyInfo> *p_list) const {
-	PropertyUsageFlags visibility = PROPERTY_USAGE_DEFAULT;
-
-	// Hide other properties if unique is true.
 	if (unique) {
-		visibility = PROPERTY_USAGE_NO_EDITOR;
-	} else {
+		p_list->push_back(PropertyInfo(Variant::BOOL, "unique", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "random", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "from_seed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "seed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_DEFAULT));
+	} else if (random) {
+		p_list->push_back(PropertyInfo(Variant::BOOL, "random", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "unique", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "from_seed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "seed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	} else if (from_seed) {
+		p_list->push_back(PropertyInfo(Variant::BOOL, "from_seed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "unique", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "random", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "seed"));
 	}
-	p_list->push_back(PropertyInfo(Variant::BOOL, "unique"));
-	p_list->push_back(PropertyInfo(Variant::STRING, "public_string", PROPERTY_HINT_NONE, "", visibility, ""));
-	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "public_bytes", PROPERTY_HINT_NONE, "", visibility, ""));
-	p_list->push_back(PropertyInfo(Variant::STRING, "private_string", PROPERTY_HINT_NONE, "", visibility, ""));
-	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "private_bytes", PROPERTY_HINT_NONE, "", visibility, ""));
+
+	if (unique || random || from_seed) {
+		p_list->push_back(PropertyInfo(Variant::STRING, "public_string", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "public_bytes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::STRING, "private_string", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "private_bytes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_DEFAULT));
+	} else {
+		p_list->push_back(PropertyInfo(Variant::BOOL, "unique", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "random", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "from_seed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+
+		p_list->push_back(PropertyInfo(Variant::STRING, "public_string"));
+		p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "public_bytes"));
+		p_list->push_back(PropertyInfo(Variant::STRING, "private_string"));
+		p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "private_bytes"));
+	}
 }
 
 bool Keypair::_set(const StringName &p_name, const Variant &p_value) {
@@ -83,6 +102,14 @@ bool Keypair::_set(const StringName &p_name, const Variant &p_value) {
 	}
 	if (name == "unique") {
 		set_unique(p_value);
+		return true;
+	}
+	if (name == "random") {
+		set_random(p_value);
+		return true;
+	}
+	if (name == "from_seed") {
+		set_from_seed(p_value);
 		return true;
 	}
 	if (name == "seed") {
@@ -115,6 +142,14 @@ bool Keypair::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = unique;
 		return true;
 	}
+	if (name == "random") {
+		r_ret = random;
+		return true;
+	}
+	if (name == "from_seed") {
+		r_ret = from_seed;
+		return true;
+	}
 	if (name == "seed") {
 		r_ret = seed;
 		return true;
@@ -123,14 +158,18 @@ bool Keypair::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
+String Keypair::_to_string() const {
+	return vformat("[Keypair:%s]", get_public_string());
+}
+
 Keypair::Keypair() {
 	seed.resize(SEED_LENGTH);
 	private_bytes.resize(PRIVATE_KEY_LENGTH);
 	public_bytes.resize(PUBLIC_KEY_LENGTH);
-	from_seed();
+	create_from_seed();
 }
 
-void Keypair::from_seed() {
+void Keypair::create_from_seed() {
 	ed25519_create_keypair(public_bytes.ptrw(), private_bytes.ptrw(), seed.ptr());
 
 	private_string = SolanaUtils::bs58_encode(private_bytes);
@@ -152,7 +191,7 @@ void Keypair::save_to_file(const String &filename) {
 	file->close();
 }
 
-void Keypair::random() {
+void Keypair::create_random() {
 	RandomNumberGenerator *rand = memnew_custom(RandomNumberGenerator);
 	rand->randomize();
 
@@ -259,7 +298,7 @@ Variant Keypair::new_from_variant(const Variant &variant) {
 
 Variant Keypair::new_random() {
 	Keypair *res = memnew_custom(Keypair);
-	res->random();
+	res->create_random();
 	return res;
 }
 
@@ -296,7 +335,7 @@ void Keypair::set_public_string(const String &p_value) {
 	ERR_FAIL_COND_EDMSG_CUSTOM(decoded_value.size() != PUBLIC_KEY_LENGTH, "Public key must be 32 bytes");
 }
 
-String Keypair::get_public_string() {
+String Keypair::get_public_string() const {
 	return public_string;
 }
 
@@ -324,6 +363,8 @@ PackedByteArray Keypair::get_public_bytes() const {
 void Keypair::set_private_string(const String &p_value) {
 	private_string = p_value;
 	unique = false;
+	random = false;
+	from_seed = false;
 
 	// Update private bytes accordingly.
 	const PackedByteArray decoded_value = SolanaUtils::bs58_decode(private_string);
@@ -341,6 +382,8 @@ String Keypair::get_private_string() {
 void Keypair::set_private_bytes(const PackedByteArray &p_value) {
 	private_bytes = p_value;
 	unique = false;
+	random = false;
+	from_seed = false;
 
 	// Do not feed 0 bytes to encode algorithm.
 	if (private_bytes.size() == 0) {
@@ -360,6 +403,8 @@ PackedByteArray Keypair::get_private_bytes() {
 
 void Keypair::set_unique(const bool p_value) {
 	unique = p_value;
+	random = false;
+	from_seed = false;
 	notify_property_list_changed();
 }
 
@@ -367,11 +412,36 @@ bool Keypair::get_unique() const {
 	return unique;
 }
 
+void Keypair::set_random(const bool p_value) {
+	random = p_value;
+	unique = false;
+	from_seed = false;
+	if (p_value) {
+		create_random();
+	}
+	notify_property_list_changed();
+}
+
+bool Keypair::get_random() const {
+	return random;
+}
+
+void Keypair::set_from_seed(const bool p_value) {
+	random = false;
+	unique = false;
+	from_seed = p_value;
+	notify_property_list_changed();
+}
+
+bool Keypair::get_from_seed() const {
+	return from_seed;
+}
+
 void Keypair::set_seed(const PackedByteArray &p_value) {
 	ERR_FAIL_COND_EDMSG_CUSTOM(p_value.size() != 32, "Seed must be 32 bytes");
 
 	seed = p_value;
-	from_seed();
+	create_from_seed();
 }
 
 PackedByteArray Keypair::get_seed() {

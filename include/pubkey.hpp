@@ -70,7 +70,7 @@ protected:
 	/**
 	 * @_to_string
 	 */
-	String _to_string() const;
+	[[nodiscard]] String _to_string() const;
 
 	/**
 	 * @_get_property_list

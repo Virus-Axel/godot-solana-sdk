@@ -86,6 +86,7 @@ void Pubkey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_wallet_address", "p_value"), &Pubkey::set_wallet_address);
 	ClassDB::bind_method(D_METHOD("get_token_mint_address"), &Pubkey::get_token_mint_address);
 	ClassDB::bind_method(D_METHOD("set_token_mint_address", "p_value"), &Pubkey::set_token_mint_address);
+	ClassDB::bind_method(D_METHOD("is_on_curve"), &Pubkey::are_bytes_curve_point);
 
 	ClassDB::bind_method(D_METHOD("create_from_string", "from"), &Pubkey::create_from_string);
 	ClassDB::bind_method(D_METHOD("create_program_address", "seeds", "program_id"), &Pubkey::create_program_address);
