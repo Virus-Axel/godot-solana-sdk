@@ -458,6 +458,9 @@ void Transaction::set_instructions(const Array &p_value) {
 }
 
 Array Transaction::get_instructions() {
+	if (deserialized) {
+		WARN_PRINT_ED_CUSTOM("Instructions cannot be decompiled from deserialized transaction");
+	}
 	return instructions;
 }
 
