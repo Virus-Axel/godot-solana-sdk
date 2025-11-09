@@ -107,10 +107,14 @@ public:
 	 * @brief Role of delegate in metadata.
 	 */
 	enum MetaDataDelegateRole : uint8_t {
-		AUTHORITY = 0, ///< Authority role.
-		COLLECTION = 1, ///< Collection role.
-		USE = 2, ///< Use role.
-		UPDATE = 3, ///< Update role.
+		AUTHORITY_ITEM = 0, ///< Authority item role.
+		COLLECTION, ///< Collection role.
+		USE, ///< Use role.
+		DATA, ///< Data role.
+		PROGRAMABLE_CONFIG, ///< Programable config role.
+		DATA_ITEM, ///< Data item role.
+		COLLECTION_ITEM, ///< Collection item role.
+		PROGRAMABLE_CONFIG_ITEM, ///< Programable config item role.
 	};
 
 	/**
