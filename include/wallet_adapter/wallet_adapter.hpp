@@ -266,10 +266,6 @@ public:
 	 */
 	void sign_text_message(const String &message);
 
-	/**
-	 * @getter{active_signer_index, uint32_t}
-	 */
-	[[nodiscard]] uint32_t get_active_signer_index() const;
 	~WalletAdapter() override = default;
 };
 } //namespace godot

@@ -367,6 +367,9 @@ WalletAdapter::WalletAdapter() {
 }
 
 bool WalletAdapter::is_wallet_adapter(const Variant &other) {
+	if (other.get_type() != Variant::OBJECT) {
+		return false;
+	}
 	return (static_cast<Object *>(other))->is_class("WalletAdapter");
 }
 
@@ -471,10 +474,6 @@ void WalletAdapter::sign_text_message(const String &message) {
 	JavaScriptBridge::get_singleton()->eval(get_sign_message_script(message));
 
 #endif
-}
-
-uint32_t WalletAdapter::get_active_signer_index() const {
-	return active_signer_index;
 }
 
 } // namespace godot
