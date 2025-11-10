@@ -4,7 +4,7 @@ extends VBoxContainer
 @onready var payer: Keypair = Keypair.new_from_file("res://payer.json")
 const LAMPORTS_PER_SOL = 1000000000
 
-const TOTAL_CASES := 16
+const TOTAL_CASES := 18
 var passed_test_mask := 0
 
 signal transaction_tests_passed
@@ -313,6 +313,59 @@ func transaction_simulation_error_signal():
 	PASS(15)
 
 
+func serialize_instruction():
+	var test_pid = Pubkey.new_from_string("7S1WFXnY4NEpEzxPaB2C2XqCVQocbjnyxfJitc6ksHjp")
+	var test_account = Pubkey.new_from_string("ChLGHj6JNLKj1ePNm3TpE1kC2UbumdBYunEgW5zh4hfD")
+	var test_data = "Godot Solana SDK".to_ascii_buffer()
+	
+	var ix := Instruction.new()
+	ix.program_id = test_pid
+	ix.accounts = [AccountMeta.new_account_meta(test_account, false, true)]
+	ix.data = test_data
+	
+	var serialized_ix = ix.serialize()
+	
+	var encoded_account_length = PackedByteArray()
+	encoded_account_length.resize(8)
+	encoded_account_length.encode_u64(0, 1)
+	
+	# Assertions are based on source code of solana-sdk rust crate.
+	assert(serialized_ix.slice(0, 32) == test_pid.to_bytes())
+	assert(serialized_ix.slice(32, 40) == encoded_account_length)
+	assert(serialized_ix.slice(40, 72) == test_account.to_bytes())
+	assert(serialized_ix[72] == 0) # Signer
+	assert(serialized_ix[73] == 1) # Writable
+	assert(serialized_ix.slice(74) == test_data)
+	
+	PASS(16)
+
+func serialize_instruction_string_pid():
+	var test_pid = Pubkey.new_from_string("7S1WFXnY4NEpEzxPaB2C2XqCVQocbjnyxfJitc6ksHjp")
+	var test_account = Pubkey.new_from_string("ChLGHj6JNLKj1ePNm3TpE1kC2UbumdBYunEgW5zh4hfD")
+	var test_data = "Godot Solana SDK".to_ascii_buffer()
+	
+	var ix := Instruction.new()
+	ix.program_id = test_pid.to_string()
+	ix.accounts = [AccountMeta.new_account_meta(test_account, false, true)]
+	ix.data = test_data
+	
+	var serialized_ix = ix.serialize()
+	
+	var encoded_account_length = PackedByteArray()
+	encoded_account_length.resize(8)
+	encoded_account_length.encode_u64(0, 1)
+	
+	# Assertions are based on source code of solana-sdk rust crate.
+	assert(serialized_ix.slice(0, 32) == test_pid.to_bytes())
+	assert(serialized_ix.slice(32, 40) == encoded_account_length)
+	assert(serialized_ix.slice(40, 72) == test_account.to_bytes())
+	assert(serialized_ix[72] == 0) # Signer
+	assert(serialized_ix[73] == 1) # Writable
+	assert(serialized_ix.slice(74) == test_data)
+	
+	PASS(17)
+
+
 func _ready():
 	# Use a local cluster for unlimited Solana airdrops.
 	# SolanaClient defaults to devnet cluster URL if not specified.
@@ -333,6 +386,8 @@ func _ready():
 	handle_set_payer_on_deserialized_transaction()
 	send_transaction_from_scene_tree()
 	transaction_simulation_error_signal()
+	serialize_instruction()
+	serialize_instruction_string_pid()
 
 	await transaction_tests_passed
 	
