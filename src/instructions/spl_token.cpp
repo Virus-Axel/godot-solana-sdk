@@ -220,9 +220,34 @@ Variant TokenProgram::new_delegate_record_address(const Variant &update_authorit
 	seeds.append(Pubkey::bytes_from_variant(MplTokenMetadata::get_pid()));
 	seeds.append(Pubkey::bytes_from_variant(mint));
 
-	(void)role;
-	// TODO(Virax): Change based on delegate role.
-	seeds.append(String("collection_delegate").to_ascii_buffer());
+	switch (role) {
+		case MetaDataDelegateRole::AUTHORITY_ITEM:
+			seeds.append(String("authority_item_delegate").to_ascii_buffer());
+			break;
+		case MetaDataDelegateRole::COLLECTION:
+			seeds.append(String("collection_delegate").to_ascii_buffer());
+			break;
+		case MetaDataDelegateRole::USE:
+			seeds.append(String("use_delegate").to_ascii_buffer());
+			break;
+		case MetaDataDelegateRole::DATA:
+			seeds.append(String("data_delegate").to_ascii_buffer());
+			break;
+		case MetaDataDelegateRole::PROGRAMABLE_CONFIG:
+			seeds.append(String("programmable_config_delegate").to_ascii_buffer());
+			break;
+		case MetaDataDelegateRole::DATA_ITEM:
+			seeds.append(String("data_item_delegate").to_ascii_buffer());
+			break;
+		case MetaDataDelegateRole::COLLECTION_ITEM:
+			seeds.append(String("collection_item_delegate").to_ascii_buffer());
+			break;
+		case MetaDataDelegateRole::PROGRAMABLE_CONFIG_ITEM:
+			seeds.append(String("prog_config_item_delegate").to_ascii_buffer());
+			break;
+		default:
+			ERR_FAIL_V_EDMSG_CUSTOM(nullptr, "Invalid delegate role.");
+	}
 	seeds.append(Pubkey::bytes_from_variant(update_authority));
 	seeds.append(Pubkey::bytes_from_variant(delegate_address));
 

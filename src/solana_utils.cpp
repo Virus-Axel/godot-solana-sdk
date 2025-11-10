@@ -301,13 +301,14 @@ Variant SolanaUtils::get_nested_value(const Dictionary &dict, const String &path
 	ERR_FAIL_COND_V_CUSTOM(keys.is_empty(), nullptr);
 
 	Variant intermediate_dict = dict;
-	for (const auto &key : keys) {
+	for (const auto &key : keys.slice(0, keys.size() - 1)) {
 		ERR_FAIL_COND_V_CUSTOM(!static_cast<Dictionary>(intermediate_dict).has(key), nullptr);
 		ERR_FAIL_COND_V_CUSTOM(static_cast<Dictionary>(intermediate_dict)[key].get_type() != Variant::DICTIONARY, nullptr);
 		intermediate_dict = static_cast<Variant>(static_cast<Dictionary>(intermediate_dict)[key]);
 	}
+	ERR_FAIL_COND_V_CUSTOM(!static_cast<Dictionary>(intermediate_dict).has(keys[keys.size() - 1]), nullptr);
 
-	return intermediate_dict;
+	return static_cast<Dictionary>(intermediate_dict)[keys[keys.size() - 1]];
 }
 
 bool SolanaUtils::nested_dict_has_keys(const Dictionary &dict, const String &path) {
@@ -318,17 +319,18 @@ bool SolanaUtils::nested_dict_has_keys(const Dictionary &dict, const String &pat
 	}
 
 	Variant intermediate_dict = dict;
-	for (const auto &key : keys) {
+	for (const auto &key : keys.slice(0, keys.size() - 1)) {
 		if (!static_cast<Dictionary>(intermediate_dict).has(key)) {
 			return false;
 		}
+
 		if (static_cast<Dictionary>(intermediate_dict)[key].get_type() != Variant::DICTIONARY) {
 			return false;
 		}
 		intermediate_dict = static_cast<Variant>(static_cast<Dictionary>(intermediate_dict)[key]);
 	}
 
-	return true;
+	return static_cast<Dictionary>(intermediate_dict).has(keys[keys.size() - 1]);
 }
 
 } //namespace godot

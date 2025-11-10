@@ -78,7 +78,7 @@ private:
 
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _signer_signed(const PackedByteArray &signature, int32_t index);
-	void _signer_failed();
+	void _signer_failed(const int32_t index);
 
 	[[nodiscard]] bool is_phantom_payer() const;
 	[[nodiscard]] bool has_valid_payer() const;

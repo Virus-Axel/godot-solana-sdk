@@ -89,11 +89,14 @@ void Transaction::_signer_signed(const PackedByteArray &signature, const int32_t
 	check_fully_signed();
 }
 
-void Transaction::_signer_failed() {
-	auto *controller = Object::cast_to<WalletAdapter>(payer);
+void Transaction::_signer_failed(const int32_t index) {
+	ERR_FAIL_COND_EDMSG_CUSTOM(index >= signers.size(), "Signer index out of bounds.");
+	ERR_FAIL_COND_EDMSG_CUSTOM(!WalletAdapter::is_wallet_adapter(signers[index]), "Signer is not a WalletAdapter.");
+
+	auto *controller = Object::cast_to<WalletAdapter>(signers[index]);
 	controller->disconnect("message_signed", callable_mp(this, &Transaction::_signer_signed));
 
-	emit_signal("signing_failed", controller->get_active_signer_index());
+	emit_signal("signing_failed", index);
 }
 
 bool Transaction::is_phantom_payer() const {
@@ -194,7 +197,7 @@ void Transaction::sign_at_index(const uint32_t index) {
 		auto *controller = Object::cast_to<WalletAdapter>(signers[index]);
 
 		controller->connect("message_signed", callable_mp(this, &Transaction::_signer_signed).bindv(Array::make(index)), CONNECT_ONE_SHOT);
-		controller->connect("signing_failed", callable_mp(this, &Transaction::_signer_failed), CONNECT_ONE_SHOT);
+		controller->connect("signing_failed", callable_mp(this, &Transaction::_signer_failed).bindv(Array::make(index)), CONNECT_ONE_SHOT);
 		controller->sign_message(serialize(), index);
 	} else {
 		ERR_PRINT_ONCE_ED("Unknown signer type.");
@@ -455,6 +458,9 @@ void Transaction::set_instructions(const Array &p_value) {
 }
 
 Array Transaction::get_instructions() {
+	if (deserialized) {
+		WARN_PRINT_ED_CUSTOM("Instructions cannot be decompiled from deserialized transaction");
+	}
 	return instructions;
 }
 
