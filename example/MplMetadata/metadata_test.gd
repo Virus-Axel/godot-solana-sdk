@@ -106,12 +106,19 @@ func test_fetch_usdc_metadata():
 	PASS(2)
 
 
+func null_object_to_instruction_builder():
+	var random_pk = Pubkey.new_random()
+	MplTokenMetadata.create_metadata_account(random_pk, random_pk, random_pk, load(""), false)
+	PASS(4)
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	await test_create_metadata()
 	await test_fetch_metadata()
 	await test_fetch_usdc_metadata()
 	await fetch_problematic_metadatas()
+	await null_object_to_instruction_builder()
 
 	print("ALL TESTS PASSED")
 	get_tree().quit(0)
