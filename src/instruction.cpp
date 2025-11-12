@@ -75,13 +75,24 @@ void Instruction::append_meta(const AccountMeta &meta) {
 PackedByteArray Instruction::serialize() {
 	PackedByteArray result;
 
-	if (program_id.get_type() == Variant::OBJECT) {
-		result.append_array(Pubkey::bytes_from_variant(program_id));
+	const PackedByteArray pid_bytes = Pubkey::bytes_from_variant(program_id);
+	if (!pid_bytes.is_empty()) {
+		result.append_array(pid_bytes);
+	} else {
+		WARN_PRINT_ED_CUSTOM("Program ID is not set or invalid in instruction.");
+	}
+
+	result.resize(static_cast<int64_t>(result.size() + sizeof(uint64_t)));
+	result.encode_u64(static_cast<int64_t>(result.size() - sizeof(uint64_t)), accounts.size());
+
+	for (unsigned int i = 0; i < accounts.size(); i++) {
+		ERR_FAIL_COND_V_EDMSG_CUSTOM(!AccountMeta::is_account_meta(accounts[i]), PackedByteArray(), "Element at index " + itos(i) + " is not of type AccountMeta.");
+		const AccountMeta *meta = Object::cast_to<AccountMeta>(accounts[i]);
+		result.append_array(Pubkey::bytes_from_variant(accounts[i]));
+		result.append(meta->get_is_signer() ? 1 : 0);
+		result.append(meta->get_writeable() ? 1 : 0);
 	}
 	result.append_array(data);
-	for (unsigned int i = 0; i < accounts.size(); i++) {
-		result.append_array(Pubkey::bytes_from_variant(accounts[i]));
-	}
 
 	return result;
 }
