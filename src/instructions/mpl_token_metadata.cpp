@@ -235,8 +235,10 @@ void MplTokenMetadata::metadata_callback(const Dictionary &rpc_result) {
 }
 
 Variant MplTokenMetadata::create_metadata_account(const Variant &mint, const Variant &mint_authority, const Variant &update_authority, const Variant &meta_data, bool is_mutable) {
-	ERR_FAIL_COND_V_EDMSG_CUSTOM(meta_data.get_type() != Variant::OBJECT, nullptr, "metadata must be a CreateMetadataArgs type.");
-	ERR_FAIL_COND_V_EDMSG_CUSTOM(static_cast<Object *>(meta_data)->get_class() != "CreateMetaDataArgs", nullptr, "metadata must be a CreateMetadataArgs type.");
+	const String error_message = "metadata must be a CreateMetadataArgs type.";
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(meta_data.get_type() != Variant::OBJECT, nullptr, error_message);
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(static_cast<Object *>(meta_data) == nullptr, nullptr, error_message);
+	ERR_FAIL_COND_V_EDMSG_CUSTOM(static_cast<Object *>(meta_data)->get_class() != "CreateMetaDataArgs", nullptr, error_message);
 
 	Instruction *result = memnew_custom(Instruction);
 	PackedByteArray data;
