@@ -228,30 +228,30 @@ Array GenericAnchorNode::split_args(const Array &args, const StringName &instruc
 }
 
 template <typename ResourceType>
-void GenericAnchorNode::bind_types(const Dictionary &idl) {
+void GenericAnchorNode::bind_types(const Dictionary &idl, const StringName &class_name) {
 	if (idl.has("types")) {
 		const Array types = idl["types"];
 		// Bind enum constants first.
 		for (unsigned int i = 0; i < types.size(); i++) {
 			if (AnchorProgram::is_enum(types[i])) {
-				GenericAnchorResource::bind_anchor_enum(types[i]);
+				GenericAnchorResource::bind_anchor_enum(types[i], class_name);
 			}
 		}
 		for (unsigned int i = 0; i < types.size(); i++) {
 			if (!AnchorProgram::is_enum(types[i])) {
-				GenericAnchorResource::bind_anchor_resource<ResourceType>(types[i]);
+				GenericAnchorResource::bind_anchor_resource<ResourceType>(types[i], class_name);
 			}
 		}
 	}
 }
 
 template <typename ResourceType>
-void GenericAnchorNode::bind_accounts(const Dictionary &idl) {
+void GenericAnchorNode::bind_accounts(const Dictionary &idl, const StringName &class_name) {
 	if (idl.has("accounts")) {
 		const Array types = idl["accounts"];
 		for (unsigned int i = 0; i < types.size(); i++) {
 			if (!AnchorProgram::is_enum(types[i])) {
-				GenericAnchorResource::bind_anchor_resource<ResourceType>(types[i]);
+				GenericAnchorResource::bind_anchor_resource<ResourceType>(types[i], class_name);
 			}
 		}
 	}
@@ -290,9 +290,6 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 
 	ERR_FAIL_COND_EDMSG_CUSTOM(custom_pid.get_type() != Variant::OBJECT, "IDL does not contain a PID.");
 
-	bind_types<ResourceType>(idl);
-	bind_accounts<ResourceType>(idl);
-
 	loaded_idls[idl["name"]] = idl;
 	const String class_name = idl["name"];
 
@@ -329,6 +326,9 @@ void GenericAnchorNode::bind_anchor_node(const Dictionary &idl) {
 	const StringName name = String(class_name);
 	const StringName parent_name = "Node";
 	internal::gdextension_interface_classdb_register_extension_class4(internal::library, name._native_ptr(), parent_name._native_ptr(), &class_info);
+
+	bind_types<ResourceType>(idl, name);
+	bind_accounts<ResourceType>(idl, name);
 
 	bind_signal(class_name, MethodInfo("account_fetched", PropertyInfo(Variant::DICTIONARY, "account_info")));
 

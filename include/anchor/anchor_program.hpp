@@ -308,14 +308,6 @@ public:
 	static bool is_enum(const Variant &anchor_type);
 
 	/**
-	 * @brief Get the name of an anchor object.
-	 *
-	 * @param anchor_type Anchor object.
-	 * @return String name of anchor object.
-	 */
-	static String get_object_name(const Variant &anchor_type);
-
-	/**
 	 * @brief Check if anchor object is of type vec.
 	 *
 	 * @param anchor_type Anchor object.

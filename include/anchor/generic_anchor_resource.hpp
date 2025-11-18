@@ -87,13 +87,18 @@ private:
 
 	template <typename NodeType>
 	static void bind_resource_class(const StringName &p_class_name, const StringName &parent_name);
-	static void bind_resource_getter(const StringName &p_class_name, const MethodDefinition &method_prototype, const StringName &property_name);
+	static void bind_resource_getter(const StringName &p_class_name, const MethodDefinition &method_prototype, const PropertyInfo &property_info);
 	static void bind_resource_setter(const StringName &p_class_name, const MethodDefinition &method_prototype, const StringName &property_name);
 	static void bind_resource_property(const StringName &p_class_name, const PropertyInfo &property_info, const StringName &setter_name = "", const StringName &getter_name = "");
+
+	static GDExtensionClassMethodCall get_getter_call_func(const StringName &property_name);
+	static GDExtensionClassMethodPtrCall get_getter_call_ptr_func();
 
 	static String get_enum_hint(const StringName &enum_type);
 	static Variant godot_type_defval(Variant::Type type_name);
 	static PackedStringArray names_from_array(const Array &fields);
+
+	static MethodBind *get_getter_method_bind(const MethodDefinition &method_definition, const PropertyInfo &property_info);
 
 	friend class ClassDB;
 	friend class Wrapped;
@@ -391,16 +396,18 @@ public:
 	 * @brief Bind an anchor enum to godot.
 	 *
 	 * @param enum_data Anchor specification of an enum.
+	 * @param class_name Name of class to bind to.
 	 */
-	static void bind_anchor_enum(const Dictionary &enum_data);
+	static void bind_anchor_enum(const Dictionary &enum_data, const StringName &class_name);
 
 	/**
 	 * @brief Bind anchor resource to godot.
 	 *
 	 * @param resource Anchor resource specification.
+	 * @param enum_class_name_hint Enum class name hint. Must be provided if resource has enum properties.
 	 */
 	template <typename NodeType>
-	static void bind_anchor_resource(const Dictionary &resource);
+	static void bind_anchor_resource(const Dictionary &resource, const StringName &enum_class_name_hint = "");
 
 	/**
 	 * @brief Bind special mint arg serialization methods.
@@ -441,8 +448,9 @@ public:
 	 * Binds property and automatically created setters and getters.
 	 *
 	 * @param property_data Property info.
+	 * @param enum_class_name_hint Optional enum class name to use for enum hints. Must be provided if property is of enum type.
 	 */
-	static void add_property(const Dictionary &property_data);
+	static void add_property(const Dictionary &property_data, const StringName &enum_class_name_hint = "");
 
 	/**
 	 * @brief Get all property values.

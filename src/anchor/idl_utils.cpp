@@ -326,4 +326,21 @@ PackedByteArray IdlUtils::serialize_variant(const Variant &variant) {
 	}
 }
 
+String IdlUtils::get_object_name(const Variant &anchor_type) {
+	if (anchor_type.get_type() == Variant::DICTIONARY) {
+		const Dictionary anchor_type_dict = anchor_type;
+		if (anchor_type_dict.has("option")) {
+			return IdlUtils::get_object_name(anchor_type_dict["option"]);
+		}
+		if (anchor_type_dict.has("vec")) {
+			return IdlUtils::get_object_name(anchor_type_dict["vec"]);
+		}
+		if (anchor_type_dict.has("defined")) {
+			return anchor_type_dict["defined"];
+		}
+	}
+
+	return "";
+}
+
 } //namespace godot

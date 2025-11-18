@@ -8,6 +8,7 @@
 #include "godot_cpp/core/error_macros.hpp"
 #include "godot_cpp/core/memory.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/typed_array.hpp"
 
 #include "account_meta.hpp"
