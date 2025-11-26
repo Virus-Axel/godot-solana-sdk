@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1762965625066,
+  "lastUpdate": 1764190411736,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
@@ -2290,6 +2290,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index",
             "value": 0.373287671232877,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Virus-Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Virus-Axel",
+            "username": "Virus-Axel"
+          },
+          "distinct": true,
+          "id": "18d98a83fd85f0fa93115ee3e433cd50f57cc27e",
+          "message": "Add transaction helper benchmark",
+          "timestamp": "2025-11-26T21:41:40+01:00",
+          "tree_id": "864cdafc03d171912f99649d67e8cad8dec543b7",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/18d98a83fd85f0fa93115ee3e433cd50f57cc27e"
+        },
+        "date": 1764190409557,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.396363636363636,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0981818181818182,
             "unit": "Percent"
           }
         ]
