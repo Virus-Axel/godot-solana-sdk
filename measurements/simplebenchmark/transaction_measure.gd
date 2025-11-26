@@ -2,11 +2,21 @@ extends Control
 
 var round_one_frames = 0
 var round_two_frames = 0
+var round_three_frames = 0
 var measurment_counter = 0
 
 const WORKLOAD_FACTOR = 50
 
 const filename: String = "output.txt"
+
+func create_transaction_with_helper():
+	var payer = Keypair.new_random()
+	var receiver = Pubkey.new_random()
+	var ix = SystemProgram.transfer(payer, receiver, 1000)
+	var tx = await TransactionManager.new().create_transaction([ix], payer)
+	tx.update_latest_blockhash("11111111111111111111111111111111")
+	tx.sign()
+	tx.serialize()
 
 func create_transaction():
 	var tx = Transaction.new()
@@ -24,7 +34,12 @@ func write_results():
 	benchmark_entry["name"] = "Simple Transaction Performance Index"
 	benchmark_entry["unit"] = "Percent"
 	benchmark_entry["value"] = float(round_two_frames) / float(round_one_frames)
-	var benchmark_data := [benchmark_entry]
+	
+	var benchmark_with_helper := {}
+	benchmark_with_helper["name"] = "Simple Transaction Performance Index (With helper class)"
+	benchmark_with_helper["unit"] = "Percent"
+	benchmark_with_helper["value"] = float(round_three_frames) / float(round_one_frames)
+	var benchmark_data := [benchmark_entry, benchmark_with_helper]
 	
 	var file = FileAccess.open(filename, FileAccess.WRITE)
 	file.store_string(JSON.stringify(benchmark_data))
@@ -38,6 +53,10 @@ func _process(delta: float) -> void:
 		for i in range(WORKLOAD_FACTOR):
 			create_transaction()
 		round_two_frames += 1
+	elif measurment_counter == 2:
+		for i in range(WORKLOAD_FACTOR):
+			create_transaction_with_helper()
+		round_three_frames += 1
 	else:
 		write_results()
 		queue_free()

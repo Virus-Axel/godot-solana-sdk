@@ -39,16 +39,17 @@ jobs:
       - name: Build binary
         shell: bash
         run: |
+          scons WalletAdapterAndroid
           scons
+          scons assemble
 
       - name: Prepare project 
         shell: bash
         run: |
           cp godot-solana-sdk.gdextension bin/
           cd measurements/simplebenchmark
-          ln -s ../../bin
-          mkdir .godot
-          echo "res://bin/godot-solana-sdk.gdextension" >> .godot/extension_list.cfg
+          ln -s ../../addons
+          godot --headless --import
 
       - name: Run Benchmark
         shell: bash
@@ -68,3 +69,4 @@ jobs:
           auto-push: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gh-pages-branch: doxygen-docs
+          max-items-in-chart: 60
