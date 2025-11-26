@@ -124,6 +124,14 @@ public:
 	 * @return PackedByteArray Byte serialization.
 	 */
 	static PackedByteArray serialize_variant(const Variant &variant);
+
+	/**
+	 * @brief Get the type name of an anchor object.
+	 *
+	 * @param anchor_type Anchor object.
+	 * @return String name of anchor object.
+	 */
+	static String get_object_name(const Variant &anchor_type);
 };
 
 } //namespace godot

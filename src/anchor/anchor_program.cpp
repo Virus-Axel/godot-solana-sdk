@@ -786,23 +786,6 @@ bool AnchorProgram::is_enum(const Variant &anchor_type) {
 	return false;
 }
 
-String AnchorProgram::get_object_name(const Variant &anchor_type) {
-	if (anchor_type.get_type() == Variant::DICTIONARY) {
-		const Dictionary anchor_type_dict = anchor_type;
-		if (anchor_type_dict.has("option")) {
-			return AnchorProgram::get_object_name(anchor_type_dict["option"]);
-		}
-		if (anchor_type_dict.has("vec")) {
-			return AnchorProgram::get_object_name(anchor_type_dict["vec"]);
-		}
-		if (anchor_type_dict.has("defined")) {
-			return anchor_type_dict["defined"];
-		}
-	}
-
-	return "";
-}
-
 bool AnchorProgram::is_vec_type(const Variant &anchor_type) {
 	if (anchor_type.get_type() == Variant::DICTIONARY) {
 		const Dictionary anchor_type_dict = anchor_type;

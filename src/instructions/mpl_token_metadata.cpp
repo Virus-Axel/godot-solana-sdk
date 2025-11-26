@@ -5,6 +5,7 @@
 #include <string>
 
 #include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/classes/object.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/error_macros.hpp"
 #include "godot_cpp/core/memory.hpp"

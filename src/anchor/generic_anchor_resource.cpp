@@ -268,84 +268,35 @@ void GenericAnchorResource::bind_resource_method(const StringName &p_class_name,
 	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, p_class_name._native_ptr(), &method_info);
 }
 
-void GenericAnchorResource::bind_resource_getter(const StringName &p_class_name, const MethodDefinition &method_prototype, const StringName &property_name) {
-	MethodBind *getter_bind = create_method_bind(&GenericAnchorResource::no_get);
-	getter_bind->set_name(method_prototype.name);
+void GenericAnchorResource::bind_resource_getter(const StringName &p_class_name, const MethodDefinition &method_prototype, const PropertyInfo &property_info) {
+	MethodBind *getter_bind = get_getter_method_bind(method_prototype, property_info);
 
-	const std::vector<StringName> args(method_prototype.args.begin(), method_prototype.args.end());
-
-	getter_bind->set_argument_names(args);
-
-	const std::vector<PropertyInfo> return_value_and_arguments_info = getter_bind->get_arguments_info_list();
-	std::vector<GDExtensionPropertyInfo> return_value_and_arguments_gdextension_info;
-	return_value_and_arguments_gdextension_info.reserve(return_value_and_arguments_info.size());
-	for (const auto &argument_info : return_value_and_arguments_info) {
-		return_value_and_arguments_gdextension_info.push_back(
-				GDExtensionPropertyInfo{
-						static_cast<GDExtensionVariantType>(argument_info.type),
-						argument_info.name._native_ptr(),
-						argument_info.class_name._native_ptr(),
-						argument_info.hint,
-						argument_info.hint_string._native_ptr(),
-						argument_info.usage,
-				});
-	}
-
-	GDExtensionPropertyInfo *return_value_info = return_value_and_arguments_gdextension_info.data();
-
-	std::vector<GDExtensionClassMethodArgumentMetadata> return_value_and_arguments_metadata = getter_bind->get_arguments_metadata_list();
-	GDExtensionClassMethodArgumentMetadata *return_value_metadata = return_value_and_arguments_metadata.data();
-	GDExtensionPropertyInfo *arguments_info = return_value_and_arguments_gdextension_info.data() + 1; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-	GDExtensionClassMethodArgumentMetadata *arguments_metadata = return_value_and_arguments_metadata.data() + 1; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-
-	std::vector<GDExtensionVariantPtr> def_args;
-	const std::vector<Variant> &def_args_val = getter_bind->get_default_arguments();
-	def_args.resize(def_args_val.size());
-	for (size_t i = 0; i < def_args_val.size(); i++) {
-		def_args[i] = (GDExtensionVariantPtr)&def_args_val[i]; // NOLINT(google-readability-casting)
-	}
-
-	prop_name = String(property_name).ascii();
-	auto lambda = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error) {
-		(void)p_method_userdata;
-		(void)p_args;
-		(void)p_argument_count;
-		(void)r_error;
-		static String abc = String(prop_name.c_str()); // NOLINT(misc-const-correctness)
-		static const String cla = GenericAnchorResource::get_class_static();
-		if (p_instance == nullptr) {
-			return;
-		}
-		Variant ret;
-		GenericAnchorResource::set_class_name(cla);
-		const bool status = static_cast<GenericAnchorResource *>(p_instance)->_get(abc, ret);
-		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
+	auto return_info = GDExtensionPropertyInfo{
+		static_cast<GDExtensionVariantType>(property_info.type),
+		property_info.name._native_ptr(),
+		property_info.class_name._native_ptr(),
+		property_info.hint,
+		property_info.hint_string._native_ptr(),
+		property_info.usage,
 	};
-	(*lambda)(nullptr, nullptr, nullptr, 0, nullptr, nullptr);
 
-	auto lambda2 = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_return) {
-		(void)p_method_userdata;
-		(void)p_instance;
-		(void)p_args;
-		const Variant ret = {};
-		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
-	};
+	const GDExtensionClassMethodArgumentMetadata return_value_metadata = getter_bind->get_argument_metadata(0);
 
 	const StringName name = getter_bind->get_name();
 	const GDExtensionClassMethodInfo method_info = {
 		name._native_ptr(),
 		getter_bind,
-		lambda,
-		lambda2,
+		get_getter_call_func(property_info.name),
+		get_getter_call_ptr_func(),
 		getter_bind->get_hint_flags(),
 		static_cast<GDExtensionBool>(getter_bind->has_return()),
-		return_value_info,
-		*return_value_metadata,
+		&return_info,
+		return_value_metadata,
 		static_cast<uint32_t>(getter_bind->get_argument_count()),
-		arguments_info,
-		arguments_metadata,
+		nullptr,
+		nullptr,
 		static_cast<uint32_t>(getter_bind->get_default_argument_count()),
-		def_args.data(),
+		nullptr,
 	};
 	internal::gdextension_interface_classdb_register_extension_class_method(internal::library, p_class_name._native_ptr(), &method_info);
 }
@@ -388,23 +339,23 @@ void GenericAnchorResource::bind_resource_setter(const StringName &p_class_name,
 	}
 
 	prop_name = String(property_name).ascii();
-	auto lambda = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error) {
+	auto setter_function = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error) {
 		(void)p_method_userdata;
 		(void)p_argument_count;
 		(void)r_error;
-		static String abc = String(prop_name.c_str()); // NOLINT(misc-const-correctness)
-		static const String cla = GenericAnchorResource::get_class_static();
+		static String property_name = String(prop_name.c_str()); // NOLINT(misc-const-correctness)
+		static const String class_name = GenericAnchorResource::get_class_static();
 		if (p_instance == nullptr) {
 			return;
 		}
 		const Variant arg = *p_args;
-		GenericAnchorResource::set_class_name(cla);
-		static_cast<GenericAnchorResource *>(p_instance)->_set(abc, arg);
+		GenericAnchorResource::set_class_name(class_name);
+		static_cast<GenericAnchorResource *>(p_instance)->_set(property_name, arg);
 		const Variant ret = {};
 		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
 	};
-	(*lambda)(nullptr, nullptr, nullptr, 0, nullptr, nullptr);
-	auto lambda2 = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_return) {
+	(*setter_function)(nullptr, nullptr, nullptr, 0, nullptr, nullptr);
+	auto setter_function_ptr = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_return) {
 		(void)p_method_userdata;
 		(void)p_instance;
 		(void)p_args;
@@ -416,8 +367,8 @@ void GenericAnchorResource::bind_resource_setter(const StringName &p_class_name,
 	const GDExtensionClassMethodInfo method_info = {
 		name._native_ptr(),
 		setter_bind,
-		lambda,
-		lambda2,
+		setter_function,
+		setter_function_ptr,
 		setter_bind->get_hint_flags(),
 		static_cast<GDExtensionBool>(setter_bind->has_return()),
 		return_value_info,
@@ -438,13 +389,45 @@ void GenericAnchorResource::bind_resource_property(const StringName &p_class_nam
 	const GDExtensionPropertyInfo prop_info = {
 		static_cast<GDExtensionVariantType>(property_info.type), // GDExtensionVariantType type;
 		property_info.name._native_ptr(), // GDExtensionStringNamePtr name;
-		p_class_name._native_ptr(), // GDExtensionStringNamePtr class_name;
+		property_info.class_name._native_ptr(), // GDExtensionStringNamePtr class_name;
 		property_info.hint, // NONE //uint32_t hint;
 		property_info.hint_string._native_ptr(), // GDExtensionStringPtr hint_string;
 		property_info.usage, // DEFAULT //uint32_t usage;
 	};
 
 	internal::gdextension_interface_classdb_register_extension_class_property_indexed(internal::library, p_class_name._native_ptr(), &prop_info, new_setter_name._native_ptr(), new_getter_name._native_ptr(), -1);
+}
+
+GDExtensionClassMethodCall GenericAnchorResource::get_getter_call_func(const StringName &property_name) {
+	prop_name = String(property_name).ascii();
+	auto getter_function = [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error) {
+		(void)p_method_userdata;
+		(void)p_args;
+		(void)p_argument_count;
+		(void)r_error;
+		static String property_name = String(prop_name.c_str()); // NOLINT(misc-const-correctness)
+		static const String class_name = GenericAnchorResource::get_class_static();
+		if (p_instance == nullptr) {
+			return;
+		}
+		Variant ret;
+		GenericAnchorResource::set_class_name(class_name);
+		const bool status = static_cast<GenericAnchorResource *>(p_instance)->_get(property_name, ret);
+		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
+	};
+	(*getter_function)(nullptr, nullptr, nullptr, 0, nullptr, nullptr);
+
+	return getter_function;
+}
+
+GDExtensionClassMethodPtrCall GenericAnchorResource::get_getter_call_ptr_func() {
+	return [](void *p_method_userdata, GDExtensionClassInstancePtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_return) {
+		(void)p_method_userdata;
+		(void)p_instance;
+		(void)p_args;
+		const Variant ret = {};
+		internal::gdextension_interface_variant_new_copy(r_return, ret._native_ptr());
+	};
 }
 
 String GenericAnchorResource::get_enum_hint(const StringName &enum_type) {
@@ -493,6 +476,17 @@ PackedStringArray GenericAnchorResource::names_from_array(const Array &fields) {
 	}
 
 	return names;
+}
+
+MethodBind *GenericAnchorResource::get_getter_method_bind(const MethodDefinition &method_definition, const PropertyInfo &property_info) {
+	MethodBind *getter_bind = create_method_bind(&GenericAnchorResource::no_get);
+	getter_bind->set_name(method_definition.name);
+
+	const std::vector<StringName> args(method_definition.args.begin(), method_definition.args.end());
+	getter_bind->set_argument_names(args);
+	getter_bind->set_hint_flags(property_info.hint);
+
+	return getter_bind;
 }
 
 const StringName &GenericAnchorResource::get_class_static() {
@@ -654,7 +648,7 @@ String GenericAnchorResource::get_local_name() const {
 	return local_name;
 }
 
-void GenericAnchorResource::bind_anchor_enum(const Dictionary &enum_data) {
+void GenericAnchorResource::bind_anchor_enum(const Dictionary &enum_data, const StringName &class_name) {
 	ERR_FAIL_COND_EDMSG_CUSTOM(!enum_data.has("name"), "Enum data struct does not contain a name.");
 	ERR_FAIL_COND_EDMSG_CUSTOM(!enum_data.has("type"), "Enum data struct does not contain a type.");
 
@@ -671,18 +665,17 @@ void GenericAnchorResource::bind_anchor_enum(const Dictionary &enum_data) {
 	for (unsigned int i = 0; i < variants.size(); i++) {
 		const Dictionary variant = variants[i];
 		if (variant.has("name")) {
-			const StringName p_class_name = "GenericAnchorResource";
 			const StringName p_enum_name = enum_name;
 			const StringName p_constant_name = enum_name + String(variant["name"]);
-			internal::gdextension_interface_classdb_register_extension_class_integer_constant(internal::library, p_class_name._native_ptr(), p_enum_name._native_ptr(), p_constant_name._native_ptr(), i, 0U);
+			internal::gdextension_interface_classdb_register_extension_class_integer_constant(internal::library, class_name._native_ptr(), p_enum_name._native_ptr(), p_constant_name._native_ptr(), i, 0U);
 		}
 	}
 }
 
-template void GenericAnchorResource::bind_anchor_resource<GenericAnchorResource>(const Dictionary &idl);
-template void GenericAnchorResource::bind_anchor_resource<CandyGuardCore>(const Dictionary &idl);
+template void GenericAnchorResource::bind_anchor_resource<GenericAnchorResource>(const Dictionary &idl, const StringName &enum_class_name_hint);
+template void GenericAnchorResource::bind_anchor_resource<CandyGuardCore>(const Dictionary &idl, const StringName &enum_class_name_hint);
 template <typename NodeType>
-void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
+void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource, const StringName &enum_class_name_hint) {
 	ERR_FAIL_COND_EDMSG_CUSTOM(!resource.has("name"), "Resource struct does not contain a name.");
 	ERR_FAIL_COND_CUSTOM(resource.has("vec"));
 	ERR_FAIL_COND_CUSTOM(resource.has("array"));
@@ -721,7 +714,7 @@ void GenericAnchorResource::bind_anchor_resource(const Dictionary &resource) {
 	initialize_class();
 
 	for (unsigned int i = 0; i < fields.size(); i++) {
-		add_property(fields[i]);
+		add_property(fields[i], enum_class_name_hint);
 	}
 	bind_mint_methods(class_name);
 
@@ -759,16 +752,17 @@ void GenericAnchorResource::add_enum_properties(const Dictionary &property_data)
 }
 
 // TODO(Virax): Refactor this and reuse code.
-void GenericAnchorResource::add_property(const Dictionary &property_data) { // NOLINT(readability-function-cognitive-complexity)
+void GenericAnchorResource::add_property(const Dictionary &property_data, const StringName &enum_class_name_hint) { // NOLINT(readability-function-cognitive-complexity)
 	ERR_FAIL_COND_EDMSG_CUSTOM(!property_data.has("name"), "Property does not have name.");
 
 	const String property_name = property_data["name"];
 
-	const String object_type = AnchorProgram::get_object_name(property_data["type"]);
+	const String object_type = IdlUtils::get_object_name(property_data["type"]);
 
 	if (enum_field_map.find(object_type) != enum_field_map.end()) {
 		const Variant::Type property_godot_type = AnchorProgram::is_vec_type(object_type) ? Variant::Type::ARRAY : Variant::Type::INT;
 		const String hint_string = get_enum_hint(object_type);
+		UtilityFunctions::print("hint_string: ", hint_string);
 		const PropertyHint hint = AnchorProgram::is_vec_type(object_type) ? PROPERTY_HINT_ARRAY_TYPE : PROPERTY_HINT_ENUM;
 
 		bool optional = false;
@@ -777,7 +771,7 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) { // N
 		}
 
 		const ResourcePropertyInfo prop_info = ResourcePropertyInfo{
-			.property_info = PropertyInfo(property_godot_type, property_name, hint, hint_string, PROPERTY_USAGE_DEFAULT, object_type),
+			.property_info = PropertyInfo(property_godot_type, property_name, hint, hint_string, PROPERTY_USAGE_DEFAULT, String(enum_class_name_hint) + "." + object_type),
 			.value = 0,
 			.optional = optional,
 			.enabled = !optional,
@@ -798,7 +792,7 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) { // N
 			property_order[get_class_static()].emplace_back("enable_" + property_name);
 
 			bind_resource_setter(get_class_static(), D_METHOD("set_enable_" + property_name, "value"), "enable_" + property_name);
-			bind_resource_getter(get_class_static(), D_METHOD("get_enable_" + property_name), "enable_" + property_name);
+			bind_resource_getter(get_class_static(), D_METHOD("get_enable_" + property_name), PropertyInfo(Variant::BOOL, "enable_" + property_name));
 
 			bind_resource_property(get_class_static(), PropertyInfo(Variant::BOOL, "enable_" + property_name));
 		}
@@ -807,7 +801,7 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) { // N
 		property_order[get_class_static()].emplace_back(property_name);
 
 		bind_resource_setter(*names[names.size() - 1], D_METHOD("set_" + property_name, "value"), property_name);
-		bind_resource_getter(*names[names.size() - 1], D_METHOD("get_" + property_name), property_name);
+		bind_resource_getter(*names[names.size() - 1], D_METHOD("get_" + property_name), prop_info.property_info);
 
 		bind_resource_property(get_class_static(), PropertyInfo(property_godot_type, property_name, hint, hint_string));
 
@@ -847,7 +841,7 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) { // N
 				extra_props[value_field_name].emplace_back(enum_value_name);
 
 				bind_resource_setter(get_class_static(), D_METHOD("set_" + enum_value_name, "value"), enum_value_name);
-				bind_resource_getter(get_class_static(), D_METHOD("get_" + enum_value_name), enum_value_name);
+				bind_resource_getter(get_class_static(), D_METHOD("get_" + enum_value_name), enum_value_info.property_info);
 
 				bind_resource_property(get_class_static(), PropertyInfo(enum_value_godot_type, enum_value_name, enum_value_hint, enum_value_hint_string));
 			}
@@ -885,7 +879,7 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) { // N
 			property_order[get_class_static()].emplace_back("enable_" + property_name);
 
 			bind_resource_setter(get_class_static(), D_METHOD("set_enable_" + property_name, "value"), "enable_" + property_name);
-			bind_resource_getter(get_class_static(), D_METHOD("get_enable_" + property_name), "enable_" + property_name);
+			bind_resource_getter(get_class_static(), D_METHOD("get_enable_" + property_name), PropertyInfo(Variant::BOOL, "enable_" + property_name));
 
 			bind_resource_property(get_class_static(), PropertyInfo(Variant::BOOL, "enable_" + property_name));
 		}
@@ -894,12 +888,10 @@ void GenericAnchorResource::add_property(const Dictionary &property_data) { // N
 		property_order[get_class_static()].emplace_back(property_name);
 
 		bind_resource_setter(get_class_static(), D_METHOD("set_" + property_name, "value"), property_name);
-		bind_resource_getter(get_class_static(), D_METHOD("get_" + property_name), property_name);
+		bind_resource_getter(get_class_static(), D_METHOD("get_" + property_name), prop_info.property_info);
 
 		bind_resource_property(get_class_static(), PropertyInfo(property_godot_type, property_name, hint, hint_string));
 	}
-
-	//properties.push_back(abc);
 }
 
 Array GenericAnchorResource::get_property_values(const StringName &class_name) {

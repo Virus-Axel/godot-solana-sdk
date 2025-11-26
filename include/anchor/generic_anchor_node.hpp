@@ -75,10 +75,10 @@ private:
 	friend class Wrapped;
 
 	template <typename ResourceType>
-	static void bind_types(const Dictionary &idl);
+	static void bind_types(const Dictionary &idl, const StringName &class_name);
 
 	template <typename ResourceType>
-	static void bind_accounts(const Dictionary &idl);
+	static void bind_accounts(const Dictionary &idl, const StringName &class_name);
 
 	static void bind_instructions(const StringName &class_name, const Dictionary &idl);
 
