@@ -276,12 +276,11 @@ func _ready():
 	get_minimum_balance_for_rent_extemption_demo()
 	
 	subscribe_account_demo()
+	await callbacks_done
 	await unsubscribe_account_test()
 	await test_project_settings()
 	test_das_methods()
 	fungible_tokens_filter()
-	
-	await callbacks_done
 	
 	print("ALL TESTS PASSED")
 	get_tree().quit(0)

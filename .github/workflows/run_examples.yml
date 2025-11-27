@@ -4,6 +4,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ${{ matrix.runner }}
@@ -325,10 +329,14 @@ jobs:
         with:
           packages: 'tools platform-tools emulator system-images;android-30;default;x86_64'
 
-      - name: (Android) Install Maestro AVD
+      - name: (Android) Install Maestro CLI
         if: ${{ endsWith(matrix.dir, 'Android/') }}
         run: |
-          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          cd ${{matrix.dir}}
+          wget https://github.com/mobile-dev-inc/Maestro/releases/download/cli-2.0.10/maestro.zip
+          sha256sum maestro.zip | grep 'dbdcfbe2b673e1a6f40c65664f1ed5becad0b0a40e35d0e203dff511d05032f6  maestro.zip'
+          unzip maestro.zip
+          chmod +x maestro/bin/maestro
 
       - name: (Android) Create AVD
         if: ${{ endsWith(matrix.dir, 'Android/') }}
@@ -362,7 +370,7 @@ jobs:
           adb install fakewallet-v1-debug.apk
           adb install tmp/app.apk
           export MAESTRO_CLI_NO_ANALYTICS=1
-          $HOME/.maestro/bin/maestro test flow.yaml
+          maestro/bin/maestro test flow.yaml
 
       - name: (Android) Verify logs
         if: ${{ endsWith(matrix.dir, 'Android/') }}

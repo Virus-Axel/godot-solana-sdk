@@ -615,6 +615,7 @@ selected = 0
 allow_reselect = true
 item_count = 2
 popup/item_0/text = "Mainnet"
+popup/item_0/id = 0
 popup/item_1/text = "Devnet"
 popup/item_1/id = 1
 script = ExtResource("3_lb3d3")

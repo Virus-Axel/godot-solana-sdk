@@ -4,16 +4,15 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b2g5g3hlmjpr8"
 path.s3tc="res://.godot/imported/verified.png-b3c0fea464bc116c97551df80c50cc57.s3tc.ctex"
-path.etc2="res://.godot/imported/verified.png-b3c0fea464bc116c97551df80c50cc57.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://addons/SolanaSDK/Textures/verified.png"
-dest_files=["res://.godot/imported/verified.png-b3c0fea464bc116c97551df80c50cc57.s3tc.ctex", "res://.godot/imported/verified.png-b3c0fea464bc116c97551df80c50cc57.etc2.ctex"]
+dest_files=["res://.godot/imported/verified.png-b3c0fea464bc116c97551df80c50cc57.s3tc.ctex"]
 
 [params]
 

@@ -35,7 +35,7 @@ func load_assets(das_only:bool=false)->void:
 		
 	is_loading=true
 	var wallet_to_load:Pubkey = SolanaService.wallet.get_pubkey()
-	#var wallet_to_load:Pubkey = Pubkey.new_from_string("9DLXWVfBA6pwJHxJ6MJ7tVQR19xbRpFTStEEJqtypxyH")
+	#var wallet_to_load:Pubkey = Pubkey.new_from_string("84pL2GAuv8XGVPyZre2xcgUNSGz9csYHBt5AW4PUcEe9")
 	owned_assets.clear()
 	
 	#loading from OG and DAS are 2 different ways completely
@@ -43,7 +43,6 @@ func load_assets(das_only:bool=false)->void:
 		var das_assets:Array = await asset_fetcher_das.fetch_assets(wallet_to_load)
 		await load_das_assets(das_assets)
 		
-#	all assets loaded previous by DAS will be skipped, so this will only load user's tokens
 	if !das_only:
 		#	all assets loaded previous by DAS will be skipped, so this will only load user's tokens
 		var wallet_token_accounts:Array[Dictionary] = await SolanaService.get_token_accounts(wallet_to_load)
@@ -67,12 +66,6 @@ func load_user_assets_og(token_accounts:Array[Dictionary]) -> void:
 		var asset:WalletAsset = await get_asset_from_mint(asset_mint,load_asset_textures)
 		if asset == null:
 			continue
-		
-		#if asset is Token && load_token_balances:
-			#var token = asset as Token
-			#token.decimals = await SolanaService.get_token_decimals(asset_mint.to_string())
-			#token.balance = token_accounts[i]["amount"] / pow(10,token.decimals)
-			
 		add_to_owned_assets(asset)
 		
 		
@@ -123,7 +116,6 @@ func fetch_asset_data(asset_mint:Pubkey):
 	
 func create_asset(asset_mint:Pubkey, asset_data,load_texture:bool) -> WalletAsset:	
 	var metadata:MetaData
-	
 	if asset_data is Dictionary:
 		metadata = MetaData.new()
 		metadata.copy_from_dict(asset_data)
@@ -136,7 +128,8 @@ func create_asset(asset_mint:Pubkey, asset_data,load_texture:bool) -> WalletAsse
 	if existing_asset!= null:
 		return existing_asset
 		
-	var asset_type:AssetType = get_asset_type(metadata)
+	var asset_type:AssetType = get_asset_type(asset_data)
+	
 	if asset_type == AssetType.NONE and (asset_data["interface"] == "MplCoreAsset" or asset_data["interface"] == "MplCoreCollection"):
 		asset_type = AssetType.CORE
 		
@@ -173,18 +166,31 @@ func add_collection_to_whitelist(collection_key:Pubkey) -> void:
 # 3 - Non fungible edition (NFT edition)
 # 4 - Programmable NFT
 # 5 - Programmable NFT Edition		
-func get_asset_type(metadata:MetaData) -> AssetType:
-	if metadata.get_token_standard() == null:
-		return AssetType.NONE
-		
-	var token_standard:int = metadata.get_token_standard()
-	match token_standard:
-		1,2:
-			return AssetType.TOKEN
-		0,3,4,5:
-			return AssetType.NFT
+func get_asset_type(asset_data) -> AssetType:
+	if asset_data is MetaData:
+		if asset_data.get_token_standard() == null:
+			return AssetType.NONE
 			
-	return AssetType.MISSING
+		var token_standard:int = asset_data.get_token_standard()
+		match token_standard:
+			1,2:
+				return AssetType.TOKEN
+			0,3,4,5:
+				return AssetType.NFT
+				
+		return AssetType.MISSING
+	else:
+		if asset_data["interface"] == "FungibleToken" or asset_data["interface"] == "FungibleAsset":
+			return AssetType.TOKEN
+		elif asset_data["interface"] == "V1_NFT":
+			return AssetType.NFT
+		elif asset_data["interface"] == "MplCoreAsset" or asset_data["interface"] == "MplCoreCollection":
+			return AssetType.CORE
+		else:
+			print("UNKNOWN ASSET INTERFACE FOUND: ", asset_data["interface"])
+			return AssetType.MISSING
+			
+		
 
 func get_owned_asset(asset_mint:Pubkey) -> WalletAsset:
 	for asset in owned_assets:

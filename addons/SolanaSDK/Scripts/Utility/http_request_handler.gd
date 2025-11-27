@@ -2,7 +2,11 @@ extends Node
 
 func send_get_request(request_link:String,parse_body_to_json:bool=true,custom_headers:PackedStringArray=PackedStringArray()) -> Dictionary:
 	var http_request = HTTPRequest.new()
+	http_request.accept_gzip=false
 	add_child(http_request)
+	
+	request_link = request_link.replace(" ","%20")
+	
 	## Perform a GET request. The URL below returns JSON as of writing.
 	var request = http_request.request(request_link,custom_headers)
 	if request != OK:
@@ -24,7 +28,11 @@ func send_get_request(request_link:String,parse_body_to_json:bool=true,custom_he
 	
 func send_post_request(body, headers:Array,endpoint:String,parse_body_to_json:bool=true) -> Dictionary:
 	var http_request = HTTPRequest.new()
+	http_request.accept_gzip=false
 	add_child(http_request)
+	
+	endpoint = endpoint.replace(" ","%20")
+	
 	var request = http_request.request(endpoint,headers,HTTPClient.METHOD_POST,body)
 	if request != OK:
 		push_error("An error occurred in the HTTP request.")

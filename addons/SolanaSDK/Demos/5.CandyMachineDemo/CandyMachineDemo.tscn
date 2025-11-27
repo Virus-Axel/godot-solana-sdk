@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://dnqcw4msg2uow" path="res://addons/SolanaSDK/Textures/Buttons/b_orange_pressed.PNG" id="4_y63il"]
 [ext_resource type="Texture2D" uid="uid://5erj253phx4s" path="res://addons/SolanaSDK/Textures/Buttons/b_orange_hover.PNG" id="5_ciagm"]
-[ext_resource type="Script" uid="uid://skowhrsyk8ki" path="res://addons/SolanaSDK/Demos/5.CandyMachineDemo/core_mint_manager.gd" id="5_e8uhn"]
+[ext_resource type="Script" uid="uid://skowhrsyk8ki" path="res://addons/SolanaSDK/Scripts/Managers/COREManager/core_candy_machine_manager.gd" id="5_e8uhn"]
 [ext_resource type="Texture2D" uid="uid://et1kvxp5bprg" path="res://addons/SolanaSDK/Textures/Buttons/b_inactive.PNG" id="6_310sy"]
 [ext_resource type="CandyGuardData" uid="uid://d4jke21dr4vpn" path="res://addons/SolanaSDK/Demos/5.CandyMachineDemo/Resources/core_mint_guards.tres" id="6_kkcni"]
 [ext_resource type="Script" uid="uid://rodqxxqhixqe" path="res://addons/SolanaSDK/Demos/_LoginDemo/scene_change_button.gd" id="7_25l6n"]
@@ -14,8 +14,8 @@
 [ext_resource type="Texture2D" uid="uid://d4kauar2qc15y" path="res://addons/SolanaSDK/Textures/Buttons/b_green_hover.PNG" id="12_8q8gn"]
 [ext_resource type="Script" uid="uid://bsgdivevnnub7" path="res://addons/SolanaSDK/Demos/5.CandyMachineDemo/token_candy_guard_mint.gd" id="12_ptq35"]
 [ext_resource type="Texture2D" uid="uid://c7s56sayh028u" path="res://addons/SolanaSDK/Textures/SolanaLogo.png" id="13_7xhcu"]
-[ext_resource type="Script" uid="uid://cvjs0lluew8kq" path="res://addons/SolanaSDK/Scripts/NFTGating/token_button_lock.gd" id="13_cx01u"]
-[ext_resource type="PackedScene" uid="uid://blmw46he11fxs" path="res://addons/SolanaSDK/Scripts/TransactionManager/TransactionOverlayUI.tscn" id="14_3whrl"]
+[ext_resource type="Script" uid="uid://cvjs0lluew8kq" path="res://addons/SolanaSDK/Scripts/Utility/TokenGating/token_button_lock.gd" id="13_cx01u"]
+[ext_resource type="PackedScene" uid="uid://blmw46he11fxs" path="res://addons/SolanaSDK/Scripts/Managers/TransactionManager/TransactionOverlayUI.tscn" id="14_3whrl"]
 [ext_resource type="Script" uid="uid://bnket1c06w8fq" path="res://addons/SolanaSDK/Scripts/Utility/Input/number_label.gd" id="14_ybpgq"]
 [ext_resource type="Script" uid="uid://b5nw7fquhlcbl" path="res://addons/SolanaSDK/Demos/_LoginDemo/scene_loader.gd" id="15_jcv61"]
 
@@ -122,7 +122,6 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("5_e8uhn")
 candy_machine_id = "GcaVx28gSWPae3oF6qfa5iTY5jFnaUu1M8rUDXu9CmNW"
-guard_base_id = "H3rxAGhp65eTBwfwpgQspZ2NX8wpHhpHSMEwL7sxCG2S"
 guard_settings = ExtResource("6_kkcni")
 candy_machine_display = NodePath("MarginContainer/MintContent")
 loading_screen = NodePath("../LoadingScreen")

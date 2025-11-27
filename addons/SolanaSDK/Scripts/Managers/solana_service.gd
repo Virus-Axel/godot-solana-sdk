@@ -6,17 +6,14 @@ enum RpcCluster{MAINNET,DEVNET,MAGICBLOCK,HONEYNET}
 @export var magicblock_rpc:String
 @export var honeycomb_rpc:String
 
-var default_devnet = "https://api.devnet.solana.com"
-var default_mainnet = "https://api.mainnet-beta.solana.com"
-
-
 var active_rpc:String
 
 var das_supported_rpc_providers:Array[String] = [
+	"localhost",
 	"helius-rpc",
+	"rubians",
 	"aura"
 ]
-var das_compatible_rpc:String
 
 var TOKEN_METADATA_PID:String = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
 var TOKEN_PID:String = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
@@ -34,16 +31,14 @@ var WRAPPED_SOL_CA:String = "So11111111111111111111111111111111111111112"
 @onready var asset_manager:AssetManager = $AssetManager
 @onready var core_manager:CoreManager = $CoreManager
 
-var rpc:String
-
 signal on_rpc_cluster_set
 
 ## Called when the node enters the scene tree for the first time.
 func _ready() -> void:	
 	if mainnet_rpc=="":
-		mainnet_rpc=default_mainnet
+		mainnet_rpc="https://api.mainnet-beta.solana.com"
 	if devnet_rpc=="":
-		devnet_rpc=default_devnet
+		devnet_rpc="https://api.devnet.solana.com"
 		
 	set_rpc_cluster(rpc_cluster)
 	
@@ -65,10 +60,8 @@ func set_rpc_cluster(new_cluster:RpcCluster)->void:
 		RpcCluster.HONEYNET:
 			active_rpc = honeycomb_rpc
 			
+	#ProjectSettings.set_setting("solana_sdk/client/default_url",active_rpc)
 	rpc_cluster = new_cluster
-	
-	if is_rpc_das_compatible(active_rpc):
-		das_compatible_rpc = active_rpc
 		
 	on_rpc_cluster_set.emit()
 	
@@ -80,10 +73,10 @@ func is_rpc_das_compatible(rpc_url:String) -> bool:
 	return false
 	
 func get_das_rpc():
-	if das_compatible_rpc == "":
-		return null
+	if is_rpc_das_compatible(active_rpc):
+		return active_rpc
 	else:
-		return das_compatible_rpc
+		return null
 	
 func generate_keypair(derive_from_machine:bool=false) -> Keypair:
 	var randomizer = RandomNumberGenerator.new()
@@ -109,6 +102,7 @@ func generate_keypair_from_pk(pk:String) -> Keypair:
 	
 func spawn_client_instance()->SolanaClient:
 	var sol_client:SolanaClient = SolanaClient.new()
+	sol_client.url_override = active_rpc
 	add_child(sol_client)
 	return sol_client
 	
@@ -239,7 +233,7 @@ func simulate_transaction(transaction:Transaction) -> Dictionary:
 		
 	return result
 	
-func is_transaction_confirmed(tx_signatures:Array) -> bool:
+func is_transaction_confirmed(tx_signatures:Array, commitment:TransactionManager.Commitment) -> bool:
 	var client:SolanaClient = spawn_client_instance()
 	client.get_signature_statuses(tx_signatures,false)
 	var response_dict:Dictionary = await client.http_response_received
@@ -256,7 +250,14 @@ func is_transaction_confirmed(tx_signatures:Array) -> bool:
 			print("NO CONFIRMATION STATUS")
 			all_confirmed=false
 			break
-		if status["confirmationStatus"] != "confirmed" and status["confirmationStatus"] != "finalized":
+			
+		if commitment == TransactionManager.Commitment.PROCESSED and status["confirmationStatus"] != "processed":
+			all_confirmed=false
+			break
+		if commitment == TransactionManager.Commitment.CONFIRMED and status["confirmationStatus"] != "confirmed":
+			all_confirmed=false
+			break
+		if commitment == TransactionManager.Commitment.FINALIZED and status["confirmationStatus"] != "finalized":
 			all_confirmed=false
 			break
 			
@@ -305,11 +306,10 @@ func fetch_all_program_accounts_of_type(program:AnchorProgram,account_type:Strin
 	
 #DAS ONLY!
 func get_asset_data(asset_id:Pubkey) -> Dictionary:
-	if das_compatible_rpc == "":
+	if !is_rpc_das_compatible(active_rpc):
 		push_error("Can't get asset data - DAS compatible RPC is not configured")
 		return {}
 	var client:SolanaClient = spawn_client_instance()
-	client.url_override = das_compatible_rpc
 	client.get_asset(asset_id)
 	var response_dict:Dictionary = await client.http_response_received
 	client.queue_free()
@@ -324,15 +324,14 @@ func get_wallet_assets_data(wallet_to_check:Pubkey,asset_limit:int=1000) -> Arra
 	var page_id:int=1
 	var wallet_assets:Array
 	
-	if das_compatible_rpc == "":
+	if !is_rpc_das_compatible(active_rpc):
 		push_error("Can't get wallet assets - DAS compatible RPC is not configured")
 		return []
 	
 	while true:
 		var client:SolanaClient = spawn_client_instance()
-		client.url_override = das_compatible_rpc
-			
-		client.get_assets_by_owner(wallet_to_check,page_id,asset_limit)
+		client.get_assets_by_owner(wallet_to_check,page_id,asset_limit,true)
+		
 		var response_dict:Dictionary = await client.http_response_received
 		client.queue_free()
 		if response_dict.has("error"):
@@ -355,14 +354,12 @@ func get_collection_assets_data(nft_owner:Pubkey,collection_mint:Pubkey,asset_li
 	var page_id:int=1
 	var owned_collection_assets:Array
 	
-	if das_compatible_rpc == "":
+	if !is_rpc_das_compatible(active_rpc):
 		push_error("Can't get collection assets - DAS compatible RPC is not configured")
 		return []
 	
 	while true:
 		var client:SolanaClient = spawn_client_instance()
-		client.url_override = das_compatible_rpc
-			
 		client.get_assets_by_group("collection_id",collection_mint,page_id,asset_limit)
 		var response_dict:Dictionary = await client.http_response_received
 		client.queue_free()
@@ -378,12 +375,12 @@ func get_collection_assets_data(nft_owner:Pubkey,collection_mint:Pubkey,asset_li
 	
 func get_token_accounts(wallet_to_check:Pubkey) -> Array[Dictionary]:
 	var client:SolanaClient = spawn_client_instance()
-	client.get_token_accounts_by_owner(wallet_to_check.to_string(),"",TOKEN_PID)
+	client.get_token_accounts_by_owner(wallet_to_check.to_string(),null,TOKEN_PID)
 	var response_dict:Dictionary = await client.http_response_received
 	client.queue_free()
 	
 	client = spawn_client_instance()
-	client.get_token_accounts_by_owner(wallet_to_check.to_string(),"",TOKEN22_PID)
+	client.get_token_accounts_by_owner(wallet_to_check.to_string(),null,TOKEN22_PID)
 	var response_dict2:Dictionary = await client.http_response_received
 	client.queue_free()
 	

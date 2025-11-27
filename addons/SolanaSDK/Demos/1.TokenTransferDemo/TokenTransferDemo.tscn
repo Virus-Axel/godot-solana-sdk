@@ -11,8 +11,9 @@
 [ext_resource type="Texture2D" uid="uid://5erj253phx4s" path="res://addons/SolanaSDK/Textures/Buttons/b_orange_hover.PNG" id="12_tjkal"]
 [ext_resource type="Texture2D" uid="uid://dnqcw4msg2uow" path="res://addons/SolanaSDK/Textures/Buttons/b_orange_pressed.PNG" id="13_uo35c"]
 [ext_resource type="Script" uid="uid://rodqxxqhixqe" path="res://addons/SolanaSDK/Demos/_LoginDemo/scene_change_button.gd" id="14_5nxww"]
-[ext_resource type="PackedScene" uid="uid://blmw46he11fxs" path="res://addons/SolanaSDK/Scripts/TransactionManager/TransactionOverlayUI.tscn" id="15_6yqjf"]
+[ext_resource type="PackedScene" uid="uid://blmw46he11fxs" path="res://addons/SolanaSDK/Scripts/Managers/TransactionManager/TransactionOverlayUI.tscn" id="15_6yqjf"]
 [ext_resource type="Script" uid="uid://b5nw7fquhlcbl" path="res://addons/SolanaSDK/Demos/_LoginDemo/scene_loader.gd" id="16_gwjyc"]
+
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7pi32"]
 bg_color = Color(0.937255, 0.682353, 0.341176, 1)

@@ -81,7 +81,11 @@ func get_input_data()-> Dictionary:
 		
 	for key in option_selectors.keys():
 		var selector = get_node(option_selectors[key]) as OptionButton
-		fields_data[key] = {"id":selector.get_selected_id(),"value":selector.get_item_text(selector.get_selected_id())}
+		fields_data[key] = {
+			"id":selector.get_selected_id(),
+			"value":selector.get_item_text(selector.get_selected_id()),
+			"metadata":selector.get_item_metadata(selector.get_selected_id())
+			}
 		
 	return fields_data
 	

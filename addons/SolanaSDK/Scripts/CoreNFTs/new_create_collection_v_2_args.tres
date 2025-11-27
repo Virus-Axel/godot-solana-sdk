@@ -1,9 +1,0 @@
-[gd_resource type="CreateCollectionV2Args" format=3 uid="uid://d8wmrepqibkt"]
-
-[resource]
-name = null
-uri = null
-plugins = null
-externalPluginAdapters = null
-resource_local_to_scene = null
-resource_name = null

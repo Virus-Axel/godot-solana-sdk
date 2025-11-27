@@ -3,10 +3,10 @@ class_name JupiterAPI
 
 enum TokenStatus{VERIFIED, UNKNOWN}
 
-var JUP_TOKEN_API:String = "https://tokens.jup.ag/token/"
-var JUP_PRICE_API:String = "https://price.jup.ag/v6/price?"
-var JUP_QUOTE_API:String = "https://quote-api.jup.ag/v6/quote?"
-var JUP_SWAP_API:String = "https://quote-api.jup.ag/v6/swap"
+var JUP_TOKEN_API:String = "https://lite-api.jup.ag/tokens/v2"
+var JUP_PRICE_API:String = "https://lite-api.jup.ag/price/v3"
+var JUP_QUOTE_API:String = "https://lite-api.jup.ag/swap/v1/"
+var JUP_SWAP_API:String = "https://lite-api.jup.ag/swap/v1/swap"
 
 
 func _ready() -> void:
@@ -28,34 +28,53 @@ func get_swap_quote(token_to_send:Pubkey,token_to_receive:Pubkey,amount_to_send:
 	
 	var output_mint:String = "outputMint="+token_to_receive.to_string()
 	
-	var amount_in_decimals:float = amount_to_send*pow(10,mint_data["decimals"])
+	var amount_in_decimals:int = amount_to_send*pow(10,mint_data["decimals"])
 	var amount:String = "amount="+str(amount_in_decimals)
 	var slippage:String = "slippageBps="+str(percentage_to_bps(slippage_percentage))
 
-	var quote_slug:String = "%s&%s&%s&%s" % [input_mint,output_mint,amount,slippage]
-	var transfer_quote:Dictionary = await HttpRequestHandler.send_get_request(JUP_QUOTE_API+quote_slug)
-	return transfer_quote["body"]
+	var quote_slug:String = "quote?%s&%s&%s&%s" % [input_mint,output_mint,amount,slippage]
+	
+	var custom_headers = ["Accept-Encoding: identity"]
+	var response:Dictionary = await HttpRequestHandler.send_get_request(JUP_QUOTE_API+quote_slug,true,custom_headers)
+	if response.has("error"):
+		return {}
+		
+	var quote = response["body"]
+#	need to cast this to int, json automatically makes it into float sadly
+	quote["contextSlot"] = int(quote["contextSlot"])
+	quote["slippageBps"] = int(quote["slippageBps"])
+	for plan in quote["routePlan"]:
+		plan["percent"] = int(plan["percent"])
+		plan["bps"] = int(plan["bps"])
+	return quote
 	
 func swap_token(payer:Pubkey,swap_quote:Dictionary) -> TransactionData:
-	var headers:Array = ["Content-type: application/json"]
+	var headers:Array = ["Content-type: application/json","Accept-Encoding: identity"]
 	var body:Dictionary = {
 		"quoteResponse":swap_quote,
 		"userPublicKey":payer.to_string(),
-		"wrapAndUnwrapSol":true
+		"asLegacyTransaction":true
+		#"wrapAndUnwrapSol":true
 	}
 	var response:Dictionary = await HttpRequestHandler.send_post_request(JSON.stringify(body),headers,JUP_SWAP_API)
 	var serialized_tx_data:PackedByteArray = SolanaUtils.bs64_decode(response["body"]["swapTransaction"])
 	var priority_fee:float = response["body"]["prioritizationFeeLamports"]
 	#return null
+	
 	var transaction:Transaction = await SolanaService.transaction_manager.sign_transaction_serialized(serialized_tx_data,SolanaService.wallet.get_kp(),[SolanaService.wallet.get_kp()])
+	if transaction == null:
+		return TransactionData.new({},{"error":"Transaction Cancelled by User.."})
+		
 	var tx_data:TransactionData = await SolanaService.transaction_manager.send_transaction(transaction)
 	return tx_data
 
 func get_token_data(token_mint:Pubkey) -> Dictionary:
-	var response:Dictionary = await HttpRequestHandler.send_get_request(JUP_TOKEN_API+token_mint.to_string())
+	var query:String = "%s/search?query=%s" % [JUP_TOKEN_API,token_mint.to_string()]
+	var custom_headers = ["Accept-Encoding: identity"]
+	var response:Dictionary = await HttpRequestHandler.send_get_request(query,true,custom_headers)
 	if response.has("error"):
 		response
-	return response["body"]
+	return response["body"][0]
 	
 func get_token_status(token_mint:Pubkey) -> TokenStatus:
 	var response:Dictionary = await get_token_data(token_mint)
@@ -67,16 +86,23 @@ func get_token_status(token_mint:Pubkey) -> TokenStatus:
 	else:
 		return TokenStatus.UNKNOWN
 		
-func get_token_unit_price(token_mint:Pubkey,price_against:Pubkey=null) -> float:
-	var ids:String="ids="+token_mint.to_string()
-	var vs_token:String = ""
-	if price_against!=null:
-		vs_token = "&vsToken="+price_against.to_string()
-		
-	var response:Dictionary = await HttpRequestHandler.send_get_request(JUP_PRICE_API+ids+vs_token)
+func get_token_unit_price(mints:Array[Pubkey]) -> float:
+	var ids:String="?ids="
+	for i in range(mints.size()):
+		ids+=mints[i].to_string()
+		if i < mints.size():
+			ids += "%2C"
+	#var vs_token:String = ""
+	#if price_against!=null:
+		#vs_token = "&vsToken="+price_against.to_string()
+	
+	var custom_headers = ["Accept-Encoding: identity"]
+	var response:Dictionary = await HttpRequestHandler.send_get_request(JUP_PRICE_API+ids,true,custom_headers)
 	if response.has("error"):
 		return 0
-	return response["body"]["data"][token_mint.to_string()]["price"]
+		
+#	usdPrice to get the price of token unit
+	return response["body"]["data"]
 
 	
 func percentage_to_bps(value:float) -> int:
