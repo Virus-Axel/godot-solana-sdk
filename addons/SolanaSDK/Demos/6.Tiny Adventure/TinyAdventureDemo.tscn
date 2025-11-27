@@ -1,9 +1,9 @@
 [gd_scene load_steps=28 format=3 uid="uid://b8ysjvfoeeent"]
 
 [ext_resource type="Script" uid="uid://colbyx6cjxj1f" path="res://addons/SolanaSDK/Demos/6.Tiny Adventure/tiny_adventure.gd" id="1_sapfa"]
-[ext_resource type="PackedScene" uid="uid://blmw46he11fxs" path="res://addons/SolanaSDK/Scripts/TransactionManager/TransactionOverlayUI.tscn" id="2_ripwo"]
+[ext_resource type="PackedScene" uid="uid://blmw46he11fxs" path="res://addons/SolanaSDK/Scripts/Managers/TransactionManager/TransactionOverlayUI.tscn" id="2_ripwo"]
 [ext_resource type="Texture2D" uid="uid://c7s56sayh028u" path="res://addons/SolanaSDK/Textures/SolanaLogo.png" id="5_3wya5"]
-[ext_resource type="Script" uid="uid://cvjs0lluew8kq" path="res://addons/SolanaSDK/Scripts/NFTGating/token_button_lock.gd" id="8_p878m"]
+[ext_resource type="Script" uid="uid://cvjs0lluew8kq" path="res://addons/SolanaSDK/Scripts/Utility/TokenGating/token_button_lock.gd" id="8_p878m"]
 [ext_resource type="Texture2D" uid="uid://didva3i0a8eeq" path="res://addons/SolanaSDK/Textures/g5383.png" id="9_31hcr"]
 [ext_resource type="Texture2D" uid="uid://cye2pbirpht4u" path="res://addons/SolanaSDK/Textures/Buttons/b_green_pressed.PNG" id="9_nsyg2"]
 [ext_resource type="Texture2D" uid="uid://d4kauar2qc15y" path="res://addons/SolanaSDK/Textures/Buttons/b_green_hover.PNG" id="10_8d8y4"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" uid="uid://rodqxxqhixqe" path="res://addons/SolanaSDK/Demos/_LoginDemo/scene_change_button.gd" id="14_4x4kr"]
 [ext_resource type="JSON" path="res://addons/SolanaSDK/Demos/6.Tiny Adventure/tiny_idl.json" id="14_ayq1d"]
 [ext_resource type="Script" uid="uid://b5nw7fquhlcbl" path="res://addons/SolanaSDK/Demos/_LoginDemo/scene_loader.gd" id="18_7asl2"]
+
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7pi32"]
 bg_color = Color(0.937255, 0.682353, 0.341176, 1)
