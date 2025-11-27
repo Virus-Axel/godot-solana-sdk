@@ -28,10 +28,17 @@ func set_data(mint_address:Pubkey,metadata:MetaData,asset_data:Dictionary,asset_
 	if asset_data.size()>0:
 		das_metadata = asset_data
 		uri = asset_data["content"]["json_uri"]
+		
 		offchain_metadata = asset_data["content"]["metadata"]
+		
+		if offchain_metadata.has("name"):
+			asset_name = offchain_metadata["name"]
+		if offchain_metadata.has("symbol"):
+			symbol = offchain_metadata["symbol"]
 
 		if asset_data["content"]["links"].has("image"):
 			offchain_metadata["image"] = asset_data["content"]["links"]["image"]
+			
 	else:
 		uri = metadata.get_uri()
 		if uri != null and uri.length() > 0:
@@ -80,5 +87,4 @@ func get_collection_mint() -> Pubkey:
 	
 func get_asset_owner() -> Pubkey:
 	return null
-	
 	

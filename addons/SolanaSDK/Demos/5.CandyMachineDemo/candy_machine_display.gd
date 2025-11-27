@@ -6,7 +6,7 @@ class_name CandyMachineDisplay
 @export var collection_displayable:DisplayableAsset
 # Called when the node enters the scene tree for the first time.
 	
-func load_cm_display(cm_data:Dictionary) -> void:
+func load_cm_display(cm_data) -> void:
 	if minted_amount!=null:
 		minted_amount.text = "%s/%s Minted" % [cm_data["items_redeemed"],cm_data["items_available"]]
 	if progress_bar!=null:
