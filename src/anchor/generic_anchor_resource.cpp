@@ -762,7 +762,6 @@ void GenericAnchorResource::add_property(const Dictionary &property_data, const 
 	if (enum_field_map.find(object_type) != enum_field_map.end()) {
 		const Variant::Type property_godot_type = AnchorProgram::is_vec_type(object_type) ? Variant::Type::ARRAY : Variant::Type::INT;
 		const String hint_string = get_enum_hint(object_type);
-		UtilityFunctions::print("hint_string: ", hint_string);
 		const PropertyHint hint = AnchorProgram::is_vec_type(object_type) ? PROPERTY_HINT_ARRAY_TYPE : PROPERTY_HINT_ENUM;
 
 		bool optional = false;
