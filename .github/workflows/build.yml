@@ -39,19 +39,33 @@ jobs:
             platform: windows
             arch: x86_64
             threads: True
-          - identifier: android-debug
-            name: Android Debug
+          - identifier: android-debug-arm64
+            name: Android Debug arm64
             runner: ubuntu-latest
             target: template_debug
             platform: android
             arch: arm64
             threads: True
-          - identifier: android-release
-            name: Android Release
+          - identifier: android-release-arm64
+            name: Android Release arm64
             runner: ubuntu-latest
             target: template_release
             platform: android
             arch: arm64
+            threads: True
+          - identifier: android-debug-x86_64
+            name: Android Debug x86_64
+            runner: ubuntu-latest
+            target: template_debug
+            platform: android
+            arch: x86_64
+            threads: True
+          - identifier: android-release-x86_64
+            name: Android Release x86_64
+            runner: ubuntu-latest
+            target: template_release
+            platform: android
+            arch: x86_64
             threads: True
           - identifier: web-debug-nothreads
             name: Web Debug (Single Thread)
