@@ -7,8 +7,7 @@ func PASS(unique_identifier: int):
 	print("[OK]: ", unique_identifier)
 
 	
-func wallet_adapter_sign(wallet_type, test_id):
-	$WalletAdapter.set_wallet_type(wallet_type)
+func wallet_adapter_sign(test_id):
 	$WalletAdapter.connect_wallet()
 	await $WalletAdapter.connection_established
 	
@@ -18,10 +17,8 @@ func wallet_adapter_sign(wallet_type, test_id):
 	$Transaction.add_instruction(ix)
 	$Transaction.update_latest_blockhash()
 	
-	
 	$Transaction.sign()
 	await $Transaction.fully_signed
-	print($Transaction.serialize())
 	var signature : PackedByteArray = $Transaction.serialize().slice(1, 65)
 	var empty_signature : PackedByteArray
 	empty_signature.resize(64)
@@ -73,8 +70,7 @@ func wallet_adapter_in_deserialized_transaction():
 
 	PASS(2)
 
-func sign_text_message(wallet_type, test_id):
-	$WalletAdapter.set_wallet_type(wallet_type)
+func sign_text_message(test_id):
 	$WalletAdapter.connect_wallet()
 	await $WalletAdapter.connection_established
 	
@@ -92,9 +88,11 @@ func sign_text_message(wallet_type, test_id):
 
 
 func _ready():
-	await wallet_adapter_sign(20, 0)
-	await wallet_adapter_sign(36, 1)
-	#await sign_text_message(20, 3)
+	await wallet_adapter_sign(0)
+	await wallet_adapter_sign(1)
+	
+	# TODO(VirAx): Enable once implemented.
+	#await sign_text_message(3)
 	await wallet_adapter_in_deserialized_transaction()
 	
 	print("[ALL TESTS PASSED]")

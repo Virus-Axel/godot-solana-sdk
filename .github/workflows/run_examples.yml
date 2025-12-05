@@ -35,8 +35,41 @@ jobs:
             platform: web
             arch: wasm32
             threads: True
+          
+          - identifier: android-debug-arm64
+            name: Android Debug arm64
+            runner: ubuntu-latest
+            target: template_debug
+            platform: android
+            arch: arm64
+            threads: True
+
+          - identifier: android-debug-x86_64
+            name: Android Debug x86_64
+            runner: ubuntu-latest
+            target: template_debug
+            platform: android
+            arch: x86_64
+            threads: True
 
     steps:
+      - name: (Android) Set up Java 21
+        if: ${{ startsWith(matrix.identifier, 'android-') }}
+        uses: actions/setup-java@v4
+        with:  
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: (Android) Set up Android SDK
+        if: ${{ startsWith(matrix.identifier, 'android-') }}
+        uses: android-actions/setup-android@v2
+
+      - name: (Android) Install Android Tools
+        if: ${{ startsWith(matrix.identifier, 'android-') }}
+        shell: sh
+        run: |
+          "$ANDROID_SDK_ROOT"/cmdline-tools/latest/bin/sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "build-tools;30.0.3" "platforms;android-29" "cmdline-tools;latest" "cmake;3.10.2.4988404" "ndk;23.2.8568313"
+
       - name: (Web) Install emsdk toolchain
         if: ${{ startsWith(matrix.identifier, 'web-') }}
         uses: mymindstorm/setup-emsdk@v14
@@ -181,7 +214,7 @@ jobs:
       - uses: chickensoft-games/setup-godot@v1
         name: 🤖 Setup Godot
         with:
-          version: 4.4.0
+          version: 4.5.1-stable
           use-dotnet: false
           include-templates: true
 
@@ -271,6 +304,84 @@ jobs:
           nohup solana-test-validator --reset --quiet ${{ steps.test_accounts.outputs.VALIDATOR_ARGS }} &
           sleep 10
 
+      - name: (Android) Install emulator dependencies
+        if: ${{ endsWith(matrix.dir, 'Android/') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libpulse0 \
+            libgl1 \
+            libglu1-mesa \
+            mesa-utils \
+            libxcursor1 \
+            libxinerama1 \
+            libxrandr2 \
+            libxi6 \
+            qemu-kvm
+
+      - name: (Android) Setup Android SDK
+        if: ${{ endsWith(matrix.dir, 'Android/') }}
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'tools platform-tools emulator system-images;android-30;default;x86_64'
+
+      - name: (Android) Install Maestro AVD
+        if: ${{ endsWith(matrix.dir, 'Android/') }}
+        run: |
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+
+      - name: (Android) Create AVD
+        if: ${{ endsWith(matrix.dir, 'Android/') }}
+        run: |
+          cd ${{matrix.dir}}
+          echo "no" | avdmanager create avd -n test -k "system-images;android-30;default;x86_64" --force
+
+      - name: (Android) Fetch fake wallet apk
+        if: ${{ endsWith(matrix.dir, 'Android/') }}
+        run: |
+          cd ${{matrix.dir}}
+          wget https://github.com/solana-mobile/mobile-wallet-adapter/releases/download/v2.1.0/fakewallet-v1-debug.apk
+          md5sum fakewallet-v1-debug.apk | grep '4543d34ee895898335287ef7c4bf3ddf  fakewallet-v1-debug.apk'
+
+      - name: (Android) Enable KVM group perms
+        if: ${{ endsWith(matrix.dir, 'Android/') }}
+        run: |
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+            sudo udevadm control --reload-rules
+            sudo udevadm trigger --name-match=kvm
+
+      - name: (Android) Export project to Android
+        if: ${{ endsWith(matrix.dir, 'Android/') }}
+        run: |
+          export ANDROID_AVD_HOME="/home/runner/.config/.android/avd"
+          cd ${{matrix.dir}}
+          $ANDROID_HOME/emulator/emulator -avd test -no-audio -no-window -no-boot-anim -no-snapshot -gpu swiftshader_indirect -accel auto -skip-adb-auth &
+          mkdir tmp
+          godot --headless --path . --export-debug Android tmp/app.apk --install-android-build-template
+          adb wait-for-device
+          adb install fakewallet-v1-debug.apk
+          adb install tmp/app.apk
+          export MAESTRO_CLI_NO_ANALYTICS=1
+          $HOME/.maestro/bin/maestro test flow.yaml
+
+      - name: (Android) Verify logs
+        if: ${{ endsWith(matrix.dir, 'Android/') }}
+        run: |
+          adb logcat -d | grep -q 'ALL TESTS PASSED'
+
+      - name: (Android) Export ADB logs
+        if: failure() && endsWith(matrix.dir, 'Android/')
+        run: |
+          adb logcat -d > /home/runner/.maestro/tests/adb_log.txt
+
+      - name: (Android) Upload maestro logs
+        if: failure() && endsWith(matrix.dir, 'Android/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-test-logs
+          path: |
+            /home/runner/.maestro/tests/
+
       - name: (Web) Download Puppeteer
         if: ${{ endsWith(matrix.dir, 'Web/') }}
         uses: actions/setup-node@v4
@@ -315,7 +426,7 @@ jobs:
           exit $?
 
       - name: Test project
-        if: ${{ endsWith(matrix.dir, 'Web/') == false }}
+        if: ${{ !endsWith(matrix.dir, 'Web/') && !endsWith(matrix.dir, 'Android/') }}
         shell: bash
         run: |
           cd ${{matrix.dir}}

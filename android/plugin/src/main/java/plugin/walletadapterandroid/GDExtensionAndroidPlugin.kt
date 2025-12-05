@@ -103,7 +103,5 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
     @UsedByGodot
     fun clearState() {
         myMessageSigningStatus = 0
-        myAction = 0
-        myMessageSigningStatus = 0
     }
 }
