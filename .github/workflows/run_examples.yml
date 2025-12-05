@@ -35,8 +35,41 @@ jobs:
             platform: web
             arch: wasm32
             threads: True
+          
+          - identifier: android-debug-arm64
+            name: Android Debug arm64
+            runner: ubuntu-latest
+            target: template_debug
+            platform: android
+            arch: arm64
+            threads: True
+
+          - identifier: android-debug-x86_64
+            name: Android Debug x86_64
+            runner: ubuntu-latest
+            target: template_debug
+            platform: android
+            arch: x86_64
+            threads: True
 
     steps:
+      - name: (Android) Set up Java 21
+        if: ${{ startsWith(matrix.identifier, 'android-') }}
+        uses: actions/setup-java@v4
+        with:  
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: (Android) Set up Android SDK
+        if: ${{ startsWith(matrix.identifier, 'android-') }}
+        uses: android-actions/setup-android@v2
+
+      - name: (Android) Install Android Tools
+        if: ${{ startsWith(matrix.identifier, 'android-') }}
+        shell: sh
+        run: |
+          "$ANDROID_SDK_ROOT"/cmdline-tools/latest/bin/sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "build-tools;30.0.3" "platforms;android-29" "cmdline-tools;latest" "cmake;3.10.2.4988404" "ndk;23.2.8568313"
+
       - name: (Web) Install emsdk toolchain
         if: ${{ startsWith(matrix.identifier, 'web-') }}
         uses: mymindstorm/setup-emsdk@v14
@@ -271,6 +304,53 @@ jobs:
           nohup solana-test-validator --reset --quiet ${{ steps.test_accounts.outputs.VALIDATOR_ARGS }} &
           sleep 10
 
+      - name: Install emulator dependencies
+        if: ${{ endsWith(matrix.dir, 'Android/') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libpulse0 \
+            libgl1 \
+            libglu1-mesa \
+            mesa-utils \
+            libxcursor1 \
+            libxinerama1 \
+            libxrandr2 \
+            libxi6 \
+            qemu-kvm
+
+      - name: Setup Android SDK
+        if: ${{ endsWith(matrix.dir, 'Android/') }}
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'tools platform-tools emulator system-images;android-30;default;arm64-v8a'
+
+      - name: Create AVD
+        if: ${{ endsWith(matrix.dir, 'Android/') }}
+        run: |
+          cd ${{matrix.dir}}
+          echo "no" | avdmanager create avd -n test -k "system-images;android-30;default;arm64-v8a" --force
+          avdmanager list avd
+
+      - name: (Android) Export project to Android
+        if: ${{ endsWith(matrix.dir, 'Android/') }}
+        run: |
+          export ANDROID_AVD_HOME="/home/runner/.config/.android/avd"
+          ls /home/runner/.config/.android/
+          echo aaaaaaa
+          ls /home/runner/.config/.android/avd
+          cd ${{matrix.dir}}
+          adb version
+          echo avds
+          avdmanager list avd
+          echo HIIIIII
+          $ANDROID_HOME/emulator/emulator -list-avds
+          $ANDROID_HOME/emulator/emulator -avd test -no-audio -no-window 
+          mkdir tmp
+          godot --headless --path . --export-debug Android tmp/app.apk --install-android-build-template
+          adb wait-for-device
+          adb install tmp/app.apk
+
       - name: (Web) Download Puppeteer
         if: ${{ endsWith(matrix.dir, 'Web/') }}
         uses: actions/setup-node@v4
@@ -315,7 +395,7 @@ jobs:
           exit $?
 
       - name: Test project
-        if: ${{ endsWith(matrix.dir, 'Web/') == false }}
+        if: ${{ !endsWith(matrix.dir, 'Web/') && !endsWith(matrix.dir, 'Android/') }}
         shell: bash
         run: |
           cd ${{matrix.dir}}

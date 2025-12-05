@@ -11,7 +11,13 @@ Place a bin folder with godot-solana-sdk and restart Godot. The projects default
 To create an example make sure you include the implementation of PASS and timeout timer. Each test should have its ID in PASS and TOTAL_CASES should reflect the total number of PASS calls (see existing example projects).
 
 ### Test Accounts
+
 A test validator will be started when running the example projects in github workflows. The test validator will include accounts from the directory *res://test_accounts*. The files names should be *<ACCOUNT_ADDRESS>.json* with the account content.
 
 ### Web targets
+
 If the project name ends with *"Web"* it will be run in a chrome browser. In this case, a [puppeteer script](https://github.com/Virus-Axel/godot-solana-sdk/blob/master/.github/workflows/puppeteer/puppeteer.js) will run to interact with the browser.
+
+### Android targets
+
+If the project name ends with *"Android"* it will be run in an Android emulator. In this case, a Maestro flow will be executed. The flow definition will be located in *flow.yaml* placed in the root of the example project.
