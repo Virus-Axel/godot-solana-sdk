@@ -36,7 +36,6 @@ var authToken: String? = null
 fun connectWallet(sender: ActivityResultSender) {
     val activity = LocalContext.current as? Activity
     LaunchedEffect(Unit) {
-        
         val connectionIdentity = ConnectionIdentity(
             identityUri = myIdentityUri,
             iconUri = myIconUri,
