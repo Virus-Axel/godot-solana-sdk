@@ -57,7 +57,7 @@ func get_edit_asset_ix(asset:Pubkey, new_name:String="", new_uri:String="", coll
 		args.newUri = new_uri
 	if new_authority!=null:
 		args.enable_newUpdateAuthority = true
-		args.newUpdateAuthority = new_authority
+		#args.newUpdateAuthority = new_authority
 
 	var edit_asset_ix:Instruction = core_instance.UpdateV2(
 		asset,

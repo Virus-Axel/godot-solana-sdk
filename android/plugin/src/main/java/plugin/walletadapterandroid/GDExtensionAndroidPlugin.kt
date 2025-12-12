@@ -47,6 +47,9 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
 
     @UsedByGodot
     fun connectWallet(cluster: Int, uri: String, icon: String, name: String) {
+        if (myResult is TransactionResult.Success) {
+            return
+        }
         myIdentityUri = Uri.parse(uri);
         myIconUri = Uri.parse(icon);
         myIdentityName = name;

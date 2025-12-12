@@ -2,22 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://5erj253phx4s"
-path.s3tc="res://.godot/imported/b_orange_hover.PNG-41cfb566fe463a96bce718d5a7b55602.s3tc.ctex"
-path.etc2="res://.godot/imported/b_orange_hover.PNG-41cfb566fe463a96bce718d5a7b55602.etc2.ctex"
+uid="uid://dlxn2ri8q6dh5"
+path="res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/SolanaSDK/Textures/Buttons/b_orange_hover.PNG"
-dest_files=["res://.godot/imported/b_orange_hover.PNG-41cfb566fe463a96bce718d5a7b55602.s3tc.ctex", "res://.godot/imported/b_orange_hover.PNG-41cfb566fe463a96bce718d5a7b55602.etc2.ctex"]
+source_file="res://icon.svg"
+dest_files=["res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -38,5 +36,8 @@ process/premult_alpha=false
 process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
-process/size_limit=256
-detect_3d/compress_to=2
+process/size_limit=0
+detect_3d/compress_to=1
+svg/scale=1.0
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false

@@ -10,9 +10,9 @@ config_version=5
 
 [application]
 
-config/name="WalletAdapterWeb"
-run/main_scene="res://WalletAdapterWeb.tscn"
-config/features=PackedStringArray("4.5", "GL Compatibility")
+config/name="WalletAdapterAndroid"
+run/main_scene="res://wallet_adapter_android.tscn"
+config/features=PackedStringArray("4.5", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -28,9 +28,4 @@ enabled=PackedStringArray("res://addons/SolanaSDK/plugin.cfg")
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-
-[solana_sdk]
-
-client/default_http_port=8899
-client/default_ws_port=8900
-client/default_url="http://127.0.0.1"
+textures/vram_compression/import_etc2_astc=true
