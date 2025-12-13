@@ -19,6 +19,8 @@ var exception_address_list:Array[String]
 
 var curr_filter:String
 
+var curr_selection:DisplayableAsset = null
+
 signal on_display_updated
 signal on_asset_selected(asset:WalletAsset)
 
@@ -26,7 +28,7 @@ signal on_asset_selected(asset:WalletAsset)
 func _ready() -> void:
 	if none_select_entry!=null:
 		none_select_entry.custom_minimum_size = entry_minimum_size
-		none_select_entry.on_selected.connect(func(entry:DisplayableAsset): on_asset_selected.emit(null))
+		none_select_entry.on_selected.connect(handle_entry_select)
 		
 	on_display_updated.connect(handle_display_update)
 	on_asset_selected.connect(handle_asset_selection)
@@ -73,7 +75,7 @@ func add_to_list(asset:WalletAsset) -> void:
 		entry_instance.set_interactive(false)
 		
 	await entry_instance.set_data(asset)
-	entry_instance.on_selected.connect(func(entry:DisplayableAsset): on_asset_selected.emit(entry.asset))
+	entry_instance.on_selected.connect(handle_entry_select)
 	entries.append(entry_instance)
 	
 	#print("ADDED TO LIST: ",asset.mint.to_string()
@@ -109,6 +111,18 @@ func matches_filter(asset:WalletAsset) -> bool:
 	if curr_filter.length() == 0:
 		return true
 	return asset.asset_name.to_lower().contains(curr_filter.to_lower())
+	
+func handle_entry_select(selected_entry:DisplayableAsset) -> void:
+	if curr_selection!=null and curr_selection!= selected_entry:
+		curr_selection.deselect()
+		
+	curr_selection = selected_entry
+	
+	if curr_selection == null:
+		on_asset_selected.emit(null)
+	else:
+		on_asset_selected.emit(curr_selection.asset)
+	
 		
 func handle_asset_selection(_selected_asset:WalletAsset) -> void:
 	if close_on_select:

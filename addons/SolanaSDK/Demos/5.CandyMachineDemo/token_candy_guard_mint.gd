@@ -1,6 +1,6 @@
 extends Node
 
-@export var mint_manager:CoreMintManager
+@export var mint_manager:CoreCandyMachineManager
 @export var displayable_token:DisplayableAsset
 @export var display_token_address:String
 @export var price_label:NumberLabel
@@ -8,6 +8,7 @@ extends Node
 @export var group_name:String = "default"
 
 var token:Token = null
+var guard_set:GuardSet
 
 func _ready() -> void:
 	mint_button.pressed.connect(initiate_mint)
@@ -25,7 +26,6 @@ func _ready() -> void:
 		
 func setup_mint_option() -> void:
 	var mint_group_id:int = mint_manager.get_group_id_from_name(group_name)
-	var guard_set:GuardSet
 	if mint_group_id>=0:
 		guard_set = mint_manager.guard_settings.groups[mint_group_id].guards
 	else:
@@ -50,7 +50,8 @@ func setup_mint_option() -> void:
 	mint_button.try_unlock()
 	
 func initiate_mint() -> void:
-	mint_manager.try_mint(group_name)
+	var meta_accounts:Array = guard_set.get_extra_account_metas(SolanaService.wallet.get_pubkey())
+	mint_manager.try_mint(group_name,meta_accounts)
 	
 func handle_asset_mint(_asset_key:Pubkey) -> void:
 	await refresh_balance_display()

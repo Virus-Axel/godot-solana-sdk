@@ -12,6 +12,8 @@ class_name DisplayableAsset
 @export var select_button:BaseButton
 @export var unavailable_overlay:Control
 
+@export var inspect_button:LinkedButton
+
 @export_category("Displayable Token Settings")
 @export var balance_label:NumberLabel
 @export var auto_load_balance:bool
@@ -55,8 +57,12 @@ func set_data(asset:WalletAsset) -> void:
 			balance_label.set_value(await token.get_balance())
 		if auto_load_balance:
 			SolanaService.transaction_manager.on_tx_finish.connect(update_balance)
-	elif asset is Nft:
-		var nft = asset as Nft
+		
+	if inspect_button!=null:
+		if asset is Token:
+			inspect_button.link = SolanaService.account_inspector.get_inspect_link(asset.mint,AccountInspector.InspectSite.DEXSCREENER)
+		elif asset is Nft or asset is CoreAsset:
+			inspect_button.link = SolanaService.account_inspector.get_inspect_link(asset.mint,AccountInspector.InspectSite.TENSOR)
 		
 	on_data_loaded.emit()
 		
@@ -74,7 +80,17 @@ func get_associated_asset() -> WalletAsset:
 	return asset
 	
 func handle_select() -> void:
-	on_selected.emit(self)
+	if select_button.toggle_mode:
+		if select_button.button_pressed:
+			on_selected.emit(self)
+		else:
+			on_selected.emit(null)
+	else:
+		on_selected.emit(self)
+		
+func deselect() -> void:
+	if select_button.toggle_mode and select_button.button_pressed:
+		select_button.button_pressed = false
 	
 func handle_image_load_complete() -> void:
 	if asset.image!=null:
