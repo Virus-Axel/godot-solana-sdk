@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://cc0u53vfjbrea"]
+
+[ext_resource type="Script" uid="uid://crgrlw8vmdmye" path="res://addons/SolanaSDK/Scenes/transaction_sender.gd" id="1_d73at"]
+
+[node name="TransactionSender" type="TextEdit"]
+custom_minimum_size = Vector2(100, 0)
+offset_right = 100.0
+offset_bottom = 23.0
+size_flags_horizontal = 3
+wrap_mode = 1
+scroll_fit_content_height = true
+script = ExtResource("1_d73at")
+
+[node name="RollTimer" type="Timer" parent="."]
+wait_time = 0.5
+
+[connection signal="timeout" from="RollTimer" to="." method="_on_roll_timer_timeout"]

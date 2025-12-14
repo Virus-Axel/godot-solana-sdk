@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://c1tbh0vi8hiu5"]
+[gd_scene load_steps=6 format=3 uid="uid://c1tbh0vi8hiu5"]
 
 [ext_resource type="Script" uid="uid://b676224m7exg3" path="res://addons/SolanaSDK/Dialogs/create_token.gd" id="1_l63xx"]
 [ext_resource type="PackedScene" uid="uid://pxcyr743odre" path="res://addons/SolanaSDK/Scenes/RpcSelector.tscn" id="2_1i5s0"]
 [ext_resource type="PackedScene" uid="uid://c2tjm60ff3qtf" path="res://addons/SolanaSDK/Scenes/KeypairSelector.tscn" id="2_e8fif"]
 [ext_resource type="PackedScene" uid="uid://f8ayiyhqtnvl" path="res://addons/SolanaSDK/Scenes/TransactionSimulator.tscn" id="4_qgec0"]
+[ext_resource type="PackedScene" uid="uid://cc0u53vfjbrea" path="res://addons/SolanaSDK/Scenes/TransactionSender.tscn" id="5_hhwt3"]
 
 [node name="CreateToken" type="Control"]
 layout_mode = 3
@@ -76,7 +77,7 @@ layout_mode = 2
 [node name="Label4" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-text = "Authority Keypair"
+text = "Payer/Authority Keypair"
 
 [node name="KeypairSelector2" parent="MarginContainer/VBoxContainer" instance=ExtResource("2_e8fif")]
 layout_mode = 2
@@ -112,6 +113,9 @@ size_flags_horizontal = 4
 disabled = true
 text = "Create"
 
+[node name="TransactionSender" parent="MarginContainer/VBoxContainer" instance=ExtResource("5_hhwt3")]
+layout_mode = 2
+
 [node name="Transaction" type="Transaction" parent="."]
 
 [node name="SolanaClient" type="SolanaClient" parent="."]
@@ -122,4 +126,3 @@ text = "Create"
 [connection signal="keypair_updated" from="MarginContainer/VBoxContainer/KeypairSelector2" to="." method="update_todo"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/SimulateButton" to="." method="_on_simulate_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/CreateButton" to="." method="_on_create_button_pressed"]
-[connection signal="transaction_response_received" from="Transaction" to="." method="_on_transaction_transaction_response_received"]
