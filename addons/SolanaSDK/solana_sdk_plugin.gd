@@ -4,28 +4,14 @@ extends EditorPlugin
 
 const SOLANA_PLUGIN_NAME := "SolanaSDK"
 
-var solana_service_path:String = "res://addons/" + SOLANA_PLUGIN_NAME + "/Autoload/SolanaService.tscn"
-var http_request_handler_path:String = "res://addons/" + SOLANA_PLUGIN_NAME + "/Autoload/HttpRequestHandler.tscn"
+var solana_service_path:String = "res://addons/" + SOLANA_PLUGIN_NAME + "/Optional/SolanaService/Autoload/SolanaService.tscn"
+var http_request_handler_path:String = "res://addons/" + SOLANA_PLUGIN_NAME + "/Optional/SolanaService/Autoload/HttpRequestHandler.tscn"
 var export_plugin : AndroidExportPlugin
 
 
 func _enter_tree():
 	export_plugin = AndroidExportPlugin.new()
 	add_export_plugin(export_plugin)
-
-	var autoload_script_paths:Array[String]
-	autoload_script_paths.append(solana_service_path)
-	autoload_script_paths.append(http_request_handler_path)
-	
-	for script in autoload_script_paths:
-		var script_parts:PackedStringArray = script.split("/")
-		var script_name:String = script_parts[script_parts.size()-1].split(".")[0]
-		# Check if the script is not already in the autoload list
-		if !ProjectSettings.has_setting("autoload/%s"%script_name):
-			# Add the script to the autoload list
-			add_autoload_singleton(script_name,script)
-			# Save the changes to the Project Settings
-			ProjectSettings.save()
 
 
 func _exit_tree():

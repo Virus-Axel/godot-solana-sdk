@@ -1,0 +1,213 @@
+[gd_scene load_steps=23 format=3 uid="uid://cwbo7ujwfaygi"]
+
+[ext_resource type="Texture2D" uid="uid://et1kvxp5bprg" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/Buttons/b_inactive.PNG" id="6_1i7e0"]
+[ext_resource type="Texture2D" uid="uid://dnqcw4msg2uow" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/Buttons/b_orange_pressed.PNG" id="7_cdlhf"]
+[ext_resource type="PackedScene" uid="uid://b0iofagcqa64g" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/8.3DNFTShowcase/ModelAsset.tscn" id="7_wc70n"]
+[ext_resource type="Texture2D" uid="uid://5erj253phx4s" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/Buttons/b_orange_hover.PNG" id="8_8rnd6"]
+[ext_resource type="Script" uid="uid://cgpyj4cj63ffv" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/8.3DNFTShowcase/model_asset_display.gd" id="8_nuffl"]
+[ext_resource type="Texture2D" uid="uid://3npcx8cx80ui" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/Arrow.PNG" id="8_orjiu"]
+[ext_resource type="Script" uid="uid://rodqxxqhixqe" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/_LoginDemo/scene_change_button.gd" id="9_r2b8r"]
+[ext_resource type="Script" uid="uid://otu1dg0a4jq0" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/8.3DNFTShowcase/asset_inspector.gd" id="10_0ihl4"]
+[ext_resource type="Script" uid="uid://b5nw7fquhlcbl" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/_LoginDemo/scene_loader.gd" id="12_8giwc"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_as8ny"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_cmecj"]
+sky_material = SubResource("ProceduralSkyMaterial_as8ny")
+
+[sub_resource type="Environment" id="Environment_17iql"]
+background_mode = 2
+sky = SubResource("Sky_cmecj")
+tonemap_mode = 2
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_c2omx"]
+viewport_path = NodePath("UICanvas/UI/SubViewport")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0xvq3"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_avkrb"]
+texture = ExtResource("6_1i7e0")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ryjmu"]
+texture = ExtResource("8_8rnd6")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_f2tob"]
+texture = ExtResource("7_cdlhf")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_bmrj2"]
+texture = ExtResource("7_cdlhf")
+
+[sub_resource type="Environment" id="Environment_1h0oo"]
+background_mode = 1
+background_color = Color(1, 0.733333, 0.607843, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+
+[sub_resource type="ImageTexture" id="ImageTexture_ku7fw"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_30bxs"]
+top_radius = 5.095
+bottom_radius = 8.525
+height = 51.382
+radial_segments = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ufg32"]
+bg_color = Color(0.360524, 0.371319, 0.458671, 1)
+
+[node name="3DNFTShowcase" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_17iql")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
+shadow_enabled = true
+
+[node name="UICanvas" type="CanvasLayer" parent="."]
+
+[node name="UI" type="Control" parent="UICanvas"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="UICanvas/UI"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("ViewportTexture_c2omx")
+expand_mode = 5
+stretch_mode = 5
+
+[node name="ReturnButton" type="Button" parent="UICanvas/UI" node_paths=PackedStringArray("scene_loader")]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -189.0
+offset_top = 14.0
+offset_right = -20.0
+offset_bottom = 91.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/focus = SubResource("StyleBoxEmpty_0xvq3")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_avkrb")
+theme_override_styles/hover = SubResource("StyleBoxTexture_ryjmu")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_f2tob")
+theme_override_styles/normal = SubResource("StyleBoxTexture_bmrj2")
+text = "RETURN"
+script = ExtResource("9_r2b8r")
+path_to_scene = "res://addons/SolanaSDK/Optional/SolanaService/Demos/_DemoSelectScene/DemoSelectScene.tscn"
+scene_loader = NodePath("../../../SceneLoader")
+
+[node name="SubViewport" type="SubViewport" parent="UICanvas/UI"]
+size = Vector2i(1920, 1080)
+
+[node name="Camera3D" type="Camera3D" parent="UICanvas/UI/SubViewport"]
+transform = Transform3D(0.999936, -0.00389453, 0.0106148, 0, 0.938807, 0.344444, -0.0113067, -0.344422, 0.938747, 0.131037, 4.7643, 14.5007)
+environment = SubResource("Environment_1h0oo")
+
+[node name="MarginContainer" type="MarginContainer" parent="UICanvas/UI"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -128.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_right = 100
+theme_override_constants/margin_bottom = 100
+
+[node name="Controls" type="HBoxContainer" parent="UICanvas/UI/MarginContainer"]
+layout_mode = 2
+
+[node name="PrevButton" type="TextureButton" parent="UICanvas/UI/MarginContainer/Controls"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+texture_normal = ExtResource("8_orjiu")
+texture_pressed = ExtResource("8_orjiu")
+texture_hover = ExtResource("8_orjiu")
+texture_disabled = ExtResource("8_orjiu")
+texture_focused = SubResource("ImageTexture_ku7fw")
+ignore_texture_size = true
+stretch_mode = 5
+flip_h = true
+
+[node name="Label" type="Label" parent="UICanvas/UI/MarginContainer/Controls"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 25
+text = "Loading 3D models..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NextButton" type="TextureButton" parent="UICanvas/UI/MarginContainer/Controls"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+texture_normal = ExtResource("8_orjiu")
+texture_pressed = ExtResource("8_orjiu")
+texture_hover = ExtResource("8_orjiu")
+texture_disabled = ExtResource("8_orjiu")
+texture_focused = SubResource("ImageTexture_ku7fw")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="ModelShowcaseSystem" type="Node3D" parent="." node_paths=PackedStringArray("model_spawn", "prev_arrow", "next_arrow", "active_nft_name")]
+script = ExtResource("8_nuffl")
+model_asset_scn = ExtResource("7_wc70n")
+model_spawn = NodePath("ModelSpawnPoint")
+prev_arrow = NodePath("../UICanvas/UI/MarginContainer/Controls/PrevButton")
+next_arrow = NodePath("../UICanvas/UI/MarginContainer/Controls/NextButton")
+active_nft_name = NodePath("../UICanvas/UI/MarginContainer/Controls/Label")
+
+[node name="ModelSpawnPoint" type="Node3D" parent="ModelShowcaseSystem" node_paths=PackedStringArray("cam")]
+script = ExtResource("10_0ihl4")
+cam = NodePath("../../UICanvas/UI/SubViewport/Camera3D")
+minDistance = 15.0
+maxDistance = 40.0
+defaultRotationSpeed = 1.0
+
+[node name="Podium" type="MeshInstance3D" parent="ModelShowcaseSystem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -25.7235, 0)
+mesh = SubResource("CylinderMesh_30bxs")
+skeleton = NodePath("../..")
+
+[node name="SceneLoader" type="Node" parent="."]
+script = ExtResource("12_8giwc")
+
+[node name="LoadingCanvas" type="Panel" parent="SceneLoader"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ufg32")
+
+[node name="Label" type="Label" parent="SceneLoader/LoadingCanvas"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 41
+text = "Loading, please wait..."
+
+[connection signal="pressed" from="UICanvas/UI/ReturnButton" to="UICanvas/UI/ReturnButton" method="_on_pressed"]

@@ -1,0 +1,167 @@
+[gd_scene load_steps=16 format=3 uid="uid://bjqrptjpy2k3b"]
+
+[ext_resource type="Texture2D" uid="uid://et1kvxp5bprg" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/Buttons/b_inactive.PNG" id="9_0s3rn"]
+[ext_resource type="PackedScene" uid="uid://c6ync1x06vh2q" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/3.AssetListDemo/DisplayableAsset.tscn" id="10_1bsb3"]
+[ext_resource type="Script" uid="uid://okfi452wp7yu" path="res://addons/SolanaSDK/Optional/SolanaService/Scripts/Utility/DisplaySystems/Assets/asset_display_system.gd" id="10_m65q0"]
+[ext_resource type="Texture2D" uid="uid://dnqcw4msg2uow" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/Buttons/b_orange_pressed.PNG" id="10_xwtt3"]
+[ext_resource type="Texture2D" uid="uid://5erj253phx4s" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/Buttons/b_orange_hover.PNG" id="11_kb74x"]
+[ext_resource type="Script" uid="uid://rodqxxqhixqe" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/_LoginDemo/scene_change_button.gd" id="12_aui6t"]
+[ext_resource type="Script" uid="uid://b5nw7fquhlcbl" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/_LoginDemo/scene_loader.gd" id="12_n62t7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7pi32"]
+bg_color = Color(0.937255, 0.682353, 0.341176, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0xvq3"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_avkrb"]
+texture = ExtResource("9_0s3rn")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ryjmu"]
+texture = ExtResource("11_kb74x")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_f2tob"]
+texture = ExtResource("10_xwtt3")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_bmrj2"]
+texture = ExtResource("10_xwtt3")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bxd20"]
+bg_color = Color(0.360524, 0.371319, 0.458671, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ahibr"]
+bg_color = Color(0.152941, 0.152941, 0.152941, 1)
+
+[node name="AssetListDemo" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_7pi32")
+
+[node name="ReturnButton" type="Button" parent="." node_paths=PackedStringArray("scene_loader")]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -183.0
+offset_top = 14.0
+offset_right = -14.0
+offset_bottom = 91.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/focus = SubResource("StyleBoxEmpty_0xvq3")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_avkrb")
+theme_override_styles/hover = SubResource("StyleBoxTexture_ryjmu")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_f2tob")
+theme_override_styles/normal = SubResource("StyleBoxTexture_bmrj2")
+text = "RETURN"
+script = ExtResource("12_aui6t")
+path_to_scene = "res://addons/SolanaSDK/Optional/SolanaService/Demos/_DemoSelectScene/DemoSelectScene.tscn"
+scene_loader = NodePath("../SceneLoader")
+
+[node name="SceneLoader" type="Node" parent="."]
+script = ExtResource("12_n62t7")
+
+[node name="LoadingCanvas" type="Panel" parent="SceneLoader"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bxd20")
+
+[node name="Label" type="Label" parent="SceneLoader/LoadingCanvas"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 41
+text = "Loading, please wait..."
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="OwnedAssetslabel" type="Label" parent="Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "OWNED ASSETS:"
+horizontal_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="Content"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 60
+
+[node name="DisplaySystem" type="PanelContainer" parent="Content/MarginContainer" node_paths=PackedStringArray("container", "no_asset_overlay")]
+custom_minimum_size = Vector2(0, 400)
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("10_m65q0")
+container = NodePath("MarginContainer/ScrollContainer/GridContainer")
+no_asset_overlay = NodePath("NoAssetsOverlay")
+display_type = Array[int]([1, 3])
+display_entry_scn = ExtResource("10_1bsb3")
+load_on_ready = true
+
+[node name="MarginContainer" type="MarginContainer" parent="Content/MarginContainer/DisplaySystem"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Content/MarginContainer/DisplaySystem/MarginContainer"]
+layout_mode = 2
+
+[node name="GridContainer" type="GridContainer" parent="Content/MarginContainer/DisplaySystem/MarginContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 5
+
+[node name="NoAssetsOverlay" type="CenterContainer" parent="Content/MarginContainer/DisplaySystem"]
+visible = false
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="Content/MarginContainer/DisplaySystem/NoAssetsOverlay"]
+custom_minimum_size = Vector2(607, 210)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ahibr")
+
+[node name="Label" type="Label" parent="Content/MarginContainer/DisplaySystem/NoAssetsOverlay"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 31
+text = "NO NFTS FOUND IN WALLET..."
+
+[connection signal="pressed" from="ReturnButton" to="ReturnButton" method="_on_pressed"]

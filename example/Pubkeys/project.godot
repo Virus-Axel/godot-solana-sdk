@@ -12,13 +12,13 @@ config_version=5
 
 config/name="Pubkeys"
 run/main_scene="res://pubkeys_example.tscn"
-config/features=PackedStringArray("4.4", "GL Compatibility")
+config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
-SolanaService="*res://addons/SolanaSDK/Autoload/SolanaService.tscn"
-HttpRequestHandler="*res://addons/SolanaSDK/Autoload/HttpRequestHandler.tscn"
+SolanaService="*res://addons/SolanaSDK/Optional/SolanaService/Autoload/SolanaService.tscn"
+HttpRequestHandler="*res://addons/SolanaSDK/Optional/SolanaService/Autoload/HttpRequestHandler.tscn"
 
 [editor_plugins]
 
@@ -28,3 +28,7 @@ enabled=PackedStringArray("res://addons/SolanaSDK/plugin.cfg")
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+
+[solana_sdk]
+
+solana_service_enabled=true

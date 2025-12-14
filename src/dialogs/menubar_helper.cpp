@@ -1,19 +1,24 @@
 #include "dialogs/menubar_helper.hpp"
 
 #include <cstdint>
+#include <string>
 
 #include "godot_cpp/classes/control.hpp"
 #include "godot_cpp/classes/dir_access.hpp"
 #include "godot_cpp/classes/editor_interface.hpp"
+#include "godot_cpp/classes/global_constants.hpp"
 #include "godot_cpp/classes/menu_bar.hpp"
 #include "godot_cpp/classes/node.hpp"
 #include "godot_cpp/classes/packed_scene.hpp"
 #include "godot_cpp/classes/popup_menu.hpp"
+#include "godot_cpp/classes/project_settings.hpp"
 #include "godot_cpp/classes/ref.hpp"
 #include "godot_cpp/core/error_macros.hpp"
 #include "godot_cpp/core/memory.hpp"
 #include "godot_cpp/variant/callable_method_pointer.hpp"
 #include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/utility_functions.hpp"
+#include "godot_cpp/variant/variant.hpp"
 
 #include "dialogs/add_custom_idl.hpp"
 #include "dialogs/generic_dialog.hpp"
@@ -27,6 +32,15 @@ PopupMenu *MenuBarHelper::solana_menu_group = nullptr;
 Dictionary *MenuBarHelper::menu_items = nullptr;
 
 namespace {
+
+const std::string ENABLED_SOLANA_SERVICE_PATH = "res://addons/SolanaSDK/Optional/SolanaService";
+const std::string DISABLED_SOLANA_SERVICE_PATH = "res://addons/SolanaSDK/Optional/.SolanaService";
+
+bool is_solana_service_enabled() {
+	const Ref<DirAccess> dir = DirAccess::open(String(ENABLED_SOLANA_SERVICE_PATH.c_str()));
+	return !dir.is_null();
+}
+
 Node *find_menu_bar(const Node *tree) {
 	for (int32_t j = 0; j < tree->get_child_count(); j++) {
 		Node *child = tree->get_child(j);
@@ -88,6 +102,41 @@ void MenuBarHelper::initialize_dialogs(Node *parent) {
 void MenuBarHelper::_bind_methods() {
 }
 
+void MenuBarHelper::toggle_solana_service() {
+	const String enabled_path = String(ENABLED_SOLANA_SERVICE_PATH.c_str());
+	const String disabled_path = String(DISABLED_SOLANA_SERVICE_PATH.c_str());
+
+	const String solana_service_path_relative = "Autoload/SolanaService.tscn";
+	const String http_request_handler_path_relative = "Autoload/HttpRequestHandler.tscn";
+
+	const String solana_service_setting = String(SOLANA_SERVICE_SETTING_LOCATION.c_str());
+	const String solana_service_autoload_setting = "autoload/SolanaService";
+	const String http_request_handler_autoload_setting = "autoload/HttpRequestHandler";
+
+	if (!is_solana_service_enabled()) {
+		const Ref<DirAccess> dir = DirAccess::open(disabled_path);
+		ERR_FAIL_COND_EDMSG_CUSTOM(dir.is_null(), "Failed to find .SolanaService directory to enable SolanaService");
+		const Error error_status = dir->rename(disabled_path, enabled_path);
+		ERR_FAIL_COND_EDMSG_CUSTOM(error_status != OK, "Failed to rename SolanaService directory");
+		solana_menu_group->set_item_text(MenuID::TOGGLE_SOLANA_SERVICE, "Disable SolanaService");
+		ProjectSettings::get_singleton()->set_setting(solana_service_setting, true);
+		ProjectSettings::get_singleton()->set_setting(solana_service_autoload_setting, vformat("*%s/%s", enabled_path, solana_service_path_relative));
+		ProjectSettings::get_singleton()->set_setting(http_request_handler_autoload_setting, vformat("*%s/%s", enabled_path, http_request_handler_path_relative));
+		ProjectSettings::get_singleton()->save();
+	} else {
+		const Ref<DirAccess> dir = DirAccess::open(enabled_path);
+		ERR_FAIL_COND_EDMSG_CUSTOM(dir.is_null(), "Failed to find .SolanaService directory to disable SolanaService");
+		const Error error_status = dir->rename(enabled_path, disabled_path);
+		ERR_FAIL_COND_EDMSG_CUSTOM(error_status != OK, "Failed to rename SolanaService directory");
+		solana_menu_group->set_item_text(MenuID::TOGGLE_SOLANA_SERVICE, "Enable SolanaService");
+		ProjectSettings::get_singleton()->set_setting(solana_service_setting, false);
+		ProjectSettings::get_singleton()->clear(solana_service_autoload_setting);
+		ProjectSettings::get_singleton()->clear(http_request_handler_autoload_setting);
+		ProjectSettings::get_singleton()->save();
+	}
+	UtilityFunctions::print("Restart the editor to apply the changes to SolanaService.");
+}
+
 void MenuBarHelper::menu_pressed_callback(int64_t menu_id) {
 	const int32_t DEFAULT_WIDTH = 600;
 	const int32_t DEFAULT_HEIGHT = 400;
@@ -95,6 +144,9 @@ void MenuBarHelper::menu_pressed_callback(int64_t menu_id) {
 	const int32_t IDL_DIALOG_HEIGHT = 300;
 
 	switch (menu_id) {
+		case MenuID::TOGGLE_SOLANA_SERVICE:
+			toggle_solana_service();
+			break;
 		case MenuID::IDL_TO_NODE:
 			add_custom_idl_dialog->popup_centered(Vector2i(IDL_DIALOG_WIDTH, IDL_DIALOG_HEIGHT));
 			break;
@@ -127,6 +179,11 @@ void MenuBarHelper::ready_callback() {
 
 	initialize_dialogs(root);
 
+	if (is_solana_service_enabled()) {
+		solana_menu_group->add_item("Disable SolanaService", MenuID::TOGGLE_SOLANA_SERVICE);
+	} else {
+		solana_menu_group->add_item("Enable SolanaService", MenuID::TOGGLE_SOLANA_SERVICE);
+	}
 	solana_menu_group->add_item("Add Node from IDL", MenuID::IDL_TO_NODE);
 	solana_menu_group->add_item("Mint Manager", MenuID::MINT_MANAGER);
 

@@ -12,13 +12,13 @@ config_version=5
 
 config/name="honeycomb"
 run/main_scene="res://honeycomb.tscn"
-config/features=PackedStringArray("4.4", "GL Compatibility")
+config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
-SolanaService="*res://addons/SolanaSDK/Autoload/SolanaService.tscn"
-HttpRequestHandler="*res://addons/SolanaSDK/Autoload/HttpRequestHandler.tscn"
+SolanaService="*res://addons/SolanaSDK/Optional/SolanaService/Autoload/SolanaService.tscn"
+HttpRequestHandler="*res://addons/SolanaSDK/Optional/SolanaService/Autoload/HttpRequestHandler.tscn"
 
 [editor_plugins]
 
@@ -32,3 +32,4 @@ renderer/rendering_method.mobile="gl_compatibility"
 [solana_sdk]
 
 client/default_url="https://rpc.test.honeycombprotocol.com"
+solana_service_enabled=true

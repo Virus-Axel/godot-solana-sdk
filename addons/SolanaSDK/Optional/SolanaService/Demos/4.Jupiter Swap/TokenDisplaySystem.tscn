@@ -1,0 +1,123 @@
+[gd_scene load_steps=5 format=3 uid="uid://dpx1ioj25vfxs"]
+
+[ext_resource type="Script" uid="uid://okfi452wp7yu" path="res://addons/SolanaSDK/Optional/SolanaService/Scripts/Utility/DisplaySystems/Assets/asset_display_system.gd" id="1_rs44u"]
+[ext_resource type="PackedScene" uid="uid://d34k0q4mj2qqt" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/4.Jupiter Swap/TokenDisplayEntry.tscn" id="2_gxoe0"]
+[ext_resource type="Texture2D" uid="uid://b3003ar1uxa77" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/closebutton.jpg.png" id="3_t4eec"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e5sqk"]
+bg_color = Color(0.580584, 0.549824, 0.493143, 1)
+
+[node name="TokenDisplaySystem" type="Control" node_paths=PackedStringArray("container", "no_asset_overlay")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_rs44u")
+display_entry_scn = ExtResource("2_gxoe0")
+container = NodePath("TokenPanel/MarginContainer/VBoxContainer/ScrollContainer/TokenContainer")
+close_on_select = true
+no_asset_overlay = NodePath("TokenPanel/MarginContainer/NoAssetsOverlay")
+
+[node name="BG" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TokenPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -245.0
+offset_right = 301.0
+offset_bottom = 283.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_e5sqk")
+
+[node name="Exit" type="Control" parent="TokenPanel"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="CloseButton" type="TextureButton" parent="TokenPanel/Exit"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -32.0
+offset_top = -42.0
+offset_right = 47.0
+offset_bottom = 35.0
+grow_horizontal = 0
+texture_normal = ExtResource("3_t4eec")
+ignore_texture_size = true
+stretch_mode = 4
+
+[node name="MarginContainer" type="MarginContainer" parent="TokenPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TokenPanel/MarginContainer"]
+layout_mode = 2
+
+[node name="SelectToken" type="Label" parent="TokenPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 51
+text = "Select Token"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Explainer" type="HBoxContainer" parent="TokenPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="DetailsLabel" type="Label" parent="TokenPanel/MarginContainer/VBoxContainer/Explainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "Token Details"
+
+[node name="BalanceLabel" type="Label" parent="TokenPanel/MarginContainer/VBoxContainer/Explainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 21
+text = "Balance
+"
+horizontal_alignment = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="TokenPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="TokenContainer" type="VBoxContainer" parent="TokenPanel/MarginContainer/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="Token" parent="TokenPanel/MarginContainer/VBoxContainer/ScrollContainer/TokenContainer" instance=ExtResource("2_gxoe0")]
+visible = false
+custom_minimum_size = Vector2(553, 30)
+layout_mode = 2
+
+[node name="NoAssetsOverlay" type="CenterContainer" parent="TokenPanel/MarginContainer"]
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="TokenPanel/MarginContainer/NoAssetsOverlay"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "No Tokens found in wallet..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="TokenPanel/Exit/CloseButton" to="." method="close"]

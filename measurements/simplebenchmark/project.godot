@@ -17,8 +17,8 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-SolanaService="*res://addons/SolanaSDK/Autoload/SolanaService.tscn"
-HttpRequestHandler="*res://addons/SolanaSDK/Autoload/HttpRequestHandler.tscn"
+SolanaService="*res://addons/SolanaSDK/Optional/SolanaService/Autoload/SolanaService.tscn"
+HttpRequestHandler="*res://addons/SolanaSDK/Optional/SolanaService/Autoload/HttpRequestHandler.tscn"
 
 [display]
 
@@ -32,3 +32,7 @@ enabled=PackedStringArray("res://addons/SolanaSDK/plugin.cfg")
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+
+[solana_sdk]
+
+solana_service_enabled=true

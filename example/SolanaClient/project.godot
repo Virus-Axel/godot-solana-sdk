@@ -18,8 +18,8 @@ config/property_name=0
 
 [autoload]
 
-SolanaService="*res://addons/SolanaSDK/Autoload/SolanaService.tscn"
-HttpRequestHandler="*res://addons/SolanaSDK/Autoload/HttpRequestHandler.tscn"
+SolanaService="*res://addons/SolanaSDK/Optional/SolanaService/Autoload/SolanaService.tscn"
+HttpRequestHandler="*res://addons/SolanaSDK/Optional/SolanaService/Autoload/HttpRequestHandler.tscn"
 
 [editor_plugins]
 
@@ -35,3 +35,4 @@ renderer/rendering_method.mobile="gl_compatibility"
 client/default_url="http://127.0.0.1"
 client/default_http_port=8899
 client/default_ws_port=8900
+solana_service_enabled=true
