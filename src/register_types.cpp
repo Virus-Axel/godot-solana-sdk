@@ -60,6 +60,7 @@
 #include "wallet_adapter.hpp"
 
 namespace godot {
+
 namespace {
 void add_setting(const String &name, Variant::Type type, const Variant &default_value, PropertyHint hint = PropertyHint::PROPERTY_HINT_NONE, const String &hint_string = "") {
 	if (!ProjectSettings::get_singleton()->has_setting(name)) {
@@ -147,6 +148,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<GenericDialog>();
 	ClassDB::register_class<GenericAnchorResource>();
 
+	add_setting(String(SOLANA_SERVICE_SETTING_LOCATION.c_str()), Variant::Type::BOOL, false);
 	add_setting("solana_sdk/client/default_url", Variant::Type::STRING, "https://api.devnet.solana.com");
 	add_setting("solana_sdk/client/default_http_port", Variant::Type::INT, HTTPS_PORT);
 	add_setting("solana_sdk/client/default_ws_port", Variant::Type::INT, WSS_PORT);

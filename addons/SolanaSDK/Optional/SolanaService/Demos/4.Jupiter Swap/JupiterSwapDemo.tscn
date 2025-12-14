@@ -1,0 +1,301 @@
+[gd_scene load_steps=37 format=3 uid="uid://c7j3dt0k488vf"]
+
+[ext_resource type="Script" uid="uid://cwkkdbxuj4ala" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/4.Jupiter Swap/jupiter_swap_manager.gd" id="1_qd30h"]
+[ext_resource type="Script" uid="uid://ufej552thaov" path="res://addons/SolanaSDK/Optional/SolanaService/Scripts/Utility/Input/data_input_system.gd" id="5_d6p00"]
+[ext_resource type="Script" uid="uid://cja6e8dxjd81x" path="res://addons/SolanaSDK/Optional/SolanaService/Scripts/Utility/Input/input_field.gd" id="6_n8mnl"]
+[ext_resource type="Texture2D" uid="uid://et1kvxp5bprg" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/Buttons/b_inactive.PNG" id="7_ko4lt"]
+[ext_resource type="Texture2D" uid="uid://b2g5g3hlmjpr8" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/verified.png" id="8_ik51n"]
+[ext_resource type="Texture2D" uid="uid://d4kauar2qc15y" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/Buttons/b_green_hover.PNG" id="8_rejmh"]
+[ext_resource type="Script" uid="uid://blmn40wibff34" path="res://addons/SolanaSDK/Optional/SolanaService/Scripts/Utility/Input/asset_selector.gd" id="9_6q363"]
+[ext_resource type="Texture2D" uid="uid://cye2pbirpht4u" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/Buttons/b_green_pressed.PNG" id="9_daua1"]
+[ext_resource type="Texture2D" uid="uid://bex3s6kk2tvo2" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/warning.png" id="9_nb5w6"]
+[ext_resource type="Script" uid="uid://fyl7vadeoj03" path="res://addons/SolanaSDK/Optional/SolanaService/Scripts/Utility/DisplaySystems/Assets/displayable_asset.gd" id="9_qn513"]
+[ext_resource type="Texture2D" uid="uid://dkyfoudbohuqq" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/missingicon.png" id="10_mog8m"]
+[ext_resource type="Texture2D" uid="uid://5erj253phx4s" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/Buttons/b_orange_hover.PNG" id="10_sqv4e"]
+[ext_resource type="Texture2D" uid="uid://dnqcw4msg2uow" path="res://addons/SolanaSDK/Optional/SolanaService/Textures/Buttons/b_orange_pressed.PNG" id="11_4cfhp"]
+[ext_resource type="Script" uid="uid://bev6bdyjti6q5" path="res://addons/SolanaSDK/Optional/SolanaService/Scripts/ThirdPartyTools/Jupiter/jupiter_api.gd" id="12_wxvqd"]
+[ext_resource type="Script" uid="uid://rodqxxqhixqe" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/_LoginDemo/scene_change_button.gd" id="12_ykt6x"]
+[ext_resource type="PackedScene" uid="uid://blmw46he11fxs" path="res://addons/SolanaSDK/Optional/SolanaService/Scripts/Managers/TransactionManager/TransactionOverlayUI.tscn" id="13_bakiu"]
+[ext_resource type="Script" uid="uid://bnket1c06w8fq" path="res://addons/SolanaSDK/Optional/SolanaService/Scripts/Utility/Input/number_label.gd" id="14_1n2ys"]
+[ext_resource type="Script" uid="uid://b5nw7fquhlcbl" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/_LoginDemo/scene_loader.gd" id="14_csqn1"]
+[ext_resource type="PackedScene" uid="uid://dpx1ioj25vfxs" path="res://addons/SolanaSDK/Optional/SolanaService/Demos/4.Jupiter Swap/TokenDisplaySystem.tscn" id="17_uoygv"]
+
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7pi32"]
+bg_color = Color(0.937255, 0.682353, 0.341176, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0xvq3"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_avkrb"]
+texture = ExtResource("7_ko4lt")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ryjmu"]
+texture = ExtResource("10_sqv4e")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_f2tob"]
+texture = ExtResource("11_4cfhp")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_bmrj2"]
+texture = ExtResource("11_4cfhp")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_80nu6"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_a6u6e"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jdp4d"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3rfs2"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6u03q"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_b04j3"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_m8hje"]
+texture = ExtResource("7_ko4lt")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_efb31"]
+texture = ExtResource("8_rejmh")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_bio0t"]
+texture = ExtResource("9_daua1")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hadpj"]
+texture = ExtResource("9_daua1")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q88lx"]
+bg_color = Color(0.360524, 0.371319, 0.458671, 1)
+
+[node name="TokenTransferDemo" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_7pi32")
+
+[node name="ReturnButton" type="Button" parent="." node_paths=PackedStringArray("scene_loader")]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -198.0
+offset_top = 18.0
+offset_right = -29.0
+offset_bottom = 95.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/focus = SubResource("StyleBoxEmpty_0xvq3")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_avkrb")
+theme_override_styles/hover = SubResource("StyleBoxTexture_ryjmu")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_f2tob")
+theme_override_styles/normal = SubResource("StyleBoxTexture_bmrj2")
+text = "RETURN"
+script = ExtResource("12_ykt6x")
+path_to_scene = "res://addons/SolanaSDK/Optional/SolanaService/Demos/_DemoSelectScene/DemoSelectScene.tscn"
+scene_loader = NodePath("../SceneLoader")
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -203.0
+offset_bottom = 203.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 50
+
+[node name="Intro" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+
+[node name="JupiterSwap" type="Label" parent="Content/Intro"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 61
+text = "JUPITER SWAP"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="JupiterSwap2" type="Label" parent="Content/Intro"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 41
+text = "Swap any token you own for SOL"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SwapContainer" type="VBoxContainer" parent="Content" node_paths=PackedStringArray("jupiter_api", "token_selector", "data_input_system", "sol_swap_value_label", "swap_button", "verification_icon")]
+layout_mode = 2
+theme_override_constants/separation = 15
+script = ExtResource("1_qd30h")
+jupiter_api = NodePath("../../JupiterAPI")
+token_selector = NodePath("TokenSelector")
+data_input_system = NodePath("DataInputSystem")
+sol_swap_value_label = NodePath("QuoteContainer/AmountDisplay")
+swap_button = NodePath("SwapButton")
+swap_slippage_percentage = 0.5
+quote_refresh_seconds = 5.0
+verification_icon = NodePath("DisplayableToken/TokenContent/VerificationMark")
+verified_icon = ExtResource("8_ik51n")
+unknown_icon = ExtResource("9_nb5w6")
+
+[node name="DataInputSystem" type="Node" parent="Content/SwapContainer"]
+script = ExtResource("5_d6p00")
+input_fields = {
+"swapAmount": NodePath("../AmountInputField")
+}
+asset_selectors = {
+"tokenToSwap": NodePath("../TokenSelector")
+}
+
+[node name="TokenSelector" type="Node" parent="Content/SwapContainer" node_paths=PackedStringArray("displayable_asset", "asset_content", "select_label")]
+script = ExtResource("9_6q363")
+displayable_asset = NodePath("../DisplayableToken")
+display_system_scn = ExtResource("17_uoygv")
+asset_content = NodePath("../DisplayableToken/TokenContent")
+select_label = NodePath("../DisplayableToken/SelectLabel")
+
+[node name="DisplayableToken" type="PanelContainer" parent="Content/SwapContainer" node_paths=PackedStringArray("visual", "symbol_label", "select_button", "balance_label")]
+custom_minimum_size = Vector2(600, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+script = ExtResource("9_qn513")
+visual = NodePath("TokenContent/Visual")
+image_size = 32
+symbol_label = NodePath("TokenContent/TokenSymbol")
+select_button = NodePath("SelectButton")
+balance_label = NodePath("TokenContent/TokenBalance")
+
+[node name="TokenContent" type="HBoxContainer" parent="Content/SwapContainer/DisplayableToken"]
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="Visual" type="TextureRect" parent="Content/SwapContainer/DisplayableToken/TokenContent"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("10_mog8m")
+expand_mode = 4
+stretch_mode = 5
+
+[node name="TokenSymbol" type="Label" parent="Content/SwapContainer/DisplayableToken/TokenContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Token"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VerificationMark" type="TextureRect" parent="Content/SwapContainer/DisplayableToken/TokenContent"]
+layout_mode = 2
+expand_mode = 3
+stretch_mode = 5
+
+[node name="TokenBalance" type="Label" parent="Content/SwapContainer/DisplayableToken/TokenContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+text = "-"
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("14_1n2ys")
+
+[node name="SelectButton" type="Button" parent="Content/SwapContainer/DisplayableToken"]
+layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_80nu6")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_a6u6e")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_jdp4d")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_3rfs2")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_6u03q")
+
+[node name="SelectLabel" type="Label" parent="Content/SwapContainer/DisplayableToken"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 31
+text = "SELECT TOKEN"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AmountInputField" type="LineEdit" parent="Content/SwapContainer"]
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 30
+placeholder_text = "Enter amount to swap..."
+alignment = 1
+script = ExtResource("6_n8mnl")
+input_type = 2
+allow_zero = false
+
+[node name="QuoteContainer" type="HBoxContainer" parent="Content/SwapContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="WillReceiveLabel" type="Label" parent="Content/SwapContainer/QuoteContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "You will receive:"
+
+[node name="AmountDisplay" type="Label" parent="Content/SwapContainer/QuoteContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.722556, 0.632248, 1)
+theme_override_font_sizes/font_size = 26
+text = "0.07 SOL"
+
+[node name="SwapButton" type="Button" parent="Content/SwapContainer"]
+custom_minimum_size = Vector2(250, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 35
+theme_override_styles/focus = SubResource("StyleBoxEmpty_b04j3")
+theme_override_styles/disabled = SubResource("StyleBoxTexture_m8hje")
+theme_override_styles/hover = SubResource("StyleBoxTexture_efb31")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_bio0t")
+theme_override_styles/normal = SubResource("StyleBoxTexture_hadpj")
+text = "SWAP"
+
+[node name="JupiterAPI" type="Node" parent="."]
+script = ExtResource("12_wxvqd")
+
+[node name="TransactionOverlayUI" parent="." instance=ExtResource("13_bakiu")]
+
+[node name="SceneLoader" type="Node" parent="."]
+script = ExtResource("14_csqn1")
+
+[node name="LoadingCanvas" type="Panel" parent="SceneLoader"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_q88lx")
+
+[node name="Label" type="Label" parent="SceneLoader/LoadingCanvas"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 41
+text = "Loading, please wait..."
+
+[connection signal="pressed" from="ReturnButton" to="ReturnButton" method="_on_pressed"]
+[connection signal="text_changed" from="Content/SwapContainer/AmountInputField" to="Content/SwapContainer/AmountInputField" method="_on_text_changed"]
