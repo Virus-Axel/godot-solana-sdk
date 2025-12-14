@@ -438,5 +438,13 @@ jobs:
         shell: bash
         run: |
           cd ${{matrix.dir}}
-          godot --headless --path . --quit-after 200000 | grep -q 'ALL TESTS PASSED'
-          exit $?
+          godot --headless --path . --quit-after 200000 --log-file log.txt || true
+          cat log.txt | grep 'ALL TESTS PASSED'
+      
+      - name: Upload Logs on Failure
+        if: ${{ failure() && !endsWith(matrix.dir, 'Web/') && !endsWith(matrix.dir, 'Android/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: |
+            ${{matrix.dir}}/log.txt

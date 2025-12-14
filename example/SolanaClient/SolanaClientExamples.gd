@@ -11,22 +11,6 @@ func PASS(unique_identifier: int):
 	print("[OK]: ", unique_identifier)
 
 
-func display_dict(data: Variant, parent: TreeItem):
-	if(typeof(data) == TYPE_STRING):
-		parent.set_text(1, data)
-	elif(typeof(data) != TYPE_DICTIONARY):
-		parent.set_text(1, str(data))
-	else:
-		var data_dict: Dictionary = data
-		var keys = data_dict.keys()
-		var values = data_dict.values()
-		for i in range(keys.size()):
-			var subchild = parent.create_child()
-			subchild.set_editable(1, true)
-			subchild.set_text(0, keys[i])
-			display_dict(values[i], subchild)
-
-
 func add_solana_client() -> SolanaClient:
 	var res = SolanaClient.new()
 	
@@ -40,13 +24,13 @@ func add_solana_client() -> SolanaClient:
 
 func delete_solana_client(client: SolanaClient):
 	remove_child(client)
+	client.queue_free()
 
 func get_account_info_demo():
 	var client: SolanaClient = add_solana_client()
 	client.get_account_info(EXAMPLE_ACCOUNT)
 	var response: Dictionary = await client.http_response_received
 	assert(response.has("result"))
-	display_dict(response["result"], $ResultTree1.create_item())
 	delete_solana_client(client)
 	PASS(0)
 
@@ -56,7 +40,6 @@ func get_latest_blockhash_demo():
 	client.get_latest_blockhash()
 	var response: Dictionary = await client.http_response_received
 	assert(response.has("result"))
-	display_dict(response["result"], $ResultTree2.create_item())
 	delete_solana_client(client)
 	PASS(1)
 	
@@ -66,7 +49,6 @@ func get_minimum_balance_for_rent_extemption_demo():
 	client.get_minimum_balance_for_rent_extemption(EXAMPLE_DATA_SIZE)
 	var response: Dictionary = await client.http_response_received
 	assert(response.has("result"))
-	display_dict(response["result"], $ResultTree3.create_item())
 	delete_solana_client(client)
 	PASS(2)
 
