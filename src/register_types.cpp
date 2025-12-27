@@ -110,6 +110,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<AddressLookupTable>();
 	ClassDB::register_class<Hash>();
 	ClassDB::register_class<Account>();
+	ClassDB::register_class<AccountFetcher>();
 	ClassDB::register_class<AccountMeta>();
 	ClassDB::register_class<Instruction>();
 	ClassDB::register_class<Transaction>();
@@ -163,6 +164,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	// Leave memory allocated and free in unregister_singleton.
 	Engine::get_singleton()->register_singleton("http_client", memnew_custom(RpcMultiHttpRequestClient)); // NOLINT (cppcoreguidelines-owning-memory)
 	Engine::get_singleton()->register_singleton("ws_client", memnew_custom(RpcSingleWsRequestClient)); // NOLINT (cppcoreguidelines-owning-memory)
+	Engine::get_singleton()->register_singleton("account_fetcher", memnew_custom(AccountFetcher)); // NOLINT (cppcoreguidelines-owning-memory)
 }
 
 void uninitialize_solana_sdk_module(ModuleInitializationLevel p_level) {
