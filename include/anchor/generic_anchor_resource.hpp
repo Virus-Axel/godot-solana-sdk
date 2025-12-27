@@ -115,14 +115,6 @@ protected:
 	// NOLINTEND(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes)
 
 	/**
-	 * @brief Check if class is an extension class.
-	 *
-	 * @return true If class is an extension class.
-	 * @return false Otherwise.
-	 */
-	bool _is_extension_class() const override;
-
-	/**
 	 * @brief Get extension class name.
 	 *
 	 * @return const StringName* Pointer to class name.

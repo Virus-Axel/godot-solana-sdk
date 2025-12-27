@@ -292,6 +292,13 @@ public:
 	 */
 	Array get_address_lookup_tables();
 
+	/**
+	 * Get MD5 hash of the transaction message.
+	 *
+	 * @return String MD5 hash of the Transaction message.
+	 */
+	String get_message_hash();
+
 	~Transaction() override = default;
 };
 } //namespace godot

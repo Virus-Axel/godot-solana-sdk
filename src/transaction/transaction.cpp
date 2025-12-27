@@ -3,10 +3,12 @@
 #include <cstdint>
 
 #include <godot_cpp/classes/global_constants.hpp>
+#include <godot_cpp/classes/hashing_context.hpp>
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/classes/thread.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/templates/list.hpp>
 #include <godot_cpp/variant/callable_method_pointer.hpp>
@@ -667,6 +669,19 @@ void Transaction::set_address_lookup_tables(const Array &address_lookup_tables) 
 
 Array Transaction::get_address_lookup_tables() {
 	return address_lookup_tables;
+}
+
+String Transaction::get_message_hash() {
+	HashingContext *context = memnew_custom(HashingContext());
+	context->start(HashingContext::HashType::HASH_MD5);
+
+	const PackedByteArray serialized_message = serialize_message();
+	context->update(serialized_message);
+	const String result_hash = context->finish().hex_encode();
+
+	memfree(context);
+
+	return result_hash;
 }
 
 } //namespace godot
