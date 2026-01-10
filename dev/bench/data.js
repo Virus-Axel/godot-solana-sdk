@@ -1,37 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1765732703712,
+  "lastUpdate": 1768068328850,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "axel.benjaminsson@live.se",
-            "name": "Axel",
-            "username": "Virus-Axel"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "29c4e8dcbf729c0496afc0bf3239d225cb78366e",
-          "message": "Merge pull request #335 from Tanv33/master\n\n🚀 Honeycomb Integration: Methods, Resources, and Testing Enhancements",
-          "timestamp": "2025-03-08T08:17:18+01:00",
-          "tree_id": "73a70ad4cc96c8c93abcfb3794e2b87d09708f58",
-          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/29c4e8dcbf729c0496afc0bf3239d225cb78366e"
-        },
-        "date": 1741419246324,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Simple Transaction Performance Index",
-            "value": 0.352739726027397,
-            "unit": "Percent"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1759,6 +1730,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index (With helper class)",
             "value": 0.0755395683453237,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6b94379a2628e43b6e2e6ec0f92fd1fc7ae91e1d",
+          "message": "Merge pull request #433 from Virus-Axel/feature/account_node\n\nImplement Account node",
+          "timestamp": "2026-01-10T18:52:21+01:00",
+          "tree_id": "45307041323037efe44ce672fda5ad54c6919be3",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/6b94379a2628e43b6e2e6ec0f92fd1fc7ae91e1d"
+        },
+        "date": 1768068327567,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.248201438848921,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0719424460431655,
             "unit": "Percent"
           }
         ]
