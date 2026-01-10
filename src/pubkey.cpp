@@ -16,6 +16,7 @@
 #include "godot_cpp/variant/variant.hpp"
 #include "sha256.hpp"
 
+#include "account.hpp"
 #include "account_meta.hpp"
 #include "curve25519.hpp"
 #include "keypair.hpp"
@@ -406,8 +407,7 @@ PackedByteArray Pubkey::bytes_from_variant(const Variant &other) {
 		return other;
 	}
 	if (other.get_type() != Variant::Type::OBJECT) {
-		const Array params = Array::make(Variant::get_type_name(other.get_type()));
-		ERR_FAIL_V_EDMSG_CUSTOM(PackedByteArray(), String("Bug: Unknown object: {0}. Please report.").format(params));
+		return {};
 	}
 
 	if (Pubkey::is_pubkey(other)) {
@@ -418,6 +418,10 @@ PackedByteArray Pubkey::bytes_from_variant(const Variant &other) {
 	}
 	if (AccountMeta::is_account_meta(other)) {
 		return Pubkey::bytes_from_variant(Object::cast_to<AccountMeta>(other)->get_key());
+	}
+	if (Account::is_account(other)) {
+		const Variant account_key = Object::cast_to<Account>(other)->get_key();
+		return Pubkey::bytes_from_variant(account_key);
 	}
 	if (WalletAdapter::is_wallet_adapter(other)) {
 		auto *phantom_controller = Object::cast_to<WalletAdapter>(other);
@@ -435,8 +439,7 @@ PackedByteArray Pubkey::bytes_from_variant(const Variant &other) {
 		return Object::cast_to<Keypair>(keypair)->get_public_bytes();
 	}
 
-	const Array params = Array::make(static_cast<Object *>(other)->get_class());
-	ERR_FAIL_V_EDMSG_CUSTOM(PackedByteArray(), String("Bug: Unknown object {0}. Please report.").format(params));
+	return {};
 }
 
 String Pubkey::string_from_variant(const Variant &other) {
@@ -450,7 +453,7 @@ String Pubkey::string_from_variant(const Variant &other) {
 		return SolanaUtils::bs58_encode(other);
 	}
 	if (other.get_type() != Variant::Type::OBJECT) {
-		ERR_FAIL_V_EDMSG_CUSTOM("", "Bug: Unknown object. Please report.");
+		return "";
 	}
 
 	if (Pubkey::is_pubkey(other)) {
@@ -471,12 +474,16 @@ String Pubkey::string_from_variant(const Variant &other) {
 		// Return placeholder
 		return SolanaUtils::ZERO_ENCODED_32.c_str();
 	}
+	if (Account::is_account(other)) {
+		const Variant account_key = Object::cast_to<Account>(other)->get_key();
+		return Pubkey::string_from_variant(account_key);
+	}
 	if (static_cast<Object *>(other)->get_class() == "JSON") {
 		const Variant keypair = Keypair::new_from_bytes(PackedByteArray(Object::cast_to<JSON>(other)->get_data()));
 		return Object::cast_to<Keypair>(keypair)->get_public_string();
 	}
 
-	ERR_FAIL_V_EDMSG_CUSTOM("", "Bug: Unknown object. Please report.");
+	return "";
 }
 
 Variant Pubkey::new_associated_token_address(const Variant &wallet_address, const Variant &token_mint_address, const Variant &token_program_id) {

@@ -38,6 +38,7 @@ docs/xml/
 
 # Clang files
 compile_commands.json
+.cache
 
 # Generated files
 include/doc_data_godot-solana-sdk.gen.h

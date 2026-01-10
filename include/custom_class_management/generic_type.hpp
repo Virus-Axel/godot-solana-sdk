@@ -65,7 +65,7 @@ protected:
 	 * @return true If class is an extension class.
 	 * @return false Otherwise.
 	 */
-	[[nodiscard]] bool _is_extension_class() const override {
+	[[nodiscard]] bool _is_extension_class() const final { // NOLINT(portability-template-virtual-member-function,-warnings-as-errors)
 		return true;
 	}
 
