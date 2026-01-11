@@ -122,7 +122,7 @@ func spawn_program_instance(original_program:AnchorProgram)->AnchorProgram:
 func get_account_info(account:Pubkey, parsed:bool=true) -> Dictionary:
 	var client:SolanaClient = spawn_client_instance()
 	client.get_account_info(account.to_string())
-	var response_dict:Dictionary = await client.http_response_received
+	var response_dict:Dictionary = (await client.http_request_completed)[1]
 	client.queue_free()
 	
 	if !parsed or !response_dict.has("result"):
@@ -142,7 +142,7 @@ func get_account_info(account:Pubkey, parsed:bool=true) -> Dictionary:
 func get_transaction_info(tx_signature:String):
 	var client:SolanaClient = spawn_client_instance()
 	client.get_transaction(tx_signature)
-	var response_dict:Dictionary = await client.http_response_received
+	var response_dict:Dictionary = (await client.http_request_completed)[1]
 	client.queue_free()
 	if response_dict.size() == 0 or !response_dict.has("result"):
 		return null
@@ -151,7 +151,7 @@ func get_transaction_info(tx_signature:String):
 func get_airdrop(address:String,sol_lamport_amount:int) -> void:
 	var client:SolanaClient = spawn_client_instance()
 	client.request_airdrop(address,sol_lamport_amount)
-	var response_dict:Dictionary = await client.http_response_received
+	var response_dict:Dictionary = (await client.http_request_completed)[1]
 	print(response_dict)
 	
 	client.queue_free()
@@ -159,7 +159,7 @@ func get_airdrop(address:String,sol_lamport_amount:int) -> void:
 func get_largest_account(mint:Pubkey) -> Pubkey:
 	var client:SolanaClient = spawn_client_instance()
 	client.get_token_largest_account(mint.to_string())
-	var response_dict:Dictionary = await client.http_response_received
+	var response_dict:Dictionary = (await client.http_request_completed)[1]
 	client.queue_free()
 	
 	var token_account:Pubkey = null
@@ -172,7 +172,7 @@ func get_largest_account(mint:Pubkey) -> Pubkey:
 func is_blockhash_valid(blockhash:String):
 	var client:SolanaClient = spawn_client_instance()
 	client.is_blockhash_valid(blockhash)
-	var response_dict:Dictionary = await client.http_response_received
+	var response_dict:Dictionary = (await client.http_request_completed)[1]
 	print(response_dict)
 	if !response_dict.has("result"):
 		return null
@@ -182,7 +182,7 @@ func get_balance(address_to_check:String,token_address:String="") -> float:
 	var client:SolanaClient = spawn_client_instance()
 	if token_address == "":
 		client.get_balance(address_to_check)
-		var response_dict:Dictionary = await client.http_response_received
+		var response_dict:Dictionary = (await client.http_request_completed)[1]
 		client.queue_free()
 		var balance = response_dict["result"]["value"] / 1000000000
 		return balance
@@ -196,7 +196,7 @@ func get_balance(address_to_check:String,token_address:String="") -> float:
 func get_ata_balance(associated_token_account:String) -> float:
 	var client:SolanaClient = spawn_client_instance()
 	client.get_token_account_balance(associated_token_account)
-	var response_dict:Dictionary = await client.http_response_received
+	var response_dict:Dictionary = (await client.http_request_completed)[1]
 	client.queue_free()
 
 	if response_dict.has("error"):
@@ -210,7 +210,7 @@ func get_ata_balance(associated_token_account:String) -> float:
 func get_token_decimals(token_address:String)->int:
 	var client:SolanaClient = spawn_client_instance()
 	client.get_token_supply(token_address)
-	var response_dict:Dictionary = await client.http_response_received
+	var response_dict:Dictionary = (await client.http_request_completed)[1]
 	client.queue_free()
 	
 	if response_dict.has("error"):
@@ -223,7 +223,7 @@ func simulate_transaction(transaction:Transaction) -> Dictionary:
 	var client:SolanaClient = spawn_client_instance()
 	var serialized_tx:String = SolanaUtils.bs64_encode(transaction.serialize())
 	client.simulate_transaction(serialized_tx,false,false,[],"base64")
-	var result = await client.http_response_received
+	var result = (await client.http_request_completed)[1]
 	client.queue_free()
 	
 	if result.size() == 0 or result.has("error"):
@@ -236,7 +236,7 @@ func simulate_transaction(transaction:Transaction) -> Dictionary:
 func is_transaction_confirmed(tx_signatures:Array, commitment:TransactionManager.Commitment) -> bool:
 	var client:SolanaClient = spawn_client_instance()
 	client.get_signature_statuses(tx_signatures,false)
-	var response_dict:Dictionary = await client.http_response_received
+	var response_dict:Dictionary = (await client.http_request_completed)[1]
 	if !response_dict.has("result"):
 		return false
 	
@@ -266,7 +266,7 @@ func is_transaction_confirmed(tx_signatures:Array, commitment:TransactionManager
 func get_associated_token_account(address_to_check:String,token_address:String) -> Pubkey:
 	var client:SolanaClient = spawn_client_instance()
 	client.get_token_accounts_by_owner(address_to_check,token_address,ATA_TOKEN_PID)
-	var response_dict:Dictionary = await client.http_response_received
+	var response_dict:Dictionary = (await client.http_request_completed)[1]
 	client.queue_free()
 	
 	var ata:String
@@ -311,7 +311,7 @@ func get_asset_data(asset_id:Pubkey) -> Dictionary:
 		return {}
 	var client:SolanaClient = spawn_client_instance()
 	client.get_asset(asset_id)
-	var response_dict:Dictionary = await client.http_response_received
+	var response_dict:Dictionary = (await client.http_request_completed)[1]
 	client.queue_free()
 
 	if response_dict.has("error"):
@@ -332,7 +332,7 @@ func get_wallet_assets_data(wallet_to_check:Pubkey,asset_limit:int=1000) -> Arra
 		var client:SolanaClient = spawn_client_instance()
 		client.get_assets_by_owner(wallet_to_check,page_id,asset_limit,true)
 		
-		var response_dict:Dictionary = await client.http_response_received
+		var response_dict:Dictionary = (await client.http_request_completed)[1]
 		client.queue_free()
 		if response_dict.has("error"):
 			push_error("Error fetching DAS assets data, stopping paging operation")
@@ -361,7 +361,7 @@ func get_collection_assets_data(nft_owner:Pubkey,collection_mint:Pubkey,asset_li
 	while true:
 		var client:SolanaClient = spawn_client_instance()
 		client.get_assets_by_group("collection_id",collection_mint,page_id,asset_limit)
-		var response_dict:Dictionary = await client.http_response_received
+		var response_dict:Dictionary = (await client.http_request_completed)[1]
 		client.queue_free()
 		if response_dict.has("error"):
 			push_error("Error fetching DAS collection assets data, stopping paging operation")
@@ -376,12 +376,12 @@ func get_collection_assets_data(nft_owner:Pubkey,collection_mint:Pubkey,asset_li
 func get_token_accounts(wallet_to_check:Pubkey) -> Array[Dictionary]:
 	var client:SolanaClient = spawn_client_instance()
 	client.get_token_accounts_by_owner(wallet_to_check.to_string(),null,TOKEN_PID)
-	var response_dict:Dictionary = await client.http_response_received
+	var response_dict:Dictionary = (await client.http_request_completed)[1]
 	client.queue_free()
 	
 	client = spawn_client_instance()
 	client.get_token_accounts_by_owner(wallet_to_check.to_string(),null,TOKEN22_PID)
-	var response_dict2:Dictionary = await client.http_response_received
+	var response_dict2:Dictionary = (await client.http_request_completed)[1]
 	client.queue_free()
 	
 	if response_dict.has("error") or response_dict2.has("error"):

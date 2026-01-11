@@ -24,6 +24,7 @@ typedef struct { // NOLINT(modernize-use-using,cppcoreguidelines-pro-type-member
 	double timeout; ///< timeout of request.
 	int request_identifier; ///< ID to pass with the RPC request.
 	Callable callback; ///< Callback that will be called when request response received.
+	Callable error_callback; ///< Callback that will be called when an error occurred.
 } RequestData;
 
 /**
@@ -49,7 +50,7 @@ private:
 
 	Error connect_to();
 	Error send_next_request();
-	void finalize_faulty();
+	void finalize_faulty(Error error);
 	void finalize_request(const Dictionary &response);
 
 protected:
@@ -85,9 +86,10 @@ public:
 	 * @param request_body Request Dictionary.
 	 * @param parsed_url URL to send request to.
 	 * @param callback Callback to call on response received.
+	 * @param error_callback Callable to call if an error occur.
 	 * @param timeout Timeout of request.
 	 */
-	void asynchronous_request(const Dictionary &request_body, const Dictionary &parsed_url, const Callable &callback, float timeout = DEFAULT_REQUEST_TIMEOUT);
+	void asynchronous_request(const Dictionary &request_body, const Dictionary &parsed_url, const Callable &callback, const Callable &error_callback, float timeout = DEFAULT_REQUEST_TIMEOUT);
 };
 
 } //namespace godot

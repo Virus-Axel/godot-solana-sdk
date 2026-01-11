@@ -20,7 +20,7 @@ func transaction_example_airdrop_to():
 	
 
 	$SolanaClient.request_airdrop(payer.get_public_string(), 3 * LAMPORTS_PER_SOL)
-	var response = await $SolanaClient.http_response_received
+	var response = (await $SolanaClient.http_request_completed)[1]
 
 	# Error check the RPC result
 	assert(response.has("result"))

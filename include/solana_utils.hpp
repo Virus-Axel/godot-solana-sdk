@@ -22,6 +22,8 @@ namespace godot {
 
 // NOLINTBEGIN(cppcoreguidelines-macro-usage)
 
+#define VERBOSE_LOG_PREFIX "[SolanaSDK] "
+
 #define GDCLASS_CUSTOM(...)                                                                                                                                                                                                                                                             \
 	/* NOLINTBEGIN(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast,bugprone-unhandled-self-assignment,cppcoreguidelines-pro-type-cstyle-cast)*/ \
 	GDCLASS(__VA_ARGS__) /* NOLINTEND(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast,bugprone-unhandled-self-assignment,cppcoreguidelines-pro-type-cstyle-cast) */

@@ -262,7 +262,7 @@ func request_airdrop_func(wallet: String, amount: int):
 	var solana_client = SolanaClient.new()
 	add_child(solana_client)
 	solana_client.request_airdrop(wallet, amount)
-	var response = await solana_client.http_response_received
+	var response = (await solana_client.http_request_completed)[1]
 	#print("response: ",response)
 	if not response or not response.has("result"):
 		print("Failed to receive airdrop")

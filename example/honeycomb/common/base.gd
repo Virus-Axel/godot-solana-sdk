@@ -179,7 +179,7 @@ func assemble_character(client: HoneyComb, project_address: String, assembler_co
 	add_child(solana_client)
 	# Step 1: Get Pre-Balance
 	solana_client.get_balance(payer_keypair.get_public_string())
-	var pre_balance = await solana_client.http_response_received
+	var pre_balance = (await solana_client.http_request_completed)[1]
 	print("pre_balance: ",pre_balance)
 	
 	# Step 2: Create Assemble Character Transaction
@@ -208,7 +208,7 @@ func assemble_character(client: HoneyComb, project_address: String, assembler_co
 
 	# Step 4: Get Post-Balance
 	solana_client.get_balance(payer_keypair.get_public_string())
-	var post_balance = await solana_client.http_response_received
+	var post_balance = (await solana_client.http_request_completed)[1]
 	print("post_balance: ",post_balance)
 	 ## assert(pre_balance.result.value == post_balance.result.value, "Expected pre_balance to be equal to post_balance, but they are different!")
 

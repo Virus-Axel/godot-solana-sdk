@@ -95,7 +95,7 @@ func update_character_traits():
 	
 	# Step 1: Get Pre-Balance
 	solana_client.get_balance(utils.user_keypair.get_public_string())
-	var pre_balance = await solana_client.http_response_received
+	var pre_balance = (await solana_client.http_request_completed)[1]
 	print("pre_balance: ", pre_balance)
 
 	# Step 2: Create Update Character Traits Transaction
@@ -126,7 +126,7 @@ func update_character_traits():
 
 	# Step 4: Get Post-Balance
 	solana_client.get_balance(utils.user_keypair.get_public_string())
-	var post_balance = await solana_client.http_response_received
+	var post_balance = (await solana_client.http_request_completed)[1]
 	print("post_balance: ", post_balance)
 	 ## assert(pre_balance.result.value == post_balance.result.value, "Expected pre_balance to be equal to post_balance, but they are different!")
 
@@ -157,7 +157,7 @@ func unwrap_character():
 	print("Running test: Unwrap Character")
 	
 	solana_client.get_balance(utils.user_keypair.get_public_string())
-	var pre_balance = await solana_client.http_response_received
+	var pre_balance = (await solana_client.http_request_completed)[1]
 	print("pre_balance: ",pre_balance)
 	
 	
@@ -178,7 +178,7 @@ func unwrap_character():
 	
 	
 	solana_client.get_balance(utils.user_keypair.get_public_string())
-	var post_balance = await solana_client.http_response_received
+	var post_balance = (await solana_client.http_request_completed)[1]
 	print("post_balance: ",post_balance)
 	 ## assert(pre_balance.result.value == post_balance.result.value, "Expected pre_balance to be equal to post_balance, but they are different!")
 

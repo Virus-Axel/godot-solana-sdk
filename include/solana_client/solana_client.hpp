@@ -62,8 +62,8 @@ private:
 	bool slot_range_enabled = false;
 
 	Callable ws_callback = callable_mp(this, &SolanaClient::ws_response_callback);
-	;
 	Callable rpc_callback = callable_mp(this, &SolanaClient::response_callback);
+	Callable error_callback = callable_mp(this, &SolanaClient::handle_rpc_error);
 
 	String ws_from_http(const String &http_url);
 	String get_real_url();
@@ -94,6 +94,7 @@ private:
 
 	void response_callback(const Dictionary &params);
 	void ws_response_callback(const Dictionary &params);
+	void handle_rpc_error(Error error_info);
 
 protected:
 	/**

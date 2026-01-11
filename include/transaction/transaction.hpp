@@ -271,16 +271,18 @@ public:
 	/**
 	 * @brief Called when send is finalized.
 	 *
+	 * @param error Error code of the operation.
 	 * @param params Send response.
 	 */
-	void send_callback(Dictionary params);
+	void send_callback(Error error, Dictionary params);
 
 	/**
 	 * @brief Called when blockhash request is finalized.
 	 *
+	 * @param error Error code of the operation.
 	 * @param params Request response.
 	 */
-	void blockhash_callback(Dictionary params);
+	void blockhash_callback(Error error, Dictionary params);
 
 	/**
 	 * @setter{address_lookup_tables}

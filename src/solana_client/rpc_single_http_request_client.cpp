@@ -10,6 +10,7 @@
 #include "godot_cpp/variant/dictionary.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/utility_functions.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
 #include "solana_utils.hpp"
@@ -22,7 +23,7 @@ void RpcSingleHttpRequestClient::process_message_sending() {
 	const Error err = send_next_request();
 
 	if (err != Error::OK) {
-		finalize_faulty();
+		finalize_faulty(err);
 		ERR_FAIL_EDMSG_CUSTOM("Error sending request.");
 	}
 }
@@ -38,10 +39,12 @@ void RpcSingleHttpRequestClient::process_body() {
 	}
 
 	// Parse the result json.
-	const Variant json_data = JSON::parse_string(response_data.get_string_from_utf8());
+	const String response_string = response_data.get_string_from_utf8();
+	const Variant json_data = JSON::parse_string(response_string);
 
 	if (json_data.get_type() != Variant::DICTIONARY) {
-		finalize_faulty();
+		UtilityFunctions::print_verbose(VERBOSE_LOG_PREFIX, response_string);
+		finalize_faulty(Error::ERR_PARSE_ERROR);
 		ERR_FAIL_EDMSG_CUSTOM("Error getting response data.");
 	}
 
@@ -58,7 +61,7 @@ void RpcSingleHttpRequestClient::process_body() {
 void RpcSingleHttpRequestClient::initiate_connection() {
 	const Error err = connect_to();
 	if (err != Error::OK) {
-		finalize_faulty();
+		finalize_faulty(err);
 		ERR_FAIL_EDMSG_CUSTOM("Failed to connect to RPC node.");
 	}
 }
@@ -152,8 +155,13 @@ Error RpcSingleHttpRequestClient::send_next_request() {
 	return request(godot::HTTPClient::METHOD_POST, path, http_headers, request_body);
 }
 
-void RpcSingleHttpRequestClient::finalize_faulty() {
-	finalize_request(Dictionary());
+void RpcSingleHttpRequestClient::finalize_faulty(const Error error) {
+	HTTPClient::close();
+	if (request_queue.front().error_callback.is_valid()) {
+		const Array params = Array::make(error);
+		request_queue.front().error_callback.callv(params);
+	}
+	request_queue.pop();
 }
 
 void RpcSingleHttpRequestClient::finalize_request(const Dictionary &response) {
@@ -180,7 +188,7 @@ void RpcSingleHttpRequestClient::process(const double delta) {
 
 		// Remove timed out requests.
 		if (is_timed_out()) {
-			finalize_faulty();
+			finalize_faulty(Error::ERR_TIMEOUT);
 			ERR_FAIL_EDMSG_CUSTOM("Request timed out.");
 		}
 	}
@@ -203,7 +211,7 @@ void RpcSingleHttpRequestClient::process(const double delta) {
 			process_body();
 			break;
 		default:
-			finalize_faulty();
+			finalize_faulty(Error::ERR_CANT_CONNECT);
 			ERR_PRINT_ONCE_ED_CUSTOM("Cannot connect");
 			return;
 			break;
@@ -213,12 +221,12 @@ void RpcSingleHttpRequestClient::process(const double delta) {
 void RpcSingleHttpRequestClient::_bind_methods() {
 }
 
-void RpcSingleHttpRequestClient::asynchronous_request(const Dictionary &request_body, const Dictionary &parsed_url, const Callable &callback, float timeout) {
+void RpcSingleHttpRequestClient::asynchronous_request(const Dictionary &request_body, const Dictionary &parsed_url, const Callable &callback, const Callable &error_callback, float timeout) {
 	RequestData data;
 	if (skip_id) {
-		data = { request_body, parsed_url, timeout, 0, callback };
+		data = RequestData{ .request = request_body, .parsed_url = parsed_url, .timeout = timeout, .request_identifier = 0, .callback = callback, .error_callback = error_callback };
 	} else {
-		data = { request_body, parsed_url, timeout, request_body["id"], callback };
+		data = RequestData{ .request = request_body, .parsed_url = parsed_url, .timeout = timeout, .request_identifier = request_body["id"], .callback = callback, .error_callback = error_callback };
 	}
 
 	request_queue.push(data);

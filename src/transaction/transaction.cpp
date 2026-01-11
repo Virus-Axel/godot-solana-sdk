@@ -494,7 +494,7 @@ void Transaction::update_latest_blockhash(const String &custom_hash) {
 
 	if (custom_hash.is_empty()) {
 		pending_blockhash = true;
-		connect("http_response_received", callable_mp(this, &Transaction::blockhash_callback), CONNECT_ONE_SHOT);
+		connect("http_request_completed", callable_mp(this, &Transaction::blockhash_callback), CONNECT_ONE_SHOT);
 		get_latest_blockhash();
 	} else {
 		latest_blockhash_string = custom_hash;
@@ -568,10 +568,10 @@ Variant Transaction::sign_and_send() {
 	return OK;
 }
 
-void Transaction::send_callback(Dictionary params) {
+void Transaction::send_callback(const Error error, Dictionary params) {
 	pending_send = false;
 
-	if (params.has("result")) {
+	if (params.has("result") && error == Error::OK) {
 		result_signature = params["result"];
 		copy_connection_state();
 		subscribe_to_signature();
@@ -581,9 +581,9 @@ void Transaction::send_callback(Dictionary params) {
 	emit_signal("transaction_response_received", params);
 }
 
-void Transaction::blockhash_callback(Dictionary params) {
+void Transaction::blockhash_callback(const Error error, Dictionary params) {
 	pending_blockhash = false;
-	if (params.has("result")) {
+	if (params.has("result") && error == Error::OK) {
 		const Dictionary blockhash_result = params["result"];
 		const Dictionary blockhash_value = blockhash_result["value"];
 		latest_blockhash_string = blockhash_value["blockhash"];
@@ -613,7 +613,7 @@ void Transaction::send() {
 	}
 
 	pending_send = true;
-	connect("http_response_received", callable_mp(this, &Transaction::send_callback), CONNECT_ONE_SHOT);
+	connect("http_request_completed", callable_mp(this, &Transaction::send_callback), CONNECT_ONE_SHOT);
 	send_transaction(SolanaUtils::bs64_encode(serialized_bytes), UINT64_MAX, skip_preflight);
 }
 

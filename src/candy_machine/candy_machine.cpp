@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 
+#include "godot_cpp/classes/global_constants.hpp"
 #include "godot_cpp/classes/object.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/error_macros.hpp"
@@ -11,6 +12,7 @@
 #include "godot_cpp/variant/callable.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/variant/utility_functions.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
 #include "account_meta.hpp"
@@ -222,12 +224,13 @@ Variant MplCandyMachine::new_candy_machine_authority_pda(const Variant &candy_ma
 
 void MplCandyMachine::get_candy_machine_info(const Variant &candy_machine_key) {
 	const Callable callback(this, "fetch_account_callback");
-	connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
+	connect("http_request_completed", callback, ConnectFlags::CONNECT_ONE_SHOT);
 	get_account_info(Pubkey::string_from_variant(candy_machine_key));
 }
 
-void MplCandyMachine::fetch_account_callback(const Dictionary &params) {
-	if (!params.has("result")) {
+void MplCandyMachine::fetch_account_callback(const Error error, const Dictionary &params) {
+	if (error != Error::OK || !params.has("result")) {
+		UtilityFunctions::print_verbose(VERBOSE_LOG_PREFIX, vformat("Fetching account failed with error code (%d) and rpc result (%s)", error, params));
 		return;
 	}
 

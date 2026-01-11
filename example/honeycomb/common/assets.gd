@@ -253,7 +253,7 @@
 	#var solana_client = SolanaClient.new()
 	#add_child(solana_client)
 	#solana_client.get_minimum_balance_for_rent_extemption(data_size)
-	#var result = await solana_client.http_response_received
+	#var result = (await solana_client.http_request_completed)[1]
 	#assert(result.has("result"))
 	#remove_child(solana_client)
 	#return result['result']

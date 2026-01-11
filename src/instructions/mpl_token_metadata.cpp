@@ -12,6 +12,8 @@
 #include "godot_cpp/variant/array.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/typed_array.hpp"
+#include "godot_cpp/variant/utility_functions.hpp"
+#include "godot_cpp/variant/variant.hpp"
 
 #include "account_meta.hpp"
 #include "instruction.hpp"
@@ -108,15 +110,16 @@ Variant MplTokenMetadata::get_mint_metadata(const Variant &mint) {
 	const Variant metadata_account = new_associated_metadata_pubkey(mint);
 
 	const Callable callback(this, "metadata_callback");
-	connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
+	connect("http_request_completed", callback, ConnectFlags::CONNECT_ONE_SHOT);
 	get_account_info(Pubkey::string_from_variant(metadata_account));
 
 	return OK;
 }
 
-void MplTokenMetadata::metadata_callback(const Dictionary &rpc_result) {
+void MplTokenMetadata::metadata_callback(const Error error, const Dictionary &rpc_result) {
 	pending_fetch = false;
-	if (!rpc_result.has("result")) {
+	if (error != Error::OK || !rpc_result.has("result")) {
+		UtilityFunctions::print_verbose(VERBOSE_LOG_PREFIX, vformat("Fetching metadata failed with error code (%d) and rpc result (%s)", error, rpc_result));
 		emit_signal("metadata_fetched", nullptr);
 		return;
 	}

@@ -42,9 +42,10 @@ public:
 	 * @param request_body Request to send.
 	 * @param parsed_url URL of the request.
 	 * @param callback Callback to call on response received.
+	 * @param error_callback Callback to call if an error occur.
 	 * @param timeout Timeout of request.
 	 */
-	void asynchronous_request(const Dictionary &request_body, const Dictionary &parsed_url, const Callable &callback, float timeout = DEFAULT_REQUEST_TIMEOUT);
+	void asynchronous_request(const Dictionary &request_body, const Dictionary &parsed_url, const Callable &callback, const Callable &error_callback, float timeout = DEFAULT_REQUEST_TIMEOUT);
 };
 
 } //namespace godot

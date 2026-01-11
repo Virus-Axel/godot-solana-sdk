@@ -40,7 +40,7 @@ func get_lamport_offset():
 		return from_lamports - result_lamports
 	return 0
 
-func _on_solana_client_http_response_received(response: Dictionary) -> void:
+func _on_solana_client_http_response_received(error: int, response: Dictionary) -> void:
 	if not response.has("result"):
 		display_error("Unexpected response: " + str(response))
 		return
@@ -74,7 +74,7 @@ func _on_solana_client_http_response_received(response: Dictionary) -> void:
 	before_received = true
 	check_done()
 
-func _on_solana_client_2_http_response_received(response: Dictionary) -> void:
+func _on_solana_client_2_http_response_received(error: int, response: Dictionary) -> void:
 	if not response.has("result"):
 		display_error("Unexpected response: " + str(response))
 		return

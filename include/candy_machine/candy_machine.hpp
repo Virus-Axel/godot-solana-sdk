@@ -149,9 +149,10 @@ public:
 	/**
 	 * @brief Called when CandyMachineData is fetched.
 	 *
+	 * @param error Error code of the operation.
 	 * @param params Account data.
 	 */
-	void fetch_account_callback(const Dictionary &params);
+	void fetch_account_callback(Error error, const Dictionary &params);
 
 	/**
 	 * @brief Get the MplCandyMachine program ID.

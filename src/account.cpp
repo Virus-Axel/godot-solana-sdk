@@ -12,6 +12,7 @@
 #include "godot_cpp/variant/callable_method_pointer.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
 #include "godot_cpp/variant/packed_string_array.hpp"
+#include "godot_cpp/variant/utility_functions.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
 #include "pubkey.hpp"
@@ -49,10 +50,6 @@ void Account::_bind_methods() {
 	ClassDB::add_property("Account", PropertyInfo(Variant::BOOL, "executable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_executable", "get_executable");
 	ClassDB::add_property("Account", PropertyInfo(Variant::BOOL, "sync_with_chain", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_sync_with_chain", "get_sync_with_chain");
 	ClassDB::add_property("Account", PropertyInfo(Variant::OBJECT, "pre_simulate_transaction", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_pre_simulate_transaction", "get_pre_simulate_transaction");
-}
-
-Account::Account() :
-		seconds_since_fetch(max_fetch_interval) {
 }
 
 void Account::_process(double delta) {
@@ -341,6 +338,7 @@ void AccountFetcher::fetch_all() {
 	if (pending_fetch) {
 		return;
 	}
+	UtilityFunctions::print(fetch_accounts.keys());
 	get_multiple_accounts(fetch_accounts.keys());
 	pending_fetch = true;
 }

@@ -198,7 +198,7 @@ void SolanaClient::quick_http_request(const Dictionary &request_body) {
 	}
 
 	if (is_inside_tree() || async_override) {
-		get_current_http_client()->asynchronous_request(request_body, parsed_url, rpc_callback);
+		get_current_http_client()->asynchronous_request(request_body, parsed_url, rpc_callback, error_callback);
 	} else {
 		ERR_FAIL_EDMSG_CUSTOM("SolanaClient must be in scene tree.");
 	}
@@ -206,11 +206,17 @@ void SolanaClient::quick_http_request(const Dictionary &request_body) {
 
 void SolanaClient::response_callback(const Dictionary &params) {
 	pending_request = false;
+	emit_signal("http_request_completed", Error::OK, params);
 	emit_signal("http_response_received", params);
 }
 
 void SolanaClient::ws_response_callback(const Dictionary &params) {
 	emit_signal("socket_response_received", params);
+}
+
+void SolanaClient::handle_rpc_error(Error error_info) {
+	emit_signal("http_request_completed", error_info, Dictionary());
+	emit_signal("http_error_occurred", error_info);
 }
 
 void SolanaClient::get_latest_blockhash() {
@@ -813,6 +819,8 @@ void SolanaClient::unsubscribe_all(const Callable &callback) {
 void SolanaClient::_bind_methods() {
 	ClassDB::add_signal("SolanaClient", MethodInfo("socket_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
 	ClassDB::add_signal("SolanaClient", MethodInfo("http_response_received", PropertyInfo(Variant::DICTIONARY, "response")));
+	ClassDB::add_signal("SolanaClient", MethodInfo("http_error_occurred", PropertyInfo(Variant::INT, "error")));
+	ClassDB::add_signal("SolanaClient", MethodInfo("http_request_completed", PropertyInfo(Variant::INT, "error"), PropertyInfo(Variant::DICTIONARY, "result")));
 
 	ClassDB::bind_static_method("SolanaClient", D_METHOD("assemble_url", "url"), &SolanaClient::assemble_url);
 	ClassDB::bind_static_method("SolanaClient", D_METHOD("parse_url", "url"), &SolanaClient::parse_url);

@@ -65,7 +65,7 @@ func start_tx_simulation():
 	var upload_price = int(str_to_var(upload_price_str[3].get_string_from_ascii()) * 1000000000 * 1.05)
 	
 	$SolanaClient.get_latest_blockhash()
-	var bh = await $SolanaClient.http_response_received
+	var bh = (await $SolanaClient.http_request_completed)[1]
 	if not bh.has("result"):
 		display_error("Failed to fetch blockhash: " + str(bh))
 		return
@@ -170,7 +170,7 @@ func _on_create_button_pressed() -> void:
 	var upload_price = int(str_to_var(upload_price_str[3].get_string_from_ascii()) * 1000000000 * 1.05)
 	
 	$SolanaClient2.get_latest_blockhash()
-	var bh = await $SolanaClient2.http_response_received
+	var bh = (await $SolanaClient2.http_request_completed)[1]
 	if not bh.has("result"):
 		display_error("Failed to fetch blockhash: " + str(bh))
 		return

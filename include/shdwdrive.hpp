@@ -145,7 +145,8 @@ private:
 	void fetch_storage_account_callback(const Dictionary &params);
 	void upload_file_callback(int result, int response_code, const PackedStringArray &headers, const PackedByteArray &body);
 
-	void emit_simulation_response(const Dictionary &response);
+	void emit_simulation_response(Error error, const Dictionary &response);
+	void handle_http_error(const Variant &error_info);
 
 	static uint64_t human_size_to_bytes(const String &human_size);
 
@@ -259,9 +260,10 @@ public:
 	/**
 	 * @brief Called when all storage accounts are being fetched.
 	 *
+	 * @param error Error code of the operation.
 	 * @param response Get account info request response from RPC node.
 	 */
-	void get_multiple_accounts_callback(const Dictionary &response);
+	void get_multiple_accounts_callback(Error error, const Dictionary &response);
 
 	/**
 	 * @brief Create a new user info PDA Pubkey.
