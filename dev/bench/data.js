@@ -1,37 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1768068328850,
+  "lastUpdate": 1768138127396,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "axel.benjaminsson@live.se",
-            "name": "Axel",
-            "username": "Virus-Axel"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "db37283d8f967f8c13dd63752806c4b85bd190bb",
-          "message": "Merge pull request #341 from Virus-Axel/refactor/format_honeycomb\n\nFormat honeycomb files and avoid doxygen warning",
-          "timestamp": "2025-03-08T18:33:48+01:00",
-          "tree_id": "8c479888a8b384b785b6d987f68c0163d4dfa7fc",
-          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/db37283d8f967f8c13dd63752806c4b85bd190bb"
-        },
-        "date": 1741459677632,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Simple Transaction Performance Index",
-            "value": 0.352739726027397,
-            "unit": "Percent"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1764,6 +1735,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index (With helper class)",
             "value": 0.0719424460431655,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "094c0a78f2f96c065e64e6de522cee38ede034cc",
+          "message": "Merge pull request #434 from Virus-Axel/feature/solana_client_signals\n\nAdd additional signals to SolanaClient",
+          "timestamp": "2026-01-11T14:16:40+01:00",
+          "tree_id": "d9811beb7605f13695f434318b488956effa4e9e",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/094c0a78f2f96c065e64e6de522cee38ede034cc"
+        },
+        "date": 1768138125140,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.257246376811594,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0905797101449275,
             "unit": "Percent"
           }
         ]
