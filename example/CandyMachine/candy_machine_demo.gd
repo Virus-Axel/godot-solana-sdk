@@ -21,7 +21,7 @@ func minumum_balance_for_rent_extemtion(data_size):
 	var client = SolanaClient.new()
 	add_child(client)
 	client.get_minimum_balance_for_rent_extemption(data_size)
-	var result = await client.http_response_received
+	var result = (await client.http_request_completed)[1]
 	assert(result.has("result"))
 	remove_child(client)
 	return result['result']

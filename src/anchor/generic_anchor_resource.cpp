@@ -104,6 +104,10 @@ GDExtensionObjectPtr GenericAnchorResource::_create_instance_func(void *data, GD
 	return new_object->_owner;
 }
 
+bool GenericAnchorResource::_is_extension_class() const {
+	return true;
+}
+
 const StringName *GenericAnchorResource::_get_extension_class_name() {
 	const StringName &string_name = get_class_static();
 	return &string_name;

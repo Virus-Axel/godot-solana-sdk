@@ -29,7 +29,7 @@ func delete_solana_client(client: SolanaClient):
 func get_account_info_demo():
 	var client: SolanaClient = add_solana_client()
 	client.get_account_info(EXAMPLE_ACCOUNT)
-	var response: Dictionary = await client.http_response_received
+	var response: Dictionary = (await client.http_request_completed)[1]
 	assert(response.has("result"))
 	delete_solana_client(client)
 	PASS(0)
@@ -38,7 +38,7 @@ func get_account_info_demo():
 func get_latest_blockhash_demo():
 	var client: SolanaClient = add_solana_client()
 	client.get_latest_blockhash()
-	var response: Dictionary = await client.http_response_received
+	var response: Dictionary = (await client.http_request_completed)[1]
 	assert(response.has("result"))
 	delete_solana_client(client)
 	PASS(1)
@@ -47,7 +47,7 @@ func get_minimum_balance_for_rent_extemption_demo():
 	const EXAMPLE_DATA_SIZE := 100
 	var client: SolanaClient = add_solana_client()
 	client.get_minimum_balance_for_rent_extemption(EXAMPLE_DATA_SIZE)
-	var response: Dictionary = await client.http_response_received
+	var response: Dictionary = (await client.http_request_completed)[1]
 	assert(response.has("result"))
 	delete_solana_client(client)
 	PASS(2)
@@ -62,7 +62,7 @@ func subscribe_account_demo():
 
 	# Make lamports of the account change to trigger the callback.
 	client.request_airdrop(EXAMPLE_ACCOUNT, 1000000)
-	var airdrop_response = await client.http_response_received
+	var airdrop_response = (await client.http_request_completed)[1]
 	assert(airdrop_response.has("result"))
 	var airdrop_signature: String = airdrop_response["result"]
 	
@@ -87,23 +87,26 @@ func test_project_settings():
 	var ws_client = add_solana_client()
 	
 	client.get_account_info(EXAMPLE_ACCOUNT)
-	var response = await client.http_response_received
+	var response = (await client.http_request_completed)[1]
 	assert(response.has("result"))
 	
 	ProjectSettings.set_setting("solana_sdk/client/default_url", INCORRECT_URL)
 	client.get_account_info(EXAMPLE_ACCOUNT)
-	response = await client.http_response_received
+	var signal_params = await client.http_request_completed
+	response = signal_params[1]
+	var error = signal_params[0]
+	assert(error == Error.ERR_CANT_CONNECT)
 	assert(response.is_empty())
 	
 	ProjectSettings.set_setting("solana_sdk/client/default_url", CORRECT_URL)
 	ProjectSettings.set_setting("solana_sdk/client/default_http_port", CORRECT_HTTP_PORT)
 	client.get_account_info(EXAMPLE_ACCOUNT)
-	response = await client.http_response_received
+	response = (await client.http_request_completed)[1]
 	assert(response.has("result"))
 	
 	ProjectSettings.set_setting("solana_sdk/client/default_http_port", INCORRECT_HTTP_PORT)
 	client.get_account_info(EXAMPLE_ACCOUNT)
-	response = await client.http_response_received
+	response = (await client.http_request_completed)[1]
 	assert(response.is_empty())
 	
 	ProjectSettings.set_setting("solana_sdk/client/default_ws_port", INCORRECT_WS_PORT)
@@ -118,7 +121,7 @@ func test_project_settings():
 	ProjectSettings.set_setting("solana_sdk/client/default_url", CORRECT_URL + ":" + CORRECT_HTTP_PORT)
 	ProjectSettings.set_setting("solana_sdk/client/default_http_port", INCORRECT_HTTP_PORT)
 	client.get_account_info(EXAMPLE_ACCOUNT)
-	response = await client.http_response_received
+	response = (await client.http_request_completed)[1]
 	assert(response.has("result"))
 	
 	# Restore correct settings
@@ -140,7 +143,7 @@ func unsubscribe_account_test():
 	
 	# Make lamports of the account change to trigger the callback.
 	client.request_airdrop(random_account.to_string(), 1000000)
-	var airdrop_response = await client.http_response_received
+	var airdrop_response = (await client.http_request_completed)[1]
 	assert(airdrop_response.has("result"))
 	var airdrop_signature: String = airdrop_response["result"]
 	
@@ -158,7 +161,7 @@ func test_account_encoding():
 	client.account_subscribe("2kJKEGhqGXJJtoWPfxnKq1Y2bN4eF9GQ39SAcGu8TDZn", account_callback)
 	
 	client.request_airdrop("2kJKEGhqGXJJtoWPfxnKq1Y2bN4eF9GQ39SAcGu8TDZn", 1000000)
-	var airdrop_response = await client.http_response_received
+	var airdrop_response = (await client.http_request_completed)[1]
 	assert(airdrop_response.has("result"))
 
 
@@ -184,31 +187,31 @@ func test_das_methods():
 	
 	
 	devnet_client.get_asset(ASSET_ADDRESS)
-	var result = await devnet_client.http_response_received
+	var result = (await devnet_client.http_request_completed)[1]
 	assert(result.has("result"))
 	result = {}
 	
 	mainnet_client.get_asset_proof(COMPRESSED_ASSET_ADDRESS)
-	result = await mainnet_client.http_response_received
+	result = (await mainnet_client.http_request_completed)[1]
 	assert(result.has("result"))
 	result = {}
 
 	mainnet_client.get_assets_by_authority(AUTHORITY_ADDRESS)
-	result = await mainnet_client.http_response_received
+	result = (await mainnet_client.http_request_completed)[1]
 	assert(result.has("result"))
 	result = {}
 
 	mainnet_client.get_assets_by_creator_address(CREATOR_ADDRESS)
-	result = await mainnet_client.http_response_received
+	result = (await mainnet_client.http_request_completed)[1]
 	assert(result.has("result"))
 	result = {}
 
 	mainnet_client.get_assets_by_owner(Pubkey.new_from_string(OWNER_ADDRESS))
-	result = await mainnet_client.http_response_received
+	result = (await mainnet_client.http_request_completed)[1]
 	assert(result.has("result"))
 
 	mainnet_client.get_assets_by_group("collection", GROUP_ADDRESS)
-	result = await mainnet_client.http_response_received
+	result = (await mainnet_client.http_request_completed)[1]
 	assert(result.has("result"))
 	result = {}
 	
@@ -228,14 +231,14 @@ func fungible_tokens_filter():
 	
 	# Fetch assets without fungible.
 	devnet_client.get_assets_by_owner(TEST_OWNER, 1, 100, false)
-	var assets_data = await devnet_client.http_response_received
+	var assets_data = (await devnet_client.http_request_completed)[1]
 	
 	# BONK address should not be in result.
 	assert(str(assets_data).find(BONK_ADDRESS) == -1)
 	
 	# Fetch assets with fungible.
 	devnet_client.get_assets_by_owner(TEST_OWNER, 1, 100, true)
-	assets_data = await devnet_client.http_response_received
+	assets_data = (await devnet_client.http_request_completed)[1]
 	
 	# BONK address should be in result.
 	assert(str(assets_data).find(BONK_ADDRESS) > 0)

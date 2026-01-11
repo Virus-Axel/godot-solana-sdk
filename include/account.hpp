@@ -50,7 +50,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Account();
+	Account() = default;
 
 	/**
 	 * @_set{Account}

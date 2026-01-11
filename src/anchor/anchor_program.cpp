@@ -2,7 +2,6 @@
 
 #include <cstdint>
 
-#include "anchor/generic_anchor_node.hpp"
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/file_access.hpp"
 #include "godot_cpp/classes/global_constants.hpp"
@@ -19,8 +18,11 @@
 #include "godot_cpp/variant/dictionary.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/utility_functions.hpp"
+#include "godot_cpp/variant/variant.hpp"
 
 #include "account_meta.hpp"
+#include "anchor/generic_anchor_node.hpp"
 #include "anchor/idl_utils.hpp"
 #include "hash.hpp"
 #include "instruction.hpp"
@@ -324,18 +326,14 @@ bool AnchorProgram::load_from_pid(const String &pid) {
 	ERR_FAIL_COND_V_CUSTOM(pid.length() < 32, false);
 
 	const Callable callback(this, "idl_from_pid_callback");
-	idl_client->connect("http_response_received", callback);
+	idl_client->connect("http_request_completed", callback, CONNECT_ONE_SHOT);
 	idl_client->get_account_info(pid);
 	return false;
 }
 
-void AnchorProgram::idl_from_pid_callback(const Dictionary &rpc_result) {
-	const Callable callback(this, "idl_from_pid_callback");
-	if (idl_client->is_connected("http_response_received", callback)) {
-		idl_client->disconnect("http_response_received", callback);
-	}
-
-	if (!rpc_result.has("result")) {
+void AnchorProgram::idl_from_pid_callback(const Error error, const Dictionary &rpc_result) {
+	if (error != Error::OK || !rpc_result.has("result")) {
+		UtilityFunctions::print_verbose(VERBOSE_LOG_PREFIX, vformat("Getting IDL from PID failed with error code (%d) and rpc result (%s)", error, rpc_result));
 		return;
 	}
 	if (!static_cast<Dictionary>(rpc_result["result"]).has("value")) {
@@ -349,7 +347,7 @@ void AnchorProgram::idl_from_pid_callback(const Dictionary &rpc_result) {
 		idl_address = Pubkey::string_from_variant(AnchorProgram::idl_address(Pubkey::new_from_string(pid)));
 
 		const Callable callback(this, "idl_from_pid_callback");
-		idl_client->connect("http_response_received", callback);
+		idl_client->connect("http_request_completed", callback, CONNECT_ONE_SHOT);
 		idl_client->get_account_info(idl_address);
 	} else {
 		ERR_FAIL_COND_EDMSG_CUSTOM(!account.has("data"), "Program does not have an associated anchor account.");
@@ -954,13 +952,18 @@ Error AnchorProgram::fetch_account(const String &name, const Variant &account) {
 	}
 	pending_account_name = name;
 	const Callable callback(this, "fetch_account_callback");
-	fetch_client->connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
+	fetch_client->connect("http_request_completed", callback, ConnectFlags::CONNECT_ONE_SHOT);
 	fetch_client->get_account_info(Pubkey::string_from_variant(account));
 
 	return Error::OK;
 }
 
-void AnchorProgram::fetch_account_callback(const Dictionary &rpc_result) {
+void AnchorProgram::fetch_account_callback(const Error error, const Dictionary &rpc_result) {
+	if (error != Error::OK) {
+		UtilityFunctions::print_verbose(VERBOSE_LOG_PREFIX, vformat("Fetching account failed with error code (%d) and rpc result (%s)", error, rpc_result));
+		return;
+	}
+
 	const String name = pending_account_name;
 	pending_account_name = "";
 
@@ -999,13 +1002,18 @@ Error AnchorProgram::fetch_all_accounts(const String &name, const Array &additio
 	filters.insert(0, type_filter);
 
 	const Callable callback(this, "fetch_all_accounts_callback");
-	fetch_client->connect("http_response_received", callback, ConnectFlags::CONNECT_ONE_SHOT);
+	fetch_client->connect("http_request_completed", callback, ConnectFlags::CONNECT_ONE_SHOT);
 	fetch_client->get_program_accounts(get_pid(), filters, false);
 
 	return Error::OK;
 }
 
-void AnchorProgram::fetch_all_accounts_callback(const Dictionary &rpc_result) {
+void AnchorProgram::fetch_all_accounts_callback(const Error error, const Dictionary &rpc_result) {
+	if (error != Error::OK) {
+		UtilityFunctions::print_verbose(VERBOSE_LOG_PREFIX, vformat("Fetching account failed with error code (%d) and rpc result (%s)", error, rpc_result));
+		return;
+	}
+
 	const String name = pending_accounts_name;
 	pending_accounts_name = "";
 

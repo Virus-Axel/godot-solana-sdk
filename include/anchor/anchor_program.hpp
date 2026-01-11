@@ -58,9 +58,9 @@ private:
 	static Variant idl_address(const Variant &pid);
 
 	bool load_from_pid(const String &pid);
-	void idl_from_pid_callback(const Dictionary &rpc_result);
-	void fetch_account_callback(const Dictionary &rpc_result);
-	void fetch_all_accounts_callback(const Dictionary &rpc_result);
+	void idl_from_pid_callback(Error error, const Dictionary &rpc_result);
+	void fetch_account_callback(Error error, const Dictionary &rpc_result);
+	void fetch_all_accounts_callback(Error error, const Dictionary &rpc_result);
 	void extract_idl_from_data(const Array &data_info);
 	Dictionary parse_account_data(const Dictionary &account_data, const Dictionary &reference, bool emit_decoded_account = false);
 

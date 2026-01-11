@@ -166,12 +166,12 @@ void ShdwDrive::send_fetch_account_infos() {
 
 	const Callable callback = Callable(this, "get_multiple_accounts_callback");
 
-	fetch_all_storage_accounts_client->connect("http_response_received", callback, CONNECT_ONE_SHOT);
+	fetch_all_storage_accounts_client->connect("http_request_completed", callback, CONNECT_ONE_SHOT);
 	fetch_all_storage_accounts_client->get_multiple_accounts(accounts);
 }
 
-void ShdwDrive::get_multiple_accounts_callback(const Dictionary &response) {
-	ERR_FAIL_COND_EDMSG_CUSTOM(!response.has("result"), "Fetching storage account failed.");
+void ShdwDrive::get_multiple_accounts_callback(const Error error, const Dictionary &response) {
+	ERR_FAIL_COND_EDMSG_CUSTOM((error != Error::OK) || !response.has("result"), "Fetching storage account failed.");
 	ERR_FAIL_COND_EDMSG_CUSTOM(!static_cast<Dictionary>(response["result"]).has("value"), "Getting storage accounts failed.");
 
 	Array accounts = static_cast<Dictionary>(response["result"])["value"];
@@ -385,7 +385,7 @@ void ShdwDrive::send_create_storage_tx() {
 	create_storage_account_transaction->add_instruction(instruction);
 
 	if (simulate_only) {
-		create_storage_account_transaction->connect("http_response_received", callable_mp(this, &ShdwDrive::emit_simulation_response), CONNECT_ONE_SHOT);
+		create_storage_account_transaction->connect("http_request_completed", callable_mp(this, &ShdwDrive::emit_simulation_response), CONNECT_ONE_SHOT);
 
 		const PackedByteArray serialized_transaction = create_storage_account_transaction->serialize();
 		const String encoded_transaction = SolanaUtils::bs64_encode(serialized_transaction);
@@ -418,7 +418,8 @@ void ShdwDrive::send_create_storage_tx_signed() {
 	const Dictionary url = SolanaClient::parse_url(SHDW_DRIVE_ENDPOINT);
 
 	const Callable callback = Callable(this, "create_store_api_response");
-	api_request->asynchronous_request(dict, url, callback);
+	const Callable error_callback = Callable(this, "handle_http_error");
+	api_request->asynchronous_request(dict, url, callback, error_callback);
 }
 
 void ShdwDrive::create_store_api_response(const Dictionary &response) {
@@ -621,8 +622,13 @@ void ShdwDrive::upload_file_callback(int result, int response_code, const Packed
 	emit_signal("upload_response", response);
 }
 
-void ShdwDrive::emit_simulation_response(const Dictionary &response) {
+void ShdwDrive::emit_simulation_response(const Error error, const Dictionary &response) {
+	(void)error;
 	emit_signal("simulation_response_received", response);
+}
+
+void ShdwDrive::handle_http_error(const Variant &error_info) {
+	// TODO(VirAx): Implement if ShdwDrive becomes relevant again.
 }
 
 Variant ShdwDrive::get_pid() {

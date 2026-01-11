@@ -132,7 +132,7 @@ func fetch_core_candy_machine(candy_machine_key: Pubkey) -> Dictionary:
 	add_child(client)
 	client.get_account_info(candy_machine_key.to_string())
 	var result := {}
-	var data: Dictionary = await client.http_response_received
+	var data: Dictionary = (await client.http_request_completed)[1]
 
 	assert(data.has("result"))
 	assert(data["result"].has("value"))

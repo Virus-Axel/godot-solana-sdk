@@ -34,7 +34,7 @@ func minumum_balance_for_rent_extemtion(data_size):
 	add_child(client)
 	client.url_override = $Transaction.url_override
 	client.get_minimum_balance_for_rent_extemption(data_size)
-	var result = await client.http_response_received
+	var result = (await client.http_request_completed)[1]
 	print(result)
 	assert(result.has("result"))
 	remove_child(client)
@@ -117,7 +117,7 @@ func get_arweave_transaction(payer_kp: Keypair, file_name: String, file_data: Pa
 	var upload_price = int(str_to_var(upload_price_str[3].get_string_from_ascii()) * 1000000000 * 1.05)
 	
 	$SolanaClient2.get_latest_blockhash()
-	var bh = await $SolanaClient2.http_response_received
+	var bh = (await $SolanaClient2.http_request_completed)[1]
 	if not bh.has("result"):
 		display_error(arweave_error + "Failed to fetch blockhash: " + str(bh))
 		return null
@@ -186,7 +186,7 @@ func upload_file_to_arweave(payer_kp: Keypair, file_name: String, file_data):
 	var upload_price = int(str_to_var(upload_price_str[3].get_string_from_ascii()) * 1000000000 * 1.05)
 	
 	$SolanaClient2.get_latest_blockhash()
-	var bh = await $SolanaClient2.http_response_received
+	var bh = (await $SolanaClient2.http_request_completed)[1]
 	if not bh.has("result"):
 		display_error(arweave_error + "Failed to fetch blockhash: " + str(bh))
 		return

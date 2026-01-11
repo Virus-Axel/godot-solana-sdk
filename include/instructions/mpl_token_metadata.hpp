@@ -21,7 +21,7 @@ private:
 
 	bool pending_fetch = false;
 
-	void metadata_callback(const Dictionary &rpc_result);
+	void metadata_callback(Error error, const Dictionary &rpc_result);
 
 protected:
 	/**

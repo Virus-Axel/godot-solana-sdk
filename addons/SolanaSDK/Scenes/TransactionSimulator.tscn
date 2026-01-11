@@ -140,6 +140,6 @@ wrap_mode = 1
 
 [node name="Transaction" type="Transaction" parent="."]
 
-[connection signal="http_response_received" from="SolanaClient" to="." method="_on_solana_client_http_response_received"]
-[connection signal="http_response_received" from="SolanaClient2" to="." method="_on_solana_client_2_http_response_received"]
+[connection signal="http_request_completed" from="SolanaClient" to="." method="_on_solana_client_http_response_received"]
+[connection signal="http_request_completed" from="SolanaClient2" to="." method="_on_solana_client_2_http_response_received"]
 [connection signal="timeout" from="LoadingLabel/Timer" to="LoadingLabel" method="_on_timer_timeout"]

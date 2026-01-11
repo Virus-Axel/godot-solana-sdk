@@ -30,10 +30,10 @@ void RpcMultiHttpRequestClient::process(double delta) {
 	}
 }
 
-void RpcMultiHttpRequestClient::asynchronous_request(const Dictionary &request_body, const Dictionary &parsed_url, const Callable &callback, float timeout) {
+void RpcMultiHttpRequestClient::asynchronous_request(const Dictionary &request_body, const Dictionary &parsed_url, const Callable &callback, const Callable &error_callback, float timeout) {
 	RpcSingleHttpRequestClient *new_client = memnew_custom(RpcSingleHttpRequestClient);
 	requests.append(new_client);
-	new_client->asynchronous_request(request_body, parsed_url, callback, timeout);
+	new_client->asynchronous_request(request_body, parsed_url, callback, error_callback, timeout);
 }
 
 } //namespace godot

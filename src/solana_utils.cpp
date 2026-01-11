@@ -298,15 +298,23 @@ PackedByteArray SolanaUtils::sha256_hash_array(const PackedStringArray &contents
 Variant SolanaUtils::get_nested_value(const Dictionary &dict, const String &path) {
 	const PackedStringArray keys = path.split("/", false);
 
-	ERR_FAIL_COND_V_CUSTOM(keys.is_empty(), nullptr);
+	if (keys.is_empty()) {
+		return nullptr;
+	}
 
 	Variant intermediate_dict = dict;
 	for (const auto &key : keys.slice(0, keys.size() - 1)) {
-		ERR_FAIL_COND_V_CUSTOM(!static_cast<Dictionary>(intermediate_dict).has(key), nullptr);
-		ERR_FAIL_COND_V_CUSTOM(static_cast<Dictionary>(intermediate_dict)[key].get_type() != Variant::DICTIONARY, nullptr);
+		if (!static_cast<Dictionary>(intermediate_dict).has(key)) {
+			return nullptr;
+		}
+		if (static_cast<Dictionary>(intermediate_dict)[key].get_type() != Variant::DICTIONARY) {
+			return nullptr;
+		}
 		intermediate_dict = static_cast<Variant>(static_cast<Dictionary>(intermediate_dict)[key]);
 	}
-	ERR_FAIL_COND_V_CUSTOM(!static_cast<Dictionary>(intermediate_dict).has(keys[keys.size() - 1]), nullptr);
+	if (!static_cast<Dictionary>(intermediate_dict).has(keys[keys.size() - 1])) {
+		return nullptr;
+	}
 
 	return static_cast<Dictionary>(intermediate_dict)[keys[keys.size() - 1]];
 }

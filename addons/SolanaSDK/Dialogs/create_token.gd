@@ -21,7 +21,7 @@ func get_create_instructions():
 	print(auth.get_public_string())
 	
 	$SolanaClient.get_minimum_balance_for_rent_extemption(TokenProgram.TOKEN_MINT_SIZE);
-	var response = await $SolanaClient.http_response_received
+	var response = (await $SolanaClient.http_request_completed)[1]
 
 	if not response.has("result"):
 		push_error("Invalid response from RPC server")
