@@ -298,6 +298,12 @@ void WalletAdapter::poll_message_signing() {
 			const PackedByteArray signed_transaction = get_message_signature();
 			const uint32_t SIGNATURE_OFFSET = (SIGNATURE_LENGTH * active_signer_index) + 1;
 
+			const int latest_action = android_plugin.call("getLatestAction");
+			if (latest_action == 2 && signed_transaction.size() == SIGNATURE_LENGTH) {
+				emit_signal("message_signed", signed_transaction);
+				return;
+			}
+
 			if (signed_transaction.size() < SIGNATURE_OFFSET + SIGNATURE_LENGTH) {
 				emit_signal("signing_failed");
 				return;
@@ -466,12 +472,24 @@ void WalletAdapter::sign_message(const PackedByteArray &serialized_message, cons
 }
 
 void WalletAdapter::sign_text_message(const String &message) {
-#ifdef WEB_ENABLED
 	dirty_transaction = false;
 	active_signer_index = 0;
 
 	wallet_state = State::SIGNING;
+	(void)message;
+
+#ifdef WEB_ENABLED
 	JavaScriptBridge::get_singleton()->eval(get_sign_message_script(message));
+#endif
+#ifdef ANDROID_ENABLED
+
+	Variant android_plugin = get_android_plugin();
+	if (android_plugin.get_type() == Variant::NIL) {
+		WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
+		return;
+	}
+
+	android_plugin.call("signTextMessage", message);
 
 #endif
 }

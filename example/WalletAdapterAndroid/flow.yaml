@@ -31,3 +31,10 @@ appId: com.example.app
 - tapOn:
     text: "AUTHORIZE"
     waitToSettleTimeoutMs: 50000
+- extendedWaitUntil: 
+     visible: "AUTHORIZE"
+     optional: true
+     timeout: 240000
+- tapOn:
+    text: "AUTHORIZE"
+    waitToSettleTimeoutMs: 50000
