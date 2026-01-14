@@ -22,7 +22,8 @@
 namespace godot {
 
 void Account::_bind_methods() {
-	ClassDB::add_signal("Account", MethodInfo("synced_to_chain"));
+    ClassDB::add_signal("Account", MethodInfo("synced_to_chain"));
+    ClassDB::add_signal("Account", MethodInfo("sync_failed"));
 	ClassDB::add_signal("Account", MethodInfo("data_changed"));
 
 	ClassDB::bind_method(D_METHOD("get_min_fetch_interval"), &Account::get_min_fetch_interval);
@@ -269,11 +270,14 @@ bool Account::has_pre_simulate_transaction() const {
 }
 
 void Account::init_with_onchain_data(const Dictionary &onchain_data) {
+    seconds_since_fetch = 0.0;
 	if (!onchain_data.has_all(Array({ "data", "executable", "lamports", "owner" }))) {
+	    emit_signal("sync_failed");
 		return;
 	}
 
 	if (onchain_data["data"].get_type() != Variant::ARRAY) {
+	    emit_signal("sync_failed");
 		return;
 	}
 
@@ -282,7 +286,6 @@ void Account::init_with_onchain_data(const Dictionary &onchain_data) {
 	owner = Pubkey::new_from_variant(onchain_data["owner"]);
 	executable = onchain_data["executable"];
 	lamports = onchain_data["lamports"];
-	seconds_since_fetch = 0.0;
 	emit_signal("synced_to_chain");
 	if (encoded_data != String(data_array[0])) {
 		emit_signal("data_changed");
