@@ -22,6 +22,7 @@ import android.net.Uri
 var myResult: TransactionResult<*>? = null
 var myAction: Int = 0
 var myStoredTransaction: ByteArray? = null
+var myStoredTextMessage: String = ""
 var myMessageSignature: ByteArray? = null
 var myMessageSigningStatus: Int = 0
 var myConnectedKey: ByteArray? = null
@@ -76,9 +77,9 @@ fun signTransaction(sender: ActivityResultSender) {
     LaunchedEffect(Unit) {
         
         val connectionIdentity = ConnectionIdentity(
-            identityUri = Uri.parse("https://solana.com"),
-            iconUri = Uri.parse("favicon.ico"),
-            identityName = "Solana"
+            identityUri = myIdentityUri,
+            iconUri = myIconUri,
+            identityName = myIdentityName
         )
 
         val walletAdapter = MobileWalletAdapter(connectionIdentity)
@@ -113,6 +114,63 @@ fun signTransaction(sender: ActivityResultSender) {
             is TransactionResult.Failure -> {
                 myMessageSigningStatus = 2
                 println("Error during transaction signing: " + result.e.message)
+            }
+        }
+
+        myResult = result
+        activity?.finish()
+    }
+}
+
+@Composable
+fun signTextMessage(sender: ActivityResultSender) {
+    val activity = LocalContext.current as? Activity
+    LaunchedEffect(Unit) {
+        
+        val connectionIdentity = ConnectionIdentity(
+            identityUri = myIdentityUri,
+            iconUri = myIconUri,
+            identityName = myIdentityName
+        )
+
+        val walletAdapter = MobileWalletAdapter(connectionIdentity)
+        when (myConnectCluster) {
+            0 -> walletAdapter.blockchain = Solana.Devnet
+            1 -> walletAdapter.blockchain = Solana.Mainnet
+            2 -> walletAdapter.blockchain = Solana.Testnet
+            else -> walletAdapter.blockchain = Solana.Devnet
+        }
+
+        if(authToken != null){
+            walletAdapter.authToken = authToken
+        }
+
+        if(myConnectedKey == null){
+            myMessageSigningStatus = 2
+            println("No connected key available for signing.")
+            activity?.finish()
+            return@LaunchedEffect
+            
+        }
+        val result = walletAdapter.transact(sender){
+            signMessagesDetached(arrayOf(myStoredTextMessage.toByteArray()), arrayOf(myConnectedKey!!))
+        }
+
+        when (result) {
+            is TransactionResult.Success -> {
+                val signedMessageBytes = result.successPayload?.messages?.first()?.signatures?.first()
+                signedMessageBytes?.let {
+                    myMessageSignature = signedMessageBytes
+                    myMessageSigningStatus = 1
+                }
+            }
+            is TransactionResult.NoWalletFound -> {
+                myMessageSigningStatus = 2
+                println("No MWA compatible wallet app found on device.")
+            }
+            is TransactionResult.Failure -> {
+                myMessageSigningStatus = 2
+                println("Error during message signing: " + result.e.message)
             }
         }
 

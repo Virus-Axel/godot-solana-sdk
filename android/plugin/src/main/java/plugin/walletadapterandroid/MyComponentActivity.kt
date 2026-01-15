@@ -34,5 +34,12 @@ class ComposeWalletActivity : ComponentActivity() {
                 signTransaction(sender)
             }
         }
+        else if (myAction == 2) {
+            hasConnectedWallet = true
+            val sender = ActivityResultSender(this)
+            setContent {
+                signTextMessage(sender)
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@ package plugin.walletadapterandroid
 import plugin.walletadapterandroid.myResult
 import plugin.walletadapterandroid.myAction
 import plugin.walletadapterandroid.myStoredTransaction
+import plugin.walletadapterandroid.myStoredTextMessage
 import plugin.walletadapterandroid.myMessageSignature
 import plugin.walletadapterandroid.myMessageSigningStatus
 import plugin.walletadapterandroid.myConnectedKey
@@ -94,10 +95,25 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
             it.startActivity(intent)
         }
     }
+    
+    @UsedByGodot
+    fun signTextMessage(textMessage: String){
+        myAction = 2
+        myStoredTextMessage = textMessage
+        godot.getActivity()?.let {
+            val intent = Intent(it, ComposeWalletActivity::class.java)
+            it.startActivity(intent)
+        }
+    }
 
     @UsedByGodot
     fun getMessageSignature(): ByteArray {
         return myMessageSignature?: ByteArray(0)
+    }
+
+    @UsedByGodot
+    fun getLatestAction(): Int {
+        return myAction
     }
 
     @UsedByGodot

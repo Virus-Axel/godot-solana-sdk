@@ -90,9 +90,8 @@ func sign_text_message(test_id):
 func _ready():
 	await wallet_adapter_sign(0)
 	await wallet_adapter_sign(1)
-	
-	# TODO(VirAx): Enable once implemented.
-	#await sign_text_message(3)
+	await sign_text_message(3)
+
 	await wallet_adapter_in_deserialized_transaction()
 	
 	print("[ALL TESTS PASSED]")
