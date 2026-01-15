@@ -1,37 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1768138127396,
+  "lastUpdate": 1768456271568,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "axel.benjaminsson@live.se",
-            "name": "Axel",
-            "username": "Virus-Axel"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "d7291ec14f8be27171b1b5b1c8fa6dcb7fa25af5",
-          "message": "Merge pull request #342 from Virus-Axel/feature/idl_to_node\n\nFeature/idl to node",
-          "timestamp": "2025-03-09T19:23:46+01:00",
-          "tree_id": "78401c66e9463ed960e2d3b82101bf19920a0242",
-          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/d7291ec14f8be27171b1b5b1c8fa6dcb7fa25af5"
-        },
-        "date": 1741545113999,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Simple Transaction Performance Index",
-            "value": 0.35958904109589,
-            "unit": "Percent"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1769,6 +1740,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index (With helper class)",
             "value": 0.0905797101449275,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "75f19db0d64621de92f74e9513a9e8fc4eaefe0c",
+          "message": "Merge pull request #435 from Virus-Axel/bugfix/sign_message_android\n\nAdd missing android bindings to signMessage function",
+          "timestamp": "2026-01-15T06:40:59+01:00",
+          "tree_id": "95a2cd680234864f80906440a6e00e4e3002559e",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/75f19db0d64621de92f74e9513a9e8fc4eaefe0c"
+        },
+        "date": 1768456269483,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.259927797833935,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0794223826714801,
             "unit": "Percent"
           }
         ]
