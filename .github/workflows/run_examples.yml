@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.ref }}-run-examples
   cancel-in-progress: true
 
 jobs:
@@ -208,6 +208,11 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@v2
+
+      - name: Set up Clang for cargo
+        shell: bash
+        run: |
+          sudo apt install clang libclang-dev
 
       - name: Set up SCons
         shell: bash
