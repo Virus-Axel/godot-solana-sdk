@@ -1,0 +1,21 @@
+[package]
+name = "validator_bridge"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "validator_bridge"
+crate-type = ["staticlib"]
+
+[features]
+default = ["use_system_allocator"]
+use_system_allocator = []
+
+[dependencies]
+gag = "1.0.0"
+once_cell = "1.21.3"
+solana-faucet = {git = "https://github.com/Virus-Axel/agave-godot", branch = "test/remove_jemmalocator", package = "solana-faucet", features = ["dev-context-only-utils"] }
+solana-fee-calculator = "3.0.0"
+solana-sdk = "*"
+solana-streamer = {git = "https://github.com/Virus-Axel/agave-godot", branch = "test/remove_jemmalocator", package = "solana-streamer" }
+solana-test-validator = {git = "https://github.com/Virus-Axel/agave-godot", branch = "test/remove_jemmalocator", package = "solana-test-validator"}
