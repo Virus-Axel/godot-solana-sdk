@@ -365,6 +365,27 @@ func mint_with_nft_payment():
 	PASS(13)
 
 
+func mint_with_plugin():
+	var asset_kp = Keypair.new_random()
+		
+	var args = load("res://resources/new_create_v_2_args.tres")
+	
+	var mint_asset_ix:Instruction = $mpl_core_program.CreateV2(
+		asset_kp,
+		null,
+		payer,
+		payer,
+		payer,
+		payer,
+		SystemProgram.get_pid(),
+		null,
+		args
+	)
+	
+	await send_instructions([mint_asset_ix])
+	PASS(14)
+
+
 func create_traditional_mint():
 	var instructions = []
 	
@@ -445,6 +466,7 @@ func _ready():
 
 	await mint_with_token_payment()
 	await mint_with_nft_payment()
+	await mint_with_plugin()
 	
 	print("ALL TESTS PASSED")
 	get_tree().quit(0)
