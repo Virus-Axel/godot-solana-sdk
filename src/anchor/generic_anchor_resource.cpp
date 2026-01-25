@@ -769,8 +769,10 @@ void GenericAnchorResource::add_property(const Dictionary &property_data, const 
 			optional = static_cast<Dictionary>(property_data["type"]).has("option");
 		}
 
+		// TODO(VirAx): Add enum class hint to be clickable in docs.
+		(void)enum_class_name_hint;
 		const ResourcePropertyInfo prop_info = ResourcePropertyInfo{
-			.property_info = PropertyInfo(property_godot_type, property_name, hint, hint_string, PROPERTY_USAGE_DEFAULT, String(enum_class_name_hint) + "." + object_type),
+			.property_info = PropertyInfo(property_godot_type, property_name, hint, hint_string, PROPERTY_USAGE_DEFAULT, object_type),
 			.value = 0,
 			.optional = optional,
 			.enabled = !optional,
