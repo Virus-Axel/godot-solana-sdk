@@ -1,0 +1,18 @@
+[gd_resource type="CreateV2Args" load_steps=4 format=3 uid="uid://hp2dr8mtnliy"]
+
+[sub_resource type="Attribute" id="Attribute_qakh1"]
+key = "name"
+value = "Bill"
+
+[sub_resource type="Attributes" id="Attributes_pu3yd"]
+attributeList = Array[Attribute]([SubResource("Attribute_qakh1")])
+
+[sub_resource type="PluginAuthorityPair" id="PluginAuthorityPair_qakh1"]
+plugin = 6
+Attributes_value_0 = SubResource("Attributes_pu3yd")
+
+[resource]
+name = "abc"
+uri = "def"
+enable_plugins = true
+plugins = Array[PluginAuthorityPair]([SubResource("PluginAuthorityPair_qakh1")])
