@@ -1,37 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1768456271568,
+  "lastUpdate": 1769454262444,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "axel.benjaminsson@live.se",
-            "name": "Axel",
-            "username": "Virus-Axel"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f32259fa83c87d8653ea0bd1f46c5a1baed461f8",
-          "message": "Merge pull request #343 from Virus-Axel/bugfix/remove_leaks\n\nRemove leaking memory in class name getter",
-          "timestamp": "2025-03-23T21:12:30+01:00",
-          "tree_id": "28c33d80b82d7425615f9266c96f7237a3bdc049",
-          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/f32259fa83c87d8653ea0bd1f46c5a1baed461f8"
-        },
-        "date": 1742761438192,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Simple Transaction Performance Index",
-            "value": 0.356164383561644,
-            "unit": "Percent"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1774,6 +1745,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index (With helper class)",
             "value": 0.0794223826714801,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c92aff7bb60d2af29dc5b4000d4052f5bc54e301",
+          "message": "Merge pull request #438 from Virus-Axel/bugfix/enum_hints\n\nRemove invalid enum type hints",
+          "timestamp": "2026-01-26T19:51:47+01:00",
+          "tree_id": "ff6de944eec0cfb6a65d4a77fa7e4c32b67b1d19",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/c92aff7bb60d2af29dc5b4000d4052f5bc54e301"
+        },
+        "date": 1769454260443,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.248201438848921,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0863309352517986,
             "unit": "Percent"
           }
         ]
