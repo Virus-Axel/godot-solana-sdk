@@ -1,37 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1769454262444,
+  "lastUpdate": 1771155107220,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "axel.benjaminsson@live.se",
-            "name": "Axel",
-            "username": "Virus-Axel"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "612dd099e4b94bd3d2871d4b4154e2b7300e77be",
-          "message": "Merge pull request #345 from Virus-Axel/bugfix/crash_on_set_payer\n\nUpdate godot version in benchmark job",
-          "timestamp": "2025-03-24T17:26:28+01:00",
-          "tree_id": "4379fcb14ca90b1dc8047eacea78d4c78781e631",
-          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/612dd099e4b94bd3d2871d4b4154e2b7300e77be"
-        },
-        "date": 1742834332159,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Simple Transaction Performance Index",
-            "value": 0.360824742268041,
-            "unit": "Percent"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1779,6 +1750,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index (With helper class)",
             "value": 0.0863309352517986,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2f810ff02483fe604b96e6eb3275e4ec93d7c6c4",
+          "message": "Merge pull request #441 from Virus-Axel/bugfix/enum_bind\n\nAdd enum bind for Cluster",
+          "timestamp": "2026-02-15T12:19:46+01:00",
+          "tree_id": "6a7f7e07b7ca20c5c47d707f26a02d751d273ced",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/2f810ff02483fe604b96e6eb3275e4ec93d7c6c4"
+        },
+        "date": 1771155105824,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.251798561151079,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0683453237410072,
             "unit": "Percent"
           }
         ]
