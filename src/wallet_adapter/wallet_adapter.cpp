@@ -364,6 +364,49 @@ void WalletAdapter::_bind_methods() {
 	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::STRING, "mobile_identity_uri"), "set_mobile_identity_uri", "get_mobile_identity_uri");
 	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::STRING, "mobile_identity_name"), "set_mobile_identity_name", "get_mobile_identity_name");
 	ClassDB::add_property("WalletAdapter", PropertyInfo(Variant::STRING, "mobile_icon_path"), "set_mobile_icon_path", "get_mobile_icon_path");
+
+	BIND_ENUM_CONSTANT(DEVNET);
+	BIND_ENUM_CONSTANT(MAINNET);
+	BIND_ENUM_CONSTANT(TESTNET);
+
+	BIND_ENUM_CONSTANT(ALPHA);
+	BIND_ENUM_CONSTANT(AVANA);
+	BIND_ENUM_CONSTANT(BITKEEP);
+	BIND_ENUM_CONSTANT(BITPIE);
+	BIND_ENUM_CONSTANT(CLOVER);
+	BIND_ENUM_CONSTANT(COIN98);
+	BIND_ENUM_CONSTANT(COINBASE);
+	BIND_ENUM_CONSTANT(COINHUB);
+	BIND_ENUM_CONSTANT(FRACTAL);
+	BIND_ENUM_CONSTANT(HUOBI);
+	BIND_ENUM_CONSTANT(HYPERPAY);
+	BIND_ENUM_CONSTANT(KEYSTONE);
+	BIND_ENUM_CONSTANT(KRYSTAL);
+	BIND_ENUM_CONSTANT(LEDGER);
+	BIND_ENUM_CONSTANT(MATH);
+	BIND_ENUM_CONSTANT(NEKO);
+	BIND_ENUM_CONSTANT(NIGHTLY);
+	BIND_ENUM_CONSTANT(NUFI);
+	BIND_ENUM_CONSTANT(ONTO);
+	BIND_ENUM_CONSTANT(PARTICLE);
+	BIND_ENUM_CONSTANT(PHANTOM);
+	BIND_ENUM_CONSTANT(SAFEPAL);
+	BIND_ENUM_CONSTANT(SAIFU);
+	BIND_ENUM_CONSTANT(SALMON);
+	BIND_ENUM_CONSTANT(SKY);
+	BIND_ENUM_CONSTANT(SOLFLARE);
+	BIND_ENUM_CONSTANT(SOLONG);
+	BIND_ENUM_CONSTANT(SPOT);
+	BIND_ENUM_CONSTANT(TOKENARY);
+	BIND_ENUM_CONSTANT(TOKENPOCKET);
+	BIND_ENUM_CONSTANT(TORUS);
+	BIND_ENUM_CONSTANT(TREZOR);
+	BIND_ENUM_CONSTANT(TRUST);
+	BIND_ENUM_CONSTANT(UNSAFEBURNER);
+	BIND_ENUM_CONSTANT(WALLETCONNECT);
+	BIND_ENUM_CONSTANT(XDEFI);
+	BIND_ENUM_CONSTANT(BACKPACK);
+	BIND_ENUM_CONSTANT(MAX_TYPES);
 }
 
 WalletAdapter::WalletAdapter() {
@@ -405,19 +448,19 @@ Variant WalletAdapter::get_connected_key() {
 	return Pubkey::new_from_bytes(connected_key);
 }
 
-void WalletAdapter::set_mobile_blockchain(int mobile_blockchain) {
-	this->mobile_blockchain = static_cast<Blockchain>(mobile_blockchain);
+void WalletAdapter::set_mobile_blockchain(Cluster mobile_blockchain) {
+	this->mobile_blockchain = mobile_blockchain;
 }
 
-int WalletAdapter::get_mobile_blockchain() {
+WalletAdapter::Cluster WalletAdapter::get_mobile_blockchain() {
 	return mobile_blockchain;
 }
 
-void WalletAdapter::set_wallet_type(int wallet_type) {
-	this->wallet_type = static_cast<WalletType>(wallet_type);
+void WalletAdapter::set_wallet_type(WalletType wallet_type) {
+	this->wallet_type = wallet_type;
 }
 
-int WalletAdapter::get_wallet_type() {
+WalletAdapter::WalletType WalletAdapter::get_wallet_type() {
 	return wallet_type;
 }
 

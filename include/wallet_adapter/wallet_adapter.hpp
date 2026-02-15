@@ -5,6 +5,7 @@
 
 #include "godot_cpp/classes/control.hpp"
 #include "godot_cpp/classes/node.hpp"
+#include "godot_cpp/core/binder_common.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
@@ -12,53 +13,6 @@
 #include "solana_utils.hpp"
 
 namespace godot {
-
-enum Blockchain : std::uint8_t {
-	MAINNET = 0,
-	DEVNET = 1,
-	TESTNET = 2,
-};
-
-enum WalletType : std::uint8_t {
-	ALPHA,
-	AVANA,
-	BITKEEP,
-	BITPIE,
-	CLOVER,
-	COIN98,
-	COINBASE,
-	COINHUB,
-	FRACTAL,
-	HUOBI,
-	HYPERPAY,
-	KEYSTONE,
-	KRYSTAL,
-	LEDGER,
-	MATH,
-	NEKO,
-	NIGHTLY,
-	NUFI,
-	ONTO,
-	PARTICLE,
-	PHANTOM,
-	SAFEPAL,
-	SAIFU,
-	SALMON,
-	SKY,
-	SOLFLARE,
-	SOLONG,
-	SPOT,
-	TOKENARY,
-	TOKENPOCKET,
-	TORUS,
-	TREZOR,
-	TRUST,
-	UNSAFEBURNER,
-	WALLETCONNECT,
-	XDEFI,
-	BACKPACK,
-	MAX_TYPES,
-};
 
 /**
  * @brief Handles interaction with external wallet applications.
@@ -72,6 +26,10 @@ enum WalletType : std::uint8_t {
  */
 class WalletAdapter : public Node {
 	GDCLASS_CUSTOM(WalletAdapter, Node)
+public:
+	enum Cluster : std::uint8_t;
+	enum WalletType : std::uint8_t;
+
 private:
 	bool connected = false;
 	bool dirty_transaction = false;
@@ -88,7 +46,7 @@ private:
 	PackedByteArray connected_key;
 	State wallet_state = State::IDLE;
 	WalletType wallet_type = PHANTOM;
-	Blockchain mobile_blockchain = Blockchain::MAINNET;
+	Cluster mobile_blockchain = Cluster::MAINNET;
 
 	static Variant get_android_plugin();
 	void clear_state();
@@ -110,6 +68,59 @@ protected:
 	static void _bind_methods();
 
 public:
+	/**
+	 * @brief Clusters for mobile blockchain selection.
+	 */
+	enum Cluster : std::uint8_t {
+		DEVNET = 0,
+		MAINNET = 1,
+		TESTNET = 2,
+	};
+
+	/**
+	 * @brief Wallet types supported by the adapter.
+	 */
+	enum WalletType : std::uint8_t {
+		ALPHA,
+		AVANA,
+		BITKEEP,
+		BITPIE,
+		CLOVER,
+		COIN98,
+		COINBASE,
+		COINHUB,
+		FRACTAL,
+		HUOBI,
+		HYPERPAY,
+		KEYSTONE,
+		KRYSTAL,
+		LEDGER,
+		MATH,
+		NEKO,
+		NIGHTLY,
+		NUFI,
+		ONTO,
+		PARTICLE,
+		PHANTOM,
+		SAFEPAL,
+		SAIFU,
+		SALMON,
+		SKY,
+		SOLFLARE,
+		SOLONG,
+		SPOT,
+		TOKENARY,
+		TOKENPOCKET,
+		TORUS,
+		TREZOR,
+		TRUST,
+		UNSAFEBURNER,
+		WALLETCONNECT,
+		XDEFI,
+		BACKPACK,
+		MAX_TYPES,
+	};
+
 	/**
 	 * @_process
 	 */
@@ -204,22 +215,22 @@ public:
 	/**
 	 * @setter{mobile_blockchain}
 	 */
-	void set_mobile_blockchain(int mobile_blockchain);
+	void set_mobile_blockchain(Cluster mobile_blockchain);
 
 	/**
-	 * @getter{mobile_blockchain, int}
+	 * @getter{mobile_blockchain, Cluster}
 	 */
-	int get_mobile_blockchain();
+	Cluster get_mobile_blockchain();
 
 	/**
 	 * @setter{wallet_type}
 	 */
-	void set_wallet_type(int wallet_type);
+	void set_wallet_type(WalletType wallet_type);
 
 	/**
-	 * @getter{wallet_type, int}
+	 * @getter{wallet_type, WalletType}
 	 */
-	int get_wallet_type();
+	WalletType get_wallet_type();
 
 	/**
 	 * @setter{mobile_identity_name}
@@ -268,6 +279,12 @@ public:
 
 	~WalletAdapter() override = default;
 };
+
 } //namespace godot
+
+// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
+VARIANT_ENUM_CAST(WalletAdapter::Cluster);
+VARIANT_ENUM_CAST(WalletAdapter::WalletType);
+// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
 
 #endif
