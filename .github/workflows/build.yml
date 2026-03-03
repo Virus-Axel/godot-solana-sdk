@@ -3,6 +3,11 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.ref }}-build
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ${{ matrix.runner }}
@@ -27,14 +32,14 @@ jobs:
             threads: True
           - identifier: windows-debug
             name: Windows Debug
-            runner: ubuntu-latest
+            runner: windows-latest
             target: template_debug
             platform: windows
             arch: x86_64
             threads: True
           - identifier: windows-release
             name: Windows Release
-            runner: ubuntu-latest
+            runner: windows-latest
             target: template_release
             platform: windows
             arch: x86_64
@@ -127,11 +132,10 @@ jobs:
 
       - name: (Windows) Install mingw64
         if: ${{ startsWith(matrix.identifier, 'windows-') }}
-        shell: sh
-        run: |
-          sudo apt-get install mingw-w64
-          sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
-          sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: mingw-w64-x86_64-gcc
 
       - name: (Android) Set up Java 21
         if: ${{ startsWith(matrix.identifier, 'android-') }}
@@ -177,6 +181,33 @@ jobs:
           python -c "import sys; print(sys.version)"
           python -m pip install scons==4.8
 
+      - name: Set up rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: 1.86.0
+
+      - name: (Linux) Set up Clang for cargo
+        if: ${{ startsWith(matrix.identifier, 'linux-') }}
+        shell: bash
+        run: |
+          sudo apt install clang libclang-dev
+
+      - name: (Windows) Install Rust Windows target
+        if: ${{ startsWith(matrix.identifier, 'windows-') }}
+        run: |
+          rustup target add x86_64-pc-windows-gnu
+          vcpkg install openssl:x64-windows
+          echo "OPENSSL_NO_VENDOR=1" >> $GITHUB_ENV
+          echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" >> $GITHUB_ENV
+
+      - name: (Mac) Install clang for cargo
+        if: ${{ startsWith(matrix.identifier, 'macos-') }}
+        shell: sh
+        run: |
+          brew install llvm
+          echo "LLVM_CONFIG_PATH=$(brew --prefix llvm)/bin/llvm-config" >> $GITHUB_ENV
+          echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
+
       - name: Checkout project
         uses: actions/checkout@v2
         with:
@@ -192,10 +223,34 @@ jobs:
           path: .godot/
           key: godot-cpp-${{ matrix.identifier }}-${{ steps.godotcpp.outputs.sha }}
 
+      - name: Install OpenSSL (vcpkg)
+        if: ${{ startsWith(matrix.identifier, 'windows-') }}
+        shell: powershell
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          .\vcpkg\bootstrap-vcpkg.bat
+          .\vcpkg\vcpkg install openssl:x64-windows
+          echo "OPENSSL_DIR=$PWD\vcpkg\installed\x64-windows" >> $env:GITHUB_ENV
+          echo "OPENSSL_LIB_DIR=$PWD\vcpkg\installed\x64-windows\lib" >> $env:GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=$PWD\vcpkg\installed\x64-windows\include" >> $env:GITHUB_ENV
+
+      - name: Setup upterm session
+        if: ${{ startsWith(matrix.identifier, 'windows-') }}
+        shell: sh
+        run: |
+          OPENSSL_NO_VENDOR=1 cargo build --manifest-path validator_bridge/Cargo.toml
+          ls validator_bridge/target
+
       - name: Compile extension
         shell: sh
         run: |
-          scons threads='${{ matrix.threads }}' target='${{ matrix.target }}' platform='${{ matrix.platform }}' arch='${{ matrix.arch }}' -j2
+          EXTRA_ARGS=""
+
+          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+            EXTRA_ARGS="$EXTRA_ARGS use_mingw=yes"
+          fi
+
+          OPENSSL_NO_VENDOR=1 scons threads='${{ matrix.threads }}' target='${{ matrix.target }}' platform='${{ matrix.platform }}' arch='${{ matrix.arch }}' $EXTRA_ARGS
           cp godot-solana-sdk.gdextension bin/
           ls -l */bin/
 

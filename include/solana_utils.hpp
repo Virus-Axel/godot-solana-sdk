@@ -24,13 +24,13 @@ namespace godot {
 
 #define VERBOSE_LOG_PREFIX "[SolanaSDK] "
 
-#define GDCLASS_CUSTOM(...)                                                                                                                                                                                                                                                             \
+#define GDCLASS_CUSTOM(m_class, m_inherits)                                                                                                                                                                                                                                             \
 	/* NOLINTBEGIN(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast,bugprone-unhandled-self-assignment,cppcoreguidelines-pro-type-cstyle-cast)*/ \
-	GDCLASS(__VA_ARGS__) /* NOLINTEND(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast,bugprone-unhandled-self-assignment,cppcoreguidelines-pro-type-cstyle-cast) */
+	GDCLASS(m_class, m_inherits) /* NOLINTEND(hicpp-use-auto,modernize-use-auto,llvm-else-after-return,readability-else-after-return,cppcoreguidelines-pro-type-reinterpret-cast,cert-oop54-cpp,cppcoreguidelines-pro-type-const-cast,bugprone-unhandled-self-assignment,cppcoreguidelines-pro-type-cstyle-cast) */
 
-#define memnew_custom(...)                            \
+#define memnew_custom(m_class)                        \
 	/* NOLINTBEGIN(cppcoreguidelines-owning-memory)*/ \
-	memnew(__VA_ARGS__) /* NOLINTEND(cppcoreguidelines-owning-memory) */
+	memnew(m_class) /* NOLINTEND(cppcoreguidelines-owning-memory) */
 
 #define ERR_PRINT_ED_CUSTOM(m_msg)                                         \
 	/* NOLINTBEGIN(llvm-else-after-return,readability-else-after-return)*/ \

@@ -399,6 +399,37 @@ else:
             + honey_sources, 
         )
 
+    # Validator bridge for desktop platforms.
+
+    if env["platform"] in ["linux", "windows", "macos"]:
+        
+        lib_ending = "a"
+
+        debug_or_release = "release" if env["target"] == "template_release" else "debug"
+
+        validator_bridge_path = "validator_bridge"
+        validator_bridge_lib = f"{validator_bridge_path}/target/{debug_or_release}/libvalidator_bridge.{lib_ending}"
+        if env["platform"] == "windows":
+            validator_bridge_lib = f"{validator_bridge_path}/target/{debug_or_release}/validator_bridge.lib"
+        validator_bridge_sources = Glob(f"{validator_bridge_path}/src/*.rs")
+
+        CARGO = os.environ.get("CARGO_PATH", "cargo")
+
+        library_path = f"{validator_bridge_path}/target/{debug_or_release}"
+
+        validator_bridge_command = env.Command(
+            validator_bridge_lib,
+            validator_bridge_sources,
+            action=f"OPENSSL_NO_VENDOR=1 {CARGO} build --manifest-path {validator_bridge_path}/Cargo.toml {'--release' if debug_or_release == 'release' else ''}"
+        )
+
+        env.Append(
+            LIBS=["validator_bridge"],
+            LIBPATH=[library_path]
+        )
+
+        Depends(library, validator_bridge_command)
+
     Default(library)
 
     if env["platform"] == "web":
