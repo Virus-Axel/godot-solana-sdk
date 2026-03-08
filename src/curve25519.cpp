@@ -5,6 +5,64 @@
 
 //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers,readability-identifier-length,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-pro-bounds-constant-array-index,cppcoreguidelines-pro-bounds-pointer-arithmetic,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
+class uint128_fallback {
+public:
+    uint64_t hi;
+    uint64_t lo;
+
+    // Constructors
+    uint128_fallback() : hi(0), lo(0) {}
+    uint128_fallback(uint64_t low) : hi(0), lo(low) {}
+    uint128_fallback(uint64_t high, uint64_t low) : hi(high), lo(low) {}
+
+    // Conversion to uint64_t (low 64 bits)
+    operator uint64_t() const {
+        return lo;
+    }
+
+    // Addition
+    uint128_fallback operator+(const uint128_fallback& other) const {
+        uint128_fallback r;
+        r.lo = lo + other.lo;
+        r.hi = hi + other.hi + (r.lo < lo);
+        return r;
+    }
+
+    uint128_fallback& operator+=(const uint128_fallback& other) {
+        uint64_t old_lo = lo;
+        lo += other.lo;
+        hi += other.hi + (lo < old_lo);
+        return *this;
+    }
+
+    // Multiplication
+    uint128_fallback operator*(const uint128_fallback& other) const {
+        const uint64_t mask32 = 0xffffffffULL;
+
+        uint64_t a_lo = lo & mask32;
+        uint64_t a_hi = lo >> 32;
+        uint64_t b_lo = other.lo & mask32;
+        uint64_t b_hi = other.lo >> 32;
+
+        uint64_t p0 = a_lo * b_lo;
+        uint64_t p1 = a_lo * b_hi;
+        uint64_t p2 = a_hi * b_lo;
+        uint64_t p3 = a_hi * b_hi;
+
+        uint64_t mid = (p0 >> 32) + (p1 & mask32) + (p2 & mask32);
+
+        uint64_t res_lo = (p0 & mask32) | (mid << 32);
+        uint64_t res_hi = p3 + (p1 >> 32) + (p2 >> 32) + (mid >> 32);
+
+        return uint128_fallback(res_hi, res_lo);
+    }
+};
+
+#if defined(__SIZEOF_INT128__)
+#else
+using __uint128_t = uint128_fallback;
+#endif
+
 namespace {
 // Multiply two 64-bit integers with 128 bits of output.
 inline __uint128_t m(uint64_t x, uint64_t y) {
@@ -41,11 +99,11 @@ FieldElement FieldElement::pow2k(uint32_t k) {
 		const uint64_t a3_19 = a[3] * 19;
 		const uint64_t a4_19 = a[4] * 19;
 
-		const __uint128_t c0 = m(a[0], a[0]) + (2 * (m(a[1], a4_19) + m(a[2], a3_19)));
-		__uint128_t c1 = m(a[3], a3_19) + (2 * (m(a[0], a[1]) + m(a[2], a4_19)));
-		__uint128_t c2 = m(a[1], a[1]) + (2 * (m(a[0], a[2]) + m(a[4], a3_19)));
-		__uint128_t c3 = m(a[4], a4_19) + (2 * (m(a[0], a[3]) + m(a[1], a[2])));
-		__uint128_t c4 = m(a[2], a[2]) + (2 * (m(a[0], a[4]) + m(a[1], a[3])));
+		const __uint128_t c0 = m(a[0], a[0]) + (__uint128_t(2) * (m(a[1], a4_19) + m(a[2], a3_19)));
+		__uint128_t c1 = m(a[3], a3_19) + (__uint128_t(2) * (m(a[0], a[1]) + m(a[2], a4_19)));
+		__uint128_t c2 = m(a[1], a[1]) + (__uint128_t(2) * (m(a[0], a[2]) + m(a[4], a3_19)));
+		__uint128_t c3 = m(a[4], a4_19) + (__uint128_t(2) * (m(a[0], a[3]) + m(a[1], a[2])));
+		__uint128_t c4 = m(a[2], a[2]) + (__uint128_t(2) * (m(a[0], a[4]) + m(a[1], a[3])));
 
 		const uint64_t LOW_51_BIT_MASK = (1ULL << 51U) - 1ULL;
 

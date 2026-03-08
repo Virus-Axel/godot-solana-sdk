@@ -25,3 +25,7 @@ android.template_debug.arm64="libgodot-solana-sdk.android.template_debug.arm64.s
 android.template_release.arm64="libgodot-solana-sdk.android.template_release.arm64.so"
 android.template_debug.x86_64="libgodot-solana-sdk.android.template_debug.x86_64.so"
 android.template_release.x86_64="libgodot-solana-sdk.android.template_release.x86_64.so"
+android.template_debug.x86_32="libgodot-solana-sdk.android.template_debug.x86_32.so"
+android.template_release.x86_32="libgodot-solana-sdk.android.template_release.x86_32.so"
+android.template_debug.arm32="libgodot-solana-sdk.android.template_debug.arm32.so"
+android.template_release.arm32="libgodot-solana-sdk.android.template_release.arm32.so"
