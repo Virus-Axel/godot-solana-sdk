@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://mwa_auth_cache_test"]
+
+[ext_resource type="Script" path="res://addons/SolanaSDK/Optional/SolanaService/Scripts/WalletAdapter/mwa_auth_cache_test.gd" id="1_b7yq2"]
+
+[node name="MWAAuthCacheTest" type="Node"]
+script = ExtResource("1_b7yq2")
+

@@ -1,8 +1,8 @@
 extends Node
 class_name WalletAdapterUI
 
-@export var provider_names:Array[String]
-@export var provider_images:Array[Texture]
+@export var provider_names:Array
+@export var provider_images:Array
 
 @export var selection_spawn:Container
 @export var provider_button_scn:PackedScene

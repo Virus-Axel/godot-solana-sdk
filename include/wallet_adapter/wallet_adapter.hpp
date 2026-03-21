@@ -34,6 +34,19 @@ private:
 	bool connected = false;
 	bool dirty_transaction = false;
 	uint32_t active_signer_index = 0;
+
+	// Mobile Wallet Adapter (MWA) session operation currently being polled.
+	enum class MwaOperation : std::uint8_t {
+		NONE = 0,
+		AUTHORIZE = 1,
+		DEAUTHORIZE = 2,
+		CAPABILITIES = 3,
+	};
+	MwaOperation mwa_operation = MwaOperation::NONE;
+	String mwa_auth_token;
+	String mwa_capabilities_json;
+	String mwa_wallet_uri_base;
+
 	String mobile_identity_uri = "https://solana.com";
 	String mobile_icon_path = "favicon.ico";
 	String mobile_identity_name = "Solana";
@@ -143,6 +156,35 @@ public:
 	 * and the WalletAdapter will instantly get the connected Pubkey.
 	 */
 	void connect_wallet();
+
+	/**
+	 * @brief Provide an auth token for silent MWA re-authorization.
+	 *
+	 * If set, the next authorization/connect attempt should attempt a silent session re-use.
+	 */
+	void set_auth_token(const String &auth_token);
+
+	/**
+	 * @brief Get the last known auth token (after a successful authorization).
+	 */
+	[[nodiscard]] String get_auth_token() const;
+
+	/**
+	 * @brief Revoke an MWA auth token and invalidate the current session.
+	 *
+	 * Emits `deauthorization_established` / `deauthorization_failed` on completion.
+	 */
+	void deauthorize(const String &auth_token);
+
+	/**
+	 * @brief Query wallet's MWA capabilities (max signing batch sizes, supported transaction versions).
+	 */
+	void get_capabilities();
+
+	/**
+	 * @brief Wallet URI base returned by the last successful MWA authorize/reauthorize.
+	 */
+	[[nodiscard]] String get_wallet_uri_base() const;
 
 	/**
 	 * @brief Check if connected.
@@ -276,6 +318,20 @@ public:
 	 * @param message Text message to sign.
 	 */
 	void sign_text_message(const String &message);
+
+	/**
+	 * @brief Sign an arbitrary detached message payload (MWA signMessages).
+	 *
+	 * Android-only in this repo; web platform currently has text-only signing.
+	 */
+	void sign_message_bytes(const PackedByteArray &message_bytes);
+
+	/**
+	 * @brief Sign and send a serialized Solana transaction (MWA signAndSendTransactions).
+	 *
+	 * Android-only in this repo.
+	 */
+	void sign_and_send_transaction(const PackedByteArray &serialized_transaction);
 
 	~WalletAdapter() override = default;
 };
