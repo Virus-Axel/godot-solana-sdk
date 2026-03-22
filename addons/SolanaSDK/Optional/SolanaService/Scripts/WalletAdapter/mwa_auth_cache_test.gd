@@ -6,12 +6,12 @@ extends Node
 ## save -> load -> clear -> empty result.
 
 func _ready() -> void:
-	print("[MWA Auth Cache Test] Starting...")
+	print_verbose("[MWA Auth Cache Test] Starting...")
 
 	_test_memory_cache()
 	_test_file_cache()
 
-	print("[MWA Auth Cache Test] Passed.")
+	print_verbose("[MWA Auth Cache Test] Passed.")
 
 func _test_memory_cache() -> void:
 	var cache := MWAMemoryCache.new()
