@@ -69,12 +69,18 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
             "signMessageBytes",
             "getMessageSignature",
             "getLatestAction",
-            "clearState"
+            "clearState",
+            "setConnectedKey"
         )
     }
 
     @UsedByGodot
     fun connectWallet(cluster: Int, uri: String, icon: String, name: String) {
+        if (!authToken.isNullOrEmpty()) {
+            myResult = TransactionResult.Success(true)
+            return
+        }
+
         // Always start a fresh connect operation; prior results must not short-circuit new sessions.
         myAction = 0
         myResult = null
@@ -171,6 +177,11 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
     @UsedByGodot
     fun getConnectedKey(): ByteArray?{
         return myConnectedKey?: ByteArray(0)
+    }
+
+    @UsedByGodot
+    fun setConnectedKey(key: ByteArray) {
+        myConnectedKey = key
     }
 
     @UsedByGodot

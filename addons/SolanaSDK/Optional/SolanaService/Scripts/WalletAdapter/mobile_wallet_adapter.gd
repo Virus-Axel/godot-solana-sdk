@@ -232,6 +232,14 @@ func authorize(identity_name: String, identity_uri: String, chain: Chain, auth_t
 	if wallet_adapter.has_method("set_auth_token"):
 		wallet_adapter.set_auth_token(auth_token)
 
+	if auth_token != "" and auth_cache != null:
+		var loaded := auth_cache.load_token()
+		var token_cache := String(loaded.get("auth_token", ""))
+		var account_cache := String(loaded.get("account_address", ""))
+		if token_cache == auth_token and account_cache != "":
+			var decoded_key = SolanaUtils.bs58_decode(account_cache)
+			_safe_android_call("setConnectedKey", decoded_key)
+
 	var res := await _wait_for_authorization(func():
 		var plugin = _get_android_plugin()
 		if plugin:
@@ -440,7 +448,8 @@ func signMessages(message_payloads: Array) -> Dictionary:
 	
 	# Fix: Use JNI key if GDExtension key is empty.
 	var final_key = key_variant
-	if final_key == null or (final_key is Array and final_key.is_empty()) or (final_key is PackedByteArray and final_key.is_empty()):
+	var is_empty_pubkey = typeof(final_key) == TYPE_OBJECT and final_key.has_method("to_string") and final_key.to_string() == ""
+	if final_key == null or (final_key is Array and final_key.is_empty()) or (final_key is PackedByteArray and final_key.is_empty()) or is_empty_pubkey:
 		final_key = jni_key
 		
 	if final_key != null:
@@ -448,6 +457,8 @@ func signMessages(message_payloads: Array) -> Dictionary:
 			address = SolanaUtils.bs58_encode(final_key)
 		elif final_key is String:
 			address = final_key
+		elif typeof(final_key) == TYPE_OBJECT and final_key.has_method("to_string"):
+			address = final_key.to_string()
 		else:
 			push_error("MWA: getConnectedKey() returned an unexpected type: ", typeof(final_key))
 			signing_failed.emit("unexpected key type")
