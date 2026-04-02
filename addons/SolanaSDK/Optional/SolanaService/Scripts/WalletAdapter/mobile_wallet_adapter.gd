@@ -75,18 +75,25 @@ func _wait_for_authorization(start_call: Callable) -> Dictionary:
 
 	var established_cb = func() -> void:
 		is_session_established = true
-		var token : String = wallet_adapter.get_auth_token()
+		var token : String = _safe_android_call("getAuthToken")
 		var wallet_uri_base := ""
-		if wallet_adapter.has_method("get_wallet_uri_base"):
+		if _get_android_plugin():
+			wallet_uri_base = String(_safe_android_call("getWalletUriBase"))
+		elif wallet_adapter.has_method("get_wallet_uri_base"):
 			wallet_uri_base = String(wallet_adapter.get_wallet_uri_base())
-		var key_variant := wallet_adapter.get_connected_key()
+		var key_variant = null
+		if _get_android_plugin():
+			key_variant = _safe_android_call("getConnectedKey")
+		elif wallet_adapter.has_method("get_connected_key"):
+			key_variant = wallet_adapter.get_connected_key()
+			
 		var account := ""
 		if key_variant != null:
 			if key_variant is PackedByteArray:
 				account = SolanaUtils.bs58_encode(key_variant)
 			elif key_variant is String:
 				account = key_variant
-			elif key_variant.has_method("to_string"):
+			elif typeof(key_variant) == TYPE_OBJECT and key_variant.has_method("to_string"):
 				account = key_variant.to_string()
 			else:
 				push_error("MWA: get_connected_key() returned an unexpected type: ", typeof(key_variant))
