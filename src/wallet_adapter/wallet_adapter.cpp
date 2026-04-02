@@ -16,7 +16,7 @@
 #include "pubkey.hpp"
 #include "solana_utils.hpp"
 #ifdef WEB_ENABLED
-#include "wallet_adapter_generated.hpp"
+#include "wallet_adapter/wallet_adapter_generated.hpp"
 #endif
 
 namespace godot {
@@ -148,7 +148,11 @@ PackedByteArray WalletAdapter::get_message_signature() {
 }
 
 PackedByteArray WalletAdapter::get_modified_transaction() {
+#ifdef WEB_ENABLED
 	return JavaScriptBridge::get_singleton()->eval("Module.tampered_serialized_message");
+#else
+	return {};
+#endif
 }
 
 Array WalletAdapter::get_available_wallets() {
@@ -172,113 +176,118 @@ Array WalletAdapter::get_available_wallets() {
 
 void WalletAdapter::poll_connection() {
 #ifdef WEB_ENABLED
-	const int wallet_connect_status = JavaScriptBridge::get_singleton()->eval("Module.wallet_status");
-	switch (wallet_connect_status) {
-		case 0:
-			return;
-			break;
+	{
+		const int wallet_connect_status = JavaScriptBridge::get_singleton()->eval("Module.wallet_status");
+		switch (wallet_connect_status) {
+			case 0:
+				return;
+				break;
 
-		case 1: {
-			connected = true;
-			const String connected_pubkey(JavaScriptBridge::get_singleton()->eval("Module.connect_key"));
+			case 1: {
+				connected = true;
+				const String connected_pubkey(JavaScriptBridge::get_singleton()->eval("Module.connect_key"));
 
-			const PackedByteArray decoded_bytes = SolanaUtils::bs58_decode(connected_pubkey);
-			connected_key = decoded_bytes;
-			// Axel, here we have a problem, it processes when in signing, so we get a reset.
-			clear_state();
-			emit_signal("connection_established");
-			break;
+				const PackedByteArray decoded_bytes = SolanaUtils::bs58_decode(connected_pubkey);
+				connected_key = decoded_bytes;
+				// Axel, here we have a problem, it processes when in signing, so we get a reset.
+				clear_state();
+				emit_signal("connection_established");
+				break;
+			}
+			default:
+				connected = false;
+				clear_state();
+				emit_signal("connection_failed");
+				break;
 		}
-		default:
-			connected = false;
-			clear_state();
-			emit_signal("connection_failed");
-			break;
 	}
 #endif
 
 #ifdef ANDROID_ENABLED
-	Variant android_plugin = get_android_plugin();
-	if (android_plugin.get_type() == Variant::NIL) {
-		WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
-		connected = false;
-		clear_state();
-		emit_signal("connection_failed");
-		return;
-	}
-
-	const int wallet_connect_status = android_plugin.call("getConnectionStatus");
-
-	switch (wallet_connect_status) {
-		case 0:
-			return;
-			break;
-
-		case 1: {
-			switch (mwa_operation) {
-				case MwaOperation::AUTHORIZE: {
-					connected = true;
-					const PackedByteArray decoded_bytes = android_plugin.call("getConnectedKey");
-					connected_key = decoded_bytes;
-					// Store the token for the Godot-side cache layer.
-					mwa_auth_token = android_plugin.call("getAuthToken");
-					mwa_wallet_uri_base = android_plugin.call("getWalletUriBase");
-					clear_state();
-					mwa_operation = MwaOperation::NONE;
-					emit_signal("connection_established");
-					break;
-				}
-
-				case MwaOperation::DEAUTHORIZE: {
-					connected = false;
-					connected_key = PackedByteArray();
-					mwa_auth_token = "";
-					mwa_wallet_uri_base = "";
-					clear_state();
-					mwa_operation = MwaOperation::NONE;
-					emit_signal("deauthorization_established");
-					break;
-				}
-
-				case MwaOperation::CAPABILITIES: {
-					connected = false;
-					connected_key = PackedByteArray();
-					mwa_auth_token = "";
-
-					mwa_capabilities_json = android_plugin.call("getCapabilitiesResultJson");
-					clear_state();
-					mwa_operation = MwaOperation::NONE;
-
-					emit_signal("capabilities_received", mwa_capabilities_json);
-					break;
-				}
-
-				default: {
-					connected = false;
-					clear_state();
-					mwa_operation = MwaOperation::NONE;
-					emit_signal("connection_failed");
-					break;
-				}
-			}
-		}
-		default:
+	{
+		Variant android_plugin = get_android_plugin();
+		if (android_plugin.get_type() == Variant::NIL) {
+			WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
 			connected = false;
-			connected_key = PackedByteArray();
-			mwa_auth_token = "";
-			mwa_wallet_uri_base = "";
 			clear_state();
-			const bool is_deauthorize = mwa_operation == MwaOperation::DEAUTHORIZE;
-			const bool is_capabilities = mwa_operation == MwaOperation::CAPABILITIES;
-			mwa_operation = MwaOperation::NONE;
-			if (is_deauthorize) {
-				emit_signal("deauthorization_failed");
-			} else if (is_capabilities) {
-				emit_signal("capabilities_failed");
-			} else {
-				emit_signal("connection_failed");
+			emit_signal("connection_failed");
+			return;
+		}
+
+		const int wallet_connect_status = android_plugin.call("getConnectionStatus");
+
+		switch (wallet_connect_status) {
+			case 0:
+				return;
+				break;
+
+			case 1: {
+				switch (mwa_operation) {
+					case MwaOperation::AUTHORIZE: {
+						connected = true;
+						const PackedByteArray decoded_bytes = android_plugin.call("getConnectedKey");
+						connected_key = decoded_bytes;
+						// Store the token for the Godot-side cache layer.
+						mwa_auth_token = android_plugin.call("getAuthToken");
+						mwa_wallet_uri_base = android_plugin.call("getWalletUriBase");
+						clear_state();
+						mwa_operation = MwaOperation::NONE;
+						emit_signal("connection_established");
+						break;
+					}
+
+					case MwaOperation::DEAUTHORIZE: {
+						connected = false;
+						connected_key = PackedByteArray();
+						mwa_auth_token = "";
+						mwa_wallet_uri_base = "";
+						clear_state();
+						mwa_operation = MwaOperation::NONE;
+						emit_signal("deauthorization_established");
+						break;
+					}
+
+					case MwaOperation::CAPABILITIES: {
+						connected = false;
+						connected_key = PackedByteArray();
+						mwa_auth_token = "";
+
+						mwa_capabilities_json = android_plugin.call("getCapabilitiesResultJson");
+						clear_state();
+						mwa_operation = MwaOperation::NONE;
+
+						emit_signal("capabilities_received", mwa_capabilities_json);
+						break;
+					}
+
+					default: {
+						connected = false;
+						clear_state();
+						mwa_operation = MwaOperation::NONE;
+						emit_signal("connection_failed");
+						break;
+					}
+				}
+				break;
 			}
-			break;
+			default:
+				connected = false;
+				connected_key = PackedByteArray();
+				mwa_auth_token = "";
+				mwa_wallet_uri_base = "";
+				clear_state();
+				const bool is_deauthorize = mwa_operation == MwaOperation::DEAUTHORIZE;
+				const bool is_capabilities = mwa_operation == MwaOperation::CAPABILITIES;
+				mwa_operation = MwaOperation::NONE;
+				if (is_deauthorize) {
+					emit_signal("deauthorization_failed");
+				} else if (is_capabilities) {
+					emit_signal("capabilities_failed");
+				} else {
+					emit_signal("connection_failed");
+				}
+				break;
+		}
 	}
 #endif
 }
@@ -306,69 +315,73 @@ PackedByteArray WalletAdapter::strip_signatures(const PackedByteArray &serializa
 
 void WalletAdapter::poll_message_signing() {
 #ifdef WEB_ENABLED
-	const int wallet_signing_status = JavaScriptBridge::get_singleton()->eval("Module.wallet_status");
-	switch (wallet_signing_status) {
-		case 0:
-			return;
-			break;
+	{
+		const int wallet_signing_status = JavaScriptBridge::get_singleton()->eval("Module.wallet_status");
+		switch (wallet_signing_status) {
+			case 0:
+				return;
+				break;
 
-		case 1: {
-			const PackedByteArray old_serialized_message = JavaScriptBridge::get_singleton()->eval("Module.old_serialized_message");
-			const PackedByteArray new_serialized_message = JavaScriptBridge::get_singleton()->eval("Module.tampered_serialized_message");
+			case 1: {
+				const PackedByteArray old_serialized_message = JavaScriptBridge::get_singleton()->eval("Module.old_serialized_message");
+				const PackedByteArray new_serialized_message = JavaScriptBridge::get_singleton()->eval("Module.tampered_serialized_message");
 
-			dirty_transaction = is_message_tampered(old_serialized_message, new_serialized_message);
-			clear_state();
+				dirty_transaction = is_message_tampered(old_serialized_message, new_serialized_message);
+				clear_state();
 
-			emit_signal("message_signed", get_message_signature());
-			break;
+				emit_signal("message_signed", get_message_signature());
+				break;
+			}
+			default:
+				clear_state();
+				emit_signal("signing_failed");
+				break;
 		}
-		default:
-			clear_state();
-			emit_signal("signing_failed");
-			break;
 	}
 #endif
 
 #ifdef ANDROID_ENABLED
-	Variant android_plugin = get_android_plugin();
-	if (android_plugin.get_type() == Variant::NIL) {
-		WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
-		clear_state();
-		emit_signal("signing_failed");
-		return;
-	}
-
-	const int wallet_signing_status = android_plugin.call("getSigningStatus");
-	switch (wallet_signing_status) {
-		case 0:
-			return;
-			break;
-
-		case 1: {
-			dirty_transaction = false;
-			clear_state();
-			const PackedByteArray signed_transaction = get_message_signature();
-			const uint32_t SIGNATURE_OFFSET = (SIGNATURE_LENGTH * active_signer_index) + 1;
-
-			const int latest_action = android_plugin.call("getLatestAction");
-			if ((latest_action == 2 || latest_action == 5 || latest_action == 6) && signed_transaction.size() == SIGNATURE_LENGTH) {
-				emit_signal("message_signed", signed_transaction);
-				return;
-			}
-
-			if (signed_transaction.size() < SIGNATURE_OFFSET + SIGNATURE_LENGTH) {
-				emit_signal("signing_failed");
-				return;
-			}
-
-			const PackedByteArray message_signature = signed_transaction.slice(SIGNATURE_OFFSET, SIGNATURE_OFFSET + SIGNATURE_LENGTH);
-			emit_signal("message_signed", message_signature);
-			break;
-		}
-		default:
+	{
+		Variant android_plugin = get_android_plugin();
+		if (android_plugin.get_type() == Variant::NIL) {
+			WARN_PRINT_ONCE_ED_CUSTOM("No android plugin installed");
 			clear_state();
 			emit_signal("signing_failed");
-			break;
+			return;
+		}
+
+		const int wallet_signing_status = android_plugin.call("getSigningStatus");
+		switch (wallet_signing_status) {
+			case 0:
+				return;
+				break;
+
+			case 1: {
+				dirty_transaction = false;
+				clear_state();
+				const PackedByteArray signed_transaction = get_message_signature();
+				const uint32_t SIGNATURE_OFFSET = (SIGNATURE_LENGTH * active_signer_index) + 1;
+
+				const int latest_action = android_plugin.call("getLatestAction");
+				if ((latest_action == 2 || latest_action == 5 || latest_action == 6) && signed_transaction.size() == SIGNATURE_LENGTH) {
+					emit_signal("message_signed", signed_transaction);
+					return;
+				}
+
+				if (signed_transaction.size() < SIGNATURE_OFFSET + SIGNATURE_LENGTH) {
+					emit_signal("signing_failed");
+					return;
+				}
+
+				const PackedByteArray message_signature = signed_transaction.slice(SIGNATURE_OFFSET, SIGNATURE_OFFSET + SIGNATURE_LENGTH);
+				emit_signal("message_signed", message_signature);
+				break;
+			}
+			default:
+				clear_state();
+				emit_signal("signing_failed");
+				break;
+		}
 	}
 #endif
 }
@@ -501,11 +514,22 @@ void WalletAdapter::connect_wallet() {
 		return;
 	}
 
+	// If already connected, we don't need to trigger the wallet app again.
+	// This avoids an extra authorization step in CI tests.
+	const int status = android_plugin.call("getConnectionStatus");
+	if (status == 1 && mwa_auth_token.length() > 0) {
+		return;
+	}
+
 	// Apply silent re-authorization token (if any) to the Android client before launching the wallet flow.
 	if (mwa_auth_token.length() > 0) {
 		android_plugin.call("setAuthToken", mwa_auth_token);
 	} else {
 		android_plugin.call("clearAuthToken");
+	}
+
+	if (connected_key.size() > 0) {
+		android_plugin.call("setConnectedKey", connected_key);
 	}
 
 	android_plugin.call("connectWallet", mobile_blockchain, mobile_identity_uri, mobile_icon_path, mobile_identity_name);
