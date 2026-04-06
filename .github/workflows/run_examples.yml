@@ -79,16 +79,16 @@ jobs:
         uses: mymindstorm/setup-emsdk@v14
         with:
           # Make sure to set a version number!
-          version: 3.1.64
+          version: 4.0.20
 
       - name: (Web) Install node
         if: ${{ startsWith(matrix.identifier, 'web-') }}
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - name: (Web) Update npm
-        if: ${{ startsWith(matrix.identifier, 'web-') }}
+        if: ${{ endsWith(matrix.dir, 'Web/') }}
         run: |
           npm install -g npm@11
 
@@ -111,11 +111,11 @@ jobs:
         id: godotcpp
         run: echo "sha=$(git -C godot-cpp rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Cache godot-cpp bindings
-        uses: actions/cache@v4
-        with:
-          path: .godot/
-          key: godot-cpp-${{ matrix.identifier }}-${{ steps.godotcpp.outputs.sha }}
+      #- name: Cache godot-cpp bindings
+      #  uses: actions/cache@v4
+      #  with:
+      #    path: .godot/
+      #    key: godot-cpp-${{ matrix.identifier }}-${{ steps.godotcpp.outputs.sha }}
 
       - name: Compile extension
         shell: sh
@@ -218,7 +218,7 @@ jobs:
       - uses: chickensoft-games/setup-godot@v1
         name: 🤖 Setup Godot
         with:
-          version: 4.5.1-stable
+          version: 4.6.2-stable
           use-dotnet: false
           include-templates: true
 
@@ -394,13 +394,7 @@ jobs:
         if: ${{ endsWith(matrix.dir, 'Web/') }}
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-
-      - name: (Web) Update npm
-        if: ${{ endsWith(matrix.dir, 'Web/') }}
-        run: |
-          npm install -g npm@11
-
+          node-version: 24
 
       - name: (Web) Setup Puppeteer
         if: ${{ endsWith(matrix.dir, 'Web/') }}
