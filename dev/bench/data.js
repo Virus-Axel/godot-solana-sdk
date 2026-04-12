@@ -1,37 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776000280173,
+  "lastUpdate": 1776008894378,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "axel.benjaminsson@live.se",
-            "name": "Axel",
-            "username": "Virus-Axel"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8d8d8394c0b4d62b731cfe131734002ceccaf176",
-          "message": "Merge pull request #348 from Virus-Axel/bugfix/fix_solana_client_keys\n\nFix account key parameters in SolanaClient",
-          "timestamp": "2025-03-25T21:38:46+01:00",
-          "tree_id": "ef9407a4897464954bf771172a91d0f88dd56775",
-          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/8d8d8394c0b4d62b731cfe131734002ceccaf176"
-        },
-        "date": 1742935632868,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Simple Transaction Performance Index",
-            "value": 0.356164383561644,
-            "unit": "Percent"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1789,6 +1760,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index (With helper class)",
             "value": 0.0719424460431655,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "30041c8256e31e8b859e20bc738784f4a3d2b202",
+          "message": "Merge pull request #448 from Virus-Axel/feature/workflow_fix\n\nSplit run example workflow into two",
+          "timestamp": "2026-04-12T17:38:36+02:00",
+          "tree_id": "493643e8973a1f587748cd130dedd72729cc4c41",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/30041c8256e31e8b859e20bc738784f4a3d2b202"
+        },
+        "date": 1776008893254,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.23826714801444,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0685920577617329,
             "unit": "Percent"
           }
         ]
