@@ -1,37 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1771155107220,
+  "lastUpdate": 1776000280173,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "axel.benjaminsson@live.se",
-            "name": "Axel",
-            "username": "Virus-Axel"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "cb0dddbc67492dafe8c261a472260bce34e5d9fe",
-          "message": "Merge pull request #346 from Virus-Axel/bugfix/crash_on_set_payer\n\nFix crash on set payer on deserialized transaction",
-          "timestamp": "2025-03-24T19:04:35+01:00",
-          "tree_id": "8449a2e66cfe05ad6032d411d9889bc08bbb63bc",
-          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/cb0dddbc67492dafe8c261a472260bce34e5d9fe"
-        },
-        "date": 1742839991409,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Simple Transaction Performance Index",
-            "value": 0.356164383561644,
-            "unit": "Percent"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1784,6 +1755,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index (With helper class)",
             "value": 0.0683453237410072,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ef5ad563c97a6f5bd08501d5eba3630a11533307",
+          "message": "Merge pull request #447 from Virus-Axel/bugfix/node_version\n\nBump node version in workflow builds",
+          "timestamp": "2026-04-12T15:15:07+02:00",
+          "tree_id": "365a26795854f59092b5dbf5a843f68efb7ee0d8",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/ef5ad563c97a6f5bd08501d5eba3630a11533307"
+        },
+        "date": 1776000279020,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.241007194244604,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0719424460431655,
             "unit": "Percent"
           }
         ]
