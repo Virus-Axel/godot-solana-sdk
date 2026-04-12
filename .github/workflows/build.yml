@@ -155,18 +155,13 @@ jobs:
         if: ${{ startsWith(matrix.identifier, 'web-') }}
         uses: mymindstorm/setup-emsdk@v14
         with:
-          version: 3.1.64
+          version: 4.0.20
 
       - name: (Web) Install node
         if: ${{ startsWith(matrix.identifier, 'web-') }}
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-
-      - name: (Web) Update npm
-        if: ${{ startsWith(matrix.identifier, 'web-') }}
-        run: |
-          npm install -g npm@11
+          node-version: 24
 
       - name: Set up Python
         uses: actions/setup-python@v2
