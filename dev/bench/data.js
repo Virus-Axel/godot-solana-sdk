@@ -1,37 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776008894378,
+  "lastUpdate": 1776017929930,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "axel.benjaminsson@live.se",
-            "name": "Axel",
-            "username": "Virus-Axel"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ff7e87fe88680223098f215f778325b84f67cad3",
-          "message": "Merge pull request #350 from Virus-Axel/bugfix/transaction_inheritance\n\nInherit SolanaClient from transaction",
-          "timestamp": "2025-03-27T21:37:39+01:00",
-          "tree_id": "318bda40c364d47fa7b64def852427ae78be312f",
-          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/ff7e87fe88680223098f215f778325b84f67cad3"
-        },
-        "date": 1743108374937,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Simple Transaction Performance Index",
-            "value": 0.373287671232877,
-            "unit": "Percent"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1794,6 +1765,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index (With helper class)",
             "value": 0.0685920577617329,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e29360da14fba1deaa44b2b36356a5e635d55f76",
+          "message": "Update pull request template for minimalism and simplicity",
+          "timestamp": "2026-04-12T20:08:07+02:00",
+          "tree_id": "ff3ae7d663b3a62b5c4a06d5df015fb8c43ee6ff",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/e29360da14fba1deaa44b2b36356a5e635d55f76"
+        },
+        "date": 1776017927979,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.248201438848921,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0719424460431655,
             "unit": "Percent"
           }
         ]
