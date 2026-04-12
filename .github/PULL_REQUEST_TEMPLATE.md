@@ -1,16 +1,17 @@
-* **Please check if the PR fulfills these requirements**
-- [ ] The commit(s) are rebased and squashed
-- [ ] Commits are concise and does not contain several different changes.
-- [ ] Issue is linked.
+<!--
+🙏 Thank you for contributing!
 
+We really appreciate the time and effort you put into this PR.
+-->
 
-* **What kind of change does this PR introduce?** (Bug fix, feature, docs update, ...)
+### 📝 Pull Request Summary
+<!-- Describe what this PR does and why it’s needed. -->
 
+### 🔧 Changes Made
+<!-- List key changes in bullet points. -->
+-
+-
+-
 
-* **What is the current behavior?** (You can also link to an open issue here)
-
-
-* **What is the new behavior (if this is a feature change)?**
-
-
-* **Other information**:
+### 📌 Other Information
+<!-- Anything else that might be useful for reviewers. -->
