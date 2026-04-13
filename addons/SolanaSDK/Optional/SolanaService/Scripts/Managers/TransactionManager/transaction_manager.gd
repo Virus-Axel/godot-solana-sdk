@@ -10,7 +10,7 @@ class_name TransactionManager
 @export var fallback_compute_unit_price = 8000
 @export var transaction_overlay_ui_scn:PackedScene
 
-enum Commitment{PROCESSED,CONFIRMED,FINALIZED}
+enum Commitment { PROCESSED, CONFIRMED, FINALIZED }
 
 var tx_blockhash:String
 var tx_timeout_timer:Timer

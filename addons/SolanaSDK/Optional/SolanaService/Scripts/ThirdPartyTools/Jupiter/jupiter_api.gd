@@ -1,7 +1,7 @@
 extends Node
 class_name JupiterAPI
 
-enum TokenStatus{VERIFIED, UNKNOWN}
+enum TokenStatus { VERIFIED, UNKNOWN }
 
 var JUP_TOKEN_API:String = "https://lite-api.jup.ag/tokens/v2"
 var JUP_PRICE_API:String = "https://lite-api.jup.ag/price/v3"

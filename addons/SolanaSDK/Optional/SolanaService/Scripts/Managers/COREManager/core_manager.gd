@@ -5,7 +5,7 @@ class_name CoreManager
 @onready var asset_manager:CoreAssetManager = $CoreAssetManager
 @onready var authority_signer:OracleSigner = $AuthoritySigner
 
-enum CoreManageState{Add,Edit,Remove}
+enum CoreManageState { Add, Edit, Remove }
 
 func get_mpl_core_instance() -> mpl_core_program:
 	var instance:mpl_core_program = mpl_core_program.new()

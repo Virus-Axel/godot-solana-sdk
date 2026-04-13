@@ -1,7 +1,7 @@
 extends LineEdit
 class_name InputField
 
-enum InputType{ALPHANUMERIC,INTEGER,DECIMAL, URL}
+enum InputType { ALPHANUMERIC, INTEGER, DECIMAL, URL }
 
 @export var input_type = InputType.ALPHANUMERIC
 @export var min_length:int = 0
