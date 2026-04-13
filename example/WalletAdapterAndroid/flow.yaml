@@ -3,35 +3,84 @@
 appId: com.example.app
 ---
 - launchApp
-- extendedWaitUntil: 
+- extendedWaitUntil:
      visible: "AUTHORIZE"
      optional: true
      timeout: 240000
 - tapOn:
     text: "AUTHORIZE"
     waitToSettleTimeoutMs: 50000
-- extendedWaitUntil: 
+- extendedWaitUntil:
      visible: "AUTHORIZE"
      optional: true
      timeout: 240000
 - tapOn:
     text: "AUTHORIZE"
     waitToSettleTimeoutMs: 50000
-- extendedWaitUntil: 
+- extendedWaitUntil:
      visible: "AUTHORIZE"
      optional: true
      timeout: 240000
 - tapOn:
     text: "AUTHORIZE"
     waitToSettleTimeoutMs: 50000
-- extendedWaitUntil: 
+- extendedWaitUntil:
      visible: "AUTHORIZE"
      optional: true
      timeout: 240000
 - tapOn:
     text: "AUTHORIZE"
     waitToSettleTimeoutMs: 50000
-- extendedWaitUntil: 
+- extendedWaitUntil:
+     visible: "AUTHORIZE"
+     optional: true
+     timeout: 240000
+- tapOn:
+    text: "AUTHORIZE"
+    waitToSettleTimeoutMs: 50000
+- extendedWaitUntil:
+     visible: "AUTHORIZE"
+     optional: true
+     timeout: 240000
+- tapOn:
+    text: "AUTHORIZE"
+    waitToSettleTimeoutMs: 50000
+- extendedWaitUntil:
+     visible: "AUTHORIZE"
+     optional: true
+     timeout: 240000
+- tapOn:
+    text: "AUTHORIZE"
+    waitToSettleTimeoutMs: 50000
+- extendedWaitUntil:
+     visible: "AUTHORIZE"
+     optional: true
+     timeout: 240000
+- tapOn:
+    text: "AUTHORIZE"
+    waitToSettleTimeoutMs: 50000
+- extendedWaitUntil:
+     visible: "AUTHORIZE"
+     optional: true
+     timeout: 240000
+- tapOn:
+    text: "AUTHORIZE"
+    waitToSettleTimeoutMs: 50000
+- extendedWaitUntil:
+     visible: "AUTHORIZE"
+     optional: true
+     timeout: 240000
+- tapOn:
+    text: "AUTHORIZE"
+    waitToSettleTimeoutMs: 50000
+- extendedWaitUntil:
+     visible: "AUTHORIZE"
+     optional: true
+     timeout: 240000
+- tapOn:
+    text: "AUTHORIZE"
+    waitToSettleTimeoutMs: 50000
+- extendedWaitUntil:
      visible: "AUTHORIZE"
      optional: true
      timeout: 240000
