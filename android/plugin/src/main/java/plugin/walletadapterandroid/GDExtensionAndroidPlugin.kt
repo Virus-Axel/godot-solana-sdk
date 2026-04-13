@@ -48,9 +48,12 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
 
     @UsedByGodot
     fun connectWallet(cluster: Int, uri: String, icon: String, name: String) {
+        Log.i("godot", "[KotlinPlugin] connectWallet | START myResult=${myResult?.javaClass?.simpleName} myConnectedKey_len=${myConnectedKey?.size ?: -1} authToken_len=${authToken?.length ?: -1} cluster=$cluster name=$name")
         if (myResult is TransactionResult.Success) {
+            Log.i("godot", "[KotlinPlugin] connectWallet | CACHED — myResult is Success, returning immediately WITHOUT opening OS picker")
             return
         }
+        Log.i("godot", "[KotlinPlugin] connectWallet | FRESH — myResult is null/not Success, opening ComposeWalletActivity (OS picker)")
         myIdentityUri = Uri.parse(uri);
         myIconUri = Uri.parse(icon);
         myIdentityName = name;
@@ -58,21 +61,14 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
         godot.getActivity()?.let {
             val intent = Intent(it, ComposeWalletActivity::class.java)
             it.startActivity(intent)
+            Log.i("godot", "[KotlinPlugin] connectWallet | ComposeWalletActivity started — OS picker should open")
         }
     }
 
     @UsedByGodot
     fun getConnectionStatus(): Int{
         val myLocalResult = myResult
-        if (myLocalResult == null) {
-            return 0
-        }
-        else if(myLocalResult is TransactionResult.Success) {
-            return 1
-        }
-        else{
-            return 2
-        }
+        return if (myLocalResult == null) 0 else if (myLocalResult is TransactionResult.Success) 1 else 2
     }
 
     @UsedByGodot
@@ -118,6 +114,8 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
 
     @UsedByGodot
     fun clearState() {
+        Log.i("godot", "[KotlinPlugin] clearState | clearing myResult only (was ${myResult?.javaClass?.simpleName}) — keeping myConnectedKey/authToken for signing")
+        myResult = null
         myMessageSigningStatus = 0
     }
 }
