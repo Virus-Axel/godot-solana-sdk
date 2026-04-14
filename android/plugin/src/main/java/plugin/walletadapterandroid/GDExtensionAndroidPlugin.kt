@@ -11,6 +11,10 @@ import plugin.walletadapterandroid.myConnectCluster
 import plugin.walletadapterandroid.myIdentityName
 import plugin.walletadapterandroid.myIdentityUri
 import plugin.walletadapterandroid.myIconUri
+import plugin.walletadapterandroid.myCapabilitiesResult
+import plugin.walletadapterandroid.myCapabilitiesStatus
+import plugin.walletadapterandroid.mySignAndSendResult
+import plugin.walletadapterandroid.mySignAndSendStatus
 import com.solana.mobilewalletadapter.clientlib.protocol.MobileWalletAdapterClient.AuthorizationResult
 
 import android.util.Log
@@ -113,9 +117,65 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun getCapabilitiesWallet() {
+        myAction = 3
+        myCapabilitiesStatus = 0
+        myCapabilitiesResult = ""
+        Log.i("godot", "[KotlinPlugin] getCapabilitiesWallet | START — opening wallet for capabilities query")
+        godot.getActivity()?.let {
+            val intent = Intent(it, ComposeWalletActivity::class.java)
+            it.startActivity(intent)
+        }
+    }
+
+    @UsedByGodot
+    fun getCapabilitiesStatus(): Int {
+        return myCapabilitiesStatus
+    }
+
+    @UsedByGodot
+    fun getCapabilitiesResult(): String {
+        return myCapabilitiesResult
+    }
+
+    @UsedByGodot
+    fun signAndSendTransaction(serializedTransaction: ByteArray) {
+        myAction = 4
+        myStoredTransaction = serializedTransaction
+        mySignAndSendStatus = 0
+        mySignAndSendResult = ""
+        Log.i("godot", "[KotlinPlugin] signAndSendTransaction | START tx_len=${serializedTransaction.size} — opening wallet for sign & send")
+        godot.getActivity()?.let {
+            val intent = Intent(it, ComposeWalletActivity::class.java)
+            it.startActivity(intent)
+        }
+    }
+
+    @UsedByGodot
+    fun getSignAndSendStatus(): Int {
+        return mySignAndSendStatus
+    }
+
+    @UsedByGodot
+    fun getSignAndSendResult(): String {
+        return mySignAndSendResult
+    }
+
+    @UsedByGodot
+    fun setIdentity(cluster: Int, uri: String, icon: String, name: String) {
+        myConnectCluster = cluster
+        myIdentityUri = Uri.parse(uri)
+        myIconUri = Uri.parse(icon)
+        myIdentityName = name
+        Log.i("godot", "[KotlinPlugin] setIdentity | cluster=$cluster uri=$uri icon=$icon name=$name")
+    }
+
+    @UsedByGodot
     fun clearState() {
-        Log.i("godot", "[KotlinPlugin] clearState | clearing myResult only (was ${myResult?.javaClass?.simpleName}) — keeping myConnectedKey/authToken for signing")
+        Log.i("godot", "[KotlinPlugin] clearState | clearing myResult and status flags (was ${myResult?.javaClass?.simpleName}) — keeping myConnectedKey/authToken for signing")
         myResult = null
         myMessageSigningStatus = 0
+        mySignAndSendStatus = 0
+        mySignAndSendResult = ""
     }
 }
