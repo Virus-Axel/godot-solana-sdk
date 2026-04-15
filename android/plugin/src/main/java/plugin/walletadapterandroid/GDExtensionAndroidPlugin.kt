@@ -15,6 +15,16 @@ import plugin.walletadapterandroid.myCapabilitiesResult
 import plugin.walletadapterandroid.myCapabilitiesStatus
 import plugin.walletadapterandroid.mySignAndSendResult
 import plugin.walletadapterandroid.mySignAndSendStatus
+import plugin.walletadapterandroid.mySiwsDomain
+import plugin.walletadapterandroid.mySiwsStatement
+import plugin.walletadapterandroid.mySiwsSignature
+import plugin.walletadapterandroid.mySiwsSignedMessage
+import plugin.walletadapterandroid.mySiwsPublicKey
+import plugin.walletadapterandroid.mySiwsAccountLabel
+import plugin.walletadapterandroid.mySiwsAccountChains
+import plugin.walletadapterandroid.mySiwsAccountFeatures
+import plugin.walletadapterandroid.mySiwsStatus
+import plugin.walletadapterandroid.authToken
 import com.solana.mobilewalletadapter.clientlib.protocol.MobileWalletAdapterClient.AuthorizationResult
 
 import android.util.Log
@@ -58,9 +68,9 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
             return
         }
         Log.i("godot", "[KotlinPlugin] connectWallet | FRESH — myResult is null/not Success, opening ComposeWalletActivity (OS picker)")
-        myIdentityUri = Uri.parse(uri);
-        myIconUri = Uri.parse(icon);
-        myIdentityName = name;
+        myIdentityUri = Uri.parse(uri)
+        myIconUri = Uri.parse(icon)
+        myIdentityName = name
         myConnectCluster = cluster
         godot.getActivity()?.let {
             val intent = Intent(it, ComposeWalletActivity::class.java)
@@ -70,24 +80,24 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun getConnectionStatus(): Int{
+    fun getConnectionStatus(): Int {
         val myLocalResult = myResult
         return if (myLocalResult == null) 0 else if (myLocalResult is TransactionResult.Success) 1 else 2
     }
 
     @UsedByGodot
-    fun getSigningStatus(): Int{
+    fun getSigningStatus(): Int {
         return myMessageSigningStatus
     }
 
     @UsedByGodot
-    fun getConnectedKey(): ByteArray?{
+    fun getConnectedKey(): ByteArray? {
         myAction = 0
-        return myConnectedKey?: ByteArray(0)
+        return myConnectedKey ?: ByteArray(0)
     }
 
     @UsedByGodot
-    fun signTransaction(serializedTransaction: ByteArray){
+    fun signTransaction(serializedTransaction: ByteArray) {
         myAction = 1
         myStoredTransaction = serializedTransaction
         godot.getActivity()?.let {
@@ -95,9 +105,9 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
             it.startActivity(intent)
         }
     }
-    
+
     @UsedByGodot
-    fun signTextMessage(textMessage: String){
+    fun signTextMessage(textMessage: String) {
         myAction = 2
         myStoredTextMessage = textMessage
         godot.getActivity()?.let {
@@ -108,7 +118,7 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
 
     @UsedByGodot
     fun getMessageSignature(): ByteArray {
-        return myMessageSignature?: ByteArray(0)
+        return myMessageSignature ?: ByteArray(0)
     }
 
     @UsedByGodot
@@ -176,6 +186,13 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
         myMessageSigningStatus = 0
         mySignAndSendStatus = 0
         mySignAndSendResult = ""
+        mySiwsSignature = null
+        mySiwsSignedMessage = null
+        mySiwsPublicKey = null
+        mySiwsAccountLabel = null
+        mySiwsAccountChains = ""
+        mySiwsAccountFeatures = ""
+        mySiwsStatus = 0
     }
 
     @UsedByGodot
@@ -185,5 +202,99 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
         myMessageSigningStatus = 0
         mySignAndSendStatus = 0
         mySignAndSendResult = ""
+        mySiwsSignature = null
+        mySiwsSignedMessage = null
+        mySiwsPublicKey = null
+        mySiwsAccountLabel = null
+        mySiwsAccountChains = ""
+        mySiwsAccountFeatures = ""
+        mySiwsStatus = 0
     }
+
+    // ─── MWA 2.0: SIWS authorize ─────────────────────────────────────────────
+
+    @UsedByGodot
+    fun connectWalletSiws(cluster: Int, uri: String, icon: String, name: String, domain: String, statement: String) {
+        Log.i("godot", "[KotlinPlugin] connectWalletSiws | cluster=$cluster domain=$domain statement=$statement")
+        myConnectCluster = cluster
+        myIdentityUri = Uri.parse(uri)
+        myIconUri = Uri.parse(icon)
+        myIdentityName = name
+        mySiwsDomain = domain
+        mySiwsStatement = statement
+        myAction = 5
+        mySiwsSignature = null
+        mySiwsSignedMessage = null
+        mySiwsPublicKey = null
+        mySiwsAccountLabel = null
+        mySiwsAccountChains = ""
+        mySiwsAccountFeatures = ""
+        mySiwsStatus = 0
+        godot.getActivity()?.let {
+            val intent = Intent(it, ComposeWalletActivity::class.java)
+            it.startActivity(intent)
+        }
+    }
+
+    @UsedByGodot
+    fun getSiwsStatus(): Int {
+        return mySiwsStatus
+    }
+
+    @UsedByGodot
+    fun getSiwsSignature(): ByteArray {
+        return mySiwsSignature ?: ByteArray(0)
+    }
+
+    @UsedByGodot
+    fun getSiwsSignedMessage(): ByteArray {
+        return mySiwsSignedMessage ?: ByteArray(0)
+    }
+
+    @UsedByGodot
+    fun getSiwsPublicKey(): ByteArray {
+        return mySiwsPublicKey ?: ByteArray(0)
+    }
+
+    @UsedByGodot
+    fun getSiwsAccountLabel(): String {
+        return mySiwsAccountLabel ?: ""
+    }
+
+    @UsedByGodot
+    fun getSiwsAccountChains(): String {
+        return mySiwsAccountChains
+    }
+
+    @UsedByGodot
+    fun getSiwsAccountFeatures(): String {
+        return mySiwsAccountFeatures
+    }
+
+    // ─── Pubkey helpers ───────────────────────────────────────────────────────
+
+    @UsedByGodot
+    fun getConnectedKeyBase58(): String {
+        val key = myConnectedKey
+        if (key == null || key.isEmpty()) return ""
+        return base58Encode(key)
+    }
+
+    private fun base58Encode(input: ByteArray): String {
+        val ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+        if (input.isEmpty()) return ""
+        var zeros = 0
+        for (b in input) { if (b.toInt() == 0) zeros++ else break }
+        var value = java.math.BigInteger(1, input)
+        val sb = StringBuilder()
+        val fifty8 = java.math.BigInteger.valueOf(58)
+        while (value > java.math.BigInteger.ZERO) {
+            val divrem = value.divideAndRemainder(fifty8)
+            value = divrem[0]
+            sb.append(ALPHABET[divrem[1].toInt()])
+        }
+        repeat(zeros) { sb.append('1') }
+        return sb.reverse().toString()
+    }
+
 }

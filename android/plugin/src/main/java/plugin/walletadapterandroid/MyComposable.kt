@@ -37,6 +37,17 @@ var myCapabilitiesStatus: Int = 0
 var mySignAndSendResult: String = ""
 var mySignAndSendStatus: Int = 0  // 0=pending, 1=success, 2=failed
 
+// MWA 2.0: SIWS (Sign In With Solana) authorize state
+var mySiwsDomain: String = ""
+var mySiwsStatement: String = ""
+var mySiwsSignature: ByteArray? = null
+var mySiwsSignedMessage: ByteArray? = null
+var mySiwsPublicKey: ByteArray? = null
+var mySiwsAccountLabel: String? = null
+var mySiwsAccountChains: String = ""
+var mySiwsAccountFeatures: String = ""
+var mySiwsStatus: Int = 0   // 0=pending, 1=success, 2=failure
+
 @Composable
 fun connectWallet(sender: ActivityResultSender) {
     val activity = LocalContext.current as? Activity
@@ -109,16 +120,13 @@ fun signTransaction(sender: ActivityResultSender) {
                 signedTxBytes?.let {
                     myMessageSignature = signedTxBytes
                     myMessageSigningStatus = 1
-                    println("Signed memo transaction:")
                 }
             }
             is TransactionResult.NoWalletFound -> {
                 myMessageSigningStatus = 2
-                println("No MWA compatible wallet app found on device.")
             }
             is TransactionResult.Failure -> {
                 myMessageSigningStatus = 2
-                println("Error during transaction signing: " + result.e.message)
             }
         }
 
@@ -172,11 +180,9 @@ fun signTextMessage(sender: ActivityResultSender) {
             }
             is TransactionResult.NoWalletFound -> {
                 myMessageSigningStatus = 2
-                println("No MWA compatible wallet app found on device.")
             }
             is TransactionResult.Failure -> {
                 myMessageSigningStatus = 2
-                println("Error during message signing: " + result.e.message)
             }
         }
 
@@ -280,7 +286,6 @@ fun signAndSendTransaction(sender: ActivityResultSender) {
             Log.i("godot", "[KotlinPlugin] signAndSendTransaction | using cached authToken (len=${authToken?.length})")
         }
 
-        // Sign via signTransactions (same approach as Unity SDK — sign via MWA, send via RPC from app side)
         Log.i("godot", "[KotlinPlugin] signAndSendTransaction | calling walletAdapter.transact { signTransactions(...) }")
         val result = walletAdapter.transact(sender) {
             signTransactions(arrayOf(myStoredTransaction ?: ByteArray(0)))
@@ -293,7 +298,6 @@ fun signAndSendTransaction(sender: ActivityResultSender) {
                 authToken = result.authResult.authToken
                 val signedTxBytes = result.successPayload?.signedPayloads?.first()
                 if (signedTxBytes != null) {
-                    // Return base64 signed tx — GDScript handles the RPC submission (like Unity SDK does)
                     mySignAndSendResult = android.util.Base64.encodeToString(signedTxBytes, android.util.Base64.NO_WRAP)
                     mySignAndSendStatus = 1
                     Log.i("godot", "[KotlinPlugin] signAndSendTransaction | SIGNED base64_len=${mySignAndSendResult.length} tx_bytes=${signedTxBytes.size}")
@@ -314,6 +318,68 @@ fun signAndSendTransaction(sender: ActivityResultSender) {
 
         myResult = result
         Log.i("godot", "[KotlinPlugin] signAndSendTransaction | DONE status=$mySignAndSendStatus finishing activity")
+        activity?.finish()
+    }
+}
+
+// MWA 2.0: SIWS authorize — one-shot connect + prove ownership via signIn().
+@Composable
+fun connectWalletSiws(sender: ActivityResultSender) {
+    val activity = LocalContext.current as? Activity
+    LaunchedEffect(Unit) {
+        Log.i("godot", "[connectWalletSiws] ENTRY | domain=$mySiwsDomain statement=$mySiwsStatement cluster=$myConnectCluster")
+
+        val connectionIdentity = ConnectionIdentity(
+            identityUri = myIdentityUri,
+            iconUri = myIconUri,
+            identityName = myIdentityName
+        )
+
+        val walletAdapter = MobileWalletAdapter(connectionIdentity)
+        when (myConnectCluster) {
+            0 -> walletAdapter.blockchain = Solana.Devnet
+            1 -> walletAdapter.blockchain = Solana.Mainnet
+            2 -> walletAdapter.blockchain = Solana.Testnet
+            else -> walletAdapter.blockchain = Solana.Devnet
+        }
+
+        val payload = SignInWithSolana.Payload(mySiwsDomain, mySiwsStatement)
+
+        try {
+            val result = walletAdapter.signIn(sender, payload)
+
+            when (result) {
+                is TransactionResult.Success -> {
+                    authToken = result.authResult.authToken
+                    myConnectedKey = result.authResult.publicKey
+
+                    val signInResult = result.authResult.signInResult ?: result.successPayload
+                    mySiwsSignature = signInResult?.signature
+                    mySiwsSignedMessage = signInResult?.signedMessage
+                    mySiwsPublicKey = signInResult?.publicKey
+
+                    val firstAccount = result.authResult.accounts?.firstOrNull()
+                    mySiwsAccountLabel = firstAccount?.accountLabel
+                    mySiwsAccountChains = firstAccount?.chains?.joinToString(",") ?: ""
+                    mySiwsAccountFeatures = firstAccount?.features?.joinToString(",") ?: ""
+
+                    mySiwsStatus = 1
+                    Log.i("godot", "[connectWalletSiws] SUCCESS | authToken_len=${result.authResult.authToken.length} pubkey_size=${result.authResult.publicKey?.size ?: 0} label=${firstAccount?.accountLabel}")
+                }
+                is TransactionResult.NoWalletFound -> {
+                    Log.i("godot", "[connectWalletSiws] NO_WALLET_FOUND")
+                    mySiwsStatus = 2
+                }
+                is TransactionResult.Failure -> {
+                    Log.i("godot", "[connectWalletSiws] FAILURE | error=${result.e.message}")
+                    mySiwsStatus = 2
+                }
+            }
+            myResult = result
+        } catch (e: Exception) {
+            Log.i("godot", "[connectWalletSiws] EXCEPTION | error=${e.message} class=${e.javaClass.simpleName}")
+            mySiwsStatus = 2
+        }
         activity?.finish()
     }
 }
