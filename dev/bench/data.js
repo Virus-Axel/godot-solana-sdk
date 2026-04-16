@@ -1,37 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776017929930,
+  "lastUpdate": 1776370049703,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "102485601+ZenRepublic@users.noreply.github.com",
-            "name": "Zen Republic",
-            "username": "ZenRepublic"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ca3ab1fb3bc0ed7ae0cf3e4b09a3a5af1ef7f66d",
-          "message": "Merge addon and SolanaService repo\n\nThe Godot Addon repo using godot-solana-sdk binaries are in two different repos. This commit merges the Godot Addon repo.",
-          "timestamp": "2025-03-28T19:53:48+01:00",
-          "tree_id": "91d4da37cd2d4d9940d55ba6c309b06adea6c99a",
-          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/ca3ab1fb3bc0ed7ae0cf3e4b09a3a5af1ef7f66d"
-        },
-        "date": 1743188549985,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Simple Transaction Performance Index",
-            "value": 0.366438356164384,
-            "unit": "Percent"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1799,6 +1770,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index (With helper class)",
             "value": 0.0719424460431655,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "mathewstevens7457@gmail.com",
+            "name": "Mathew Stevens",
+            "username": "mstevens843"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "078d78b23ef2d185046346abdacb2c05e68bc96e",
+          "message": "Split clearState into internal and full reset to preserve cached connections",
+          "timestamp": "2026-04-16T21:59:17+02:00",
+          "tree_id": "301147582f63f6da3e0faae7e53c7ac3ac41d409",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/078d78b23ef2d185046346abdacb2c05e68bc96e"
+        },
+        "date": 1776370048327,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.298932384341637,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0711743772241993,
             "unit": "Percent"
           }
         ]
