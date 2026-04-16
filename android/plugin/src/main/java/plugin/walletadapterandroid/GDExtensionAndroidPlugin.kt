@@ -11,6 +11,10 @@ import plugin.walletadapterandroid.myConnectCluster
 import plugin.walletadapterandroid.myIdentityName
 import plugin.walletadapterandroid.myIdentityUri
 import plugin.walletadapterandroid.myIconUri
+import plugin.walletadapterandroid.myCapabilitiesResult
+import plugin.walletadapterandroid.myCapabilitiesStatus
+import plugin.walletadapterandroid.mySignAndSendResult
+import plugin.walletadapterandroid.mySignAndSendStatus
 import com.solana.mobilewalletadapter.clientlib.protocol.MobileWalletAdapterClient.AuthorizationResult
 
 import android.util.Log
@@ -48,9 +52,12 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
 
     @UsedByGodot
     fun connectWallet(cluster: Int, uri: String, icon: String, name: String) {
+        Log.i("godot", "[KotlinPlugin] connectWallet | START myResult=${myResult?.javaClass?.simpleName} myConnectedKey_len=${myConnectedKey?.size ?: -1} authToken_len=${authToken?.length ?: -1} cluster=$cluster name=$name")
         if (myResult is TransactionResult.Success) {
+            Log.i("godot", "[KotlinPlugin] connectWallet | CACHED — myResult is Success, returning immediately WITHOUT opening OS picker")
             return
         }
+        Log.i("godot", "[KotlinPlugin] connectWallet | FRESH — myResult is null/not Success, opening ComposeWalletActivity (OS picker)")
         myIdentityUri = Uri.parse(uri);
         myIconUri = Uri.parse(icon);
         myIdentityName = name;
@@ -58,21 +65,14 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
         godot.getActivity()?.let {
             val intent = Intent(it, ComposeWalletActivity::class.java)
             it.startActivity(intent)
+            Log.i("godot", "[KotlinPlugin] connectWallet | ComposeWalletActivity started — OS picker should open")
         }
     }
 
     @UsedByGodot
     fun getConnectionStatus(): Int{
         val myLocalResult = myResult
-        if (myLocalResult == null) {
-            return 0
-        }
-        else if(myLocalResult is TransactionResult.Success) {
-            return 1
-        }
-        else{
-            return 2
-        }
+        return if (myLocalResult == null) 0 else if (myLocalResult is TransactionResult.Success) 1 else 2
     }
 
     @UsedByGodot
@@ -117,7 +117,73 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
     }
 
     @UsedByGodot
+    fun getCapabilitiesWallet() {
+        myAction = 3
+        myCapabilitiesStatus = 0
+        myCapabilitiesResult = ""
+        Log.i("godot", "[KotlinPlugin] getCapabilitiesWallet | START — opening wallet for capabilities query")
+        godot.getActivity()?.let {
+            val intent = Intent(it, ComposeWalletActivity::class.java)
+            it.startActivity(intent)
+        }
+    }
+
+    @UsedByGodot
+    fun getCapabilitiesStatus(): Int {
+        return myCapabilitiesStatus
+    }
+
+    @UsedByGodot
+    fun getCapabilitiesResult(): String {
+        return myCapabilitiesResult
+    }
+
+    @UsedByGodot
+    fun signAndSendTransaction(serializedTransaction: ByteArray) {
+        myAction = 4
+        myStoredTransaction = serializedTransaction
+        mySignAndSendStatus = 0
+        mySignAndSendResult = ""
+        Log.i("godot", "[KotlinPlugin] signAndSendTransaction | START tx_len=${serializedTransaction.size} — opening wallet for sign & send")
+        godot.getActivity()?.let {
+            val intent = Intent(it, ComposeWalletActivity::class.java)
+            it.startActivity(intent)
+        }
+    }
+
+    @UsedByGodot
+    fun getSignAndSendStatus(): Int {
+        return mySignAndSendStatus
+    }
+
+    @UsedByGodot
+    fun getSignAndSendResult(): String {
+        return mySignAndSendResult
+    }
+
+    @UsedByGodot
+    fun setIdentity(cluster: Int, uri: String, icon: String, name: String) {
+        myConnectCluster = cluster
+        myIdentityUri = Uri.parse(uri)
+        myIconUri = Uri.parse(icon)
+        myIdentityName = name
+        Log.i("godot", "[KotlinPlugin] setIdentity | cluster=$cluster uri=$uri icon=$icon name=$name")
+    }
+
+    @UsedByGodot
     fun clearState() {
+        Log.i("godot", "[KotlinPlugin] clearState | clearing status flags — keeping myResult/myConnectedKey/authToken for connection reuse")
         myMessageSigningStatus = 0
+        mySignAndSendStatus = 0
+        mySignAndSendResult = ""
+    }
+
+    @UsedByGodot
+    fun clearStateFullReset() {
+        Log.i("godot", "[KotlinPlugin] clearStateFullReset | clearing myResult (was ${myResult?.javaClass?.simpleName}) + all status flags — next connectWallet will open fresh OS picker")
+        myResult = null
+        myMessageSigningStatus = 0
+        mySignAndSendStatus = 0
+        mySignAndSendResult = ""
     }
 }
