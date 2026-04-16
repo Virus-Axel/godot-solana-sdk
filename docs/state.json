@@ -1,0 +1,78 @@
+{
+  "feature": "mwa-android",
+  "flow": "greenfield",
+  "version": "next-2.0",
+  "created": "2026-04-14T11:40:19Z",
+  "lastUpdated": "2026-04-16T12:45:00Z",
+  "currentPhase": "implement",
+  "currentStep": null,
+  "currentCheckpoint": null,
+  "phases": {
+    "research": {
+      "status": "complete",
+      "startedAt": "2026-04-14T11:40:19Z",
+      "completedAt": "2026-04-14T11:55:00Z",
+      "gateResult": "pass"
+    },
+    "specify": {
+      "status": "complete",
+      "startedAt": "2026-04-14T11:55:00Z",
+      "completedAt": "2026-04-16T10:00:00Z",
+      "gateResult": "pass"
+    },
+    "architecture": {
+      "status": "complete",
+      "startedAt": "2026-04-16T10:00:00Z",
+      "completedAt": "2026-04-16T11:30:00Z",
+      "gateResult": "pass"
+    },
+    "plan": {
+      "status": "complete",
+      "startedAt": "2026-04-16T11:30:00Z",
+      "completedAt": "2026-04-16T12:45:00Z",
+      "gateResult": "pass"
+    }
+  },
+  "storiesDone": 0,
+  "storiesTotal": 21,
+  "changeStories": [],
+  "currentStory": "1-1",
+  "tooling": {
+    "format": "clang-format (C++); ktlint (Kotlin)",
+    "lint": "clang-tidy (C++); ktlint (Kotlin); Android Lint",
+    "lint_fix": null,
+    "build": "scons addon (one-command redistributable); scons platform=android target=template_release; ./gradlew :plugin:assembleRelease",
+    "test": "./gradlew test (Kotlin unit, JUnit+MockK+FakeMwaClient); scons tests (C++ host, GoogleTest+MockMwaAndroidBridge); GUT for GDScript; ./gradlew connectedAndroidTest (instrumented, macos-latest + emulator + Fake Wallet)",
+    "security": "CI grep for Log.*(authToken|publicKey|SecretString.value); merged-manifest CI audit; dependency-verification.xml + gradle.lockfile; reproducible-build 2-runner byte-diff; release R8 smoke"
+  },
+  "metrics": {
+    "totalRetries": 0,
+    "tddRate": 0,
+    "avgTaskMinutes": 0,
+    "subagentSpawns": 7,
+    "gatePasses": 4,
+    "gateFails": 0,
+    "gateOverrides": 0,
+    "agentTeamsUsed": false,
+    "parallelWaves": 0,
+    "parallelStories": 0,
+    "interfaceAudits": 0,
+    "interfaceMismatches": 0
+  },
+  "waveStrategy": {},
+  "devops": {
+    "pass1": "pending",
+    "pass2": "pending",
+    "pass2Partial": false
+  },
+  "notes": {
+    "baseRepo": "Virus-Axel/godot-solana-sdk cloned from master",
+    "branch": "feature/mwa-android",
+    "remoteWarning": "origin points to upstream (read-only for user) — add own fork before pushing",
+    "taskOverview": "docs/Godot_MWA_Task_Overview.md",
+    "specStats": "16 FRs, 11 NFRs, 5 UCs, 65 ACs, 4 persona reviews (46 concerns), 10 risks",
+    "archStats": "13 components, 34 DDs (all LOCKED), 11 signal schemas, 13 error codes, 6 workflows, 6 test tiers",
+    "planStats": "21 stories (4S/13M/4L), 5 epics, 7 waves, 8 interface contracts, 4 PD-* all LOCKED",
+    "architectureImmutable": true
+  }
+}
