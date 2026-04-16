@@ -1,0 +1,92 @@
+# Single source of truth for MWA error codes.
+# Edit this file; regenerate 3-language artifacts with:
+#   python tools/gen_error_codes.py
+#
+# CI enforces: (1) generated artifacts match this manifest (codegen_drift_check),
+#              (2) generator itself passes golden/property/failure tests (generator_tests).
+#
+# Schema: tools/mwa_codegen/schema.py (v1).
+# Target artifacts:
+#   - src/generated/mwa_error_codes.hpp            (C++  enum class MwaErrorCode)
+#   - android/plugin/src/generated/kotlin/com/limechain/mwa/generated/MwaError.kt
+#   - addons/SolanaSDK/mwa_error_codes.gd          (GDScript class_name MwaErrorCodes)
+schema_version: 1
+codes:
+  - name: USER_CANCELED
+    cpp_enum: USER_CANCELED
+    kotlin_enum: UserCanceled
+    recoverable: true
+    retry_hint: retry_now
+    default_user_message: "You cancelled the wallet prompt."
+  - name: WALLET_REJECTED
+    cpp_enum: WALLET_REJECTED
+    kotlin_enum: WalletRejected
+    recoverable: true
+    retry_hint: retry_now
+    default_user_message: "The wallet rejected the request."
+  - name: NO_MWA_WALLET_INSTALLED
+    cpp_enum: NO_MWA_WALLET_INSTALLED
+    kotlin_enum: NoMwaWalletInstalled
+    recoverable: true
+    retry_hint: install_wallet
+    default_user_message: "No Solana wallet installed. Install one to continue."
+  - name: WALLET_UNINSTALLED
+    cpp_enum: WALLET_UNINSTALLED
+    kotlin_enum: WalletUninstalled
+    recoverable: true
+    retry_hint: connect
+    default_user_message: "The previously connected wallet is no longer installed."
+  - name: TOKEN_EXPIRED
+    cpp_enum: TOKEN_EXPIRED
+    kotlin_enum: TokenExpired
+    recoverable: true
+    retry_hint: connect
+    default_user_message: "Your wallet session has expired. Please reconnect."
+  - name: RPC_FAILED
+    cpp_enum: RPC_FAILED
+    kotlin_enum: RpcFailed
+    recoverable: true
+    retry_hint: retry_now
+    default_user_message: "The Solana network rejected the transaction."
+  - name: NETWORK_OFFLINE
+    cpp_enum: NETWORK_OFFLINE
+    kotlin_enum: NetworkOffline
+    recoverable: true
+    retry_hint: retry_now
+    default_user_message: "No internet connection."
+  - name: TIMEOUT
+    cpp_enum: TIMEOUT
+    kotlin_enum: Timeout
+    recoverable: true
+    retry_hint: retry_now
+    default_user_message: "The operation timed out."
+  - name: NOT_CONNECTED
+    cpp_enum: NOT_CONNECTED
+    kotlin_enum: NotConnected
+    recoverable: true
+    retry_hint: connect
+    default_user_message: "Not connected to a wallet. Call MWA.connect() first."
+  - name: UNSUPPORTED_PLATFORM
+    cpp_enum: UNSUPPORTED_PLATFORM
+    kotlin_enum: UnsupportedPlatform
+    recoverable: false
+    retry_hint: none
+    default_user_message: "MWA is only available on Android."
+  - name: PROTOCOL_ERROR
+    cpp_enum: PROTOCOL_ERROR
+    kotlin_enum: ProtocolError
+    recoverable: false
+    retry_hint: connect
+    default_user_message: "Wallet communication failed."
+  - name: STORAGE_CORRUPT
+    cpp_enum: STORAGE_CORRUPT
+    kotlin_enum: StorageCorrupt
+    recoverable: true
+    retry_hint: connect
+    default_user_message: "Secure storage is unavailable. Please reconnect."
+  - name: REAUTH_REQUIRED
+    cpp_enum: REAUTH_REQUIRED
+    kotlin_enum: ReauthRequired
+    recoverable: true
+    retry_hint: connect
+    default_user_message: "Your session needs renewal."
