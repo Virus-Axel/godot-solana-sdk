@@ -47,3 +47,4 @@ include/anchor/generated
 
 # Testing files
 .github/workflows/puppeteer/solana-wallet-mock/
+.venv/
