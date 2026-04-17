@@ -50,3 +50,7 @@ include/anchor/generated
 .venv/
 .hypothesis/
 .DS_Store
+
+# LaiM session locks (should never be committed)
+docs/.lock
+docs/.quick-lock
