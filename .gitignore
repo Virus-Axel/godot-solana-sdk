@@ -49,3 +49,4 @@ include/anchor/generated
 .github/workflows/puppeteer/solana-wallet-mock/
 .venv/
 .hypothesis/
+.DS_Store
