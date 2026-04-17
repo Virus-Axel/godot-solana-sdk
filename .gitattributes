@@ -5,3 +5,8 @@ tools/testdata/**/*.hpp             text eol=lf
 tools/testdata/**/*.kt              text eol=lf
 tools/testdata/**/*.gd              text eol=lf
 tools/testdata/**/*.yaml            text eol=lf
+
+# Mark generated codegen artifacts so GitHub language stats ignore them.
+src/generated/mwa_error_codes.hpp                                                               linguist-generated=true
+android/plugin/src/generated/kotlin/com/godotengine/godot_solana_sdk/mwa/generated/MwaError.kt  linguist-generated=true
+addons/SolanaSDK/mwa_error_codes.gd                                                             linguist-generated=true
