@@ -5,18 +5,18 @@ sealed class MwaError(
     val code: String,
     val recoverable: Boolean,
     val retryHint: String,
-    val defaultMessage: String,
+    val defaultUserMessage: String,
 ) {
     object TestAlpha : MwaError(
         code = "TEST_ALPHA",
         recoverable = true,
         retryHint = "retry_now",
-        defaultMessage = "Alpha failed.",
+        defaultUserMessage = "Alpha failed.",
     )
     object TestBeta : MwaError(
         code = "TEST_BETA",
         recoverable = false,
         retryHint = "none",
-        defaultMessage = "Beta is fatal.",
+        defaultUserMessage = "Beta is fatal.",
     )
 }
