@@ -11,7 +11,7 @@ Invariants enforced (mirrored from docs/stories/1-1.md "Schema invariants"):
 * ``name`` and ``cpp_enum`` MUST match ``^[A-Z][A-Z0-9_]*$``.
 * ``kotlin_enum`` MUST match ``^[A-Z][A-Za-z0-9]*$``.
 * ``recoverable`` MUST be a Python ``bool`` (YAML ``true`` / ``false``, not quoted).
-* ``retry_hint`` MUST be one of ``{retry_now, install_wallet, connect, none}``.
+* ``retry_hint`` MUST be one of ``{retry_now, reauthorize, install_wallet, connect, none}``.
 * ``default_user_message`` MUST be a non-empty string.
 * ``name``, ``cpp_enum``, ``kotlin_enum`` values MUST each be unique across the
   manifest.
