@@ -8,7 +8,7 @@
 # Schema: tools/mwa_codegen/schema.py (v1).
 # Target artifacts:
 #   - src/generated/mwa_error_codes.hpp            (C++  enum class MwaErrorCode)
-#   - android/plugin/src/generated/kotlin/com/limechain/mwa/generated/MwaError.kt
+#   - android/plugin/src/generated/kotlin/com/godotengine/godot_solana_sdk/mwa/generated/MwaError.kt
 #   - addons/SolanaSDK/mwa_error_codes.gd          (GDScript class_name MwaErrorCodes)
 schema_version: 1
 codes:
@@ -40,7 +40,7 @@ codes:
     cpp_enum: TOKEN_EXPIRED
     kotlin_enum: TokenExpired
     recoverable: true
-    retry_hint: reauthorize
+    retry_hint: connect
     default_user_message: "Your wallet session has expired. Please reconnect."
   - name: RPC_FAILED
     cpp_enum: RPC_FAILED
@@ -88,5 +88,5 @@ codes:
     cpp_enum: REAUTH_REQUIRED
     kotlin_enum: ReauthRequired
     recoverable: true
-    retry_hint: reauthorize
+    retry_hint: connect
     default_user_message: "Your session needs renewal."

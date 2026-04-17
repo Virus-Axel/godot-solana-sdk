@@ -34,7 +34,7 @@ sealed class MwaError(
     object TokenExpired : MwaError(
         code = "TOKEN_EXPIRED",
         recoverable = true,
-        retryHint = "reauthorize",
+        retryHint = "connect",
         defaultMessage = "Your wallet session has expired. Please reconnect.",
     )
     object RpcFailed : MwaError(
@@ -82,7 +82,7 @@ sealed class MwaError(
     object ReauthRequired : MwaError(
         code = "REAUTH_REQUIRED",
         recoverable = true,
-        retryHint = "reauthorize",
+        retryHint = "connect",
         defaultMessage = "Your session needs renewal.",
     )
 }
