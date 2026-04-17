@@ -30,7 +30,7 @@ from .models import ErrorCode, Manifest
 
 _NAME_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
 _KOTLIN_RE = re.compile(r"^[A-Z][A-Za-z0-9]*$")
-_VALID_RETRY_HINTS = frozenset({"retry_now", "install_wallet", "connect", "none"})
+_VALID_RETRY_HINTS = frozenset({"retry_now", "reauthorize", "install_wallet", "connect", "none"})
 _REQUIRED_KEYS = (
     "name",
     "cpp_enum",

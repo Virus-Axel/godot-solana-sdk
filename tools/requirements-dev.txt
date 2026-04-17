@@ -1,0 +1,8 @@
+# Dev-only dependencies for the MWA codegen toolchain.
+# Install via:  pip install -r tools/requirements-dev.txt
+#
+# Versions verified via PyPI on 2026-04-14.
+pytest==9.0.3
+hypothesis==6.151.11
+Jinja2==3.1.6
+PyYAML==6.0.3
