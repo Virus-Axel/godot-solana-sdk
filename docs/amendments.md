@@ -26,3 +26,9 @@ BOTH architecture.md and this file, using amended values where they conflict.
 - **Original:** `recoverable: false, retry_hint: connect`
 - **Actual:** `recoverable: true, retry_hint: connect`
 - **Rationale:** `recoverable: false` with `retry_hint: connect` is contradictory — a non-`none` hint implies a recovery path exists. Protocol errors are transient (bad WebSocket frame, interrupted session); a fresh `connect()` can recover. `UNSUPPORTED_PLATFORM` remains the only `recoverable: false, retry_hint: none` entry.
+
+## A-5: §3.3 / §8.5 Kotlin package namespace — com.limechain.mwa.generated → com.godotengine.godot_solana_sdk.mwa.generated
+- **Story:** 1-1 | **Date:** 2026-04-17
+- **Original:** story-creator agent chose `com.limechain.mwa.generated`
+- **Actual:** `com.godotengine.godot_solana_sdk.mwa.generated`
+- **Rationale:** This is a contribution to `Virus-Axel/godot-solana-sdk`, not a standalone LimeChain product. Using a contributor-branded namespace (`com.limechain.*`) in someone else's OSS repo is inappropriate. The architecture doc §8.5 ProGuard rules reference `com.godotengine.godot_solana_sdk.mwa.**` — the generated code must live under this namespace or R8 will strip the sealed enum in release builds, causing `ClassNotFoundException`. Aligning with the architecture doc's ProGuard rules requires zero additional amendments to §8.5.

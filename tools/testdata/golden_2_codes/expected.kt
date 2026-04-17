@@ -1,5 +1,5 @@
 // This file is generated, do not edit.
-package com.limechain.mwa.generated
+package com.godotengine.godot_solana_sdk.mwa.generated
 
 sealed class MwaError(
     val code: String,
