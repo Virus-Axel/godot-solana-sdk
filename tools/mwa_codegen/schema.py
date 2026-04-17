@@ -163,6 +163,16 @@ def _validate_entry(
             code_name=code_name,
         )
 
+    _UNSAFE_CHARS = {'"', "\\", "${"}
+    for unsafe in _UNSAFE_CHARS:
+        if unsafe in entry.default_user_message:
+            raise ManifestValidationError(
+                f"default_user_message contains unsafe character {unsafe!r} that "
+                f"would break generated string literals",
+                field="default_user_message",
+                code_name=code_name,
+            )
+
     if entry.name in seen_names:
         raise ManifestValidationError(
             f"duplicate name: {entry.name!r}",

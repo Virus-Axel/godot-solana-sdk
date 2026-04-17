@@ -326,6 +326,71 @@ codes:
     assert excinfo.value.code_name == "lowercase"
 
 
+def test_failure_duplicate_kotlin_enum(tmp_path: Path) -> None:
+    doc = """
+schema_version: 1
+codes:
+  - name: A
+    cpp_enum: A
+    kotlin_enum: Shared
+    recoverable: true
+    retry_hint: none
+    default_user_message: "a"
+  - name: B
+    cpp_enum: B
+    kotlin_enum: Shared
+    recoverable: true
+    retry_hint: none
+    default_user_message: "b"
+"""
+    with pytest.raises(ManifestValidationError) as excinfo:
+        _write_and_load(tmp_path, doc)
+    assert excinfo.value.field == "kotlin_enum"
+    assert excinfo.value.code_name == "B"
+
+
+def test_failure_unsafe_quote_in_message(tmp_path: Path) -> None:
+    doc = """
+schema_version: 1
+codes:
+  - name: QUOTE
+    cpp_enum: QUOTE
+    kotlin_enum: Quote
+    recoverable: true
+    retry_hint: none
+    default_user_message: 'She said "hello"'
+"""
+    with pytest.raises(ManifestValidationError) as excinfo:
+        _write_and_load(tmp_path, doc)
+    assert excinfo.value.field == "default_user_message"
+    assert excinfo.value.code_name == "QUOTE"
+
+
+def test_failure_unsafe_backslash_in_message(tmp_path: Path) -> None:
+    doc = "schema_version: 1\ncodes:\n  - name: SLASH\n    cpp_enum: SLASH\n    kotlin_enum: Slash\n    recoverable: true\n    retry_hint: none\n    default_user_message: 'has a \\\\backslash'\n"
+    with pytest.raises(ManifestValidationError) as excinfo:
+        _write_and_load(tmp_path, doc)
+    assert excinfo.value.field == "default_user_message"
+    assert excinfo.value.code_name == "SLASH"
+
+
+def test_failure_unsafe_dollar_brace_in_message(tmp_path: Path) -> None:
+    doc = """
+schema_version: 1
+codes:
+  - name: INTERP
+    cpp_enum: INTERP
+    kotlin_enum: Interp
+    recoverable: true
+    retry_hint: none
+    default_user_message: "value is ${x}"
+"""
+    with pytest.raises(ManifestValidationError) as excinfo:
+        _write_and_load(tmp_path, doc)
+    assert excinfo.value.field == "default_user_message"
+    assert excinfo.value.code_name == "INTERP"
+
+
 def test_failure_empty_message(tmp_path: Path) -> None:
     doc = """
 schema_version: 1
@@ -341,6 +406,46 @@ codes:
         _write_and_load(tmp_path, doc)
     assert excinfo.value.field == "default_user_message"
     assert excinfo.value.code_name == "EMPTY_MSG"
+
+
+# ---------------------------------------------------------------------------
+# Group 4: --check CLI mode tests
+# ---------------------------------------------------------------------------
+
+
+def test_check_passes_when_artifacts_match(tmp_path: Path) -> None:
+    """--check exits 0 when generated output matches committed files."""
+    from tools.mwa_codegen.emit import render_cpp, render_gdscript, render_kotlin
+    from tools.gen_error_codes import check_targets, generate, TARGETS
+
+    outputs = generate(REPO_ROOT / "tools" / "error-codes.yaml")
+    diffs = check_targets(outputs)
+    assert diffs == [], f"Expected no drift, got: {diffs}"
+
+
+def test_check_fails_when_artifact_modified(tmp_path: Path) -> None:
+    """--check detects content drift in a tracked artifact."""
+    from tools.gen_error_codes import check_targets, generate, TARGETS
+
+    outputs = generate(REPO_ROOT / "tools" / "error-codes.yaml")
+    outputs["cpp"] = outputs["cpp"].replace("USER_CANCELED", "TAMPERED")
+    diffs = check_targets(outputs)
+    assert len(diffs) == 1
+    assert "content differs" in diffs[0]
+
+
+def test_check_fails_when_artifact_missing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """--check reports missing file when an artifact path doesn't exist."""
+    from tools.gen_error_codes import check_targets, generate, TARGETS
+
+    outputs = generate(REPO_ROOT / "tools" / "error-codes.yaml")
+    fake_targets = dict(TARGETS)
+    fake_targets["cpp"] = tmp_path / "nonexistent" / "mwa_error_codes.hpp"
+
+    monkeypatch.setattr("tools.gen_error_codes.TARGETS", fake_targets)
+    diffs = check_targets(outputs)
+    assert len(diffs) == 1
+    assert "does not exist" in diffs[0]
 
 
 # ---------------------------------------------------------------------------
