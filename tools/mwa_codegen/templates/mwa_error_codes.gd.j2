@@ -1,0 +1,12 @@
+# This file is generated, do not edit.
+class_name MwaErrorCodes
+
+{% for code in codes %}
+const MWA_ERR_{{ code.name }} := "{{ code.name }}"
+{% endfor %}
+
+const ALL_CODES: Array[String] = [
+{% for code in codes %}
+    "{{ code.name }}",
+{% endfor %}
+]

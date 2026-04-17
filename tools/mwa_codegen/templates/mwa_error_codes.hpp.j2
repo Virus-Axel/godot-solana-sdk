@@ -1,0 +1,24 @@
+// This file is generated, do not edit.
+#ifndef GODOT_SOLANA_SDK_MWA_ERROR_CODES_HPP
+#define GODOT_SOLANA_SDK_MWA_ERROR_CODES_HPP
+
+namespace godot_solana_sdk::mwa {
+
+enum class MwaErrorCode : int {
+{% for code in codes %}
+    {{ code.cpp_enum }} = {{ loop.index0 }},
+{% endfor %}
+};
+
+inline const char* code_name(MwaErrorCode e) {
+    switch (e) {
+{% for code in codes %}
+        case MwaErrorCode::{{ code.cpp_enum }}: return "{{ code.name }}";
+{% endfor %}
+    }
+    return "UNKNOWN";
+}
+
+}  // namespace godot_solana_sdk::mwa
+
+#endif // GODOT_SOLANA_SDK_MWA_ERROR_CODES_HPP

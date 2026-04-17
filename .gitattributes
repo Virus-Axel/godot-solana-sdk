@@ -1,0 +1,7 @@
+# Enforce LF line endings for codegen templates and golden test fixtures.
+# Prevents CRLF on Windows (autocrlf=true) from breaking byte-identical golden tests.
+tools/mwa_codegen/templates/*.j2    text eol=lf
+tools/testdata/**/*.hpp             text eol=lf
+tools/testdata/**/*.kt              text eol=lf
+tools/testdata/**/*.gd              text eol=lf
+tools/testdata/**/*.yaml            text eol=lf

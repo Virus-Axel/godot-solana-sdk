@@ -1,0 +1,18 @@
+// This file is generated, do not edit.
+package com.godotengine.godot_solana_sdk.mwa.generated
+
+sealed class MwaError(
+    val code: String,
+    val recoverable: Boolean,
+    val retryHint: String,
+    val defaultUserMessage: String,
+) {
+{% for code in codes %}
+    object {{ code.kotlin_enum }} : MwaError(
+        code = "{{ code.name }}",
+        recoverable = {{ "true" if code.recoverable else "false" }},
+        retryHint = "{{ code.retry_hint }}",
+        defaultUserMessage = "{{ code.default_user_message }}",
+    )
+{% endfor %}
+}
