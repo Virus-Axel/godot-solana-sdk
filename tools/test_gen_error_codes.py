@@ -22,10 +22,8 @@ from __future__ import annotations
 import re
 import string
 from pathlib import Path
-from typing import List, Tuple
 
 import pytest
-import yaml
 from hypothesis import HealthCheck, given, settings, strategies as st
 
 from tools.mwa_codegen.emit import (
@@ -325,7 +323,7 @@ codes:
     with pytest.raises(ManifestValidationError) as excinfo:
         _write_and_load(tmp_path, doc)
     assert excinfo.value.field == "name"
-    assert excinfo.value.code_name is None  # name rejected before adding to seen
+    assert excinfo.value.code_name == "lowercase"
 
 
 def test_failure_empty_message(tmp_path: Path) -> None:
