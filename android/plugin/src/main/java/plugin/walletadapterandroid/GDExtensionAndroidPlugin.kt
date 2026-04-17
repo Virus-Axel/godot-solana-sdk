@@ -186,4 +186,15 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
         mySignAndSendStatus = 0
         mySignAndSendResult = ""
     }
+
+    @UsedByGodot
+    fun getAuthToken(): String {
+        return authToken ?: ""
+    }
+
+    @UsedByGodot
+    fun setAuthToken(token: String) {
+        authToken = if (token.isEmpty()) null else token
+        Log.i("godot", "[KotlinPlugin] setAuthToken | token_len=${authToken?.length ?: 0}")
+    }
 }
