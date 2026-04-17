@@ -1,0 +1,33 @@
+name: Generator Tests
+on:
+  push:
+    branches: [master, feature/mwa-android]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generator-tests:
+    name: Pytest codegen suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: tools/requirements-dev.txt
+
+      - name: Install test dependencies
+        run: pip install -r tools/requirements-dev.txt
+
+      - name: Run tests
+        run: pytest tools/ -ra
