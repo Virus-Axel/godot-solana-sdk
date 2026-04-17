@@ -8,7 +8,7 @@ epics:
         slug: error-codes-codegen
         title: "Error-Codes Manifest + 3-Language Codegen + Generator Tests"
         size: M
-        status: in-progress
+        status: done
         wave: 1
         dependencies: []
       - id: "1-2"
