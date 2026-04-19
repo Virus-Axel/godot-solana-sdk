@@ -55,5 +55,13 @@ class ComposeWalletActivity : ComponentActivity() {
                 signAndSendTransaction(sender)
             }
         }
+        else if (myAction == 5) {
+            // MWA 2.0: SIWS authorize
+            hasConnectedWallet = true
+            val sender = ActivityResultSender(this)
+            setContent {
+                connectWalletSiws(sender)
+            }
+        }
     }
 }
