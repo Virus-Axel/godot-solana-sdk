@@ -211,6 +211,16 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
         mySiwsStatus = 0
     }
 
+    @UsedByGodot
+    fun getAuthToken(): String {
+        return authToken ?: ""
+    }
+
+    @UsedByGodot
+    fun setAuthToken(token: String) {
+        authToken = if (token.isEmpty()) null else token
+        Log.i("godot", "[KotlinPlugin] setAuthToken | token_len=${authToken?.length ?: 0}")
+    }
     // ─── MWA 2.0: SIWS authorize ─────────────────────────────────────────────
 
     @UsedByGodot
