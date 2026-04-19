@@ -1,37 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776611244696,
+  "lastUpdate": 1776612788901,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "axel.benjaminsson@live.se",
-            "name": "Axel",
-            "username": "Virus-Axel"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "1c05459d63dbcd05787e83459bdf7ebadd88fb22",
-          "message": "Merge pull request #351 from Virus-Axel/test/test_problem_nfts\n\nAdd test for fetching problem NFTs metadata",
-          "timestamp": "2025-03-29T08:44:49+01:00",
-          "tree_id": "0d700c91d738be1ca3744075b27470ebcf311507",
-          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/1c05459d63dbcd05787e83459bdf7ebadd88fb22"
-        },
-        "date": 1743234788861,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Simple Transaction Performance Index",
-            "value": 0.36986301369863,
-            "unit": "Percent"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1809,6 +1780,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index (With helper class)",
             "value": 0.0719424460431655,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2823947f0349d44ba63209dd99fe6610ac3cea26",
+          "message": "Merge pull request #454 from mstevens843/feat/extensible-auth-cache\n\nadd getAuthToken/setAuthToken for extensible auth cache layer",
+          "timestamp": "2026-04-19T17:22:44+02:00",
+          "tree_id": "259a563b1a5eb46b0ed34f8b298f5fff8236047a",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/2823947f0349d44ba63209dd99fe6610ac3cea26"
+        },
+        "date": 1776612787388,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.244604316546763,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0755395683453237,
             "unit": "Percent"
           }
         ]
