@@ -72,6 +72,13 @@ dependencies {
     // 5.11.4 is the newest 5.x (last Kotlin-1.x-compatible) release; logged as D1 (Rule 1) under
     // Story 1-2 §Deviations Expected. Revisit after Kotlin plugin 2.x upgrade (tracked in concerns.md).
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+
+    // Plan §Tooling Notes pins MockK 1.14.9, but 1.14.x is compiled with Kotlin 2.x metadata and
+    // hits the same `"expected version is 1.8.0"` failure as JUnit 6.x above. 1.13.13 is the last
+    // widely-deployed Kotlin-1.x-compatible MockK release; used for mocking `android.util.Log`
+    // statics in SdkLogTest. Logged as D7 (Rule 1) under Story 1-2 §Deviations Expected; unblocks
+    // alongside JUnit 6.x when Kotlin plugin bumps to 2.x (tracked in concerns.md CR-5).
+    testImplementation("io.mockk:mockk:1.13.13")
 }
 
 // BUILD TASKS DEFINITION
