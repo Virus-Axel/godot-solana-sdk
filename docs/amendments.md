@@ -140,3 +140,40 @@ BOTH architecture.md and this file, using amended values where they conflict.
   - Every future story (1-4, 2-1, 2-2, 2-3, 3-x) adding `@UsedByGodot` methods inherits this protection automatically — no per-story keep rules needed.
 - **Verification check for future stories:** on any story that adds new `@UsedByGodot` methods, confirm by `javap -p` on the release AAR class that the method names survive R8 with their source names (not renamed to `a/b/c`). Protocol: `./gradlew :plugin:assembleRelease && javap -p /tmp/mwa-aar/classes/plugin/walletadapterandroid/<ClassName>.class | grep <methodName>`.
 - **Follow-through:** No separate concern entry needed. D15 in the Story 1-2 task-6 deviation log remains as the historical trail; A-10 is the forward-looking architectural rule.
+
+## A-11: §2.3.1 ISigner contract — `GDCLASS` → `GDCLASS_CUSTOM` for codebase consistency
+- **Story:** 1-3 | **Date:** 2026-04-20
+- **Original (docs/architecture.md:128-166, the LOCKED §2.3.1 contract):**
+  ```cpp
+  class ISigner : public godot::RefCounted {
+      GDCLASS(ISigner, godot::RefCounted);
+      // ...
+  };
+  ```
+- **Actual:**
+  ```cpp
+  class ISigner : public godot::RefCounted {
+      GDCLASS_CUSTOM(ISigner, godot::RefCounted);
+      // ...
+  };
+  ```
+- **Rationale:** Codebase-wide registration consistency. Story 1-3's pre-implementation scan on 2026-04-20 verified that ALL three existing GDExtension-registered classes use `GDCLASS_CUSTOM`, not plain `GDCLASS`:
+  - `Transaction` — `GDCLASS_CUSTOM(Transaction, SolanaClient)` (`include/transaction/transaction.hpp:42`)
+  - `WalletAdapter` — `GDCLASS_CUSTOM(WalletAdapter, Node)` (`include/wallet_adapter/wallet_adapter.hpp:30`)
+  - `Keypair` — `GDCLASS_CUSTOM(Keypair, Resource)` (`include/keypair.hpp:30`)
+
+  `GDCLASS_CUSTOM` is a codebase-specific macro that wraps `GDCLASS` with extra registration hooks (the exact additions are project-internal and not part of the public godot-cpp API). The risk of mixing the two macros at a parent/child boundary is real but invisible: a child class using `GDCLASS_CUSTOM(LocalKeypairSigner, ISigner)` whose parent only ran plain `GDCLASS(ISigner, ...)` may silently break metadata/vtable chaining (the codebase-specific hooks expect their parent class to have run them too). The failure mode is the worst kind — silent at compile time, manifests as missing signal/method bindings or registration table corruption at runtime, and the implementer's first instinct is to blame their own subclass code rather than the parent's macro choice.
+
+  Two options were on the table during story creation:
+  - **(a) Keep `GDCLASS` for ISigner (per §2.3.1 verbatim).** Document in story Dev Notes that §2.3.1 uses `GDCLASS` deliberately because ISigner is a pure abstract interface with no factory needs. Implementer must verify by reading `GDCLASS_CUSTOM`'s definition and confirm that child classes (`LocalKeypairSigner`, `WalletAdapterSigner`) using `GDCLASS_CUSTOM` work correctly with a `GDCLASS` parent. If broken → file amendment then.
+  - **(b) Amend §2.3.1 to use `GDCLASS_CUSTOM`** for codebase consistency. File amendment NOW; eliminate the risk class-mismatch class entirely.
+
+  Option (b) is cheaper and safer: filed at story creation time, no implementer guesswork, no risk of silent metadata divergence in the field. The architecture doc's `GDCLASS` choice was inherited from generic godot-cpp conventions and did not consider the codebase's `GDCLASS_CUSTOM` precedent — a pure dataflow oversight, not an intentional architectural choice.
+- **Amended verification criterion (Story 1-3 Task 1):**
+  - `grep -c "GDCLASS_CUSTOM(ISigner" src/isigner.hpp` returns 1.
+  - `grep -c "^[[:space:]]*GDCLASS(ISigner" src/isigner.hpp` returns 0 (the plain-GDCLASS variant is absent).
+- **Affected:**
+  - docs/architecture.md §2.3.1 ISigner contract (the verbatim header inlines `GDCLASS_CUSTOM` instead of `GDCLASS`).
+  - Story 1-3 §Architecture Guardrails inlines the amended contract.
+  - Future stories adding new C++ classes inherit the `GDCLASS_CUSTOM` default — already established codebase convention; amendment makes it explicit at the architecture-doc level.
+- **Follow-through:** No separate concern entry needed. A-11 is forward-looking and self-contained. Future stories that add C++ classes registered via ClassDB MUST use `GDCLASS_CUSTOM` unless an explicit reason exists to deviate (and that reason MUST be filed as a separate amendment).
