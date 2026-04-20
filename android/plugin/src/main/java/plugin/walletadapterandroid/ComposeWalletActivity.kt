@@ -1,14 +1,9 @@
-
 package plugin.walletadapterandroid
 
-import com.solana.mobilewalletadapter.clientlib.*
-
 import android.os.Bundle
-import com.solana.mobilewalletadapter.clientlib.ActivityResultSender
-import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import android.util.Log
+import com.solana.mobilewalletadapter.clientlib.ActivityResultSender
 
 class ComposeWalletActivity : ComponentActivity() {
     private var hasConnectedWallet = false

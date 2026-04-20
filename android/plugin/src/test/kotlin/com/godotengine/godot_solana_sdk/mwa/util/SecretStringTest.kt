@@ -61,13 +61,21 @@ class SecretStringTest {
             SecretString::class.java.fields.forEach { add(it.name) }
         }
         val banned = setOf(
-            "bytes", "value", "content", "data",
-            "getBytes", "getValue", "getContent", "getData",
+            "bytes",
+            "value",
+            "content",
+            "data",
+            "getBytes",
+            "getValue",
+            "getContent",
+            "getData",
         )
         banned.forEach { name ->
             assertTrue(
                 name !in publicMembers,
-                "SecretString must not expose public member '$name'; AC-1 requires reveal() to be the sole accessor. Public members: $publicMembers",
+                "SecretString must not expose public member '$name'; " +
+                    "AC-1 requires reveal() to be the sole accessor. " +
+                    "Public members: $publicMembers",
             )
         }
     }

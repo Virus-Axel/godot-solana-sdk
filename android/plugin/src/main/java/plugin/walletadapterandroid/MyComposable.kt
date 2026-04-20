@@ -1,24 +1,18 @@
 package plugin.walletadapterandroid
 
-import androidx.compose.runtime.Composable
-import com.solana.mobilewalletadapter.clientlib.*
-import androidx.compose.runtime.LaunchedEffect
-
-import kotlinx.coroutines.*
-import kotlin.coroutines.CoroutineContext
-import androidx.activity.ComponentActivity
-import com.solana.mobilewalletadapter.common.signin.SignInWithSolana
-import com.solana.mobilewalletadapter.clientlib.ActivityResultSender
-import androidx.compose.ui.platform.LocalContext
-
-import kotlinx.coroutines.runBlocking
 import android.app.Activity
-import android.content.Intent
-
 import android.net.Uri
-
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import com.godotengine.godot_solana_sdk.mwa.session.MwaSessionState
 import com.godotengine.godot_solana_sdk.mwa.util.SdkLog
+import com.solana.mobilewalletadapter.clientlib.ActivityResultSender
+import com.solana.mobilewalletadapter.clientlib.ConnectionIdentity
+import com.solana.mobilewalletadapter.clientlib.MobileWalletAdapter
+import com.solana.mobilewalletadapter.clientlib.Solana
+import com.solana.mobilewalletadapter.clientlib.TransactionResult
+import com.solana.mobilewalletadapter.clientlib.successPayload
 
 private const val TAG = "MWA"
 private const val CORR_SCAFFOLD = "scaffold"
@@ -30,7 +24,7 @@ fun connectWallet(sender: ActivityResultSender, session: MwaSessionState) {
         val connectionIdentity = ConnectionIdentity(
             identityUri = Uri.parse(session.getIdentityUri()),
             iconUri = Uri.parse(session.getIconUri()),
-            identityName = session.getIdentityName()
+            identityName = session.getIdentityName(),
         )
 
         val walletAdapter = MobileWalletAdapter(connectionIdentity)
@@ -64,11 +58,10 @@ fun connectWallet(sender: ActivityResultSender, session: MwaSessionState) {
 fun signTransaction(sender: ActivityResultSender, session: MwaSessionState) {
     val activity = LocalContext.current as? Activity
     LaunchedEffect(Unit) {
-
         val connectionIdentity = ConnectionIdentity(
             identityUri = Uri.parse(session.getIdentityUri()),
             iconUri = Uri.parse(session.getIconUri()),
-            identityName = session.getIdentityName()
+            identityName = session.getIdentityName(),
         )
 
         val walletAdapter = MobileWalletAdapter(connectionIdentity)
@@ -116,11 +109,10 @@ fun signTransaction(sender: ActivityResultSender, session: MwaSessionState) {
 fun signTextMessage(sender: ActivityResultSender, session: MwaSessionState) {
     val activity = LocalContext.current as? Activity
     LaunchedEffect(Unit) {
-
         val connectionIdentity = ConnectionIdentity(
             identityUri = Uri.parse(session.getIdentityUri()),
             iconUri = Uri.parse(session.getIconUri()),
-            identityName = session.getIdentityName()
+            identityName = session.getIdentityName(),
         )
 
         val walletAdapter = MobileWalletAdapter(connectionIdentity)

@@ -1,22 +1,12 @@
 package plugin.walletadapterandroid
 
-import com.solana.mobilewalletadapter.clientlib.protocol.MobileWalletAdapterClient.AuthorizationResult
-
+import android.content.Intent
 import android.util.Log
+import com.godotengine.godot_solana_sdk.mwa.session.MwaSessionState
+import com.solana.mobilewalletadapter.clientlib.TransactionResult
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.UsedByGodot
-import com.solana.mobilewalletadapter.clientlib.*
-
-import com.solana.mobilewalletadapter.clientlib.ActivityResultSender
-
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import android.os.Bundle
-import android.content.Intent
-import android.net.Uri
-
-import com.godotengine.godot_solana_sdk.mwa.session.MwaSessionState
 
 class GDExtensionAndroidPlugin(godot: Godot) : GodotPlugin(godot) {
 

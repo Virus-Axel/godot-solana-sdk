@@ -8,8 +8,7 @@ class SecretString(source: ByteArray) {
 
     override fun toString(): String = "<redacted>"
 
-    override fun equals(other: Any?): Boolean =
-        other is SecretString && bytes.contentEquals(other.bytes)
+    override fun equals(other: Any?): Boolean = other is SecretString && bytes.contentEquals(other.bytes)
 
     override fun hashCode(): Int = bytes.contentHashCode()
 }

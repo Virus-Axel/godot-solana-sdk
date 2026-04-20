@@ -1,0 +1,25 @@
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.{kt,kts}]
+max_line_length = 140
+ktlint_code_style = intellij_idea
+ktlint_standard_no-wildcard-imports = enabled
+# Amendment A-5 locks the Kotlin namespace at com.godotengine.godot_solana_sdk.mwa.**;
+# the underscore in `godot_solana_sdk` is architecturally mandated and matches the
+# repo's package / ProGuard / R8 rule conventions. Disable ktlint's package-name rule
+# which otherwise flags the underscore as a naming violation.
+ktlint_standard_package-name = disabled
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[Makefile]
+indent_style = tab

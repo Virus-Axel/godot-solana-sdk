@@ -15,29 +15,47 @@ class MwaSessionState {
     private var identityName: String = ""
     private var authToken: String? = null
 
-    fun setResult(result: Any?) { this.lastResult = result }
+    fun setResult(result: Any?) {
+        this.lastResult = result
+    }
     fun getLastResult(): Any? = lastResult
 
-    fun setAction(action: Int) { this.pendingAction = action }
+    fun setAction(action: Int) {
+        this.pendingAction = action
+    }
     fun getPendingAction(): Int = pendingAction
 
-    fun setTransaction(tx: ByteArray?) { this.pendingTransaction = tx }
+    fun setTransaction(tx: ByteArray?) {
+        this.pendingTransaction = tx
+    }
     fun getPendingTransaction(): ByteArray? = pendingTransaction
 
-    fun setTextMessage(msg: String) { this.pendingTextMessage = msg }
+    fun setTextMessage(msg: String) {
+        this.pendingTextMessage = msg
+    }
     fun getPendingTextMessage(): String = pendingTextMessage
 
-    fun setSignature(sig: ByteArray?) { this.lastSignature = sig }
+    fun setSignature(sig: ByteArray?) {
+        this.lastSignature = sig
+    }
     fun getLastSignature(): ByteArray? = lastSignature
 
-    fun setStatus(status: Int) { this.signingStatus = status }
+    fun setStatus(status: Int) {
+        this.signingStatus = status
+    }
     fun getSigningStatus(): Int = signingStatus
-    fun clearStatus() { this.signingStatus = 0 }
+    fun clearStatus() {
+        this.signingStatus = 0
+    }
 
-    fun setKey(key: ByteArray?) { this.connectedKey = key }
+    fun setKey(key: ByteArray?) {
+        this.connectedKey = key
+    }
     fun getConnectedKey(): ByteArray? = connectedKey
 
-    fun setCluster(cluster: Int) { this.cluster = cluster }
+    fun setCluster(cluster: Int) {
+        this.cluster = cluster
+    }
     fun getCluster(): Int = cluster
 
     fun setIdentity(identityUri: String, iconUri: String, identityName: String) {
@@ -49,7 +67,9 @@ class MwaSessionState {
     fun getIconUri(): String = iconUri
     fun getIdentityName(): String = identityName
 
-    fun setAuthToken(token: String?) { this.authToken = token }
+    fun setAuthToken(token: String?) {
+        this.authToken = token
+    }
     fun getAuthToken(): String? = authToken
 
     fun clear() {
