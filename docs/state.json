@@ -44,6 +44,15 @@
     "status": "in-progress",
     "startedAt": "2026-04-17T15:35:00Z"
   },
+  "baselineTests": {
+    "total": 29,
+    "passing": 29,
+    "failing": 0,
+    "baselinedAt": "2026-04-20T00:00:00Z",
+    "baselinedAtStory": 1,
+    "command": ".venv/bin/pytest tools/",
+    "note": "Python generator tests (Story 1-1). Kotlin (./gradlew test) + C++ (scons tests) test infra materializes in this story; no existing tests to baseline."
+  },
   "tooling": {
     "format": "clang-format (C++); ktlint (Kotlin)",
     "lint": "clang-tidy (C++); ktlint (Kotlin); Android Lint",
