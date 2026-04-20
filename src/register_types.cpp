@@ -59,6 +59,7 @@
 #include "system_program.hpp"
 #include "transaction.hpp"
 #include "wallet_adapter.hpp"
+#include "wallet_adapter/wallet_adapter_signer.hpp"
 
 namespace godot {
 
@@ -119,6 +120,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<Transaction>();
 	ClassDB::register_class<Keypair>();
 	ClassDB::register_class<WalletAdapter>();
+	ClassDB::register_class<godot_solana_sdk::WalletAdapterSigner>();
 	ClassDB::register_class<ComputeBudget>();
 	ClassDB::register_class<SystemProgram>();
 	ClassDB::register_class<TokenProgram>();

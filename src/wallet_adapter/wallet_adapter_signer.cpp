@@ -1,0 +1,229 @@
+#include "wallet_adapter/wallet_adapter_signer.hpp"
+
+#include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/error_macros.hpp"
+#include "godot_cpp/core/method_bind.hpp"
+#include "godot_cpp/variant/callable.hpp"
+#include "godot_cpp/variant/string.hpp"
+#include "godot_cpp/variant/variant.hpp"
+
+#include "pubkey.hpp"
+#include "wallet_adapter/wallet_adapter.hpp"
+
+namespace godot_solana_sdk {
+
+void WalletAdapterSigner::_bind_methods() {
+	using namespace godot;
+
+	ClassDB::bind_method(D_METHOD("set_wallet_adapter", "wallet_adapter"),
+			&WalletAdapterSigner::set_wallet_adapter);
+	ClassDB::bind_method(D_METHOD("get_wallet_adapter"),
+			&WalletAdapterSigner::get_wallet_adapter);
+
+	ClassDB::bind_method(D_METHOD("is_connected"),
+			&WalletAdapterSigner::is_connected);
+	ClassDB::bind_method(D_METHOD("get_public_key"),
+			&WalletAdapterSigner::get_public_key);
+
+	ClassDB::bind_method(D_METHOD("sign_messages", "messages_concat", "lengths", "request_id"),
+			&WalletAdapterSigner::sign_messages);
+	ClassDB::bind_method(D_METHOD("sign_transactions", "transactions_concat", "lengths", "request_id"),
+			&WalletAdapterSigner::sign_transactions);
+
+	ClassDB::bind_method(D_METHOD("_on_message_signed", "signature"),
+			&WalletAdapterSigner::_on_message_signed);
+	ClassDB::bind_method(D_METHOD("_on_signing_failed"),
+			&WalletAdapterSigner::_on_signing_failed);
+}
+
+void WalletAdapterSigner::set_wallet_adapter(godot::Object *p_wa) {
+	if (p_wa == nullptr) {
+		wa_ = nullptr;
+		return;
+	}
+	auto *cast = godot::Object::cast_to<godot::WalletAdapter>(p_wa);
+	if (cast == nullptr) {
+		// Loud-fail diagnostic: silent nullification leaves the signer in a
+		// non-functional state with no trail.
+		WARN_PRINT_ED("WalletAdapterSigner::set_wallet_adapter: argument is not a WalletAdapter; signer left unconfigured.");
+	}
+	wa_ = cast;
+}
+
+godot::Object *WalletAdapterSigner::get_wallet_adapter() const {
+	return wa_;
+}
+
+// NOTE: WalletAdapter::is_connected() is zero-arg (verified at
+// include/wallet_adapter/wallet_adapter.hpp:153). The base Object class also
+// declares bool is_connected(StringName, Callable) const with two REQUIRED args,
+// so overload resolution picks WalletAdapter's zero-arg version unambiguously
+// for `wa_->is_connected()`. No `using Object::is_connected` is required for our
+// call site.
+bool WalletAdapterSigner::is_connected() const {
+	return wa_ != nullptr && wa_->is_connected();
+}
+
+godot::String WalletAdapterSigner::get_public_key() const {
+	if (wa_ == nullptr || !wa_->is_connected()) {
+		return godot::String();
+	}
+	// godot::Pubkey lives in `namespace godot` (verified at include/pubkey.hpp:16,
+	// the closing `} //namespace godot` at line 494). godot::Pubkey::string_from_variant
+	// (declared at include/pubkey.hpp:435) accepts a Variant carrying a Pubkey-typed
+	// Resource — which is exactly what WalletAdapter::get_connected_key returns
+	// (verified at src/wallet_adapter/wallet_adapter.cpp:447, body
+	// `return Pubkey::new_from_bytes(connected_key);`). No conversion gap.
+	return godot::Pubkey::string_from_variant(wa_->get_connected_key());
+}
+
+void WalletAdapterSigner::sign_messages(const godot::PackedByteArray &messages_concat,
+		const godot::PackedInt32Array &lengths,
+		const godot::String &request_id) {
+	using namespace godot;
+
+	if (wa_ == nullptr || !wa_->is_connected()) {
+		emit_signal("sign_failed", request_id,
+				String("NOT_CONNECTED"),
+				String("WalletAdapterSigner has no connected WalletAdapter"));
+		return;
+	}
+	if (request_in_flight_) {
+		emit_signal("sign_failed", request_id,
+				String("BUSY"),
+				String("WalletAdapterSigner has another request in flight"));
+		return;
+	}
+	if (lengths.is_empty()) {
+		emit_signal("sign_completed", request_id, Array());
+		return;
+	}
+
+	// Bounds pre-check: sum(lengths) must equal messages_concat.size(). Surfaces
+	// caller-side encoding mistakes loudly instead of producing truncated slices.
+	int64_t total_len = 0;
+	for (int i = 0; i < lengths.size(); i++) {
+		const int len = lengths[i];
+		ERR_FAIL_COND_MSG(len < 0,
+				"WalletAdapterSigner::sign_messages: negative length in lengths array.");
+		total_len += len;
+	}
+	ERR_FAIL_COND_MSG(total_len != messages_concat.size(),
+			"WalletAdapterSigner::sign_messages: sum(lengths) does not match messages_concat.size().");
+
+	request_in_flight_ = true;
+	pending_request_id_ = request_id;
+	pending_concat_ = messages_concat;
+	pending_lengths_ = lengths;
+	pending_signatures_ = Array();
+	pending_offset_ = 0;
+	self_pin_ = Ref<WalletAdapterSigner>(this);
+
+	// Connect ONCE per request (not per slice). Connections are explicitly torn down
+	// in finish_success() / fail(). One-shot connections per slice would leak siblings:
+	// CONNECT_ONE_SHOT only removes the callback that fired; its sibling persists.
+	// After N slices, N stale callbacks would accumulate and eventually fire into
+	// freed memory once self_pin_ releases `this`.
+	const Callable on_signed(this, "_on_message_signed");
+	const Callable on_failed(this, "_on_signing_failed");
+	wa_->connect("message_signed", on_signed);
+	wa_->connect("signing_failed", on_failed);
+
+	dispatch_next_slice();
+}
+
+void WalletAdapterSigner::sign_transactions(const godot::PackedByteArray &transactions_concat,
+		const godot::PackedInt32Array &lengths,
+		const godot::String &request_id) {
+	// WalletAdapter::sign_message handles both message and transaction signing
+	// (the wallet receives serialized bytes; the protocol distinction lives at the
+	// caller). Delegating to sign_messages keeps this bridge minimal.
+	sign_messages(transactions_concat, lengths, request_id);
+}
+
+void WalletAdapterSigner::dispatch_next_slice() {
+	using namespace godot;
+
+	const int slice_index = pending_signatures_.size();
+	const int slice_len = pending_lengths_[slice_index];
+	const PackedByteArray slice = pending_concat_.slice(pending_offset_, pending_offset_ + slice_len);
+	pending_offset_ += slice_len;
+
+	// signer_index is hardcoded to 0 — see header doc note on v1.1 limitation.
+	wa_->sign_message(slice, 0);
+}
+
+void WalletAdapterSigner::_on_message_signed(const godot::PackedByteArray &signature) {
+	if (!request_in_flight_) {
+		return;
+	}
+	pending_signatures_.append(signature);
+	if (pending_signatures_.size() >= pending_lengths_.size()) {
+		finish_success();
+	} else {
+		dispatch_next_slice();
+	}
+}
+
+void WalletAdapterSigner::_on_signing_failed() {
+	if (!request_in_flight_) {
+		return;
+	}
+	fail(godot::String("WALLET_REJECTED"),
+			godot::String("WalletAdapter emitted signing_failed"));
+}
+
+void WalletAdapterSigner::disconnect_signals() {
+	using namespace godot;
+
+	if (wa_ == nullptr) {
+		return;
+	}
+	const Callable on_signed(this, "_on_message_signed");
+	const Callable on_failed(this, "_on_signing_failed");
+	if (wa_->is_connected("message_signed", on_signed)) {
+		wa_->disconnect("message_signed", on_signed);
+	}
+	if (wa_->is_connected("signing_failed", on_failed)) {
+		wa_->disconnect("signing_failed", on_failed);
+	}
+}
+
+void WalletAdapterSigner::finish_success() {
+	const godot::String req_id = pending_request_id_;
+	const godot::Array sigs = pending_signatures_;
+
+	disconnect_signals();
+
+	request_in_flight_ = false;
+	pending_request_id_ = godot::String();
+	pending_concat_ = godot::PackedByteArray();
+	pending_lengths_ = godot::PackedInt32Array();
+	pending_signatures_ = godot::Array();
+	pending_offset_ = 0;
+
+	emit_signal("sign_completed", req_id, sigs);
+
+	// Release self-pin LAST so `this` survives the emit chain.
+	self_pin_ = godot::Ref<WalletAdapterSigner>();
+}
+
+void WalletAdapterSigner::fail(const godot::String &error_code, const godot::String &message) {
+	const godot::String req_id = pending_request_id_;
+
+	disconnect_signals();
+
+	request_in_flight_ = false;
+	pending_request_id_ = godot::String();
+	pending_concat_ = godot::PackedByteArray();
+	pending_lengths_ = godot::PackedInt32Array();
+	pending_signatures_ = godot::Array();
+	pending_offset_ = 0;
+
+	emit_signal("sign_failed", req_id, error_code, message);
+
+	self_pin_ = godot::Ref<WalletAdapterSigner>();
+}
+
+} //namespace godot_solana_sdk
