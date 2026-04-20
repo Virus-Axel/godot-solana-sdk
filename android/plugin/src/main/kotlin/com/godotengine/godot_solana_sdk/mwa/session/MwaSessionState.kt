@@ -13,6 +13,22 @@ class MwaSessionState {
     private var identityUri: String = ""
     private var iconUri: String = ""
     private var identityName: String = ""
+
+    // FORWARD-CONTRACT (Story 2-1): `authToken` is intentionally a raw
+    // `String?` here, NOT a `SecretString?`. Story 1-2 only extracts the
+    // shape out of the scaffold globals; Story 2-1 migrates the field to
+    // `SecretString?` and wires `SecureTokenStore` for on-disk encryption
+    // (see DD-14 + concerns.md CR-5). Until that migration lands:
+    //   * NEVER pass `authToken` (or the String returned by `getAuthToken()`)
+    //     to any `Log.*` call -- enforced by `ci/grep_bans.sh` pattern #1
+    //     (`Log.(v|d|i|w|e)(.*?authToken`) which fails CI on any leak.
+    //   * NEVER concatenate the token into a log message string OUTSIDE a
+    //     lambda -- enforced by ci/grep_bans.sh pattern #4 (`SdkLog lambda
+    //     + interpolation outside lambda`).
+    //   * Callers that must transmit the token across IPC / network must
+    //     treat the `String?` as sensitive for the duration of the
+    //     reference and clear references promptly; Story 2-1 replaces this
+    //     manual discipline with the `SecretString` wrapper API.
     private var authToken: String? = null
 
     fun setResult(result: Any?) {

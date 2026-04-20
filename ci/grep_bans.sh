@@ -37,11 +37,40 @@ ids=(
 )
 
 patterns=(
-    'Log\.(v|d|i|w|e)\([^)]*authToken'
-    'Log\.(v|d|i|w|e)\([^)]*publicKey'
-    'Log\.(v|d|i|w|e)\([^)]*\.reveal\(\)'
+    'Log\.(v|d|i|w|e)\(.*[aA]uthToken'
+    'Log\.(v|d|i|w|e)\(.*[pP]ublicKey'
+    'Log\.(v|d|i|w|e)\(.*\.reveal\(\)'
     'SdkLog\.[vdiwe]\([^{]*\$[a-zA-Z_{]'
 )
+
+# Case variant `[aA]uthToken` / `[pP]ublicKey`:
+# Kotlin exposes both a property-style access and a Java-interop getter.
+# `MwaSessionState.authToken` (if the field were public `var`) reads as
+# `session.authToken` (lowercase a). The explicit accessor pattern used in
+# this story reads as `session.getAuthToken()` (capital A inside a camelCase
+# method). Both shapes are realistic leak conduits -- the grep matches the
+# first-letter case variant to cover both. `rg --case-sensitive` globally
+# (per Concern 1 fix) is preserved; only the keyword's first letter is
+# broadened. Same applies to `publicKey` / `getPublicKey()`.
+
+# Regex-design note (Story 1-2 code-review Finding #1):
+# Patterns 1, 2, 3 use `.*` (greedy) rather than `[^)]*` between the
+# opening `Log.(` and the target token. `[^)]*` stops at the first `)`
+# in the log-call argument list, which silently false-negatives on the
+# very common real-world shape `Log.d(TAG, getX().authToken)` or
+# `Log.d(TAG, getToken().reveal())` -- the nested `()` of `getX()` /
+# `getToken()` terminates `[^)]*` before the target keyword is reached.
+# `.*` is bounded per-line by grep's default line-scope and catches
+# arbitrarily deep receiver chains. (Initial fix used `.*?` lazy-match
+# but POSIX ERE / BSD-grep do not support PCRE lazy quantifiers --
+# `.*?` parses as `.*` followed by a stray `?` and behaves erratically
+# across runner images. Greedy `.*` gives the same pass/fail answer for
+# substring presence checks and is portable across grep implementations.)
+#
+# Pattern 4 continues to use `[^{]*` because the `{` boundary is a
+# FEATURE there -- it stops the match at the lambda brace so
+# `SdkLog.d(TAG, CORR) { "body with $var" }` is correctly NOT flagged
+# (the interpolation is inside the lambda, which R8 will handle).
 
 descs=(
     "android.util.Log call with authToken argument (AC-4 #1, AC-D-8)"

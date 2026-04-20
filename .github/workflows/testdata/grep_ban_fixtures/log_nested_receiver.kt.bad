@@ -1,0 +1,34 @@
+// Regression fixture for Story 1-2 code-review Finding #1 (nested-receiver shape).
+// The .kt.bad extension prevents AGP from compiling this file.
+//
+// Intentional violations below -- must NOT be fixed. This file exists so
+// ci/grep_bans.sh --check-only proves that patterns 1 and 3 fire against
+// the `Log.<level>(TAG, getX().<member>)` shape.
+//
+// Why it matters: the ORIGINAL `[^)]*` regex stopped at the first `)` in
+// the log-call argument list. Real-world leak code overwhelmingly looks
+// like `Log.d(TAG, session.getAuthToken())` (since `getAuthToken()` is
+// the MwaSessionState accessor) or `Log.d(TAG, getToken().reveal())`
+// (unwrap via a chain). The original pattern false-negatived on both.
+// The current `.*?` patterns catch them; deleting this fixture -- or
+// reverting the patterns -- regresses the self-test, surfacing the
+// mistake at CI time.
+package grep_ban_fixtures
+
+import android.util.Log
+import com.godotengine.godot_solana_sdk.mwa.session.MwaSessionState
+import com.godotengine.godot_solana_sdk.mwa.util.SecretString
+
+// Violation A -- pattern 1 via nested receiver: the realistic leak shape
+// that the original regex missed.
+fun badLogAuthTokenViaAccessor(session: MwaSessionState) {
+    Log.d("MWA", "connecting with token=" + session.getAuthToken())
+}
+
+// Violation B -- pattern 3 via nested receiver: nested `getToken()` call
+// before the `.reveal()` chain. Original regex stopped at the `)` of
+// `getToken()` and missed the subsequent `.reveal()`.
+fun badLogRevealViaChain(): Unit {
+    fun getToken(): SecretString = SecretString(byteArrayOf(1, 2, 3))
+    Log.w("MWA", "bytes=" + getToken().reveal().joinToString())
+}

@@ -55,3 +55,28 @@ Deferred items from code reviews and implementation. Tracked for future resoluti
 - **Why LOW:** bytecode proof is strictly stronger than the grep. No release-build regression, no runtime leak — R8 correctly strips v/d call sites. The grep numbers are a bytecode-layout observation, not a behavior property.
 - **Trigger to revisit:** AGP / R8 version bump in the future. If a newer R8 starts DCE-ing dead lambda classes, the grep will naturally return 0/0/1 and both the original plan criterion AND the amended criterion will pass. No action required; this concern will auto-close at that point.
 - **Not a concrete code change** — documentation-only follow-up.
+
+
+## CR-10 (MEDIUM): R8Sentinel ships into release AAR as public bytecode
+- **Story:** 1-2 | **Date:** 2026-04-20 | **Severity:** MEDIUM | **Status:** tracked | **Origin:** code-review Finding #4
+- **Summary:** `R8Sentinel.kt` is marked `internal` + `@Suppress("unused")` and is functionally dead code in production (exists only so `ci/verify_r8_strip.sh` has a known-shape byte pattern to assert against). The `-keep class ...R8Sentinel { *; }` rule in `consumer-rules.pro` correctly prevents R8 DCE from removing it, but that means the class — and the three `MWA_R8_SENTINEL_VERBOSE_*` / `..._DEBUG_*` / `..._INFO_KEEP_*` magic strings in its lambda-class constant pools — ship in every release AAR consumers download.
+- **Why MEDIUM:** no security impact (the strings are opaque UUIDs, not secrets; they reveal only that Story 1-2's evidence infrastructure exists). But evidence infrastructure leaking into the shipped artifact is a cleanliness concern, and a principled fix is cheap.
+- **Resolution:** move `R8Sentinel.kt` under a build-variant gate so it is included in the release AAR only when a property like `-PverifyR8Strip=true` is passed. CI's `verify-r8-strip` workflow job sets the flag; normal release builds don't. Requires a small AGP `variantFilter` or `sourceSets` customization in `android/plugin/build.gradle.kts`. Defer to a dedicated follow-up task — not blocking.
+
+## CR-11 (LOW): Dead scaffold field `ComposeWalletActivity.hasConnectedWallet`
+- **Story:** 1-2 | **Date:** 2026-04-20 | **Severity:** LOW | **Status:** tracked | **Origin:** code-review Finding #5
+- **Summary:** `android/plugin/src/main/java/plugin/walletadapterandroid/ComposeWalletActivity.kt` declares `private var hasConnectedWallet = false` and assigns `true` in all three `when`-branches of `onCreate`, but nothing ever reads the field. Pre-existing scaffold code carried over through Task 4's migration.
+- **Why LOW:** no behavioral impact; ktlint doesn't flag unused `var` fields (only unused imports/params); the field's presence is harmless. Natural cleanup target but not urgent.
+- **Resolution:** delete the field + its three assignments in a subsequent scaffold-cleanup pass, ideally bundled with any future Story-2-x refactor of `ComposeWalletActivity`.
+
+## CR-12 (LOW): verify_r8_strip.sh Gate 2a method list is hard-coded (v, d)
+- **Story:** 1-2 | **Date:** 2026-04-20 | **Severity:** LOW | **Status:** tracked | **Origin:** code-review Finding #6
+- **Summary:** `ci/verify_r8_strip.sh:131-132` greps for unminified `invokestatic .../SdkLog.v(` and `.d(` specifically. If a future story adds another method to the `-assumenosideeffects` block in `consumer-rules.pro` (e.g., `SdkLog.t` for trace, or an audit variant), the script silently false-passes — only `v` and `d` are checked.
+- **Why LOW:** drift is slow (the `-assumenosideeffects` block rarely expands), the Gate 2b invokestatic-count check catches most regressions anyway (name-agnostic), and the fix requires some awk/sed to parse the rule file reliably.
+- **Resolution:** derive the stripped-method list by parsing the `-assumenosideeffects class ...SdkLog { ... }` block in `consumer-rules.pro`, then assert each method is absent from `R8Sentinel.class`. Defer until a second method is added to the block.
+
+## CR-13 (LOW): consumer-rules.pro lacks a cross-reference banner for proguard-library-self.pro
+- **Story:** 1-2 | **Date:** 2026-04-20 | **Severity:** LOW | **Status:** tracked | **Origin:** code-review Finding #7
+- **Summary:** The R8 rule set is split across two files: `consumer-rules.pro` (ships to downstream consumers via `consumerProguardFiles`) and `proguard-library-self.pro` (applies only to the library's own release build via `buildTypes.release.proguardFiles`). A future maintainer reading `consumer-rules.pro` has no in-file signal that a sibling file exists with library-self-only rules (`-dontobfuscate` in particular), making the split easy to miss when debugging R8 behavior.
+- **Why LOW:** `proguard-library-self.pro` itself has a thorough header explaining the split; the gap is only that `consumer-rules.pro` doesn't point AT it.
+- **Resolution:** add a one-line banner comment at the top of `consumer-rules.pro`: `# See also: proguard-library-self.pro -- library-self-only rules (-dontobfuscate).`
