@@ -46,6 +46,12 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
+    }
 }
 
 dependencies {
@@ -58,6 +64,14 @@ dependencies {
     implementation("androidx.compose.material:material:1.4.3")
     implementation("androidx.compose.ui:ui-tooling-preview:1.4.3")
     implementation("androidx.activity:activity-compose:1.8.0")
+
+    // Plan (Story 1-2 §Tooling Notes) pins JUnit Jupiter 6.0.3, but 6.x is compiled with Kotlin 2.1
+    // metadata and fails compileDebugUnitTestKotlin under this module's Kotlin plugin 1.8.0:
+    //   "Module was compiled with an incompatible version of Kotlin.
+    //    The binary version of its metadata is 2.1.0, expected version is 1.8.0."
+    // 5.11.4 is the newest 5.x (last Kotlin-1.x-compatible) release; logged as D1 (Rule 1) under
+    // Story 1-2 §Deviations Expected. Revisit after Kotlin plugin 2.x upgrade (tracked in concerns.md).
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 }
 
 // BUILD TASKS DEFINITION
