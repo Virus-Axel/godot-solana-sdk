@@ -1,16 +1,5 @@
 package plugin.walletadapterandroid
 
-import plugin.walletadapterandroid.myResult
-import plugin.walletadapterandroid.myAction
-import plugin.walletadapterandroid.myStoredTransaction
-import plugin.walletadapterandroid.myStoredTextMessage
-import plugin.walletadapterandroid.myMessageSignature
-import plugin.walletadapterandroid.myMessageSigningStatus
-import plugin.walletadapterandroid.myConnectedKey
-import plugin.walletadapterandroid.myConnectCluster
-import plugin.walletadapterandroid.myIdentityName
-import plugin.walletadapterandroid.myIdentityUri
-import plugin.walletadapterandroid.myIconUri
 import com.solana.mobilewalletadapter.clientlib.protocol.MobileWalletAdapterClient.AuthorizationResult
 
 import android.util.Log
@@ -27,10 +16,17 @@ import android.os.Bundle
 import android.content.Intent
 import android.net.Uri
 
-class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
+import com.godotengine.godot_solana_sdk.mwa.session.MwaSessionState
+
+class GDExtensionAndroidPlugin(godot: Godot) : GodotPlugin(godot) {
 
     companion object {
         val TAG = GDExtensionAndroidPlugin::class.java.simpleName
+
+        // Single session-state instance shared between the plugin (Godot-facing API) and
+        // ComposeWalletActivity (which reads it to dispatch the right @Composable). A formal DI
+        // solution is out of scope for Story 1-2; Story 2-1 may introduce one.
+        val sessionState: MwaSessionState = MwaSessionState()
 
         init {
             try {
@@ -48,13 +44,12 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
 
     @UsedByGodot
     fun connectWallet(cluster: Int, uri: String, icon: String, name: String) {
-        if (myResult is TransactionResult.Success) {
+        if (sessionState.getLastResult() is TransactionResult.Success<*>) {
             return
         }
-        myIdentityUri = Uri.parse(uri);
-        myIconUri = Uri.parse(icon);
-        myIdentityName = name;
-        myConnectCluster = cluster
+        sessionState.setIdentity(uri, icon, name)
+        sessionState.setCluster(cluster)
+        sessionState.setAction(0)
         godot.getActivity()?.let {
             val intent = Intent(it, ComposeWalletActivity::class.java)
             it.startActivity(intent)
@@ -62,44 +57,30 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun getConnectionStatus(): Int{
-        val myLocalResult = myResult
-        if (myLocalResult == null) {
+    fun getConnectionStatus(): Int {
+        val last = sessionState.getLastResult()
+        if (last == null) {
             return 0
-        }
-        else if(myLocalResult is TransactionResult.Success) {
+        } else if (last is TransactionResult.Success<*>) {
             return 1
-        }
-        else{
+        } else {
             return 2
         }
     }
 
     @UsedByGodot
-    fun getSigningStatus(): Int{
-        return myMessageSigningStatus
+    fun getSigningStatus(): Int = sessionState.getSigningStatus()
+
+    @UsedByGodot
+    fun getConnectedKey(): ByteArray? {
+        sessionState.setAction(0)
+        return sessionState.getConnectedKey() ?: ByteArray(0)
     }
 
     @UsedByGodot
-    fun getConnectedKey(): ByteArray?{
-        myAction = 0
-        return myConnectedKey?: ByteArray(0)
-    }
-
-    @UsedByGodot
-    fun signTransaction(serializedTransaction: ByteArray){
-        myAction = 1
-        myStoredTransaction = serializedTransaction
-        godot.getActivity()?.let {
-            val intent = Intent(it, ComposeWalletActivity::class.java)
-            it.startActivity(intent)
-        }
-    }
-    
-    @UsedByGodot
-    fun signTextMessage(textMessage: String){
-        myAction = 2
-        myStoredTextMessage = textMessage
+    fun signTransaction(serializedTransaction: ByteArray) {
+        sessionState.setAction(1)
+        sessionState.setTransaction(serializedTransaction)
         godot.getActivity()?.let {
             val intent = Intent(it, ComposeWalletActivity::class.java)
             it.startActivity(intent)
@@ -107,17 +88,23 @@ class GDExtensionAndroidPlugin(godot: Godot): GodotPlugin(godot) {
     }
 
     @UsedByGodot
-    fun getMessageSignature(): ByteArray {
-        return myMessageSignature?: ByteArray(0)
+    fun signTextMessage(textMessage: String) {
+        sessionState.setAction(2)
+        sessionState.setTextMessage(textMessage)
+        godot.getActivity()?.let {
+            val intent = Intent(it, ComposeWalletActivity::class.java)
+            it.startActivity(intent)
+        }
     }
 
     @UsedByGodot
-    fun getLatestAction(): Int {
-        return myAction
-    }
+    fun getMessageSignature(): ByteArray = sessionState.getLastSignature() ?: ByteArray(0)
+
+    @UsedByGodot
+    fun getLatestAction(): Int = sessionState.getPendingAction()
 
     @UsedByGodot
     fun clearState() {
-        myMessageSigningStatus = 0
+        sessionState.clearStatus()
     }
 }

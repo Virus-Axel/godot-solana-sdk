@@ -1,8 +1,6 @@
 
 package plugin.walletadapterandroid
 
-import plugin.walletadapterandroid.connectWallet
-import plugin.walletadapterandroid.myAction
 import com.solana.mobilewalletadapter.clientlib.*
 
 import android.os.Bundle
@@ -16,29 +14,30 @@ class ComposeWalletActivity : ComponentActivity() {
     private var hasConnectedWallet = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val uri = intent?.data
-
         super.onCreate(savedInstanceState)
 
-        if (myAction == 0) {
-            hasConnectedWallet = true
-            val sender = ActivityResultSender(this)
-            setContent {
-                connectWallet(sender)
+        val session = GDExtensionAndroidPlugin.sessionState
+        when (session.getPendingAction()) {
+            0 -> {
+                hasConnectedWallet = true
+                val sender = ActivityResultSender(this)
+                setContent {
+                    connectWallet(sender, session)
+                }
             }
-        }
-        else if (myAction == 1) {
-            hasConnectedWallet = true
-            val sender = ActivityResultSender(this)
-            setContent {
-                signTransaction(sender)
+            1 -> {
+                hasConnectedWallet = true
+                val sender = ActivityResultSender(this)
+                setContent {
+                    signTransaction(sender, session)
+                }
             }
-        }
-        else if (myAction == 2) {
-            hasConnectedWallet = true
-            val sender = ActivityResultSender(this)
-            setContent {
-                signTextMessage(sender)
+            2 -> {
+                hasConnectedWallet = true
+                val sender = ActivityResultSender(this)
+                setContent {
+                    signTextMessage(sender, session)
+                }
             }
         }
     }

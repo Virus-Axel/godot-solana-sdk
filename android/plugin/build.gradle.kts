@@ -11,7 +11,7 @@ val pluginPackageName = "plugin.walletadapterandroid"
 
 android {
     namespace = pluginPackageName
-    compileSdk = 33
+    compileSdk = 34
 
     buildFeatures {
         buildConfig = true
@@ -22,7 +22,8 @@ android {
     }
 
     defaultConfig {
-        minSdk = 21
+        minSdk = 23
+        targetSdk = 34
 
         externalNativeBuild {
             cmake {
