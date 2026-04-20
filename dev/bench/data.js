@@ -1,37 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776612788901,
+  "lastUpdate": 1776670268410,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "axel.benjaminsson@live.se",
-            "name": "Axel",
-            "username": "Virus-Axel"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "993c0714c5f2bf01936d1aed68fadb40d833f012",
-          "message": "Merge pull request #352 from Virus-Axel/bugfix/enable_json_quick_select\n\nEnable JSON quick select for payer property",
-          "timestamp": "2025-03-29T19:19:43+01:00",
-          "tree_id": "96425d4e35e3670222bb3f85851f2bdd824e6ac4",
-          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/993c0714c5f2bf01936d1aed68fadb40d833f012"
-        },
-        "date": 1743272887755,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Simple Transaction Performance Index",
-            "value": 0.373287671232877,
-            "unit": "Percent"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1814,6 +1785,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index (With helper class)",
             "value": 0.0755395683453237,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "c7f89894df0135c76b66e4bd053649211d698818",
+          "message": "Merge pull request #444 from inspikalu/feat/skills.md\n\nfeat: add AI agent SKILL.md specs",
+          "timestamp": "2026-04-20T09:20:39+02:00",
+          "tree_id": "4dcc1c106d1abf8c192fa2107cf7300b26b72933",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/c7f89894df0135c76b66e4bd053649211d698818"
+        },
+        "date": 1776670266506,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.247311827956989,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0681003584229391,
             "unit": "Percent"
           }
         ]
