@@ -3,7 +3,7 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-20T08:10:00Z",
+  "lastUpdated": "2026-04-20T13:30:00Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
@@ -33,51 +33,40 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 1,
+  "storiesDone": 2,
   "storiesTotal": 21,
   "changeStories": [],
-  "currentStory": {
-    "storyId": "1-2",
-    "slug": "secret-string-sdk-log-scaffold-cleanup",
-    "size": "M",
-    "wave": 1,
-    "status": "in-progress",
-    "startedAt": "2026-04-17T15:35:00Z",
-    "pausedAt": "2026-04-20T08:00:00Z",
-    "tasks": [
-      {
-        "id": 1,
-        "name": "Kotlin SecretString + JUnit tests",
-        "status": "done",
-        "committed": true,
-        "commits": ["add8de3b", "53df93fd"],
-        "testsAdded": 6,
-        "deviations": ["D1 (Rule 1) JUnit 5.11.4", "D2 (Rule 1) ctor defensive copy", "D3 (Rule 1) 6 tests vs 5", "D4 (Rule 1) java.lang.reflect", "D5 (Rule 3) Task 6 isMinifyEnabled amendment"]
-      },
-      {
-        "id": 2,
-        "name": "C++ SecretString header-only (tests deferred to 1-5 per A-8)",
-        "status": "done",
-        "committed": false,
-        "partial": true,
-        "testsAdded": 0,
-        "deviations": ["D6 (Rule 4) Task 2 reduced scope — header-only, GoogleTest deferred to Story 1-5 per amendment A-8 and Risk R4 fallback (b); concern CR-8 tracks gap"]
-      },
-      { "id": 3, "name": "Kotlin SdkLog + MockK lambda-elision tests", "status": "pending" },
-      { "id": 4, "name": "Scaffold cleanup: SDK bumps + println + MwaSessionState", "status": "pending" },
-      { "id": 5, "name": "ktlint config + ktlintCheck green", "status": "pending" },
-      { "id": 6, "name": "R8 -assumenosideeffects + release AAR decompile evidence", "status": "pending" },
-      { "id": 7, "name": "CI grep workflow for 4 banned patterns", "status": "pending" }
-    ]
-  },
+  "currentStory": null,
+  "completedStories": [
+    {
+      "storyId": "1-1",
+      "slug": "error-codes-codegen",
+      "completedAt": "2026-04-17T15:34:00Z"
+    },
+    {
+      "storyId": "1-2",
+      "slug": "secret-string-sdk-log-scaffold-cleanup",
+      "completedAt": "2026-04-20T13:30:00Z",
+      "gate5Result": "pass",
+      "tasks": 7,
+      "commits": 8,
+      "deviations": 21,
+      "amendments": ["A-9", "A-10"],
+      "concerns": ["CR-10", "CR-11", "CR-12", "CR-13"],
+      "testsAdded": 26,
+      "reviewFindings": {"high": 1, "medium": 3, "low": 3, "fixed": 3, "deferred": 4}
+    }
+  ],
   "baselineTests": {
-    "total": 29,
-    "passing": 29,
+    "total": 55,
+    "passing": 55,
     "failing": 0,
     "baselinedAt": "2026-04-20T00:00:00Z",
     "baselinedAtStory": 1,
-    "command": ".venv/bin/pytest tools/",
-    "note": "Python generator tests (Story 1-1). Kotlin (./gradlew test) + C++ (scons tests) test infra materializes in this story; no existing tests to baseline."
+    "lastRefreshedAt": "2026-04-20T13:30:00Z",
+    "lastRefreshedAtStory": 2,
+    "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
+    "note": "Post-story-1-2 refresh: 29 Python generator tests (Story 1-1) + 26 Kotlin unit tests (6 SecretString + 7 SdkLog + 13 MwaSessionState from Story 1-2). All passing; no baselined failures. C++ test tier still pending per A-8 (Story 1-5 lands scons tests alias)."
   },
   "tooling": {
     "format": "clang-format (C++); ktlint (Kotlin)",
@@ -91,8 +80,8 @@
     "totalRetries": 0,
     "tddRate": 0,
     "avgTaskMinutes": 0,
-    "subagentSpawns": 7,
-    "gatePasses": 4,
+    "subagentSpawns": 8,
+    "gatePasses": 5,
     "gateFails": 0,
     "gateOverrides": 0,
     "agentTeamsUsed": false,
