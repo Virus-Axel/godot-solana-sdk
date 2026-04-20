@@ -62,6 +62,12 @@ android {
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "consumer-rules.pro",
+                // library-self-only rules (e.g. -dontobfuscate) kept out of
+                // consumer-rules.pro so downstream apps still get full R8
+                // obfuscation. See proguard-library-self.pro header for
+                // rationale (ci/verify_r8_strip.sh Gate 2 obfuscation blind
+                // spot).
+                "proguard-library-self.pro",
             )
         }
     }

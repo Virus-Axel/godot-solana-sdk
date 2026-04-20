@@ -1,0 +1,15 @@
+// Fixture for Story 1-2 Task 7 -- banned pattern #1 (AC-4, AC-D-8).
+// The .kt.bad extension prevents AGP from compiling this file; the grep
+// script scans by glob, not by file type.
+//
+// Intentional violation on the next line -- must NOT be fixed. This file
+// exists so ci/grep_bans.sh --check-only proves pattern #1 fires.
+package grep_ban_fixtures
+
+import android.util.Log
+
+const val authToken: String = "would-be-a-real-token"
+
+fun badLogAuthToken() {
+    Log.d("MWA", "processing authToken=$authToken")
+}

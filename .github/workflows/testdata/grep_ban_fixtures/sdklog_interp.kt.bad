@@ -1,0 +1,31 @@
+// Fixture for Story 1-2 Task 7 -- banned pattern #4 (AC-4, DD-30 foot-gun).
+// The .kt.bad extension prevents AGP from compiling this file.
+//
+// Two intentional violations below -- must NOT be fixed. This file exists
+// so ci/grep_bans.sh --check-only proves pattern #4 fires against BOTH
+// Kotlin string-interpolation forms:
+//   1. braced   -- "${expr}"
+//   2. bare     -- "$identifier"
+//
+// Why this pattern is banned (DD-30): SdkLog.v/d/i/w/e take a lambda
+// `msg: () -> String` specifically so R8 -assumenosideeffects can strip
+// call + argument evaluation together. Passing an interpolated argument
+// OUTSIDE a lambda -- e.g. SdkLog.d("MWA", corrId, "token=$token") --
+// evaluates the interpolation BEFORE R8 reaches the call site, so the
+// secret-containing String is materialized even in release builds.
+// Both forms are equally dangerous; the grep pattern matches both.
+package grep_ban_fixtures
+
+import com.godotengine.godot_solana_sdk.mwa.util.SdkLog
+
+val token = "secret"
+
+// Violation A -- braced form
+fun badSdkLogInterpBraced() {
+    SdkLog.d("MWA", "scaffold", "token=${token}")
+}
+
+// Violation B -- bare form (equally banned)
+fun badSdkLogInterpBare() {
+    SdkLog.e("MWA", "scaffold", "token=$token")
+}

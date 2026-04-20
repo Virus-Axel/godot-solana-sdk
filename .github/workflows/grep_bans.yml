@@ -1,0 +1,84 @@
+name: grep-bans
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - feature/mwa-android
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Job 1 -- Source-level banned-pattern scan (fast, no JVM needed).
+  # -------------------------------------------------------------------------
+  grep-bans:
+    name: "AC-4 source-level banned-pattern grep"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install ripgrep (fast, exact regex semantics)
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
+      - name: Self-test -- all 4 banned patterns fire against fixtures
+        # Runs ci/grep_bans.sh in --check-only mode against the four
+        # synthetic fixture files under .github/workflows/testdata/. Each
+        # fixture intentionally contains at least one violation of its
+        # pattern; the self-test proves the grep rules still fire (catches
+        # accidental regex regressions where a future edit silently
+        # neutralizes the production scan below).
+        run: bash ci/grep_bans.sh --check-only .github/workflows/testdata/grep_ban_fixtures/
+
+      - name: Production scan -- zero violations in source tree
+        # Scans the real source tree for the four AC-4 banned patterns.
+        # Exits 0 on clean code, non-zero on any violation. The production
+        # scan deliberately skips the fixtures dir (counting them here
+        # would guarantee a perma-fail).
+        run: bash ci/grep_bans.sh android/plugin/src/main/ src/mwa/
+
+  # -------------------------------------------------------------------------
+  # Job 2 -- Release AAR R8-strip verification (CR-7 / A-9 gate).
+  # -------------------------------------------------------------------------
+  # ci/grep_bans.sh guards the SOURCE. This job guards the RELEASE AAR
+  # against the specific regression ci/grep_bans.sh cannot detect: a
+  # maintainer flips buildTypes.release.isMinifyEnabled = false (or
+  # removes the release block entirely), so R8 never runs and the
+  # -assumenosideeffects rule on SdkLog.v/d has zero effect. Source is
+  # still clean (grep_bans.sh passes), but the release AAR ships with
+  # SdkLog call sites + interpolated lambda bodies intact.
+  verify-r8-strip:
+    name: "CR-7 / A-9 release AAR R8-strip verify"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Cache Gradle caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('android/**/*.gradle.kts', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Assemble release AAR
+        working-directory: android
+        run: ./gradlew :plugin:assembleRelease --console=plain
+
+      - name: Run verify_r8_strip.sh against the release AAR
+        # Bytecode-level check: no unminified invokestatic to SdkLog.v/d
+        # (Gate 2, authoritative per A-9) + INFO sentinel still present
+        # (Gate 3, positive discriminator). Gate 4 logs VERBOSE/DEBUG
+        # sentinel string counts as informational output; those are soft
+        # per A-9 because R8 preserves compiled .class files of stripped
+        # lambdas as unreachable dead code.
+        run: bash ci/verify_r8_strip.sh

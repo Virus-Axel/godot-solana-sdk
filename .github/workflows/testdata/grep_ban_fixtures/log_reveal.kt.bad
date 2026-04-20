@@ -1,0 +1,21 @@
+// Fixture for Story 1-2 Task 7 -- banned pattern #3 (AC-4, AC-D-8).
+// The .kt.bad extension prevents AGP from compiling this file.
+//
+// Intentional violation on the next line -- must NOT be fixed. This file
+// exists so ci/grep_bans.sh --check-only proves pattern #3 fires.
+//
+// The pattern is deliberately RECEIVER-AGNOSTIC -- `Log.(v|d|i|w|e)(...
+// .reveal()` matches any receiver, because SecretString.reveal() is an
+// instance method in real code (`token.reveal()`, `sessionState.authToken
+// .reveal()`) and the class-qualified form (`SecretString.reveal()`) is
+// a syntactically rare shape that would not catch realistic leaks. The
+// fixture uses an instance-call receiver to mirror production usage.
+package grep_ban_fixtures
+
+import android.util.Log
+import com.godotengine.godot_solana_sdk.mwa.util.SecretString
+
+fun badLogReveal() {
+    val token = SecretString(byteArrayOf(1, 2, 3))
+    Log.w("MWA", "token bytes=" + token.reveal().joinToString())
+}

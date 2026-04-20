@@ -1,0 +1,14 @@
+// Fixture for Story 1-2 Task 7 -- banned pattern #2 (AC-4, AC-D-8).
+// The .kt.bad extension prevents AGP from compiling this file.
+//
+// Intentional violation on the next line -- must NOT be fixed. This file
+// exists so ci/grep_bans.sh --check-only proves pattern #2 fires.
+package grep_ban_fixtures
+
+import android.util.Log
+
+val publicKey: ByteArray = byteArrayOf(0x01, 0x02, 0x03)
+
+fun badLogPublicKey() {
+    Log.i("MWA", "connected publicKey=${publicKey.joinToString()}")
+}
