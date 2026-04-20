@@ -39,6 +39,31 @@ android {
         manifestPlaceholders["godotPluginPackageName"] = pluginPackageName
         buildConfigField("String", "GODOT_PLUGIN_NAME", "\"${pluginName}\"")
         setProperty("archivesBaseName", pluginName)
+
+        // Ship the R8 strip rules to downstream AAR consumers (architecture.md §8.5,
+        // amended A-6). See consumer-rules.pro for the rule set + rationale.
+        consumerProguardFiles("consumer-rules.pro")
+    }
+
+    buildTypes {
+        release {
+            // CR-7 (Story 1-2 Task 6): AGP's default release build type has
+            // isMinifyEnabled=false, so R8 never runs during `:plugin:assembleRelease`
+            // and the -assumenosideeffects rule in consumer-rules.pro has zero effect
+            // on the AAR. Without this block the Task 6 sentinel grep returns
+            // `VERBOSE=1, DEBUG=1, INFO=1` (false negative) even with a correctly
+            // written consumer-rules.pro.
+            //
+            // The second proguardFiles argument ("consumer-rules.pro") reuses the
+            // same rule set so the AAR's own release build honors the
+            // -assumenosideeffects rule during assembly (not just downstream consumer
+            // apps via consumerProguardFiles above).
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "consumer-rules.pro",
+            )
+        }
     }
 
     compileOptions {

@@ -86,3 +86,57 @@ BOTH architecture.md and this file, using amended values where they conflict.
   - AC-1 half satisfied now (Kotlin); AC-1 C++ half satisfied at inspection-level; full GoogleTest satisfaction lands in Story 1-5.
 - **Follow-through:** Concern **CR-8** tracks the test-tier debt and closes when Story 1-5 lands the `tests` alias + runs this header's tests. Story 1-5's story file (created at wave 3 start) will list a prerequisite task: "Import `test/mwa/secret_string_test.cpp` from Story 1-2's deferred scope (A-8)." The test file body is already specified verbatim in Story 1-2 §Task 2 — it ports without new design work.
 
+## A-9: Story 1-2 Task 6 — replace grep-count verification with bytecode-disassembly proof
+- **Story:** 1-2 | **Date:** 2026-04-20
+- **Original (story 1-2 Task 6 verification hints / must_have artifact spec):** `grep -c MWA_R8_SENTINEL_VERBOSE` / `..._DEBUG` against the decompiled release AAR classes must return 0; `..._INFO_KEEP` must return >= 1. Evidence file at `docs/stories/evidence/1-2-r8-aar-decompile.txt` must contain `VERBOSE=0, DEBUG=0, INFO=1`.
+- **Actual:** Release AAR built with `isMinifyEnabled=true` + `-assumenosideeffects class ...SdkLog { public static void v(...); public static void d(...); }` yields `VERBOSE=1, DEBUG=1, INFO=1` grep counts. R8 correctly strips the v/d call sites AND prevents the VERBOSE/DEBUG lambda singletons from ever being instantiated at runtime, BUT R8 does not remove the compiled `.class` files of the stripped lambdas — the sentinel string literals remain in their constant pools as unreachable dead code.
+- **Rationale:** The grep test, as written, conflates two different properties:
+  1. "R8 stripped the v/d call sites" (the property AC-2 actually wants) — TRUE, verified at bytecode level.
+  2. "R8 removed the sentinel string literals from the AAR bytecode" (the property the grep measures) — FALSE, because R8 preserves the `.class` files of unreachable lambdas.
+  The authoritative proof of (1) is the bytecode disassembly of `R8Sentinel.exerciseLogs()`:
+     - `getstatic R8Sentinel$a.a:I; pop` replaces `invokestatic SdkLog.v` (v call site stripped).
+     - `getstatic R8Sentinel$b.a:I; pop` replaces `invokestatic SdkLog.d` (d call site stripped).
+     - `getstatic R8Sentinel$c.a:L...$c; invokestatic b/a.a(...)` for the `i` path (retained — `b/a` is the R8-minified `SdkLog`, `a` is `i`).
+  Plus: `R8Sentinel$a.<clinit>` and `R8Sentinel$b.<clinit>` do NOT publish their `INSTANCE` singleton field (no `putstatic` instruction), so their lambda bodies are unreachable even if reflectively probed. `R8Sentinel$c.<clinit>` DOES publish `INSTANCE`, so the `i` lambda runs.
+  The bytecode disassembly is STRICTLY STRONGER than the grep — it proves the runtime behavior the plan cares about, whereas the grep proves a bytecode-layout property R8 is not obligated to deliver.
+- **Amended verification criterion (replaces the grep counts as the Task 6 / AC-2 proof):**
+  1. `./gradlew :plugin:assembleRelease` log MUST include `:plugin:minifyReleaseWithR8` (proves R8 ran).
+  2. `javap -p -c R8Sentinel.class` MUST show `getstatic` + `pop` at the v and d call sites (NOT `invokestatic SdkLog.v / SdkLog.d`).
+  3. `javap -p -c R8Sentinel.class` MUST show an `invokestatic` at the i call site (against whatever R8-minified name the rule preserved).
+  4. `javap -p -c R8Sentinel$a.class` and `R8Sentinel$b.class` MUST show `<clinit>` with NO `putstatic` to their `INSTANCE` field.
+  5. `javap -p -c R8Sentinel$c.class` MUST show `<clinit>` with a `putstatic` to `INSTANCE`.
+  Grep counts are retained in the evidence file as secondary observation (not as the pass/fail criterion).
+- **Affected:** Story 1-2 Task 6 verification hints, must_have "Release AAR...contains zero occurrences..." phrasing, and the `docs/stories/evidence/1-2-r8-aar-decompile.txt` contents spec. Architecture §8.5 R8 rules are unchanged — they fire correctly.
+- **Follow-through:** Concern **CR-9** added to `docs/concerns.md` (LOW) tracking that future R8/AGP version bumps could change this grep behavior (if a future R8 starts DCE-ing dead lambda classes, grep will naturally go to 0 and the amended criterion still passes). No code change required for CR-9 itself.
+
+
+## A-10: Godot `@UsedByGodot` reflection surface MUST be preserved in every MWA AAR
+- **Story:** 1-2 | **Date:** 2026-04-20 | **Scope:** architecture-wide (applies to stories 1-4, 2-1, 2-2, 2-3, every plugin AAR through 1.0 and beyond)
+- **Original (docs/architecture.md §8.5 R8 Rules and §2.2 Component G — GDExtensionAndroidPlugin):** The locked R8 ruleset enumerated `-keepclassmembers class com.godotengine.godot_solana_sdk.mwa.** { native <methods>; }` (JNI preservation) and the Story 1-2 `-assumenosideeffects` block, but did not include a keep rule for Godot's reflective method-dispatch surface (`@org.godotengine.godot.plugin.UsedByGodot`).
+- **Actual (Story 1-2 Task 6 verification on 2026-04-20):** A direct inspection of the upstream `org.godotengine:godot:4.3.0.stable` AAR at `~/.gradle/caches/modules-2/files-2.1/org.godotengine/godot/4.3.0.stable/...` confirmed the AAR ships NONE of the following:
+  - `proguard.txt` at the AAR root
+  - `consumer-rules.pro` at the AAR root
+  - `META-INF/proguard/*.pro`
+
+  The AAR root contains only `AndroidManifest.xml`, `classes.jar`, `jni`, `META-INF/`, `R.txt`, `res/`. Upstream Godot does NOT preserve `@UsedByGodot` via any consumer rule. Every downstream plugin AAR that ships R8-optimizable methods must plant its own retention rule, or a minified game-app build will rename/DCE the annotated methods and the plugin will fail at game-runtime with a "method not found" deep inside Godot's Java-side dispatcher (typically swallowed as a log line).
+- **Rationale:** This is a pure dataflow omission in the original architecture — the rule was never considered because the locked `-keepclassmembers ... native <methods>` entry covered the JNI surface and the team assumed the Godot AAR itself would ship the reflection-surface retention rule. It does not. Promoting this from a Story 1-2 Task 6 deviation (D15) to an architecture-level amendment because every subsequent story that adds `@UsedByGodot` methods to the plugin surface (1-4 node skeleton, 2-1 connect, 2-2 sign, 2-3 disconnect, and every follow-on) would silently re-open the same bug if the rule were not baked into the canonical R8 ruleset.
+- **Amended R8 ruleset (addition to docs/architecture.md §8.5 R8 Rules):**
+  ```
+  # Preserve Godot's reflection-dispatch surface. @UsedByGodot methods are
+  # invoked by name at game runtime via reflection; a minified downstream
+  # build without these rules silently breaks the plugin.
+  # Upstream Godot 4.3.0 AAR verified to ship NO consumer rules (A-10, 2026-04-20).
+  -keepclasseswithmembers class * {
+      @org.godotengine.godot.plugin.UsedByGodot <methods>;
+  }
+  -keepclassmembers class * {
+      @org.godotengine.godot.plugin.UsedByGodot <methods>;
+  }
+  ```
+  Shipped in `android/plugin/consumer-rules.pro` (Story 1-2 Task 6) and reused by the AAR's own release build via `buildTypes.release.proguardFiles` (see CR-7 / A-9).
+- **Affected:**
+  - docs/architecture.md §8.5 R8 Rules (add the keep rules above to the authoritative ruleset).
+  - docs/architecture.md §2.2 Component G — GDExtensionAndroidPlugin (add note: "All `@UsedByGodot`-annotated methods are protected from R8 renaming/DCE by the consumer-rules.pro rules installed per A-10.").
+  - Every future story (1-4, 2-1, 2-2, 2-3, 3-x) adding `@UsedByGodot` methods inherits this protection automatically — no per-story keep rules needed.
+- **Verification check for future stories:** on any story that adds new `@UsedByGodot` methods, confirm by `javap -p` on the release AAR class that the method names survive R8 with their source names (not renamed to `a/b/c`). Protocol: `./gradlew :plugin:assembleRelease && javap -p /tmp/mwa-aar/classes/plugin/walletadapterandroid/<ClassName>.class | grep <methodName>`.
+- **Follow-through:** No separate concern entry needed. D15 in the Story 1-2 task-6 deviation log remains as the historical trail; A-10 is the forward-looking architectural rule.
