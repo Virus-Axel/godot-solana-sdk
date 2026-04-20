@@ -39,6 +39,7 @@
 #include "honeycomb/honeycomb_generated.hpp"
 #include "honeycomb/honeycomb_types.hpp" // NOLINT(misc-include-cleaner)
 #include "instruction.hpp"
+#include "isigner.hpp"
 #include "keypair.hpp"
 #include "meta_data/collection.hpp"
 #include "meta_data/create_metadata_args.hpp"
@@ -114,6 +115,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<AccountSimulator>();
 	ClassDB::register_class<AccountMeta>();
 	ClassDB::register_class<Instruction>();
+	ClassDB::register_abstract_class<godot_solana_sdk::ISigner>();
 	ClassDB::register_class<Transaction>();
 	ClassDB::register_class<Keypair>();
 	ClassDB::register_class<WalletAdapter>();
