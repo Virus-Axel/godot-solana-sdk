@@ -799,7 +799,7 @@ func _on_error(data: Dictionary) -> void:
 
 Public C++ headers of the GDExtension boundary use **only** `godot::` types — `godot::Variant`, `godot::String`, `godot::Dictionary`, `godot::PackedByteArray`, `godot::Ref<T>`. No `std::string`, `std::vector`, `std::unique_ptr`, or other STL across the GDExtension ABI. This is the only discipline that survives multiple toolchains (MSVC vs MinGW vs Clang; libc++ vs libstdc++; NDK r23 vs r25) without silent binary-incompatibility.
 
-`SecretString` on the C++ side is a POD-like wrapper holding engine-allocated `PackedByteArray` storage, with `operator<<` / `to_string()` returning the literal `"<redacted>"`. No STL internals.
+`SecretString` on the C++ side is a POD-like wrapper holding engine-allocated `PackedByteArray` storage, with `to_string()` returning the literal `"<redacted>"` (see A-7 — `operator<<` dropped because it would require `<ostream>` and violate DD-26). No STL internals.
 
 A CI header-lint job scans public headers under `src/mwa/include/` and fails the build on any STL type reference.
 
@@ -1020,11 +1020,14 @@ CI step (AC-NFR-SEC-2): build a synthetic consumer app that includes this plugin
 -keep class com.solanamobile.mobilewalletadapter.** { *; }
 -dontwarn com.solanamobile.mobilewalletadapter.**
 
-# Strip verbose/debug logs in release
--assumenosideeffects class com.godotengine.godot_solana_sdk.mwa.SdkLog {
+# Strip verbose/debug logs in release (package corrected — see A-6)
+-assumenosideeffects class com.godotengine.godot_solana_sdk.mwa.util.SdkLog {
     public static void v(...);
     public static void d(...);
 }
+
+# Keep Story 1-2 Task 6 R8-strip evidence sentinel from DCE (see A-6)
+-keep class com.godotengine.godot_solana_sdk.mwa.util.R8Sentinel { *; }
 ```
 
 ## 9. Infrastructure & Deployment
@@ -1163,7 +1166,7 @@ Decisions from research.md are carried forward; new decisions are added here.
   - **Alternatives considered:** hand-maintain 3 enums (rejected — drift invisible); use clientlib-ktx's exception hierarchy directly (rejected — leaks implementation detail, breaks layer encapsulation).
   - **Rationale:** AC-A-3, AC-D-2; single source of truth; CI drift check.
 
-- **DD-14 [LOCKED]** `SecretString` wrapper type in both Kotlin and C++ with `toString()/operator<<` → `"<redacted>"`; tokens never unwrap into `String`-typed fields.
+- **DD-14 [LOCKED]** `SecretString` wrapper type in both Kotlin and C++ with `toString()` (Kotlin) / `to_string()` (C++) → `"<redacted>"`; tokens never unwrap into `String`-typed fields. (See A-7 — `operator<<` dropped per DD-26.)
   - **Rationale:** AC-D-8, AC-NFR-SEC-6; defense in depth against accidental `Log.*` leakage.
 
 - **DD-15 [LOCKED]** Single `mwa_error` signal (not per-operation error signals).

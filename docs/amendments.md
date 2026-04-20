@@ -29,3 +29,41 @@ BOTH architecture.md and this file, using amended values where they conflict.
 - **Original:** story-creator agent chose `com.limechain.mwa.generated`
 - **Actual:** `com.godotengine.godot_solana_sdk.mwa.generated`
 - **Rationale:** This is a contribution to `Virus-Axel/godot-solana-sdk`, not a standalone LimeChain product. Using a contributor-branded namespace (`com.limechain.*`) in someone else's OSS repo is inappropriate. The architecture doc §8.5 ProGuard rules reference `com.godotengine.godot_solana_sdk.mwa.**` — the generated code must live under this namespace or R8 will strip the sealed enum in release builds, causing `ClassNotFoundException`. Aligning with the architecture doc's ProGuard rules requires zero additional amendments to §8.5.
+
+## A-6: §8.5 R8 rules — correct `SdkLog` package + keep `R8Sentinel`
+- **Story:** 1-2 | **Date:** 2026-04-20
+- **Original (architecture.md:1024-1027):**
+  ```
+  -assumenosideeffects class com.godotengine.godot_solana_sdk.mwa.SdkLog {
+      public static void v(...);
+      public static void d(...);
+  }
+  ```
+- **Actual:**
+  ```
+  -assumenosideeffects class com.godotengine.godot_solana_sdk.mwa.util.SdkLog {
+      public static void v(...);
+      public static void d(...);
+  }
+
+  # Story 1-2 Task 6 evidence capture — keep sentinel class from DCE so INFO=1 discriminator works
+  -keep class com.godotengine.godot_solana_sdk.mwa.util.R8Sentinel { *; }
+  ```
+- **Rationale:** Two corrections to §8.5 that surface together when Story 1-2 ships the consumer-rules.pro.
+  1. **Package path.** `SdkLog` lives under `com.godotengine.godot_solana_sdk.mwa.util.SdkLog` per A-5's subpackage convention (`util` for utility classes, `session` for state). ProGuard/R8 class-name matchers in `-assumenosideeffects` are exact — the original `mwa.SdkLog` rule does not match `mwa.util.SdkLog` and R8 would silently do nothing. The failure mode is invisible: release builds ship with SdkLog.v/d call sites and lambda bodies intact, sentinel strings still appear in the decompiled AAR, and the test blames `@JvmStatic` (the next-most-likely cause) when the real culprit is the package name.
+  2. **`R8Sentinel` keep rule.** Story 1-2 Task 6 plants an `internal object R8Sentinel` with `exerciseLogs()` that calls `SdkLog.v/d/i` with unique sentinel strings (`MWA_R8_SENTINEL_{VERBOSE,DEBUG,INFO}_*`). The release-AAR decompile then grep-counts these to prove `VERBOSE=0, DEBUG=0, INFO=1` — `INFO=1` is the discriminator that proves the strip is *selective*, not wholesale. But `R8Sentinel` is never called from production code, and R8's default pass DCEs unreferenced classes. Without the `-keep`, the entire class is removed, `INFO=0`, and the test cannot distinguish "R8 correctly stripped v/d" from "R8 DCE'd everything and you never proved anything about the rule." The `-keep` is cheap (one class, test-only semantics, does not ship to consumers' apps because consumer-rules.pro only applies inside the AAR's own code paths).
+
+  Both corrections are additive to §8.5 and compatible with every downstream story that logs via `SdkLog` (they all use the `util.SdkLog` package anyway).
+
+## A-7: AC-1 (Story 1-2) — drop `operator<<`; `to_string()` is the sole C++ stringification path
+- **Story:** 1-2 | **Date:** 2026-04-20
+- **Original (plan.md §Story 1-2 AC-1; architecture.md:802, 1166):** "stringified via `toString()` / `operator<<`"
+- **Actual:** "stringified via `toString()` (Kotlin) / `to_string()` (C++)"
+- **Rationale:** DD-26 [LOCKED] forbids STL types and headers in public C++ GDExtension headers (`src/mwa/include/`). A conventional `std::ostream& operator<<(std::ostream&, const SecretString&)` requires `#include <ostream>` and drags in `<iosfwd>` / `<string>` / libc++ vs libstdc++ ABI surface — the exact drift DD-26 exists to prevent. Godot's C++ API does not provide a chainable string-append `operator<<` idiom for `godot::String`; the canonical stringification is a value-returning method. AC-1's original wording was inherited from idiomatic C++ iostream conventions and silently conflicts with DD-26.
+
+  The implementation keeps:
+  - Kotlin: `override fun toString() = "<redacted>"` (unchanged; satisfies "toString()" half of the original AC).
+  - C++: `godot::String to_string() const { return godot::String("<redacted>"); }` (sole path).
+  - Optional: a free `godot::String operator+(const godot::String&, const SecretString&)` overload for string concatenation convenience (header-only, engine types only, DD-26-compliant). Not required by AC-1 as amended.
+
+  AC-1 verification tests assert `.to_string()` returns `godot::String("<redacted>")` and the class exposes no other public accessor than `.reveal_bytes()`. No production caller uses `operator<<` today (nothing in the codebase writes `SecretString` to a `std::ostream` — everything goes through `SdkLog` which is Kotlin-side). plan.md AC-1 is left verbatim as the historical record; this amendment is the active source for Story 1-2 and all downstream token-handling stories.

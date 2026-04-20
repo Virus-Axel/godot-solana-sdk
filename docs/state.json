@@ -3,7 +3,7 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-17T15:00:00Z",
+  "lastUpdated": "2026-04-17T15:35:00Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
@@ -36,7 +36,14 @@
   "storiesDone": 1,
   "storiesTotal": 21,
   "changeStories": [],
-  "currentStory": null,
+  "currentStory": {
+    "storyId": "1-2",
+    "slug": "secret-string-sdk-log-scaffold-cleanup",
+    "size": "M",
+    "wave": 1,
+    "status": "in-progress",
+    "startedAt": "2026-04-17T15:35:00Z"
+  },
   "tooling": {
     "format": "clang-format (C++); ktlint (Kotlin)",
     "lint": "clang-tidy (C++); ktlint (Kotlin); Android Lint",

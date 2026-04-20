@@ -15,7 +15,7 @@ epics:
         slug: secret-string-sdk-log-scaffold-cleanup
         title: "SecretString + SdkLog + Scaffold Cleanup"
         size: M
-        status: backlog
+        status: in-progress
         wave: 1
         dependencies: []
       - id: "1-3"
