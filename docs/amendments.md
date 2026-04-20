@@ -67,3 +67,22 @@ BOTH architecture.md and this file, using amended values where they conflict.
   - Optional: a free `godot::String operator+(const godot::String&, const SecretString&)` overload for string concatenation convenience (header-only, engine types only, DD-26-compliant). Not required by AC-1 as amended.
 
   AC-1 verification tests assert `.to_string()` returns `godot::String("<redacted>")` and the class exposes no other public accessor than `.reveal_bytes()`. No production caller uses `operator<<` today (nothing in the codebase writes `SecretString` to a `std::ostream` — everything goes through `SdkLog` which is Kotlin-side). plan.md AC-1 is left verbatim as the historical record; this amendment is the active source for Story 1-2 and all downstream token-handling stories.
+
+## A-8: Story 1-2 Task 2 — defer C++ `SecretString` GoogleTest to Story 1-5
+- **Story:** 1-2 | **Date:** 2026-04-20
+- **Original (plan.md §Story 1-2 Task 2 / story 1-2 M2):** "GoogleTest asserts `to_string()` and `reveal_bytes()` behavior" — test file at `test/mwa/secret_string_test.cpp`, SCons `tests` alias target runs it.
+- **Actual:** Story 1-2 Task 2 ships only `src/mwa/include/secret_string.hpp` (header-only). The GoogleTest test file, the SCons `tests` alias, and system-GoogleTest wiring are deferred to Story 1-5 (`MobileWalletAdapter C++ Node Skeleton + Thread-Hop Unit Test`), which plan.md explicitly scopes to "establish the C++ test tier."
+- **Rationale:** Story 1-2's Risk R4 anticipated this escalation path. Scan on 2026-04-20 confirmed:
+  1. No `src/mwa/` or `test/` / `tests/` directory exists.
+  2. `SConstruct` has no `tests` alias (only `addon` and Solana `test-validator` targets).
+  3. GoogleTest is not installed system-wide (no brew keg, no `gtest.h` anywhere on the machine).
+  4. `godot-cpp` submodule is not initialized locally either; compilation of any C++ file requires `git submodule update --init godot-cpp` first.
+
+  Attempting R4 option (a) — install GoogleTest + add SCons `tests` alias — exceeded the story's 1-hour budget because it also requires the godot-cpp submodule init, header-include wiring for `godot::PackedByteArray`/`godot::String`, and a cross-platform test-runner target (local macOS + GitHub CI macOS + Linux). R4 fallback (b) applies: defer to Story 1-5, ship the header.
+
+  Verification coverage impact on Story 1-2:
+  - M2 Kotlin `SecretString` verified by JUnit 5 tests (Task 1 already done — 6 tests green).
+  - M2 C++ `SecretString` verified by **inspection only** in this story (header satisfies DD-26, `godot::`-only types, `to_string()` returns `"<redacted>"`, `reveal_bytes()` exposes `PackedByteArray`). Downstream DD-26 hygiene is backstopped by Story 1-4's header-lint CI job (scans `src/mwa/include/` for STL leaks).
+  - AC-1 half satisfied now (Kotlin); AC-1 C++ half satisfied at inspection-level; full GoogleTest satisfaction lands in Story 1-5.
+- **Follow-through:** Concern **CR-8** tracks the test-tier debt and closes when Story 1-5 lands the `tests` alias + runs this header's tests. Story 1-5's story file (created at wave 3 start) will list a prerequisite task: "Import `test/mwa/secret_string_test.cpp` from Story 1-2's deferred scope (A-8)." The test file body is already specified verbatim in Story 1-2 §Task 2 — it ports without new design work.
+
