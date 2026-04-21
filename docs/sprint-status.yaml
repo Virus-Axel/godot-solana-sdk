@@ -22,7 +22,7 @@ epics:
         slug: isigner-core-transaction-refactor
         title: "ISigner in godot-solana-sdk Core + Transaction Refactor + Compat Shim"
         size: M
-        status: in-progress
+        status: done
         wave: 1
         dependencies: []
       - id: "1-4"
