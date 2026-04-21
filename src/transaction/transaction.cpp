@@ -313,15 +313,18 @@ void Transaction::_isigner_signed(const String &request_id, const Array &sigs) {
 	const int32_t index = isigner_request_id_to_index_[request_id];
 	isigner_request_id_to_index_.erase(request_id);
 
-	if (sigs.is_empty()) {
-		UtilityFunctions::push_error("[Transaction] Signer ", index, " emitted sign_completed with empty signatures.");
+	// Code-review MED 6: unify malformed-reply handling. Both empty-array and
+	// wrong-size paths now emit signing_failed(index) so the caller's fully_signed
+	// signal can never deadlock waiting on a misbehaving ISigner. Previously the
+	// wrong-size path used ERR_FAIL_COND_MSG which returned silently and left
+	// signatures[index] as a zero-byte placeholder.
+	if (sigs.size() != 1) {
+		UtilityFunctions::push_error(
+				"[Transaction] Signer ", index, " emitted sign_completed with ", sigs.size(),
+				" signatures; expected exactly 1 (request_id=", request_id, ").");
 		emit_signal("signing_failed", index);
 		return;
 	}
-	// Defensive: each sign_at_index dispatches a single-message batch, so we expect
-	// exactly one signature back. A multi-sig array indicates a misbehaving ISigner.
-	ERR_FAIL_COND_MSG(sigs.size() != 1,
-			String("Transaction expected 1 signature for request ") + request_id + String(", got ") + String::num_int64(sigs.size()));
 
 	signatures[index] = sigs[0];
 	ready_signature_amount++;
@@ -672,8 +675,25 @@ void Transaction::add_instruction(const Variant &instruction) {
 }
 
 void Transaction::set_signers(const Array &p_value) {
+	// Code-review HIGH 1: disconnect previously-connected ISigner instances before
+	// swapping the signer set. Without this, late callbacks from the OLD signer set
+	// (shared across Transactions, in-flight async resolves) fire into this Transaction
+	// with stale request_ids and silently no-op or stomp signatures from a different pass.
+	disconnect_all_isigner_signers();
+
 	message.supply_signers(p_value);
 	signers = p_value;
+
+	// Code-review HIGH 2: clear stale signing state and re-resize signatures to match
+	// the new signer count. Symmetric with set_instructions / set_payer / add_instruction
+	// which trigger this via reset_state() + create_message(). We can't call reset_state()
+	// directly here because it clears `signers` which we just assigned; inline the safe
+	// subset and then run create_message() to resize signatures.
+	ready_signature_amount = 0;
+	signatures.clear();
+	result_signature = "";
+	removed_path_taken_ = false;
+	create_message();
 }
 
 Array Transaction::get_signers() {
@@ -789,7 +809,9 @@ Error Transaction::sign() {
 		return ERR_UNAVAILABLE;
 	}
 
-	const PackedByteArray msg = serialize();
+	// Code-review MED 5: removed dead `const PackedByteArray msg = serialize();` —
+	// `msg` was never read; serialize() is expensive (walks signatures + serialize_message);
+	// leftover from a prior refactor. Each sign_at_index serializes its own message.
 
 	signers = message.get_signers();
 
@@ -825,6 +847,16 @@ Error Transaction::partially_sign(const Array &array) {
 		return ERR_UNAVAILABLE;
 	}
 
+	// Code-review MED 4: snapshot for rollback if the v1.2 abort-on-first-offender
+	// fires. Without this, a partial sign attempt that hits a removed Keypair leaves
+	// `signers` overwritten via `signers = message.get_signers()` and any prior valid
+	// partial-sigs stranded in `signatures`. The caller getting ERR_METHOD_NOT_FOUND
+	// has no clean retry path. Contract: on ERR_METHOD_NOT_FOUND, the Transaction is
+	// unmutated relative to its pre-call state.
+	const Array signers_snapshot = signers.duplicate();
+	const TypedArray<PackedByteArray> signatures_snapshot = signatures.duplicate();
+	const uint32_t ready_signature_amount_snapshot = ready_signature_amount;
+
 	signers = message.get_signers();
 
 	removed_path_taken_ = false;
@@ -843,6 +875,10 @@ Error Transaction::partially_sign(const Array &array) {
 	}
 
 	if (removed_path_taken_) {
+		// MED 4: restore pre-call state — Transaction is unmutated on the error path.
+		signers = signers_snapshot;
+		signatures = signatures_snapshot;
+		ready_signature_amount = ready_signature_amount_snapshot;
 		// Story 1-3 Task 7 (AC-5): same v1.2 removal semantics as sign().
 		return Error::ERR_METHOD_NOT_FOUND;
 	}

@@ -8,6 +8,7 @@
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
+#include "generated/mwa_error_codes.hpp"
 #include "pubkey.hpp"
 #include "wallet_adapter/wallet_adapter.hpp"
 
@@ -38,6 +39,17 @@ void WalletAdapterSigner::_bind_methods() {
 }
 
 void WalletAdapterSigner::set_wallet_adapter(godot::Object *p_wa) {
+	// Code-review HIGH 3: refuse mid-flight swaps. Without this guard, swapping
+	// to a different WalletAdapter would leave disconnect_signals targeting the
+	// NEW wa_ (no-op against the OLD one), leaking signal connections; swapping
+	// to nullptr would strand the in-flight request forever (self_pin_ leaked,
+	// caller never notified). Cleanest fix: reject the swap with a diagnostic.
+	// Caller can call set_wallet_adapter again after the in-flight resolves.
+	if (request_in_flight_) {
+		WARN_PRINT_ED("WalletAdapterSigner::set_wallet_adapter: request in flight; swap rejected. Call again after sign completes/fails.");
+		return;
+	}
+
 	if (p_wa == nullptr) {
 		wa_ = nullptr;
 		return;
@@ -84,12 +96,17 @@ void WalletAdapterSigner::sign_messages(const godot::PackedByteArray &messages_c
 	using namespace godot;
 
 	if (wa_ == nullptr || !wa_->is_connected()) {
+		// Code-review LOW 8: use generated MwaErrorCode names for parity with
+		// LocalKeypairSigner (CR-14 marker tracks the v1.2 namespace cleanup).
+		// TODO(CR-14): rename to SignerErrorCode in v1.2 cleanup.
 		emit_signal("sign_failed", request_id,
-				String("NOT_CONNECTED"),
+				String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::NOT_CONNECTED)),
 				String("WalletAdapterSigner has no connected WalletAdapter"));
 		return;
 	}
 	if (request_in_flight_) {
+		// "BUSY" not in MwaErrorCode enum; keep as string literal until error-codes.yaml
+		// adds it (Story 1-1 follow-up). // TODO(CR-14): consider adding BUSY to enum.
 		emit_signal("sign_failed", request_id,
 				String("BUSY"),
 				String("WalletAdapterSigner has another request in flight"));
@@ -100,17 +117,29 @@ void WalletAdapterSigner::sign_messages(const godot::PackedByteArray &messages_c
 		return;
 	}
 
-	// Bounds pre-check: sum(lengths) must equal messages_concat.size(). Surfaces
-	// caller-side encoding mistakes loudly instead of producing truncated slices.
+	// Bounds pre-check: sum(lengths) must equal messages_concat.size(). Code-review
+	// MED 7: emit sign_failed (caller hangs without it; previous ERR_FAIL_COND_MSG
+	// returned silently, leaving CR-17 HashMap leak). Matches LocalKeypairSigner's
+	// PROTOCOL_ERROR convention.
 	int64_t total_len = 0;
 	for (int i = 0; i < lengths.size(); i++) {
 		const int len = lengths[i];
-		ERR_FAIL_COND_MSG(len < 0,
-				"WalletAdapterSigner::sign_messages: negative length in lengths array.");
+		if (len < 0) {
+			// TODO(CR-14): rename to SignerErrorCode in v1.2 cleanup.
+			emit_signal("sign_failed", request_id,
+					String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::PROTOCOL_ERROR)),
+					String("WalletAdapterSigner: negative length in lengths array"));
+			return;
+		}
 		total_len += len;
 	}
-	ERR_FAIL_COND_MSG(total_len != messages_concat.size(),
-			"WalletAdapterSigner::sign_messages: sum(lengths) does not match messages_concat.size().");
+	if (total_len != messages_concat.size()) {
+		// TODO(CR-14): rename to SignerErrorCode in v1.2 cleanup.
+		emit_signal("sign_failed", request_id,
+				String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::PROTOCOL_ERROR)),
+				String("WalletAdapterSigner: sum(lengths) does not match messages_concat.size()"));
+		return;
+	}
 
 	request_in_flight_ = true;
 	pending_request_id_ = request_id;
@@ -170,7 +199,9 @@ void WalletAdapterSigner::_on_signing_failed() {
 	if (!request_in_flight_) {
 		return;
 	}
-	fail(godot::String("WALLET_REJECTED"),
+	// Code-review LOW 8: WALLET_REJECTED is in MwaErrorCode enum (mwa_error_codes.hpp:9).
+	// TODO(CR-14): rename to SignerErrorCode in v1.2 cleanup.
+	fail(godot::String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::WALLET_REJECTED)),
 			godot::String("WalletAdapter emitted signing_failed"));
 }
 
