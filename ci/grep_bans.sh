@@ -1,23 +1,36 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
-# ci/grep_bans.sh  (Story 1-2 Task 7 — AC-4 enforcement)
+# ci/grep_bans.sh  (Story 1-2 Task 7 — AC-4 enforcement;
+#                   Story 1-4 Task 6 — AC-5 extension, pattern 5)
 # -----------------------------------------------------------------------------
-# Scans source files for the four banned patterns documented in AC-4 +
-# AC-D-8:
+# Scans source files for the banned patterns documented in AC-4 + AC-D-8
+# (patterns 1-4, Story 1-2) and AC-5 (pattern 5, Story 1-4):
 #
 #   1. Log.[vdiwe](...authToken...)        -- android.util.Log call with authToken
 #   2. Log.[vdiwe](...publicKey...)        -- android.util.Log call with publicKey
 #   3. Log.[vdiwe](...SecretString.reveal())  -- Log call that unwraps SecretString
 #   4. SdkLog.[vdiwe](...${...)            -- SdkLog call with string interpolation
 #                                             outside a lambda (DD-30 foot-gun)
+#   5. #ifdef __ANDROID__ (+ 3 spelling variants) outside
+#                                             src/mwa/platform_selector.cpp (AC-5)
 #
 # Usage:
 #   # Production scan -- exits 0 on clean code, non-zero on any violation.
 #   bash ci/grep_bans.sh android/plugin/src/main/ src/mwa/
 #
-#   # Self-test scan against the fixture files (expected to fire each pattern
-#   # exactly once; script exits non-zero because violations are intentional).
+#   # Self-test scan against the fixture files.
 #   bash ci/grep_bans.sh --check-only .github/workflows/testdata/grep_ban_fixtures/
+#
+#   Self-test semantics (IMPORTANT — inverts production mode):
+#     - Every fixture file is INTENTIONALLY a violation. The test asserts that
+#       each pattern FIRES at least once against the fixture set.
+#     - Exit 0 = every pattern fired as expected (success).
+#     - Exit 1 = one or more patterns failed to fire (pattern regression). The
+#       workflow YAML invokes self-test BEFORE the production scan; the two
+#       ends agree that "self-test exit 0 is pass" — do NOT invert in YAML.
+#     - Rationale: self-test is checking the ASSERTION LOGIC ("the pattern
+#       catches what it's meant to catch"), not the SOURCE TREE ("the source
+#       has violations"). Production mode checks the source tree.
 #
 # The DRY rationale: the workflow YAML invokes this script twice (production
 # scan + fixtures self-test) so the pattern list lives in exactly one place.
@@ -34,6 +47,7 @@ ids=(
     "log-publickey"
     "log-reveal"
     "sdklog-interp"
+    "ifdef-android-outside-selector"
 )
 
 patterns=(
@@ -41,6 +55,30 @@ patterns=(
     'Log\.(v|d|i|w|e)\(.*[pP]ublicKey'
     'Log\.(v|d|i|w|e)\(.*\.reveal\(\)'
     'SdkLog\.[vdiwe]\([^{]*\$[a-zA-Z_{]'
+    '^[[:space:]]*#[[:space:]]*(if(n?def)?[[:space:]]+__ANDROID__|if[[:space:]]+!?[[:space:]]*defined[[:space:]]*\([[:space:]]*__ANDROID__[[:space:]]*\))'
+)
+
+# Per-pattern production-scan exclusion (Story 1-4 Task 6, AC-5).
+# Parallel to patterns[]: excludes[i] names a single path that the pattern
+# must NOT flag when running the PRODUCTION scan. Empty string = no
+# exclusion (patterns 1-4 have no sanctioned violators). Pattern 5 excludes
+# `src/mwa/platform_selector.cpp` — the sole TU in the C++ source tree
+# allowed to contain `#ifdef __ANDROID__` (by design; see file-header
+# comment in that file + AC-5 in docs/stories/1-4.md). The exclusion is
+# intentionally keyed on path, not on an "allow-list" comment marker,
+# because the platform-selector pattern is a one-off architectural choice
+# and should not invite lookalikes elsewhere in the tree.
+#
+# Self-test mode ignores excludes[]: the fixture directory is the whole
+# scan scope, and every fixture file IS a violation — the excludes[] path
+# (src/mwa/platform_selector.cpp) never appears under the fixtures dir so
+# applying it there would be a silent no-op anyway.
+excludes=(
+    ""
+    ""
+    ""
+    ""
+    "src/mwa/platform_selector.cpp"
 )
 
 # Case variant `[aA]uthToken` / `[pP]ublicKey`:
@@ -72,11 +110,38 @@ patterns=(
 # `SdkLog.d(TAG, CORR) { "body with $var" }` is correctly NOT flagged
 # (the interpolation is inside the lambda, which R8 will handle).
 
+# Pattern 5 (ifdef-android-outside-selector, Story 1-4 AC-5) is a single
+# regex that collapses the four `__ANDROID__` spelling variants into one
+# alternation:
+#
+#     #ifdef __ANDROID__
+#     #ifndef __ANDROID__
+#     #if defined(__ANDROID__)
+#     #if !defined(__ANDROID__)
+#
+# The anchor `^[[:space:]]*#[[:space:]]*` tolerates the two whitespace
+# shapes real code uses: `#ifdef` (token-adjacent, C89-style) and `# ifdef`
+# (space-separated, allowed by the standard but rare). `if(n?def)?` packs
+# `if`, `ifdef`, `ifndef` into a single optional-`n`-optional-`def` group;
+# the second branch handles `if defined(...)` + `if !defined(...)` with an
+# optional `!`. The parens around `__ANDROID__` are matched literally by
+# the ERE `\(...\)` escape (rg and grep -E treat `\(` as a literal paren
+# inside a character-class-free context; this matches the documented
+# pattern in docs/stories/1-4.md:194 verbatim). The `[[:space:]]*` padding
+# inside the parens allows `defined ( __ANDROID__ )` (uncommon but legal).
+#
+# Production-scan exclusion lives in excludes[4] above, NOT inside the
+# regex: a negative-lookahead-on-path would need PCRE and would not work
+# in the grep fallback branch. Keeping the exclusion out-of-band also
+# means a maintainer reading the pattern does not have to decode the
+# exception boundary.
+
 descs=(
-    "android.util.Log call with authToken argument (AC-4 #1, AC-D-8)"
-    "android.util.Log call with publicKey argument (AC-4 #2, AC-D-8)"
+    "android.util.Log call with authToken argument (AC-4 #1, AC-D-8). Pattern uses greedy .* which correctly handles nested receiver calls like Log.d(TAG, getX().authToken) — see regex-design note above. Still a bypass surface if future code writes Log.d(formatMessage(authToken)) (authToken hidden inside nested call args rather than the log-call args); if such a shape appears in review, add a broader pattern or switch to a Kotlin-AST-aware scanner."
+    "android.util.Log call with publicKey argument (AC-4 #2, AC-D-8). Same nested-call caveat as pattern 1 — greedy .* catches receiver chains but not publicKey buried inside a nested function-call arg like Log.d(formatMessage(publicKey)); flag for broadening if that shape appears."
     "android.util.Log call unwrapping a SecretString via .reveal() (AC-4 #3, AC-D-8) -- matches any receiver, not just the class-qualified form, because SecretString.reveal() is an instance method and real calls look like 'token.reveal()', 'sessionState.authToken.reveal()', etc. The previous class-qualified pattern matched a syntactically impossible call shape and was a silent false-negative (codebase has no other .reveal() methods on 2026-04-20; broaden if future additions appear)"
     "SdkLog.[vdiwe] call with string-interpolation args outside a lambda -- DD-30 foot-gun. Matches BOTH \${expr} braced form AND bare \$identifier form (the tail char class [a-zA-Z_{] disambiguates: { opens a braced expansion, letters/underscore start a bare identifier; literal-\$ in raw strings with non-identifier follow chars like space or end-of-line slip through by design)"
+    "'#ifdef __ANDROID__' (or #ifndef / #if defined(__ANDROID__) / #if !defined(__ANDROID__)) outside src/mwa/platform_selector.cpp — AC-5 bans all four spelling variants. The production scan in .github/workflows/grep_bans.yml must exclude src/mwa/platform_selector.cpp via ripgrep's --glob '!src/mwa/platform_selector.cpp' or equivalent."
 )
 
 # Parse mode flag.
@@ -127,15 +192,32 @@ for i in "${!patterns[@]}"; do
     id="${ids[$i]}"
     pat="${patterns[$i]}"
     desc="${descs[$i]}"
+    exclude="${excludes[$i]:-}"
+
+    # Per-pattern production-scan exclusion plumbing. Skip in self-test mode
+    # (fixture dir never contains the excluded real-source path; applying it
+    # there is a no-op anyway, but suppressing it keeps the self-test scan
+    # path identical in shape to the original Story 1-2 implementation).
+    rg_extra=()
+    if [[ "$mode" == "production" && -n "$exclude" ]]; then
+        rg_extra=(--glob "!${exclude}")
+    fi
 
     # Collect matches. `|| true` because non-matching runs return non-zero on
     # grep/rg, which `set -e` would treat as a fatal error.
     if [[ "$grep_flavor" == "rg" ]]; then
-        matches=$("${grep_cmd[@]}" "$pat" "${paths[@]}" 2>/dev/null || true)
+        matches=$("${grep_cmd[@]}" "${rg_extra[@]}" "$pat" "${paths[@]}" 2>/dev/null || true)
     else
         # grep -rnE with --include support on BSD grep. Scan all regular files
         # under the given paths; exclude binary matches.
         matches=$("${grep_cmd[@]}" --exclude-dir=".git" --exclude-dir="build" "$pat" "${paths[@]}" 2>/dev/null || true)
+        # Post-filter the excluded path in the grep fallback branch: grep's
+        # --exclude matches on basename only, which would over-exclude any
+        # same-basename file elsewhere. A simple grep -v on the full path is
+        # both tighter and portable across BSD/GNU grep.
+        if [[ "$mode" == "production" && -n "$exclude" && -n "$matches" ]]; then
+            matches=$(printf "%s\n" "$matches" | grep -v -F "$exclude" || true)
+        fi
     fi
 
     count=$(printf "%s" "$matches" | grep -c . 2>/dev/null || true)
