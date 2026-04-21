@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "op": "sign_and_send",
+  "scenario": "success",
+  "expected_input": {
+    "auth_token": "dGVzdC1hdXRoLXRva2VuLXNpZ25zZW5k",
+    "transactions": [
+      "dHgtdW5zaWduZWQtYXNzdWJtaXQ="
+    ],
+    "cluster": "devnet"
+  },
+  "response": {
+    "type": "success",
+    "payload": {
+      "signatures": [
+        "5CrhasMLvBzCo8bfv6WpPzGTVrrAENZrwUtsSENXkpBJcsaQyBFbLDxLK2wpTtQhMwUS2UvuyJrqN2D2jqV5gn1T"
+      ]
+    }
+  }
+}

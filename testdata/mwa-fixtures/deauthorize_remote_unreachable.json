@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "op": "deauthorize",
+  "scenario": "remote_unreachable",
+  "expected_input": {
+    "identity": {
+      "name": "Test Game",
+      "uri": "https://example.com/godot-mwa-sample",
+      "icon_uri": "https://example.com/icon.png"
+    },
+    "auth_token": "dGVzdC1hdXRoLXRva2VuLW9mZmxpbmU="
+  },
+  "response": {
+    "type": "error",
+    "code": "NETWORK_OFFLINE"
+  }
+}

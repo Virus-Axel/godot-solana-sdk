@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "op": "reauthorize",
+  "scenario": "success",
+  "expected_input": {
+    "identity": {
+      "name": "Test Game",
+      "uri": "https://example.com/godot-mwa-sample",
+      "icon_uri": "https://example.com/icon.png"
+    },
+    "auth_token": "dGVzdC1hdXRoLXRva2VuLXJlYXV0aA==",
+    "cluster": "devnet",
+    "chain_id": "solana:devnet"
+  },
+  "response": {
+    "type": "success",
+    "payload": {
+      "auth_token": "dGVzdC1hdXRoLXRva2VuLXJlYXV0aA==",
+      "public_key": "dGVzdC1wdWJsaWMta2V5LWJ5dGVzLTEyMzQ1Njc4OTA=",
+      "account_label": "Test Wallet",
+      "wallet_uri_base": "",
+      "wallet_package": "com.solanamobile.fakewallet",
+      "cluster": "devnet",
+      "chain_id": "solana:devnet"
+    }
+  }
+}

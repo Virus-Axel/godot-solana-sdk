@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "op": "sign_messages",
+  "scenario": "wallet_rejected",
+  "expected_input": {
+    "auth_token": "dGVzdC1hdXRoLXRva2VuLXNpZ25tc2c=",
+    "messages": [
+      "bWVzc2FnZS10by1zaWdu"
+    ],
+    "addresses": [
+      "dGVzdC1wdWJsaWMta2V5LWJ5dGVzLTEyMzQ1Njc4OTA="
+    ]
+  },
+  "response": {
+    "type": "error",
+    "code": "WALLET_REJECTED"
+  }
+}

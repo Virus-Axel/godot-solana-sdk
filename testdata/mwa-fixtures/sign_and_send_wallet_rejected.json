@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "op": "sign_and_send",
+  "scenario": "wallet_rejected",
+  "expected_input": {
+    "auth_token": "dGVzdC1hdXRoLXRva2VuLXNpZ25zZW5k",
+    "transactions": [
+      "dHgtdW5zaWduZWQtYXNzdWJtaXQ="
+    ],
+    "cluster": "devnet"
+  },
+  "response": {
+    "type": "error",
+    "code": "WALLET_REJECTED"
+  }
+}
