@@ -18,7 +18,9 @@
 
 #include "account_meta.hpp"
 #include "instruction.hpp"
+#include "isigner.hpp"
 #include "keypair.hpp"
+#include "local_keypair_signer.hpp"
 #include "pubkey.hpp"
 #include "solana_client.hpp"
 #include <instructions/compute_budget.hpp>
@@ -66,6 +68,9 @@ void Transaction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_message"), &Transaction::create_message);
 	ClassDB::bind_method(D_METHOD("send"), &Transaction::send);
 	ClassDB::bind_method(D_METHOD("partially_sign", "latest_blockhash"), &Transaction::partially_sign);
+
+	ClassDB::bind_method(D_METHOD("_isigner_signed", "request_id", "sigs"), &Transaction::_isigner_signed);
+	ClassDB::bind_method(D_METHOD("_isigner_failed", "request_id", "error_code", "message"), &Transaction::_isigner_failed);
 
 	BIND_CONSTANT(DEFAULT_UNIT_LIMIT);
 	BIND_CONSTANT(DEFAULT_UNIT_PRICE);
@@ -178,32 +183,161 @@ void Transaction::sign_at_index(const uint32_t index) {
 		Array params;
 		params.append(Variant::get_type_name(signers[index].get_type()));
 		WARN_PRINT_ONCE_ED(String("Signer is not an object. It is a {0}").format(params));
-	} else if (Keypair::is_keypair(signers[index])) {
-		auto *signer_keypair = Object::cast_to<Keypair>(signers[index]);
+		return;
+	}
 
-		const PackedByteArray signature = signer_keypair->sign_message(serialize_message());
-		signatures[index] = signature;
-		ready_signature_amount++;
-		emit_signal("signer_state_changed");
-		check_fully_signed();
-	} else if (Keypair::is_compatible_type(signers[index])) {
-		auto signer_keypair = Keypair::new_from_variant(signers[index]);
-		ERR_FAIL_COND_EDMSG_CUSTOM(signer_keypair.get_type() != Variant::OBJECT, "Signer is not a Keypair or compatible type.");
+	// PRIMARY PATH (Story 1-3 AC-2): native ISigner. Both godot_solana_sdk::ISigner
+	// implementations (LocalKeypairSigner, WalletAdapterSigner, MobileWalletAdapter from
+	// Story 2-1) flow through this branch.
+	auto *isigner_native = Object::cast_to<godot_solana_sdk::ISigner>(signers[index]);
+	if (isigner_native != nullptr) {
+		const String request_id = allocate_isigner_request_id(static_cast<int32_t>(index));
 
-		const PackedByteArray signature = Object::cast_to<Keypair>(signer_keypair)->sign_message(serialize_message());
-		signatures[index] = signature;
-		ready_signature_amount++;
-		emit_signal("signer_state_changed");
-		check_fully_signed();
-	} else if (signers[index].has_method("sign_message")) {
+		const Callable on_signed(this, "_isigner_signed");
+		const Callable on_failed(this, "_isigner_failed");
+		if (!isigner_native->is_connected("sign_completed", on_signed)) {
+			isigner_native->connect("sign_completed", on_signed);
+		}
+		if (!isigner_native->is_connected("sign_failed", on_failed)) {
+			isigner_native->connect("sign_failed", on_failed);
+		}
+		// Track for clean disconnect on Transaction destruction (CR-15-related lifecycle).
+		isigner_connected_signer_ids_.insert(isigner_native->get_instance_id());
+
+		// CR-16: payload is serialize_message() — the message portion that ed25519 signs.
+		// MWA's sign_transactions API expects the FULL serialized tx (with sig slots);
+		// future Story 2-1 MobileWalletAdapter must reconcile this convention. For
+		// LocalKeypairSigner / WalletAdapterSigner v1.1, message-only is correct.
+		const PackedByteArray msg = serialize_message();
+		PackedInt32Array lengths;
+		lengths.push_back(msg.size());
+
+		// Semantic: this is a Solana transaction signing operation, not arbitrary
+		// message signing. Calling sign_transactions (not sign_messages) so future
+		// MWA-backed signers route to the correct wallet UX (review-and-approve, not
+		// "sign arbitrary blob"). For LocalKeypairSigner the two methods are identical.
+		isigner_native->sign_transactions(msg, lengths, request_id);
+		return;
+	}
+
+	// COMPAT PATH (AC-3, AC-6): raw Keypair → wrap in Ref<LocalKeypairSigner> → dispatch
+	// via the same ISigner pipeline. The local Ref keeps the wrapper alive through the
+	// SYNCHRONOUS sign_completed emit (Concern 4 resolution: no self-pin needed). The
+	// deprecation push_warning is planted by Task 5 here.
+	if (Keypair::is_keypair(signers[index]) || Keypair::is_compatible_type(signers[index])) {
+		const Variant kp_variant = Keypair::is_keypair(signers[index])
+				? signers[index]
+				: Keypair::new_from_variant(signers[index]);
+		ERR_FAIL_COND_EDMSG_CUSTOM(kp_variant.get_type() != Variant::OBJECT, "Signer is not a Keypair or compatible type.");
+		Ref<Keypair> kp_ref = kp_variant;
+
+		Ref<godot_solana_sdk::LocalKeypairSigner> wrapper;
+		wrapper.instantiate();
+		wrapper->set_keypair(kp_ref);
+
+		const String request_id = allocate_isigner_request_id(static_cast<int32_t>(index));
+
+		const Callable on_signed(this, "_isigner_signed");
+		const Callable on_failed(this, "_isigner_failed");
+		wrapper->connect("sign_completed", on_signed);
+		wrapper->connect("sign_failed", on_failed);
+		// NOTE: wrapper is stack-local; connections die with it on function return.
+		// Do NOT track in isigner_connected_signer_ids_ — that's for long-lived signers.
+
+		const PackedByteArray msg = serialize_message();
+		PackedInt32Array lengths;
+		lengths.push_back(msg.size());
+
+		// Synchronous emit (per AC-6): handler runs INSIDE this call frame, sets
+		// signatures[index] before sign_transactions returns. wrapper Ref stays alive
+		// through emit chain by virtue of being a stack-local Ref.
+		wrapper->sign_transactions(msg, lengths, request_id);
+		return;
+	}
+
+	// COMPAT PATH (v1.1 unchanged per Concern 5): raw WalletAdapter — keep existing
+	// async branch with one-shot per-call connections. Deprecation+removal of this
+	// path is deferred to a future story.
+	if (signers[index].has_method("sign_message")) {
 		auto *controller = Object::cast_to<WalletAdapter>(signers[index]);
 
 		controller->connect("message_signed", callable_mp(this, &Transaction::_signer_signed).bindv(Array::make(index)), CONNECT_ONE_SHOT);
 		controller->connect("signing_failed", callable_mp(this, &Transaction::_signer_failed).bindv(Array::make(index)), CONNECT_ONE_SHOT);
 		controller->sign_message(serialize(), index);
-	} else {
-		ERR_PRINT_ONCE_ED("Unknown signer type.");
+		return;
 	}
+
+	ERR_PRINT_ONCE_ED("Unknown signer type.");
+}
+
+String Transaction::allocate_isigner_request_id(const int32_t index) {
+	const String request_id = String("tx-isigner-req-") + String::num_uint64(next_isigner_request_id_++);
+	isigner_request_id_to_index_[request_id] = index;
+	return request_id;
+}
+
+void Transaction::_isigner_signed(const String &request_id, const Array &sigs) {
+	if (!isigner_request_id_to_index_.has(request_id)) {
+		// Unknown request — likely from another Transaction sharing this signer; ignore.
+		return;
+	}
+	const int32_t index = isigner_request_id_to_index_[request_id];
+	isigner_request_id_to_index_.erase(request_id);
+
+	if (sigs.is_empty()) {
+		UtilityFunctions::push_error("[Transaction] Signer ", index, " emitted sign_completed with empty signatures.");
+		emit_signal("signing_failed", index);
+		return;
+	}
+	// Defensive: each sign_at_index dispatches a single-message batch, so we expect
+	// exactly one signature back. A multi-sig array indicates a misbehaving ISigner.
+	ERR_FAIL_COND_MSG(sigs.size() != 1,
+			String("Transaction expected 1 signature for request ") + request_id + String(", got ") + String::num_int64(sigs.size()));
+
+	signatures[index] = sigs[0];
+	ready_signature_amount++;
+	emit_signal("signer_state_changed");
+	check_fully_signed();
+}
+
+void Transaction::_isigner_failed(const String &request_id, const String &error_code, const String &message) {
+	if (!isigner_request_id_to_index_.has(request_id)) {
+		return;
+	}
+	const int32_t index = isigner_request_id_to_index_[request_id];
+	isigner_request_id_to_index_.erase(request_id);
+
+	// Surface the structured error to the editor / logs. The signing_failed signal
+	// itself only carries an int index for backward compatibility; the structured
+	// (error_code, message) pair would require a new signal — out of scope for v1.1.
+	UtilityFunctions::push_error(
+			"[Transaction] Signer ", index, " failed: ", error_code, " — ", message);
+
+	emit_signal("signing_failed", index);
+}
+
+void Transaction::_notification(const int p_what) {
+	if (p_what == NOTIFICATION_PREDELETE) {
+		disconnect_all_isigner_signers();
+	}
+}
+
+void Transaction::disconnect_all_isigner_signers() {
+	const Callable on_signed(this, "_isigner_signed");
+	const Callable on_failed(this, "_isigner_failed");
+	for (const ObjectID &id : isigner_connected_signer_ids_) {
+		Object *obj = ObjectDB::get_instance(id);
+		if (obj == nullptr) {
+			continue; // signer already destroyed; connections went with it
+		}
+		if (obj->is_connected("sign_completed", on_signed)) {
+			obj->disconnect("sign_completed", on_signed);
+		}
+		if (obj->is_connected("sign_failed", on_failed)) {
+			obj->disconnect("sign_failed", on_failed);
+		}
+	}
+	isigner_connected_signer_ids_.clear();
 }
 
 void Transaction::copy_connection_state() {

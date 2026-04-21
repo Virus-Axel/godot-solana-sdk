@@ -95,3 +95,45 @@ Deferred items from code reviews and implementation. Tracked for future resoluti
   - `src/local_keypair_signer.cpp` (Story 1-3 Task 4) — uses `MwaErrorCode::NOT_CONNECTED` with `// TODO(CR-14)` marker.
   - Future non-MWA `ISigner` implementations may extend the same pattern (e.g., a hypothetical `HardwareWalletSigner`); they should reuse the same TODO marker for consistency.
 - **Trigger to revisit:** v1.2 release planning (when `MWA_ISIGNER_REMOVE_V1_2` flips to default-on per Story 1-3 Task 7's compile-define gate). At that point, bundle the `MwaErrorCode` → `SignerErrorCode` rename with the deprecation-shim removal.
+
+## CR-15 (MEDIUM): WalletAdapter::did_transaction_change semantics lost when signing flows via WalletAdapterSigner ISigner bridge
+- **Story:** 1-3 | **Date:** 2026-04-21 | **Severity:** MEDIUM | **Status:** tracked | **Origin:** Task 3 adversarial review (BLOCKER 1)
+- **Summary:** The legacy `WalletAdapter`-direct dispatch in `Transaction::sign_at_index` (preserved unchanged in v1.1 per Concern 5 scope-out) handles browser-wallet transaction modification: when the wallet alters the tx (e.g. compute budget, priority fee), `_signer_signed` calls `controller->did_transaction_change()` and pulls modified bytes via `WalletAdapter::get_modified_transaction()`, re-deserializes, then splices the signature into the updated message. The new `ISigner` pipeline (`_isigner_signed`) drops this entire detect-and-republish path: it sets `signatures[index] = sigs[0]` and emits, regardless of whether the wallet modified anything. For Story 1-3's `LocalKeypairSigner` this is harmless (a local keypair never modifies a tx). For `WalletAdapterSigner` (Task 2's bridge) used through the new ISigner pipeline, the modified-tx case would silently produce a signature for the wallet's modified bytes against an unmodified `Transaction.message` — submission fails on-chain.
+- **Why MEDIUM:** v1.1 preserves the old direct-WalletAdapter branch (Concern 5), so users who pass a raw `WalletAdapter` into `signers` retain correct modify-detect behavior. The regression only fires when a user explicitly wraps a `WalletAdapter` in `WalletAdapterSigner` and uses the bridge. That is a less common path in v1.1 because `WalletAdapterSigner` exists primarily as a contractual surface for AC-A-5 fulfillment, not as the default signer. Severity escalates if Story 2-1's `MobileWalletAdapter` (which only flows through ISigner) ever needs the same modify-detect semantics — tracked there.
+- **Risk:** A user explicitly using `WalletAdapterSigner` with a wallet that modifies transactions will produce invalid signatures with no diagnostic. The on-chain failure may surface seconds-to-minutes later as a generic "InvalidSignature" RPC error.
+- **Resolution paths (decision deferred to a future story):**
+  1. **Extend ISigner contract:** add an optional `modified_payload` field to `sign_completed` (e.g., emit `sign_completed(request_id, signatures, modified_payload_bytes_or_empty)`). `Transaction::_isigner_signed` checks for non-empty payload and re-deserializes.
+  2. **Document the limitation:** in `docs/migrations/isigner.md` (Task 6), warn that `WalletAdapterSigner` does not currently propagate wallet-side modifications. Recommend raw `WalletAdapter` usage in v1.1 for browser wallets that may modify transactions.
+  3. **Update `WalletAdapterSigner` (Task 2) to emit a separate signal:** `tx_modified_by_wallet(modified_bytes)` that `Transaction` can subscribe to alongside `sign_completed`. Adds complexity to ISigner consumers.
+- **Affected:**
+  - `src/transaction/transaction.cpp` (Story 1-3 Task 3) — `_isigner_signed` handler.
+  - `src/wallet_adapter/wallet_adapter_signer.cpp` (Story 1-3 Task 2) — would need to grow the modify-detect path if option (1) or (3) is chosen.
+  - `docs/migrations/isigner.md` (Story 1-3 Task 6) — documentation of v1.1 limitation per option (2).
+- **Trigger to revisit:** Story 2-1 design (when `MobileWalletAdapter : ISigner` lands and needs the same semantic decision for MWA's tx-review-and-modify flow), OR v1.1 release blocker if a consumer reports broken `WalletAdapterSigner` usage with a modifying wallet.
+
+## CR-16 (LOW): ISigner.sign_transactions payload convention not yet aligned with MWA protocol expectations
+- **Story:** 1-3 | **Date:** 2026-04-21 | **Severity:** LOW | **Status:** tracked | **Origin:** Task 3 adversarial review (BLOCKER 2)
+- **Summary:** `Transaction::sign_at_index` calls `signer->sign_transactions(serialize_message(), [size], request_id)` for both the native ISigner branch and the Keypair-wrap branch. The payload is `serialize_message()` — the message portion only (what ed25519 signs). MWA's `sign_transactions` API expects the FULL serialized tx wire format (signature slots + message), and the wallet adds its signature to the appropriate slot. When Story 2-1's `MobileWalletAdapter : ISigner` lands, it must reconcile this: either (a) accept message-only bytes and reconstruct full tx wire format internally, (b) the contract changes to pass `serialize()` and `LocalKeypairSigner.sign_transactions` grows sig-slot-stripping logic to extract the message portion. v1.1 picks the message-only convention because it matches what `LocalKeypairSigner` and `WalletAdapterSigner` actually do today (sign the message bytes directly).
+- **Why LOW:** The convention works correctly for both v1.1 ISigner implementations (`LocalKeypairSigner`, `WalletAdapterSigner`) — they sign the message bytes directly, matching what `serialize_message()` returns. No incorrect signatures produced, no on-chain failures. The concern is forward-looking: when `MobileWalletAdapter` is added in Story 2-1, it must explicitly handle the convention mismatch with MWA.
+- **Risk:** If Story 2-1 implements `MobileWalletAdapter::sign_transactions` by passing the message-only bytes directly to MWA's `sign_transactions` API, MWA will fail (expects full wire format). The implementer must either reconstruct the full serialized tx (round-tripping through `Transaction` deserialize/reserialize) or change the ISigner contract.
+- **Resolution path:**
+  1. Story 2-1 design pass: pick convention (message-only vs full-serialize) and document in architecture amendment.
+  2. If full-serialize is chosen, refactor `Transaction::sign_at_index` to pass `serialize()`, and update `LocalKeypairSigner.sign_transactions` to strip sig slots and sign the message portion. Both T3 and T4 of Story 1-3 would receive a follow-up commit.
+  3. If message-only is chosen, document that `MobileWalletAdapter::sign_transactions` reconstructs the full tx wire format from the message bytes plus its own signature.
+- **Affected:**
+  - `src/transaction/transaction.cpp` (Story 1-3 Task 3) — `sign_at_index` payload.
+  - `src/local_keypair_signer.cpp` (Story 1-3 Task 4) — `sign_transactions` impl.
+  - `src/mwa/.../mobile_wallet_adapter.cpp` (Story 2-1, future) — must reconcile convention.
+- **Trigger to revisit:** Story 2-1 architecture pass.
+
+## CR-17 (LOW): Transaction.isigner_request_id_to_index_ HashMap unbounded on unresponsive signers
+- **Story:** 1-3 | **Date:** 2026-04-21 | **Severity:** LOW | **Status:** tracked | **Origin:** Task 3 adversarial review (SUBSTANTIVE 3)
+- **Summary:** `Transaction` allocates a unique `request_id` per `sign_at_index` invocation and stores `request_id → index` in `isigner_request_id_to_index_`. The map entry is removed when the signer emits `sign_completed` or `sign_failed`. A signer that hangs forever (Android wallet backgrounded, network partition, MWA token expired without a server-side timeout) leaves its entry in the map permanently. Over long-running game sessions with many sign attempts, the map grows.
+- **Why LOW:** Each entry is small (`String` request_id + `int32_t` index ≈ 50 bytes). Map cleared on Transaction destruction. Practical impact requires thousands of hung sign requests in a single Transaction's lifetime — extreme edge case.
+- **Resolution path:**
+  1. Add a per-request timeout (e.g., 60 s default, configurable) that synthesizes a `sign_failed(request_id, "TIMEOUT", "...")` after the deadline so the normal cleanup fires.
+  2. Implementation requires either (a) a single timer that scans the map every N seconds, or (b) per-request timer (more memory, more precise). Option (a) is sufficient for v1.1.
+- **Affected:**
+  - `include/transaction/transaction.hpp` — would gain a `Timer*` member or a `_process` tick-based scanner.
+  - `src/transaction/transaction.cpp` — `_isigner_signed` / `_isigner_failed` would need to check timestamp before acting on stale entries.
+- **Trigger to revisit:** A consumer reports memory growth in long-running scenes, OR after Story 2-1 (when real MWA signing exposes the hung-signer scenario more frequently than desktop testing did).

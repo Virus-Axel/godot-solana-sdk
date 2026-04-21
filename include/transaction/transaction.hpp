@@ -4,7 +4,10 @@
 #include <cstdint>
 
 #include "godot_cpp/classes/global_constants.hpp"
+#include "godot_cpp/core/object_id.hpp"
 #include "godot_cpp/core/property_info.hpp"
+#include "godot_cpp/templates/hash_map.hpp"
+#include "godot_cpp/templates/hash_set.hpp"
 #include "godot_cpp/templates/list.hpp"
 #include "godot_cpp/variant/array.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
@@ -80,6 +83,23 @@ private:
 	void _signer_signed(const PackedByteArray &signature, int32_t index);
 	void _signer_failed(int32_t index);
 
+	// ISigner-path request routing (Story 1-3 Task 3 — request_id → signer index).
+	// Each sign_at_index() invocation that dispatches via ISigner generates a unique
+	// request_id; the signer emits sign_completed/sign_failed with that request_id;
+	// _isigner_signed/_isigner_failed look up the index and apply the result.
+	// CR-17: this map is unbounded if signers hang. Per-request timeout deferred to a
+	// future story.
+	HashMap<String, int32_t> isigner_request_id_to_index_;
+	uint64_t next_isigner_request_id_ = 0;
+	// Tracks long-lived ISigner instances we connected to (NOT the wrap-on-the-fly
+	// LocalKeypairSigner wrappers — those die with the local Ref). Used by
+	// _notification(NOTIFICATION_PREDELETE) to disconnect cleanly.
+	HashSet<ObjectID> isigner_connected_signer_ids_;
+	String allocate_isigner_request_id(int32_t index);
+	void _isigner_signed(const String &request_id, const Array &sigs);
+	void _isigner_failed(const String &request_id, const String &error_code, const String &message);
+	void disconnect_all_isigner_signers();
+
 	[[nodiscard]] bool is_phantom_payer() const;
 	[[nodiscard]] bool has_valid_payer() const;
 	void create_message();
@@ -130,6 +150,11 @@ public:
 	 * @_process
 	 */
 	void _process(double delta) override;
+
+	/**
+	 * @brief Godot lifecycle hook used to clean up ISigner connections on destruction.
+	 */
+	void _notification(int p_what);
 
 	/**
 	 * @setter{instruction, p_value}
