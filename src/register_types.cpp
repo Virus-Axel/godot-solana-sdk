@@ -41,6 +41,7 @@
 #include "instruction.hpp"
 #include "isigner.hpp"
 #include "keypair.hpp"
+#include "local_keypair_signer.hpp"
 #include "meta_data/collection.hpp"
 #include "meta_data/create_metadata_args.hpp"
 #include "meta_data/creator.hpp"
@@ -119,6 +120,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_abstract_class<godot_solana_sdk::ISigner>();
 	ClassDB::register_class<Transaction>();
 	ClassDB::register_class<Keypair>();
+	ClassDB::register_class<godot_solana_sdk::LocalKeypairSigner>();
 	ClassDB::register_class<WalletAdapter>();
 	ClassDB::register_class<godot_solana_sdk::WalletAdapterSigner>();
 	ClassDB::register_class<ComputeBudget>();
