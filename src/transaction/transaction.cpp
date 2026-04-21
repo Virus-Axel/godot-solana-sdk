@@ -1,5 +1,6 @@
 #include "transaction.hpp"
 
+#include <atomic>
 #include <cstdint>
 
 #include <godot_cpp/classes/global_constants.hpp>
@@ -225,6 +226,16 @@ void Transaction::sign_at_index(const uint32_t index) {
 	// SYNCHRONOUS sign_completed emit (Concern 4 resolution: no self-pin needed). The
 	// deprecation push_warning is planted by Task 5 here.
 	if (Keypair::is_keypair(signers[index]) || Keypair::is_compatible_type(signers[index])) {
+		// AC-3 deprecation warning. Fires exactly once per process the first time
+		// any Transaction signs via the raw-Keypair compat path. Removed in v1.2
+		// (Task 7 compile-define gate replaces this branch with ERR_METHOD_NOT_FOUND).
+		static std::atomic<bool> deprecation_warned{false};
+		if (!deprecation_warned.exchange(true)) {
+			UtilityFunctions::push_warning(
+					"Transaction.sign(Keypair) is deprecated; use ISigner. "
+					"See docs/migrations/isigner.md. Removed in v1.2.");
+		}
+
 		const Variant kp_variant = Keypair::is_keypair(signers[index])
 				? signers[index]
 				: Keypair::new_from_variant(signers[index]);
