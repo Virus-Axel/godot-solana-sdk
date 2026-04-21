@@ -29,7 +29,7 @@ epics:
         slug: mwa-android-bridge-platform-selector-dispatcher
         title: "MwaAndroidBridge Interface + Platform Selector TU + MockMwaAndroidBridge + GodotMainDispatcher"
         size: M
-        status: in-progress
+        status: done
         wave: 2
         dependencies: ["1-1", "1-2"]
       - id: "1-5"

@@ -137,3 +137,18 @@ Deferred items from code reviews and implementation. Tracked for future resoluti
   - `include/transaction/transaction.hpp` — would gain a `Timer*` member or a `_process` tick-based scanner.
   - `src/transaction/transaction.cpp` — `_isigner_signed` / `_isigner_failed` would need to check timestamp before acting on stale entries.
 - **Trigger to revisit:** A consumer reports memory growth in long-running scenes, OR after Story 2-1 (when real MWA signing exposes the hung-signer scenario more frequently than desktop testing did).
+
+## CR-18 (MEDIUM): GodotMainDispatcher TOCTOU between ObjectDB::get_instance and target->call_deferred
+- **Story:** 1-4 | **Date:** 2026-04-21 | **Severity:** MEDIUM | **Status:** tracked with `TODO(story-2-1)` breadcrumb in code | **Origin:** Task 4 + Story 1-4 adversarial code review (finding #3)
+- **Summary:** `GodotMainDispatcher::post(signal_name, payload)` calls `godot::ObjectDB::get_instance(target_id_)` and then `target->call_deferred("emit_signal", ...)`. The null-check is thread-safe at resolution time, but the subsequent virtual dispatch is a member call on a raw pointer — if another thread frees `target` between the null-check (succeeds) and the `call_deferred` invocation, the virtual dispatch reads freed memory. The hazard is INERT in Story 1-4 (the no-op + test paths never race), but WILL surface in Story 2-1+ when real JNI worker threads have lifetimes not synchronized with Godot main: `_exit_tree` → node freed → JNI callback still in flight → dispatcher resolves stale pointer → call_deferred on freed memory → UAF.
+- **Why MEDIUM:** Latent bug with a clear future trigger. Story 1-4's own execution paths do not exercise the race (no JNI, no worker threads in production — the mock's `drive_signal_from_thread` is test-only and joins synchronously). But the contract is load-bearing for every signal emission from Story 2-1 onward. Classic heisenbug surface — surfaces rarely under shutdown timing, symptoms typically appear as spurious segfaults in consumer crash reports.
+- **Code-level mitigation (Story 1-4):** The dispatcher header explicitly documents the contract: "Callers MUST arrange for the target to outlive all threads that can possibly call `post`." A `TODO(story-2-1)` block names two candidate resolutions:
+  1. **Destroying-flag + join/cancel in `_exit_tree`:** the owning `MobileWalletAdapter` node's `_exit_tree` sets a destroying-flag, blocks/joins all in-flight JNI callbacks before the node destructor returns; the bridge impl reads the flag before every `dispatcher_->post()` call.
+  2. **Handle-carrying type:** switch the dispatcher to a `godot::Callable` bound to `emit_signal` + target ObjectID (or a `WeakRef<Node>` holder) so lifetime is carried with the handle and no raw-pointer hop is needed.
+  Cross-references `retrospect/universal.md` "Mutable holder + in-flight async state ⇒ guard every setter against the state machine" — same lifecycle hazard class.
+- **Risk if unresolved:** Stories 2-1, 2-2, 2-3, 3-1, 3-2, 3-3, 4-1, 4-2, 4-3, 5-3 (all stories with real JNI callback flow) will silently ship a UAF that fires during engine teardown under timing pressure.
+- **Affected:**
+  - `src/mwa/godot_main_dispatcher.cpp` — will need either a destroying-flag check or a handle-type swap.
+  - `src/mwa/include/godot_main_dispatcher.hpp` — public contract documents the hazard + TODO.
+  - Story 2-1's `MobileWalletAdapter` node — MUST implement the caller-side protocol (option 1) OR be receptive to the dispatcher switching to a handle type (option 2).
+- **Trigger to revisit:** Story 2-1 design. Blocking: do NOT ship Story 2-1 without resolving CR-18 (either in 2-1 itself or in a preceding refactor story).
