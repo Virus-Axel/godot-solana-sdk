@@ -82,3 +82,96 @@ jobs:
       - name : Check Formatting
         run: |
           CLANG_FORMAT=clang-format-20 scons check-format
+
+  # ---------------------------------------------------------------------------
+  # Job 2 -- AC-1 / DD-26 header-lint for src/mwa/include/.
+  # ---------------------------------------------------------------------------
+  # Public MWA headers at the ABI boundary must reference only godot:: types;
+  # no std:: identifiers, no STL includes except the C-compat fixed-width
+  # headers. See docs/architecture.md §7.1.1 (DD-26) and Story 1-4 AC-1.
+  #
+  # POLICY: allow-list, not deny-list. DD-26 defines a CLOSED SET of permitted
+  # header sources. A deny-list of banned STL headers will miss future
+  # additions (<array>, <algorithm>, <atomic>, <expected>, ...) and ships a
+  # silent hole until a reviewer notices. The allow-list fires on any header
+  # not explicitly whitelisted, matching DD-26's intent: "only godot:: plus
+  # C-compat fixed-width" is a closed contract, not an open exception list.
+  #
+  # ALLOWED in src/mwa/include/*.hpp:
+  #   - <cstdint>, <cstddef>   (C-compat fixed-width integer + size_t)
+  #   - <godot_cpp/**>         (GDExtension ABI)
+  #   - "..."                  (project-local quoted includes)
+  # EVERYTHING ELSE is a violation (including <string>, <vector>, <memory>,
+  # <array>, <algorithm>, etc. — all STL containers, utilities, iostreams).
+  #
+  # The job ALSO fires on any `\bstd::` identifier in the header — the
+  # allow-list rejects new STL includes, but a developer who already has
+  # godot_cpp includes + tries to smuggle in `std::whatever` via unqualified
+  # typedef chains still gets caught at the usage site.
+  #
+  # KNOWN LIMITATION: the `\bstd::` check is a textual grep, so string
+  # literals and doc-comments containing the literal "std::" token will
+  # false-positive (e.g., `/// Equivalent to std::string`). Mitigation:
+  # rephrase the comment to avoid the literal token — "equivalent to
+  # `unique_ptr<...>`" backticked without the `std::` prefix (see the
+  # ownership docstring in mwa_android_bridge.hpp for the established
+  # style). If a PR needs a genuine std:: mention in a comment, flag it
+  # at review rather than silencing the check — DD-26 is load-bearing.
+  #
+  # Runs as a sibling job to clang-checks rather than a step inside it
+  # because the scan is OS-agnostic, needs no toolchain, and completes in
+  # seconds -- coupling it to the heavy scons/clang-tidy job would waste
+  # CI minutes on every push.
+  header-lint-mwa:
+    name: "AC-1 DD-26 header-lint (src/mwa/include/)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # ripgrep is preinstalled on ubuntu-latest images (verified 2026-04-21).
+      # No apt-get step needed.
+
+      - name: "Scan src/mwa/include/ for DD-26 violations (allow-list + std:: usage)"
+        shell: bash
+        # Two checks, both must pass:
+        #   (1) No `\bstd::` identifier anywhere under src/mwa/include/.
+        #   (2) Every `#include <...>` (angle-bracket) line is on the allow-list
+        #       (cstdint, cstddef, or godot_cpp/**). Quoted `"..."` includes are
+        #       unrestricted — they are project-local and scanned separately by
+        #       the build's own dependency graph.
+        run: |
+          set -e
+          violations=0
+
+          # ---- Check 1: no std:: usage ----
+          if rg -n '\bstd::' src/mwa/include/; then
+            echo ""
+            echo "FAIL (check 1): src/mwa/include/ contains std:: identifiers."
+            echo "Fix: use godot:: types (godot::String, godot::Dictionary, etc.),"
+            echo "or move offending code to an impl file (src/mwa/*.cpp)."
+            violations=$((violations + 1))
+          fi
+
+          # ---- Check 2: angle-bracket includes must be allow-listed ----
+          # Extract `#include <...>` lines, then filter out the allowed set.
+          # Any remaining line is a violation.
+          disallowed=$(rg -n '^[[:space:]]*#[[:space:]]*include[[:space:]]*<[^>]+>' src/mwa/include/ \
+                       | grep -vE '<(cstdint|cstddef|godot_cpp/[^>]+)>' \
+                       || true)
+          if [[ -n "$disallowed" ]]; then
+            echo ""
+            echo "FAIL (check 2): src/mwa/include/ has angle-bracket includes outside the"
+            echo "DD-26 allow-list (<cstdint>, <cstddef>, <godot_cpp/**>):"
+            echo "$disallowed"
+            echo ""
+            echo "Fix: use only godot_cpp/** or C-compat fixed-width headers in public"
+            echo "MWA headers. Move any std::/STL-dependent code to an impl file."
+            violations=$((violations + 1))
+          fi
+
+          if [[ "$violations" -gt 0 ]]; then
+            exit 1
+          fi
+          echo "OK: src/mwa/include/ is DD-26-clean (allow-list + std:: usage checks)."
+          fi
