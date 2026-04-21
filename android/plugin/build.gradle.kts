@@ -83,7 +83,27 @@ android {
     testOptions {
         unitTests.all {
             it.useJUnitPlatform()
+
+            // Gradle's default unit-test working directory is the subproject's
+            // directory (`android/plugin/`), so a naive `File("testdata/mwa-fixtures")`
+            // in a test would resolve to `android/plugin/testdata/mwa-fixtures`
+            // which does not exist. Pass the absolute repo-root path via a
+            // system property so tests read `File(System.getProperty("mwa.fixtures.dir"))`
+            // deterministically regardless of CWD. See Story 1-6 Design Decision 6.
+            it.systemProperty(
+                "mwa.fixtures.dir",
+                rootDir.parentFile.resolve("testdata/mwa-fixtures").absolutePath,
+            )
         }
+    }
+
+    // Register the codegen output directory from Story 1-1 (`tools/gen_error_codes.py`)
+    // as a main-source-set root so the generated `MwaError` sealed class is visible to
+    // the plugin's Kotlin code. Story 1-1 (line 334) noted this wiring belonged to
+    // Story 1-2, but it was missed there — Story 1-6 Task 1 is the first code to
+    // reference `MwaError` from plugin Kotlin, exposing the gap.
+    sourceSets.getByName("main") {
+        java.srcDirs("src/generated/kotlin")
     }
 }
 
