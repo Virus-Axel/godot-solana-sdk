@@ -95,6 +95,11 @@ private:
 	// LocalKeypairSigner wrappers — those die with the local Ref). Used by
 	// _notification(NOTIFICATION_PREDELETE) to disconnect cleanly.
 	HashSet<ObjectID> isigner_connected_signer_ids_;
+	// Story 1-3 Task 7: set to true by sign_at_index when the MWA_ISIGNER_REMOVE_V1_2
+	// branch fires (raw Keypair signer encountered in a build with the gate flipped).
+	// Read by sign() / partially_sign() to short-circuit return ERR_METHOD_NOT_FOUND.
+	// Reset at the top of each sign() / partially_sign() invocation.
+	bool removed_path_taken_ = false;
 	String allocate_isigner_request_id(int32_t index);
 	void _isigner_signed(const String &request_id, const Array &sigs);
 	void _isigner_failed(const String &request_id, const String &error_code, const String &message);

@@ -245,6 +245,12 @@ env = SConscript("godot-cpp/SConstruct")
 # - CPPDEFINES are for pre-processor defines
 # - LINKFLAGS are for linking flags
 
+# Story 1-3 Task 7: opt-in compile-define gate that flips Transaction.sign(Keypair) compat
+# from a deprecation warning (v1.1) to ERR_METHOD_NOT_FOUND (v1.2). Set via
+# `scons addon mwa_isigner_remove_v1_2=1`. Default 0 — v1.1 compat behavior preserved.
+if int(ARGUMENTS.get('mwa_isigner_remove_v1_2', 0)):
+    env.Append(CPPDEFINES=['MWA_ISIGNER_REMOVE_V1_2'])
+
 # tweak this if you want to use different folders, or more folders, to store your source code in.
 env.Append(CPPPATH=["src/"])
 env.Append(CPPPATH=["include/"])

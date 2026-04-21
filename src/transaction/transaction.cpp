@@ -177,6 +177,7 @@ void Transaction::reset_state() {
 	signatures.clear();
 	signers.clear();
 	result_signature = "";
+	removed_path_taken_ = false;
 }
 
 void Transaction::sign_at_index(const uint32_t index) {
@@ -228,9 +229,23 @@ void Transaction::sign_at_index(const uint32_t index) {
 	// SYNCHRONOUS sign_completed emit (Concern 4 resolution: no self-pin needed). The
 	// deprecation push_warning is planted by Task 5 here.
 	if (Keypair::is_keypair(signers[index]) || Keypair::is_compatible_type(signers[index])) {
+#ifdef MWA_ISIGNER_REMOVE_V1_2
+		// AC-5 (post-v1.2 removal): the raw-Keypair compat path is gone. Surface a
+		// loud ERR_PRINT pointing at the migration doc, mark the request, and short-
+		// circuit out. The outer dispatch loop in sign() / partially_sign() detects
+		// removed_path_taken_ and aborts on the FIRST offender (Option 2 from the
+		// adversarial review): no half-signed transactions, no per-signer ERR_PRINT
+		// spam if the array contains multiple raw Keypairs.
+		// NOTE: This branch must stay semantically synchronized with the #else
+		// deprecation branch below — they handle the same signer flavor; only the
+		// version-gated UX differs (warn-and-wrap vs hard-fail).
+		ERR_PRINT("Transaction.sign(Keypair) was removed in v1.2; use an ISigner. See docs/migrations/isigner.md.");
+		removed_path_taken_ = true;
+		return;
+#else
 		// AC-3 deprecation warning. Fires exactly once per process the first time
 		// any Transaction signs via the raw-Keypair compat path. Removed in v1.2
-		// (Task 7 compile-define gate replaces this branch with ERR_METHOD_NOT_FOUND).
+		// (the #ifdef branch above replaces this when MWA_ISIGNER_REMOVE_V1_2 is set).
 		static std::atomic<bool> deprecation_warned{false};
 		if (!deprecation_warned.exchange(true)) {
 			UtilityFunctions::push_warning(
@@ -266,6 +281,7 @@ void Transaction::sign_at_index(const uint32_t index) {
 		// through emit chain by virtue of being a stack-local Ref.
 		wrapper->sign_transactions(msg, lengths, request_id);
 		return;
+#endif // MWA_ISIGNER_REMOVE_V1_2
 	}
 
 	// COMPAT PATH (v1.1 unchanged per Concern 5): raw WalletAdapter — keep existing
@@ -777,8 +793,22 @@ Error Transaction::sign() {
 
 	signers = message.get_signers();
 
+	removed_path_taken_ = false;
 	for (unsigned int i = 0; i < signers.size(); i++) {
 		sign_at_index(i);
+		if (removed_path_taken_) {
+			// Abort the dispatch loop on first offender (per Task 7 review Option 2).
+			// Leaves signatures[0..i-1] populated only if those slots were dispatched
+			// to non-removed signers BEFORE the offender. Caller treats
+			// ERR_METHOD_NOT_FOUND as "fully migrate before retrying."
+			break;
+		}
+	}
+
+	if (removed_path_taken_) {
+		// Story 1-3 Task 7 (AC-5): MWA_ISIGNER_REMOVE_V1_2 build encountered a raw
+		// Keypair in signers. Surface to the caller as ERR_METHOD_NOT_FOUND.
+		return Error::ERR_METHOD_NOT_FOUND;
 	}
 
 	check_fully_signed();
@@ -797,12 +827,24 @@ Error Transaction::partially_sign(const Array &array) {
 
 	signers = message.get_signers();
 
+	removed_path_taken_ = false;
 	for (unsigned int i = 0; i < array.size(); i++) {
+		if (removed_path_taken_) {
+			break; // outer-loop abort on first offender (Option 2)
+		}
 		for (unsigned int j = 0; j < signers.size(); j++) {
 			if (Pubkey::bytes_from_variant(signers[j]) == Pubkey::bytes_from_variant(array[i])) {
 				sign_at_index(j);
+				if (removed_path_taken_) {
+					break; // inner-loop abort on first offender
+				}
 			}
 		}
+	}
+
+	if (removed_path_taken_) {
+		// Story 1-3 Task 7 (AC-5): same v1.2 removal semantics as sign().
+		return Error::ERR_METHOD_NOT_FOUND;
 	}
 
 	check_fully_signed();
