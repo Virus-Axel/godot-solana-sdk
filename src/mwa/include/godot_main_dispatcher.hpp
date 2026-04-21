@@ -36,6 +36,20 @@ namespace godot_solana_sdk::mwa {
  *     (synchronized via @c PrintHandler's internal lock) and remains safe to
  *     invoke from the bridge's non-main threads in the post-destroy path.
  *
+ * TODO(story-2-1): the current TOCTOU window is inert in Story 1-4 (no-op
+ *   + test paths never race) but WILL surface when the real JNI flow lands
+ *   — JNI worker threads have lifetimes NOT synchronized with Godot main,
+ *   so `_exit_tree` → node freed → JNI callback still in flight → dispatcher
+ *   resolves stale pointer → call_deferred on freed memory → UAF. Story 2-1
+ *   MUST specify the caller-side teardown protocol:
+ *     (a) `_exit_tree` sets a destroying-flag and joins/cancels all in-flight
+ *         JNI callbacks before the node destructor returns, OR
+ *     (b) switch to a handle-carrying type (e.g. `godot::Callable` bound to
+ *         `emit_signal` + target ObjectID), eliminating the raw-pointer hop.
+ *   See retrospect/universal.md "Mutable holder + in-flight async state ⇒
+ *   guard every setter against the state machine" — same lifecycle hazard
+ *   class. Do not ship Story 2-1 without resolving this.
+ *
  * Lifetime:
  *   - The dispatcher stores the target's @c godot::ObjectID, NOT a raw
  *     pointer, so it remains safe to call @ref post after the target is

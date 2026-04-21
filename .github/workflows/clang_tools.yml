@@ -174,4 +174,3 @@ jobs:
             exit 1
           fi
           echo "OK: src/mwa/include/ is DD-26-clean (allow-list + std:: usage checks)."
-          fi

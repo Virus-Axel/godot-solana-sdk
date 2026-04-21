@@ -32,10 +32,18 @@ class GodotMainDispatcher;
 
 class MockMwaAndroidBridge : public MwaAndroidBridge {
 public:
-    // `dispatcher` may be nullptr — helpful for recording-only tests that
-    // never exercise the thread-hop path. `drive_signal_from_thread` asserts
+    // `dispatcher` may be nullptr — for recording-only tests that never
+    // exercise the thread-hop path. `drive_signal_from_thread` asserts
     // dispatcher non-null; the 9 op overrides do not call the dispatcher.
-    explicit MockMwaAndroidBridge(GodotMainDispatcher* dispatcher = nullptr);
+    //
+    // NO DEFAULT ARGUMENT — tests must pass the intent explicitly:
+    //   - `MockMwaAndroidBridge mock(nullptr)` — recording-only. Calling
+    //     `drive_signal_from_thread` on this instance will ERR_FAIL at runtime.
+    //   - `MockMwaAndroidBridge mock(&dispatcher)` — full test double.
+    // The missing default is intentional: it eliminates the "forgot to pass
+    // one" footgun where a stray `MockMwaAndroidBridge mock;` silently
+    // records correctly but then ERR_FAILs inside the thread-hop test.
+    explicit MockMwaAndroidBridge(GodotMainDispatcher* dispatcher);
     ~MockMwaAndroidBridge() override = default;
 
     // --- MwaAndroidBridge overrides: record call + return ---
