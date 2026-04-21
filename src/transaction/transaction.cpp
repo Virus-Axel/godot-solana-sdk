@@ -202,7 +202,9 @@ void Transaction::sign_at_index(const uint32_t index) {
 		if (!isigner_native->is_connected("sign_failed", on_failed)) {
 			isigner_native->connect("sign_failed", on_failed);
 		}
-		// Track for clean disconnect on Transaction destruction (CR-15-related lifecycle).
+		// Track for clean disconnect in NOTIFICATION_PREDELETE (see _notification +
+		// disconnect_all_isigner_signers below). Defensive lifecycle hygiene — not tied
+		// to a tracked concern.
 		isigner_connected_signer_ids_.insert(isigner_native->get_instance_id());
 
 		// CR-16: payload is serialize_message() — the message portion that ed25519 signs.
