@@ -118,6 +118,13 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.4.3")
     implementation("androidx.activity:activity-compose:1.8.0")
 
+    // Story 1-6 Task 3 — FakeMwaClient parses testdata/mwa-fixtures/*.json. org.json
+    // is pure-Java (no Kotlin-version coupling; no kotlinx-serialization compiler
+    // plugin required) and works identically in :plugin:testDebugUnitTest JVM runs
+    // and Android runtime. FakeMwaClient is test-only but ships in src/main/ per
+    // Story 1-6 Dev Notes so Epic 2+ test source-sets can consume it.
+    implementation("org.json:json:20231013")
+
     // Plan (Story 1-2 §Tooling Notes) pins JUnit Jupiter 6.0.3, but 6.x is compiled with Kotlin 2.1
     // metadata and fails compileDebugUnitTestKotlin under this module's Kotlin plugin 1.8.0:
     //   "Module was compiled with an incompatible version of Kotlin.

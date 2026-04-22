@@ -125,6 +125,11 @@ class TestValidateFile:
             # either branch; we assert the ``response`` path appears in the
             # error so we know the schema tightening is in effect.
             ("authorize_extraprop.json", "response"),
+            # Schema-valid at the top level but the success ``payload`` is
+            # empty — the per-op REQUIRED_PAYLOAD_KEYS second-stage check
+            # catches this (FakeMwaClient would blow up at parse time
+            # otherwise).
+            ("authorize_emptypayload.json", "auth_token"),
         ],
         # Notes on the chosen fragments:
         #   * ``authorize_badcode.json``'s error is at path ``response/type``

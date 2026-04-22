@@ -5,6 +5,11 @@
   "expected_input": {},
   "response": {
     "type": "success",
-    "payload": {}
+    "payload": {
+      "auth_token": "dGVzdC1taW5pbWFsLWF1dGg=",
+      "public_key": "dGVzdC1wdWJsaWMta2V5LWJ5dGVzLTEyMzQ1Njc4OTA=",
+      "cluster": "devnet",
+      "chain_id": "solana:devnet"
+    }
   }
 }

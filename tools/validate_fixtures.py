@@ -35,6 +35,21 @@ ERROR_CODES = ["USER_CANCELED", "WALLET_REJECTED", "NO_MWA_WALLET_INSTALLED",
                "UNSUPPORTED_PLATFORM", "PROTOCOL_ERROR", "STORAGE_CORRUPT",
                "REAUTH_REQUIRED"]
 
+# Per-op required keys on a success-branch ``response.payload``. Enforced AFTER
+# the top-level JSON Schema check (which keeps ``payload`` deliberately typed
+# only as ``object`` for forward compatibility — this table holds the
+# per-op-specific shape requirements that ``FakeMwaClient`` depends on at
+# parse time).
+REQUIRED_PAYLOAD_KEYS: dict = {
+    "authorize": {"auth_token", "public_key", "cluster", "chain_id"},
+    "reauthorize": {"auth_token", "public_key", "cluster", "chain_id"},
+    "deauthorize": set(),
+    "disconnect": set(),
+    "sign_messages": {"signed_payloads"},
+    "sign_transactions": {"signed_payloads"},
+    "sign_and_send": {"signatures"},
+}
+
 # The two response branches both set ``additionalProperties: False`` so that
 # stray fields (including the ``developer_details`` field dropped from the
 # schema during pre-implementation revision) cannot silently slip through.
@@ -171,6 +186,21 @@ def validate_file(path):
             f"scenario mismatch: filename='{scenario}' but json.scenario='{json_scn}'",
             code=FixtureValidationError.SCENARIO_MISMATCH,
         )
+    # Second-stage: per-op payload shape check (success branch only — error
+    # branches don't carry payloads). Catches fixtures that are schema-valid
+    # at the top level but missing fields FakeMwaClient requires at parse
+    # time (e.g. authorize_success with an empty payload).
+    response = data["response"]
+    if response.get("type") == "success":
+        required = REQUIRED_PAYLOAD_KEYS.get(op, set())
+        payload = response.get("payload", {})
+        missing = sorted(required - set(payload.keys()))
+        if missing:
+            raise FixtureValidationError(
+                path,
+                f"payload for op '{op}' missing required field(s) {missing}",
+                code=FixtureValidationError.SCHEMA_VIOLATION,
+            )
 
 
 def validate_directory(dir_path, all_errors=False):

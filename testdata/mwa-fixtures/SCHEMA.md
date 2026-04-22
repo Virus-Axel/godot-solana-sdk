@@ -103,17 +103,45 @@ document's `op` and `scenario` fields exactly. A mismatch is a validator failure
 `MwaError` singletons have no field to thread it through — are rejected by
 `tools/validate_fixtures.py` rather than silently accepted.
 
+### Per-op success-payload required keys
+
+The top-level schema intentionally types `response.payload` as `object` with
+no required keys so the schema stays open to future fields. The
+per-op shape contract `FakeMwaClient` relies on is enforced as a second-stage
+check in `tools/validate_fixtures.py` via `REQUIRED_PAYLOAD_KEYS`:
+
+| op | Required keys on `response.payload` (success branch) |
+|---|---|
+| `authorize` / `reauthorize` | `auth_token`, `public_key`, `cluster`, `chain_id` |
+| `deauthorize` / `disconnect` | (none — empty `payload: {}` is valid) |
+| `sign_messages` / `sign_transactions` | `signed_payloads` |
+| `sign_and_send` | `signatures` |
+
+A fixture with `response.type = "success"` and a `payload` missing any of the
+above keys is rejected at CI time rather than blowing up at
+`FakeMwaClient` parse time.
+
 ## Encoding conventions
 
-- `auth_token` — base64 string (standard alphabet, padded). The wallet returns it
-  this way; `FakeMwaClient` wraps its UTF-8 bytes in `SecretString` — see
-  `AuthResult` KDoc for the opaque-invariant rationale.
-- `public_key` — **base64** (not base58). 32-byte ed25519 public key, base64-encoded
-  = 44 chars. `FakeMwaClient` decodes via `java.util.Base64.getDecoder().decode(...)`.
+All base64 fields use **RFC 4648 §4 standard alphabet with `=` padding** —
+the default form produced by `java.util.Base64.getEncoder()` / decoded by
+`java.util.Base64.getDecoder()`. URL-safe base64 (§5, `-`/`_` alphabet) is NOT
+accepted. Fixture authors must pad to a 4-char boundary.
+
+- `auth_token` — **opaque string**. Treated as an opaque blob by both MWA impls;
+  although wallets in practice emit base64 characters, the fixture consumer
+  (`FakeMwaClient`) stores the string's UTF-8 bytes in `SecretString` without
+  decoding, and `MwaClientImpl` pushes it back to the adapter via an identity
+  transform (`adapter.authToken = String(reveal(), UTF_8)`). See `AuthResult`
+  KDoc for the opaque-invariant rationale.
+- `public_key` — **base64** (not base58). 32-byte ed25519 public key; base64 is
+  44 chars with `=` padding. `FakeMwaClient` decodes via
+  `java.util.Base64.getDecoder().decode(...)`.
 - `messages` / `addresses` / `transactions` / `signed_payloads` (in
   `expected_input` or `payload`) — base64 strings.
 - `signatures` (in `sign_and_send` success payload) — base58 strings, per Solana
-  RPC convention.
+  RPC convention. `FakeMwaClient` returns them as `List<String>` without
+  decoding; callers decode if they need raw bytes.
 
 ## Scenario name vs `response.code`
 

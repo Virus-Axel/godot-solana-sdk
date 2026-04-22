@@ -65,12 +65,7 @@ interface MwaClient {
      * that — see Story 4-1). Returns `Failure(WalletUninstalled)` if the wallet app is
      * gone (local wipe still proceeds per 4-1 AC-2).
      */
-    @Suppress("ktlint:standard:function-signature")
-    suspend fun deauthorize(
-        sender: ActivityResultSender,
-        identity: ConnectionIdentity,
-        authToken: SecretString,
-    ): MwaResult<Unit>
+    suspend fun deauthorize(sender: ActivityResultSender, identity: ConnectionIdentity, authToken: SecretString): MwaResult<Unit>
 
     /**
      * Close the current MWA session on the MwaClient side without revoking the token.
