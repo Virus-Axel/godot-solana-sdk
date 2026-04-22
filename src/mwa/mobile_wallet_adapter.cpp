@@ -14,6 +14,8 @@
 #include "godot_cpp/variant/typed_array.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
+#include "generated/mwa_error_codes.hpp"
+
 namespace {
 // D-4: generate exactly 8 lowercase hex chars ([0-9a-f]{8}) per op-method call.
 // Matches Story 1-6 Kotlin corrId format (UUID.randomUUID().toString().take(8).lowercase()).
@@ -28,6 +30,36 @@ godot::String generate_request_id() {
 	char buf[9];
 	std::snprintf(buf, sizeof(buf), "%08x", r);
 	return godot::String(buf);
+}
+
+// D-3: build the AC-3 mwa_error payload for the null-bridge pre-op branch.
+// Shape mirrors NoOpMwaAndroidBridge::emit_unsupported (src/mwa/no_op_mwa_android_bridge.cpp:21-43)
+// so consumers see an identical mwa_error{UNSUPPORTED_PLATFORM, ...} envelope regardless of
+// which path fired (non-Android NoOp vs. MWA_TESTING null-bridge). See Story 1-5 Guardrails
+// §D-3 + §"Signal payload semantic" (lines 110-111) for key rationale. developer_details
+// MUST be exactly "Kotlin plugin not loaded" — T5.3 asserts on this. `message` also carries
+// the same string to satisfy AC-3 prose (`message="Kotlin plugin not loaded"`); this key
+// matches NoOp's shape which likewise populates `message` at
+// src/mwa/no_op_mwa_android_bridge.cpp:25-39 — cross-bridge consistency so consumers keying
+// off `message` work identically across both paths. The arch §3.2 canonical payload lists
+// only `user_message` + `developer_details`; the `message` key is a NoOp-originated
+// extension that this T3 branch preserves rather than drops. Reconciliation (pick a single
+// canonical shape across NoOp + T3 + downstream 2-1/5-5 docs) is tracked as a CR in T7
+// close-out — NOT resolved here.
+godot::Dictionary build_unsupported_platform_payload(const godot::String &request_id,
+		const godot::String &source_method) {
+	godot::Dictionary payload;
+	payload["request_id"] = request_id;
+	payload["code"] = godot::String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::UNSUPPORTED_PLATFORM));
+	payload["message"] = godot::String("Kotlin plugin not loaded");
+	payload["user_message"] = godot::String("Mobile wallet isn't available on this device.");
+	payload["developer_details"] = godot::String("Kotlin plugin not loaded");
+	payload["recoverable"] = false;
+	payload["retry_hint"] = godot::String("none");
+	payload["layer"] = godot::String("cpp");
+	payload["cause"] = godot::String("");
+	payload["source_method"] = source_method;
+	return payload;
 }
 } // anonymous namespace
 
@@ -106,36 +138,71 @@ MobileWalletAdapter::MobileWalletAdapter() :
 // delegation line.
 void MobileWalletAdapter::mwa_connect(const godot::Dictionary &identity, const godot::String &cluster, const godot::Dictionary &opts) {
 	const godot::String request_id = generate_request_id();
+	if (bridge_ == nullptr) {
+		dispatcher_.post(godot::String("mwa_error"),
+				build_unsupported_platform_payload(request_id, godot::String("connect")));
+		return;
+	}
 	bridge_->connect(request_id, identity, cluster, opts);
 }
 
 void MobileWalletAdapter::reauthorize(const godot::Dictionary &opts) {
 	const godot::String request_id = generate_request_id();
+	if (bridge_ == nullptr) {
+		dispatcher_.post(godot::String("mwa_error"),
+				build_unsupported_platform_payload(request_id, godot::String("reauthorize")));
+		return;
+	}
 	bridge_->reauthorize(request_id, opts);
 }
 
 void MobileWalletAdapter::mwa_disconnect() {
 	const godot::String request_id = generate_request_id();
+	if (bridge_ == nullptr) {
+		dispatcher_.post(godot::String("mwa_error"),
+				build_unsupported_platform_payload(request_id, godot::String("disconnect")));
+		return;
+	}
 	bridge_->disconnect(request_id, godot::Dictionary());
 }
 
 void MobileWalletAdapter::deauthorize() {
 	const godot::String request_id = generate_request_id();
+	if (bridge_ == nullptr) {
+		dispatcher_.post(godot::String("mwa_error"),
+				build_unsupported_platform_payload(request_id, godot::String("deauthorize")));
+		return;
+	}
 	bridge_->deauthorize(request_id, godot::Dictionary());
 }
 
 void MobileWalletAdapter::sign_messages(const godot::TypedArray<godot::PackedByteArray> &messages, const godot::Dictionary &opts) {
 	const godot::String request_id = generate_request_id();
+	if (bridge_ == nullptr) {
+		dispatcher_.post(godot::String("mwa_error"),
+				build_unsupported_platform_payload(request_id, godot::String("sign_messages")));
+		return;
+	}
 	bridge_->sign_messages(request_id, messages, opts);
 }
 
 void MobileWalletAdapter::sign_transactions(const godot::TypedArray<godot::PackedByteArray> &transactions, const godot::Dictionary &opts) {
 	const godot::String request_id = generate_request_id();
+	if (bridge_ == nullptr) {
+		dispatcher_.post(godot::String("mwa_error"),
+				build_unsupported_platform_payload(request_id, godot::String("sign_transactions")));
+		return;
+	}
 	bridge_->sign_transactions(request_id, transactions, opts);
 }
 
 void MobileWalletAdapter::sign_and_send(const godot::TypedArray<godot::PackedByteArray> &transactions, const godot::Dictionary &opts) {
 	const godot::String request_id = generate_request_id();
+	if (bridge_ == nullptr) {
+		dispatcher_.post(godot::String("mwa_error"),
+				build_unsupported_platform_payload(request_id, godot::String("sign_and_send")));
+		return;
+	}
 	bridge_->sign_and_send(request_id, transactions, opts);
 }
 
@@ -162,5 +229,11 @@ godot::Dictionary MobileWalletAdapter::get_diagnostics() {
 }
 
 void MobileWalletAdapter::forget_all() {}
+
+#ifdef MWA_TESTING
+void MobileWalletAdapter::set_bridge_for_testing(std::unique_ptr<mwa::MwaAndroidBridge> bridge) {
+	bridge_ = std::move(bridge);
+}
+#endif
 
 } //namespace godot_solana_sdk

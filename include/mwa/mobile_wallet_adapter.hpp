@@ -69,6 +69,15 @@ public:
 	// 2 utility — stubs in 1-5; real wire-up in Stories 5-2 / 4-2.
 	[[nodiscard]] godot::Dictionary get_diagnostics();
 	void forget_all();
+
+#ifdef MWA_TESTING
+	// D-3: test-only. Replaces the owned bridge with a caller-supplied one
+	// (or nullptr to exercise the AC-3 UNSUPPORTED_PLATFORM pre-op branch).
+	// Production builds do not define MWA_TESTING; this symbol does not exist
+	// in production. CI grep-ban `mwa-testing-define` (T6) guards against
+	// MWA_TESTING leaking into release builds.
+	void set_bridge_for_testing(std::unique_ptr<mwa::MwaAndroidBridge> bridge);
+#endif
 };
 
 } //namespace godot_solana_sdk
