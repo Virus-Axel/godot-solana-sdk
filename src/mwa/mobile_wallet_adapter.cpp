@@ -234,6 +234,10 @@ void MobileWalletAdapter::forget_all() {}
 void MobileWalletAdapter::set_bridge_for_testing(std::unique_ptr<mwa::MwaAndroidBridge> bridge) {
 	bridge_ = std::move(bridge);
 }
+
+mwa::GodotMainDispatcher &MobileWalletAdapter::dispatcher_for_testing() {
+	return dispatcher_;
+}
 #endif
 
 } //namespace godot_solana_sdk

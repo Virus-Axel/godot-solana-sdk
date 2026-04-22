@@ -93,6 +93,14 @@ public:
     // re-enter post() — must not hold the lock across arbitrary callback code).
     // Snapshot+clear under lock, emit from snapshot without lock.
     void drain_for_testing();
+
+    // Returns a COPY of `pending_` under lock without mutating state. Tests use
+    // this to assert on posted-but-not-yet-drained entries (signal_name +
+    // payload) without invoking emit_signal — in host-mode test binaries
+    // emit_signal has no connected callbacks to observe, so snapshot-then-drain
+    // is the practical assertion pattern. Each element is a
+    // godot::Dictionary{"signal_name": String, "payload": Dictionary}.
+    godot::Array snapshot_pending_for_testing() const;
 #endif
 
 private:

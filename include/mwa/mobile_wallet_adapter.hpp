@@ -77,6 +77,12 @@ public:
 	// in production. CI grep-ban `mwa-testing-define` (T6) guards against
 	// MWA_TESTING leaking into release builds.
 	void set_bridge_for_testing(std::unique_ptr<mwa::MwaAndroidBridge> bridge);
+
+	// Test-only reference to the owned GodotMainDispatcher. Tests reach this
+	// to call drain_for_testing() / snapshot_pending_for_testing() and to
+	// construct a MockMwaAndroidBridge sharing the same dispatcher instance.
+	// Symmetric with set_bridge_for_testing — both gated by MWA_TESTING.
+	mwa::GodotMainDispatcher &dispatcher_for_testing();
 #endif
 };
 

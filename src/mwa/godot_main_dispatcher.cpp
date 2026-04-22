@@ -92,6 +92,14 @@ void GodotMainDispatcher::drain_for_testing() {
         target->emit_signal(signal_name, payload);
     }
 }
+
+godot::Array GodotMainDispatcher::snapshot_pending_for_testing() const {
+    // Copy pending_ under lock. godot::Array::duplicate() produces a deep copy
+    // (the nested Dictionary entries are also copied) — caller gets a stable
+    // snapshot unaffected by subsequent post() calls from other threads.
+    godot::MutexLock lock(drain_mutex_);
+    return pending_.duplicate();
+}
 #endif
 
 }  // namespace godot_solana_sdk::mwa
