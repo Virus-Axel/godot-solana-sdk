@@ -3,18 +3,11 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-22T08:19:30Z",
+  "lastUpdated": "2026-04-22T15:35:17Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": {
-    "storyId": "1-5",
-    "slug": "mobile-wallet-adapter-node-skeleton",
-    "startedAt": "2026-04-22T08:19:30Z",
-    "status": "in-progress",
-    "wave": 3,
-    "size": "S"
-  },
+  "currentStory": null,
   "phases": {
     "research": {
       "status": "complete",
@@ -41,7 +34,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 5,
+  "storiesDone": 6,
   "storiesTotal": 21,
   "changeStories": [],
   "completedStories": [
@@ -104,6 +97,21 @@
       "testsAdded": 102,
       "reviewFindings": {"rounds": 8, "blockers": 5, "substantive": 34, "minor": 27, "fixed": "all"},
       "notes": "Pre-implementation [X] revision resolved 11 design/schema blockers (scenario regex broadened for 10_cycle; longest-prefix filename parser LOCKED; authToken opaque-string invariant DD-2; per-call adapter DD-1; corrId UUID; chainId/cluster validation DD-4; Gradle systemProperty DD-6). T7 ordering: T1 → T4 → T5 → T3 → T6 → T2 → T7 per revised Execution Order (compile-dep forces impl-first for the 2 test-paired ops). 8 iterative [R] reviews caught and resolved: clientlib-ktx JVM package correction (com.solana vs com.solanamobile); source-set registration miss from Story 1-2 (D-3); base58 hex-stub → real encoder; exception classifier mapped ERROR_NOT_SIGNED/AUTHORIZATION_FAILED/NOT_SUBMITTED to typed MwaError (not blanket ProtocolError); snake_case op-name parity between Fake and Real impls; corrId propagated into MwaResult.Success/Failure (backward-compat default-null). +102 tests: 74 Kotlin (45 MwaClient interface/DTO; 19 FakeMwaClient; 29 MwaClientImpl) + 54 pytest (40 validator + 14 existing). 5 LOW concerns logged: ProtocolContract exhaustiveness (CR-19), signTransactions/signMessages mock success-path deferred (CR-20), fake/real parity harness (CR-21), MwaClientImpl exception-path log test (CR-22), laim-content-guard xit( false-positive (CR-23)."
+    },
+    {
+      "storyId": "1-5",
+      "slug": "mobile-wallet-adapter-node-skeleton",
+      "completedAt": "2026-04-22T15:35:17Z",
+      "gate5Result": "pass",
+      "tasks": 7,
+      "commits": 10,
+      "deviations": 6,
+      "amendments": ["A-12"],
+      "concerns": ["CR-24", "CR-25", "CR-26", "CR-27", "CR-28"],
+      "concernsResolved": ["CR-8"],
+      "testsAdded": 6,
+      "reviewFindings": {"userInteractive": true, "blockers": 3, "substantive": 4, "minor": 5, "fixed": "all", "note": "Per-task [R]/[E] reviews in lieu of formal code-review-agent spawn. T1 had [R] resolving signal-shape drift → A-12; T3 had review flagging AC-D-10 citation + arch §3.2 vs NoOp reconciliation gap (CR-26); T5 committed without pre-review halt (process error), retroactively [A]-approved after user reviewed diff; T6 had [R] resolving missing MWA_TESTING SConstruct isolation check."},
+      "notes": "A-8 FLIPPED in T4 — C++ test tier now wired. Key inline decisions (all in story Guardrails): D-1 method-rename connect/disconnect/is_connected → mwa_* (avoids godot::Object collision); D-2 test-mode drain harness via godot::Mutex+Array queue (DD-26-compliant; rejected std:: equivalents); D-3 set_bridge_for_testing(unique_ptr) under #ifdef MWA_TESTING (rejected ctor overload + friend class); D-4 request_id = 8 lowercase hex via std::random_device+mt19937+snprintf (matches Kotlin corrId format from 1-6). Amendment A-12 documents the 2-param *_completed signal escalation from arch §3.2's uniform 1-Dict. T4 split into 3 commits (A dispatcher / B submodule / C+D scons+SecretString) to quarantine submodule-add risk. T5 scope-crept 2 test-only getters (snapshot_pending_for_testing + dispatcher_for_testing) necessary for tests to observe internals — symmetric with T3's set_bridge_for_testing pattern. 6 TEST_F cases shipped (2 SecretString from T4b, 4 MobileWalletAdapter from T5). Local scons not installed per A-8 posture; CI (cpp_tests.yml Linux+macOS matrix, T6) is ground-truth validation pending. CR-8 RESOLVED (pending first CI GREEN on cpp_tests.yml). CR-18 untouched — TOCTOU window inert in 1-5 (drain_for_testing bypasses call_deferred). Latent gap CR-28: dispatcher post(name, Dictionary) API carries only 1 Dict vs A-12's 2-param *_completed — Story 1-5 tests use mwa_error only so works here; Story 2-1+ needs dispatcher API evolution. 10 commits: pre-T1 docs + T1 + T2 + T3 + T4a + T4b-B + T4b-CD + T5 + T6 + T7 close-out."
     }
   ],
   "baselineTests": {

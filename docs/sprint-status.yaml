@@ -36,7 +36,7 @@ epics:
         slug: mobile-wallet-adapter-node-skeleton
         title: "MobileWalletAdapter C++ Node Skeleton + Thread-Hop Unit Test"
         size: S
-        status: in-progress
+        status: done
         wave: 3
         dependencies: ["1-4"]
       - id: "1-6"
