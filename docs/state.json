@@ -3,7 +3,7 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-21T10:46:28Z",
+  "lastUpdated": "2026-04-22T08:09:41Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
@@ -33,7 +33,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 4,
+  "storiesDone": 5,
   "storiesTotal": 21,
   "changeStories": [],
   "currentStory": null,
@@ -51,24 +51,10 @@
       "tasks": 7,
       "commits": 8,
       "deviations": 21,
-      "amendments": [
-        "A-9",
-        "A-10"
-      ],
-      "concerns": [
-        "CR-10",
-        "CR-11",
-        "CR-12",
-        "CR-13"
-      ],
+      "amendments": ["A-9", "A-10"],
+      "concerns": ["CR-10", "CR-11", "CR-12", "CR-13"],
       "testsAdded": 26,
-      "reviewFindings": {
-        "high": 1,
-        "medium": 3,
-        "low": 3,
-        "fixed": 3,
-        "deferred": 4
-      }
+      "reviewFindings": {"high": 1, "medium": 3, "low": 3, "fixed": 3, "deferred": 4}
     },
     {
       "storyId": "1-3",
@@ -81,13 +67,7 @@
       "amendments": ["A-11"],
       "concerns": ["CR-14", "CR-15", "CR-16", "CR-17"],
       "testsAdded": 0,
-      "reviewFindings": {
-        "high": 3,
-        "medium": 4,
-        "low": 2,
-        "fixed": 8,
-        "deferred": 1
-      },
+      "reviewFindings": {"high": 3, "medium": 4, "low": 2, "fixed": 8, "deferred": 1},
       "notes": "Inspection-level verification per A-8 (no C++ test tier until Story 1-5). T4 executed before T3 due to dependency (story task numbers preserved). 1933 lines insertion across 16 files."
     },
     {
@@ -101,26 +81,34 @@
       "amendments": [],
       "concerns": ["CR-18"],
       "testsAdded": 0,
-      "reviewFindings": {
-        "critical": 1,
-        "medium": 2,
-        "low": 0,
-        "fixed": 3,
-        "deferred": 0
-      },
+      "reviewFindings": {"critical": 1, "medium": 2, "low": 0, "fixed": 3, "deferred": 0},
       "notes": "Inspection-level verification per A-8. T4 executed before T2/T3 due to compile-dependency chain (T1 → T4 → T2 → T5 → T3 → T6 → T7). Code-review cycle caught 1 CRITICAL (stray fi in header-lint bash, would have broken AC-1 enforcement silently) + 2 MEDIUM (mock default-null footgun, TOCTOU TODO breadcrumb for Story 2-1). CR-18: TOCTOU between ObjectDB::get_instance and target->call_deferred — inert in 1-4, must resolve in 2-1 before real JNI threads."
+    },
+    {
+      "storyId": "1-6",
+      "slug": "mwa-client-fake-fixtures",
+      "completedAt": "2026-04-22T08:09:41Z",
+      "gate5Result": "pass",
+      "tasks": 7,
+      "commits": 8,
+      "deviations": 5,
+      "amendments": [],
+      "concerns": ["CR-19", "CR-20", "CR-21", "CR-22", "CR-23"],
+      "testsAdded": 102,
+      "reviewFindings": {"rounds": 8, "blockers": 5, "substantive": 34, "minor": 27, "fixed": "all"},
+      "notes": "Pre-implementation [X] revision resolved 11 design/schema blockers (scenario regex broadened for 10_cycle; longest-prefix filename parser LOCKED; authToken opaque-string invariant DD-2; per-call adapter DD-1; corrId UUID; chainId/cluster validation DD-4; Gradle systemProperty DD-6). T7 ordering: T1 → T4 → T5 → T3 → T6 → T2 → T7 per revised Execution Order (compile-dep forces impl-first for the 2 test-paired ops). 8 iterative [R] reviews caught and resolved: clientlib-ktx JVM package correction (com.solana vs com.solanamobile); source-set registration miss from Story 1-2 (D-3); base58 hex-stub → real encoder; exception classifier mapped ERROR_NOT_SIGNED/AUTHORIZATION_FAILED/NOT_SUBMITTED to typed MwaError (not blanket ProtocolError); snake_case op-name parity between Fake and Real impls; corrId propagated into MwaResult.Success/Failure (backward-compat default-null). +102 tests: 74 Kotlin (45 MwaClient interface/DTO; 19 FakeMwaClient; 29 MwaClientImpl) + 54 pytest (40 validator + 14 existing). 5 LOW concerns logged: ProtocolContract exhaustiveness (CR-19), signTransactions/signMessages mock success-path deferred (CR-20), fake/real parity harness (CR-21), MwaClientImpl exception-path log test (CR-22), laim-content-guard xit( false-positive (CR-23)."
     }
   ],
   "baselineTests": {
-    "total": 55,
-    "passing": 55,
+    "total": 157,
+    "passing": 157,
     "failing": 0,
-    "baselinedAt": "2026-04-20T00:00:00Z",
-    "baselinedAtStory": 1,
-    "lastRefreshedAt": "2026-04-21T13:00:00Z",
-    "lastRefreshedAtStory": 3,
+    "baselinedAt": "2026-04-22T08:09:41Z",
+    "baselinedAtStory": 5,
+    "lastRefreshedAt": "2026-04-22T08:09:41Z",
+    "lastRefreshedAtStory": 5,
     "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
-    "note": "Post-story-1-3: baseline unchanged at 55 (Story 1-3 added 0 tests per A-8 — C++ test tier still pending until Story 1-5 lands scons tests alias). Story 1-3 changes are inspection-verified at the C++ tier; CI build/lint workflows (build.yml, clang_tools.yml) gate compile/lint."
+    "note": "Post-story-1-6: baseline refreshed from 55 to 157 (+102). Kotlin 26 → 74 (+48: 19 FakeMwaClientTest + 29 MwaClientImplTest). Pytest 29 → 83 (+54: 40 validate_fixtures + 14 existing unchanged). All tests deterministic across re-runs."
   },
   "tooling": {
     "format": "clang-format (C++); ktlint (Kotlin)",
@@ -134,24 +122,19 @@
     "totalRetries": 0,
     "tddRate": 0,
     "avgTaskMinutes": 0,
-    "subagentSpawns": 18,
-    "gatePasses": 7,
+    "subagentSpawns": 19,
+    "gatePasses": 8,
     "gateFails": 0,
     "gateOverrides": 0,
     "agentTeamsUsed": false,
     "parallelWaves": 0,
     "parallelStories": 0,
-    "interfaceAudits": 3,
-    "interfaceMismatches": 0
+    "interfaceAudits": 4,
+    "interfaceMismatches": 0,
+    "pauseResumeCount": 1
   },
-  "waveStrategy": {
-    "2": "sequential"
-  },
-  "devops": {
-    "pass1": "pending",
-    "pass2": "pending",
-    "pass2Partial": false
-  },
+  "waveStrategy": {"2": "sequential"},
+  "devops": {"pass1": "pending", "pass2": "pending", "pass2Partial": false},
   "notes": {
     "baseRepo": "Virus-Axel/godot-solana-sdk cloned from master",
     "branch": "feature/mwa-android",

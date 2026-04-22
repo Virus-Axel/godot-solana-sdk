@@ -43,7 +43,7 @@ epics:
         slug: mwa-client-fake-fixtures
         title: "MwaClient Kotlin Interface + FakeMwaClient + testdata/mwa-fixtures"
         size: M
-        status: backlog
+        status: done
         wave: 2
         dependencies: ["1-1", "1-2"]
 
