@@ -7,6 +7,11 @@
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
 
+#ifdef MWA_TESTING
+#include <godot_cpp/classes/mutex.hpp>
+#include <godot_cpp/variant/array.hpp>
+#endif
+
 namespace godot_solana_sdk::mwa {
 
 /**
@@ -61,6 +66,9 @@ namespace godot_solana_sdk::mwa {
  *     script-exposed class macro).
  *
  * Copy/move: deleted — a dispatcher is bound to a single node instance.
+ *
+ * Under @c MWA_TESTING, the class additionally exposes @ref drain_for_testing,
+ * a synchronous harness for host-binary tests that lack a Godot engine loop.
  */
 class GodotMainDispatcher {
 public:
@@ -71,8 +79,33 @@ public:
     GodotMainDispatcher(const GodotMainDispatcher&) = delete;
     GodotMainDispatcher& operator=(const GodotMainDispatcher&) = delete;
 
+#ifdef MWA_TESTING
+    // D-2: test-only synchronous drain. Under MWA_TESTING, `post()` enqueues into
+    // `pending_` (mutex-guarded) instead of calling `call_deferred` — the host
+    // test binary has no Godot engine loop to drain it. Test code calls this
+    // method after any worker thread (e.g.
+    // MockMwaAndroidBridge::drive_signal_from_thread) has been joined, to
+    // synchronously invoke target->emit_signal(name, payload) for each queued
+    // entry. Production builds (MWA_TESTING undefined) do NOT declare this
+    // method; `post()` uses `call_deferred` as before.
+    //
+    // Thread-safety: emit loop runs OUTSIDE the mutex (signal handlers may
+    // re-enter post() — must not hold the lock across arbitrary callback code).
+    // Snapshot+clear under lock, emit from snapshot without lock.
+    void drain_for_testing();
+#endif
+
 private:
     godot::ObjectID target_id_;
+
+#ifdef MWA_TESTING
+    // D-2: {signal_name, payload} entries awaiting drain. godot::Array + godot::Mutex
+    // (Godot 4 value-member pattern per godot-cpp/include/godot_cpp/core/mutex_lock.hpp:52
+    // `mutable Mutex _thread_safe_;`) instead of the STL `vector`+`mutex` pair — DD-26
+    // allow-list compliance (src/mwa/include/ restricted to godot:: + <cstdint>/<cstddef>).
+    godot::Array pending_;
+    mutable godot::Mutex drain_mutex_;
+#endif
 };
 
 }  // namespace godot_solana_sdk::mwa
