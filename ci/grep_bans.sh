@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
 # ci/grep_bans.sh  (Story 1-2 Task 7 — AC-4 enforcement;
-#                   Story 1-4 Task 6 — AC-5 extension, pattern 5)
+#                   Story 1-4 Task 6 — AC-5 extension, pattern 5;
+#                   Story 1-5 Task 6 — DD-22 / D-2 extensions, patterns 6+7)
 # -----------------------------------------------------------------------------
 # Scans source files for the banned patterns documented in AC-4 + AC-D-8
-# (patterns 1-4, Story 1-2) and AC-5 (pattern 5, Story 1-4):
+# (patterns 1-4, Story 1-2), AC-5 (pattern 5, Story 1-4), and Story 1-5's
+# thread-marshalling + test-compile-gate enforcement (patterns 6-7):
 #
 #   1. Log.[vdiwe](...authToken...)        -- android.util.Log call with authToken
 #   2. Log.[vdiwe](...publicKey...)        -- android.util.Log call with publicKey
@@ -13,6 +15,20 @@
 #                                             outside a lambda (DD-30 foot-gun)
 #   5. #ifdef __ANDROID__ (+ 3 spelling variants) outside
 #                                             src/mwa/platform_selector.cpp (AC-5)
+#   6. emit_signal(...) call outside src/mwa/godot_main_dispatcher.cpp — DD-22
+#                                             thread-marshalling: every signal
+#                                             to GDScript crosses to Godot main
+#                                             via the dispatcher's call_deferred
+#                                             (or, under MWA_TESTING, via its
+#                                             drain_for_testing). Direct
+#                                             `emit_signal(...)` anywhere else
+#                                             in src/mwa/ is a marshalling bypass.
+#   7. #define MWA_TESTING ...             -- MWA_TESTING is a scons-tests-only
+#                                             compile define (-DMWA_TESTING=1);
+#                                             source-level #define would leak the
+#                                             test-mode drain path / setter into
+#                                             production builds. Zero legitimate
+#                                             #define MWA_TESTING in source files.
 #
 # Usage:
 #   # Production scan -- exits 0 on clean code, non-zero on any violation.
@@ -48,6 +64,8 @@ ids=(
     "log-reveal"
     "sdklog-interp"
     "ifdef-android-outside-selector"
+    "emit-signal-outside-dispatcher"
+    "mwa-testing-define"
 )
 
 patterns=(
@@ -56,6 +74,8 @@ patterns=(
     'Log\.(v|d|i|w|e)\(.*\.reveal\(\)'
     'SdkLog\.[vdiwe]\([^{]*\$[a-zA-Z_{]'
     '^[[:space:]]*#[[:space:]]*(if(n?def)?[[:space:]]+__ANDROID__|if[[:space:]]+!?[[:space:]]*defined[[:space:]]*\([[:space:]]*__ANDROID__[[:space:]]*\))'
+    '\bemit_signal[[:space:]]*\('
+    '^[[:space:]]*#[[:space:]]*define[[:space:]]+MWA_TESTING\b'
 )
 
 # Per-pattern production-scan exclusion (Story 1-4 Task 6, AC-5).
@@ -79,6 +99,8 @@ excludes=(
     ""
     ""
     "src/mwa/platform_selector.cpp"
+    "src/mwa/godot_main_dispatcher.cpp"
+    ""
 )
 
 # Case variant `[aA]uthToken` / `[pP]ublicKey`:
@@ -142,6 +164,8 @@ descs=(
     "android.util.Log call unwrapping a SecretString via .reveal() (AC-4 #3, AC-D-8) -- matches any receiver, not just the class-qualified form, because SecretString.reveal() is an instance method and real calls look like 'token.reveal()', 'sessionState.authToken.reveal()', etc. The previous class-qualified pattern matched a syntactically impossible call shape and was a silent false-negative (codebase has no other .reveal() methods on 2026-04-20; broaden if future additions appear)"
     "SdkLog.[vdiwe] call with string-interpolation args outside a lambda -- DD-30 foot-gun. Matches BOTH \${expr} braced form AND bare \$identifier form (the tail char class [a-zA-Z_{] disambiguates: { opens a braced expansion, letters/underscore start a bare identifier; literal-\$ in raw strings with non-identifier follow chars like space or end-of-line slip through by design)"
     "'#ifdef __ANDROID__' (or #ifndef / #if defined(__ANDROID__) / #if !defined(__ANDROID__)) outside src/mwa/platform_selector.cpp — AC-5 bans all four spelling variants. The production scan in .github/workflows/grep_bans.yml must exclude src/mwa/platform_selector.cpp via ripgrep's --glob '!src/mwa/platform_selector.cpp' or equivalent."
+    "'emit_signal(...)' direct call outside src/mwa/godot_main_dispatcher.cpp (Story 1-5 Task 6, DD-22). Every MWA signal to GDScript MUST cross to Godot main via the dispatcher's call_deferred path (production) or drain_for_testing (MWA_TESTING). A direct emit_signal(...) in any other src/mwa/ TU bypasses both paths. The word-boundary regex matches emit_signal when followed by optional whitespace + '('; string literals like '\"emit_signal\"' (the call_deferred arg) do NOT match because no paren follows the identifier. Excludes src/mwa/godot_main_dispatcher.cpp via excludes[5]."
+    "'#define MWA_TESTING' at source level (Story 1-5 Task 6, D-2 / D-3 gate integrity). MWA_TESTING is strictly a scons-tests-only compile define (-DMWA_TESTING=1 set by the tests alias in SConstruct); zero legitimate source-level #define uses exist. A #define in production headers or .cpp files would activate the test-mode drain queue + set_bridge_for_testing symbol in release builds — immediate behavioral regression. #ifdef MWA_TESTING (testing for the flag) is intentionally NOT matched by this pattern; only the directive '#[[:space:]]*define[[:space:]]+MWA_TESTING' fires."
 )
 
 # Parse mode flag.

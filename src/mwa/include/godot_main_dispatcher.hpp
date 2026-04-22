@@ -85,7 +85,7 @@ public:
     // test binary has no Godot engine loop to drain it. Test code calls this
     // method after any worker thread (e.g.
     // MockMwaAndroidBridge::drive_signal_from_thread) has been joined, to
-    // synchronously invoke target->emit_signal(name, payload) for each queued
+    // synchronously invoke target->emit_signal with (name, payload) for each queued
     // entry. Production builds (MWA_TESTING undefined) do NOT declare this
     // method; `post()` uses `call_deferred` as before.
     //
