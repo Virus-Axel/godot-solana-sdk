@@ -48,6 +48,7 @@
 #include "meta_data/meta_data.hpp"
 #include "meta_data/uses.hpp"
 #include "mpl_token_metadata.hpp"
+#include "mwa/mobile_wallet_adapter.hpp"
 #include "pubkey.hpp"
 #include "rpc_multi_http_request_client.hpp"
 #include "rpc_single_http_request_client.hpp"
@@ -123,6 +124,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<godot_solana_sdk::LocalKeypairSigner>();
 	ClassDB::register_class<WalletAdapter>();
 	ClassDB::register_class<godot_solana_sdk::WalletAdapterSigner>();
+	ClassDB::register_class<godot_solana_sdk::MobileWalletAdapter>();
 	ClassDB::register_class<ComputeBudget>();
 	ClassDB::register_class<SystemProgram>();
 	ClassDB::register_class<TokenProgram>();

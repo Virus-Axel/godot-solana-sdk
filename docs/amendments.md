@@ -177,3 +177,30 @@ BOTH architecture.md and this file, using amended values where they conflict.
   - Story 1-3 §Architecture Guardrails inlines the amended contract.
   - Future stories adding new C++ classes inherit the `GDCLASS_CUSTOM` default — already established codebase convention; amendment makes it explicit at the architecture-doc level.
 - **Follow-through:** No separate concern entry needed. A-11 is forward-looking and self-contained. Future stories that add C++ classes registered via ClassDB MUST use `GDCLASS_CUSTOM` unless an explicit reason exists to deviate (and that reason MUST be filed as a separate amendment).
+
+## A-12: §3.2 Signal Payload Schemas — `*_completed` family escalates to 2-param binding with typed `request_id: String` first-class
+
+- **Story:** 1-5 (MobileWalletAdapter C++ Node Skeleton).
+- **Source:** Story 1-5 pre-implementation review (2026-04-22) BLOCKER-4 resolution + T1 review follow-up. Revision added the Guardrails signals-table (story lines 88-101) that explicitly enumerates per-signal PropertyInfo arity. On T1 review the spec-vs-arch drift surfaced when the first `_bind_methods` implementation collapsed all 11 signals to the uniform 1-Dict binding arch.md §3.2 originally prescribed.
+- **Architecture doc section impacted:** §3.2 Signal Payload Schemas (`docs/architecture.md:218-314`).
+- **Original (arch.md §3.2 line 220, pre-amendment):**
+  > All signals emit a single `Dictionary` argument (AC-D-10 — additive keys only).
+- **Amended binding contract (Story 1-5 Guardrails table is the reference):**
+  - **7 `*_completed` family — 2 params:** `PropertyInfo(Variant::STRING, "request_id")` THEN `PropertyInfo(Variant::DICTIONARY, "result")`. Applies to: `connect_completed`, `reauthorize_completed`, `disconnect_completed`, `deauthorize_completed`, `sign_messages_completed`, `sign_transactions_completed`, `sign_and_send_completed`.
+  - **4 error/lifecycle family — 1 param:** `PropertyInfo(Variant::DICTIONARY, "payload")`. Applies to: `mwa_error`, `mwa_timeout`, `mwa_cancelled_lifecycle`, `reauth_required`.
+- **Rationale:** D-4 (Story 1-5 Guardrails §D-4) makes `request_id` a load-bearing correlation identifier threaded through every op call (C++ side) and every Kotlin-layer log line (matching `corrId` format). For the `*_completed` family the `request_id` is the primary join key every consumer uses to correlate a completion with the originating request. Burying it inside a Dictionary forces every consumer (GDScript facade in Story 2-1, example app in 5-4, API docs in 5-5) to reach into the Dict with `result["request_id"]` and do a typed cast — poor ergonomics for a first-class typed value.
+
+  Two options were considered during the Story 1-5 review:
+  - **(a) Keep arch.md §3.2's uniform 1-Dict shape.** Minimal change; matches "additive keys only" (AC-D-10) literally. Forfeits the typed `request_id` API surface.
+  - **(b) Escalate `*_completed` to 2-param (chosen).** Makes `request_id` first-class and typed for the family where it is the primary correlation key. Error/lifecycle signals stay 1-Dict because their payloads are cross-cutting (`mwa_error` can arrive without a `request_id` — e.g., `UNSUPPORTED_PLATFORM` from the pre-op branch; `reauth_required` has no associated request) — forcing a 2-param shape there would paper over real semantic heterogeneity.
+
+  AC-D-10 "additive keys only" (the cited rationale in the original §3.2 prose) is a forward-compat posture about Dictionary contents — consumers must tolerate new keys without breaking. It is orthogonal to the question of how many PropertyInfo params a signal binding carries. An `result: Dictionary` that grows additively on the inside is AC-D-10-compliant regardless of whether it's the signal's sole param or its second. The original §3.2 language conflated the two orthogonal postures.
+- **Affected:**
+  - `docs/architecture.md §3.2 line 220` — the "All signals emit a single `Dictionary` argument" sentence is amended by this document; read §3.2 in conjunction with A-12.
+  - Story 1-5 Guardrails signals-table (`docs/stories/1-5.md:88-101`) is the authoritative binding-shape reference.
+  - `src/mwa/mobile_wallet_adapter.cpp::_bind_methods` Story 1-5 Task 1 implements the amended shape.
+  - Story 1-5 Task 5.1 `BindingSmoke.SignalsAndMethodsRegistered` asserts the PropertyInfo parameter list of each signal against the Guardrails table (name-only presence is insufficient).
+  - Story 2-1 MWA.gd facade — GDScript signal-handler signatures must match the 2-param shape for `*_completed` (callable receives `request_id: String, result: Dictionary`).
+  - Story 5-5 documentation bundle — API reference signal tables must use the amended shape.
+  - Story 3-1 / 3-2 / 3-3 signing-path stories — `sign_messages_completed` / `sign_transactions_completed` / `sign_and_send_completed` emission sites must pass `request_id` as the first `emit_signal` arg before the `result` Dictionary.
+- **Follow-through:** No concern entry. A-12 is forward-looking. Future stories that bind new `*_completed`-family signals inherit the 2-param shape; future stories that bind new error/lifecycle-family signals inherit the 1-Dict shape. Any deviation from these family defaults MUST be filed as a separate amendment.
