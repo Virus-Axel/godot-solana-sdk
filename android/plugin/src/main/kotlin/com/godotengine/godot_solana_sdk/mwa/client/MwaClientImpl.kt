@@ -35,7 +35,20 @@ import java.util.UUID
  * Never logs `authToken` or `publicKey` bytes (CI grep in `ci/grep_bans.sh`).
  * Only `corrId` and op-name appear in log lines.
  */
-class MwaClientImpl : MwaClient {
+class MwaClientImpl(
+    /**
+     * Factory that produces a [MobileWalletAdapter] for the given
+     * [ConnectionIdentity]. Defaults to the clientlib-ktx constructor
+     * (`::MobileWalletAdapter`). Tests inject a mock factory to intercept
+     * construction without resorting to byte-code manipulation
+     * (`mockkConstructor`).
+     *
+     * **Per-call usage (Design Decision 1):** every op that needs an adapter
+     * invokes this factory inline — no shared adapter field exists on
+     * [MwaClientImpl], so callers cannot observe cross-call state.
+     */
+    private val adapterFactory: (ConnectionIdentity) -> MobileWalletAdapter = { MobileWalletAdapter(it) },
+) : MwaClient {
 
     override suspend fun authorize(
         sender: ActivityResultSender,
@@ -69,7 +82,7 @@ class MwaClientImpl : MwaClient {
         // No blockchain set: deauthorize is a wallet-only op — no RPC endpoint
         // routing required. Same asymmetry in signMessages / signTransactions
         // below (they're wallet-local signature ops).
-        val adapter = MobileWalletAdapter(identity)
+        val adapter = adapterFactory(identity)
         val tokenStr = authToken.toOpaqueString()
         adapter.authToken = tokenStr
         mapUnitTransactionResult(
@@ -99,7 +112,7 @@ class MwaClientImpl : MwaClient {
         if (addresses.size != 1) {
             return@runOp MwaResult.Failure(MwaError.ProtocolError, corrId)
         }
-        val adapter = MobileWalletAdapter(identity)
+        val adapter = adapterFactory(identity)
         adapter.authToken = authToken.toOpaqueString()
         val result = adapter.transact(sender) { _ ->
             signMessagesDetached(messages.toTypedArray(), addresses.toTypedArray())
@@ -131,7 +144,7 @@ class MwaClientImpl : MwaClient {
         authToken: SecretString,
         transactions: List<ByteArray>,
     ): MwaResult<SignResult> = runOp("sign_transactions") { corrId ->
-        val adapter = MobileWalletAdapter(identity)
+        val adapter = adapterFactory(identity)
         adapter.authToken = authToken.toOpaqueString()
         val result = adapter.transact(sender) { _ ->
             signTransactions(transactions.toTypedArray())
@@ -157,7 +170,7 @@ class MwaClientImpl : MwaClient {
         // the RPC endpoint; unknown cluster → ProtocolError before any wire call.
         val blockchain = clusterToBlockchain(cluster)
             ?: return@runOp MwaResult.Failure(MwaError.ProtocolError, corrId)
-        val adapter = MobileWalletAdapter(identity).also { it.blockchain = blockchain }
+        val adapter = adapterFactory(identity).also { it.blockchain = blockchain }
         adapter.authToken = authToken.toOpaqueString()
         val result = adapter.transact(sender) { _ ->
             signAndSendTransactions(
@@ -237,7 +250,7 @@ class MwaClientImpl : MwaClient {
             }
             return null
         }
-        return MobileWalletAdapter(identity).also { it.blockchain = blockchain }
+        return adapterFactory(identity).also { it.blockchain = blockchain }
     }
 
     private fun clusterToBlockchain(cluster: String): Blockchain? = when (cluster) {
@@ -365,7 +378,10 @@ class MwaClientImpl : MwaClient {
      * minor versions and introducing that surface here for one caller costs
      * more than the ~20 lines of well-known algorithm.
      */
-    private fun encodeBase58(bytes: ByteArray): String {
+    // `internal` so MwaClientImplTest can exercise this against known vectors
+    // (empty, all-zero, and a synthetic 64-byte signature) without having to
+    // drive the full signAndSend transact path.
+    internal fun encodeBase58(bytes: ByteArray): String {
         if (bytes.isEmpty()) return ""
         var leadingZeros = 0
         while (leadingZeros < bytes.size && bytes[leadingZeros] == 0.toByte()) leadingZeros++
