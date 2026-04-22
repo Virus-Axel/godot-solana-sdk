@@ -3,10 +3,18 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-22T08:09:41Z",
+  "lastUpdated": "2026-04-22T08:19:30Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
+  "currentStory": {
+    "storyId": "1-5",
+    "slug": "mobile-wallet-adapter-node-skeleton",
+    "startedAt": "2026-04-22T08:19:30Z",
+    "status": "in-progress",
+    "wave": 3,
+    "size": "S"
+  },
   "phases": {
     "research": {
       "status": "complete",
@@ -36,7 +44,6 @@
   "storiesDone": 5,
   "storiesTotal": 21,
   "changeStories": [],
-  "currentStory": null,
   "completedStories": [
     {
       "storyId": "1-1",
@@ -129,11 +136,11 @@
     "agentTeamsUsed": false,
     "parallelWaves": 0,
     "parallelStories": 0,
-    "interfaceAudits": 4,
+    "interfaceAudits": 5,
     "interfaceMismatches": 0,
     "pauseResumeCount": 1
   },
-  "waveStrategy": {"2": "sequential"},
+  "waveStrategy": {"2": "sequential", "3": "sequential"},
   "devops": {"pass1": "pending", "pass2": "pending", "pass2Partial": false},
   "notes": {
     "baseRepo": "Virus-Axel/godot-solana-sdk cloned from master",
