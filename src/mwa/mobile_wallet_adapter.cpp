@@ -1,5 +1,9 @@
 #include "mwa/mobile_wallet_adapter.hpp"
 
+#include <cstdio>
+#include <cstdint>
+#include <random>
+
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/method_bind.hpp"
 #include "godot_cpp/core/object.hpp"
@@ -9,6 +13,23 @@
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/typed_array.hpp"
 #include "godot_cpp/variant/variant.hpp"
+
+namespace {
+// D-4: generate exactly 8 lowercase hex chars ([0-9a-f]{8}) per op-method call.
+// Matches Story 1-6 Kotlin corrId format (UUID.randomUUID().toString().take(8).lowercase()).
+// Source pick: std::random_device + std::mt19937 — portable, no scene-tree/engine
+// dependency, no godot-cpp gen/ Crypto class requirement. thread_local keeps
+// construction cost off the hot path without cross-thread contention.
+godot::String generate_request_id() {
+	static thread_local std::random_device rd;
+	static thread_local std::mt19937 gen(rd());
+	std::uniform_int_distribution<std::uint32_t> dist(0U, 0xFFFFFFFFU);
+	const std::uint32_t r = dist(gen);
+	char buf[9];
+	std::snprintf(buf, sizeof(buf), "%08x", r);
+	return godot::String(buf);
+}
+} // anonymous namespace
 
 namespace godot_solana_sdk {
 
@@ -78,20 +99,45 @@ MobileWalletAdapter::MobileWalletAdapter() :
 		dispatcher_(this),
 		bridge_(std::unique_ptr<mwa::MwaAndroidBridge>(mwa::MwaAndroidBridge::create(&dispatcher_))) {}
 
-// 7 ops — empty bodies; T2 wires bridge delegation + request_id generation.
-void MobileWalletAdapter::mwa_connect(const godot::Dictionary & /*identity*/, const godot::String & /*cluster*/, const godot::Dictionary & /*opts*/) {}
+// 7 ops — generate request_id (D-4) and delegate to bridge. Bridge method names
+// stay original (D-1 rename is node-binding-only). Disconnect/deauthorize pass
+// an empty Dictionary for opts — bridge signatures require the arg even though
+// the node bindings take none. T3 adds the null-bridge guard above each
+// delegation line.
+void MobileWalletAdapter::mwa_connect(const godot::Dictionary &identity, const godot::String &cluster, const godot::Dictionary &opts) {
+	const godot::String request_id = generate_request_id();
+	bridge_->connect(request_id, identity, cluster, opts);
+}
 
-void MobileWalletAdapter::reauthorize(const godot::Dictionary & /*opts*/) {}
+void MobileWalletAdapter::reauthorize(const godot::Dictionary &opts) {
+	const godot::String request_id = generate_request_id();
+	bridge_->reauthorize(request_id, opts);
+}
 
-void MobileWalletAdapter::mwa_disconnect() {}
+void MobileWalletAdapter::mwa_disconnect() {
+	const godot::String request_id = generate_request_id();
+	bridge_->disconnect(request_id, godot::Dictionary());
+}
 
-void MobileWalletAdapter::deauthorize() {}
+void MobileWalletAdapter::deauthorize() {
+	const godot::String request_id = generate_request_id();
+	bridge_->deauthorize(request_id, godot::Dictionary());
+}
 
-void MobileWalletAdapter::sign_messages(const godot::TypedArray<godot::PackedByteArray> & /*messages*/, const godot::Dictionary & /*opts*/) {}
+void MobileWalletAdapter::sign_messages(const godot::TypedArray<godot::PackedByteArray> &messages, const godot::Dictionary &opts) {
+	const godot::String request_id = generate_request_id();
+	bridge_->sign_messages(request_id, messages, opts);
+}
 
-void MobileWalletAdapter::sign_transactions(const godot::TypedArray<godot::PackedByteArray> & /*transactions*/, const godot::Dictionary & /*opts*/) {}
+void MobileWalletAdapter::sign_transactions(const godot::TypedArray<godot::PackedByteArray> &transactions, const godot::Dictionary &opts) {
+	const godot::String request_id = generate_request_id();
+	bridge_->sign_transactions(request_id, transactions, opts);
+}
 
-void MobileWalletAdapter::sign_and_send(const godot::TypedArray<godot::PackedByteArray> & /*transactions*/, const godot::Dictionary & /*opts*/) {}
+void MobileWalletAdapter::sign_and_send(const godot::TypedArray<godot::PackedByteArray> &transactions, const godot::Dictionary &opts) {
+	const godot::String request_id = generate_request_id();
+	bridge_->sign_and_send(request_id, transactions, opts);
+}
 
 // 4 state getters — empty defaults in 1-5.
 bool MobileWalletAdapter::mwa_is_connected() const {
