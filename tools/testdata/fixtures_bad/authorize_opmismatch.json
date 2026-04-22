@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "op": "reauthorize",
+  "scenario": "opmismatch",
+  "expected_input": {},
+  "response": {
+    "type": "success",
+    "payload": {}
+  }
+}

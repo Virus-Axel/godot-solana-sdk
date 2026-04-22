@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "op": "authorize",
+  "scenario": "extraprop",
+  "expected_input": {},
+  "response": {
+    "type": "success",
+    "payload": {},
+    "unexpected_field": "should be rejected by additionalProperties=false"
+  }
+}

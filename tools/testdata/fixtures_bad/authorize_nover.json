@@ -1,0 +1,9 @@
+{
+  "op": "authorize",
+  "scenario": "nover",
+  "expected_input": {},
+  "response": {
+    "type": "success",
+    "payload": {}
+  }
+}

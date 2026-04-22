@@ -6,3 +6,6 @@ pytest==9.0.3
 hypothesis==6.151.11
 Jinja2==3.1.6
 PyYAML==6.0.3
+# Story 1-6 Task 5 — JSON Schema draft 2020-12 validator used by
+# tools/validate_fixtures.py to enforce testdata/mwa-fixtures/ schema.
+jsonschema==4.26.0

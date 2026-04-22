@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "op": "authorize",
+  "scenario": "badcode",
+  "expected_input": {},
+  "response": {
+    "type": "error"
+  }
+}

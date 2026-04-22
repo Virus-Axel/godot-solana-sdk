@@ -69,6 +69,7 @@ document's `op` and `scenario` fields exactly. A mismatch is a validator failure
       "oneOf": [
         {
           "required": ["type", "payload"],
+          "additionalProperties": false,
           "properties": {
             "type": { "const": "success" },
             "payload": { "type": "object" }
@@ -76,6 +77,7 @@ document's `op` and `scenario` fields exactly. A mismatch is a validator failure
         },
         {
           "required": ["type", "code"],
+          "additionalProperties": false,
           "properties": {
             "type": { "const": "error" },
             "code": {
@@ -94,6 +96,12 @@ document's `op` and `scenario` fields exactly. A mismatch is a validator failure
   }
 }
 ```
+
+`additionalProperties: false` is set at both the top level AND on each
+`response` oneOf branch. Stray fields — including the previously-considered
+`developer_details` string on the error branch, which was dropped because
+`MwaError` singletons have no field to thread it through — are rejected by
+`tools/validate_fixtures.py` rather than silently accepted.
 
 ## Encoding conventions
 
