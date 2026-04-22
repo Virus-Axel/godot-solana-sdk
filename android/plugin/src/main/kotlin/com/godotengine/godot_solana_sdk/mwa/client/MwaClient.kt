@@ -68,9 +68,22 @@ interface MwaClient {
     suspend fun deauthorize(sender: ActivityResultSender, identity: ConnectionIdentity, authToken: SecretString): MwaResult<Unit>
 
     /**
-     * Close the current MWA session on the MwaClient side without revoking the token.
-     * The cached [authToken] stays valid for a subsequent `reauthorize`. Does not
-     * surface wallet UI and does not touch the wallet process (local-only drop).
+     * Close the current MWA session on the MwaClient side without revoking the
+     * token — the cached auth token stays valid for a subsequent [reauthorize].
+     *
+     * **Client-layer no-op.** At this layer there is no persistent session to
+     * tear down — clientlib-ktx 2.0.3 binds each wallet interaction to an
+     * [ActivityResultSender] for the duration of the `transact`/`connect`
+     * call, so there is nothing to close when a caller is done using the
+     * client. Local cache teardown (clearing the plugin's cached
+     * `is_connected` / `get_public_key` getters, closing the
+     * `SecureTokenStore` handle, etc.) is the plugin layer's responsibility
+     * and lands in Story 2-3. Never surfaces wallet UI and never touches the
+     * wallet process.
+     *
+     * Returns `MwaResult.Success(Unit)` unconditionally in the current
+     * implementation; future refactors that introduce client-layer session
+     * state MUST change this contract deliberately and update consumers.
      */
     suspend fun disconnect(): MwaResult<Unit>
 
