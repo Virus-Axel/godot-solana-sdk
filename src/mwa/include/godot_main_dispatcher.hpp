@@ -75,9 +75,14 @@ public:
     explicit GodotMainDispatcher(godot::Object* target);
     void post(const godot::String& signal_name, const godot::Dictionary& payload);
 
-    // Copy/move semantics: dispatcher is node-owned, not meant to move.
+    // Copy/move semantics: dispatcher is node-owned, not meant to move. Move
+    // ops are implicitly deleted by the copy=delete, but declaring them
+    // explicitly is hygiene for a class holding a value-member `godot::Mutex`
+    // (see :110 ownership note + `_THREAD_SAFE_CLASS_` sanction cited there).
     GodotMainDispatcher(const GodotMainDispatcher&) = delete;
     GodotMainDispatcher& operator=(const GodotMainDispatcher&) = delete;
+    GodotMainDispatcher(GodotMainDispatcher&&) = delete;
+    GodotMainDispatcher& operator=(GodotMainDispatcher&&) = delete;
 
 #ifdef MWA_TESTING
     // D-2: test-only synchronous drain. Under MWA_TESTING, `post()` enqueues into
@@ -111,6 +116,17 @@ private:
     // (Godot 4 value-member pattern per godot-cpp/include/godot_cpp/core/mutex_lock.hpp:52
     // `mutable Mutex _thread_safe_;`) instead of the STL `vector`+`mutex` pair — DD-26
     // allow-list compliance (src/mwa/include/ restricted to godot:: + <cstdint>/<cstddef>).
+    //
+    // Value-member rationale for godot::Mutex (which inherits godot::RefCounted
+    // and is normally held via godot::Ref<>): sanctioned directly by godot-cpp's
+    // own `_THREAD_SAFE_CLASS_` macro (mutex_lock.hpp:52), which expands inside
+    // arbitrary Object subclasses to `mutable Mutex _thread_safe_;` — the same
+    // shape we use here. The Mutex wrapper's default ctor registers the OS
+    // mutex through the extension interface at GodotMainDispatcher construction
+    // (which happens after the GDExtension has bound, because the dispatcher is
+    // owned by a Godot-registered Node whose ctor runs post-bind). Copy/move
+    // ops on GodotMainDispatcher are explicitly `= delete` above, so the Mutex
+    // value-member cannot be duplicated or moved out of a live dispatcher.
     godot::Array pending_;
     mutable godot::Mutex drain_mutex_;
 #endif
