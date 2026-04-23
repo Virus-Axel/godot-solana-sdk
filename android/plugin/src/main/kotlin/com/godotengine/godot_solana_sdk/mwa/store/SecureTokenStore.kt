@@ -7,6 +7,7 @@ import androidx.security.crypto.MasterKey
 import org.json.JSONObject
 import java.io.IOException
 import java.security.GeneralSecurityException
+import java.security.SecureRandom
 
 /**
  * Encrypted on-disk token storage for Mobile Wallet Adapter authorize tokens.
@@ -78,22 +79,58 @@ class SecureTokenStore(private val context: Context) {
     }
 
     /**
-     * Lists every stored [CacheKey] by iterating `prefs.all` VALUES (not keys)
-     * and reconstructing each tuple from the record's first-class fields.
-     * The cache key on disk is `sha256`-based (one-way; not reversible), but
-     * [CacheRecord] already carries `cluster`, `chainId`, `walletPackage`, and
-     * `identityUri` per arch §3.1 — so the CacheKey tuple is recoverable
-     * directly from each stored value. No side index, no hash reversal.
+     * Lists every stored [CacheKey] by iterating entries whose KEY starts with
+     * [CacheKey.KEY_PREFIX] (`"mwa::v1::"`) and reconstructing each tuple from
+     * the record's first-class fields. The on-disk cache key is `sha256`-based
+     * (one-way), but [CacheRecord] already carries `cluster`, `chainId`,
+     * `walletPackage`, and `identityUri` per arch §3.1 — so the CacheKey tuple
+     * is recoverable directly from each stored value. No side index, no hash
+     * reversal.
      *
-     * Entries whose value is not a JSON-serialized [CacheRecord] are skipped
-     * (other plugin components may share the prefs file in future stories).
-     * Used by `forget_all` in Story 4-2; the transitive dependency on
-     * [CacheRecord.fromJson] lands in T3.
+     * The key-prefix filter excludes non-CacheRecord entries that co-live in
+     * the same prefs file — currently [FINGERPRINT_SALT_KEY] for the
+     * per-install salt (D-9). Any future internal entry MUST use a key that
+     * does NOT start with `"mwa::v1::"` to stay out of this iteration.
+     *
+     * Used by `forget_all` in Story 4-2.
      */
-    fun listAllKeys(): List<CacheKey> = prefs.all.values
+    fun listAllKeys(): List<CacheKey> = prefs.all
+        .filterKeys { it.startsWith(CacheKey.KEY_PREFIX) }
+        .values
         .filterIsInstance<String>()
         .map { CacheRecord.fromJson(JSONObject(it)) }
         .map { CacheKey(it.cluster, it.chainId, it.walletPackage, it.identityUri) }
+
+    /**
+     * Returns the 32-byte per-install salt for [AuthTokenFingerprint]. On
+     * first access generates a fresh salt via [SecureRandom] and persists it
+     * under [FINGERPRINT_SALT_KEY] inside the same `EncryptedSharedPreferences`
+     * file (AES256_GCM-encrypted at rest via the MasterKey). Subsequent calls
+     * return the persisted value unchanged.
+     *
+     * Storage format: lower-hex string (64 chars for 32 bytes). Hex over
+     * base64 for API-23 compat — `java.util.Base64` is API-26+ and
+     * `android.util.Base64` isn't available in unit-test JVM (D-T3-1).
+     *
+     * Arch §8.3 / D-9 specified `SecureRandom.getInstanceStrong()`; that
+     * method is API-26+ and this module targets `minSdk = 23`. The default
+     * `SecureRandom()` constructor is cryptographically secure on all API-23+
+     * Android devices (delegates to `/dev/urandom`) — logged as D-T3-1
+     * (Rule 2 substitution).
+     *
+     * Rotated only by `forget_all()` (Story 4-2 scope).
+     */
+    fun getOrCreatePerInstallSalt(): ByteArray {
+        val existing = prefs.getString(FINGERPRINT_SALT_KEY, null)
+        if (existing != null) {
+            return hexToBytes(existing)
+        }
+        val salt = ByteArray(FINGERPRINT_SALT_BYTES).also { SecureRandom().nextBytes(it) }
+        prefs.edit()
+            .putString(FINGERPRINT_SALT_KEY, bytesToLowerHex(salt))
+            .apply()
+        return salt
+    }
 
     private fun wipeCorruptPrefs() {
         context.deleteSharedPreferences(PREFS_FILE_NAME)
@@ -103,5 +140,9 @@ class SecureTokenStore(private val context: Context) {
     companion object {
         const val MASTER_KEY_ALIAS = "godot-sdk-mwa-master-key-v1"
         const val PREFS_FILE_NAME = "godot-sdk-mwa-tokens-v1"
+
+        /** D-9: alias for the per-install HKDF salt entry. Must NOT collide with [CacheKey.KEY_PREFIX]. */
+        const val FINGERPRINT_SALT_KEY = "godot-sdk-mwa-fingerprint-salt-v1"
+        const val FINGERPRINT_SALT_BYTES = 32
     }
 }

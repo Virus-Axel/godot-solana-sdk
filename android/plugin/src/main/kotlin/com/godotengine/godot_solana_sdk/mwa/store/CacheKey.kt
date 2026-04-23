@@ -21,7 +21,7 @@ data class CacheKey(
     val identityUri: String,
 ) {
     /** `"mwa::v1::" + SHA256(canonical())` per DD-17 / DD-27. */
-    fun toHash(): String = "mwa::v1::" + sha256Hex(canonical())
+    fun toHash(): String = KEY_PREFIX + sha256Hex(canonical())
 
     /**
      * Length-prefixed UTF-8 concatenation. For each of the 4 fields in order
@@ -38,6 +38,16 @@ data class CacheKey(
         }
         out.toByteArray()
     }
+
+    companion object {
+        /**
+         * Persisted-key prefix. Used by [SecureTokenStore.listAllKeys] to filter
+         * `SharedPreferences.getAll` entries — non-CacheRecord entries (e.g. the
+         * fingerprint salt under `FINGERPRINT_SALT_KEY`) live in the same
+         * prefs file and MUST be excluded from cache-key iteration.
+         */
+        const val KEY_PREFIX = "mwa::v1::"
+    }
 }
 
 /**
@@ -50,11 +60,28 @@ data class CacheKey(
  * is belt-and-braces: hex digits `0-9a-f` are locale-invariant, but codec paths
  * should not depend on the default locale.
  */
-internal fun sha256Hex(bytes: ByteArray): String {
-    val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
-    val sb = StringBuilder(digest.size * 2)
-    for (b in digest) {
+internal fun sha256Hex(bytes: ByteArray): String = bytesToLowerHex(
+    MessageDigest.getInstance("SHA-256").digest(bytes),
+)
+
+/** Lower-hex encode — 2 chars per input byte. See [sha256Hex] kdoc for Byte/Int rationale. */
+internal fun bytesToLowerHex(bytes: ByteArray): String {
+    val sb = StringBuilder(bytes.size * 2)
+    for (b in bytes) {
         sb.append("%02x".format(Locale.ROOT, b))
     }
     return sb.toString()
+}
+
+/** Inverse of [bytesToLowerHex]. Accepts lowercase hex; throws [IllegalArgumentException] on odd length or invalid chars. */
+internal fun hexToBytes(hex: String): ByteArray {
+    require(hex.length % 2 == 0) { "hex string must have even length, got ${hex.length}" }
+    val out = ByteArray(hex.length / 2)
+    for (i in out.indices) {
+        val hi = Character.digit(hex[i * 2], 16)
+        val lo = Character.digit(hex[i * 2 + 1], 16)
+        require(hi >= 0 && lo >= 0) { "invalid hex character at index ${i * 2} in '$hex'" }
+        out[i] = ((hi shl 4) or lo).toByte()
+    }
+    return out
 }
