@@ -24,7 +24,7 @@
 
 #include "mwa/mobile_wallet_adapter.hpp"
 #include "godot_main_dispatcher.hpp"
-#include "testing/mock_mwa_android_bridge.hpp"
+#include "mwa/testing/mock_mwa_android_bridge.hpp"
 
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/memory.hpp>
