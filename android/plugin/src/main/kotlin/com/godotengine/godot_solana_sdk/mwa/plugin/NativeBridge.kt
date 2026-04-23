@@ -1,0 +1,120 @@
+package com.godotengine.godot_solana_sdk.mwa.plugin
+
+import com.godotengine.godot_solana_sdk.mwa.util.SdkLog
+
+/**
+ * Kotlin → C++ callback seam for the MWA authorize/sign pipeline. The plugin
+ * layer builds a typed payload (serialized to JSON) and hands it here; the
+ * production impl invokes the `external fun` JNI declarations on the plugin
+ * companion so the C++ dispatcher can emit to Godot main via
+ * `Callable::call_deferred` (D-5 / D-6).
+ *
+ * **A-12 arity discipline** — the seam mirrors [docs/amendments.md#A-12]'s signal
+ * shape directly:
+ *   - `connect_completed` (and the other `*_completed` signals) are 2-param on
+ *     the GDScript side: `(request_id: String, result: Dictionary)`. The seam
+ *     method keeps `requestId` as a separate arg so the C++ side can route it
+ *     into the dispatcher's arity-2 Array (`Array::make(request_id, result)`).
+ *   - `mwa_error`, `mwa_timeout`, `mwa_cancelled_lifecycle` are 1-param on the
+ *     GDScript side: `(payload: Dictionary)` with `request_id` embedded as a
+ *     field. The seam methods take ONLY the JSON blob — do NOT add a separate
+ *     `requestId` arg; the C++ side would have no place to put it without
+ *     violating A-12's arity-1 contract for error/lifecycle signals.
+ *
+ * **Token-leak hazard — read before modifying** — every `*DictJson` parameter
+ * on every method here is a serialized Dictionary that includes the wallet's
+ * `auth_token` (connect path) or enough correlation metadata to reconstruct
+ * a session (error/timeout/cancellation paths). **NEVER** log, interpolate,
+ * include in exception messages, or otherwise materialize these values in
+ * output. `ci/grep_bans.sh` pattern-8 bans the variable names
+ * (`resultDictJson`, `errorDictJson`, `timeoutDictJson`,
+ * `cancelledDictJson`) from any `Log.*` or `SdkLog.*` call — that catch
+ * enforces the rule at CI-time.
+ *
+ * Two implementations:
+ *  - [DefaultNativeBridge] — Story 2-1 T4 stub that logs method NAME only (no
+ *    payload content). The `external fun` wiring + C++ JNI entry points land
+ *    in T5. Keeping T4 green without a JNI runtime lets tests inject mocks
+ *    and the plugin code compiles standalone.
+ *  - Test doubles — inject a recording impl via the `@VisibleForTesting` ctor
+ *    overload on the plugin.
+ */
+internal interface NativeBridge {
+
+    /**
+     * 2-param `connect_completed` per A-12 — `requestId` becomes the first
+     * signal argument, `resultDictJson` becomes the second (Dictionary).
+     *
+     * **WARNING — `resultDictJson` contains the wallet's auth_token.** Do NOT
+     * log, interpolate, or include in exception messages.
+     */
+    fun postConnectCompleted(requestId: String, resultDictJson: String)
+
+    /**
+     * 1-param `mwa_error` per A-12. `request_id` is embedded inside
+     * `errorDictJson` at the `request_id` field (A-14 10-key shape).
+     *
+     * **WARNING — `errorDictJson` carries developer-details + correlation data.**
+     * Do NOT log or interpolate into messages.
+     */
+    fun postMwaError(errorDictJson: String)
+
+    /**
+     * 1-param `mwa_timeout` per A-12. `request_id` is embedded inside
+     * `timeoutDictJson`.
+     *
+     * **WARNING — do NOT log or interpolate `timeoutDictJson`.**
+     */
+    fun postMwaTimeout(timeoutDictJson: String)
+
+    /**
+     * 1-param `mwa_cancelled_lifecycle` per A-12. Fires when an in-flight op
+     * is cancelled by Android lifecycle teardown (Story 5-3 lifecycle
+     * observer). Included here so the 4-signal terminal-signal invariant
+     * ([InflightMap] kdoc) is backed by a full seam surface; the authorize
+     * path does not invoke this method directly.
+     *
+     * **WARNING — do NOT log or interpolate `cancelledDictJson`.**
+     */
+    fun postMwaCancelledLifecycle(cancelledDictJson: String)
+}
+
+/**
+ * Default (production) impl. Story 2-1 T5 replaces the log-warn bodies with
+ * direct calls to the `external fun` JNI declarations on the plugin companion
+ * — `GDExtensionAndroidPlugin.postConnectCompletedNative(...)` etc. Until
+ * then this stub is the honest state: `mwaAuthorize` is not yet called from
+ * production (the node + GDScript facade land in T6 / T7), and tests inject
+ * a mock.
+ *
+ * The stub logs only the method name — NOT the payload — per the token-leak
+ * discipline in [NativeBridge]'s kdoc. Do not add payload content to these
+ * log lines; pattern-8 in `ci/grep_bans.sh` catches accidental leaks.
+ */
+internal object DefaultNativeBridge : NativeBridge {
+    private const val TAG = "MWA-NativeBridge"
+
+    override fun postConnectCompleted(requestId: String, resultDictJson: String) {
+        SdkLog.w(TAG, requestId) {
+            "postConnectCompleted called before T5 wires the JNI external fun"
+        }
+    }
+
+    override fun postMwaError(errorDictJson: String) {
+        SdkLog.w(TAG, "pending-jni") {
+            "postMwaError called before T5 wires the JNI external fun"
+        }
+    }
+
+    override fun postMwaTimeout(timeoutDictJson: String) {
+        SdkLog.w(TAG, "pending-jni") {
+            "postMwaTimeout called before T5 wires the JNI external fun"
+        }
+    }
+
+    override fun postMwaCancelledLifecycle(cancelledDictJson: String) {
+        SdkLog.w(TAG, "pending-jni") {
+            "postMwaCancelledLifecycle called before T5 wires the JNI external fun"
+        }
+    }
+}

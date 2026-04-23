@@ -1,5 +1,6 @@
 package com.godotengine.godot_solana_sdk.mwa.session
 
+import com.godotengine.godot_solana_sdk.mwa.util.SecretString
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -113,12 +114,14 @@ class MwaSessionStateTest {
     }
 
     @Test
-    fun `setAuthToken and getAuthToken round-trip`() {
+    fun `setAuthToken and getAuthToken round-trip (SecretString per Story 2-1 T4)`() {
         val s = MwaSessionState()
+        val token = SecretString("token-abc".toByteArray(Charsets.UTF_8))
 
-        s.setAuthToken("token-abc")
+        s.setAuthToken(token)
 
-        assertEquals("token-abc", s.getAuthToken())
+        assertEquals(token, s.getAuthToken())
+        assertArrayEquals("token-abc".toByteArray(Charsets.UTF_8), s.getAuthToken()?.reveal())
     }
 
     @Test
@@ -133,7 +136,7 @@ class MwaSessionStateTest {
         s.setKey(byteArrayOf(5, 6))
         s.setCluster(1)
         s.setIdentity("u", "i", "n")
-        s.setAuthToken("t")
+        s.setAuthToken(SecretString("t".toByteArray(Charsets.UTF_8)))
 
         s.clear()
 

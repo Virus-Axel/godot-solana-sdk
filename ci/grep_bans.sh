@@ -66,6 +66,7 @@ ids=(
     "ifdef-android-outside-selector"
     "emit-signal-outside-dispatcher"
     "mwa-testing-define"
+    "log-payload-json"
 )
 
 patterns=(
@@ -76,6 +77,7 @@ patterns=(
     '^[[:space:]]*#[[:space:]]*(if(n?def)?[[:space:]]+__ANDROID__|if[[:space:]]+!?[[:space:]]*defined[[:space:]]*\([[:space:]]*__ANDROID__[[:space:]]*\))'
     '\bemit_signal[[:space:]]*\('
     '^[[:space:]]*#[[:space:]]*define[[:space:]]+MWA_TESTING\b'
+    '(Log|SdkLog)\.(v|d|i|w|e).*(resultDictJson|errorDictJson|timeoutDictJson|cancelledDictJson)'
 )
 
 # Per-pattern production-scan exclusion (Story 1-4 Task 6, AC-5).
@@ -100,6 +102,7 @@ excludes=(
     ""
     "src/mwa/platform_selector.cpp"
     "src/mwa/godot_main_dispatcher.cpp"
+    ""
     ""
 )
 
@@ -166,6 +169,7 @@ descs=(
     "'#ifdef __ANDROID__' (or #ifndef / #if defined(__ANDROID__) / #if !defined(__ANDROID__)) outside src/mwa/platform_selector.cpp — AC-5 bans all four spelling variants. The production scan in .github/workflows/grep_bans.yml must exclude src/mwa/platform_selector.cpp via ripgrep's --glob '!src/mwa/platform_selector.cpp' or equivalent."
     "'emit_signal(...)' direct call outside src/mwa/godot_main_dispatcher.cpp (Story 1-5 Task 6, DD-22). Every MWA signal to GDScript MUST cross to Godot main via the dispatcher's call_deferred path (production) or drain_for_testing (MWA_TESTING). A direct emit_signal(...) in any other src/mwa/ TU bypasses both paths. The word-boundary regex matches emit_signal when followed by optional whitespace + '('; string literals like '\"emit_signal\"' (the call_deferred arg) do NOT match because no paren follows the identifier. Excludes src/mwa/godot_main_dispatcher.cpp via excludes[5]."
     "'#define MWA_TESTING' at source level (Story 1-5 Task 6, D-2 / D-3 gate integrity). MWA_TESTING is strictly a scons-tests-only compile define (-DMWA_TESTING=1 set by the tests alias in SConstruct); zero legitimate source-level #define uses exist. A #define in production headers or .cpp files would activate the test-mode drain queue + set_bridge_for_testing symbol in release builds — immediate behavioral regression. #ifdef MWA_TESTING (testing for the flag) is intentionally NOT matched by this pattern; only the directive '#[[:space:]]*define[[:space:]]+MWA_TESTING' fires."
+    "Log.* or SdkLog.* call referencing an MWA NativeBridge payload variable name (Story 2-1 Task 4). 'resultDictJson' / 'errorDictJson' / 'timeoutDictJson' / 'cancelledDictJson' are serialized MWA Dictionary payloads that include auth_token (connect path) or enough correlation data to reconstruct a session (error/timeout/cancel paths). The existing log-authtoken ban (pattern 1) only catches direct 'authToken' references — payload vars wrap the token inside a JSON string where the literal 'authToken' substring is not present in the logging call arguments (the LITERAL is inside the payload at runtime). This pattern closes that gap at the payload-var name level: if it's named *DictJson and you're logging it, that's a token-leak candidate regardless of how the payload was built."
 )
 
 # Parse mode flag.

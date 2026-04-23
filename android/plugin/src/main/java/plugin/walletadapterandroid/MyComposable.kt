@@ -7,6 +7,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import com.godotengine.godot_solana_sdk.mwa.session.MwaSessionState
 import com.godotengine.godot_solana_sdk.mwa.util.SdkLog
+import com.godotengine.godot_solana_sdk.mwa.util.SecretString
 import com.solana.mobilewalletadapter.clientlib.ActivityResultSender
 import com.solana.mobilewalletadapter.clientlib.ConnectionIdentity
 import com.solana.mobilewalletadapter.clientlib.MobileWalletAdapter
@@ -18,7 +19,7 @@ private const val TAG = "MWA"
 private const val CORR_SCAFFOLD = "scaffold"
 
 @Composable
-fun connectWallet(sender: ActivityResultSender, session: MwaSessionState) {
+internal fun connectWallet(sender: ActivityResultSender, session: MwaSessionState) {
     val activity = LocalContext.current as? Activity
     LaunchedEffect(Unit) {
         val connectionIdentity = ConnectionIdentity(
@@ -38,7 +39,10 @@ fun connectWallet(sender: ActivityResultSender, session: MwaSessionState) {
 
         when (result) {
             is TransactionResult.Success -> {
-                session.setAuthToken(result.authResult.authToken)
+                // Story 2-1 T4: MwaSessionState.authToken migrated to SecretString?.
+                // clientlib hands us a raw String; wrap at the seam to keep the field
+                // redacted in toString / logs. Unwrap on the read side below.
+                session.setAuthToken(SecretString(result.authResult.authToken.toByteArray(Charsets.UTF_8)))
                 session.setKey(result.authResult.publicKey)
             }
             is TransactionResult.NoWalletFound -> {
@@ -55,7 +59,7 @@ fun connectWallet(sender: ActivityResultSender, session: MwaSessionState) {
 }
 
 @Composable
-fun signTransaction(sender: ActivityResultSender, session: MwaSessionState) {
+internal fun signTransaction(sender: ActivityResultSender, session: MwaSessionState) {
     val activity = LocalContext.current as? Activity
     LaunchedEffect(Unit) {
         val connectionIdentity = ConnectionIdentity(
@@ -74,7 +78,8 @@ fun signTransaction(sender: ActivityResultSender, session: MwaSessionState) {
 
         val token = session.getAuthToken()
         if (token != null) {
-            walletAdapter.authToken = token
+            // Unwrap SecretString at the clientlib seam (the adapter takes a raw String).
+            walletAdapter.authToken = String(token.reveal(), Charsets.UTF_8)
         }
 
         val result = walletAdapter.transact(sender) {
@@ -106,7 +111,7 @@ fun signTransaction(sender: ActivityResultSender, session: MwaSessionState) {
 }
 
 @Composable
-fun signTextMessage(sender: ActivityResultSender, session: MwaSessionState) {
+internal fun signTextMessage(sender: ActivityResultSender, session: MwaSessionState) {
     val activity = LocalContext.current as? Activity
     LaunchedEffect(Unit) {
         val connectionIdentity = ConnectionIdentity(
@@ -125,7 +130,8 @@ fun signTextMessage(sender: ActivityResultSender, session: MwaSessionState) {
 
         val token = session.getAuthToken()
         if (token != null) {
-            walletAdapter.authToken = token
+            // Unwrap SecretString at the clientlib seam (the adapter takes a raw String).
+            walletAdapter.authToken = String(token.reveal(), Charsets.UTF_8)
         }
 
         val connectedKey = session.getConnectedKey()

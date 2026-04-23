@@ -307,3 +307,17 @@ Deferred items from code reviews and implementation. Tracked for future resoluti
   - plan.md — may need amendment to add Story 5-6b or Story 5-7.
   - docs/architecture.md — §CI section should be updated when CR-35 resolves (headless-Godot build step added to the test tier taxonomy).
 - **Trigger to revisit:** Wave 5 planning (when Epic 5 stories are being scoped) OR Story 2-1 design review (when CR-18 + CR-28 + CR-34 all converge and the cost of no-C++-tier becomes concrete).
+
+## CR-36 (LOW): MwaSessionState.lastResult: Any? erases secret-type discipline
+- **Story:** 2-1 | **Date:** 2026-04-23 | **Severity:** LOW | **Status:** tracked | **Origin:** Story 2-1 T4 code review
+- **Summary:** `MwaSessionState.lastResult` is typed as `Any?` (scaffold-era pattern from Story 1-2). It currently holds clientlib-ktx `TransactionResult<*>` values including `TransactionResult.Success<AuthResult>` — which has a `.authToken: String` field that round-trips untyped through `toString()`. A stray `Log.d("result: $lastResult")` would stringify the raw auth token into logs, bypassing the `SecretString`/@Synchronized discipline applied to the rest of the class in Story 2-1 T4.
+- **Why LOW:** (a) Current grep-bans (pattern 1 `Log.*authToken` + pattern 3 `Log.*reveal()`) would NOT catch `Log.d("$lastResult")` — the variable name is `lastResult`, not `authToken`. (b) No current call site logs `lastResult` — CI is green. (c) The blast radius is bounded: scaffold-era `@UsedByGodot` methods ONLY read `lastResult` via `is TransactionResult.Success<*>` type-check, never stringify. So the leak is latent, not active.
+- **Mitigation until closed:** Add a grep-ban for `Log\.(v|d|i|w|e)\(.*lastResult` if the field is ever touched in new code. For now the type discipline is encoded in reviewer vigilance.
+- **Trigger to close:** Story 2-3 (disconnect) or Story 4-x (hardening pass) narrows `lastResult` from `Any?` to a typed sealed class (e.g., `sealed class MwaSessionResult`) where each variant has an explicit `toString()` redaction for secret fields. Same story should convert the Java-bean `setX/getX` pair to Kotlin properties (nit from the T4 review).
+
+## CR-37 (LOW): MwaSessionState.pendingTransaction / connectedKey lack defensive copy
+- **Story:** 2-1 | **Date:** 2026-04-23 | **Severity:** LOW | **Status:** tracked | **Origin:** Story 2-1 T4 code review
+- **Summary:** `setTransaction(ByteArray?)` and `setKey(ByteArray?)` store the caller's reference directly. An external holder of the original array can mutate the stored bytes post-set, or later see mutations the session made. Neither field is secret — public key bytes are intentionally non-secret, pending transaction bytes are caller-owned draft material — but the caller-aliasing surface is real.
+- **Why LOW:** No current call site retains the reference after calling setTransaction/setKey — they pass literals (`signTransaction(serializedTransaction: ByteArray)` from `@UsedByGodot`). The aliasing is latent.
+- **Mitigation until closed:** Reviewer vigilance.
+- **Trigger to close:** Same 2-3 / 4-x hardening pass as CR-36 — add `.copyOf()` in setters AND getters (similar to `SecretString`'s constructor copy-in + reveal copy-out pattern).
