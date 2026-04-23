@@ -125,6 +125,14 @@ dependencies {
     // Story 1-6 Dev Notes so Epic 2+ test source-sets can consume it.
     implementation("org.json:json:20231013")
 
+    // Story 2-1 Task 1 (D-T1-1, Rule 2) — Keystore-backed MasterKey + EncryptedSharedPreferences
+    // for SecureTokenStore (arch §8.3). 1.1.0-alpha06 is the Google-documented EncryptedSharedPreferences
+    // API surface; 1.0.0 is stale by five years. The alpha tag is load-bearing but API-stable in practice
+    // (no breaking changes since alpha01). Transitively brings in tink-android (shaded Tink), which
+    // exposes com.google.crypto.tink.shaded.protobuf.InvalidProtocolBufferException for the
+    // corrupt-recovery catch path in SecureTokenStore.
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
     // Plan (Story 1-2 §Tooling Notes) pins JUnit Jupiter 6.0.3, but 6.x is compiled with Kotlin 2.1
     // metadata and fails compileDebugUnitTestKotlin under this module's Kotlin plugin 1.8.0:
     //   "Module was compiled with an incompatible version of Kotlin.

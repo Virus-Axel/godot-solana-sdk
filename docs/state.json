@@ -3,11 +3,18 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-23T10:15:00.000Z",
+  "lastUpdated": "2026-04-23T08:44:23Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": null,
+  "currentStory": {
+    "storyId": "2-1",
+    "slug": "connect-secure-token-store",
+    "wave": 4,
+    "size": "L",
+    "status": "in-progress",
+    "startedAt": "2026-04-23T10:20:00Z"
+  },
   "phases": {
     "research": {
       "status": "complete",
@@ -219,9 +226,9 @@
     "agentTeamsUsed": false,
     "parallelWaves": 0,
     "parallelStories": 0,
-    "interfaceAudits": 5,
+    "interfaceAudits": 6,
     "interfaceMismatches": 0,
-    "pauseResumeCount": 2
+    "pauseResumeCount": 3
   },
   "waveStrategy": {
     "2": "sequential",
