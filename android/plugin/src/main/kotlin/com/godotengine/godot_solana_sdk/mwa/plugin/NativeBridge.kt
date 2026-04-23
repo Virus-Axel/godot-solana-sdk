@@ -1,6 +1,6 @@
 package com.godotengine.godot_solana_sdk.mwa.plugin
 
-import com.godotengine.godot_solana_sdk.mwa.util.SdkLog
+import plugin.walletadapterandroid.GDExtensionAndroidPlugin
 
 /**
  * Kotlin → C++ callback seam for the MWA authorize/sign pipeline. The plugin
@@ -80,41 +80,31 @@ internal interface NativeBridge {
 }
 
 /**
- * Default (production) impl. Story 2-1 T5 replaces the log-warn bodies with
- * direct calls to the `external fun` JNI declarations on the plugin companion
- * — `GDExtensionAndroidPlugin.postConnectCompletedNative(...)` etc. Until
- * then this stub is the honest state: `mwaAuthorize` is not yet called from
- * production (the node + GDScript facade land in T6 / T7), and tests inject
- * a mock.
+ * Default (production) impl. Story 2-1 T5 wires to the `external fun` JNI
+ * declarations on [GDExtensionAndroidPlugin]'s companion —
+ * `postConnectCompletedNative` etc. — which the JVM resolves to the
+ * `Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_*`
+ * JNIEXPORT functions in `src/mwa/mwa_android_bridge_jni.cpp` via the
+ * `System.loadLibrary(...)` in the plugin's class init.
  *
- * The stub logs only the method name — NOT the payload — per the token-leak
- * discipline in [NativeBridge]'s kdoc. Do not add payload content to these
- * log lines; pattern-8 in `ci/grep_bans.sh` catches accidental leaks.
+ * Do NOT log payload content in this class — pattern-8 in
+ * `ci/grep_bans.sh` catches accidental leaks (banned variable names:
+ * `resultDictJson`, `errorDictJson`, `timeoutDictJson`, `cancelledDictJson`).
  */
 internal object DefaultNativeBridge : NativeBridge {
-    private const val TAG = "MWA-NativeBridge"
-
     override fun postConnectCompleted(requestId: String, resultDictJson: String) {
-        SdkLog.w(TAG, requestId) {
-            "postConnectCompleted called before T5 wires the JNI external fun"
-        }
+        GDExtensionAndroidPlugin.postConnectCompletedNative(requestId, resultDictJson)
     }
 
     override fun postMwaError(errorDictJson: String) {
-        SdkLog.w(TAG, "pending-jni") {
-            "postMwaError called before T5 wires the JNI external fun"
-        }
+        GDExtensionAndroidPlugin.postMwaErrorNative(errorDictJson)
     }
 
     override fun postMwaTimeout(timeoutDictJson: String) {
-        SdkLog.w(TAG, "pending-jni") {
-            "postMwaTimeout called before T5 wires the JNI external fun"
-        }
+        GDExtensionAndroidPlugin.postMwaTimeoutNative(timeoutDictJson)
     }
 
     override fun postMwaCancelledLifecycle(cancelledDictJson: String) {
-        SdkLog.w(TAG, "pending-jni") {
-            "postMwaCancelledLifecycle called before T5 wires the JNI external fun"
-        }
+        GDExtensionAndroidPlugin.postMwaCancelledLifecycleNative(cancelledDictJson)
     }
 }

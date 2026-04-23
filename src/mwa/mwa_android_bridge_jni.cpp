@@ -1,113 +1,620 @@
+// Story 2-1 T5 — real Android JNI implementation of MwaAndroidBridge.
+//
+// This TU is excluded from non-Android builds by the SConstruct platform
+// filter (src/mwa/mwa_android_bridge_jni.cpp is filtered out when
+// env["platform"] != "android"). Per D-11, NO `#ifdef __ANDROID__` inside
+// this file — the platform gate is at SConstruct level.
+//
+// Architecture overview:
+//   Forward path (GDScript → C++ → Kotlin plugin):
+//     MobileWalletAdapter::mwa_connect(...)
+//         → MwaAndroidBridgeJni::connect(request_id, identity, cluster, opts)
+//             → JNI: CallStaticVoidMethod(plugin_companion,
+//                   mwaAuthorizeFromJni, reqId, identityJson, cluster, chainId, timeoutMs)
+//         The Kotlin @JvmStatic wrapper forwards to
+//         GDExtensionAndroidPlugin.mwaAuthorize (the T4 @UsedByGodot instance
+//         method). The Kotlin coroutine runs the authorize op.
+//
+//   Reverse path (Kotlin plugin → C++ → dispatcher):
+//     DefaultNativeBridge.postConnectCompleted(...)
+//         → GDExtensionAndroidPlugin.Companion.postConnectCompletedNative (external fun)
+//             → JNIEXPORT Java_..._postConnectCompletedNative in this file
+//                 → MwaJniContext::get_dispatcher()->post("connect_completed",
+//                       Dictionary{request_id, result_dict})
+//                 → D-5 Callable + D-6 Array ladder (T6) crosses to Godot main.
+//
+// JNI caching: JNI_OnLoad captures JavaVM*, the plugin companion class, and
+// every @JvmStatic method ID. FindClass / GetStaticMethodID are expensive and
+// fail on worker threads without a preceding AttachCurrentThread — so we
+// cache during load-time on the class-loader's main JNIEnv.
+//
+// Lifetime / null-safety:
+//   - If JNI_OnLoad fails to cache any symbol (class not found, method ID
+//     null), every op emits an mwa_error{NOT_CONNECTED} envelope with
+//     `developer_details="JNI symbol cache failed"` — honest actionable
+//     error instead of a silent no-op.
+//   - MwaJniContext::get_dispatcher() is `nullptr` before bridge ctor runs
+//     or after dtor; JNIEXPORT callbacks `push_warning` and drop in that case.
+
 #include "mwa_android_bridge_jni.hpp"
 
+#include <jni.h>
+
+#include <atomic>
+#include <mutex>
+
+#include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/variant/array.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/variant/variant.hpp>
 
 #include "generated/mwa_error_codes.hpp"
 #include "godot_main_dispatcher.hpp"
 
 namespace godot_solana_sdk::mwa {
 
+namespace {
+
+// ---------------- JavaVM + JNI symbol cache ----------------
+
+JavaVM* g_jvm = nullptr;
+jclass g_plugin_companion_class = nullptr; // GlobalRef
+
+// @JvmStatic wrappers on the plugin companion — one per forward op.
+jmethodID g_mid_mwa_authorize_from_jni = nullptr;
+jmethodID g_mid_mwa_disconnect_from_jni = nullptr;
+jmethodID g_mid_mwa_reauthorize_from_jni = nullptr;
+jmethodID g_mid_mwa_deauthorize_from_jni = nullptr;
+jmethodID g_mid_mwa_sign_messages_from_jni = nullptr;
+jmethodID g_mid_mwa_sign_transactions_from_jni = nullptr;
+jmethodID g_mid_mwa_sign_and_send_from_jni = nullptr;
+jmethodID g_mid_mwa_forget_all_from_jni = nullptr;
+jmethodID g_mid_mwa_get_diagnostics_from_jni = nullptr;
+
+// True once JNI_OnLoad populated the cache without error. Read by op methods
+// to decide between real JNI call vs. `emit_jni_unavailable`.
+std::atomic<bool> g_jni_ready{false};
+
+// Scoped AttachCurrentThread — detaches in dtor iff WE attached. No-op if
+// the calling thread was already attached (e.g., Godot main).
+class ScopedJniAttach {
+public:
+    ScopedJniAttach() : env_(nullptr), did_attach_(false) {
+        if (g_jvm == nullptr) { return; }
+        const jint rc = g_jvm->GetEnv(reinterpret_cast<void**>(&env_), JNI_VERSION_1_6);
+        if (rc == JNI_EDETACHED) {
+            if (g_jvm->AttachCurrentThread(&env_, nullptr) == JNI_OK) {
+                did_attach_ = true;
+            } else {
+                env_ = nullptr;
+            }
+        } else if (rc != JNI_OK) {
+            env_ = nullptr;
+        }
+    }
+
+    ~ScopedJniAttach() {
+        if (did_attach_ && g_jvm != nullptr) {
+            g_jvm->DetachCurrentThread();
+        }
+    }
+
+    JNIEnv* env() const { return env_; }
+
+    ScopedJniAttach(const ScopedJniAttach&) = delete;
+    ScopedJniAttach& operator=(const ScopedJniAttach&) = delete;
+
+private:
+    JNIEnv* env_;
+    bool did_attach_;
+};
+
+// ---------------- godot::String <-> jstring converters ----------------
+//
+// WARNING: these converters use JNI modified-UTF-8 (GetStringUTFChars /
+// NewStringUTF), which diverges from standard UTF-8 for:
+//   - embedded U+0000 (encoded as 0xC0 0x80 in modified, single 0x00 in standard)
+//   - supplementary characters U+10000+ (emoji) — encoded as surrogate-pair 3-byte
+//     sequences in modified vs. single 4-byte sequences in standard
+// godot::String / godot::JSON produce standard UTF-8; feeding modified UTF-8 bytes
+// to godot::String(const char*) silently mangles non-BMP input.
+//
+// CURRENT TRAFFIC — all strings crossing this boundary are ASCII-only:
+//   - request_id: 8 lowercase hex chars
+//   - identityJson / resultDictJson / errorDictJson / etc.: godot::JSON / Kotlin
+//     JSONObject output escapes non-ASCII to \uXXXX sequences (JSON spec permits
+//     both forms; the implementations happen to prefer escaped form for non-BMP)
+//   - cluster / chainId: "devnet" / "solana:devnet" etc. — ASCII enum-like
+//   - public_key / auth_token: base64 / base58 / hex — all ASCII
+// Non-ASCII would only arrive if a wallet_label or identity.name with emoji
+// reaches this boundary unescaped, which the current JSON serialization path
+// prevents.
+// CR-38 tracks migrating to GetStringChars/NewString (UTF-16) for future-proofing.
+godot::String jstring_to_godot_string(JNIEnv* env, jstring jstr) {
+    if (jstr == nullptr) { return godot::String(); }
+    const char* utf = env->GetStringUTFChars(jstr, nullptr);
+    if (utf == nullptr) { return godot::String(); }
+    godot::String out(utf);
+    env->ReleaseStringUTFChars(jstr, utf);
+    return out;
+}
+
+jstring godot_string_to_jstring(JNIEnv* env, const godot::String& s) {
+    const godot::CharString cs = s.utf8();
+    return env->NewStringUTF(cs.get_data());
+}
+
+// Serialize a godot::Dictionary into a JSON string for forward-path JNI calls
+// (identity dict → JNI string arg). Never logs the result.
+godot::String serialize_dict_to_json(const godot::Dictionary& dict) {
+    return godot::JSON::stringify(dict);
+}
+
+// Extract timeout_ms from opts dict (may be absent — returns 0, which
+// GDExtensionAndroidPlugin's effectiveWatchdog maps to the internal default).
+int64_t opts_timeout_ms(const godot::Dictionary& opts) {
+    if (!opts.has("timeout_ms")) { return 0; }
+    const godot::Variant v = opts["timeout_ms"];
+    if (v.get_type() == godot::Variant::INT) {
+        return static_cast<int64_t>(v);
+    }
+    return 0;
+}
+
+// Extract chain_id from opts dict; defaults to "solana:<cluster>" shape when
+// absent (Kotlin side validates canonical form via MwaClientImpl's
+// canonicalChainIdFor).
+godot::String opts_chain_id(const godot::Dictionary& opts, const godot::String& cluster) {
+    if (opts.has("chain_id")) {
+        return godot::String(opts["chain_id"]);
+    }
+    return godot::String("solana:") + cluster;
+}
+
+// Build + post a PROTOCOL_ERROR mwa_error for the JNI-exception-swallowed case.
+// Preserves the terminal-signal invariant: Kotlin throwing synchronously during
+// dispatch no longer orphans the request_id — GDScript observes exactly-one
+// terminal signal (the mwa_error here) for that request.
+class GodotMainDispatcher;  // fwd
+void emit_jni_exception_error(GodotMainDispatcher* dispatcher,
+                              const godot::String& request_id,
+                              const char* method_name) {
+    if (dispatcher == nullptr) { return; }
+    godot::Dictionary payload;
+    payload["request_id"] = request_id;
+    payload["code"] = godot::String("PROTOCOL_ERROR");
+    payload["message"] = godot::String("MWA JNI dispatch threw");
+    payload["user_message"] = godot::String("The wallet request could not be dispatched.");
+    payload["developer_details"] = godot::String("JNI exception during ") + godot::String(method_name);
+    payload["recoverable"] = true;
+    payload["retry_hint"] = godot::String("retry_now");
+    payload["layer"] = godot::String("cpp");
+    payload["cause"] = godot::String("jni_exception");
+    payload["source_method"] = godot::String(method_name);
+    dispatcher->post(godot::String("mwa_error"), payload);
+}
+
+// ---------------- Forward-path JNI invocation ----------------
+
+// Call a cached @JvmStatic void method that takes (reqId, identityJson,
+// cluster, chainId, timeoutMs). Used for mwaAuthorizeFromJni and
+// reauthorizeFromJni.
+void call_authorize_shape(jmethodID mid,
+                          GodotMainDispatcher* dispatcher,
+                          const godot::String& request_id,
+                          const godot::String& identity_json,
+                          const godot::String& cluster,
+                          const godot::String& chain_id,
+                          int64_t timeout_ms,
+                          const char* method_name) {
+    if (mid == nullptr) { return; }
+    ScopedJniAttach attach;
+    JNIEnv* env = attach.env();
+    if (env == nullptr) { return; }
+    jstring j_req = godot_string_to_jstring(env, request_id);
+    jstring j_identity = godot_string_to_jstring(env, identity_json);
+    jstring j_cluster = godot_string_to_jstring(env, cluster);
+    jstring j_chain = godot_string_to_jstring(env, chain_id);
+    env->CallStaticVoidMethod(g_plugin_companion_class, mid, j_req, j_identity,
+                              j_cluster, j_chain, static_cast<jlong>(timeout_ms));
+    if (env->ExceptionCheck() == JNI_TRUE) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        // Preserve terminal-signal invariant (AC-6): orphan request_id would leave
+        // the game with no signal fired. Emit mwa_error with PROTOCOL_ERROR so the
+        // game's signal handlers see exactly one terminal signal.
+        emit_jni_exception_error(dispatcher, request_id, method_name);
+    }
+    env->DeleteLocalRef(j_req);
+    env->DeleteLocalRef(j_identity);
+    env->DeleteLocalRef(j_cluster);
+    env->DeleteLocalRef(j_chain);
+}
+
+// Call a cached @JvmStatic void method that takes a single (reqId) arg.
+// Used for disconnect / deauthorize / forget_all / get_diagnostics.
+void call_reqid_only_shape(jmethodID mid,
+                           GodotMainDispatcher* dispatcher,
+                           const godot::String& request_id,
+                           const char* method_name) {
+    if (mid == nullptr) { return; }
+    ScopedJniAttach attach;
+    JNIEnv* env = attach.env();
+    if (env == nullptr) { return; }
+    jstring j_req = godot_string_to_jstring(env, request_id);
+    env->CallStaticVoidMethod(g_plugin_companion_class, mid, j_req);
+    if (env->ExceptionCheck() == JNI_TRUE) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        emit_jni_exception_error(dispatcher, request_id, method_name);
+    }
+    env->DeleteLocalRef(j_req);
+}
+
+}  // anonymous namespace
+
+// ---------------- MwaJniContext impl ----------------
+
+namespace {
+std::atomic<GodotMainDispatcher*> g_dispatcher{nullptr};
+}  // anonymous namespace
+
+void MwaJniContext::register_dispatcher(GodotMainDispatcher* dispatcher) {
+    g_dispatcher.store(dispatcher, std::memory_order_release);
+}
+
+void MwaJniContext::unregister_dispatcher() {
+    g_dispatcher.store(nullptr, std::memory_order_release);
+}
+
+GodotMainDispatcher* MwaJniContext::get_dispatcher() {
+    return g_dispatcher.load(std::memory_order_acquire);
+}
+
+// ---------------- MwaAndroidBridgeJni impl ----------------
+
 MwaAndroidBridgeJni::MwaAndroidBridgeJni(GodotMainDispatcher* dispatcher)
-    : dispatcher_(nullptr) {  // default-init; filled in body if dispatcher is valid.
-    // Loud null-check — UB-avoidance. ERR_FAIL_NULL_MSG returns void on failure,
-    // leaving dispatcher_ at nullptr so subsequent op calls early-return.
+    : dispatcher_(nullptr) {
     ERR_FAIL_NULL_MSG(dispatcher,
         "MwaAndroidBridgeJni: dispatcher must be non-null.");
     dispatcher_ = dispatcher;
+    MwaJniContext::register_dispatcher(dispatcher);
 }
 
-void MwaAndroidBridgeJni::emit_not_connected_stub(const godot::String& source_method,
-                                                  const godot::String& request_id) {
-    if (dispatcher_ == nullptr) { return; }  // defensive; should have failed at ctor.
+MwaAndroidBridgeJni::~MwaAndroidBridgeJni() {
+    MwaJniContext::unregister_dispatcher();
+}
 
-    // 1) Log the stub notice via print_line (no severity distinction in C++ yet; Kotlin
-    //    SdkLog exists but a C++ parallel is not yet shipped — see story Dev Notes).
-    godot::UtilityFunctions::print_line(
-        godot::String("MWA: op=") + source_method +
-        godot::String(" request_id=") + request_id +
-        godot::String(" (JNI stub — real implementation arrives in Story 2-1)"));
-
-    // 2) Build + post the NOT_CONNECTED mwa_error.
-    //
-    // Payload discipline for the 1-4 JNI stub (differs from a live-adapter
-    // NOT_CONNECTED that Story 2-1+ will emit):
-    //   - `recoverable = false` and `retry_hint = "none"`: retry cannot
-    //     succeed in this SDK version — the JNI bridge has no implementation
-    //     yet. A caller that retries on `recoverable + retry_hint=retry_now`
-    //     would spin forever; `false` prevents the loop AND disambiguates the
-    //     stub payload from a real live-adapter NOT_CONNECTED (which ships
-    //     `recoverable=true, retry_hint="connect"` when Story 2-1 lands).
-    //   - `user_message` says "not yet available in this build" — honest and
-    //     actionable without leaking internal "stub" vocabulary into UI
-    //     toasts / error dialogs. The "stub" breadcrumb is in
-    //     `developer_details` (technical log field) instead.
+void MwaAndroidBridgeJni::emit_jni_unavailable(const godot::String& source_method,
+                                                const godot::String& request_id) {
+    if (dispatcher_ == nullptr) { return; }
     godot::Dictionary payload;
     payload["request_id"] = request_id;
     payload["code"] = godot::String(code_name(MwaErrorCode::NOT_CONNECTED));
-    payload["message"] =
-        godot::String("MWA JNI bridge stub — real implementation arrives in Story 2-1");
-    payload["user_message"] =
-        godot::String("MWA is not yet available in this build.");
-    payload["developer_details"] =
-        godot::String("Story 1-4 JNI stub; no real bridge yet. ")
-        + godot::String("connect/authorize impl lands in Story 2-1. ")
-        + godot::String("Retry will not succeed in this SDK version.");
+    payload["message"] = godot::String("MWA JNI bridge not initialized");
+    payload["user_message"] = godot::String("Mobile wallet is temporarily unavailable. Please restart the app.");
+    payload["developer_details"] = godot::String(
+        "JNI_OnLoad did not populate the plugin companion class or method ids; "
+        "check System.loadLibrary and the Kotlin plugin class path.");
     payload["recoverable"] = false;
     payload["retry_hint"] = godot::String("none");
     payload["layer"] = godot::String("cpp");
-    payload["cause"] = godot::String("");
+    payload["cause"] = godot::String("jni_uninitialized");
     payload["source_method"] = source_method;
     dispatcher_->post(godot::String("mwa_error"), payload);
 }
 
 void MwaAndroidBridgeJni::connect(const godot::String& request_id,
-                                  const godot::Dictionary& /*identity*/,
-                                  const godot::String& /*cluster*/,
-                                  const godot::Dictionary& /*opts*/) {
-    emit_not_connected_stub(godot::String("connect"), request_id);
+                                  const godot::Dictionary& identity,
+                                  const godot::String& cluster,
+                                  const godot::Dictionary& opts) {
+    if (!g_jni_ready.load(std::memory_order_acquire)) {
+        emit_jni_unavailable(godot::String("connect"), request_id);
+        return;
+    }
+    call_authorize_shape(g_mid_mwa_authorize_from_jni, dispatcher_,
+                         request_id, serialize_dict_to_json(identity),
+                         cluster, opts_chain_id(opts, cluster),
+                         opts_timeout_ms(opts), "connect");
 }
 
 void MwaAndroidBridgeJni::reauthorize(const godot::String& request_id,
-                                      const godot::Dictionary& /*opts*/) {
-    emit_not_connected_stub(godot::String("reauthorize"), request_id);
+                                      const godot::Dictionary& opts) {
+    if (!g_jni_ready.load(std::memory_order_acquire)) {
+        emit_jni_unavailable(godot::String("reauthorize"), request_id);
+        return;
+    }
+    // Story 2-2 lands the full reauth path; empty identity + cluster for now.
+    call_authorize_shape(g_mid_mwa_reauthorize_from_jni, dispatcher_,
+                         request_id, godot::String(""), godot::String(""),
+                         godot::String(""), opts_timeout_ms(opts), "reauthorize");
 }
 
 void MwaAndroidBridgeJni::disconnect(const godot::String& request_id,
                                      const godot::Dictionary& /*opts*/) {
-    emit_not_connected_stub(godot::String("disconnect"), request_id);
+    if (!g_jni_ready.load(std::memory_order_acquire)) {
+        emit_jni_unavailable(godot::String("disconnect"), request_id);
+        return;
+    }
+    call_reqid_only_shape(g_mid_mwa_disconnect_from_jni, dispatcher_, request_id, "disconnect");
 }
 
 void MwaAndroidBridgeJni::deauthorize(const godot::String& request_id,
                                       const godot::Dictionary& /*opts*/) {
-    emit_not_connected_stub(godot::String("deauthorize"), request_id);
+    if (!g_jni_ready.load(std::memory_order_acquire)) {
+        emit_jni_unavailable(godot::String("deauthorize"), request_id);
+        return;
+    }
+    call_reqid_only_shape(g_mid_mwa_deauthorize_from_jni, dispatcher_, request_id, "deauthorize");
 }
 
 void MwaAndroidBridgeJni::sign_messages(const godot::String& request_id,
                                         const godot::TypedArray<godot::PackedByteArray>& /*messages*/,
                                         const godot::Dictionary& /*opts*/) {
-    emit_not_connected_stub(godot::String("sign_messages"), request_id);
+    if (!g_jni_ready.load(std::memory_order_acquire)) {
+        emit_jni_unavailable(godot::String("sign_messages"), request_id);
+        return;
+    }
+    call_reqid_only_shape(g_mid_mwa_sign_messages_from_jni, dispatcher_, request_id, "sign_messages");
 }
 
 void MwaAndroidBridgeJni::sign_transactions(const godot::String& request_id,
                                             const godot::TypedArray<godot::PackedByteArray>& /*transactions*/,
                                             const godot::Dictionary& /*opts*/) {
-    emit_not_connected_stub(godot::String("sign_transactions"), request_id);
+    if (!g_jni_ready.load(std::memory_order_acquire)) {
+        emit_jni_unavailable(godot::String("sign_transactions"), request_id);
+        return;
+    }
+    call_reqid_only_shape(g_mid_mwa_sign_transactions_from_jni, dispatcher_, request_id, "sign_transactions");
 }
 
 void MwaAndroidBridgeJni::sign_and_send(const godot::String& request_id,
                                         const godot::TypedArray<godot::PackedByteArray>& /*transactions*/,
                                         const godot::Dictionary& /*opts*/) {
-    emit_not_connected_stub(godot::String("sign_and_send"), request_id);
+    if (!g_jni_ready.load(std::memory_order_acquire)) {
+        emit_jni_unavailable(godot::String("sign_and_send"), request_id);
+        return;
+    }
+    call_reqid_only_shape(g_mid_mwa_sign_and_send_from_jni, dispatcher_, request_id, "sign_and_send");
 }
 
 void MwaAndroidBridgeJni::forget_all(const godot::String& request_id) {
-    emit_not_connected_stub(godot::String("forget_all"), request_id);
+    if (!g_jni_ready.load(std::memory_order_acquire)) {
+        emit_jni_unavailable(godot::String("forget_all"), request_id);
+        return;
+    }
+    call_reqid_only_shape(g_mid_mwa_forget_all_from_jni, dispatcher_, request_id, "forget_all");
 }
 
 void MwaAndroidBridgeJni::get_diagnostics(const godot::String& request_id) {
-    emit_not_connected_stub(godot::String("get_diagnostics"), request_id);
+    if (!g_jni_ready.load(std::memory_order_acquire)) {
+        emit_jni_unavailable(godot::String("get_diagnostics"), request_id);
+        return;
+    }
+    call_reqid_only_shape(g_mid_mwa_get_diagnostics_from_jni, dispatcher_, request_id, "get_diagnostics");
 }
 
 }  // namespace godot_solana_sdk::mwa
+
+// ---------------- JNI_OnLoad + JNIEXPORT callbacks ----------------
+//
+// JNI boundary functions live in the top-level C linkage so the JVM can
+// resolve them by mangled name. Everything inside
+// `godot_solana_sdk::mwa` is C++ with name mangling and not directly
+// callable from the JVM.
+
+extern "C" {
+
+using godot_solana_sdk::mwa::MwaJniContext;
+using godot_solana_sdk::mwa::GodotMainDispatcher;
+
+// --- forward-path: cache the plugin companion class + method IDs ---
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
+    godot_solana_sdk::mwa::g_jvm = vm;
+    JNIEnv* env = nullptr;
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        return -1;
+    }
+
+    jclass local = env->FindClass("plugin/walletadapterandroid/GDExtensionAndroidPlugin$Companion");
+    if (local == nullptr) {
+        // FindClass left a pending exception; clear to avoid spilling into
+        // future JNI calls on this thread.
+        if (env->ExceptionCheck() == JNI_TRUE) { env->ExceptionClear(); }
+        return JNI_VERSION_1_6;  // Cache not populated; g_jni_ready stays false, ops emit NOT_CONNECTED.
+    }
+    godot_solana_sdk::mwa::g_plugin_companion_class =
+        static_cast<jclass>(env->NewGlobalRef(local));
+    env->DeleteLocalRef(local);
+
+    // (reqId: String, identityJson: String, cluster: String, chainId: String, timeoutMs: Long): Unit
+    const char* authorize_sig = "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V";
+    godot_solana_sdk::mwa::g_mid_mwa_authorize_from_jni =
+        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
+                               "mwaAuthorizeFromJni", authorize_sig);
+    godot_solana_sdk::mwa::g_mid_mwa_reauthorize_from_jni =
+        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
+                               "mwaReauthorizeFromJni", authorize_sig);
+
+    // (reqId: String): Unit
+    const char* reqid_only_sig = "(Ljava/lang/String;)V";
+    godot_solana_sdk::mwa::g_mid_mwa_disconnect_from_jni =
+        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
+                               "mwaDisconnectFromJni", reqid_only_sig);
+    godot_solana_sdk::mwa::g_mid_mwa_deauthorize_from_jni =
+        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
+                               "mwaDeauthorizeFromJni", reqid_only_sig);
+    godot_solana_sdk::mwa::g_mid_mwa_sign_messages_from_jni =
+        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
+                               "mwaSignMessagesFromJni", reqid_only_sig);
+    godot_solana_sdk::mwa::g_mid_mwa_sign_transactions_from_jni =
+        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
+                               "mwaSignTransactionsFromJni", reqid_only_sig);
+    godot_solana_sdk::mwa::g_mid_mwa_sign_and_send_from_jni =
+        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
+                               "mwaSignAndSendFromJni", reqid_only_sig);
+    godot_solana_sdk::mwa::g_mid_mwa_forget_all_from_jni =
+        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
+                               "mwaForgetAllFromJni", reqid_only_sig);
+    godot_solana_sdk::mwa::g_mid_mwa_get_diagnostics_from_jni =
+        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
+                               "mwaGetDiagnosticsFromJni", reqid_only_sig);
+
+    if (env->ExceptionCheck() == JNI_TRUE) { env->ExceptionClear(); }
+
+    // Readiness: class + at least the authorize method must be resolved.
+    // Missing optional methods (reauth, sign, etc.) are acceptable during
+    // Story 2-1 T5 (only authorize is fully wired); the op methods null-check
+    // their specific mid before each call.
+    godot_solana_sdk::mwa::g_jni_ready.store(
+        godot_solana_sdk::mwa::g_plugin_companion_class != nullptr &&
+            godot_solana_sdk::mwa::g_mid_mwa_authorize_from_jni != nullptr,
+        std::memory_order_release);
+
+    return JNI_VERSION_1_6;
+}
+
+// --- reverse-path: callbacks from Kotlin NativeBridge via external fun ---
+
+// Hand-construct a minimal mwa_error when a payload JSON fails to parse. Used
+// by both arity-1 and arity-2 callback helpers so GDScript always sees a
+// well-formed mwa_error — a mangled emission isn't silently suppressed and a
+// malformed *_completed isn't delivered with an empty result dict.
+static void post_parse_failure_error(GodotMainDispatcher* dispatcher,
+                                     const godot::String& request_id_maybe,
+                                     const char* seam_label) {
+    godot::Dictionary fallback;
+    fallback["request_id"] = request_id_maybe;
+    fallback["code"] = godot::String("PROTOCOL_ERROR");
+    fallback["message"] = godot::String("MWA payload JSON parse failed");
+    fallback["user_message"] = godot::String("The wallet response could not be processed.");
+    fallback["developer_details"] =
+        godot::String("JNI payload parse failed at seam=") + godot::String(seam_label);
+    fallback["recoverable"] = true;
+    fallback["retry_hint"] = godot::String("retry_now");
+    fallback["layer"] = godot::String("cpp");
+    fallback["cause"] = godot::String("json_parse_error");
+    fallback["source_method"] = godot::String(seam_label);
+    dispatcher->post(godot::String("mwa_error"), fallback);
+}
+
+// Parse a JSON string and return (ok, dict). On parse failure pushes a warning
+// and returns (false, {}). Callers decide whether to fall back to a
+// hand-constructed error or pass through the empty dict.
+static bool try_parse_payload(const godot::String& json_str,
+                              const char* seam_label,
+                              godot::Dictionary& out) {
+    godot::Ref<godot::JSON> json;
+    json.instantiate();
+    if (json->parse(json_str) != godot::OK) {
+        godot::UtilityFunctions::push_warning(
+            godot::String("MWA: JNI payload JSON parse failed at seam=") + godot::String(seam_label));
+        return false;
+    }
+    const godot::Variant data = json->get_data();
+    if (data.get_type() != godot::Variant::DICTIONARY) {
+        godot::UtilityFunctions::push_warning(
+            godot::String("MWA: JNI payload JSON root is not a dict at seam=") + godot::String(seam_label));
+        return false;
+    }
+    out = godot::Dictionary(data);
+    return true;
+}
+
+// Helper: parse payload JSON + post to dispatcher as arity-1 (1-param error/lifecycle
+// signals per A-12). Used by mwa_error / mwa_timeout / mwa_cancelled_lifecycle /
+// reauth_required. NEVER logs the payload body — only the seam label (which is
+// the signal name: public identifier, not secret). Payload variable naming matches
+// the grep-ban pattern 8.
+// On parse failure emits a hand-constructed mwa_error to preserve the terminal-
+// signal invariant (AC-6) instead of delivering an empty-payload emission.
+static void post_arity1(JNIEnv* env,
+                        jstring payload_json,
+                        const char* signal_name,
+                        const char* seam_label) {
+    GodotMainDispatcher* dispatcher = MwaJniContext::get_dispatcher();
+    if (dispatcher == nullptr) {
+        godot::UtilityFunctions::push_warning(
+            godot::String("MWA: ") + seam_label + godot::String(" fired before bridge registered; dropping"));
+        return;
+    }
+    const godot::String json_str =
+        godot_solana_sdk::mwa::jstring_to_godot_string(env, payload_json);
+    godot::Dictionary payload;
+    if (!try_parse_payload(json_str, seam_label, payload)) {
+        // Hand-construct — don't pass the mangled payload through. Callers
+        // of mwa_error specifically: even if the payload that failed WAS
+        // an mwa_error, we still emit the hand-constructed fallback so
+        // downstream shapes are well-formed.
+        post_parse_failure_error(dispatcher, godot::String(""), seam_label);
+        return;
+    }
+    dispatcher->post(godot::String(signal_name), payload);
+}
+
+// Helper: post to dispatcher as arity-2 `*_completed` signal per A-12. GDScript
+// sees `connect_completed(request_id, result)` — two typed parameters matching
+// the `ADD_SIGNAL` registration. Uses the transitional
+// `GodotMainDispatcher::post_arity2` helper (removed in T6 when post evolves
+// to accept Array).
+// On parse failure emits mwa_error instead of connect_completed with empty dict
+// — the terminal-signal invariant fires, and the mwa_error carries the
+// actual failure mode (AC-6).
+static void post_arity2_completed(JNIEnv* env,
+                                  jstring req_id_jstr,
+                                  jstring result_json_jstr,
+                                  const char* signal_name,
+                                  const char* seam_label) {
+    GodotMainDispatcher* dispatcher = MwaJniContext::get_dispatcher();
+    if (dispatcher == nullptr) {
+        godot::UtilityFunctions::push_warning(
+            godot::String("MWA: ") + seam_label + godot::String(" fired before bridge registered; dropping"));
+        return;
+    }
+    const godot::String req_id =
+        godot_solana_sdk::mwa::jstring_to_godot_string(env, req_id_jstr);
+    const godot::String json_str =
+        godot_solana_sdk::mwa::jstring_to_godot_string(env, result_json_jstr);
+    godot::Dictionary result;
+    if (!try_parse_payload(json_str, seam_label, result)) {
+        post_parse_failure_error(dispatcher, req_id, seam_label);
+        return;
+    }
+    dispatcher->post_arity2(godot::String(signal_name), req_id, result);
+}
+
+JNIEXPORT void JNICALL
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postConnectCompletedNative(
+    JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
+    post_arity2_completed(env, reqId, resultDictJson, "connect_completed", "postConnectCompletedNative");
+}
+
+JNIEXPORT void JNICALL
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postMwaErrorNative(
+    JNIEnv* env, jobject /*companion*/, jstring errorDictJson) {
+    post_arity1(env, errorDictJson, "mwa_error", "postMwaErrorNative");
+}
+
+JNIEXPORT void JNICALL
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postMwaTimeoutNative(
+    JNIEnv* env, jobject /*companion*/, jstring timeoutDictJson) {
+    post_arity1(env, timeoutDictJson, "mwa_timeout", "postMwaTimeoutNative");
+}
+
+JNIEXPORT void JNICALL
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postMwaCancelledLifecycleNative(
+    JNIEnv* env, jobject /*companion*/, jstring cancelledDictJson) {
+    post_arity1(env, cancelledDictJson, "mwa_cancelled_lifecycle", "postMwaCancelledLifecycleNative");
+}
+
+JNIEXPORT void JNICALL
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postReauthRequiredNative(
+    JNIEnv* env, jobject /*companion*/, jstring reauthDictJson) {
+    post_arity1(env, reauthDictJson, "reauth_required", "postReauthRequiredNative");
+}
+
+}  // extern "C"

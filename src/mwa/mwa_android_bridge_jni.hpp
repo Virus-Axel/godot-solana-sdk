@@ -1,7 +1,7 @@
-// Android JNI implementation of MwaAndroidBridge (STUB for Story 1-4 Task 2).
-// Real JNI calls arrive in Story 2-1. Currently every op emits
-// mwa_error{code=NOT_CONNECTED} + logs a stub notice. NO actual JNI calls,
-// NO JavaVM*, NO AttachCurrentThread.
+// Android JNI implementation of MwaAndroidBridge (Story 2-1 T5 — real JNI).
+// This header is only INCLUDED on Android (platform_selector.cpp gates the
+// include under its sanctioned `#ifdef __ANDROID__`). The CPP TU is excluded
+// from non-Android builds by the SConstruct platform filter.
 #ifndef GODOT_SOLANA_SDK_MWA_MWA_ANDROID_BRIDGE_JNI_HPP
 #define GODOT_SOLANA_SDK_MWA_MWA_ANDROID_BRIDGE_JNI_HPP
 
@@ -11,10 +11,43 @@ namespace godot_solana_sdk::mwa {
 
 class GodotMainDispatcher;
 
+/**
+ * Thread-safe singleton that holds the active [GodotMainDispatcher] pointer so
+ * JNIEXPORT callbacks (Kotlin → C++) can route `postConnectCompletedNative` /
+ * `postMwaErrorNative` / etc. through the dispatcher without threading the
+ * pointer through the JVM.
+ *
+ * Lifetime: [MwaAndroidBridgeJni] calls [register] in its ctor and
+ * [unregister] in its dtor. Re-entrancy-safe via atomic store — multiple
+ * register calls from different bridges replace the previous pointer without
+ * UB; an unregister paired with a live dispatcher reset to `nullptr` so
+ * JNIEXPORT functions can detect the teardown and drop cleanly.
+ *
+ * Ownership: the dispatcher is NOT owned here — it's owned by the
+ * [MobileWalletAdapter] node that constructed it. [get_dispatcher] returns a
+ * non-owning raw pointer; callers MUST not `delete` it.
+ */
+class MwaJniContext {
+public:
+    // Register the active dispatcher. Idempotent: subsequent registers
+    // overwrite the previous pointer atomically. Called from
+    // [MwaAndroidBridgeJni] ctor.
+    static void register_dispatcher(GodotMainDispatcher* dispatcher);
+
+    // Clear the stored pointer. After this, [get_dispatcher] returns
+    // `nullptr` and JNIEXPORT callbacks drop with a `push_warning`. Called
+    // from [MwaAndroidBridgeJni] dtor.
+    static void unregister_dispatcher();
+
+    // Non-owning accessor for JNIEXPORT callbacks. May return `nullptr` if
+    // the ctor hasn't run or the dtor already did — callers MUST null-check.
+    static GodotMainDispatcher* get_dispatcher();
+};
+
 class MwaAndroidBridgeJni : public MwaAndroidBridge {
 public:
     explicit MwaAndroidBridgeJni(GodotMainDispatcher* dispatcher);
-    ~MwaAndroidBridgeJni() override = default;
+    ~MwaAndroidBridgeJni() override;
 
     // 7 MWA ops — override signatures exactly match MwaAndroidBridge's pure-virtuals.
     void connect(const godot::String& request_id,
@@ -45,9 +78,10 @@ public:
     MwaAndroidBridgeJni& operator=(const MwaAndroidBridgeJni&) = delete;
 
 private:
-    // Helper: log the stub notice + build and post an mwa_error{NOT_CONNECTED} payload.
-    void emit_not_connected_stub(const godot::String& source_method,
-                                 const godot::String& request_id);
+    // Helper: emit NOT_CONNECTED when JNI_OnLoad failed and callers need an
+    // actionable error envelope (not a silent drop).
+    void emit_jni_unavailable(const godot::String& source_method,
+                              const godot::String& request_id);
 
     GodotMainDispatcher* dispatcher_;  // non-owning — dispatcher outlives the bridge.
 };

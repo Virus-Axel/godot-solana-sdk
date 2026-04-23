@@ -62,6 +62,34 @@ void GodotMainDispatcher::post(const godot::String& signal_name,
 #endif
 }
 
+// Story 2-1 T5 transitional — remove in T6 when [post] evolves to (String, Array).
+void GodotMainDispatcher::post_arity2(const godot::String& signal_name,
+                                       const godot::String& request_id,
+                                       const godot::Dictionary& result) {
+#ifdef MWA_TESTING
+    godot::MutexLock lock(drain_mutex_);
+    godot::Dictionary entry;
+    entry["signal_name"] = signal_name;
+    entry["request_id"] = request_id;
+    entry["result"] = result;
+    entry["arity"] = 2;
+    pending_.push_back(entry);
+    return;
+#else
+    godot::Object* target = godot::ObjectDB::get_instance(target_id_);
+    if (target == nullptr) {
+        godot::UtilityFunctions::push_warning(
+            godot::String("MWA: dispatcher post_arity2 after destroy (signal=") + signal_name +
+            godot::String(")"));
+        return;
+    }
+    // A-12: connect_completed (and future *_completed signals) are 2-param signals at GDScript
+    // level. call_deferred forwards N args to emit_signal after "emit_signal" — so 2 extra
+    // args here land as the signal's 2 formal parameters.
+    target->call_deferred(godot::StringName("emit_signal"), signal_name, request_id, result);
+#endif
+}
+
 #ifdef MWA_TESTING
 void GodotMainDispatcher::drain_for_testing() {
     // Snapshot under lock, emit outside. emit_signal callbacks may re-enter

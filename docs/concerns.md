@@ -321,3 +321,24 @@ Deferred items from code reviews and implementation. Tracked for future resoluti
 - **Why LOW:** No current call site retains the reference after calling setTransaction/setKey — they pass literals (`signTransaction(serializedTransaction: ByteArray)` from `@UsedByGodot`). The aliasing is latent.
 - **Mitigation until closed:** Reviewer vigilance.
 - **Trigger to close:** Same 2-3 / 4-x hardening pass as CR-36 — add `.copyOf()` in setters AND getters (similar to `SecretString`'s constructor copy-in + reveal copy-out pattern).
+
+## CR-38 (LOW): JNI string converters use modified UTF-8 (non-BMP mangling latent)
+- **Story:** 2-1 | **Date:** 2026-04-23 | **Severity:** LOW | **Status:** tracked | **Origin:** Story 2-1 T5 code review
+- **Summary:** `jstring_to_godot_string` / `godot_string_to_jstring` in `src/mwa/mwa_android_bridge_jni.cpp` use `GetStringUTFChars` + `NewStringUTF`, which emit JNI "modified UTF-8" (embedded U+0000 encoded as 0xC0 0x80; supplementary chars U+10000+ encoded as 3-byte surrogate pair sequences). `godot::String` and `godot::JSON` produce/consume standard UTF-8. Feeding modified UTF-8 to `godot::String(const char*)` silently mangles non-BMP input (emoji, most notably).
+- **Why LOW:** All current MWA traffic is ASCII at this boundary — request_id (hex), auth_token (base64), public_key (hex/base58), cluster / chainId (enum-like). Payload JSON from Kotlin `JSONObject.toString()` / `godot::JSON::stringify` tends to escape non-ASCII to `\uXXXX` sequences (though this is implementation-dependent). No current code path produces literal UTF-8 non-BMP bytes at this seam.
+- **Mitigation until closed:** Kdoc warnings on both converters document the hazard. Ensure any code that might carry non-BMP strings (wallet_label with emoji, user-configurable identity.name) stays in the JSON-escape path.
+- **Trigger to close:** First observed non-BMP character in a real wallet response OR Story 5-5 documentation pass for "wallet compatibility matrix" whichever comes first. Fix: switch converters to `GetStringChars`/`NewString` (UTF-16 path via `jchar*` → `char16_t*`) using `godot::String.utf16()`.
+
+## CR-39 (MEDIUM): `GodotMainDispatcher::post_arity2` is transitional T5 helper — T6 removes it
+- **Story:** 2-1 | **Date:** 2026-04-23 | **Severity:** MEDIUM | **Status:** tracked | **Origin:** Story 2-1 T5 code review
+- **Summary:** T5 adds `GodotMainDispatcher::post_arity2(signal_name, request_id, result)` as a 2-arg-emit helper so connect_completed fires with A-12's 2-param GDScript shape. This is a transitional surface — T6's `post(String, Array)` + `{1, 2}` arity ladder per D-6 dissolves both `post` and `post_arity2` into a single unified entry point. Any code path that adds a new caller to `post_arity2` between T5 and T6 creates migration friction.
+- **Why MEDIUM:** Mechanical migration (single-call-site today), but the transitional API creates a silent contract: "only the T5 JNIEXPORT `postConnectCompletedNative` path may call this." Without T6 landing promptly, future `*_completed` signals (Stories 2-2 / 2-3 / 3-x) might be tempted to use `post_arity2` and proliferate the transitional pattern.
+- **Mitigation until closed:** Kdoc on both `GodotMainDispatcher::post_arity2` declaration and the T5 JNI callsite explicitly mark the helper as "remove in T6" + "do NOT add new callers beyond the T5 connect_completed path."
+- **Trigger to close:** T6 landing (next task in Story 2-1). T6 deletes `post_arity2` from the header + impl; the T5 JNI callback migrates to `dispatcher->post(signal_name, godot::Array::make(request_id, result))` per D-6.
+
+## CR-40 (LOW): MwaError.defaultUserMessage backs both `message` and `user_message` in A-14 payload
+- **Story:** 2-1 | **Date:** 2026-04-23 | **Severity:** LOW | **Status:** tracked | **Origin:** Story 2-1 T5 code review
+- **Summary:** `buildErrorJson` in `GDExtensionAndroidPlugin` currently sets both `message` (AC-3 technical breadcrumb per A-14) and `user_message` (user-facing graceful prompt) to `error.defaultUserMessage`. The generated `MwaError` sealed class (Story 1-1) only exposes `defaultUserMessage`, so the two keys carry identical content — the A-14 shape's split between developer-readable and user-readable messaging is effectively collapsed.
+- **Why LOW:** The A-14 10-key shape is present; consumers reading `developer_details` (the canonical dev-facing field) aren't affected. `message` being equivalent to `user_message` is stylistic debt, not a functional bug.
+- **Mitigation until closed:** Kdoc in `buildErrorJson` flags the intentional duplication with a CR-40 pointer.
+- **Trigger to close:** Story 1-1 codegen adds `defaultTechnicalMessage` to the `MwaError` enum. Story 2-3 (disconnect) / 4-x (hardening) can pick up the follow-up and re-point `buildErrorJson`'s `message` field.

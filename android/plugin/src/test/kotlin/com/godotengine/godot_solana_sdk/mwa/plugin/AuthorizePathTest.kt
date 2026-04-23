@@ -108,6 +108,9 @@ class AuthorizePathTest {
             clock = { 1_700_000_000_000L },
             inflightMap = inflightOverride,
             diagnostics = MwaDiagnostics(),
+            // Tests run without an Android main looper — use Unconfined so withContext
+            // runs in place instead of dispatching to a non-existent Main dispatcher.
+            mainDispatcher = Dispatchers.Unconfined,
         )
     }
 

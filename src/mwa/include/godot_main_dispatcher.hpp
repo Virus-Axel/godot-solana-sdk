@@ -75,6 +75,23 @@ public:
     explicit GodotMainDispatcher(godot::Object* target);
     void post(const godot::String& signal_name, const godot::Dictionary& payload);
 
+    /**
+     * Story 2-1 T5 transitional — arity-2 call_deferred for `*_completed`
+     * signals per A-12. GDScript sees the signal as
+     * `connect_completed(request_id, result)` — two typed params, matching
+     * the `ADD_SIGNAL(MethodInfo(...))` registration in
+     * `MobileWalletAdapter::_bind_methods`.
+     *
+     * REMOVED in T6: T6 evolves [post] to take `godot::Array` +
+     * a hard-coded `{1, 2}` arity ladder (D-6); this helper dissolves into
+     * that single unified entry point. Do NOT add new callers here beyond
+     * the T5 JNIEXPORT `postConnectCompletedNative` path — any extension
+     * points the T6 evolution naturally.
+     */
+    void post_arity2(const godot::String& signal_name,
+                     const godot::String& request_id,
+                     const godot::Dictionary& result);
+
     // Copy/move semantics: dispatcher is node-owned, not meant to move. Move
     // ops are implicitly deleted by the copy=delete, but declaring them
     // explicitly is hygiene for a class holding a value-member `godot::Mutex`

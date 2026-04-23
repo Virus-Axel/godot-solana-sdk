@@ -284,6 +284,16 @@ instruction_sources = Glob("instructions/src/*.cpp")
 other_sources = Glob("src/*/*.cpp")
 honey_sources = Glob("src/honeycomb/types/*.cpp")
 
+# Story 2-1 T5 — the real MwaAndroidBridgeJni implementation #includes <jni.h>,
+# which is only available in the Android NDK. On non-Android platforms the TU
+# must be excluded entirely (D-11: no `#ifdef __ANDROID__` inside source files
+# outside src/mwa/platform_selector.cpp; platform gating lives at SConstruct).
+# `platform_selector.cpp` wraps its include of `mwa_android_bridge_jni.hpp`
+# under its own `#ifdef __ANDROID__`, so the HEADER is only included on Android
+# too — we do NOT filter the header, only the .cpp.
+if env["platform"] != "android":
+    other_sources = [s for s in other_sources if "mwa_android_bridge_jni" not in str(s)]
+
 
 # Handle the container build
 if env.GetOption("container_build"):
