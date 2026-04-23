@@ -1,0 +1,10 @@
+# Placeholder — C++ host-mode test tier retired by Amendment A-13 (Story 1-5, 2026-04-23).
+#
+# Story 1-5 originally landed 6 TEST_F cases in this directory (2 SecretString +
+# 4 MobileWalletAdapter). The host binary SIGSEGV'd at runtime because godot-cpp's
+# GDExtensionBinding interface pointers are null in a process without a running
+# Godot engine. See docs/amendments.md A-13 for the full analysis and rationale.
+#
+# Directory retained for the future headless-Godot C++ test tier tracked by CR-35
+# (docs/concerns.md). Do not add host-mode GoogleTest files here without first
+# amending A-13 — the incompatibility is architectural, not a gap in the tooling.

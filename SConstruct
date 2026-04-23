@@ -518,56 +518,9 @@ else:
     env.Command("assemble", None, [Copy(GDEXT_FILE, "godot-solana-sdk.gdextension"), copy_bin_action, copy_aar_action])
     env.Alias("addon", [ANDROID_PLUGIN_DESTINATION, gdext_target])
 
-    # --- Story 1-5 Task 4: scons tests (host-only MWA GoogleTest binary) ---
-    # A-8 unlocks the C++ test tier here. Demand-build — only wired when the
-    # user runs `scons tests` explicitly. Does NOT mutate the shared addon env;
-    # uses env.Clone() + layered appends so the default `addon` target is
-    # bit-identical before and after this block.
-    #
-    # Test binary links a HOST subset of MWA sources against vendored GoogleTest
-    # (v1.14.0, added T4 Phase B at third_party/googletest). Runner:
-    #     scons tests && ./bin/mwa_tests
-    # CI (Linux + macOS) wired via T6 (cpp_tests.yml).
-    #
-    # EXCLUDED from the link (MUST NOT ship in the test binary):
-    #   - src/mwa/mwa_android_bridge_jni.cpp (Android-only; needs JNI headers)
-    #   - Non-MWA addon sources (sources, sha256, ed25519, wallet, instruction,
-    #     honey, other minus the MWA subset listed below)
-    #
-    # INCLUDED:
-    #   - GoogleTest: gtest-all.cc + gtest_main.cc compiled directly (no
-    #     pkg-config fallback; single source of truth per Story 1-5 Sub-5).
-    #   - Production MWA subset: mobile_wallet_adapter, godot_main_dispatcher,
-    #     no_op_mwa_android_bridge, platform_selector (routes to NoOp on host).
-    #   - Testing double: testing/mock_mwa_android_bridge (Story 1-4).
-    #   - New test files: Glob("src/mwa/tests/*.cpp") — depth 3, excluded from
-    #     the addon's Glob("src/*/*.cpp") at :284.
-    if "tests" in COMMAND_LINE_TARGETS:
-        tests_env = env.Clone()
-        # D-2 / D-3 compile gate: flips test-only behavior in dispatcher + node.
-        tests_env.Append(CPPDEFINES=["MWA_TESTING"])
-        tests_env.Append(CPPPATH=[
-            "third_party/googletest/googletest/include",
-            "third_party/googletest/googletest",  # gtest-all.cc needs gtest/internal/*
-        ])
-
-        gtest_sources = [
-            "third_party/googletest/googletest/src/gtest-all.cc",
-            "third_party/googletest/googletest/src/gtest_main.cc",
-        ]
-
-        mwa_test_sources = [
-            "src/mwa/mobile_wallet_adapter.cpp",
-            "src/mwa/godot_main_dispatcher.cpp",
-            "src/mwa/no_op_mwa_android_bridge.cpp",
-            "src/mwa/platform_selector.cpp",
-            "src/mwa/testing/mock_mwa_android_bridge.cpp",
-        ] + Glob("src/mwa/tests/*.cpp")
-
-        test_binary = tests_env.Program(
-            target="bin/mwa_tests",
-            source=gtest_sources + mwa_test_sources,
-        )
-
-        tests_env.Alias("tests", test_binary)
-    # --- end Story 1-5 Task 4 tests target ---
+    # Story 1-5 `scons tests` target (host-mode MobileWalletAdapter / SecretString
+    # GoogleTest harness) was RETIRED by Amendment A-13 on 2026-04-23 — godot-cpp's
+    # GDExtensionBinding interface pointers are null in a host binary with no
+    # running Godot engine, making ClassDB::register_class SIGSEGV at runtime.
+    # C++ test coverage deferred to a future headless-Godot tier (CR-35).
+    # See docs/amendments.md A-13 + docs/concerns.md CR-31..35.

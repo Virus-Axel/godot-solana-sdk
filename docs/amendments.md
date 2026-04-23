@@ -204,3 +204,54 @@ BOTH architecture.md and this file, using amended values where they conflict.
   - Story 5-5 documentation bundle — API reference signal tables must use the amended shape.
   - Story 3-1 / 3-2 / 3-3 signing-path stories — `sign_messages_completed` / `sign_transactions_completed` / `sign_and_send_completed` emission sites must pass `request_id` as the first `emit_signal` arg before the `result` Dictionary.
 - **Follow-through:** No concern entry. A-12 is forward-looking. Future stories that bind new `*_completed`-family signals inherit the 2-param shape; future stories that bind new error/lifecycle-family signals inherit the 1-Dict shape. Any deviation from these family defaults MUST be filed as a separate amendment.
+
+## A-13: Story 1-5 accepts ZERO host-tier C++ test coverage — `scons tests` target, `cpp_tests.yml`, and `third_party/googletest` submodule retired
+
+- **Story:** 1-5 | **Date:** 2026-04-23 | **Scope:** Story 1-5 test infrastructure; architecture-level guidance for every future C++-heavy story.
+- **Source:** Story 1-5 post-implementation CI investigation. `./bin/mwa_tests` built GREEN on commit `f8ffd143` but SIGSEGV'd at runtime in `MobileWalletAdapterTest::SetUpTestSuite()` at `godot::ClassDB::register_class<MobileWalletAdapter>()`. Root cause: godot-cpp's `GDExtensionBinding` interface pointers are null in a host binary that never received the `GDExtension entry-point` callbacks from a running Godot engine. Stock `gtest_main.cc` (what the scons tests target linked) does not and cannot initialize those pointers.
+- **Four resolution paths were considered (2026-04-23):**
+  - **(A) Host stubs:** custom `test_main.cpp` populating ~140 `godot::internal::gdextension_interface_*` function pointers with stubs (memory / variant / classdb / string / signal). Estimated 200-400 LOC of ceremony against a non-public ABI; fragile across godot-cpp version bumps; correctness of stubs is not mechanically verifiable.
+  - **(B) `dlopen` + `get_proc_address` shim:** drive godot-cpp init through its public ABI by loading our own `.so` and returning stubs from a get_proc_address callback. Same ~140 stubs required; same fragility.
+  - **(C) Scope down host tests:** rewrite tests to NOT require godot-cpp runtime. **Chosen** (see Rationale).
+  - **(D) Headless Godot + GUT-for-C++:** replace `./bin/mwa_tests` with a GDScript test harness run inside a headless Godot binary loading the production `.so`. Proper long-term answer; out of grant scope to re-do Story 1-5 Tasks 4-6 + CI.
+- **Rationale for choosing (C):** Reading the MWA production headers after picking (C) revealed a harder floor than the option framing suggested:
+  - `SecretString` ctor is `explicit SecretString(godot::PackedByteArray)` — no raw-bytes overload. The ctor, `reveal_bytes()`, and the `operator+` convenience all return `godot::PackedByteArray` / `godot::String`. Testing SecretString requires Variant machinery regardless of how we frame the assertions.
+  - `MwaAndroidBridge` is a pure-virtual interface whose entire surface is `godot::String` + `godot::Dictionary` + `godot::TypedArray<godot::PackedByteArray>` (DD-26 compliance). Testing `MockMwaAndroidBridge` or `NoOpMwaAndroidBridge` requires constructing those argument types.
+  - `GodotMainDispatcher` holds a `godot::ObjectID` + (under MWA_TESTING) `godot::Array` + `godot::Mutex`; its public `post()` takes `godot::String` + `godot::Dictionary`.
+  - `MobileWalletAdapter` is GDCLASS-derived — the original segfault surface — untestable host-mode by definition.
+
+  Per DD-26 [LOCKED] (`docs/architecture.md §7.1.1`), every public header under `src/mwa/include/` is restricted to `godot::` types + `<cstdint>`/`<cstddef>`. This is enforced by Story 1-4's header-lint CI job. The architectural posture that makes DD-26 desirable (hygienic GDExtension ABI, no STL leaks) is the same posture that makes host-mode GoogleTest infeasible: **there is no seam in our MWA production code that takes or returns non-godot types.** "Scope down to test code that doesn't need godot-cpp runtime" has zero targets to aim at.
+
+  Option (C) therefore collapses in practice to: **delete the C++ host test tier entirely.** No production class can be exercised host-mode. The 6 TEST_F cases (2 SecretString + 4 MobileWalletAdapter) that Story 1-5 Task 4b Phase D + Task 5 shipped are retired in-place and deferred to a future headless-Godot tier (tracked as CR-35).
+- **Changes this amendment authorizes:**
+  1. **Delete** `src/mwa/tests/test_secret_string.cpp` (ported from Story 1-2 §Task 2 per A-8; 2 TEST cases).
+  2. **Delete** `src/mwa/tests/test_mobile_wallet_adapter.cpp` (Story 1-5 Task 5; 4 TEST_F cases — `BindingSmoke`, `OpMethodsReturnWithin16ms`, `ThreadHop_SignalEmitsOnMainFromWorkerThread`, `PreOp_UnsupportedPlatformWhenKotlinNotLoaded`).
+  3. **Keep** `src/mwa/tests/` as an empty directory (tracked via `.gitkeep`) for the future headless-Godot tier.
+  4. **Remove** the `tests` SCons alias target from `SConstruct` (the `if "tests" in COMMAND_LINE_TARGETS:` block introduced by Task 4 Phase C, lines 521-573).
+  5. **Remove** the `third_party/googletest` git submodule (v1.14.0 at SHA `f8d7d77c`, added Task 4 Phase B, commit `deb59965`) and its `.gitmodules` entry.
+  6. **Delete** `.github/workflows/cpp_tests.yml` (Linux + macOS matrix, Task 6, commit `ce20c0a6`).
+  7. **Retain** the `MWA_TESTING` compile-define scaffolding in production source (`GodotMainDispatcher::drain_for_testing`, `snapshot_pending_for_testing`, `MobileWalletAdapter::set_bridge_for_testing`, `MobileWalletAdapter::dispatcher_for_testing` — all `#ifdef MWA_TESTING`-gated). These are dead code in production release builds (no activation path without the retired `scons tests` alias) and remain available for the future headless-Godot tier to reactivate. The grep-ban pattern 7 (`mwa-testing-define`, `ci/grep_bans.sh`) stays — it catches accidental `#define MWA_TESTING` leaks at source level and remains protective even without a `tests` target.
+  8. **Retain** amendment A-8's flip: A-8 said "C++ test tier wired in Story 1-5." That flip is now partially reverted — the test tier was wired and found infeasible. A-13 supersedes A-8 for the C++ tier question; A-8's JUnit-side / header-only landing for Story 1-2 is unaffected.
+- **Verification coverage impact on Story 1-5:**
+  - **AC-1 (11 signals wired via BindingSmoke):** no automated host-mode enforcement. Manual inspection of `src/mwa/mobile_wallet_adapter.cpp::_bind_methods` + Kotlin-side MwaClient parity (Story 1-6 — 74 Kotlin tests) carry partial coverage. Tracked as **CR-31 MEDIUM**.
+  - **AC-2 (host-platform unit test Linux/Windows/macOS):** no host-platform tests exist at all. Windows deferral (CR-25) is now moot; the entire AC is deferred to the headless-Godot tier. Tracked in **CR-35 (rollup)**.
+  - **AC-3 (null-bridge branch via PreOp test):** no automated enforcement. Manual inspection of `src/mwa/mobile_wallet_adapter.cpp:35-58` + NoOp shape documentation carries the load. Tracked as **CR-32 MEDIUM**.
+  - **AC-4 (op methods return within 16ms):** no automated enforcement. Op-method stubs are near-empty (empty-body binds + dispatcher handoff); regression surface is narrow. Tracked as **CR-33 LOW**.
+  - **AC-5 (thread-hop signal emits on main from worker):** no automated enforcement. `GodotMainDispatcher::post` + `drain_for_testing` plumbing is inspection-verified; the ObjectID→call_deferred hop has a CR-18 TOCTOU TODO that Story 2-1 must resolve anyway. Tracked as **CR-34 MEDIUM**.
+  - **CR-8 (SecretString C++ GoogleTest from 1-2):** REDEFERRED from 1-2→1-5 to 1-5→headless-Godot tier. SecretString Kotlin-side coverage (6 JUnit tests from Story 1-2 Task 1) remains intact; only the C++ assertions move.
+  - **CR-29 (production `post()` path not exercised by tests):** partially resolved by deletion — the "tests lie about the production branch" concern ceases to exist because no tests run. Reframed: the production path is now inspection-verified exclusively until the future tier lands. Cross-referenced from CR-35.
+- **Affected artifacts:**
+  - `SConstruct:521-573` — tests alias block removed.
+  - `.gitmodules:16-18` — third_party/googletest entry removed.
+  - `.github/workflows/cpp_tests.yml` — file deleted.
+  - `third_party/googletest/` — submodule deregistered and directory removed.
+  - `src/mwa/tests/test_secret_string.cpp` — deleted.
+  - `src/mwa/tests/test_mobile_wallet_adapter.cpp` — deleted.
+  - `src/mwa/tests/.gitkeep` — added.
+  - `docs/concerns.md` — CR-8 status updated (REDEFERRED); CR-31..35 added; CR-25, CR-27, CR-29, CR-30 cross-referenced.
+  - `docs/state.json` — Story 1-5 completedStories entry: amendment list += A-13, concerns list += CR-31..35, notes cite this decision.
+  - `docs/sprint-status.yaml` — Story 1-5 remains status=done (with A-13 amendment accepted at Gate 5).
+- **Architectural guidance for future stories:**
+  - **Rule:** for any GDExtension C++ module whose public surface enforces DD-26-style godot-only type hygiene, do NOT plan a host-mode GoogleTest tier. Pick one of: (1) headless Godot + GDScript test harness, (2) Kotlin-side equivalence testing where the C++ layer is a thin wrapper, (3) inspection-only with CI-enforced header hygiene (current posture).
+  - **Where this applies in the current plan:** every future Wave story that would add new C++ test coverage (Story 2-1 signer bridge, Story 3-x signing path, Story 5-6 CI hardening) inherits this guidance — do not add `scons tests`-style targets without first scoping a headless-Godot pivot.
+- **Follow-through:** **CR-35** tracks the future headless-Godot C++ test tier as a forward-looking obligation. Scope must be decided before the grant close: fold into Story 5-6 (CI/Build Integration) or carve a dedicated Epic-5 story. Missing this dooms the AC-1..5 coverage gap to permanence. No amendment retraction path — A-13 stands until superseded by a future amendment that re-plans the C++ test tier with (D) or equivalent.
