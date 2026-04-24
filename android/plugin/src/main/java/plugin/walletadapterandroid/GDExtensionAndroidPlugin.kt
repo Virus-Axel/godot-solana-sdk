@@ -164,8 +164,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
         @JvmStatic
         fun mwaDisconnectFromJni(reqId: String) {
-            Log.i(TAG, "mwaDisconnectFromJni: Story 2-3 scope; reqId=$reqId")
-            instance?.emitNotImplemented(reqId, "disconnect") ?: emitInstanceNullError(reqId, "disconnect")
+            instance?.mwaDisconnect(reqId) ?: emitInstanceNullError(reqId, "disconnect")
         }
 
         @JvmStatic
@@ -246,6 +245,18 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
         @JvmStatic
         external fun postConnectCompletedNative(reqId: String, resultDictJson: String)
+
+        /**
+         * Story 2-3 T2 — 2-param `disconnect_completed` JNI callback per A-12.
+         * Kotlin → C++ `Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postDisconnectCompletedNative`
+         * (Story 2-3 T3) → dispatcher.post("disconnect_completed", Array::make(reqId, result_dict)).
+         *
+         * `resultDictJson` is `{request_id, source_method: "disconnect"}` — NO
+         * secret material on the disconnect path. The warning is convention
+         * uniformity (same seam shape as connect_completed).
+         */
+        @JvmStatic
+        external fun postDisconnectCompletedNative(reqId: String, resultDictJson: String)
 
         @JvmStatic
         external fun postMwaErrorNative(errorDictJson: String)
@@ -354,6 +365,96 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     diagnostics.incrementLateResult()
                     SdkLog.w(TAG, requestId) { "late_result outcome=crash" }
                 }
+            }
+        }
+    }
+
+    /**
+     * Story 2-3 T2 — `disconnect` entry point. Called from the JNI
+     * [MwaAndroidBridgeJni] on a worker thread. Pure client-side wipe
+     * (DD-2-3-1): wipes [MwaSessionState] auth-only fields via
+     * [MwaSessionState.clearOnLogout] but leaves [SecureTokenStore] intact
+     * so a subsequent `reauthorize` can restore the session silently (Story
+     * 2-2).
+     *
+     * Dispatcher-marshalled to [mainDispatcher] via `scope.launch +
+     * withContext` for DD-22 parity with [mwaAuthorize]. No watchdog —
+     * the body has no suspension points after the dispatcher hop.
+     *
+     * Ordering (DD-2-3-2): `register → tryTerminate CAS → clearOnLogout →
+     * post`. The CAS gates both state mutation AND emission. Any
+     * implementation that wipes before the CAS is a Rule 2 deviation
+     * requiring an amendment (breaks state-machine discipline uniformity).
+     *
+     * Idempotence (AC-3): double-disconnect with DIFFERENT `requestId`
+     * produces two independent register/CAS/wipe/emit cycles → two
+     * `disconnect_completed` emissions, one per call. The wipe is a no-op
+     * on already-cleared state. Same-`requestId` double-call fails the
+     * initial `register` CAS (duplicate_request_id branch).
+     */
+    @UsedByGodot
+    fun mwaDisconnect(requestId: String) {
+        scope.launch {
+            withContext(mainDispatcher) {
+                // Step 1: reserve the slot. Same-requestId duplicate is a caller contract
+                // violation — emit PROTOCOL_ERROR and abort without touching state.
+                if (!inflightMap.register(requestId, clock())) {
+                    nativeBridge.postMwaError(
+                        buildErrorJson(
+                            requestId = requestId,
+                            error = MwaError.ProtocolError,
+                            developerDetails = "duplicate requestId on disconnect — caller must use fresh UUIDs per op",
+                            layer = "kotlin",
+                            cause = "duplicate_request_id",
+                            sourceMethod = "disconnect",
+                        ).toString(),
+                    )
+                    return@withContext
+                }
+
+                // Step 2 (DD-2-3-2 CAS-first): win the terminal-signal CAS BEFORE
+                // mutating state. If we lose the CAS (not expected on the disconnect
+                // path — no competing timeout/failure path — but defense in depth
+                // preserves the state-machine discipline), do NOT wipe and do NOT
+                // emit; just log the late_result.
+                if (!inflightMap.tryTerminate(requestId)) {
+                    diagnostics.incrementLateResult()
+                    SdkLog.w(TAG, requestId) { "late_result outcome=disconnect (CAS lost)" }
+                    return@withContext
+                }
+
+                // Step 3 (DD-2-3-1): wipe auth-only MwaSessionState. Caller identity +
+                // `cluster: Int` are preserved for a subsequent reauthorize. The
+                // SecureTokenStore CacheRecord is NOT touched — Story 4-1 deauthorize
+                // is the path that deletes the token.
+                try {
+                    sessionState.clearOnLogout()
+                } catch (ex: Throwable) {
+                    // Not realistically reachable — clearOnLogout is pure @Synchronized
+                    // field assignment — but defense in depth preserves the
+                    // terminal-signal invariant. We already won the CAS so we MUST emit
+                    // exactly one terminal signal; since wipe failed, it's mwa_error.
+                    SdkLog.e(TAG, requestId) { "mwaDisconnect wipe crashed: ${ex.javaClass.simpleName}" }
+                    nativeBridge.postMwaError(
+                        buildErrorJson(
+                            requestId = requestId,
+                            error = MwaError.ProtocolError,
+                            developerDetails = "clearOnLogout crashed: ${ex.javaClass.simpleName}",
+                            layer = "kotlin",
+                            cause = ex.javaClass.simpleName,
+                            sourceMethod = "disconnect",
+                        ).toString(),
+                    )
+                    return@withContext
+                }
+
+                // Step 4: emit the terminal signal. CAS won in Step 2, wipe succeeded
+                // in Step 3, so exactly one disconnect_completed fires per requestId.
+                val resultJson = JSONObject().apply {
+                    put("request_id", requestId)
+                    put("source_method", "disconnect")
+                }.toString()
+                nativeBridge.postDisconnectCompleted(requestId, resultJson)
             }
         }
     }

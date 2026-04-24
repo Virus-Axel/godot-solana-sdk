@@ -68,7 +68,7 @@ epics:
         slug: disconnect
         title: "disconnect"
         size: S
-        status: backlog
+        status: in-progress
         wave: 5
         dependencies: ["2-1"]
 

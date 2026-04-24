@@ -3,11 +3,19 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-24T11:45:00Z",
+  "lastUpdated": "2026-04-24T11:50:00Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": null,
+  "currentStory": {
+    "storyId": "2-3",
+    "slug": "disconnect",
+    "size": "S",
+    "wave": 5,
+    "startedAt": "2026-04-24T11:50:00Z",
+    "baselineTag": "pre-mwa-android-2-3",
+    "status": "in-progress"
+  },
   "phases": {
     "research": {
       "status": "complete",
@@ -252,15 +260,16 @@
     }
   ],
   "baselineTests": {
-    "total": 157,
-    "passing": 157,
+    "total": 192,
+    "passing": 192,
     "failing": 0,
     "baselinedAt": "2026-04-22T08:09:41Z",
     "baselinedAtStory": 5,
-    "lastRefreshedAt": "2026-04-23T10:15:00Z",
-    "lastRefreshedAtStory": 5,
+    "lastRefreshedAt": "2026-04-24T11:55:00Z",
+    "lastRefreshedAtStory": 7,
     "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
-    "note": "Post-story-1-6: baseline refreshed from 55 to 157 (+102). Kotlin 26 → 74 (+48: 19 FakeMwaClientTest + 29 MwaClientImplTest). Pytest 29 → 83 (+54: 40 validate_fixtures + 14 existing unchanged). 2026-04-23 post-A-13: 6 C++ TEST_F cases retired (NOT counted in the 157 — A-8/A-13 track confirms the 6 never contributed to the baseline count because CI never GREEN'd). Kotlin + pytest baseline untouched by A-13."
+    "failingTests": [],
+    "note": "Post-story-2-1 (2026-04-24) baseline refresh: 157 → 192 (+35 from Story 2-1 tasks T1-T10). Kotlin 74 → 109 (+35: CacheKeyTest, CacheRecordTest, AuthTokenFingerprintTest, MwaSessionStateTest expanded, AuthorizePathTest, SecureTokenStoreTest, SecretStringTest). Pytest 83 → 83 (unchanged — Story 2-1 didn't touch Python tooling). 0 failing. Snapshot verifies in <10s total wall clock on local dev. Pre-Story-2-3 baseline set."
   },
   "tooling": {
     "format": "clang-format (C++); ktlint (Kotlin)",
@@ -287,7 +296,8 @@
   },
   "waveStrategy": {
     "2": "sequential",
-    "3": "sequential"
+    "3": "sequential",
+    "5": "sequential"
   },
   "devops": {
     "pass1": "pending",

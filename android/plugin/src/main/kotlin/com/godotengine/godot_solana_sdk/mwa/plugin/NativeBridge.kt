@@ -51,6 +51,20 @@ internal interface NativeBridge {
     fun postConnectCompleted(requestId: String, resultDictJson: String)
 
     /**
+     * 2-param `disconnect_completed` per A-12 — Story 2-3. `requestId` is the
+     * first signal argument; `resultDictJson` is the second (Dictionary
+     * carrying `{request_id, source_method: "disconnect"}` only — no secret
+     * material).
+     *
+     * Even though disconnect's payload is not secret, the 2-param
+     * `*_completed` family uniformly warns against payload logging to keep the
+     * seam convention uniform and the grep-ban surface consistent.
+     *
+     * **WARNING — do NOT log or interpolate `resultDictJson`.**
+     */
+    fun postDisconnectCompleted(requestId: String, resultDictJson: String)
+
+    /**
      * 1-param `mwa_error` per A-12. `request_id` is embedded inside
      * `errorDictJson` at the `request_id` field (A-14 10-key shape).
      *
@@ -94,6 +108,10 @@ internal interface NativeBridge {
 internal object DefaultNativeBridge : NativeBridge {
     override fun postConnectCompleted(requestId: String, resultDictJson: String) {
         GDExtensionAndroidPlugin.postConnectCompletedNative(requestId, resultDictJson)
+    }
+
+    override fun postDisconnectCompleted(requestId: String, resultDictJson: String) {
+        GDExtensionAndroidPlugin.postDisconnectCompletedNative(requestId, resultDictJson)
     }
 
     override fun postMwaError(errorDictJson: String) {
