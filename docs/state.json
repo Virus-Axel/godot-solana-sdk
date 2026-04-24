@@ -3,7 +3,7 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-24T11:00:00Z",
+  "lastUpdated": "2026-04-24T11:45:00Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
@@ -223,7 +223,32 @@
         "fixed": "all",
         "note": "Per-task [R]/[E] reviews throughout. T6 code-review cycle surfaced CR-T6-7 (HIGH, latent dtor-race → filed as CR-41, REQUIRED T10 closure — delivered), CR-T6-8 (LOW, arity-1 parse-failure drops request_id → filed as CR-42, accepted trade-off with push_warning breadcrumb), CR-T6-2 (MWA_TESTING enqueue arity validation → fixed in T6 revision), CR-T6-9 (MwaSessionState @Synchronized verification → confirmed via 37-grep across setters/getters). Post-T9 hook found 4 'assertion-free' files — FakeWalletFixtures.kt + PluginTestHarness.kt are test helpers (exempt per global rule); the remaining 'flagged' test files each had ≥4-16 assertion calls (false-positive on MockK verify syntax)."
       },
-      "notes": "First real-JNI vertical slice. Story 2-1 wired the authorize-path end-to-end: SecureTokenStore + CacheKey + CacheRecord + AuthTokenFingerprint (T1-T3); Kotlin plugin authorize-path + MwaSessionState SecretString migration + InflightMap (T4); real MwaAndroidBridgeJni + JavaVM cache + JNIEXPORT callbacks (T5); dispatcher Callable+Array evolution closing CR-18/28/29 + state-getter JNI roundtrip (T6); MWA.gd autoload facade + plugin autoload registration (T7); Kotlin AC-1/4 unit coverage (T8); androidTest AC-1/3/4/5/6/7/8 + R8 smoke workflow (T9); CR-32 GDScript desktop backstop + CR-41 teardown-race barrier + Amendment A-14 + close-out (T10). Tests: Kotlin 109/109 + pytest 83/83 = 192 unit passing; androidTest + R8-smoke + gdscript_tests workflows created — first CI run verifies runtime. Route B accepted for T9 (in-process FakeMwaClient instead of real Fake-Wallet APK install; D-T9-1 Rule 2). 10 commits: T1 SecureTokenStore scaffold + T2 CacheKey canonicalization + T3 CacheRecord+AuthTokenFingerprint + T4 plugin authorize-path + T5 real JNI bridge + T6 dispatcher evolution + T7 MWA.gd facade + T8 AC-1/4 unit coverage + T9 androidTest suite + T10 CR-32 desktop backstop + CR-41 barrier + A-14 close-out."
+      "notes": "First real-JNI vertical slice. Story 2-1 wired the authorize-path end-to-end: SecureTokenStore + CacheKey + CacheRecord + AuthTokenFingerprint (T1-T3); Kotlin plugin authorize-path + MwaSessionState SecretString migration + InflightMap (T4); real MwaAndroidBridgeJni + JavaVM cache + JNIEXPORT callbacks (T5); dispatcher Callable+Array evolution closing CR-18/28/29 + state-getter JNI roundtrip (T6); MWA.gd autoload facade + plugin autoload registration (T7); Kotlin AC-1/4 unit coverage (T8); androidTest AC-1/3/4/5/6/7/8 + R8 smoke workflow (T9); CR-32 GDScript desktop backstop + CR-41 teardown-race barrier + Amendment A-14 + close-out (T10). Tests: Kotlin 109/109 + pytest 83/83 = 192 unit passing; androidTest + R8-smoke + gdscript_tests workflows created — first CI run verifies runtime. Route B accepted for T9 (in-process FakeMwaClient instead of real Fake-Wallet APK install; D-T9-1 Rule 2). 10 commits: T1 SecureTokenStore scaffold + T2 CacheKey canonicalization + T3 CacheRecord+AuthTokenFingerprint + T4 plugin authorize-path + T5 real JNI bridge + T6 dispatcher evolution + T7 MWA.gd facade + T8 AC-1/4 unit coverage + T9 androidTest suite + T10 CR-32 desktop backstop + CR-41 barrier + A-14 close-out.",
+      "ciFixupRounds": {
+        "round1": {
+          "commit": "033b8974",
+          "target": "grep-bans self-test + R8 sealed-class + emulator arch",
+          "date": "2026-04-24"
+        },
+        "round2": {
+          "commit": "87522cc6",
+          "target": "R8 keep rule for JNI bridge + emulator runner switch",
+          "date": "2026-04-24"
+        },
+        "round3": {
+          "commits": ["3da4c027", "07d54f23", "9d62e268"],
+          "target": "emulator job — R8 8.5.35 classpath override (kotlin.H dex fix) + META-INF license excludes + x86_64 abiFilter",
+          "date": "2026-04-24",
+          "result": "📱 Instrumented Tests (AC-1/3/4/5/6/7/8) + R8 smoke — ALL GREEN. 7/7 androidTest ACs PASSED on API 33 x86_64 emulator (run 24887446284, 6m54s). Kotlin unit baseline untouched (109/109). Deviations logged: D-CI-3 (R8 8.5.35 pin, Rule 2), D-CI-4 (META-INF excludes, Rule 1), D-CI-5 (x86_64 abiFilter, Rule 1).",
+          "note": "Discovery order: (1) R8 4.0.48 can't parse Kotlin metadata → 8.5.35 override. (2) 6 junit-jupiter jars duplicate META-INF/LICENSE.md → packagingOptions.resources.excludes. (3) arm64-only abiFilter blocks x86_64 emulator install → add x86_64. Each round cleared one layer; total investigation 3 rounds / 3 pushes."
+        }
+      },
+      "ciStatus": {
+        "emulator": "green-2026-04-24T11:40Z",
+        "r8Smoke": "green-2026-04-24T11:40Z",
+        "gdscriptTests": "failing — separate issue, not Story 2-1 CI round-3 scope; round-4 candidate",
+        "otherFailures": "Clang Tools + Run Examples + Verify Docs — pre-existing upstream branch failures, not MWA-related"
+      }
     }
   ],
   "baselineTests": {
