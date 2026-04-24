@@ -21,7 +21,7 @@
       { "id": "T3", "status": "done", "committed": true, "commitSha": "pending", "description": "C++ JNIEXPORT postDisconnectCompletedNative" },
       { "id": "T4", "status": "done", "committed": false, "description": "MWA.gd facade verification (inspection) — 5/5 invariants verified, no edits" },
       { "id": "T5", "status": "done", "committed": true, "commitSha": "pending", "description": "androidTest AC-1 retention + AC-3 double-disconnect + R8 smoke REQUIRED_METHODS + CR-45 logged; runtime validation deferred to CI push" },
-      { "id": "T6", "status": "pending", "description": "CR-32 desktop GDScript backstop" },
+      { "id": "T6", "status": "done", "committed": true, "commitSha": "pending", "description": "CR-32 desktop GDScript backstop extended with disconnect scenario (C6); refactored into two-phase harness sharing _assert_unsupported_platform_payload helper; runtime validation blocked by gdscript_tests workflow red (round-4 candidate, not T6 scope)" },
       { "id": "T7", "status": "pending", "description": "Close-out" }
     ]
   },
