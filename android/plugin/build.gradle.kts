@@ -87,7 +87,19 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "17"
+        // Story 2-1 T10 fixup (D-F1 Rule 1): lower Kotlin bytecode target from
+        // 17 to 11 so sealed-class output does NOT carry the Java 17
+        // `PermittedSubclasses` class-file attribute. AGP 7.4.1's bundled R8
+        // rejects `PermittedSubclasses` under `minifyReleaseWithR8` when the
+        // output target is class files (library/AAR mode) — the exact error
+        // is "Sealed classes are not supported as program classes when
+        // generating class files". Bundled R8 can't be upgraded without
+        // bumping AGP past 7.4.1 (which the plan currently locks, per Story
+        // 1-2 §Tooling Notes + D10 / CR-5). Sealed-class semantics stay
+        // identical at Kotlin bytecode level 11 (metadata-only
+        // representation); runtime behavior unchanged. Revisit alongside the
+        // AGP 8.x + Kotlin plugin 2.x upgrade pair.
+        jvmTarget = "11"
     }
 
     testOptions {

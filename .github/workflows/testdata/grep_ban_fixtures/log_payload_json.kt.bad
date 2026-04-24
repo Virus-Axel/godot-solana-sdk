@@ -1,0 +1,33 @@
+// Fixture for Story 2-1 T5 — banned pattern #8 (log-payload-json).
+// The .kt.bad extension prevents AGP from compiling this file; the grep
+// script scans by glob, not by file type.
+//
+// Intentional violations on lines below — must NOT be fixed. This file
+// exists so ci/grep_bans.sh --check-only proves pattern #8 fires.
+// Pattern regex (excerpt):
+//   (Log|SdkLog)\.(v|d|i|w|e).*(resultDictJson|errorDictJson|timeoutDictJson|cancelledDictJson)
+// NativeBridge JSON payload parameters carry secret material (auth_token
+// on the connect path; correlation metadata elsewhere) per Story 2-1 T5
+// kdoc; logging or interpolating them is the leak surface this pattern
+// guards.
+package grep_ban_fixtures
+
+import android.util.Log
+
+fun badLogResultDictJson(resultDictJson: String) {
+    Log.d("MWA", "postConnectCompletedNative payload=$resultDictJson")
+}
+
+fun badLogErrorDictJson(errorDictJson: String) {
+    Log.i("MWA", "postMwaError payload=$errorDictJson")
+}
+
+fun badSdkLogTimeoutDictJson(timeoutDictJson: String) {
+    // SdkLog.* receiver also covered by the pattern.
+    @Suppress("unused")
+    val _msg = "SdkLog.w reqId=xxx payload=$timeoutDictJson"
+}
+
+fun badLogCancelledDictJson(cancelledDictJson: String) {
+    Log.w("MWA", "cancelledDictJson=$cancelledDictJson")
+}

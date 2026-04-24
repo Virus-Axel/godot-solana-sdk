@@ -41,13 +41,13 @@ jobs:
       - name: Set up Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Enable KVM group perms (Linux fallback — no-op on macOS)
-        if: runner.os == 'Linux'
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
+      # D-F3 (Story 2-1 T10 fixup): macos-latest runners are Apple Silicon
+      # (M-series, arm64) since late 2024. reactivecircus/android-emulator-
+      # runner@v2 on these runners MUST use `arch: arm64-v8a`; the previous
+      # `x86_64` config times out waiting for the emulator to boot because
+      # there's no HAXM/KVM-equivalent virtualization layer for x86_64
+      # emulation on Apple Silicon. google_apis system images on API 33
+      # ship arm64 variants.
       - name: AVD cache
         uses: actions/cache@v4
         id: avd-cache
@@ -55,15 +55,19 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-api33-google-x86_64
+          key: avd-api33-google-arm64-v8a-v2
 
-      - name: Run androidTest on API 33 emulator
+      - name: Run androidTest on API 33 emulator (arm64-v8a)
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 33
           target: google_apis
-          arch: x86_64
-          profile: pixel_4
+          arch: arm64-v8a
+          # Drop the `pixel_4` hardware profile — on Apple Silicon the stock
+          # profile is both faster to boot AND more reliable for headless
+          # runs (pixel_4 emulation quirks on arm64 host compound the boot
+          # latency that was already stressing the action's default 600s
+          # wait window).
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
           disable-animations: true
           working-directory: android
