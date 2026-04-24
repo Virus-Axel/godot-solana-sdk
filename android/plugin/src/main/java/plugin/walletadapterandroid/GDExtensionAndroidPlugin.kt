@@ -389,8 +389,17 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * Idempotence (AC-3): double-disconnect with DIFFERENT `requestId`
      * produces two independent register/CAS/wipe/emit cycles → two
      * `disconnect_completed` emissions, one per call. The wipe is a no-op
-     * on already-cleared state. Same-`requestId` double-call fails the
-     * initial `register` CAS (duplicate_request_id branch).
+     * on already-cleared state.
+     *
+     * **AC-3 caller contract:** each `MWA.disconnect()` GDScript call
+     * produces a FRESH `requestId` via C++ `generate_request_id()` (D-4 at
+     * `src/mwa/mobile_wallet_adapter.cpp`). A caller that re-uses the same
+     * `requestId` for a retry hits the `InflightMap.register` CAS below
+     * (duplicate_request_id branch) and gets `mwa_error{PROTOCOL_ERROR,
+     * cause=duplicate_request_id}` — NOT a second `disconnect_completed`.
+     * AC-3's "disconnect_completed still fires" semantics therefore apply
+     * to the GDScript-observable flow (distinct request_ids per call), NOT
+     * to same-id programmatic retry within Kotlin.
      */
     @UsedByGodot
     fun mwaDisconnect(requestId: String) {
