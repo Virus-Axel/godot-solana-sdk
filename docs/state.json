@@ -3,18 +3,11 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-24T09:00:00Z",
+  "lastUpdated": "2026-04-24T10:00:00Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": {
-    "storyId": "2-1",
-    "slug": "connect-secure-token-store",
-    "wave": 4,
-    "size": "L",
-    "status": "in-progress",
-    "startedAt": "2026-04-23T10:20:00Z"
-  },
+  "currentStory": null,
   "phases": {
     "research": {
       "status": "complete",
@@ -41,7 +34,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 6,
+  "storiesDone": 7,
   "storiesTotal": 21,
   "changeStories": [],
   "completedStories": [
@@ -194,6 +187,43 @@
         "note": "Per-task [R]/[E] reviews in lieu of formal code-review-agent spawn. T1 had [R] resolving signal-shape drift → A-12; T3 had review flagging AC-D-10 citation + arch §3.2 vs NoOp reconciliation gap (CR-26); T5 committed without pre-review halt (process error), retroactively [A]-approved after user reviewed diff; T6 had [R] resolving missing MWA_TESTING SConstruct isolation check. Post-implementation CI investigation on 2026-04-23 surfaced godot-cpp host-mode initialization segfault in ClassDB::register_class — resolved by A-13 (Option C: delete host-tier C++ tests, defer to headless-Godot tier per CR-35)."
       },
       "notes": "A-8 FLIPPED in T4 (C++ test tier wired) — then PARTIALLY REVERTED by A-13 on 2026-04-23 when godot-cpp host-mode init proved incompatible with DD-26 header hygiene. Key inline decisions (all in story Guardrails): D-1 method-rename connect/disconnect/is_connected → mwa_* (avoids godot::Object collision); D-2 test-mode drain harness via godot::Mutex+Array queue (DD-26-compliant); D-3 set_bridge_for_testing(unique_ptr) under #ifdef MWA_TESTING; D-4 request_id = 8 lowercase hex (matches Kotlin corrId from 1-6). Amendment A-12 documents the 2-param *_completed signal escalation from arch §3.2's uniform 1-Dict. Amendment A-13 retires the C++ host test tier (scons tests target, cpp_tests.yml, third_party/googletest submodule, both test files) — 6 TEST_F cases deferred to future headless-Godot tier (CR-35). MWA_TESTING scaffolding in source retained for future reactivation (drain_for_testing, snapshot_pending_for_testing, set_bridge_for_testing, dispatcher_for_testing). Coverage gaps on AC-1/3/4/5 and redeferred CR-8 tracked by CR-31..34 + CR-35 rollup. CR-18 untouched — TOCTOU window still inert in 1-5 after A-13 (no tests to exercise either branch) but Story 2-1 MUST resolve before real JNI lands. 11 commits: pre-T1 docs + T1 + T2 + T3 + T4a + T4b-B + T4b-CD + T5 + T6 + T7 close-out + A-13 retirement (2026-04-23)."
+    },
+    {
+      "storyId": "2-1",
+      "slug": "connect-secure-token-store",
+      "completedAt": "2026-04-24T10:00:00Z",
+      "gate5Result": "pass",
+      "tasks": 10,
+      "commits": 10,
+      "amendments": [
+        "A-14"
+      ],
+      "concerns": [
+        "CR-41",
+        "CR-42",
+        "CR-43",
+        "CR-44"
+      ],
+      "concernsResolved": [
+        "CR-18",
+        "CR-26",
+        "CR-28",
+        "CR-29",
+        "CR-32",
+        "CR-34",
+        "CR-39",
+        "CR-41"
+      ],
+      "testsAdded": 35,
+      "reviewFindings": {
+        "userInteractive": true,
+        "blockers": 0,
+        "substantive": 6,
+        "minor": 4,
+        "fixed": "all",
+        "note": "Per-task [R]/[E] reviews throughout. T6 code-review cycle surfaced CR-T6-7 (HIGH, latent dtor-race → filed as CR-41, REQUIRED T10 closure — delivered), CR-T6-8 (LOW, arity-1 parse-failure drops request_id → filed as CR-42, accepted trade-off with push_warning breadcrumb), CR-T6-2 (MWA_TESTING enqueue arity validation → fixed in T6 revision), CR-T6-9 (MwaSessionState @Synchronized verification → confirmed via 37-grep across setters/getters). Post-T9 hook found 4 'assertion-free' files — FakeWalletFixtures.kt + PluginTestHarness.kt are test helpers (exempt per global rule); the remaining 'flagged' test files each had ≥4-16 assertion calls (false-positive on MockK verify syntax)."
+      },
+      "notes": "First real-JNI vertical slice. Story 2-1 wired the authorize-path end-to-end: SecureTokenStore + CacheKey + CacheRecord + AuthTokenFingerprint (T1-T3); Kotlin plugin authorize-path + MwaSessionState SecretString migration + InflightMap (T4); real MwaAndroidBridgeJni + JavaVM cache + JNIEXPORT callbacks (T5); dispatcher Callable+Array evolution closing CR-18/28/29 + state-getter JNI roundtrip (T6); MWA.gd autoload facade + plugin autoload registration (T7); Kotlin AC-1/4 unit coverage (T8); androidTest AC-1/3/4/5/6/7/8 + R8 smoke workflow (T9); CR-32 GDScript desktop backstop + CR-41 teardown-race barrier + Amendment A-14 + close-out (T10). Tests: Kotlin 109/109 + pytest 83/83 = 192 unit passing; androidTest + R8-smoke + gdscript_tests workflows created — first CI run verifies runtime. Route B accepted for T9 (in-process FakeMwaClient instead of real Fake-Wallet APK install; D-T9-1 Rule 2). 10 commits: T1 SecureTokenStore scaffold + T2 CacheKey canonicalization + T3 CacheRecord+AuthTokenFingerprint + T4 plugin authorize-path + T5 real JNI bridge + T6 dispatcher evolution + T7 MWA.gd facade + T8 AC-1/4 unit coverage + T9 androidTest suite + T10 CR-32 desktop backstop + CR-41 barrier + A-14 close-out."
     }
   ],
   "baselineTests": {

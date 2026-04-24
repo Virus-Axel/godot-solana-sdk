@@ -1,0 +1,91 @@
+name: 🎮 GDScript Tests (CR-32 desktop NoOp-bridge backstop)
+# Story 2-1 T10 — CR-32 replacement for the host-mode C++ test tier A-13
+# retired. Runs the MWA facade on desktop (Linux) via headless Godot and
+# asserts mwa_error{UNSUPPORTED_PLATFORM} fires within 1 frame of
+# MWA.connect (NoOp bridge path per D-11 platform selector).
+#
+# Pattern adapted from run_module_test.yml (shared across the existing
+# example-test suites). Self-contained here to avoid coupling with the
+# example-matrix workflow — CR-32 is independent of the example projects'
+# runtime Solana dependencies.
+on:
+  push:
+    branches:
+      - master
+      - 'feature/**'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  cr32-desktop:
+    name: Linux desktop · MWA NoOp-bridge UNSUPPORTED_PLATFORM
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up SCons
+        shell: bash
+        run: |
+          python -m pip install scons==4.8
+
+      - name: Set up Godot 4.6.2
+        uses: chickensoft-games/setup-godot@v1
+        with:
+          version: 4.6.2-stable
+          use-dotnet: false
+          include-templates: false
+
+      - name: Get godot-cpp commit SHA
+        id: godotcpp
+        run: echo "sha=$(git -C godot-cpp rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache godot-cpp bindings (linux-release)
+        uses: actions/cache@v4
+        with:
+          path: .godot/
+          key: godot-cpp-linux-release-${{ steps.godotcpp.outputs.sha }}
+
+      - name: Build extension (linux-release x86_64)
+        shell: bash
+        run: |
+          scons target=template_release platform=linux arch=x86_64 -j2
+
+      - name: Stage addon into example project
+        shell: bash
+        run: |
+          cp godot-solana-sdk.gdextension bin/ || true
+          # WalletAdapterAndroid's project.godot pre-registers the MWA autoload
+          # (T7) and is a known-good host for this desktop test.
+          cd example/WalletAdapterAndroid
+          ln -sfn ../../addons addons
+          ln -sfn ../../bin bin
+
+      - name: Run CR-32 GDScript test (headless)
+        shell: bash
+        run: |
+          cd example/WalletAdapterAndroid
+          # Override main scene to the test scene via positional arg (Godot's
+          # convention: everything after --path is opened as scene/resource).
+          godot --headless --path . res://addons/SolanaSDK/mwa/tests/test_unsupported_platform.tscn \
+            --quit-after 10000 \
+            --log-file cr32-log.txt \
+            || true
+          echo "=== CR-32 log ==="
+          cat cr32-log.txt
+          grep -q 'ALL TESTS PASSED' cr32-log.txt
+
+      - name: Upload log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cr32-gdscript-log
+          path: example/WalletAdapterAndroid/cr32-log.txt

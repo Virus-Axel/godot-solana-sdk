@@ -255,3 +255,42 @@ BOTH architecture.md and this file, using amended values where they conflict.
   - **Rule:** for any GDExtension C++ module whose public surface enforces DD-26-style godot-only type hygiene, do NOT plan a host-mode GoogleTest tier. Pick one of: (1) headless Godot + GDScript test harness, (2) Kotlin-side equivalence testing where the C++ layer is a thin wrapper, (3) inspection-only with CI-enforced header hygiene (current posture).
   - **Where this applies in the current plan:** every future Wave story that would add new C++ test coverage (Story 2-1 signer bridge, Story 3-x signing path, Story 5-6 CI hardening) inherits this guidance — do not add `scons tests`-style targets without first scoping a headless-Godot pivot.
 - **Follow-through:** **CR-35** tracks the future headless-Godot C++ test tier as a forward-looking obligation. Scope must be decided before the grant close: fold into Story 5-6 (CI/Build Integration) or carve a dedicated Epic-5 story. Missing this dooms the AC-1..5 coverage gap to permanence. No amendment retraction path — A-13 stands until superseded by a future amendment that re-plans the C++ test tier with (D) or equivalent.
+
+## A-14: §3.2 `mwa_error` payload elevates NoOp 10-key shape as canonical — adds `message` alongside `user_message` / `developer_details`
+
+- **Filed:** 2026-04-24 (Story 2-1 T10 close-out — CR-26 resolution)
+- **Supersedes:** arch §3.2's 9-key `mwa_error` prose for the keys carried in the payload.
+- **Rationale:** Three independent sources specified the `mwa_error` envelope with incompatible key sets:
+  1. `docs/architecture.md` §3.2 lists 9 keys (no `message`).
+  2. Story 1-5 AC-3 prose (`"Kotlin plugin not loaded"`) cites `message` by name.
+  3. `src/mwa/no_op_mwa_android_bridge.cpp::emit_unsupported` shipped a 10-key payload (includes `message`) in production from Story 1-4 onward.
+
+  Consumers that key off `message` (from AC-3 prose) versus `developer_details` (from arch §3.2) would silently diverge. The NoOp production shape was the earliest source to reach code; retrofitting the arch spec to match it is less churn than source-patching three callers (NoOp + JNI + C++ node null-bridge branch) plus the generated error shape in MwaError.Kt (1-1 codegen). A-14 elevates the NoOp shape.
+- **The 10-key `mwa_error` payload (canonical post-A-14):**
+
+  | Key                   | Type       | Source       | Notes                                                                  |
+  |-----------------------|------------|--------------|------------------------------------------------------------------------|
+  | `request_id`          | String     | op dispatch  | 8 lowercase hex (D-4); correlation for terminal signal.                |
+  | `code`                | String     | MwaError enum (codegen 1-1) | e.g. `UNSUPPORTED_PLATFORM`, `USER_CANCELED`, `NO_MWA_WALLET_INSTALLED`. |
+  | `message`             | String     | AC-3 breadcrumb | Dev-readable short message. **NEW in A-14** — was absent from §3.2.  |
+  | `user_message`        | String     | MwaError.defaultUserMessage | User-facing graceful prompt.                               |
+  | `developer_details`   | String     | op-site specific | Context string or empty. Canonical dev-facing field for logs.        |
+  | `recoverable`         | Bool       | MwaError.recoverable | false for UNSUPPORTED_PLATFORM; true for USER_CANCELED; etc.       |
+  | `retry_hint`          | String     | MwaError.retryHint | Enum-like: `none`, `retry_now`, `connect`, `install_wallet` (per A-1). |
+  | `layer`               | String     | emit site | `"kotlin"` (clientlib classification), `"cpp"` (null-bridge), `"wallet"` (wallet rejection). |
+  | `cause`               | String\|NULL | op-site specific | Machine-parseable cause tag or JSON null; `""` for NoOp.           |
+  | `source_method`       | String     | emit site | `"connect"` / `"disconnect"` / `"reauthorize"` / ... — operation that failed. |
+
+- **Consumer guidance:**
+  - Prefer `developer_details` for canonical dev-facing reads (structured, op-specific).
+  - `message` is the AC-3 verbatim breadcrumb and retained for cross-AC consistency; consumers MAY read it but SHOULD NOT rely on it being distinct from `user_message` (CR-40 tracks the Story 1-1 codegen follow-up that would split them).
+  - All three string keys (`message`, `user_message`, `developer_details`) are guaranteed present under A-14; consumers MUST tolerate any of them being the empty string on specific emit sites.
+- **Affected code (all paths already comply at T10 commit time):**
+  - `src/mwa/no_op_mwa_android_bridge.cpp::emit_unsupported` — 10 keys since Story 1-4 ✓
+  - `src/mwa/mobile_wallet_adapter.cpp::build_unsupported_platform_payload` — 10 keys since Story 1-5 T3 ✓
+  - `src/mwa/mwa_android_bridge_jni.cpp::emit_jni_exception_error` + `emit_jni_unavailable` + `post_parse_failure_error` — 10 keys since Story 2-1 T5 ✓
+  - `android/plugin/src/main/java/plugin/walletadapterandroid/GDExtensionAndroidPlugin.kt::buildErrorJson` + `buildInstanceNullErrorJson` — 10 keys since Story 2-1 T4 ✓
+- **GDScript-level enforcement:** the CR-32 desktop test (`addons/SolanaSDK/mwa/tests/test_unsupported_platform.gd`, Story 2-1 T10) asserts every key in the table above is present in the `mwa_error` payload on the NoOp bridge path. If a future contributor drops one of the 10 keys at an emit site on a desktop build, the `gdscript_tests.yml` workflow fails.
+- **Forward-compat note:** when the Story 1-1 codegen adds a `defaultTechnicalMessage` field to `MwaError` (CR-40 follow-up), `message` and `user_message` can finally carry distinct content. A-14 does NOT require that; the shape is stable either way.
+- **Closes:** CR-26 (arch §3.2 `message` key reconciliation).
+- **Follow-through:** CR-40 (LOW) remains open as the Story 1-1 codegen enhancement; it is non-blocking for A-14.

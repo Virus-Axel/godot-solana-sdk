@@ -49,7 +49,9 @@
 #include <jni.h>
 
 #include <atomic>
+#include <chrono>
 #include <mutex>
+#include <thread>
 
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/core/error_macros.hpp>
@@ -267,22 +269,93 @@ void call_reqid_only_shape(jmethodID mid,
 
 }  // anonymous namespace
 
-// ---------------- MwaJniContext impl ----------------
+// ---------------- MwaJniContext impl (+ CR-41 teardown barrier) ----------------
+//
+// CR-41 resolution (Story 2-1 T10): JNIEXPORT callbacks that post through the
+// dispatcher take a CallbackLease before touching the pointer. The lease's
+// ctor atomically increments `g_in_flight_callbacks` iff `g_draining` is
+// clear. `unregister_dispatcher` sets `g_draining`, spin-waits (bounded
+// ~200ms) for the counter to reach zero, then clears the pointer. Net: no
+// lease-holder is ever mid-`post()` when the dispatcher object is destroyed.
+// See CR-41 in concerns.md for the full hazard framing.
 
 namespace {
 std::atomic<GodotMainDispatcher*> g_dispatcher{nullptr};
+std::atomic<int> g_in_flight_callbacks{0};
+std::atomic<bool> g_draining{false};
+
+constexpr int DRAIN_TIMEOUT_MS = 200;
+constexpr int DRAIN_POLL_US = 100;
 }  // anonymous namespace
 
 void MwaJniContext::register_dispatcher(GodotMainDispatcher* dispatcher) {
+    // Store the new pointer BEFORE clearing the draining flag — so if a
+    // stale callback somehow observes the pointer transition it gets the
+    // new (valid) dispatcher, not a torn read.
     g_dispatcher.store(dispatcher, std::memory_order_release);
+    g_draining.store(false, std::memory_order_release);
 }
 
 void MwaJniContext::unregister_dispatcher() {
+    // Phase 1: signal draining — new lease acquisitions will fail from this
+    // point on. Release-order pairs with the CallbackLease ctor's acquire.
+    g_draining.store(true, std::memory_order_release);
+
+    // Phase 2: spin-wait (bounded) for in-flight leases to drop. Each
+    // existing lease finishes its `dispatcher->post(...)` call and
+    // decrements the counter in its dtor. We yield the CPU between polls
+    // so a worker thread holding a lease can make progress.
+    const auto deadline =
+        std::chrono::steady_clock::now() + std::chrono::milliseconds(DRAIN_TIMEOUT_MS);
+    while (g_in_flight_callbacks.load(std::memory_order_acquire) > 0 &&
+           std::chrono::steady_clock::now() < deadline) {
+        std::this_thread::sleep_for(std::chrono::microseconds(DRAIN_POLL_US));
+    }
+
+    const int stragglers = g_in_flight_callbacks.load(std::memory_order_acquire);
+    if (stragglers > 0) {
+        godot::UtilityFunctions::push_warning(
+            godot::String("MWA: dispatcher unregister drain timed out with ") +
+            godot::itos(stragglers) +
+            godot::String(" in-flight callback(s); proceeding at UAF risk (CR-41 bound exceeded)."));
+    }
+
+    // Phase 3: clear the pointer. Any stragglers past the deadline still
+    // hold the OLD pointer in their lease and will hit a destroyed
+    // dispatcher object — best-effort drop per CR-41's bounded-wait contract.
     g_dispatcher.store(nullptr, std::memory_order_release);
 }
 
 GodotMainDispatcher* MwaJniContext::get_dispatcher() {
     return g_dispatcher.load(std::memory_order_acquire);
+}
+
+// CR-41 lease: ctor order is (counter-increment, draining-check, pointer-load,
+// counter-decrement-on-failure). The counter increment PRECEDES the draining
+// check so that `unregister_dispatcher` cannot observe counter=0 between a
+// racing ctor's draining-check and its post() call.
+MwaJniContext::CallbackLease::CallbackLease()
+    : dispatcher_(nullptr), acquired_(false) {
+    g_in_flight_callbacks.fetch_add(1, std::memory_order_acq_rel);
+    if (g_draining.load(std::memory_order_acquire)) {
+        // Draining in progress — back out the pre-increment and leave
+        // `dispatcher_` null so callers drop cleanly.
+        g_in_flight_callbacks.fetch_sub(1, std::memory_order_acq_rel);
+        return;
+    }
+    GodotMainDispatcher* p = g_dispatcher.load(std::memory_order_acquire);
+    if (p == nullptr) {
+        g_in_flight_callbacks.fetch_sub(1, std::memory_order_acq_rel);
+        return;
+    }
+    dispatcher_ = p;
+    acquired_ = true;
+}
+
+MwaJniContext::CallbackLease::~CallbackLease() {
+    if (acquired_) {
+        g_in_flight_callbacks.fetch_sub(1, std::memory_order_acq_rel);
+    }
 }
 
 // Story 2-1 T6 — empty-defaults snapshot. Matches the shape NoOp returns so
@@ -643,10 +716,14 @@ static void post_arity1(JNIEnv* env,
                         jstring payload_json,
                         const char* signal_name,
                         const char* seam_label) {
-    GodotMainDispatcher* dispatcher = MwaJniContext::get_dispatcher();
+    // CR-41: acquire lease BEFORE touching dispatcher. Lease dtor releases
+    // the in-flight counter even if we early-return below.
+    MwaJniContext::CallbackLease lease;
+    GodotMainDispatcher* dispatcher = lease.dispatcher();
     if (dispatcher == nullptr) {
         godot::UtilityFunctions::push_warning(
-            godot::String("MWA: ") + seam_label + godot::String(" fired before bridge registered; dropping"));
+            godot::String("MWA: ") + seam_label +
+            godot::String(" fired before bridge registered or during teardown drain; dropping"));
         return;
     }
     const godot::String json_str =
@@ -684,10 +761,14 @@ static void post_arity2_completed(JNIEnv* env,
                                   jstring result_json_jstr,
                                   const char* signal_name,
                                   const char* seam_label) {
-    GodotMainDispatcher* dispatcher = MwaJniContext::get_dispatcher();
+    // CR-41: acquire lease BEFORE touching dispatcher. Lease dtor releases
+    // the in-flight counter even if we early-return below.
+    MwaJniContext::CallbackLease lease;
+    GodotMainDispatcher* dispatcher = lease.dispatcher();
     if (dispatcher == nullptr) {
         godot::UtilityFunctions::push_warning(
-            godot::String("MWA: ") + seam_label + godot::String(" fired before bridge registered; dropping"));
+            godot::String("MWA: ") + seam_label +
+            godot::String(" fired before bridge registered or during teardown drain; dropping"));
         return;
     }
     const godot::String req_id =

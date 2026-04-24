@@ -17,11 +17,24 @@ class GodotMainDispatcher;
  * `postMwaErrorNative` / etc. through the dispatcher without threading the
  * pointer through the JVM.
  *
- * Lifetime: [MwaAndroidBridgeJni] calls [register] in its ctor and
- * [unregister] in its dtor. Re-entrancy-safe via atomic store — multiple
- * register calls from different bridges replace the previous pointer without
- * UB; an unregister paired with a live dispatcher reset to `nullptr` so
- * JNIEXPORT functions can detect the teardown and drop cleanly.
+ * Lifetime: [MwaAndroidBridgeJni] calls [register_dispatcher] in its ctor and
+ * [unregister_dispatcher] in its dtor.
+ *
+ * Story 2-1 T10 — CR-41 teardown-race barrier:
+ *   An in-flight callback counter plus a draining flag protect the
+ *   hazard-class identified by CR-41 (JNIEXPORT callback already past the
+ *   null-check + mid-`dispatcher->post(...)` when the owning node is freed).
+ *   JNIEXPORT callbacks acquire a scoped RAII lease via
+ *   [acquire_callback_lease] BEFORE touching the dispatcher pointer;
+ *   [unregister_dispatcher] sets the draining flag and spin-waits (bounded
+ *   ~200ms) until the counter drops to zero, so no lease-holder is mid-post
+ *   when the dispatcher object is destroyed.
+ *
+ *   The lease contract is EXCLUSIVE to the JNIEXPORT reverse-path helpers
+ *   (`post_arity1`, `post_arity2_completed`); the forward-path op methods on
+ *   [MwaAndroidBridgeJni] use the `dispatcher_` MEMBER pointer and are
+ *   main-thread-only — the bridge object cannot be destroyed while main is
+ *   executing one of its own methods, so no race.
  *
  * Ownership: the dispatcher is NOT owned here — it's owned by the
  * [MobileWalletAdapter] node that constructed it. [get_dispatcher] returns a
@@ -29,19 +42,51 @@ class GodotMainDispatcher;
  */
 class MwaJniContext {
 public:
-    // Register the active dispatcher. Idempotent: subsequent registers
-    // overwrite the previous pointer atomically. Called from
-    // [MwaAndroidBridgeJni] ctor.
+    // Register the active dispatcher + clear the draining flag. Called from
+    // [MwaAndroidBridgeJni] ctor. A preceding
+    // [unregister_dispatcher] MUST have completed (its bounded spin-drain
+    // guarantees zero in-flight callbacks at that point); re-registering
+    // without an intervening unregister overwrites the pointer and accepts
+    // the ambiguity for any still-leased call.
     static void register_dispatcher(GodotMainDispatcher* dispatcher);
 
-    // Clear the stored pointer. After this, [get_dispatcher] returns
-    // `nullptr` and JNIEXPORT callbacks drop with a `push_warning`. Called
-    // from [MwaAndroidBridgeJni] dtor.
+    // Signal draining + spin-wait (bounded ~200ms) for in-flight callbacks
+    // to release their leases, then clear the dispatcher pointer. After
+    // this returns the counter is zero (or the timeout fired with a
+    // logged warning — see CR-41). Called from [MwaAndroidBridgeJni] dtor.
     static void unregister_dispatcher();
 
-    // Non-owning accessor for JNIEXPORT callbacks. May return `nullptr` if
-    // the ctor hasn't run or the dtor already did — callers MUST null-check.
+    // Non-owning accessor. Prefer [acquire_callback_lease] for JNIEXPORT
+    // callbacks — this bare accessor returns a POINTER SNAPSHOT that can
+    // become dangling after return. Retained for diagnostic/test-only
+    // callers that do not post through the dispatcher.
     static GodotMainDispatcher* get_dispatcher();
+
+    // CR-41 RAII lease. Holding this guard PINS the dispatcher against a
+    // concurrent [unregister_dispatcher]. Usage:
+    //
+    //   MwaJniContext::CallbackLease lease;
+    //   if (lease.dispatcher() == nullptr) { ...dropped...; return; }
+    //   lease.dispatcher()->post(...);
+    //   // destructor decrements the in-flight counter.
+    //
+    // `dispatcher()` returns non-null iff we successfully acquired (not
+    // draining + a dispatcher was registered). A null `dispatcher()` means
+    // the callback should drop cleanly.
+    class CallbackLease {
+    public:
+        CallbackLease();
+        ~CallbackLease();
+        CallbackLease(const CallbackLease&) = delete;
+        CallbackLease& operator=(const CallbackLease&) = delete;
+        CallbackLease(CallbackLease&&) = delete;
+        CallbackLease& operator=(CallbackLease&&) = delete;
+        GodotMainDispatcher* dispatcher() const { return dispatcher_; }
+
+    private:
+        GodotMainDispatcher* dispatcher_;
+        bool acquired_;
+    };
 
     // Story 2-1 T6 — synchronous JNI round-trip to the Kotlin plugin that
     // returns an atomic snapshot of `MwaSessionState` (is_connected,
