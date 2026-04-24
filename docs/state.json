@@ -22,7 +22,7 @@
       { "id": "T4", "status": "done", "committed": false, "description": "MWA.gd facade verification (inspection) — 5/5 invariants verified, no edits" },
       { "id": "T5", "status": "done", "committed": true, "commitSha": "pending", "description": "androidTest AC-1 retention + AC-3 double-disconnect + R8 smoke REQUIRED_METHODS + CR-45 logged; runtime validation deferred to CI push" },
       { "id": "T6", "status": "done", "committed": true, "commitSha": "pending", "description": "CR-32 desktop GDScript backstop extended with disconnect scenario (C6); refactored into two-phase harness sharing _assert_unsupported_platform_payload helper; runtime validation blocked by gdscript_tests workflow red (round-4 candidate, not T6 scope)" },
-      { "id": "T7", "status": "pending", "description": "Close-out" }
+      { "id": "T7", "status": "done", "committed": true, "commitSha": "pending", "description": "Close-out — baseline refresh 192→196; full suite re-run green; Gate 5 evaluation prepared" }
     ]
   },
   "phases": {
@@ -269,16 +269,16 @@
     }
   ],
   "baselineTests": {
-    "total": 192,
-    "passing": 192,
+    "total": 196,
+    "passing": 196,
     "failing": 0,
     "baselinedAt": "2026-04-22T08:09:41Z",
     "baselinedAtStory": 5,
-    "lastRefreshedAt": "2026-04-24T11:55:00Z",
-    "lastRefreshedAtStory": 7,
+    "lastRefreshedAt": "2026-04-24T12:10:00Z",
+    "lastRefreshedAtStory": 8,
     "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
     "failingTests": [],
-    "note": "Post-story-2-1 (2026-04-24) baseline refresh: 157 → 192 (+35 from Story 2-1 tasks T1-T10). Kotlin 74 → 109 (+35: CacheKeyTest, CacheRecordTest, AuthTokenFingerprintTest, MwaSessionStateTest expanded, AuthorizePathTest, SecureTokenStoreTest, SecretStringTest). Pytest 83 → 83 (unchanged — Story 2-1 didn't touch Python tooling). 0 failing. Snapshot verifies in <10s total wall clock on local dev. Pre-Story-2-3 baseline set."
+    "note": "Post-story-2-3 T7 (2026-04-24) baseline refresh: 192 → 196 (+4 from Story 2-3 T1+T2 merged commit — MwaAndroidPluginDisconnectTest: AC-1 wipe+retention, AC-2 silent-reauth preconditions + CacheKey re-derivability, AC-3 double-disconnect, duplicate-requestId PROTOCOL_ERROR). Kotlin 109 → 113, pytest 83 unchanged. Story 2-3 T5 adds 2 androidTest files (AC1DisconnectRetainsTokenTest + AC3DoubleDisconnectTest) — NOT counted here; androidTest runs on emulator CI only and has its own baseline: pre-2-3 had 7 AC tests from Story 2-1 T9 green, post-2-3 expected 9."
   },
   "tooling": {
     "format": "clang-format (C++); ktlint (Kotlin)",
