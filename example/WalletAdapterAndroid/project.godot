@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 SolanaService="*res://addons/SolanaSDK/Optional/SolanaService/Autoload/SolanaService.tscn"
 HttpRequestHandler="*res://addons/SolanaSDK/Optional/SolanaService/Autoload/HttpRequestHandler.tscn"
+MWA="*res://addons/SolanaSDK/mwa/MWA.gd"
 
 [editor_plugins]
 

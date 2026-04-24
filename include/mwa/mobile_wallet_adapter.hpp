@@ -51,7 +51,13 @@ public:
 	// 7 ops — delegate to bridge (T2 wires bodies). D-1 rename applied to
 	// mwa_connect / mwa_disconnect to avoid godot::Object inherited-method
 	// collision.
-	void mwa_connect(const godot::Dictionary &identity, const godot::String &cluster, const godot::Dictionary &opts);
+	//
+	// Story 2-1 T7 (Rule 2 expansion from T6): mwa_connect returns the
+	// generated 8-hex-char request_id so the GDScript MWA.gd facade can
+	// return the correlation ID to callers (T7 spec: `connect(...) -> String`).
+	// The remaining 6 op methods stay void — the facade exposes `void` for
+	// them per the T7 spec.
+	godot::String mwa_connect(const godot::Dictionary &identity, const godot::String &cluster, const godot::Dictionary &opts);
 	void reauthorize(const godot::Dictionary &opts);
 	void mwa_disconnect();
 	void deauthorize();

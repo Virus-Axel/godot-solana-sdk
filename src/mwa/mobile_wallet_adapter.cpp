@@ -139,15 +139,16 @@ MobileWalletAdapter::MobileWalletAdapter() :
 // an empty Dictionary for opts — bridge signatures require the arg even though
 // the node bindings take none. T3 adds the null-bridge guard above each
 // delegation line.
-void MobileWalletAdapter::mwa_connect(const godot::Dictionary &identity, const godot::String &cluster, const godot::Dictionary &opts) {
+godot::String MobileWalletAdapter::mwa_connect(const godot::Dictionary &identity, const godot::String &cluster, const godot::Dictionary &opts) {
 	const godot::String request_id = generate_request_id();
 	if (bridge_ == nullptr) {
 		// D-6: 1-arity error signal — wrap payload in 1-elem Array.
 		dispatcher_.post(godot::String("mwa_error"),
 				godot::Array::make(build_unsupported_platform_payload(request_id, godot::String("connect"))));
-		return;
+		return request_id;
 	}
 	bridge_->connect(request_id, identity, cluster, opts);
+	return request_id;
 }
 
 void MobileWalletAdapter::reauthorize(const godot::Dictionary &opts) {
