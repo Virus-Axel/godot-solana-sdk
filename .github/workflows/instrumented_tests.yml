@@ -22,11 +22,20 @@ on:
 jobs:
   instrumented:
     name: API 33 emulator · :plugin:connectedAndroidTest
-    # reactivecircus/android-emulator-runner requires a HW-accelerated runner.
-    # macos-latest provides HAXM (Intel) or Apple Silicon + KVM-equivalent;
-    # ubuntu-latest runners have no nested virtualization and cannot boot
-    # the emulator. Per DD-20.
-    runs-on: macos-latest
+    # D-F5 (Story 2-1 T10 second fixup): ubuntu-latest + x86_64 KVM, NOT
+    # macos-latest + arm64. The prior macos-latest run failed with
+    # `HVF error: HV_UNSUPPORTED` / `qemu-system-aarch64-headless: failed
+    # to initialize HVF: Invalid argument` — GitHub's hosted Apple Silicon
+    # macOS runners do not expose Hypervisor.framework to the emulator, so
+    # arm64 QEMU can't hardware-accelerate. Before that, the initial
+    # macos-latest + x86_64 config hit the reverse problem (Apple Silicon
+    # has no HAXM for x86 emulation).
+    #
+    # The stable pattern across the existing CI (run_examples.yml,
+    # run_module_test.yml) is ubuntu-latest with /dev/kvm exposed — larger
+    # GitHub-hosted ubuntu runners provide nested virtualization. Mirror
+    # that pattern here.
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - name: Checkout
@@ -41,13 +50,12 @@ jobs:
       - name: Set up Gradle cache
         uses: gradle/actions/setup-gradle@v3
 
-      # D-F3 (Story 2-1 T10 fixup): macos-latest runners are Apple Silicon
-      # (M-series, arm64) since late 2024. reactivecircus/android-emulator-
-      # runner@v2 on these runners MUST use `arch: arm64-v8a`; the previous
-      # `x86_64` config times out waiting for the emulator to boot because
-      # there's no HAXM/KVM-equivalent virtualization layer for x86_64
-      # emulation on Apple Silicon. google_apis system images on API 33
-      # ship arm64 variants.
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: AVD cache
         uses: actions/cache@v4
         id: avd-cache
@@ -55,19 +63,14 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-api33-google-arm64-v8a-v2
+          key: avd-api33-google-x86_64-v3
 
-      - name: Run androidTest on API 33 emulator (arm64-v8a)
+      - name: Run androidTest on API 33 emulator (x86_64 + KVM)
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 33
           target: google_apis
-          arch: arm64-v8a
-          # Drop the `pixel_4` hardware profile — on Apple Silicon the stock
-          # profile is both faster to boot AND more reliable for headless
-          # runs (pixel_4 emulation quirks on arm64 host compound the boot
-          # latency that was already stressing the action's default 600s
-          # wait window).
+          arch: x86_64
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
           disable-animations: true
           working-directory: android

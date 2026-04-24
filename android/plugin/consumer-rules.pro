@@ -72,3 +72,28 @@
 -keepclassmembers class * {
     @org.godotengine.godot.plugin.UsedByGodot <methods>;
 }
+
+# -----------------------------------------------------------------------------
+# Story 2-1 T5/T6/T10 — JNI bridge methods callable from the C++ extension
+# via JNI GetStaticMethodID (forward path) OR via external-fun resolution
+# (reverse path). R8 cannot see C++ callers and will DCE these methods
+# when they're only reachable through the C++ bridge — producing a runtime
+# `NoSuchMethodError` the moment the bridge fires a callback.
+#
+# Surface kept here (plugin.walletadapterandroid.GDExtensionAndroidPlugin$Companion):
+#   - mwa*FromJni  (9 forward wrappers, @JvmStatic) — C++ → Kotlin op dispatch
+#   - mwaQuerySessionStateFromJni (@JvmStatic) — sync session-state query (T6)
+#   - post*Native (5 external funs, @JvmStatic) — Kotlin → C++ signal reverse
+#
+# Keeping the entire Companion class is safe: it's a scaffold-era singleton
+# with ~20 members total; R8 size impact is negligible and the keep-whole
+# form avoids accidentally missing a future-added method (the R8 smoke step
+# in .github/workflows/instrumented_tests.yml would catch it, but keeping
+# the whole class is simpler than matching name patterns member-by-member).
+#
+# The enclosing `GDExtensionAndroidPlugin` class is ALREADY kept by the
+# @UsedByGodot rule above (Godot plugin loader reflection); the Companion
+# rule below is additive.
+-keep class plugin.walletadapterandroid.GDExtensionAndroidPlugin$Companion {
+    *;
+}
