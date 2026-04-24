@@ -84,6 +84,29 @@ public:
     virtual void forget_all(const godot::String& request_id) = 0;
 
     virtual void get_diagnostics(const godot::String& request_id) = 0;
+
+    /**
+     * Story 2-1 T6 — synchronous pull of current session state for
+     * @c MobileWalletAdapter's four state getters (D-5 + D-6 surface).
+     *
+     * Returns a @c godot::Dictionary with these keys (all required):
+     *   - @c is_connected : @c bool
+     *   - @c public_key : @c godot::String (base58)
+     *   - @c cluster : @c godot::String (e.g. "devnet")
+     *   - @c wallet_label : @c godot::String
+     *   - @c auth_token_fingerprint : @c godot::String (8 lowercase hex chars; empty pre-connect)
+     *
+     * Impl contract:
+     *   - NoOp returns empty defaults (false / empty strings) on all platforms.
+     *   - Jni returns the atomic snapshot via
+     *     @c MwaJniContext::query_session_state (single JNI round-trip that
+     *     reads @c MwaSessionState fields under its synchronized lock).
+     *
+     * Synchronous by design: callers are @c mwa_is_connected / @c get_public_key
+     * / @c get_cluster / @c get_wallet_label / @c get_auth_token_fingerprint on
+     * the Godot main thread — no coroutine / signal hop. Must be cheap.
+     */
+    virtual godot::Dictionary query_session_state() const = 0;
 };
 
 }  // namespace godot_solana_sdk::mwa

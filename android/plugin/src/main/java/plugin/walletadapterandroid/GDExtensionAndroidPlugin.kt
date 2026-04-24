@@ -204,6 +204,30 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             instance?.emitNotImplemented(reqId, "get_diagnostics") ?: emitInstanceNullError(reqId, "get_diagnostics")
         }
 
+        /**
+         * Story 2-1 T6 — synchronous state-snapshot pull from the C++
+         * `MwaJniContext::query_session_state`. Returns a JSON object with the
+         * 5 keys `MobileWalletAdapter`'s state getters need:
+         * `is_connected`, `public_key`, `cluster`, `wallet_label`,
+         * `auth_token_fingerprint`. Atomic snapshot via
+         * [MwaSessionState.snapshotSessionStateJson] (single `@Synchronized`
+         * critical section); avoids 5 separate JNI `CallStatic` calls that
+         * could interleave with a concurrent `handleSuccess` / `clear` write.
+         *
+         * Called on the Godot main thread; must be cheap (the critical section
+         * copies a handful of strings — no network, no disk, no coroutine).
+         * Empty JSON (`{}`-equivalent defaults) when [instance] is null.
+         */
+        @JvmStatic
+        fun mwaQuerySessionStateFromJni(): String {
+            // Unconditional read from the companion-object `sessionState` —
+            // even if the plugin `instance` is null (class loaded pre-ctor),
+            // the state is default-initialized to "not connected" and the
+            // serializer returns the empty-defaults shape. Matches the NoOp
+            // shape on the C++ side.
+            return sessionState.snapshotSessionStateJson()
+        }
+
         // ========== Story 2-1 T5 — JNI callback declarations (Kotlin → C++) ==========
         //
         // `external fun` declarations resolved at `System.loadLibrary(...)` (above)
@@ -409,6 +433,10 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             sessionState.setAuthTokenFingerprint(fingerprint)
             sessionState.setWalletIconUri(auth.walletUriBase.orEmpty())
             sessionState.setKey(auth.publicKey)
+            // Story 2-1 T6 — fields read via MwaJniContext::query_session_state.
+            sessionState.setPublicKeyBase58(publicKeyBase58)
+            sessionState.setClusterName(auth.cluster)
+            sessionState.setWalletLabel(auth.accountLabel.orEmpty())
         }
 
         if (inflightMap.tryTerminate(requestId)) {

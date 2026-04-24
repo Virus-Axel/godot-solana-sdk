@@ -8,6 +8,7 @@
 #include "godot_cpp/core/method_bind.hpp"
 #include "godot_cpp/core/object.hpp"
 #include "godot_cpp/core/property_info.hpp"
+#include "godot_cpp/variant/array.hpp"
 #include "godot_cpp/variant/dictionary.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/string.hpp"
@@ -116,11 +117,13 @@ void MobileWalletAdapter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("sign_and_send", "transactions", "opts"), &MobileWalletAdapter::sign_and_send);
 
 	// 4 state getters — D-1 rename: mwa_is_connected (collides with
-	// godot::Object::is_connected). Return empty defaults until Story 2-1.
+	// godot::Object::is_connected). Story 2-1 T6 wires to bridge snapshot.
 	ClassDB::bind_method(D_METHOD("mwa_is_connected"), &MobileWalletAdapter::mwa_is_connected);
 	ClassDB::bind_method(D_METHOD("get_public_key"), &MobileWalletAdapter::get_public_key);
 	ClassDB::bind_method(D_METHOD("get_cluster"), &MobileWalletAdapter::get_cluster);
 	ClassDB::bind_method(D_METHOD("get_wallet_label"), &MobileWalletAdapter::get_wallet_label);
+	// Story 2-1 T6 — AC-7 fingerprint getter forwarded by MWA.gd facade (T7).
+	ClassDB::bind_method(D_METHOD("get_auth_token_fingerprint"), &MobileWalletAdapter::get_auth_token_fingerprint);
 
 	// 2 utility — stubs in 1-5.
 	ClassDB::bind_method(D_METHOD("get_diagnostics"), &MobileWalletAdapter::get_diagnostics);
@@ -139,8 +142,9 @@ MobileWalletAdapter::MobileWalletAdapter() :
 void MobileWalletAdapter::mwa_connect(const godot::Dictionary &identity, const godot::String &cluster, const godot::Dictionary &opts) {
 	const godot::String request_id = generate_request_id();
 	if (bridge_ == nullptr) {
+		// D-6: 1-arity error signal — wrap payload in 1-elem Array.
 		dispatcher_.post(godot::String("mwa_error"),
-				build_unsupported_platform_payload(request_id, godot::String("connect")));
+				godot::Array::make(build_unsupported_platform_payload(request_id, godot::String("connect"))));
 		return;
 	}
 	bridge_->connect(request_id, identity, cluster, opts);
@@ -150,7 +154,7 @@ void MobileWalletAdapter::reauthorize(const godot::Dictionary &opts) {
 	const godot::String request_id = generate_request_id();
 	if (bridge_ == nullptr) {
 		dispatcher_.post(godot::String("mwa_error"),
-				build_unsupported_platform_payload(request_id, godot::String("reauthorize")));
+				godot::Array::make(build_unsupported_platform_payload(request_id, godot::String("reauthorize"))));
 		return;
 	}
 	bridge_->reauthorize(request_id, opts);
@@ -160,7 +164,7 @@ void MobileWalletAdapter::mwa_disconnect() {
 	const godot::String request_id = generate_request_id();
 	if (bridge_ == nullptr) {
 		dispatcher_.post(godot::String("mwa_error"),
-				build_unsupported_platform_payload(request_id, godot::String("disconnect")));
+				godot::Array::make(build_unsupported_platform_payload(request_id, godot::String("disconnect"))));
 		return;
 	}
 	bridge_->disconnect(request_id, godot::Dictionary());
@@ -170,7 +174,7 @@ void MobileWalletAdapter::deauthorize() {
 	const godot::String request_id = generate_request_id();
 	if (bridge_ == nullptr) {
 		dispatcher_.post(godot::String("mwa_error"),
-				build_unsupported_platform_payload(request_id, godot::String("deauthorize")));
+				godot::Array::make(build_unsupported_platform_payload(request_id, godot::String("deauthorize"))));
 		return;
 	}
 	bridge_->deauthorize(request_id, godot::Dictionary());
@@ -180,7 +184,7 @@ void MobileWalletAdapter::sign_messages(const godot::TypedArray<godot::PackedByt
 	const godot::String request_id = generate_request_id();
 	if (bridge_ == nullptr) {
 		dispatcher_.post(godot::String("mwa_error"),
-				build_unsupported_platform_payload(request_id, godot::String("sign_messages")));
+				godot::Array::make(build_unsupported_platform_payload(request_id, godot::String("sign_messages"))));
 		return;
 	}
 	bridge_->sign_messages(request_id, messages, opts);
@@ -190,7 +194,7 @@ void MobileWalletAdapter::sign_transactions(const godot::TypedArray<godot::Packe
 	const godot::String request_id = generate_request_id();
 	if (bridge_ == nullptr) {
 		dispatcher_.post(godot::String("mwa_error"),
-				build_unsupported_platform_payload(request_id, godot::String("sign_transactions")));
+				godot::Array::make(build_unsupported_platform_payload(request_id, godot::String("sign_transactions"))));
 		return;
 	}
 	bridge_->sign_transactions(request_id, transactions, opts);
@@ -200,27 +204,45 @@ void MobileWalletAdapter::sign_and_send(const godot::TypedArray<godot::PackedByt
 	const godot::String request_id = generate_request_id();
 	if (bridge_ == nullptr) {
 		dispatcher_.post(godot::String("mwa_error"),
-				build_unsupported_platform_payload(request_id, godot::String("sign_and_send")));
+				godot::Array::make(build_unsupported_platform_payload(request_id, godot::String("sign_and_send"))));
 		return;
 	}
 	bridge_->sign_and_send(request_id, transactions, opts);
 }
 
-// 4 state getters — empty defaults in 1-5.
+// 4 state getters — T6 wires via bridge->query_session_state() (atomic
+// snapshot: NoOp returns empty defaults on non-Android; Jni round-trips to
+// MwaSessionState via MwaJniContext::query_session_state on Android). The
+// null-bridge branch (D-3 MWA_TESTING case) returns the same empty-default
+// values NoOp's snapshot would produce.
 bool MobileWalletAdapter::mwa_is_connected() const {
-	return false;
+	if (bridge_ == nullptr) { return false; }
+	const godot::Dictionary snapshot = bridge_->query_session_state();
+	return static_cast<bool>(snapshot.get("is_connected", false));
 }
 
 godot::String MobileWalletAdapter::get_public_key() const {
-	return godot::String();
+	if (bridge_ == nullptr) { return godot::String(); }
+	const godot::Dictionary snapshot = bridge_->query_session_state();
+	return godot::String(snapshot.get("public_key", godot::String()));
 }
 
 godot::String MobileWalletAdapter::get_cluster() const {
-	return godot::String();
+	if (bridge_ == nullptr) { return godot::String(); }
+	const godot::Dictionary snapshot = bridge_->query_session_state();
+	return godot::String(snapshot.get("cluster", godot::String()));
 }
 
 godot::String MobileWalletAdapter::get_wallet_label() const {
-	return godot::String();
+	if (bridge_ == nullptr) { return godot::String(); }
+	const godot::Dictionary snapshot = bridge_->query_session_state();
+	return godot::String(snapshot.get("wallet_label", godot::String()));
+}
+
+godot::String MobileWalletAdapter::get_auth_token_fingerprint() const {
+	if (bridge_ == nullptr) { return godot::String(); }
+	const godot::Dictionary snapshot = bridge_->query_session_state();
+	return godot::String(snapshot.get("auth_token_fingerprint", godot::String()));
 }
 
 // 2 utility — stubs in 1-5.

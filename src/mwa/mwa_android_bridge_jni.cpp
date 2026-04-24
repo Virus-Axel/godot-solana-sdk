@@ -1,4 +1,12 @@
-// Story 2-1 T5 — real Android JNI implementation of MwaAndroidBridge.
+// Story 2-1 T5 / T6 — real Android JNI implementation of MwaAndroidBridge.
+//
+// T5 landed the forward-direction call path (C++ → Kotlin) and the
+// reverse-direction JNIEXPORT callbacks. T6 evolved the dispatcher surface
+// to a `(String, Array)` signature per D-6, dissolving the T5 transitional
+// `post_arity2` into the unified `post` + arity ladder, and added
+// `MwaJniContext::query_session_state` as a synchronous pull of
+// `MwaSessionState` for the C++ node's four state getters (plus
+// `get_auth_token_fingerprint` surfaced for T7's MWA.gd facade).
 //
 // This TU is excluded from non-Android builds by the SConstruct platform
 // filter (src/mwa/mwa_android_bridge_jni.cpp is filtered out when
@@ -73,6 +81,9 @@ jmethodID g_mid_mwa_sign_transactions_from_jni = nullptr;
 jmethodID g_mid_mwa_sign_and_send_from_jni = nullptr;
 jmethodID g_mid_mwa_forget_all_from_jni = nullptr;
 jmethodID g_mid_mwa_get_diagnostics_from_jni = nullptr;
+// Story 2-1 T6 — reverse-direction sync getter: returns JSON string snapshot
+// of MwaSessionState for the 4 C++ state getters.
+jmethodID g_mid_mwa_query_session_state_from_jni = nullptr;
 
 // True once JNI_OnLoad populated the cache without error. Read by op methods
 // to decide between real JNI call vs. `emit_jni_unavailable`.
@@ -178,7 +189,6 @@ godot::String opts_chain_id(const godot::Dictionary& opts, const godot::String& 
 // Preserves the terminal-signal invariant: Kotlin throwing synchronously during
 // dispatch no longer orphans the request_id — GDScript observes exactly-one
 // terminal signal (the mwa_error here) for that request.
-class GodotMainDispatcher;  // fwd
 void emit_jni_exception_error(GodotMainDispatcher* dispatcher,
                               const godot::String& request_id,
                               const char* method_name) {
@@ -194,7 +204,8 @@ void emit_jni_exception_error(GodotMainDispatcher* dispatcher,
     payload["layer"] = godot::String("cpp");
     payload["cause"] = godot::String("jni_exception");
     payload["source_method"] = godot::String(method_name);
-    dispatcher->post(godot::String("mwa_error"), payload);
+    // D-6: 1-arity error signal — wrap payload in 1-elem Array.
+    dispatcher->post(godot::String("mwa_error"), godot::Array::make(payload));
 }
 
 // ---------------- Forward-path JNI invocation ----------------
@@ -274,6 +285,62 @@ GodotMainDispatcher* MwaJniContext::get_dispatcher() {
     return g_dispatcher.load(std::memory_order_acquire);
 }
 
+// Story 2-1 T6 — empty-defaults snapshot. Matches the shape NoOp returns so
+// consumers default-cast to "not connected" on any JNI failure path.
+static godot::Dictionary build_empty_session_state() {
+    godot::Dictionary out;
+    out["is_connected"] = false;
+    out["public_key"] = godot::String();
+    out["cluster"] = godot::String();
+    out["wallet_label"] = godot::String();
+    out["auth_token_fingerprint"] = godot::String();
+    return out;
+}
+
+godot::Dictionary MwaJniContext::query_session_state() {
+    if (!g_jni_ready.load(std::memory_order_acquire) ||
+        g_mid_mwa_query_session_state_from_jni == nullptr) {
+        return build_empty_session_state();
+    }
+    ScopedJniAttach attach;
+    JNIEnv* env = attach.env();
+    if (env == nullptr) {
+        return build_empty_session_state();
+    }
+    // CallStaticObjectMethod -> jstring JSON payload. Kotlin's
+    // `mwaQuerySessionStateFromJni` reads MwaSessionState under a single
+    // `@Synchronized` lock, so the 5-key JSON is a coherent snapshot.
+    jobject result_obj = env->CallStaticObjectMethod(
+        g_plugin_companion_class, g_mid_mwa_query_session_state_from_jni);
+    if (env->ExceptionCheck() == JNI_TRUE) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        if (result_obj != nullptr) { env->DeleteLocalRef(result_obj); }
+        return build_empty_session_state();
+    }
+    if (result_obj == nullptr) {
+        return build_empty_session_state();
+    }
+    const godot::String json_str =
+        jstring_to_godot_string(env, static_cast<jstring>(result_obj));
+    env->DeleteLocalRef(result_obj);
+
+    godot::Ref<godot::JSON> json;
+    json.instantiate();
+    if (json->parse(json_str) != godot::OK) {
+        godot::UtilityFunctions::push_warning(
+            godot::String("MWA: query_session_state JSON parse failed"));
+        return build_empty_session_state();
+    }
+    const godot::Variant data = json->get_data();
+    if (data.get_type() != godot::Variant::DICTIONARY) {
+        godot::UtilityFunctions::push_warning(
+            godot::String("MWA: query_session_state JSON root is not a dict"));
+        return build_empty_session_state();
+    }
+    return godot::Dictionary(data);
+}
+
 // ---------------- MwaAndroidBridgeJni impl ----------------
 
 MwaAndroidBridgeJni::MwaAndroidBridgeJni(GodotMainDispatcher* dispatcher)
@@ -304,7 +371,8 @@ void MwaAndroidBridgeJni::emit_jni_unavailable(const godot::String& source_metho
     payload["layer"] = godot::String("cpp");
     payload["cause"] = godot::String("jni_uninitialized");
     payload["source_method"] = source_method;
-    dispatcher_->post(godot::String("mwa_error"), payload);
+    // D-6: 1-arity error signal — wrap payload in 1-elem Array.
+    dispatcher_->post(godot::String("mwa_error"), godot::Array::make(payload));
 }
 
 void MwaAndroidBridgeJni::connect(const godot::String& request_id,
@@ -397,6 +465,14 @@ void MwaAndroidBridgeJni::get_diagnostics(const godot::String& request_id) {
     call_reqid_only_shape(g_mid_mwa_get_diagnostics_from_jni, dispatcher_, request_id, "get_diagnostics");
 }
 
+godot::Dictionary MwaAndroidBridgeJni::query_session_state() const {
+    // Delegates to the file-scope helper so non-bridge callers (e.g. diagnostic
+    // tooling in Story 5-2) can reach the same snapshot without instantiating
+    // a bridge. On any JNI failure path the helper returns empty defaults —
+    // the getter then reports "not connected" rather than crashing.
+    return MwaJniContext::query_session_state();
+}
+
 }  // namespace godot_solana_sdk::mwa
 
 // ---------------- JNI_OnLoad + JNIEXPORT callbacks ----------------
@@ -464,6 +540,11 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
         env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
                                "mwaGetDiagnosticsFromJni", reqid_only_sig);
 
+    // Story 2-1 T6 — sync getter returns String (Ljava/lang/String;).
+    godot_solana_sdk::mwa::g_mid_mwa_query_session_state_from_jni =
+        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
+                               "mwaQuerySessionStateFromJni", "()Ljava/lang/String;");
+
     if (env->ExceptionCheck() == JNI_TRUE) { env->ExceptionClear(); }
 
     // Readiness: class + at least the authorize method must be resolved.
@@ -484,9 +565,34 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
 // by both arity-1 and arity-2 callback helpers so GDScript always sees a
 // well-formed mwa_error — a mangled emission isn't silently suppressed and a
 // malformed *_completed isn't delivered with an empty result dict.
+//
+// CR-T6-8 trade-off (Story 2-1 T6 review): for arity-1 paths the request_id
+// lives INSIDE the payload JSON. When parse fails we have no trustworthy way
+// to recover it — attempting to string-match a `request_id` out of mangled
+// bytes would propagate corruption (the wrong request could be marked
+// TERMINATED in the Kotlin InflightMap). So `request_id_maybe` is the empty
+// string for arity-1 failures. Consequence: the specific original request
+// stays PENDING in InflightMap forever (until the watchdog timeout fires
+// from the Kotlin side). Acceptable in this cascading-failure scenario:
+// a mangled payload is itself a symptom of a deeper fault; the deterministic
+// user-visible mwa_error preserves the terminal-signal invariant globally
+// even if one specific request_id can't be correlated. We log the seam label
+// and payload byte-length (NOT the body — the body might carry auth_token
+// ciphertext or similar secret material) so operators can correlate the
+// failure post-hoc. Future editors: do NOT "fix" this by pulling a
+// substring-matched request_id out of the mangled string.
 static void post_parse_failure_error(GodotMainDispatcher* dispatcher,
                                      const godot::String& request_id_maybe,
-                                     const char* seam_label) {
+                                     const char* seam_label,
+                                     int mangled_payload_length = -1) {
+    if (mangled_payload_length >= 0) {
+        godot::UtilityFunctions::push_warning(
+            godot::String("MWA: post_parse_failure seam=") + godot::String(seam_label) +
+            godot::String(" mangled_bytes=") + godot::itos(mangled_payload_length) +
+            godot::String(" request_id=") + (request_id_maybe.is_empty()
+                ? godot::String("<unrecoverable; arity-1 parse failure>")
+                : request_id_maybe));
+    }
     godot::Dictionary fallback;
     fallback["request_id"] = request_id_maybe;
     fallback["code"] = godot::String("PROTOCOL_ERROR");
@@ -499,7 +605,8 @@ static void post_parse_failure_error(GodotMainDispatcher* dispatcher,
     fallback["layer"] = godot::String("cpp");
     fallback["cause"] = godot::String("json_parse_error");
     fallback["source_method"] = godot::String(seam_label);
-    dispatcher->post(godot::String("mwa_error"), fallback);
+    // D-6: 1-arity error signal — wrap fallback in 1-elem Array.
+    dispatcher->post(godot::String("mwa_error"), godot::Array::make(fallback));
 }
 
 // Parse a JSON string and return (ok, dict). On parse failure pushes a warning
@@ -550,17 +657,25 @@ static void post_arity1(JNIEnv* env,
         // of mwa_error specifically: even if the payload that failed WAS
         // an mwa_error, we still emit the hand-constructed fallback so
         // downstream shapes are well-formed.
-        post_parse_failure_error(dispatcher, godot::String(""), seam_label);
+        //
+        // CR-T6-8: arity-1 path — request_id is embedded IN the payload
+        // JSON; parse failure leaves it unrecoverable. We log the seam +
+        // mangled-byte length so operators can correlate post-hoc; the
+        // specific original request_id stays PENDING in Kotlin's
+        // InflightMap until the watchdog fires. See post_parse_failure_error
+        // kdoc for the trade-off rationale.
+        post_parse_failure_error(dispatcher, godot::String(""), seam_label, json_str.length());
         return;
     }
-    dispatcher->post(godot::String(signal_name), payload);
+    // D-6: 1-arity error/lifecycle signal — wrap payload in 1-elem Array.
+    dispatcher->post(godot::String(signal_name), godot::Array::make(payload));
 }
 
 // Helper: post to dispatcher as arity-2 `*_completed` signal per A-12. GDScript
 // sees `connect_completed(request_id, result)` — two typed parameters matching
-// the `ADD_SIGNAL` registration. Uses the transitional
-// `GodotMainDispatcher::post_arity2` helper (removed in T6 when post evolves
-// to accept Array).
+// the `ADD_SIGNAL` registration. T6: dispatcher->post now takes Array; we
+// wrap (req_id, result) in a 2-elem Array and the production ladder unpacks
+// it into `call_deferred(signal_name, req_id, result)`.
 // On parse failure emits mwa_error instead of connect_completed with empty dict
 // — the terminal-signal invariant fires, and the mwa_error carries the
 // actual failure mode (AC-6).
@@ -581,10 +696,14 @@ static void post_arity2_completed(JNIEnv* env,
         godot_solana_sdk::mwa::jstring_to_godot_string(env, result_json_jstr);
     godot::Dictionary result;
     if (!try_parse_payload(json_str, seam_label, result)) {
-        post_parse_failure_error(dispatcher, req_id, seam_label);
+        // Arity-2 path — request_id was the separate JNI arg and IS
+        // recoverable; pass it through so the fallback mwa_error carries
+        // the correct correlation.
+        post_parse_failure_error(dispatcher, req_id, seam_label, json_str.length());
         return;
     }
-    dispatcher->post_arity2(godot::String(signal_name), req_id, result);
+    // D-6: 2-arity *_completed signal — Array::make(req_id, result).
+    dispatcher->post(godot::String(signal_name), godot::Array::make(req_id, result));
 }
 
 JNIEXPORT void JNICALL

@@ -39,7 +39,19 @@ void NoOpMwaAndroidBridge::emit_unsupported(const godot::String& source_method,
     payload["layer"] = godot::String("cpp");
     payload["cause"] = godot::String("");
     payload["source_method"] = source_method;
-    dispatcher_->post(godot::String("mwa_error"), payload);
+    // D-6: 1-arity error/lifecycle signal — wrap payload in 1-elem Array.
+    dispatcher_->post(godot::String("mwa_error"), godot::Array::make(payload));
+}
+
+godot::Dictionary NoOpMwaAndroidBridge::query_session_state() const {
+    // Non-Android path never connects; state getters return empty defaults.
+    godot::Dictionary out;
+    out["is_connected"] = false;
+    out["public_key"] = godot::String();
+    out["cluster"] = godot::String();
+    out["wallet_label"] = godot::String();
+    out["auth_token_fingerprint"] = godot::String();
+    return out;
 }
 
 void NoOpMwaAndroidBridge::connect(const godot::String& request_id,

@@ -5,6 +5,7 @@
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/variant/variant.hpp>
 
 #ifdef MWA_TESTING
 #include <godot_cpp/core/mutex_lock.hpp>   // MutexLock RAII for drain_for_testing
@@ -12,81 +13,80 @@
 
 namespace godot_solana_sdk::mwa {
 
-GodotMainDispatcher::GodotMainDispatcher(godot::Object* target)
-    : target_id_() {  // default-init to invalid ObjectID; filled in body if target is valid.
+GodotMainDispatcher::GodotMainDispatcher(godot::Object* target) {
     // Loud null-check — UB-avoidance (nullptr deref on target->get_instance_id()).
-    // ERR_FAIL_NULL_MSG returns void on failure, leaving target_id_ at its invalid default.
-    // Subsequent post() calls will hit the null ObjectDB::get_instance branch and warn.
+    // ERR_FAIL_NULL_MSG returns void on failure, leaving emit_signal_callable_
+    // default-constructed (invalid Callable). Subsequent post() calls through
+    // an invalid Callable produce an internal godot-cpp warning and are dropped.
     ERR_FAIL_NULL_MSG(target,
         "GodotMainDispatcher: target must be a non-null live godot::Object* at construction.");
+    // D-5: bind Callable carrying target+method+ObjectID as an atomic handle.
+    // Callable internally holds an ObjectID for lifetime-aware dispatch — a
+    // freed target produces a no-op internal warning inside godot-cpp rather
+    // than a UAF (CR-18 closure).
+    emit_signal_callable_ = godot::Callable(target, "emit_signal");
+#ifdef MWA_TESTING
+    // D-5: target_id_ retained only for drain_for_testing()'s synchronous
+    // dispatch path (Callable::call_deferred is asynchronous — the test
+    // harness contract expects sync emit after workers joined).
     target_id_ = target->get_instance_id();
+#endif
 }
 
 void GodotMainDispatcher::post(const godot::String& signal_name,
-                               const godot::Dictionary& payload) {
+                               const godot::Array& args) {
 #ifdef MWA_TESTING
     // D-2: enqueue for synchronous drain_for_testing(). The host test binary has
     // no engine loop, so call_deferred would be a black hole. Test calls
     // drain_for_testing() to flush after std::thread workers have joined.
-    godot::MutexLock lock(drain_mutex_);
-    godot::Dictionary entry;
-    entry["signal_name"] = signal_name;
-    entry["payload"] = payload;
-    pending_.push_back(entry);
-    return;
-#else
-    // Thread-safe handle resolution (Godot 4): ObjectDB::get_instance is the C++ API
-    // for resolving an ObjectID; Object::get_instance_from_id is the GDScript-facing
-    // equivalent. Repo convention (see src/transaction/transaction.cpp:361) uses
-    // ObjectDB::get_instance — mirror that here.
     //
-    // Race note: see class-level thread-safety contract — caller must guarantee
-    // `target` outlives every in-flight post() call. The null-check below only
-    // catches the post-teardown case (ObjectID resolves to null); a concurrent
-    // free between the null-check and the virtual dispatch is caller-prevented.
-    godot::Object* target = godot::ObjectDB::get_instance(target_id_);
-    if (target == nullptr) {
-        // AC-6: target freed or never registered — drop with a warning.
-        // Signal name is included so the lost emission is identifiable in logs.
-        // "MWA: " tag prefix mirrors the §7.2 logging convention (Kotlin SdkLog parity).
-        // UtilityFunctions::push_warning is thread-safe in Godot 4 (PrintHandler lock).
-        godot::UtilityFunctions::push_warning(
-            godot::String("MWA: dispatcher post after destroy (signal=") + signal_name +
-            godot::String(")"));
-        return;
+    // T6 key rename: `"payload"` (Dictionary) → `"args"` (Array) per D-6.
+    //
+    // CR-T6-2: validate arity at ENQUEUE time so tests fail loudly at the
+    // call site that produced the bad Array, not later inside
+    // drain_for_testing(). Mirrors the production ladder's default arm so
+    // the MWA_TESTING branch doesn't silently accept a 3-arity Array that
+    // the production path would reject. Keep symmetric with the drain
+    // ladder — if production grows to arity 3, bump this guard too.
+    {
+        const int n_in = args.size();
+        if (n_in != 1 && n_in != 2) {
+            ERR_FAIL_MSG(godot::vformat(
+                "GodotMainDispatcher::post (MWA_TESTING): unsupported arity %d for signal '%s' (expected 1 or 2)",
+                n_in, signal_name));
+        }
     }
-
-    // DD-22: every signal to GDScript crosses to the Godot main thread via
-    // call_deferred("emit_signal", ...). Never call emit_signal directly here.
-    target->call_deferred(godot::StringName("emit_signal"), signal_name, payload);
-#endif
-}
-
-// Story 2-1 T5 transitional — remove in T6 when [post] evolves to (String, Array).
-void GodotMainDispatcher::post_arity2(const godot::String& signal_name,
-                                       const godot::String& request_id,
-                                       const godot::Dictionary& result) {
-#ifdef MWA_TESTING
     godot::MutexLock lock(drain_mutex_);
     godot::Dictionary entry;
     entry["signal_name"] = signal_name;
-    entry["request_id"] = request_id;
-    entry["result"] = result;
-    entry["arity"] = 2;
+    entry["args"] = args;
     pending_.push_back(entry);
     return;
 #else
-    godot::Object* target = godot::ObjectDB::get_instance(target_id_);
-    if (target == nullptr) {
-        godot::UtilityFunctions::push_warning(
-            godot::String("MWA: dispatcher post_arity2 after destroy (signal=") + signal_name +
-            godot::String(")"));
-        return;
+    // D-6 arity ladder: godot-cpp's Callable exposes `call_deferred` as a
+    // vararg template (extension_api.json: `is_vararg: true`) but NO
+    // `call_deferredv(Array)` equivalent — `callv` is synchronous. Hand-rolling
+    // a `const Variant**` argv is not an option on the public surface. So we
+    // unpack the Array at the call site with a bounded ladder; `default`
+    // fires ERR_FAIL_MSG so an out-of-contract arity cannot ship silently.
+    //
+    // Arity upper bound is 2, bounded by A-12 (7 `*_completed` signals carry
+    // 2 params; 4 error/lifecycle signals carry 1). If a future story needs
+    // arity 3, it MUST file a new amendment AND extend this ladder AND the
+    // parallel ladder in drain_for_testing() below.
+    const int n = args.size();
+    switch (n) {
+        case 1:
+            emit_signal_callable_.call_deferred(signal_name, args[0]);
+            break;
+        case 2:
+            emit_signal_callable_.call_deferred(signal_name, args[0], args[1]);
+            break;
+        default:
+            ERR_FAIL_MSG(godot::vformat(
+                "GodotMainDispatcher::post: unsupported arity %d for signal '%s' (expected 1 or 2)",
+                n, signal_name));
     }
-    // A-12: connect_completed (and future *_completed signals) are 2-param signals at GDScript
-    // level. call_deferred forwards N args to emit_signal after "emit_signal" — so 2 extra
-    // args here land as the signal's 2 formal parameters.
-    target->call_deferred(godot::StringName("emit_signal"), signal_name, request_id, result);
 #endif
 }
 
@@ -101,11 +101,14 @@ void GodotMainDispatcher::drain_for_testing() {
         pending_.clear();
     }
 
+    // D-5: drain_for_testing resolves through ObjectDB::get_instance against
+    // the MWA_TESTING-only `target_id_` field, not through emit_signal_callable_.
+    // Callable::call_deferred is asynchronous; the harness contract is
+    // synchronous dispatch after workers joined.
     godot::Object* target = godot::ObjectDB::get_instance(target_id_);
     if (target == nullptr) {
-        // Parity with production post(): target freed → drop silently (the
-        // equivalent warning already fires from post()'s production path;
-        // in test mode we want a clean no-op for deterministic tests).
+        // Parity with production: target freed → drop silently for
+        // deterministic tests.
         return;
     }
 
@@ -113,11 +116,23 @@ void GodotMainDispatcher::drain_for_testing() {
     for (int i = 0; i < n; ++i) {
         godot::Dictionary entry = snapshot[i];
         godot::String signal_name = entry["signal_name"];
-        godot::Dictionary payload = entry["payload"];
-        // Under MWA_TESTING, direct emit_signal is safe because we're
-        // synchronously invoked from the test's main thread AFTER worker
-        // threads have joined. No thread-marshalling concern.
-        target->emit_signal(signal_name, payload);
+        godot::Array args = entry["args"];
+        // D-6 parallel arity ladder — SYMMETRIC with the production ladder
+        // above. Must grow in lockstep with production post() or the
+        // retired-harness guarantee (A-13 retain-source clause) breaks.
+        const int arity = args.size();
+        switch (arity) {
+            case 1:
+                target->emit_signal(signal_name, args[0]);
+                break;
+            case 2:
+                target->emit_signal(signal_name, args[0], args[1]);
+                break;
+            default:
+                ERR_FAIL_MSG(godot::vformat(
+                    "GodotMainDispatcher::drain_for_testing: unsupported arity %d for signal '%s' (expected 1 or 2)",
+                    arity, signal_name));
+        }
     }
 }
 

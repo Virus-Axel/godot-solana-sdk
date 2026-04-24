@@ -307,6 +307,7 @@ Deferred items from code reviews and implementation. Tracked for future resoluti
   - plan.md — may need amendment to add Story 5-6b or Story 5-7.
   - docs/architecture.md — §CI section should be updated when CR-35 resolves (headless-Godot build step added to the test tier taxonomy).
 - **Trigger to revisit:** Wave 5 planning (when Epic 5 stories are being scoped) OR Story 2-1 design review (when CR-18 + CR-28 + CR-34 all converge and the cost of no-C++-tier becomes concrete).
+- **T6 key rename follow-up (CR-T6-1):** Story 2-1 T6 renamed the `MWA_TESTING` `pending_` entry key from `"payload"` (Dictionary value) to `"args"` (Array value) per D-6. Any revived test harness that reads `snapshot_pending_for_testing()` entries MUST use `entry["args"]` + the arity ladder ({1, 2}-element Array). Worth a check when porting Story 1-5 dispatcher tests to the new headless-Godot tier — the schema flip is intentional and load-bearing for A-12 2-param `*_completed` signals.
 
 ## CR-36 (LOW): MwaSessionState.lastResult: Any? erases secret-type discipline
 - **Story:** 2-1 | **Date:** 2026-04-23 | **Severity:** LOW | **Status:** tracked | **Origin:** Story 2-1 T4 code review
@@ -342,3 +343,52 @@ Deferred items from code reviews and implementation. Tracked for future resoluti
 - **Why LOW:** The A-14 10-key shape is present; consumers reading `developer_details` (the canonical dev-facing field) aren't affected. `message` being equivalent to `user_message` is stylistic debt, not a functional bug.
 - **Mitigation until closed:** Kdoc in `buildErrorJson` flags the intentional duplication with a CR-40 pointer.
 - **Trigger to close:** Story 1-1 codegen adds `defaultTechnicalMessage` to the `MwaError` enum. Story 2-3 (disconnect) / 4-x (hardening) can pick up the follow-up and re-point `buildErrorJson`'s `message` field.
+
+## CR-41 (HIGH, latent): Bridge-dtor teardown race with in-flight JNIEXPORT callbacks
+- **Story:** 2-1 | **Date:** 2026-04-24 | **Severity:** HIGH | **Status:** tracked (T10 REQUIRED) | **Origin:** Story 2-1 T6 review
+- **Summary:** `MwaAndroidBridgeJni::~MwaAndroidBridgeJni()` calls `MwaJniContext::unregister_dispatcher()` (atomic store → nullptr), but a JNIEXPORT callback thread can already be past the `g_dispatcher.load(acquire)` null-check and mid-`dispatcher->post(...)` when the dtor runs AND the `GodotMainDispatcher` object is subsequently destroyed by its owning `MobileWalletAdapter` node. Structurally identical hazard-class to CR-18 (closed at the target layer via `godot::Callable`); here the hazard is one layer up, at the dispatcher object itself. UAF.
+- **Why LATENT in T6:** The race window opens only on a plugin teardown scenario where a Kotlin `DefaultNativeBridge.postConnect*` call has reached the C++ JNIEXPORT, is between `MwaJniContext::get_dispatcher()` returning non-null and `dispatcher->post(...)` completing, AND the owning node is freed. A-13-retired C++ test tier does not exercise the race; no current kotlin test can reach the JNI boundary.
+- **Options (ordered by cost):**
+  1. Teardown ordering in node dtor: `MobileWalletAdapter::~MobileWalletAdapter` tears the bridge BEFORE dispatcher destroys (reverse of construction). Plus a draining barrier — `unregister_dispatcher()` sets a flag + waits on an atomic in-flight-callback count; JNIEXPORT callbacks increment/decrement around the `post()` call and drop new calls once the flag is set. **Story 2-1 T10 close-out work.**
+  2. `std::shared_ptr<GodotMainDispatcher>` in `MwaJniContext` with JNIEXPORT upgrading to shared_ptr before post(). Cleanly kills the race; introduces a new ownership edge across the C++ node / dispatcher boundary.
+  3. Pre-destroy signal from Kotlin to C++ to stop emitting callbacks; larger refactor across clientlib + plugin.
+- **Mitigation until closed:** None in T6 code itself.
+- **Trigger to close:** Story 2-1 T10 MUST land option (1) before Gate 5. The real-JNI path ships in this story; the race is production-reachable the moment a user rotates wallets or the app teardowns between connect and connect_completed. Do NOT defer past Story 2-1.
+
+## CR-42 (LOW): Arity-1 JSON parse-failure loses request_id correlation
+- **Story:** 2-1 | **Date:** 2026-04-24 | **Severity:** LOW | **Status:** accepted trade-off | **Origin:** Story 2-1 T6 review
+- **Summary:** For JNIEXPORT arity-1 callbacks (`postMwaError`, `postMwaTimeout`, `postMwaCancelledLifecycle`, `postReauthRequired`) the `request_id` lives INSIDE the payload JSON. If that JSON fails to parse, `post_parse_failure_error` emits a fallback `mwa_error` with empty `request_id`. Kotlin's `InflightMap` can't mark the specific request TERMINATED; that request stays PENDING until the Kotlin watchdog fires.
+- **Why LOW:** A mangled JSON payload IS itself a symptom of a deeper fault (wire corruption, Kotlin formatter bug, etc.). Recovering `request_id` by substring-matching the mangled bytes would propagate the corruption into `InflightMap` (wrong request marked TERMINATED). Trade-off: preserve global terminal-signal invariant (GDScript always sees a typed `mwa_error`), at the cost of one orphaned in-flight record per corruption event (watchdog cleans it up).
+- **Mitigation until closed:** T6 logs the seam label + mangled-byte-length (NOT body — secret material like `auth_token` ciphertext may be present) via `push_warning`. Kdoc on `post_parse_failure_error` forbids future "fixes" that pull a request_id substring out of mangled bytes.
+- **Trigger to close:** Wire-format version bump that moves `request_id` to a separate JNI arg on all arity-1 callbacks (parallel to the arity-2 path). Unlikely before Story 4-x hardening pass.
+
+## CR-43 (LOW): No JNI_OnUnload — GlobalRef on plugin companion class leaks if library unloads
+- **Story:** 2-1 | **Date:** 2026-04-24 | **Severity:** LOW | **Status:** tracked | **Origin:** Story 2-1 T6 review
+- **Summary:** `src/mwa/mwa_android_bridge_jni.cpp::JNI_OnLoad` creates a `NewGlobalRef` on the `GDExtensionAndroidPlugin$Companion` jclass (`g_plugin_companion_class`). There is no paired `JNI_OnUnload` that calls `DeleteGlobalRef`. Library unloads (JVM dlclose-ing the .so) would leak the GlobalRef.
+- **Why LOW:** Android runtimes rarely unload libraries — plugins typically live for the full process lifetime. Even if the JVM did unload, process-local GlobalRef dies with the process.
+- **Mitigation until closed:** None in T6 code.
+- **Trigger to close:** Story 4-x hardening pass OR first observed plugin-reload scenario.
+
+## CR-44 (LOW): NewStringUTF / GetStringUTFChars lack OOM null-check
+- **Story:** 2-1 | **Date:** 2026-04-24 | **Severity:** LOW | **Status:** tracked | **Origin:** Story 2-1 T6 review
+- **Summary:** `godot_string_to_jstring` / `jstring_to_godot_string` in `src/mwa/mwa_android_bridge_jni.cpp` call `NewStringUTF` / `GetStringUTFChars` without guarding the OOM null-return paths documented by JNI. An edge-case allocation failure could return nullptr jstring; subsequent JNI calls would NPE inside the JVM.
+- **Why LOW:** All traffic is short ASCII (request_id, JSON payloads, cluster names). Realistic OOM at these allocation sizes requires adverse heap conditions that would already be manifesting elsewhere in the plugin.
+- **Mitigation until closed:** None in T6 code.
+- **Trigger to close:** Story 4-x hardening pass OR first field-observed crash trace pointing at these converters.
+
+## CR-39: RESOLVED in T6 (2026-04-24)
+- Resolution: `GodotMainDispatcher::post_arity2` transitional helper deleted from header + impl. The T5 JNIEXPORT `postConnectCompletedNative` path migrated to `dispatcher->post(signal_name, godot::Array::make(req_id, result))` per D-6. Grep confirms no remaining callers.
+- Evidence: src/mwa/include/godot_main_dispatcher.hpp (post_arity2 declaration removed), src/mwa/godot_main_dispatcher.cpp (post_arity2 body removed), src/mwa/mwa_android_bridge_jni.cpp (post_arity2_completed helper now calls unified `dispatcher->post` with 2-elem Array).
+
+## CR-28: RESOLVED in T6 (2026-04-24)
+- Resolution: `GodotMainDispatcher::post` signature evolved to `post(const String& signal_name, const Array& args)` per D-6. Hard-coded arity ladder {1, 2} in both the production `Callable::call_deferred` branch AND the MWA_TESTING `drain_for_testing` branch. Default arm fires `ERR_FAIL_MSG` so out-of-contract arity cannot ship silently. Arity validation added at MWA_TESTING enqueue time per CR-T6-2 review feedback.
+- Evidence: src/mwa/godot_main_dispatcher.cpp post() production switch + MWA_TESTING pre-enqueue guard + drain_for_testing switch; all 10 caller sites (NoOp, JNI ops, JNI callbacks, MobileWalletAdapter null-bridge branches, Mock) migrated to `godot::Array::make(...)`.
+
+## CR-18: RESOLVED in T6 (2026-04-24)
+- Resolution: Production branch of `GodotMainDispatcher::post` no longer performs `ObjectDB::get_instance(target_id_) → raw-ptr virtual dispatch`. Ctor binds `emit_signal_callable_ = godot::Callable(target, "emit_signal")`; post() calls `emit_signal_callable_.call_deferred(signal_name, args-unpacked)`. godot-cpp's Callable handles target+ObjectID resolution atomically; a freed target produces an internal warning, not a UAF. `target_id_` moved under `#ifdef MWA_TESTING` for `drain_for_testing()`'s synchronous dispatch path (per D-5 + A-13 retain-source clause).
+- Evidence: src/mwa/include/godot_main_dispatcher.hpp (emit_signal_callable_ production member; target_id_ under MWA_TESTING), src/mwa/godot_main_dispatcher.cpp (ctor binds Callable; post() uses arity ladder over call_deferred).
+- Follow-up: CR-41 tracks the DISPATCHER-LAYER analogue of this race (dispatcher object destroyed mid-JNI-callback); T10 MUST close it before Gate 5.
+
+## CR-29: REFRAMES closed in T6 (2026-04-24)
+- Resolution: Production `post` path now reduces to a single `Callable::call_deferred` call whose behavior is verified by godot-cpp's own test suite. No MWA-specific dispatch logic remains in the production branch (aside from the arity ladder, which is a pure switch over `args.size()` with ERR_FAIL_MSG default arm).
+- Evidence: src/mwa/godot_main_dispatcher.cpp production switch — 2 cases + default; no ObjectDB lookup, no null-check-then-dispatch.

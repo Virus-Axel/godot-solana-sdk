@@ -110,6 +110,26 @@ void MockMwaAndroidBridge::clear_calls() {
     recorded_calls_.clear();
 }
 
+godot::Dictionary MockMwaAndroidBridge::query_session_state() const {
+    // Tests stage the snapshot via set_session_state_for_testing. When unset,
+    // return the same empty-default shape NoOp uses so default-cast code paths
+    // (non-connected state) work without explicit test setup.
+    if (session_state_snapshot_.is_empty()) {
+        godot::Dictionary out;
+        out["is_connected"] = false;
+        out["public_key"] = godot::String();
+        out["cluster"] = godot::String();
+        out["wallet_label"] = godot::String();
+        out["auth_token_fingerprint"] = godot::String();
+        return out;
+    }
+    return session_state_snapshot_.duplicate();
+}
+
+void MockMwaAndroidBridge::set_session_state_for_testing(const godot::Dictionary& snapshot) {
+    session_state_snapshot_ = snapshot.duplicate();
+}
+
 void MockMwaAndroidBridge::drive_signal_from_thread(const godot::String& thread_name,
                                                     const godot::String& signal_name,
                                                     godot::Dictionary payload) {
@@ -156,7 +176,11 @@ void MockMwaAndroidBridge::drive_signal_from_thread(const godot::String& thread_
         // Windows / other: no-op. Thread name is for debugging; functional behavior is unaffected.
         (void)name_utf8;
 #endif
-        dispatcher->post(signal_copy, payload_copy);
+        // D-6: dispatcher->post now takes a godot::Array. For the mock's
+        // generalized signal-driver, treat every caller payload as a 1-arity
+        // wrap. Tests that need 2-arity (*_completed) signals should call
+        // dispatcher->post directly or extend this helper with an arity param.
+        dispatcher->post(signal_copy, godot::Array::make(payload_copy));
     });
 
     worker.join();  // synchronous for tests: post executes before caller proceeds.

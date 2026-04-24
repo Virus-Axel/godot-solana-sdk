@@ -64,6 +64,15 @@ public:
     void forget_all(const godot::String& request_id) override;
     void get_diagnostics(const godot::String& request_id) override;
 
+    // Story 2-1 T6 — test-controllable state snapshot. Returns the dict passed
+    // to `set_session_state_for_testing` (empty defaults if never set).
+    godot::Dictionary query_session_state() const override;
+
+    // Test-driver: stage the dict returned by subsequent `query_session_state`
+    // invocations. Thread-safety: call from the test's main thread between
+    // setup and assertions, not concurrently with worker threads reading state.
+    void set_session_state_for_testing(const godot::Dictionary& snapshot);
+
     // --- Test-driver API ---
     // Returns the recorded-calls buffer by value (godot::Array is COW, cheap).
     // Each element is a Dictionary {"method", "request_id", "args"}.
@@ -103,6 +112,7 @@ private:
                 godot::Dictionary args);
 
     godot::Array recorded_calls_;
+    godot::Dictionary session_state_snapshot_;
     GodotMainDispatcher* dispatcher_;  // non-owning; may be nullptr.
 };
 

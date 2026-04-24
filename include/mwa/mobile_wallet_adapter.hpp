@@ -59,12 +59,20 @@ public:
 	void sign_transactions(const godot::TypedArray<godot::PackedByteArray> &transactions, const godot::Dictionary &opts);
 	void sign_and_send(const godot::TypedArray<godot::PackedByteArray> &transactions, const godot::Dictionary &opts);
 
-	// 4 state getters — return empty defaults in 1-5; real wire-up in Story 2-1
-	// (SecureTokenStore). D-1 rename applied to mwa_is_connected.
+	// 4 state getters — Story 2-1 T6 wires these to MwaSessionState via
+	// bridge->query_session_state() (JNI round-trip on Android; empty defaults
+	// on non-Android / MWA_TESTING null bridge). D-1 rename applied to
+	// mwa_is_connected.
 	[[nodiscard]] bool mwa_is_connected() const;
 	[[nodiscard]] godot::String get_public_key() const;
 	[[nodiscard]] godot::String get_cluster() const;
 	[[nodiscard]] godot::String get_wallet_label() const;
+
+	// Story 2-1 T6 — AC-7 fingerprint surface for MWA.gd facade (T7). Reads
+	// the same MwaSessionState snapshot as the 4 state getters above; returns
+	// empty string pre-connect or on any JNI failure path. 8 lowercase hex
+	// chars post-connect, as computed by AuthTokenFingerprint in T3.
+	[[nodiscard]] godot::String get_auth_token_fingerprint() const;
 
 	// 2 utility — stubs in 1-5; real wire-up in Stories 5-2 / 4-2.
 	[[nodiscard]] godot::Dictionary get_diagnostics();

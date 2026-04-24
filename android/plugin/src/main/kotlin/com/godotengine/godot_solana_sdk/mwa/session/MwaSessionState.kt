@@ -1,6 +1,7 @@
 package com.godotengine.godot_solana_sdk.mwa.session
 
 import com.godotengine.godot_solana_sdk.mwa.util.SecretString
+import org.json.JSONObject
 
 /**
  * In-memory session state for the MWA plugin. Single instance held as a
@@ -50,6 +51,16 @@ internal class MwaSessionState {
     private var authToken: SecretString? = null
     private var authTokenFingerprint: String = ""
     private var walletIconUri: String = ""
+    // Story 2-1 T6 — fields needed by `MobileWalletAdapter`'s C++ state
+    // getters via `MwaJniContext::query_session_state`. T4 stored publicKey
+    // bytes in [connectedKey] and cluster as an Int on the scaffold surface,
+    // neither of which matches the String-typed GDScript getters. Adding
+    // String-typed shadows so the compound [snapshotSessionStateJson] returns
+    // the shape consumed by arch §7.1 state-getter contract without decoding
+    // per call.
+    private var publicKeyBase58: String = ""
+    private var clusterName: String = ""
+    private var walletLabel: String = ""
 
     @Synchronized
     fun setResult(result: Any?) {
@@ -162,6 +173,60 @@ internal class MwaSessionState {
     @Synchronized
     fun getWalletIconUri(): String = walletIconUri
 
+    @Synchronized
+    fun setPublicKeyBase58(encoded: String) {
+        this.publicKeyBase58 = encoded
+    }
+
+    @Synchronized
+    fun getPublicKeyBase58(): String = publicKeyBase58
+
+    @Synchronized
+    fun setClusterName(name: String) {
+        this.clusterName = name
+    }
+
+    @Synchronized
+    fun getClusterName(): String = clusterName
+
+    @Synchronized
+    fun setWalletLabel(label: String) {
+        this.walletLabel = label
+    }
+
+    @Synchronized
+    fun getWalletLabel(): String = walletLabel
+
+    /**
+     * Story 2-1 T6 — atomic JSON snapshot of the 5 state-getter values the
+     * C++ node reads via `MwaJniContext::query_session_state`. The
+     * `@Synchronized` keyword ensures callers see a consistent post-connect
+     * tuple (no torn read between `authToken` going non-null and
+     * `publicKeyBase58` populating).
+     *
+     * Shape (all keys present, strings empty when not connected):
+     *   ```json
+     *   {
+     *     "is_connected": Bool,
+     *     "public_key": String,
+     *     "cluster": String,
+     *     "wallet_label": String,
+     *     "auth_token_fingerprint": String
+     *   }
+     *   ```
+     * `is_connected` is true iff we hold a non-null `authToken` — the field
+     * is wiped to null by [clear] / [clearOnLogout] so it's the authoritative
+     * "session live?" signal.
+     */
+    @Synchronized
+    fun snapshotSessionStateJson(): String = JSONObject().apply {
+        put("is_connected", authToken != null)
+        put("public_key", publicKeyBase58)
+        put("cluster", clusterName)
+        put("wallet_label", walletLabel)
+        put("auth_token_fingerprint", authTokenFingerprint)
+    }.toString()
+
     /**
      * Full wipe. Used by the scaffold-era plugin shutdown path and test
      * teardown. Wipes the [authToken]'s underlying bytes via
@@ -188,6 +253,9 @@ internal class MwaSessionState {
         authToken = null
         authTokenFingerprint = ""
         walletIconUri = ""
+        publicKeyBase58 = ""
+        clusterName = ""
+        walletLabel = ""
     }
 
     /**
@@ -206,5 +274,8 @@ internal class MwaSessionState {
         connectedKey = null
         lastResult = null
         signingStatus = 0
+        publicKeyBase58 = ""
+        clusterName = ""
+        walletLabel = ""
     }
 }

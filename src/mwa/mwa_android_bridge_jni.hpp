@@ -42,6 +42,15 @@ public:
     // Non-owning accessor for JNIEXPORT callbacks. May return `nullptr` if
     // the ctor hasn't run or the dtor already did — callers MUST null-check.
     static GodotMainDispatcher* get_dispatcher();
+
+    // Story 2-1 T6 — synchronous JNI round-trip to the Kotlin plugin that
+    // returns an atomic snapshot of `MwaSessionState` (is_connected,
+    // public_key, cluster, wallet_label, auth_token_fingerprint). Called
+    // from MwaAndroidBridgeJni::query_session_state() on the Godot main
+    // thread. Returns an empty Dictionary if the JNI symbol cache is not
+    // ready, if the plugin instance is null, or if the CallStatic throws —
+    // all recoverable "not yet connected" states that match NoOp's shape.
+    static godot::Dictionary query_session_state();
 };
 
 class MwaAndroidBridgeJni : public MwaAndroidBridge {
@@ -73,6 +82,10 @@ public:
     // 2 lifecycle ops
     void forget_all(const godot::String& request_id) override;
     void get_diagnostics(const godot::String& request_id) override;
+
+    // Story 2-1 T6 — delegates to MwaJniContext::query_session_state() which
+    // performs a synchronous JNI round-trip to MwaSessionState (Kotlin).
+    godot::Dictionary query_session_state() const override;
 
     MwaAndroidBridgeJni(const MwaAndroidBridgeJni&) = delete;
     MwaAndroidBridgeJni& operator=(const MwaAndroidBridgeJni&) = delete;

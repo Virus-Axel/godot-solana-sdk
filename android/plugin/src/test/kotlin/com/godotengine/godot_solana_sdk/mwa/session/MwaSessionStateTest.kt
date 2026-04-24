@@ -1,9 +1,12 @@
 package com.godotengine.godot_solana_sdk.mwa.session
 
 import com.godotengine.godot_solana_sdk.mwa.util.SecretString
+import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class MwaSessionStateTest {
@@ -164,5 +167,70 @@ class MwaSessionStateTest {
 
         assertEquals(7, a.getPendingAction())
         assertEquals(3, b.getPendingAction())
+    }
+
+    @Test
+    fun `T6 snapshotSessionStateJson on fresh instance reports not-connected defaults`() {
+        val s = MwaSessionState()
+
+        val snapshot = JSONObject(s.snapshotSessionStateJson())
+
+        assertFalse(snapshot.getBoolean("is_connected"))
+        assertEquals("", snapshot.getString("public_key"))
+        assertEquals("", snapshot.getString("cluster"))
+        assertEquals("", snapshot.getString("wallet_label"))
+        assertEquals("", snapshot.getString("auth_token_fingerprint"))
+    }
+
+    @Test
+    fun `T6 snapshotSessionStateJson returns all 5 fields after connect`() {
+        val s = MwaSessionState()
+        s.setAuthToken(SecretString("token-bytes".toByteArray(Charsets.UTF_8)))
+        s.setAuthTokenFingerprint("deadbeef")
+        s.setPublicKeyBase58("11111111111111111111111111111111")
+        s.setClusterName("devnet")
+        s.setWalletLabel("Phantom")
+
+        val snapshot = JSONObject(s.snapshotSessionStateJson())
+
+        assertTrue(snapshot.getBoolean("is_connected"))
+        assertEquals("11111111111111111111111111111111", snapshot.getString("public_key"))
+        assertEquals("devnet", snapshot.getString("cluster"))
+        assertEquals("Phantom", snapshot.getString("wallet_label"))
+        assertEquals("deadbeef", snapshot.getString("auth_token_fingerprint"))
+    }
+
+    @Test
+    fun `T6 clearOnLogout wipes state-getter shadow fields`() {
+        val s = MwaSessionState()
+        s.setAuthToken(SecretString("t".toByteArray(Charsets.UTF_8)))
+        s.setPublicKeyBase58("pk")
+        s.setClusterName("devnet")
+        s.setWalletLabel("wallet")
+        s.setAuthTokenFingerprint("fp")
+
+        s.clearOnLogout()
+
+        val snapshot = JSONObject(s.snapshotSessionStateJson())
+        assertFalse(snapshot.getBoolean("is_connected"))
+        assertEquals("", snapshot.getString("public_key"))
+        assertEquals("", snapshot.getString("cluster"))
+        assertEquals("", snapshot.getString("wallet_label"))
+        assertEquals("", snapshot.getString("auth_token_fingerprint"))
+    }
+
+    @Test
+    fun `T6 clear wipes state-getter shadow fields`() {
+        val s = MwaSessionState()
+        s.setAuthToken(SecretString("t".toByteArray(Charsets.UTF_8)))
+        s.setPublicKeyBase58("pk")
+        s.setClusterName("devnet")
+        s.setWalletLabel("wallet")
+
+        s.clear()
+
+        assertEquals("", s.getPublicKeyBase58())
+        assertEquals("", s.getClusterName())
+        assertEquals("", s.getWalletLabel())
     }
 }

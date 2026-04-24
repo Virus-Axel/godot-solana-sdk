@@ -40,6 +40,9 @@ public:
     void forget_all(const godot::String& request_id) override;
     void get_diagnostics(const godot::String& request_id) override;
 
+    // Story 2-1 T6 — returns empty defaults (never connected on non-Android).
+    godot::Dictionary query_session_state() const override;
+
     NoOpMwaAndroidBridge(const NoOpMwaAndroidBridge&) = delete;
     NoOpMwaAndroidBridge& operator=(const NoOpMwaAndroidBridge&) = delete;
 
