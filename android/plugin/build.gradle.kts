@@ -102,6 +102,27 @@ android {
         jvmTarget = "11"
     }
 
+    // Story 2-1 CI fixup round 3 (D-CI-4, Rule 1): exclude META-INF license/notice
+    // files from the merged androidTest APK. Six transitive junit-jupiter jars
+    // (junit-jupiter-5.8.2, junit-jupiter-api-5.8.2, junit-jupiter-engine-5.8.2,
+    // junit-jupiter-params-5.8.2, junit-platform-commons-1.8.2,
+    // junit-platform-engine-1.8.2) — pulled in by the androidTest runtime —
+    // each ship their own `META-INF/LICENSE.md`, causing
+    // `DuplicateRelativeFileException` in `:plugin:mergeDebugAndroidTestJavaResource`.
+    // The LICENSE/NOTICE files are informational and not required at runtime;
+    // excluding them is the standard AGP remedy. Also excluding the common
+    // paired files (LICENSE-notice.md, NOTICE.md, AL2.0, LGPL2.1) to avoid
+    // re-hitting this in future dependency updates.
+    packagingOptions {
+        resources {
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
+            excludes += "META-INF/NOTICE.md"
+            excludes += "META-INF/AL2.0"
+            excludes += "META-INF/LGPL2.1"
+        }
+    }
+
     testOptions {
         unitTests.all {
             it.useJUnitPlatform()
