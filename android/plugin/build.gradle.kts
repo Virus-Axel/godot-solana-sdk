@@ -32,7 +32,17 @@ android {
             }
         }
         ndk {
+            // Story 2-1 CI fixup round 3c (D-CI-5, Rule 1): x86_64 alongside
+            // arm64-v8a so the androidTest APK installs on GitHub's ubuntu +
+            // KVM x86_64 emulator (D-F5). Without x86_64 in the filter,
+            // transitive native libs (via godot-lib-android) are packaged
+            // arm64-only and `adb install` on the emulator fails with
+            // `INSTALL_FAILED_NO_MATCHING_ABIS: res=-113 (Failed to extract
+            // native libraries)`. The plugin AAR itself has no native code;
+            // the release pipeline stays arm64-primary — downstream Godot
+            // games re-filter per their own build targets.
             abiFilters.add("arm64-v8a")
+            abiFilters.add("x86_64")
         }
 
         manifestPlaceholders["godotPluginName"] = pluginName
