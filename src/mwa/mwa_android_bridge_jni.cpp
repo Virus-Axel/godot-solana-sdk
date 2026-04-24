@@ -793,6 +793,25 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postCon
     post_arity2_completed(env, reqId, resultDictJson, "connect_completed", "postConnectCompletedNative");
 }
 
+// Story 2-3 T3 — 2-param `disconnect_completed` JNIEXPORT per A-12.
+// Kotlin side: GDExtensionAndroidPlugin.Companion.postDisconnectCompletedNative (external fun)
+// → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
+//       "disconnect_completed", Array::make(req_id, result_dict))
+// under CR-41 CallbackLease — parallel to postConnectCompletedNative above.
+//
+// The result_dict carries `{request_id, source_method: "disconnect"}` only —
+// no secret material on the disconnect path. On JSON parse failure (unlikely;
+// the Kotlin side builds a 2-key JSON via JSONObject), post_parse_failure_error
+// falls back to mwa_error{PROTOCOL_ERROR, source_method="disconnect",
+// cause="parse_failure"} via the existing helper — preserves the
+// terminal-signal invariant (AC-3 idempotence remains safe because each
+// call carries its own request_id per DD-2-3-4).
+JNIEXPORT void JNICALL
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postDisconnectCompletedNative(
+    JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
+    post_arity2_completed(env, reqId, resultDictJson, "disconnect_completed", "postDisconnectCompletedNative");
+}
+
 JNIEXPORT void JNICALL
 Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postMwaErrorNative(
     JNIEnv* env, jobject /*companion*/, jstring errorDictJson) {

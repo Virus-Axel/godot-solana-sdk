@@ -14,7 +14,16 @@
     "wave": 5,
     "startedAt": "2026-04-24T11:50:00Z",
     "baselineTag": "pre-mwa-android-2-3",
-    "status": "in-progress"
+    "status": "in-progress",
+    "tasks": [
+      { "id": "T1", "status": "done", "committed": true, "commitSha": "b5b5548a", "mergedWith": "T2", "deviation": "D-2-3-1" },
+      { "id": "T2", "status": "done", "committed": true, "commitSha": "b5b5548a", "mergedWith": "T1", "deviation": "D-2-3-1" },
+      { "id": "T3", "status": "done", "committed": true, "commitSha": "pending", "description": "C++ JNIEXPORT postDisconnectCompletedNative" },
+      { "id": "T4", "status": "pending", "description": "MWA.gd facade verification (inspection)" },
+      { "id": "T5", "status": "pending", "description": "androidTest AC-1/AC-3 + R8 smoke update" },
+      { "id": "T6", "status": "pending", "description": "CR-32 desktop GDScript backstop" },
+      { "id": "T7", "status": "pending", "description": "Close-out" }
+    ]
   },
   "phases": {
     "research": {
