@@ -19,8 +19,8 @@
       { "id": "T1", "status": "done", "committed": true, "commitSha": "b5b5548a", "mergedWith": "T2", "deviation": "D-2-3-1" },
       { "id": "T2", "status": "done", "committed": true, "commitSha": "b5b5548a", "mergedWith": "T1", "deviation": "D-2-3-1" },
       { "id": "T3", "status": "done", "committed": true, "commitSha": "pending", "description": "C++ JNIEXPORT postDisconnectCompletedNative" },
-      { "id": "T4", "status": "pending", "description": "MWA.gd facade verification (inspection)" },
-      { "id": "T5", "status": "pending", "description": "androidTest AC-1/AC-3 + R8 smoke update" },
+      { "id": "T4", "status": "done", "committed": false, "description": "MWA.gd facade verification (inspection) — 5/5 invariants verified, no edits" },
+      { "id": "T5", "status": "done", "committed": true, "commitSha": "pending", "description": "androidTest AC-1 retention + AC-3 double-disconnect + R8 smoke REQUIRED_METHODS + CR-45 logged; runtime validation deferred to CI push" },
       { "id": "T6", "status": "pending", "description": "CR-32 desktop GDScript backstop" },
       { "id": "T7", "status": "pending", "description": "Close-out" }
     ]

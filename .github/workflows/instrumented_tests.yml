@@ -137,6 +137,10 @@ jobs:
           # Grep javap -p (all members) for the T4/T5/T6/T7 contract surface.
           REQUIRED_METHODS=(
             mwaAuthorize
+            # Story 2-3 T5 — mwaDisconnect is a new @UsedByGodot instance method
+            # introduced in T2. Inherits A-10 keep rules automatically; the smoke
+            # grep asserts R8 did not strip or rename the symbol.
+            mwaDisconnect
             mwaQuerySessionStateFromJni
             mwaAuthorizeFromJni
             mwaReauthorizeFromJni
@@ -148,6 +152,10 @@ jobs:
             mwaForgetAllFromJni
             mwaGetDiagnosticsFromJni
             postConnectCompletedNative
+            # Story 2-3 T2 — parallel external fun for disconnect_completed's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3).
+            postDisconnectCompletedNative
             postMwaErrorNative
             postMwaTimeoutNative
             postMwaCancelledLifecycleNative
