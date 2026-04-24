@@ -146,6 +146,35 @@ class AuthorizePathTest {
     }
 
     @Test
+    fun `AC-4 no wallet - authorize_no_wallet_json emits mwa_error with NO_MWA_WALLET_INSTALLED`() {
+        val plugin = buildPlugin(
+            clientFactory = { FakeMwaClient(fixturesDir).withScenario("no_wallet") },
+        )
+        val jsonSlot = slot<String>()
+
+        plugin.mwaAuthorize("req-nowallet", identityJson, "devnet", "solana:devnet", timeoutMs = 2_000L)
+
+        awaitCondition(2_000L) {
+            runCatching { verify(exactly = 1) { nativeBridge.postMwaError(capture(jsonSlot)) } }.isSuccess
+        }
+        val payload = JSONObject(jsonSlot.captured)
+        assertEquals("req-nowallet", payload.getString("request_id"))
+        assertEquals("NO_MWA_WALLET_INSTALLED", payload.getString("code"))
+        assertEquals("kotlin", payload.getString("layer"))
+        assertEquals("connect", payload.getString("source_method"))
+        // AC-4 shape: 10-key A-14 envelope present regardless of code.
+        assertTrue(payload.has("message"))
+        assertTrue(payload.has("user_message"))
+        assertTrue(payload.has("developer_details"))
+        assertTrue(payload.has("recoverable"))
+        assertTrue(payload.has("retry_hint"))
+        assertTrue(payload.has("cause"))
+        // Terminal-signal invariant — no other terminal signal alongside.
+        verify(exactly = 0) { nativeBridge.postConnectCompleted(any(), any()) }
+        verify(exactly = 0) { nativeBridge.postMwaTimeout(any()) }
+    }
+
+    @Test
     fun `user canceled - authorize_user_canceled_json emits mwa_error with USER_CANCELED`() {
         val plugin = buildPlugin(
             clientFactory = { FakeMwaClient(fixturesDir).withScenario("user_canceled") },
