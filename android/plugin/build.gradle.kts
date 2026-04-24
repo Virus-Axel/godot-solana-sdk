@@ -43,6 +43,16 @@ android {
         // Ship the R8 strip rules to downstream AAR consumers (architecture.md §8.5,
         // amended A-6). See consumer-rules.pro for the rule set + rationale.
         consumerProguardFiles("consumer-rules.pro")
+
+        // Story 2-1 T9 — androidTest suite (AC-1 plaintext scan, AC-3/5/6 on
+        // real coroutines + real EncryptedSharedPreferences + real Keystore,
+        // AC-7 fingerprint idempotence, AC-8 logcat+filesystem scan). The Fake
+        // Wallet APK route (installed via adb) is replaced by the in-process
+        // FakeMwaClient injected through the @VisibleForTesting ctor — same
+        // pattern as T4 unit tests (D-T9-1 Rule 2). AC-4 no-wallet scenario is
+        // exercised via FakeMwaClient.withScenario("no_wallet") rather than a
+        // real uninstall-before-test step.
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -147,6 +157,22 @@ dependencies {
     // statics in SdkLogTest. Logged as D7 (Rule 1) under Story 1-2 §Deviations Expected; unblocks
     // alongside JUnit 6.x when Kotlin plugin bumps to 2.x (tracked in concerns.md CR-5).
     testImplementation("io.mockk:mockk:1.13.13")
+
+    // Story 2-1 T9 — androidTest (instrumented tests on emulator).
+    //
+    // JUnit 4 (not 5) is the AndroidX Test runner's supported framework. AGP 7.x
+    // ships no @RunWith(AndroidJUnit4::class) adapter for Jupiter, and building
+    // a custom one is out of scope. T9 uses JUnit 4 idioms for androidTest;
+    // unitTest (JVM) keeps JUnit 5. D-T9-2 (Rule 1) logs the split.
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    // mockk-android packages the agent for device runtime; same 1.13.13 pin
+    // (Kotlin 1.8 compatibility) as the unit-test plate.
+    androidTestImplementation("io.mockk:mockk-android:1.13.13")
+    // Coroutines test utilities (runTest, TestScope) — AC-3/5/6 exercise
+    // suspend paths under realistic dispatchers on device.
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 }
 
 // BUILD TASKS DEFINITION

@@ -1,0 +1,166 @@
+name: 📱 Instrumented Tests (AC-1/3/4/5/6/7/8) + R8 smoke (A-10)
+# Story 2-1 T9 — on-emulator Android instrumentation tests plus the R8
+# release-AAR smoke step from A-10 (confirms @UsedByGodot method names
+# survive R8 minification).
+#
+# Route B (D-T9-1 Rule 2): no Fake Wallet APK install step. Tests inject
+# FakeMwaClient via @VisibleForTesting plugin ctor — same pattern as the
+# T4 unit tests, but on real device with real EncryptedSharedPreferences
+# + real Keystore. What this buys us: AC-1 plaintext scan has teeth
+# (real AES256_GCM), AC-8 recursive scan covers the real app data dir,
+# AC-7 fingerprint idempotence exercises the Keystore-backed salt across
+# calls. What this does NOT cover: clientlib-ktx ↔ real wallet intent
+# resolution (tracked as a Story 4-x hardening follow-up).
+on:
+  push:
+    branches:
+      - master
+      - 'feature/**'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  instrumented:
+    name: API 33 emulator · :plugin:connectedAndroidTest
+    # reactivecircus/android-emulator-runner requires a HW-accelerated runner.
+    # macos-latest provides HAXM (Intel) or Apple Silicon + KVM-equivalent;
+    # ubuntu-latest runners have no nested virtualization and cannot boot
+    # the emulator. Per DD-20.
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Enable KVM group perms (Linux fallback — no-op on macOS)
+        if: runner.os == 'Linux'
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api33-google-x86_64
+
+      - name: Run androidTest on API 33 emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
+          disable-animations: true
+          working-directory: android
+          script: |
+            ./gradlew :plugin:connectedDebugAndroidTest --info --stacktrace
+
+      - name: Upload androidTest reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: androidTest-reports
+          path: |
+            android/plugin/build/reports/androidTests/**
+            android/plugin/build/outputs/androidTest-results/**
+
+  r8-smoke:
+    name: R8 smoke — @UsedByGodot method names survive minification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Assemble release AAR (runs R8 — isMinifyEnabled=true per CR-7)
+        run: |
+          cd android
+          ./gradlew :plugin:assembleRelease --info --stacktrace
+
+      - name: Extract classes.jar from release AAR
+        run: |
+          mkdir -p /tmp/mwa-aar
+          cd /tmp/mwa-aar
+          AAR=$(find "$GITHUB_WORKSPACE/android/plugin/build/outputs/aar" -name 'WalletAdapterAndroid-release.aar' | head -1)
+          if [ -z "$AAR" ]; then
+            echo "::error::release AAR not found under android/plugin/build/outputs/aar/"
+            exit 1
+          fi
+          echo "Found AAR: $AAR"
+          unzip -o "$AAR"
+          mkdir -p classes
+          cd classes
+          unzip -o ../classes.jar
+          echo "Extracted class tree root:"
+          ls -la plugin/walletadapterandroid/ || true
+
+      - name: Verify @UsedByGodot method names survive R8 (A-10 + D-12)
+        run: |
+          cd /tmp/mwa-aar/classes
+          CLASS=plugin/walletadapterandroid/GDExtensionAndroidPlugin.class
+          if [ ! -f "$CLASS" ]; then
+            echo "::error::$CLASS not found in release AAR — R8 removed the @UsedByGodot plugin class entirely, or the package layout changed."
+            exit 1
+          fi
+          # A-10 consumer-rules.pro should preserve every @UsedByGodot method name.
+          # Grep javap -p (all members) for the T4/T5/T6/T7 contract surface.
+          REQUIRED_METHODS=(
+            mwaAuthorize
+            mwaQuerySessionStateFromJni
+            mwaAuthorizeFromJni
+            mwaReauthorizeFromJni
+            mwaDisconnectFromJni
+            mwaDeauthorizeFromJni
+            mwaSignMessagesFromJni
+            mwaSignTransactionsFromJni
+            mwaSignAndSendFromJni
+            mwaForgetAllFromJni
+            mwaGetDiagnosticsFromJni
+            postConnectCompletedNative
+            postMwaErrorNative
+            postMwaTimeoutNative
+            postMwaCancelledLifecycleNative
+            postReauthRequiredNative
+          )
+          JAVAP_OUT=$(javap -p "$CLASS")
+          COMPANION_CLASS=plugin/walletadapterandroid/GDExtensionAndroidPlugin\$Companion.class
+          COMPANION_OUT=""
+          if [ -f "$COMPANION_CLASS" ]; then
+            COMPANION_OUT=$(javap -p "$COMPANION_CLASS")
+          fi
+          FAIL=0
+          for M in "${REQUIRED_METHODS[@]}"; do
+            if echo "$JAVAP_OUT$COMPANION_OUT" | grep -q " $M("; then
+              echo "✓ $M survived R8"
+            else
+              echo "::error::R8 stripped or renamed '$M' — @UsedByGodot contract broken. Review consumer-rules.pro + A-10."
+              FAIL=1
+            fi
+          done
+          if [ "$FAIL" -ne 0 ]; then
+            exit 1
+          fi
