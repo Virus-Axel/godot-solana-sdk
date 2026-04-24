@@ -3,28 +3,11 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-24T11:50:00Z",
+  "lastUpdated": "2026-04-24T12:20:00Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": {
-    "storyId": "2-3",
-    "slug": "disconnect",
-    "size": "S",
-    "wave": 5,
-    "startedAt": "2026-04-24T11:50:00Z",
-    "baselineTag": "pre-mwa-android-2-3",
-    "status": "in-progress",
-    "tasks": [
-      { "id": "T1", "status": "done", "committed": true, "commitSha": "b5b5548a", "mergedWith": "T2", "deviation": "D-2-3-1" },
-      { "id": "T2", "status": "done", "committed": true, "commitSha": "b5b5548a", "mergedWith": "T1", "deviation": "D-2-3-1" },
-      { "id": "T3", "status": "done", "committed": true, "commitSha": "pending", "description": "C++ JNIEXPORT postDisconnectCompletedNative" },
-      { "id": "T4", "status": "done", "committed": false, "description": "MWA.gd facade verification (inspection) — 5/5 invariants verified, no edits" },
-      { "id": "T5", "status": "done", "committed": true, "commitSha": "pending", "description": "androidTest AC-1 retention + AC-3 double-disconnect + R8 smoke REQUIRED_METHODS + CR-45 logged; runtime validation deferred to CI push" },
-      { "id": "T6", "status": "done", "committed": true, "commitSha": "pending", "description": "CR-32 desktop GDScript backstop extended with disconnect scenario (C6); refactored into two-phase harness sharing _assert_unsupported_platform_payload helper; runtime validation blocked by gdscript_tests workflow red (round-4 candidate, not T6 scope)" },
-      { "id": "T7", "status": "done", "committed": true, "commitSha": "pending", "description": "Close-out — baseline refresh 192→196; full suite re-run green; Gate 5 evaluation prepared" }
-    ]
-  },
+  "currentStory": null,
   "phases": {
     "research": {
       "status": "complete",
@@ -51,7 +34,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 7,
+  "storiesDone": 8,
   "storiesTotal": 21,
   "changeStories": [],
   "completedStories": [
@@ -266,6 +249,53 @@
         "gdscriptTests": "failing — separate issue, not Story 2-1 CI round-3 scope; round-4 candidate",
         "otherFailures": "Clang Tools + Run Examples + Verify Docs — pre-existing upstream branch failures, not MWA-related"
       }
+    },
+    {
+      "storyId": "2-3",
+      "slug": "disconnect",
+      "size": "S",
+      "wave": 5,
+      "startedAt": "2026-04-24T11:50:00Z",
+      "completedAt": "2026-04-24T12:20:00Z",
+      "gate5Result": "pass",
+      "tasks": 7,
+      "commits": 6,
+      "baselineTag": "pre-mwa-android-2-3",
+      "postTag": "post-mwa-android-2-3",
+      "commitsList": [
+        "b5b5548a feat(mwa): Story 2-3 T1+T2 — disconnect path (TDD) + API + impl",
+        "d7dfe5e3 feat(mwa): Story 2-3 T3 — C++ JNIEXPORT postDisconnectCompletedNative",
+        "abf394dc test(mwa): Story 2-3 T5 — androidTest AC-1/AC-3 + R8 smoke method list + CR-45",
+        "54466505 test(mwa): Story 2-3 T6 — CR-32 desktop backstop extends to disconnect (C6)",
+        "0840e8cb chore(mwa): Story 2-3 T7 — baseline refresh 192→196 + pre-Gate-5 close-out",
+        "410d458a docs(mwa): Story 2-3 code-review fix #1 — mwaDisconnect kdoc clarification"
+      ],
+      "deviations": ["D-2-3-1", "D-2-3-2"],
+      "amendments": [],
+      "concerns": ["CR-45"],
+      "concernsResolved": [],
+      "testsAdded": 6,
+      "testsAddedDetail": "4 Kotlin unit (MwaAndroidPluginDisconnectTest: AC-1 wipe+retention, AC-2 silent-reauth preconditions + CacheKey re-derivability, AC-3 double-disconnect, duplicate-requestId PROTOCOL_ERROR) + 2 androidTest (AC1DisconnectRetainsTokenTest + AC3DoubleDisconnectTest; NOT counted in unit baseline — emulator-only). Pytest unchanged.",
+      "reviewFindings": {
+        "userInteractive": true,
+        "adversarialChecks": 11,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 1,
+        "fixed": 1,
+        "deferred": 0,
+        "note": "Code review (adversarial subagent) found 1 LOW kdoc-clarity finding on mwaDisconnect documentation re same-requestId retry semantics. Fixed in commit 410d458a with one emphasized paragraph + D-4 generate_request_id citation. 10 substantive review rounds during implementation: 2 on the story file itself (concerns C1-C6 before T1 + I-T5-A/B/C/D on AC-1 androidTest), 2 pre-commit iterations on T1+T2 unit test (I-T1-1 tautological assertion, I-T1-2 deleteToken verify gap, I-T1-3 typeAnchor, I-T1-4 mock-vs-disk comment), 1 on AC-3 androidTest (M-T5-1/4/5). Design discipline: CAS-first-then-wipe-then-emit ordering locked per DD-2-3-2; CacheKey-from-caller-args discipline locked per DD-2-3-5.",
+        "acceptanceCriteriaCoverage": "AC-1 unit+androidTest (all 4 preserved identity fields + freshKey re-derivability + real-crypto retention round-trip); AC-2 unit preconditions + on-device DD-2-3-5 evidence; AC-3 unit idempotence + androidTest payload-shape + assertNotEquals on request_ids."
+      },
+      "ciStatus": {
+        "unitBaseline": "green-local-2026-04-24T12:10Z (113 Kotlin + 83 pytest = 196)",
+        "androidTest": "pending — runtime validation on next CI push via Story 2-1 round-3-fixed workflow (ubuntu-latest + KVM + API 33 x86_64 + R8 8.5.35 + META-INF excludes + x86_64 abiFilter)",
+        "r8Smoke": "workflow updated — REQUIRED_METHODS now includes mwaDisconnect + postDisconnectCompletedNative; runtime validation on next CI push",
+        "gdscriptTests": "still failing (pre-existing, round-4 candidate); T6 disconnect scenario ready but workflow red blocks runtime validation",
+        "note": "Story ships with unit baseline green; on-device validation happens asynchronously once the next `git push origin feature/mwa-android` runs the CI matrix."
+      },
+      "notes": "Second Wave 5 story (first was 2-1). Smallest-surface disconnect: authorize-path inverse that wipes MwaSessionState auth-only fields while retaining SecureTokenStore CacheRecord so Story 2-2's silent reauth works. All scaffolding inherited from Story 2-1 (CR-18 dispatcher, InflightMap, MwaSessionState.clearOnLogout, SecureTokenStore, MWA.gd facade delegate, C++ mwa_disconnect bridge-dispatch body). Core code delta: NativeBridge.postDisconnectCompleted interface method + DefaultNativeBridge override + @UsedByGodot fun mwaDisconnect instance method + @JvmStatic external fun postDisconnectCompletedNative + mwaDisconnectFromJni delegate rewrite + JNIEXPORT mirror of postConnectCompletedNative. 5 design decisions locked: DD-2-3-1 pure client-side wipe (no MwaClient.disconnect), DD-2-3-2 CAS-first-then-wipe-then-emit ordering, DD-2-3-3 dispatcher-marshalled with no watchdog, DD-2-3-4 fresh UUID per call (no collapsing), DD-2-3-5 CacheKey derived from caller args (not MwaSessionState). 6 commits: T1+T2 merged (b5b5548a, D-2-3-1 Rule 1) + T3 (d7dfe5e3) + T5 (abf394dc) + T6 (54466505) + T7 (0840e8cb) + code-review docs fix (410d458a). T4 was inspection-only (MWA.gd facade verification, 5/5 invariants PASS, no commit). Unit baseline 192 → 196 (+4 from MwaAndroidPluginDisconnectTest); androidTest pre-2-3 7 ACs → post-2-3 9 ACs expected. CR-45 LOW logged for Route B harness coverage gap (recording NativeBridge mock bypasses the real Kotlin→JNI→C++→GDScript signal path; R8 smoke + T6 desktop backstop + Story 2-1's symmetric connect path are the current mitigations; closure candidate CR-35 headless-Godot tier)."
     }
   ],
   "baselineTests": {
