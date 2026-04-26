@@ -118,6 +118,22 @@ func disconnect() -> void:
 	_node.mwa_disconnect()
 
 
+## Silent re-authorization using the cached auth token. No wallet UI is shown
+## (NFR-5). Completion arrives via one terminal signal per request:
+##   - `reauthorize_completed(request_id, result)` on success (AC-1).
+##   - `mwa_error{code=NOT_CONNECTED}` if no cached token is present (AC-2) or
+##     if the stored cluster/chain-id does not match the caller's args (AC-4
+##     cluster-mismatch); retry hint is "connect" in both cases.
+##   - `mwa_error{code=TOKEN_EXPIRED}` if the wallet rejects the cached token
+##     and the token is wiped from secure storage (AC-3 graceful wipe).
+##   - `mwa_timeout` on watchdog expiry (DD-2-2-3).
+##
+## `opts` (optional): {"timeout_ms": int} — clamped to internal default per
+## DD-23. Omitted keys fall to the C++ node's defaults.
+func reauthorize(opts: Dictionary = {}) -> void:
+	_node.reauthorize(opts)
+
+
 ## Synchronous state read — true after a successful connect, false otherwise.
 ## Backed by MwaSessionState.authToken != null (arch §7.1; round-tripped via
 ## MwaJniContext::query_session_state).
