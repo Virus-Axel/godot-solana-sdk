@@ -83,9 +83,15 @@ class MwaAndroidPluginReauthorizeTest {
     private val walletIconUri = "https://wallet.example/icon.png"
     private val publicKey = "AbcDefGhiJkl1234567890AbcDefGhiJkl1234567890"
 
-    // Base64 of "test-auth-token-reauth" — matches reauthorize_success.json fixture
-    // which has "dGVzdC1hdXRoLXRva2VuLXJlYXV0aA==" for both expected_input and response.
-    private val authTokenBytes = "test-auth-token-reauth".toByteArray(Charsets.UTF_8)
+    // FakeMwaClient treats `auth_token` as an OPAQUE STRING — UTF-8 bytes of the raw
+    // string from the fixture, NOT base64-decoded (see FakeMwaClient.kt:52-57 and L169:
+    // `SecretString(payload.getString("auth_token").toByteArray(Charsets.UTF_8))`).
+    // Seed value MUST be the byte sequence FakeMwaClient will return so the impl's
+    // DD-2-2-5 rotation-detection (`auth.authToken.reveal().contentEquals(cached.authToken.reveal())`)
+    // observes byte-identity in the happy path — matching the LOCKED contract at story line 122-124
+    // ("expected_input.auth_token and response.payload.auth_token are byte-identical:
+    //   `dGVzdC1hdXRoLXRva2VuLXJlYXV0aA==`").
+    private val authTokenBytes = "dGVzdC1hdXRoLXRva2VuLXJlYXV0aA==".toByteArray(Charsets.UTF_8)
     private val salt = ByteArray(32) { 0x01 }
 
     // AC-6 fingerprint identity is mathematical (DD-2-2-5): HKDF-SHA256(authTokenBytes, salt).

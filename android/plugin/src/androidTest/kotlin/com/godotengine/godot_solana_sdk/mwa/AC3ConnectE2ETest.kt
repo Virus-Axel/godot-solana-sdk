@@ -85,10 +85,11 @@ class AC3ConnectE2ETest {
             timeoutMs = 3_000L,
         )
         val returnElapsedMs = System.currentTimeMillis() - returnStartMs
+        // 200ms is a generous device margin; spec says ≤16ms for a pure dispatch (coroutine launch).
         assertTrue(
             "AC-3: mwaAuthorize must return within ≤16ms (observed ${returnElapsedMs}ms). " +
                 "The long work is async — this call only launches a coroutine.",
-            returnElapsedMs <= 200L, // generous device margin; spec says 16ms for a pure dispatch.
+            returnElapsedMs <= 200L,
         )
 
         val jsonSlot = slot<String>()

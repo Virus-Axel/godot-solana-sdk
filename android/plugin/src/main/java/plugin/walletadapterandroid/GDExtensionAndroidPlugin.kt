@@ -477,19 +477,336 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 2-2 T1 stub — full implementation lands in T2.
+     * Story 2-2 T2 — reauthorize-path entry point. Called from the JNI
+     * [mwaReauthorizeFromJni] on a worker thread and from the
+     * `@VisibleForTesting` ctor in unit tests. Implements UC-3 silent
+     * reauthorize per arch §4.2 + DD-2-2-1 through DD-2-2-7:
      *
-     * Entry point for reauthorize from JNI (via [mwaReauthorizeFromJni]) and
-     * from the `@VisibleForTesting` ctor in unit tests. Body is a `TODO` stub
-     * so T1's 8 unit tests compile but fail at runtime (proper TDD red state).
-     * T2 replaces this body with the real dispatch-to-mainDispatcher + watchdog
-     * + 3-tuple-filter + MwaClient.reauthorize + handleSuccess / handleTokenExpired
-     * implementation per story §T2 spec + DD-2-2-1 through DD-2-2-7.
+     * 1. Register the request in [InflightMap] (PROTOCOL_ERROR on duplicate).
+     * 2. `scope.launch { withContext(mainDispatcher) { ... } }` — all state
+     *    mutations and signal emissions run on the main dispatcher (DD-22 parity).
+     * 3. Parse identity JSON (PROTOCOL_ERROR on malformed).
+     * 4. Discover CacheKey via `store.listAllKeys()` 3-tuple filter
+     *    `(cluster, chainId, identityUri)` — DD-2-2-7. NO walletPackage in
+     *    caller args; iteration is O(N) where N ≤ small (typically 1-3).
+     *    If the filter returns empty: NOT_CONNECTED (AC-2 + AC-4 via DD-2-2-1).
+     *    Tie-break on multi-match: most-recently-used (DD-2-2-7).
+     * 5. Load CacheRecord; if vanished between listAllKeys and getToken: NOT_CONNECTED.
+     * 6. Call [MwaClient.reauthorize] inside `withTimeoutOrNull(effectiveMs)`
+     *    (DD-2-2-3). On null: [emitTimeoutReauth].
+     * 7. On [MwaResult.Success]: [handleReauthSuccess] (putToken + fingerprint +
+     *    sessionState + CAS + postReauthorizeCompleted).
+     * 8. On [MwaResult.Failure] with [MwaError.TokenExpired]: [handleTokenExpired]
+     *    (CAS → clearOnLogout → deleteToken → postMwaError, DD-2-2-2).
+     * 9. On other failures: [emitFailureReauth].
+     *
+     * **DD-2-2-1 [LOCKED]:** NO separate cluster-comparison branch.
+     * Cluster mismatch is detected implicitly by the 3-tuple filter returning
+     * empty (DD-27 + DD-2-2-7). `ci/grep_bans.sh` pattern-9 enforces statically.
      */
     @UsedByGodot
-    @Suppress("UNUSED_PARAMETER")
     fun mwaReauthorize(requestId: String, identityJson: String, cluster: String, chainId: String, timeoutMs: Long) {
-        TODO("Story 2-2 T2 fills in")
+        val effectiveMs = effectiveWatchdog(timeoutMs)
+        if (!inflightMap.register(requestId, clock())) {
+            SdkLog.w(TAG, requestId) { "duplicate requestId at mwaReauthorize; refusing re-register" }
+            nativeBridge.postMwaError(
+                buildErrorJson(
+                    requestId = requestId,
+                    error = MwaError.ProtocolError,
+                    developerDetails = "duplicate requestId — caller must use fresh UUIDs per op",
+                    layer = "kotlin",
+                    cause = "duplicate_request_id",
+                    sourceMethod = "reauthorize",
+                ).toString(),
+            )
+            return
+        }
+        scope.launch {
+            try {
+                withContext(mainDispatcher) {
+                    // Step A: parse identity — PROTOCOL_ERROR on malformed input.
+                    val parsed = parseIdentity(identityJson) ?: run {
+                        emitFailureReauth(
+                            requestId,
+                            MwaError.ProtocolError,
+                            developerDetails = "identity.name required; identityJson=<redacted>",
+                        )
+                        return@withContext
+                    }
+
+                    // Step B: discover CacheKey via DD-2-2-7 3-tuple filter.
+                    // walletPackage is NOT in caller args — iterate listAllKeys + filter.
+                    // DD-2-2-1: NO separate cluster comparison branch; the filter itself
+                    // is the detection mechanism (empty result → NOT_CONNECTED).
+                    val store = storeProvider(requireContext())
+                    val candidates = store.listAllKeys().filter {
+                        it.cluster == cluster &&
+                            it.chainId == chainId &&
+                            it.identityUri == parsed.identityUri
+                    }
+                    // Materialize once: load each candidate's record now (single decrypt per
+                    // candidate). Folds the race-guard ("vanished between listAllKeys and
+                    // getToken") into the same empty-result path — same NOT_CONNECTED
+                    // outcome on the wire either way (AC-2 / AC-4 / race all collapse here).
+                    val candidatesWithRecords = candidates.mapNotNull { k ->
+                        store.getToken(k)?.let { k to it }
+                    }
+                    if (candidatesWithRecords.isEmpty()) {
+                        emitFailureReauth(
+                            requestId,
+                            MwaError.NotConnected,
+                            developerDetails = "no readable cached token under (cluster=$cluster, " +
+                                "chainId=$chainId, identityUri=${parsed.identityUri})",
+                        )
+                        return@withContext
+                    }
+
+                    // Tie-break on multi-match (DD-2-2-7): most-recently-used wallet.
+                    val (key, cached) = candidatesWithRecords.maxBy { it.second.lastUsedAtMs }
+
+                    // Step D: call MwaClient.reauthorize inside watchdog (DD-2-2-3).
+                    val client = mwaClientFactory()
+                    try {
+                        val result = withTimeoutOrNull(effectiveMs) {
+                            client.reauthorize(
+                                senderProvider(),
+                                parsed.connectionIdentity,
+                                cached.authToken,
+                                cluster,
+                                chainId,
+                            )
+                        }
+                        when (result) {
+                            null -> emitTimeoutReauth(requestId, effectiveMs)
+                            is MwaResult.Success -> handleReauthSuccess(requestId, key, result.value, store)
+                            is MwaResult.Failure -> {
+                                if (result.error is MwaError.TokenExpired) {
+                                    // DD-2-2-2 graceful wipe: CAS → clearOnLogout → deleteToken → postMwaError.
+                                    handleTokenExpired(requestId, key, store)
+                                } else {
+                                    emitFailureReauth(requestId, result.error, developerDetails = null)
+                                }
+                            }
+                        }
+                    } finally {
+                        runCatching { client.close() }
+                    }
+                }
+            } catch (ce: CancellationException) {
+                // Preserve cancellation propagation — graceful scope teardown, not a crash.
+                throw ce
+            } catch (ex: Throwable) {
+                SdkLog.e(TAG, requestId) {
+                    "mwaReauthorize crashed: ${ex.javaClass.simpleName}: ${ex.message}"
+                }
+                if (inflightMap.tryTerminate(requestId)) {
+                    nativeBridge.postMwaError(
+                        buildErrorJson(
+                            requestId = requestId,
+                            error = MwaError.ProtocolError,
+                            developerDetails = "mwaReauthorize coroutine crashed: ${ex.javaClass.simpleName}",
+                            layer = "kotlin",
+                            cause = ex.javaClass.simpleName,
+                            sourceMethod = "reauthorize",
+                        ).toString(),
+                    )
+                } else {
+                    diagnostics.incrementLateResult()
+                    SdkLog.w(TAG, requestId) { "late_result outcome=crash" }
+                }
+            }
+        }
+    }
+
+    /**
+     * Story 2-2 T2 — success path for reauthorize.
+     *
+     * Updates [SecureTokenStore] `lastUsedAtMs`, handles wallet-side token rotation
+     * (DD-2-2-5), updates [MwaSessionState], wins the terminal-signal CAS, and emits
+     * `reauthorize_completed` via [NativeBridge.postReauthorizeCompleted] using
+     * [buildSuccessJson] (DD-2-2-4 — NO sibling builder).
+     *
+     * **DD-2-2-5 rotation-detection (LOCKED):** compare `auth.authToken.reveal()` vs
+     * `cached.authToken.reveal()` byte-for-byte. The fingerprint, stored [CacheRecord],
+     * and [MwaSessionState] writes ALL use the RETURNED bytes (`auth.authToken`).
+     * - When NOT rotated (FakeMwaClient happy path + clientlib-ktx 2.0.3 + Phantom
+     *   production per story line 124), `auth.authToken == cached.authToken` byte-for-byte
+     *   → fingerprint/store/sessionState writes observably no-op on token bytes.
+     * - When rotated (defensive contract), we log a non-secret event marker
+     *   `auth_token_rotated_by_wallet` (bytes never logged), store the new bytes,
+     *   and let the recomputed fingerprint flow through.
+     *
+     * AC-6 "fingerprint identical pre/post" holds in test scope because the happy-path
+     * fixture returns byte-identical bytes (per the LOCKED contract).
+     *
+     * **`publicKey` is NOT in DD-2-2-5 scope.** Public key represents the canonical
+     * session identity and AC-1 "public_key retained" requires the cached base58 value.
+     * The wallet confirms the same identity via reauthorize; we do not re-encode
+     * `auth.publicKey` (raw bytes) on this path.
+     */
+    private suspend fun handleReauthSuccess(requestId: String, key: CacheKey, auth: AuthResult, store: SecureTokenStore) {
+        val cached = store.getToken(key)
+        if (cached == null) {
+            // Extremely unlikely race: record disappeared during the reauth round-trip.
+            SdkLog.w(TAG, requestId) { "cached record vanished during reauth success path; emitting NOT_CONNECTED" }
+            emitFailureReauth(
+                requestId,
+                MwaError.NotConnected,
+                developerDetails = "cached record vanished during reauth success path",
+            )
+            return
+        }
+
+        // DD-2-2-5 (LOCKED) — rotation-detection. Compare returned vs cached bytes
+        // byte-for-byte. When rotated, log a non-secret event marker (bytes never
+        // logged). Fingerprint, stored CacheRecord, and sessionState writes ALL use
+        // the RETURNED bytes (auth.authToken) — when not rotated, returned == cached
+        // by construction so the writes are observable no-ops on token bytes; when
+        // rotated (defensive contract per story line 126-131), the new bytes flow
+        // through. Per-install salt is never rotated by reauth (only forget_all per
+        // Story 4-2). Public key is NOT in DD-2-2-5 scope — AC-1 "public_key retained"
+        // uses cached.publicKey (base58 already).
+        val isRotated = !auth.authToken.reveal().contentEquals(cached.authToken.reveal())
+        if (isRotated) {
+            SdkLog.w(TAG, requestId) { "auth_token_rotated_by_wallet" } // event marker, NO bytes
+        }
+
+        // DD-2-2-5(a) + (b): persist returned authToken bytes + fresh lastUsedAtMs;
+        // recompute fingerprint from RETURNED bytes (when not rotated, this equals
+        // AuthTokenFingerprint.compute(cached.authToken.reveal(), salt)).
+        // Wrap store ops in StorageCorruptException catch to mirror handleSuccess —
+        // gives callers a consistent MwaError.StorageCorrupt code across authorize +
+        // reauthorize on disk corruption (rather than reauth surfacing PROTOCOL_ERROR
+        // via the outer Throwable handler).
+        val activeFingerprint: String = try {
+            val salt = store.getOrCreatePerInstallSalt()
+            store.putToken(
+                key,
+                cached.copy(authToken = auth.authToken, lastUsedAtMs = clock()),
+            )
+            AuthTokenFingerprint.compute(auth.authToken.reveal(), salt)
+        } catch (ex: StorageCorruptException) {
+            SdkLog.w(TAG, requestId) {
+                "storage corrupt on reauthorize success: ${ex.cause?.javaClass?.simpleName}"
+            }
+            emitFailureReauth(
+                requestId,
+                MwaError.StorageCorrupt,
+                developerDetails = "EncryptedSharedPreferences corrupt: ${ex.cause?.javaClass?.simpleName}",
+            )
+            return
+        }
+
+        // AC-1 "public_key retained" — use the cached base58 string (DD-2-2-5 covers
+        // authToken rotation only, not publicKey).
+        val publicKeyBase58 = cached.publicKey
+
+        // DD-2-2-5(d) + DD-22: update MwaSessionState on mainDispatcher (T2 is already
+        // inside withContext(mainDispatcher) in the caller). Restore the FULL surface
+        // that handleSuccess sets — on cold-start, sessionState is freshly empty and
+        // mwaReauthorize is the only path that re-populates it. Identity metadata
+        // (walletLabel, walletIconUri) comes from the cached record (wallet doesn't
+        // rotate identity on reauth, only authToken per DD-2-2-5). connectedKey raw
+        // bytes come from auth.publicKey (parallel to handleSuccess).
+        sessionState.setAuthToken(auth.authToken)
+        sessionState.setAuthTokenFingerprint(activeFingerprint)
+        sessionState.setWalletIconUri(cached.walletIconUri)
+        sessionState.setKey(auth.publicKey)
+        sessionState.setPublicKeyBase58(publicKeyBase58)
+        sessionState.setClusterName(auth.cluster)
+        sessionState.setWalletLabel(cached.walletLabel)
+
+        // CAS — win the terminal-signal slot exactly once per requestId.
+        if (!inflightMap.tryTerminate(requestId)) {
+            diagnostics.incrementLateResult()
+            SdkLog.w(TAG, requestId) { "late_result outcome=reauthorize" }
+            return
+        }
+
+        // Emit reauthorize_completed — 2-param A-12 shape, 6-key DD-2-2-4 result payload.
+        // DO NOT introduce a sibling builder — reuse buildSuccessJson (DD-2-2-4 LOCKED).
+        nativeBridge.postReauthorizeCompleted(
+            requestId,
+            buildSuccessJson(
+                requestId = requestId,
+                fingerprint = activeFingerprint,
+                publicKeyBase58 = publicKeyBase58,
+                walletLabel = cached.walletLabel,
+                walletIconUri = cached.walletIconUri,
+                cluster = auth.cluster,
+            ).toString(),
+        )
+    }
+
+    /**
+     * Story 2-2 T2 — TOKEN_EXPIRED graceful-wipe path (AC-3, DD-2-2-2).
+     *
+     * **DD-2-2-2 ordering [LOCKED]:** CAS → wipe in-memory state → wipe on-disk
+     * record → emit terminal error. This exact lexical order must be preserved;
+     * any reordering is a Rule 2 deviation requiring an amendment.
+     *
+     *  1. `inflightMap.tryTerminate(requestId)` — win the CAS.
+     *  2. `sessionState.clearOnLogout()` — wipe auth-only in-memory fields.
+     *  3. `store.deleteToken(key)` — **first production caller of deleteToken**.
+     *  4. `nativeBridge.postMwaError(...)` — emit TOKEN_EXPIRED terminal error.
+     */
+    private fun handleTokenExpired(requestId: String, key: CacheKey, store: SecureTokenStore) {
+        if (!inflightMap.tryTerminate(requestId)) {
+            diagnostics.incrementLateResult()
+            SdkLog.w(TAG, requestId) { "late_result outcome=token_expired" }
+            return
+        }
+        // DD-2-2-2 ordering: Step 2 in-memory wipe → Step 3 disk wipe → Step 4 emit error.
+        // First production caller of SecureTokenStore.deleteToken (story T1 spec line 76).
+        sessionState.clearOnLogout()
+        store.deleteToken(key)
+        nativeBridge.postMwaError(
+            buildErrorJson(
+                requestId = requestId,
+                error = MwaError.TokenExpired,
+                developerDetails = "wallet reported auth token expired; cached record deleted (graceful wipe)",
+                layer = "kotlin",
+                cause = null,
+                sourceMethod = "reauthorize",
+            ).toString(),
+        )
+    }
+
+    /**
+     * Story 2-2 T2 — emits a typed failure for the reauthorize path.
+     * Parallel to [emitFailure] on the authorize path; uses `sourceMethod =
+     * "reauthorize"` for A-14 payload consistency.
+     */
+    private fun emitFailureReauth(requestId: String, error: MwaError, developerDetails: String?) {
+        if (inflightMap.tryTerminate(requestId)) {
+            nativeBridge.postMwaError(
+                buildErrorJson(
+                    requestId = requestId,
+                    error = error,
+                    developerDetails = developerDetails,
+                    layer = "kotlin",
+                    cause = null,
+                    sourceMethod = "reauthorize",
+                ).toString(),
+            )
+        } else {
+            diagnostics.incrementLateResult()
+            SdkLog.w(TAG, requestId) { "late_result outcome=failure code=${error.code}" }
+        }
+    }
+
+    /**
+     * Story 2-2 T2 — emits `mwa_timeout` for the reauthorize path (DD-2-2-3).
+     * Parallel to [emitTimeout] on the authorize path; uses `sourceMethod =
+     * "reauthorize"`.
+     */
+    private fun emitTimeoutReauth(requestId: String, effectiveMs: Long) {
+        if (inflightMap.tryTerminate(requestId)) {
+            nativeBridge.postMwaTimeout(buildTimeoutJson(requestId, effectiveMs, "reauthorize").toString())
+        } else {
+            diagnostics.incrementLateResult()
+            SdkLog.w(TAG, requestId) { "late_result outcome=timeout" }
+        }
     }
 
     private suspend fun runAuthorize(requestId: String, identityJson: String, cluster: String, chainId: String, effectiveMs: Long) {
