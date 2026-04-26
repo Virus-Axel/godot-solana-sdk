@@ -812,6 +812,25 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postDis
     post_arity2_completed(env, reqId, resultDictJson, "disconnect_completed", "postDisconnectCompletedNative");
 }
 
+// Story 2-2 T3 — 2-param `reauthorize_completed` JNIEXPORT per A-12.
+// Kotlin side: GDExtensionAndroidPlugin.Companion.postReauthorizeCompletedNative (external fun)
+// → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
+//       "reauthorize_completed", Array::make(req_id, result_dict))
+// under CR-41 CallbackLease — parallel to postDisconnectCompletedNative above.
+//
+// The result_dict carries the reauthorize response payload (public_key,
+// auth_token_fingerprint, etc.) built by Kotlin before the call. On JSON
+// parse failure, post_parse_failure_error falls back to
+// mwa_error{PROTOCOL_ERROR, source_method="reauthorize", cause="parse_failure"}
+// via the existing helper — preserves the terminal-signal invariant.
+// No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
+// Signals are posted via dispatcher only — no direct signal emission here.
+JNIEXPORT void JNICALL
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postReauthorizeCompletedNative(
+    JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
+    post_arity2_completed(env, reqId, resultDictJson, "reauthorize_completed", "postReauthorizeCompletedNative");
+}
+
 JNIEXPORT void JNICALL
 Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postMwaErrorNative(
     JNIEnv* env, jobject /*companion*/, jstring errorDictJson) {
