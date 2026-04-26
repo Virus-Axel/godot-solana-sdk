@@ -14,3 +14,28 @@ script = ExtResource("1_d15cl")
 [node name="WalletAdapter" type="WalletAdapter" parent="."]
 
 [node name="Transaction" type="Transaction" parent="."]
+
+[node name="DiagnosticLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 600.0
+offset_bottom = 100.0
+text = "Public Key: (not yet connected)\nFingerprint: (not yet connected)\nLast Cycle: —"
+autowrap_mode = 2
+
+[node name="ReauthorizeBtn" type="Button" parent="."]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 112.0
+offset_right = 200.0
+offset_bottom = 144.0
+text = "Reauthorize"
+
+[node name="MWAConnectBtn" type="Button" parent="."]
+layout_mode = 0
+offset_left = 216.0
+offset_top = 112.0
+offset_right = 400.0
+offset_bottom = 144.0
+text = "MWA Connect (bootstrap)"
