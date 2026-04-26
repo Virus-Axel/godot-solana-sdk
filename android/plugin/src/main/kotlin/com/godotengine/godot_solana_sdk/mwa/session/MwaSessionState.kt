@@ -51,6 +51,7 @@ internal class MwaSessionState {
     private var authToken: SecretString? = null
     private var authTokenFingerprint: String = ""
     private var walletIconUri: String = ""
+
     // Story 2-1 T6 — fields needed by `MobileWalletAdapter`'s C++ state
     // getters via `MwaJniContext::query_session_state`. T4 stored publicKey
     // bytes in [connectedKey] and cluster as an Int on the scaffold surface,

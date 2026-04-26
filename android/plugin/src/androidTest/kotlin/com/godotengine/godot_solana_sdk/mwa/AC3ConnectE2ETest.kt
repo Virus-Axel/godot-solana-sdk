@@ -6,7 +6,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.godotengine.godot_solana_sdk.mwa.plugin.NativeBridge
 import com.godotengine.godot_solana_sdk.mwa.store.CacheKey
 import com.godotengine.godot_solana_sdk.mwa.store.SecureTokenStore
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify

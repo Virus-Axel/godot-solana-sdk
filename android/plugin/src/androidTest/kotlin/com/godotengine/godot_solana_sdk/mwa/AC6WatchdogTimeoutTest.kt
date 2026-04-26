@@ -88,11 +88,8 @@ class AC6WatchdogTimeoutTest {
                 cluster: String,
                 chainId: String,
             ) = error("nyi")
-            override suspend fun deauthorize(
-                sender: ActivityResultSender,
-                identity: ConnectionIdentity,
-                authToken: SecretString,
-            ) = error("nyi")
+            override suspend fun deauthorize(sender: ActivityResultSender, identity: ConnectionIdentity, authToken: SecretString) =
+                error("nyi")
             override suspend fun disconnect() = error("nyi")
             override suspend fun signMessages(
                 sender: ActivityResultSender,

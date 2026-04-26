@@ -150,16 +150,12 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             DefaultNativeBridge.postMwaError(buildInstanceNullErrorJson(reqId, sourceMethod).toString())
         }
 
-        // Story 2-2 wires the real reauthorize path; T5 logs at I-level and
-        // emits NOT_CONNECTED via the NativeBridge so GDScript consumers
-        // observe a typed error instead of a silent drop. Remaining params
-        // match the mwaAuthorizeFromJni JNI signature for symmetry (same
-        // 5-arg authorize_sig in JNI_OnLoad).
+        // Story 2-2 T1 stub-first scaffolding: delegates to the instance method whose
+        // body is `TODO("Story 2-2 T2 fills in")`. T2 replaces the TODO with real impl.
         @JvmStatic
-        @Suppress("UNUSED_PARAMETER")
         fun mwaReauthorizeFromJni(reqId: String, identityJson: String, cluster: String, chainId: String, timeoutMs: Long) {
-            Log.i(TAG, "mwaReauthorizeFromJni: Story 2-2 scope; reqId=$reqId")
-            instance?.emitNotImplemented(reqId, "reauthorize") ?: emitInstanceNullError(reqId, "reauthorize")
+            instance?.mwaReauthorize(reqId, identityJson, cluster, chainId, timeoutMs)
+                ?: emitInstanceNullError(reqId, "reauthorize")
         }
 
         @JvmStatic
@@ -257,6 +253,18 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
          */
         @JvmStatic
         external fun postDisconnectCompletedNative(reqId: String, resultDictJson: String)
+
+        /**
+         * Story 2-2 T1 stub — 2-param `reauthorize_completed` JNI callback per A-12.
+         * Kotlin → C++ `Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postReauthorizeCompletedNative`
+         * (Story 2-2 T3) → dispatcher.post("reauthorize_completed", Array::make(reqId, result_dict)).
+         *
+         * `resultDictJson` carries `{request_id, auth_token_fingerprint, public_key,
+         * wallet_label, wallet_icon_uri, cluster}` per DD-2-2-4. WARNING — do NOT log
+         * or interpolate `resultDictJson` (contains auth_token_fingerprint).
+         */
+        @JvmStatic
+        external fun postReauthorizeCompletedNative(reqId: String, resultDictJson: String)
 
         @JvmStatic
         external fun postMwaErrorNative(errorDictJson: String)
@@ -466,6 +474,22 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 nativeBridge.postDisconnectCompleted(requestId, resultJson)
             }
         }
+    }
+
+    /**
+     * Story 2-2 T1 stub — full implementation lands in T2.
+     *
+     * Entry point for reauthorize from JNI (via [mwaReauthorizeFromJni]) and
+     * from the `@VisibleForTesting` ctor in unit tests. Body is a `TODO` stub
+     * so T1's 8 unit tests compile but fail at runtime (proper TDD red state).
+     * T2 replaces this body with the real dispatch-to-mainDispatcher + watchdog
+     * + 3-tuple-filter + MwaClient.reauthorize + handleSuccess / handleTokenExpired
+     * implementation per story §T2 spec + DD-2-2-1 through DD-2-2-7.
+     */
+    @UsedByGodot
+    @Suppress("UNUSED_PARAMETER")
+    fun mwaReauthorize(requestId: String, identityJson: String, cluster: String, chainId: String, timeoutMs: Long) {
+        TODO("Story 2-2 T2 fills in")
     }
 
     private suspend fun runAuthorize(requestId: String, identityJson: String, cluster: String, chainId: String, effectiveMs: Long) {

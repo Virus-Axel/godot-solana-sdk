@@ -65,6 +65,20 @@ internal interface NativeBridge {
     fun postDisconnectCompleted(requestId: String, resultDictJson: String)
 
     /**
+     * 2-param `reauthorize_completed` per A-12 — Story 2-2. `requestId` is the
+     * first signal argument; `resultDictJson` is the second (Dictionary carrying
+     * `{request_id, auth_token_fingerprint, public_key, wallet_label,
+     * wallet_icon_uri, cluster}` — same 6-key shape as `connect_completed`
+     * per DD-2-2-4).
+     *
+     * **WARNING — `resultDictJson` contains `auth_token_fingerprint` (a
+     * derivative of the wallet's auth_token). Do NOT log, interpolate, or
+     * include in exception messages.** `ci/grep_bans.sh` pattern-8 bans
+     * `resultDictJson` from any `Log.*` / `SdkLog.*` call.
+     */
+    fun postReauthorizeCompleted(requestId: String, resultDictJson: String)
+
+    /**
      * 1-param `mwa_error` per A-12. `request_id` is embedded inside
      * `errorDictJson` at the `request_id` field (A-14 10-key shape).
      *
@@ -112,6 +126,10 @@ internal object DefaultNativeBridge : NativeBridge {
 
     override fun postDisconnectCompleted(requestId: String, resultDictJson: String) {
         GDExtensionAndroidPlugin.postDisconnectCompletedNative(requestId, resultDictJson)
+    }
+
+    override fun postReauthorizeCompleted(requestId: String, resultDictJson: String) {
+        GDExtensionAndroidPlugin.postReauthorizeCompletedNative(requestId, resultDictJson)
     }
 
     override fun postMwaError(errorDictJson: String) {
