@@ -3,19 +3,11 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-26T11:10:00Z",
+  "lastUpdated": "2026-04-26T11:30:00Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": {
-    "storyId": "2-2",
-    "slug": "reauthorize-silent-reauth",
-    "size": "M",
-    "wave": 5,
-    "startedAt": "2026-04-24T12:25:00Z",
-    "baselineTag": "pre-mwa-android-2-2",
-    "status": "in-progress"
-  },
+  "currentStory": null,
   "phases": {
     "research": {
       "status": "complete",
@@ -42,7 +34,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 8,
+  "storiesDone": 9,
   "storiesTotal": 21,
   "changeStories": [],
   "completedStories": [
@@ -313,6 +305,61 @@
         "note": "Story ships with unit baseline green; on-device validation happens asynchronously once the next `git push origin feature/mwa-android` runs the CI matrix."
       },
       "notes": "Second Wave 5 story (first was 2-1). Smallest-surface disconnect: authorize-path inverse that wipes MwaSessionState auth-only fields while retaining SecureTokenStore CacheRecord so Story 2-2's silent reauth works. All scaffolding inherited from Story 2-1 (CR-18 dispatcher, InflightMap, MwaSessionState.clearOnLogout, SecureTokenStore, MWA.gd facade delegate, C++ mwa_disconnect bridge-dispatch body). Core code delta: NativeBridge.postDisconnectCompleted interface method + DefaultNativeBridge override + @UsedByGodot fun mwaDisconnect instance method + @JvmStatic external fun postDisconnectCompletedNative + mwaDisconnectFromJni delegate rewrite + JNIEXPORT mirror of postConnectCompletedNative. 5 design decisions locked: DD-2-3-1 pure client-side wipe (no MwaClient.disconnect), DD-2-3-2 CAS-first-then-wipe-then-emit ordering, DD-2-3-3 dispatcher-marshalled with no watchdog, DD-2-3-4 fresh UUID per call (no collapsing), DD-2-3-5 CacheKey derived from caller args (not MwaSessionState). 6 commits: T1+T2 merged (b5b5548a, D-2-3-1 Rule 1) + T3 (d7dfe5e3) + T5 (abf394dc) + T6 (54466505) + T7 (0840e8cb) + code-review docs fix (410d458a). T4 was inspection-only (MWA.gd facade verification, 5/5 invariants PASS, no commit). Unit baseline 192 → 196 (+4 from MwaAndroidPluginDisconnectTest); androidTest pre-2-3 7 ACs → post-2-3 9 ACs expected. CR-45 LOW logged for Route B harness coverage gap (recording NativeBridge mock bypasses the real Kotlin→JNI→C++→GDScript signal path; R8 smoke + T6 desktop backstop + Story 2-1's symmetric connect path are the current mitigations; closure candidate CR-35 headless-Godot tier)."
+    },
+    {
+      "storyId": "2-2",
+      "slug": "reauthorize-silent-reauth",
+      "size": "M",
+      "wave": 5,
+      "startedAt": "2026-04-24T12:25:00Z",
+      "completedAt": "2026-04-26T11:30:00Z",
+      "gate5Result": "pass",
+      "tasks": 7,
+      "commits": 7,
+      "baselineTag": "pre-mwa-android-2-2",
+      "postTag": "post-mwa-android-2-2",
+      "commitsList": [
+        "62f95a76 test(mwa): Story 2-2 T1 — Kotlin unit tests (TDD red) + minimal stub scaffolding",
+        "dea7cb3c feat(mwa): Story 2-2 T2 — mwaReauthorize impl + DD-2-2-1 grep-ban + DD-2-2-5 fidelity",
+        "0627f9ca feat(mwa): Story 2-2 T3 — C++ JNIEXPORT postReauthorizeCompletedNative",
+        "a9637173 feat(mwa): Story 2-2 T4 — MWA.gd reauthorize facade method",
+        "3a5c16f5 test(mwa): Story 2-2 T5 — androidTest AC-1/AC-3 + R8 smoke + fixture assets",
+        "45dac146 docs(mwa): Story 2-2 T6 — 10-cycle reauthorize release-gate procedure + demo-app wiring",
+        "50b6d61a chore(mwa): Story 2-2 T7 — baseline refresh 196→204 + pre-Gate-5 close-out"
+      ],
+      "deviations": [
+        "D-2-2-1 Rule 1 (T1): 3 ktlint-format-only side effects committed inline (MwaSessionState +1 blank line, AC3ConnectE2ETest -1 unused import, AC6WatchdogTimeoutTest signature reflow)",
+        "D-2-2-2 Rule 1 (T2): pre-existing ktlint cleanup surfaced by umbrella ktlintCheck (AC3ConnectE2ETest comment placement from b58736cef, GDExtensionAndroidPlugin.kt long-line + comment placement)",
+        "D-2-2-3 Rule 1 (T6): demo-app path drift — story line 429 cited addons/SolanaSDK/example/ but actual structure is example/WalletAdapterAndroid/ (top-level). Story-doc inaccuracy; not a code deviation."
+      ],
+      "amendments": [],
+      "concerns": [
+        "CR-46",
+        "CR-47",
+        "CR-48"
+      ],
+      "concernsResolved": [],
+      "testsAdded": 10,
+      "testsAddedDetail": "8 Kotlin unit (MwaAndroidPluginReauthorizeTest: AC-1 silent reauth, AC-2 cache-miss NOT_CONNECTED, AC-3 graceful wipe + TOKEN_EXPIRED + DD-2-2-2 ordering capture via state-snapshot at deleteToken-call time, AC-4 cluster-mismatch via 3-tuple filter, AC-6 fingerprint identity, watchdog timeout, late-result drop, duplicate-requestId PROTOCOL_ERROR) + 2 androidTest (AC1ReauthorizeSilentTest 24 assertions covering 6/6 DD-2-2-4 success-payload keys + DD-2-2-4 negative source_method invariant + Route B structural activity-stack argument + AC-6 in-band; AC3TokenExpiredWipeTest 25 assertions covering full A-14 10-key envelope incl. cause + HIGHEST-LEVERAGE store.getToken==null on real EncryptedSharedPreferences + DD-2-2-2 ordering scope clarification; NOT counted in unit baseline — emulator-only). Pytest unchanged. + 1 release-gate procedure document (304 lines).",
+      "reviewFindings": {
+        "userInteractive": true,
+        "rounds": 6,
+        "findings": 18,
+        "blockers": 2,
+        "substantive": 9,
+        "minor": 7,
+        "fixed": "all",
+        "deferred": 0,
+        "note": "Per-task [R]/[E] reviews in lieu of formal code-review-agent spawn (the agent ran out of tool budget across 3 spawn attempts; see /start log). 6 user-interactive review rounds: T1 surfaced I-T1-A (T2-GREEN-blocker — synthetic preFingerprint vs real HKDF; fixed by computing at class-init), I-T1-B (DD-2-2-2 ordering capture via state-snapshot pattern; fixed), I-T1-C (FakeMwaClient.withScenario + mwa.fixtures.dir verified safe pre-edit). T2 surfaced a DD-2-2-5 LOCKED deviation (cached-bytes-always semantics in handleReauthSuccess); HALTED + reverted to spec fidelity (auth.authToken throughout) without amendment. T3 surfaced ed25519 submodule env gap → CR-46. T5 AC3 surfaced I-T5-A (cause key 9/10→10/10 A-14 coverage), I-T5-B (shared-singleton kdoc), I-T5-C (DD-2-2-2 ordering scope), I-T5-D (CR-47 multi-match tie-break), I-T5-F (citation accuracy). T5 AC1 surfaced I-T5-AC1-A (DD-2-2-4 3/6→6/6 keys), I-T5-AC1-B (no source_method negative invariant), I-T5-AC1-C (kdoc tightened — UiDevice/ActivityMonitor are technically available but Route B makes them zero-info), I-T5-AC1-D (CR-48 rotation branch coverage gap). T6 surfaced 2 CRITICAL: I-T6-A (has_seen_connect never flips because demo uses scaffold $WalletAdapter, not MWA — added MWA Connect bootstrap button), I-T6-B (demo flow re-triggers wallet chooser breaking AC-5 0-transitions — gated demo flow on has_seen_connect). I-T6-E MEDIUM (empty pk/fp guard added to release-gate marker). All 18 findings fixed before commit; CR-45 inheritance from Story 2-3 acknowledged not re-logged."
+      },
+      "ciStatus": {
+        "unitBaseline": "green-local-2026-04-26T11:10Z (121 Kotlin + 83 pytest = 204)",
+        "androidTest": "pending — runtime validation on next CI push via Story 2-1 round-3-fixed workflow (ubuntu-latest + KVM + API 33 x86_64 + R8 8.5.35 + META-INF excludes + x86_64 abiFilter); AC1ReauthorizeSilentTest + AC3TokenExpiredWipeTest expected 11 total (was 9)",
+        "r8Smoke": "workflow updated — REQUIRED_METHODS now includes mwaReauthorize + postReauthorizeCompletedNative; runtime validation on next CI push",
+        "gdscriptTests": "still failing (pre-existing, round-4 candidate; T6 demo-app wiring did not fix the existing failures)",
+        "note": "Story ships with unit baseline green; on-device validation happens asynchronously once the next `git push origin feature/mwa-android` runs the CI matrix."
+      },
+      "notes": "Third Wave 5 story (after 2-1 and 2-3). Smallest-surface silent-reauth: client-side discovery via DD-2-2-7 3-tuple listAllKeys filter + 4-tuple CacheKey rebuild from caller args + DD-2-2-5 rotation-detection contract (defensive — fixtures return byte-identical authToken in test scope; production rotation observed manually via T6 release-gate). Core code delta: NativeBridge.postReauthorizeCompleted interface method + DefaultNativeBridge override + @UsedByGodot fun mwaReauthorize instance method + handleReauthSuccess + handleTokenExpired + emitFailureReauth + emitTimeoutReauth helpers + @JvmStatic external fun postReauthorizeCompletedNative + mwaReauthorizeFromJni rewrite + JNIEXPORT mirror of postConnectCompletedNative + ci/grep_bans.sh pattern-9 (DD-2-2-1 static guard) + .bad fixture for self-test. 7 design decisions locked: DD-2-2-1 no cluster-comparison branch (3-tuple filter is sole detection), DD-2-2-2 graceful-wipe ordering (CAS → clearOnLogout → deleteToken → postMwaError), DD-2-2-3 watchdog parity reusing effectiveWatchdog helper, DD-2-2-4 buildSuccessJson reuse (no sibling builder), DD-2-2-5 rotation-detection with returned bytes throughout (LOCKED contract restored mid-T2 review after subagent's cached-bytes deviation), DD-2-2-6 release-gate as manual procedure (NOT CI per AC-5), DD-2-2-7 walletPackage discovery via listAllKeys + 3-tuple filter + maxByOrNull lastUsedAtMs tie-break. 7 commits: T1 (62f95a76) + T2 (dea7cb3c) + T3 (0627f9ca) + T4 (a9637173) + T5 (3a5c16f5) + T6 (45dac146) + T7 (0627f9ca→50b6d61a). Unit baseline 196 → 204; androidTest pre-2-2 9 ACs → post-2-2 11 expected. AC-3 is the FIRST production caller of SecureTokenStore.deleteToken in the codebase. CR-45 inherited transitively (Route B harness gap); CR-46 (ed25519 submodule env gap, surfaced T3), CR-47 (DD-2-2-7 multi-match tie-break uncovered), CR-48 (DD-2-2-5 rotation branch uncovered) all LOW with candidate-test sketches. Closure candidates: CR-35 headless-Godot tier for CR-45/47/48 transitive coverage; T6 release-gate procedure for CR-48 manual rotation observation."
     }
   ],
   "baselineTests": {
