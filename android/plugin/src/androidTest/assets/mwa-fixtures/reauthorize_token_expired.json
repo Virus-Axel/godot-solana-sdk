@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "op": "reauthorize",
+  "scenario": "token_expired",
+  "expected_input": {
+    "identity": {
+      "name": "Test Game",
+      "uri": "https://example.com/godot-mwa-sample",
+      "icon_uri": "https://example.com/icon.png"
+    },
+    "auth_token": "dGVzdC1hdXRoLXRva2VuLWV4cGlyZWQ=",
+    "cluster": "devnet",
+    "chain_id": "solana:devnet"
+  },
+  "response": {
+    "type": "error",
+    "code": "TOKEN_EXPIRED"
+  }
+}

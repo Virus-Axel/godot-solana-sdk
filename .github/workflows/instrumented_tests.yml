@@ -141,6 +141,10 @@ jobs:
             # introduced in T2. Inherits A-10 keep rules automatically; the smoke
             # grep asserts R8 did not strip or rename the symbol.
             mwaDisconnect
+            # Story 2-2 T5 — mwaReauthorize is a new @UsedByGodot instance method
+            # introduced in T2. Inherits A-10 keep rules automatically; the smoke
+            # grep asserts R8 did not strip or rename the symbol.
+            mwaReauthorize
             mwaQuerySessionStateFromJni
             mwaAuthorizeFromJni
             mwaReauthorizeFromJni
@@ -156,6 +160,10 @@ jobs:
             # Kotlin→C++ callback path. JNI symbol linked at runtime via the
             # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3).
             postDisconnectCompletedNative
+            # Story 2-2 T2 — parallel external fun for reauthorize_completed's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3).
+            postReauthorizeCompletedNative
             postMwaErrorNative
             postMwaTimeoutNative
             postMwaCancelledLifecycleNative
