@@ -61,7 +61,7 @@ epics:
         slug: reauthorize-silent-reauth
         title: "reauthorize + TOKEN_EXPIRED + 10-Cycle Silent-Reauth Test"
         size: M
-        status: backlog
+        status: in-progress
         wave: 5
         dependencies: ["2-1"]
       - id: "2-3"

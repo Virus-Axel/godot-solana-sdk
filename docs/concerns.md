@@ -420,3 +420,56 @@ Deferred items from code reviews and implementation. Tracked for future resoluti
 - **Mitigation until closed:** R8 smoke (instrumented_tests.yml REQUIRED_METHODS) asserts `mwaDisconnect` + `postDisconnectCompletedNative` symbols survive minification. T6 GDScript desktop backstop (test_unsupported_platform.gd) exercises the NoOp-bridge side of the signal. Story 2-1's AC-3 connect test proves the real-JNI → GDScript signal path for the `connect_completed` symmetry.
 - **Trigger to close:** CR-35 headless-Godot tier lands (earliest Story 5-x CI polish) OR a manual on-device smoke walkthrough documents disconnect_completed reception in a real Godot scene (can ride with Story 3-1 signing-path validation).
 - **Candidate test:** Add a single headless-Godot GDScript test that (i) loads the plugin, (ii) connects via a FakeMwaClient fixture, (iii) calls MWA.disconnect(), (iv) asserts MWA.disconnect_completed fired with `source_method == "disconnect"`.
+
+## CR-46: `ed25519` submodule uninitialized — host scons build pre-existing fail
+- **Story:** 2-2 (surfaced during T3) | **Severity:** LOW
+- **Detail:** `git submodule status` shows the `ed25519` submodule with a leading `-` (`-b1f19fab... ed25519`), meaning the submodule directory is empty / not checked out. Host `scons target=template_release` fails in `src/mwa/wallet_adapter_signer.cpp` (or another non-MWA TU) on `ed25519.h not found`. Pre-existing — confirmed by stash-test during Story 2-2 T3 (reverting T3 produces the identical failure at the same TU). Likely deinitialized by an earlier `git submodule deinit` or never-initialized on the dev machine. The same `build-containers` submodule is also uninitialized but has no impact on the build.
+- **Impact:** Host scons build cannot complete on this dev environment; story 2-2 truth line 536 ("Non-Android desktop builds compile + link") cannot be locally verified post-T3. Android gradle build is unaffected — the JNI TU is SCons-guarded Android-only and the Android toolchain pulls ed25519 sources differently (or not at all). CI's Linux/macOS scons matrix may also surface this if the runner doesn't `git submodule update --init` before `scons`.
+- **Risk:** LOW for Story 2-2 specifically — T3's symbol is Android-only and fully verified by `./gradlew :plugin:assembleRelease` + Kotlin unit baseline. The story's host-build verification line is moot for the JNI TU. Risk is for OTHER TUs (`wallet_adapter_signer.cpp` from Story 1-3) which the host-build matrix legitimately needs.
+- **Mitigation until closed:** Run `git submodule update --init ed25519` once locally before any `scons` invocation. Verify CI workflows include `git submodule update --init --recursive` (or equivalent) before scons steps. T7 close-out should confirm the local host build passes after a manual submodule init, OR amend the story to explicitly scope-fence the host-build verification to non-MWA TUs.
+- **Trigger to close:** Either (a) a `.gitmodules` audit + CI workflow check confirms automatic init in all build paths, (b) a documentation update in CONTRIBUTING / dev-setup explicitly calls out the manual submodule init, or (c) Story 2-2 T7 verifies host scons green after `git submodule update --init ed25519` and logs the resolution.
+- **Candidate fix:** Single command: `git submodule update --init --recursive`. If this does not resolve, deeper investigation (potentially missing remote / archived submodule URL) needed.
+
+## CR-47: DD-2-2-7 multi-match tie-break uncovered by Story 2-2 tests
+- **Story:** 2-2 (surfaced during T5 review) | **Severity:** LOW
+- **Detail:** Story 2-2 wired a most-recently-used wallet tie-break in `mwaReauthorize` per DD-2-2-7 (story line 158): when `store.listAllKeys().filter { 3-tuple }` returns 2+ candidates, pick `maxByOrNull { store.getToken(it)?.lastUsedAtMs ?: 0L }`. Neither T1 unit tests nor T5 androidTest exercises the multi-match path — every test seeds exactly one CacheRecord. A regression that swapped `maxByOrNull` to `minByOrNull` (selecting LEAST-recent), or that broke the `lastUsedAtMs` comparison (e.g., string-compare instead of numeric), would slip through Story 2-2's test surface entirely.
+- **Risk:** LOW — the realistic case (user authorized to game with Phantom, then later with Solflare on the same cluster, then calls reauthorize) is rare. The implementation uses Kotlin stdlib `maxByOrNull` against a `Long` field, leaving a narrow regression surface (mostly: an editor accidentally renaming `max` to `min`, or a refactor that changes `lastUsedAtMs` semantics).
+- **Mitigation until closed:** Implementation correctness verified by inspection (T2 `handleReauthSuccess` discovery branch + DD-2-2-7 spec matching). Production logs would surface a wrong-wallet selection if it happened (the wallet rejects the cached token bytes for a different wallet → AC-3 graceful wipe → user retries connect, sees correct wallet chooser).
+- **Trigger to close:** Add a unit-test scenario in `MwaAndroidPluginReauthorizeTest` that seeds 2 CacheRecords with the same 3-tuple but distinct `walletPackage` + distinct `lastUsedAtMs`, calls `mwaReauthorize`, asserts `MwaClient.reauthorize` was invoked with the cached `authToken` from the most-recent record. Or fold into a future story (4-x or CI polish) that adds a parameterized multi-match harness.
+- **Candidate test (sketch):**
+  ```kotlin
+  @Test fun `DD-2-2-7 multi-match picks most-recently-used wallet`() {
+      seedPostConnectSession()
+      seedCacheRecord(walletPackage = "com.phantom.app", lastUsedAtMs = 1000L)
+      seedCacheRecord(walletPackage = "com.solflare.app", lastUsedAtMs = 5000L)
+      val capturedToken = slot<SecretString>()
+      every { mockClient.reauthorize(any(), any(), capture(capturedToken), any(), any()) } returns ...
+      plugin.mwaReauthorize("rea-mm", identityJson, "devnet", "solana:devnet", 5000L)
+      // Assert capturedToken.captured matches the Solflare seed (max lastUsedAtMs).
+  }
+  ```
+
+## CR-48: DD-2-2-5 token rotation branch uncovered by Story 2-2 automated tests
+- **Story:** 2-2 (surfaced during T5 review) | **Severity:** LOW
+- **Detail:** `handleReauthSuccess` contains an explicit rotation-detection branch (DD-2-2-5 LOCKED): when `auth.authToken.reveal().contentEquals(cached.authToken.reveal()) == false`, log `auth_token_rotated_by_wallet` event marker and persist returned bytes via `store.putToken(key, cached.copy(authToken = auth.authToken, ...))`. The `FakeMwaClient.reauthorize_success.json` fixture returns BYTE-IDENTICAL `authToken` per fixture-parity contract (story line 122), so `isRotated == false` in every T1 unit test and every T5 androidTest. The rotation branch (log marker + recomputed fingerprint from new bytes + putToken with new bytes) is never exercised by automated tests in 2-2.
+- **Risk:** LOW — the spec calls DD-2-2-5 a "defensive contract" only meaningful in real-wallet scenarios where rotation actually happens (clientlib-ktx 2.0.3 + Phantom production currently never rotate per story line 124). The T6 manual release-gate procedure observes rotation events with real Phantom on a physical device. A regression that broke the rotation branch would manifest only when a wallet starts rotating tokens on reauth — at which point the test surface would catch it on the first T6 release-gate run.
+- **Mitigation until closed:** Implementation correctness verified by T2 inspection (DD-2-2-5 fidelity restored — fingerprint/store/sessionState all use `auth.authToken` returned bytes regardless of `isRotated`; the if branch only adds the log marker). Spec line 130 explicitly accepts this gap: "T1 + T5 fixtures use byte-identical tokens (FakeMwaClient reauthorize_success.json), so AC-6's strict equality assertion holds in test scope."
+- **Trigger to close:** Add a unit-test scenario that injects a parameterized mock `MwaClient.reauthorize` returning DIFFERENT `authToken` bytes than the seeded `cached.authToken`, then asserts: (a) `SdkLog.w` called with message containing "auth_token_rotated_by_wallet", (b) `store.getToken(key)?.authToken.reveal()` equals the returned bytes (not the seeded ones), (c) `sessionState.getAuthTokenFingerprint()` matches `AuthTokenFingerprint.compute(returnedBytes, salt)`. Or fold into a future Story 4-x rotation-aware refactor.
+- **Candidate test (sketch):**
+  ```kotlin
+  @Test fun `DD-2-2-5 rotated token persists new bytes and logs marker`() {
+      seedPostConnectSession()
+      val (cacheKey, _) = seedCacheRecord()  // cached.authToken = "test-cached".bytes
+      val rotatedToken = SecretString("test-rotated-by-wallet".toByteArray())
+      val mockClient = mockk<MwaClient> {
+          coEvery { reauthorize(any(), any(), any(), any(), any()) } returns
+              MwaResult.Success(authResultWith(authToken = rotatedToken))
+      }
+      val plugin = buildPlugin(clientFactory = { mockClient })
+      plugin.mwaReauthorize("rea-rot", identityJson, "devnet", "solana:devnet", 5000L)
+      // Assert: log marker fired; store.getToken(cacheKey)?.authToken.reveal()
+      // matches "test-rotated-by-wallet".bytes; sessionState.getAuthTokenFingerprint()
+      // matches compute(rotatedToken.reveal(), salt); reauthorize_completed payload's
+      // auth_token_fingerprint reflects the NEW value (not preFingerprint).
+  }
+  ```
