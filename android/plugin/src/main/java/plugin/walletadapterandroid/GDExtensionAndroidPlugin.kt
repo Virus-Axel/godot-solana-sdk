@@ -152,8 +152,12 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             DefaultNativeBridge.postMwaError(buildInstanceNullErrorJson(reqId, sourceMethod).toString())
         }
 
-        // Story 2-2 T1 stub-first scaffolding: delegates to the instance method whose
-        // body is `TODO("Story 2-2 T2 fills in")`. T2 replaces the TODO with real impl.
+        // Story 2-2 T2 — JNI shim forwards to the `mwaReauthorize(...)` instance
+        // method with the full reauth-args set (identityJson, cluster, chainId,
+        // timeoutMs); the C++ side at `MobileWalletAdapter::reauthorize` populates
+        // these from sessionState before crossing JNI. Null-instance branch routes
+        // to mwa_error{NOT_CONNECTED, source_method="reauthorize"} via the AC-6
+        // emitInstanceNullError helper.
         @JvmStatic
         fun mwaReauthorizeFromJni(reqId: String, identityJson: String, cluster: String, chainId: String, timeoutMs: Long) {
             instance?.mwaReauthorize(reqId, identityJson, cluster, chainId, timeoutMs)
