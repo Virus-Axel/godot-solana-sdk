@@ -118,6 +118,33 @@ func disconnect() -> void:
 	_node.mwa_disconnect()
 
 
+## Revoke the wallet's auth_token AND wipe ALL local cache records keyed under
+## this caller's identity (FR-5 / AC-NFR-SEC-5). Always clears local state
+## regardless of the remote outcome — the threat model is a returned/stolen
+## device that must not retain a working auth_token. Completion arrives via:
+##   - `deauthorize_completed(request_id, result)` on every call —
+##     `result` is `{request_id, remote_revoke_succeeded, local_cache_cleared,
+##     warning}` per arch.md:669 + DD-4-1-1. `local_cache_cleared` is always
+##     `true`; `remote_revoke_succeeded` reflects whether the wallet's
+##     remote revoke endpoint was reachable; `warning` is `"remote_unreachable"`
+##     on remote failure (network off, wallet uninstalled) or `""` on success.
+##   - `mwa_error{code=PROTOCOL_ERROR, source_method="deauthorize"}` ONLY
+##     on catastrophic local failures (e.g. corrupted keystore wipe crash —
+##     DD-4-1-3 nested defensive try/catch). Remote-revoke failure does NOT
+##     route here per DD-4-1-1; it surfaces as `deauthorize_completed{
+##     remote_revoke_succeeded: false, warning: "remote_unreachable"}`.
+##
+## Idempotent (AC-4): calling on an already-deauthorized session emits
+## `deauthorize_completed{remote_revoke_succeeded: true, local_cache_cleared:
+## true, warning: ""}` (vacuous success per DD-4-1-4 — nothing to revoke).
+##
+## No watchdog: AC-2 requires remote failure to surface as `remote_unreachable`,
+## NOT `mwa_timeout`. clientlib-ktx's internal per-call timeout is the upstream
+## guard.
+func deauthorize() -> void:
+	_node.deauthorize()
+
+
 ## Silent re-authorization using the cached auth token. No wallet UI is shown
 ## (NFR-5). Completion arrives via one terminal signal per request:
 ##   - `reauthorize_completed(request_id, result)` on success (AC-1).
