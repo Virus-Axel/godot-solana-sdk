@@ -127,9 +127,10 @@ epics:
         slug: keystore-recovery-manifest-r8-reproducible
         title: "Keystore Corruption Recovery + Manifest Hardening + R8 Rules + Dep Lockfile + Reproducible Build"
         size: L
-        status: backlog
+        status: in-progress
         wave: 5
         dependencies: ["2-1"]
+        startedAt: 2026-04-27T13:05:00Z
 
   - id: 5
     name: "Polish — Observability, Lifecycle, Example, Docs, CI"
