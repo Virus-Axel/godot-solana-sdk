@@ -3,18 +3,11 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-27T08:55:00Z",
+  "lastUpdated": "2026-04-27T09:10:00Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": {
-    "storyId": "3-1",
-    "slug": "sign-messages-run-signing-op",
-    "size": "M",
-    "wave": 5,
-    "status": "in-progress",
-    "startedAt": "2026-04-26T20:12:53Z"
-  },
+  "currentStory": null,
   "phases": {
     "research": {
       "status": "complete",
@@ -41,7 +34,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 9,
+  "storiesDone": 10,
   "storiesTotal": 21,
   "changeStories": [],
   "completedStories": [
@@ -367,6 +360,85 @@
         "note": "Story ships with unit baseline green; on-device validation happens asynchronously once the next `git push origin feature/mwa-android` runs the CI matrix."
       },
       "notes": "Third Wave 5 story (after 2-1 and 2-3). Smallest-surface silent-reauth: client-side discovery via DD-2-2-7 3-tuple listAllKeys filter + 4-tuple CacheKey rebuild from caller args + DD-2-2-5 rotation-detection contract (defensive — fixtures return byte-identical authToken in test scope; production rotation observed manually via T6 release-gate). Core code delta: NativeBridge.postReauthorizeCompleted interface method + DefaultNativeBridge override + @UsedByGodot fun mwaReauthorize instance method + handleReauthSuccess + handleTokenExpired + emitFailureReauth + emitTimeoutReauth helpers + @JvmStatic external fun postReauthorizeCompletedNative + mwaReauthorizeFromJni rewrite + JNIEXPORT mirror of postConnectCompletedNative + ci/grep_bans.sh pattern-9 (DD-2-2-1 static guard) + .bad fixture for self-test. 7 design decisions locked: DD-2-2-1 no cluster-comparison branch (3-tuple filter is sole detection), DD-2-2-2 graceful-wipe ordering (CAS → clearOnLogout → deleteToken → postMwaError), DD-2-2-3 watchdog parity reusing effectiveWatchdog helper, DD-2-2-4 buildSuccessJson reuse (no sibling builder), DD-2-2-5 rotation-detection with returned bytes throughout (LOCKED contract restored mid-T2 review after subagent's cached-bytes deviation), DD-2-2-6 release-gate as manual procedure (NOT CI per AC-5), DD-2-2-7 walletPackage discovery via listAllKeys + 3-tuple filter + maxByOrNull lastUsedAtMs tie-break. 7 commits: T1 (62f95a76) + T2 (dea7cb3c) + T3 (0627f9ca) + T4 (a9637173) + T5 (3a5c16f5) + T6 (45dac146) + T7 (0627f9ca→50b6d61a). Unit baseline 196 → 204; androidTest pre-2-2 9 ACs → post-2-2 11 expected. AC-3 is the FIRST production caller of SecureTokenStore.deleteToken in the codebase. CR-45 inherited transitively (Route B harness gap); CR-46 (ed25519 submodule env gap, surfaced T3), CR-47 (DD-2-2-7 multi-match tie-break uncovered), CR-48 (DD-2-2-5 rotation branch uncovered) all LOW with candidate-test sketches. Closure candidates: CR-35 headless-Godot tier for CR-45/47/48 transitive coverage; T6 release-gate procedure for CR-48 manual rotation observation."
+    },
+    {
+      "storyId": "3-1",
+      "slug": "sign-messages-run-signing-op",
+      "size": "M",
+      "wave": 5,
+      "startedAt": "2026-04-26T20:12:53Z",
+      "completedAt": "2026-04-27T09:10:00Z",
+      "gate5Result": "pass",
+      "tasks": 7,
+      "commits": 10,
+      "baselineTag": "pre-mwa-android-3-1",
+      "postTag": "post-mwa-android-3-1",
+      "commitsList": [
+        "49418ed4 test(mwa): Story 3-1 T1 — Kotlin unit tests (TDD red) + minimal stub scaffolding",
+        "87692808 fixup(mwa): Story 3-1 T1 — satisfy laim-verify-checks hook on contract-test stub",
+        "ba1e500b feat(mwa): Story 3-1 T2 — runSigningOp shared signing pipeline + mwaSignMessages impl + DD-15 grep-ban",
+        "b89d9a18 fixup(mwa): Story 3-1 T2 — refresh stale TODO references in kdoc post-impl",
+        "89c76b5d feat(mwa): Story 3-1 T3 — C++ JNIEXPORT postSignMessagesCompletedNative",
+        "0aa48efc feat(mwa): Story 3-1 T4 — MWA.gd sign_messages facade + D-3-1-12 spec alignment",
+        "8953425a test(mwa): Story 3-1 T5 — androidTest AC-2 happy E2E + R8 smoke + DD-3-1-5 leak guards",
+        "f51fbd20 test(mwa): Story 3-1 T6 — fixture-input contract test (AC-5 re-scope per D-3-1-13)",
+        "4f5b6c3c chore(mwa): Story 3-1 T7 — baseline refresh 204→213 + pre-Gate-5 close-out",
+        "9b0f5db2 docs(mwa): Story 3-1 code-review fix — refresh stale TODO kdoc on mwaReauthorizeFromJni"
+      ],
+      "deviations": [
+        "D-3-1-1 Rule 1: runSigningOp is private member (not top-level extension) per DD-3-1-1",
+        "D-3-1-2 Rule 1: runSigningOp block receiver = MwaClient (SDK seam), not MobileWalletAdapterClient per DD-3-1-2",
+        "D-3-1-3 Rule 1: return type aligned to MwaResult<X> (not Result<T, MwaError>); signature evolved to add timeoutMs",
+        "D-3-1-4 Rule 1: timeoutMs param added to runSigningOp signature for DD-3-1-3 watchdog parity",
+        "D-3-1-5 Rule 2 (superseded by D-3-1-13): earlier AC-5 evidence narrowing per DD-3-1-7",
+        "D-3-1-6 Rule 2 (RETRACTED): inferred-recording fallback retracted at T6 pre-impl audit",
+        "D-3-1-7 Rule 2 (N/A): instrumented-tier escalation N/A under D-3-1-13's re-scope",
+        "D-3-1-8 Rule 1 (Pre-Impl Audit Rev 1.5): MwaSessionState.getKey() → getConnectedKey()",
+        "D-3-1-9 Rule 1 (Pre-Impl Audit Rev 1.5): setIdentity is one combined setter (not 3 separate)",
+        "D-3-1-10 Rule 1 (Rev 2 T1 review): runSigningOp visibility @VisibleForTesting internal (not private)",
+        "D-3-1-11 Rule 1 (Rev 2 T1 review / C-3-1-W): runSigningOp single-wrap MwaResult<X> return (not double-wrap)",
+        "D-3-1-12 Rule 1 (T4 facade audit): MWA.gd sign_messages -> void per locked Story 2-1 T7 convention (not -> String)",
+        "D-3-1-13 Rule 2 (T6 contract test re-scope): fixture-input contract verification (not Fake↔recorded-real frame agreement) — pre-impl audit caught FakeMwaClient does not construct JSON-RPC frames"
+      ],
+      "amendments": [],
+      "concerns": [],
+      "concernsResolved": [],
+      "concernsTransitive": [
+        "CR-18 RESOLVED in 2-1 T6 — exercised by 3-1 T5 androidTest (no drift observed; CI runtime confirmation pending)",
+        "CR-32 RESOLVED in 2-1 T10 — desktop backstop coverage extends via shared build_unsupported_platform_payload helper; optional follow-up for explicit sign_messages invocation noted",
+        "CR-35 HIGH deferred — headless-Godot tier still unaddressed",
+        "CR-41 RESOLVED in 2-1 T10 — exercised by T1 mock + T5 androidTest; no regression",
+        "CR-45 LOW transitive — Route B harness gap continues; mitigations T5 R8 smoke + future CR-35",
+        "CR-46 LOW — not surfaced in 3-1 scope (T3 inspection-level + ban-greps + assemble exit=0)",
+        "CR-47 LOW — not in scope (sign_messages does not invoke listAllKeys; preflight uses synchronous getAuthToken null-check per DD-3-1-6)",
+        "CR-48 LOW — N/A for sign_messages (no putToken on signing path per DD-2-2-5 contract)"
+      ],
+      "testsAdded": 9,
+      "testsAddedDetail": "8 Kotlin unit (MwaAndroidPluginSignMessagesTest: AC-1 LOC budget + AC-2 happy path + AC-3 NOT_CONNECTED preflight + AC-4 USER_CANCELED + runSigningOp Success passthrough + watchdog timeout → Failure(Timeout) + duplicate requestId → PROTOCOL_ERROR + late result after terminate dropped) + 1 Kotlin unit (SignMessagesContractTest: fixture-input contract verification per D-3-1-13 re-scope; @Disabled removed) + 1 androidTest (AC2SignMessagesHappyE2ETest: full Stage 1 connect → Stage 2 rebuild plugin → Stage 3 mwaSignMessages → Stage 4 verify+capture; 12+ assertions incl. 7 negative-key DD-3-1-5 leak guards from code-review I-T5-B). Pytest unchanged. AndroidTest count pre-3-1: 11 (post-2-2) → post-3-1 expected: 12.",
+      "reviewFindings": {
+        "userInteractive": true,
+        "agentSpawn": true,
+        "agentBudget": "spent across 3 spawns (~25 tool calls + 130k tokens before final synthesis)",
+        "rounds": 4,
+        "findings": 5,
+        "blockers": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 4,
+        "fixed": 1,
+        "dismissed": 4,
+        "deferred": 0,
+        "note": "Per-task [R]/[C]/[1] interactive reviews throughout: T3 [C] line-selection approval; T4 [F] interface mismatch fix → D-3-1-12; T5 [R] surfaced I-T5-A (anchor comment for hardcoded base64) + I-T5-B (5 buildSuccessJson-leak negative-key guards) — both fixed pre-commit; T6 [1] re-scope from frame-agreement to fixture-input contract → D-3-1-13. Final code-review-agent spawn surfaced 5 findings (1 MEDIUM dismissed — coverage breadth concerns not story-mandated; 4 LOW — 1 applied as drive-by 9b0f5db2 fixing stale Story 2-2 leftover kdoc, 3 dismissed as misreadings/redundant/N-of-scope). 0 architectural concerns; 0 amendments to architecture.md."
+      },
+      "ciStatus": {
+        "unitBaseline": "green-local-2026-04-27T08:43Z (130 Kotlin + 83 pytest = 213)",
+        "androidTest": "pending — runtime validation on next CI push via Story 2-1 round-3-fixed workflow (ubuntu-latest + KVM + API 33 x86_64 + R8 8.5.35 + META-INF excludes + x86_64 abiFilter); AC2SignMessagesHappyE2ETest expected 12 total (was 11)",
+        "r8Smoke": "workflow updated — REQUIRED_METHODS now includes mwaSignMessages + postSignMessagesCompletedNative; runtime validation on next CI push",
+        "gdscriptTests": "still failing (pre-existing, round-4 candidate; T4 facade addition does not fix the existing failures)",
+        "note": "Story ships with unit baseline green; on-device validation happens asynchronously once the next `git push origin feature/mwa-android` runs the CI matrix."
+      },
+      "notes": "Fourth Wave 5 story (after 2-1, 2-3, 2-2). First signing-path consumer: introduces runSigningOp shared pipeline (consumed unchanged by Stories 3-2 sign_transactions and 3-3 sign_and_send) + mwaSignMessages instance method + buildSignSuccessJson 2-key payload (DD-3-1-5) distinct from 6-key buildSuccessJson (DD-2-2-4). Code delta: NativeBridge.postSignMessagesCompleted interface method + DefaultNativeBridge override + @UsedByGodot fun mwaSignMessages (≤20-LOC body per AC-1) + runSigningOp helper (single-wrap MwaResult<X> return per D-3-1-11) + emitNotConnectedSign (DD-3-1-6 sync preflight helper) + emitTimeoutSign (parameterized by SigningOp.sourceMethod) + handleSignMessagesSuccess + handleSignMessagesFailure + buildSignSuccessJson + @JvmStatic external fun postSignMessagesCompletedNative + mwaSignMessagesFromJni T2 rewrite + JNIEXPORT mirror in C++ + MWA.gd sign_messages facade (`-> void` per Story 2-1 T7 LOCKED convention via D-3-1-12). 13 design decisions locked (DD-3-1-1..DD-3-1-13). 10 commits: T1 (49418ed4) + T1 fixup (87692808) + T2 (ba1e500b) + T2 fixup (b89d9a18) + T3 (89c76b5d) + T4 (0aa48efc) + T5 (8953425a) + T6 (f51fbd20) + T7 (4f5b6c3c) + code-review fix (9b0f5db2). Unit baseline 204 → 213 (+8 from T1, +1 from T6 contract enabled); androidTest pre-3-1 11 ACs → post-3-1 expected 12. T6 substantive re-scope (D-3-1-13 Rule 2) — pre-impl audit caught the v1 spec's false premise that FakeMwaClient constructs a JSON-RPC frame (it does not; runOp delegates to parseSignResponse with no wire-format step). AC-5 evidence collapses to fixture-input contract verification; D-3-1-5 superseded; D-3-1-6 (inferred recording) and D-3-1-7 (instrumented-tier shift) retracted. T4 substantive interface audit (D-3-1-12 Rule 1) — story v1 said `-> String` but Story 2-1 T7 LOCKED convention at mobile_wallet_adapter.hpp:55-59 says 'remaining 6 op methods stay void'; aligned. Code-review-agent ran with 3 spawn attempts (~25 tool calls + 130k tokens); produced 5 findings (1 fixed drive-by, 4 dismissed). CR sweep: CR-18/CR-32/CR-41 transitively exercised; CR-35 deferred; CR-45 inherited; CR-46 not surfaced; CR-47/CR-48 not in scope (sign_messages doesn't use listAllKeys or putToken)."
     }
   ],
   "baselineTests": {
@@ -393,15 +465,15 @@
     "totalRetries": 0,
     "tddRate": 0,
     "avgTaskMinutes": 0,
-    "subagentSpawns": 20,
-    "gatePasses": 8,
+    "subagentSpawns": 23,
+    "gatePasses": 9,
     "gateFails": 0,
     "gateOverrides": 0,
     "agentTeamsUsed": false,
     "parallelWaves": 0,
     "parallelStories": 0,
-    "interfaceAudits": 7,
-    "interfaceMismatches": 2,
+    "interfaceAudits": 9,
+    "interfaceMismatches": 4,
     "pauseResumeCount": 7
   },
   "waveStrategy": {
