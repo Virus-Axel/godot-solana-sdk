@@ -68,6 +68,7 @@ ids=(
     "mwa-testing-define"
     "log-payload-json"
     "cluster-mismatch-branch"
+    "per-op-error-signal"
 )
 
 patterns=(
@@ -80,6 +81,7 @@ patterns=(
     '^[[:space:]]*#[[:space:]]*define[[:space:]]+MWA_TESTING\b'
     '(Log|SdkLog)\.(v|d|i|w|e).*(resultDictJson|errorDictJson|timeoutDictJson|cancelledDictJson)'
     '(cluster_mismatch|cluster[[:space:]]*!=[[:space:]]*activeCluster|cachedRecord\.cluster[[:space:]]*!=)'
+    '(SIGN_(MESSAGES|TRANSACTIONS|AND_SEND)_FAILED|sign_(messages|transactions|and_send)_failed|MwaError\.Sign(Messages|Transactions|AndSend)Failed)'
 )
 
 # Per-pattern production-scan exclusion (Story 1-4 Task 6, AC-5).
@@ -104,6 +106,7 @@ excludes=(
     ""
     "src/mwa/platform_selector.cpp"
     "src/mwa/godot_main_dispatcher.cpp"
+    ""
     ""
     ""
     ""
@@ -174,6 +177,7 @@ descs=(
     "'#define MWA_TESTING' at source level (Story 1-5 Task 6, D-2 / D-3 gate integrity). MWA_TESTING is strictly a scons-tests-only compile define (-DMWA_TESTING=1 set by the tests alias in SConstruct); zero legitimate source-level #define uses exist. A #define in production headers or .cpp files would activate the test-mode drain queue + set_bridge_for_testing symbol in release builds — immediate behavioral regression. #ifdef MWA_TESTING (testing for the flag) is intentionally NOT matched by this pattern; only the directive '#[[:space:]]*define[[:space:]]+MWA_TESTING' fires."
     "Log.* or SdkLog.* call referencing an MWA NativeBridge payload variable name (Story 2-1 Task 4). 'resultDictJson' / 'errorDictJson' / 'timeoutDictJson' / 'cancelledDictJson' are serialized MWA Dictionary payloads that include auth_token (connect path) or enough correlation data to reconstruct a session (error/timeout/cancel paths). The existing log-authtoken ban (pattern 1) only catches direct 'authToken' references — payload vars wrap the token inside a JSON string where the literal 'authToken' substring is not present in the logging call arguments (the LITERAL is inside the payload at runtime). This pattern closes that gap at the payload-var name level: if it's named *DictJson and you're logging it, that's a token-leak candidate regardless of how the payload was built."
     "Forbidden cluster-mismatch branch in mwaReauthorize (Story 2-2 T2, DD-2-2-1 LOCKED). The pattern 'cluster_mismatch', 'cluster != activeCluster', or 'cachedRecord.cluster !=' in the Kotlin plugin source signals a prohibited separate cluster-comparison branch in mwaReauthorize. DD-2-2-1 mandates that cluster mismatch is detected IMPLICITLY via the 3-tuple listAllKeys() filter (DD-2-2-7): a caller who connected on devnet but calls reauthorize with cluster=mainnet finds ZERO records under the (mainnet, solana:mainnet, identityUri) filter — the empty result drives the NOT_CONNECTED branch. A separate cachedRecord.cluster comparison is redundant, misleading, and violates DD-2-2-1. Any addition of such a branch is a Rule 2 deviation requiring an amendment. This static guard enforces the invariant at CI-time without relying on unit-test coverage of the implementation's internal control flow."
+    "Per-operation error-signal anti-pattern (Story 3-1 T2, DD-15 LOCKED). Matches references to per-op error codes that DO NOT exist in the canonical MwaError codegen: 'SIGN_MESSAGES_FAILED' / 'SIGN_TRANSACTIONS_FAILED' / 'SIGN_AND_SEND_FAILED' (SCREAMING_SNAKE), 'sign_messages_failed' / 'sign_transactions_failed' / 'sign_and_send_failed' (snake_case), or 'MwaError.SignMessagesFailed' / 'MwaError.SignTransactionsFailed' / 'MwaError.SignAndSendFailed' (Kotlin enum reference). DD-15 mandates a SINGLE 'mwa_error' signal that disambiguates per-op failures via the 'source_method' enum field — adding per-op failed codes bloats the signal surface and breaks the 'await race(success, mwa_error)' consumer pattern. Stories 3-1 / 3-2 / 3-3 all route signing failures through 'mwa_error{code=USER_CANCELED|TIMEOUT|PROTOCOL_ERROR|..., source_method=\"sign_messages\"|...}' — never via per-op signals. Any addition of a per-op failure code is a Rule 2 deviation requiring an amendment + concerns.md entry."
 )
 
 # Parse mode flag.

@@ -1,0 +1,75 @@
+// Story 3-1 T2 — grep-ban pattern-10 self-test fixture (DD-15 LOCKED).
+// This file is INTENTIONALLY a violation. The self-test asserts the pattern fires.
+// DO NOT reference this file from production code.
+//
+// Per DD-15 (arch §11 line 1172 LOCKED): single `mwa_error` signal — NOT
+// per-operation error signals. Consumer pattern is `await race(success_signal,
+// mwa_error)` with the enumerated `source_method` field disambiguating which
+// op failed. Per-op error codes (SIGN_MESSAGES_FAILED, sign_transactions_failed,
+// MwaError.SignAndSendFailed, etc.) are anti-patterns that bloat the signal
+// surface and DO NOT exist in the canonical MwaError codegen — any reference
+// to one in source is either a typo or an attempt to add a per-op error code
+// outside the codegen pipeline.
+
+// Variant A: SCREAMING_SNAKE per-op code literal (sign_messages variant)
+fun badSignMessages_variantA(error: String) {
+    if (error == "SIGN_MESSAGES_FAILED") {
+        emitFailure("SIGN_MESSAGES_FAILED")
+    }
+}
+
+// Variant B: SCREAMING_SNAKE per-op code literal (sign_transactions variant)
+fun badSignTransactions_variantB(error: String) {
+    if (error == "SIGN_TRANSACTIONS_FAILED") {
+        emitFailure("SIGN_TRANSACTIONS_FAILED")
+    }
+}
+
+// Variant C: SCREAMING_SNAKE per-op code literal (sign_and_send variant)
+fun badSignAndSend_variantC(error: String) {
+    if (error == "SIGN_AND_SEND_FAILED") {
+        emitFailure("SIGN_AND_SEND_FAILED")
+    }
+}
+
+// Variant D: snake_case per-op code literal (sign_messages variant)
+fun badSignMessages_variantD(error: String) {
+    if (error == "sign_messages_failed") {
+        emitFailure("sign_messages_failed")
+    }
+}
+
+// Variant E: snake_case per-op code literal (sign_transactions variant)
+fun badSignTransactions_variantE(error: String) {
+    if (error == "sign_transactions_failed") {
+        emitFailure("sign_transactions_failed")
+    }
+}
+
+// Variant F: snake_case per-op code literal (sign_and_send variant)
+fun badSignAndSend_variantF(error: String) {
+    if (error == "sign_and_send_failed") {
+        emitFailure("sign_and_send_failed")
+    }
+}
+
+// Variant G: Kotlin enum reference to non-existent MwaError variant (sign_messages)
+fun badSignMessages_variantG(error: MwaError) {
+    if (error == MwaError.SignMessagesFailed) {
+        emitFailure(MwaError.SignMessagesFailed)
+    }
+}
+
+// Variant H: Kotlin enum reference to non-existent MwaError variant (sign_transactions)
+fun badSignTransactions_variantH(error: MwaError) {
+    if (error == MwaError.SignTransactionsFailed) {
+        emitFailure(MwaError.SignTransactionsFailed)
+    }
+}
+
+// Variant I: Kotlin enum reference to non-existent MwaError variant (sign_and_send)
+fun badSignAndSend_variantI(error: MwaError) {
+    if (error == MwaError.SignAndSendFailed) {
+        emitFailure(MwaError.SignAndSendFailed)
+    }
+}

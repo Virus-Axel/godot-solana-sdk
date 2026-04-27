@@ -8,6 +8,7 @@ import com.godotengine.godot_solana_sdk.mwa.client.MwaClient
 import com.godotengine.godot_solana_sdk.mwa.client.MwaClientImpl
 import com.godotengine.godot_solana_sdk.mwa.client.MwaResult
 import com.godotengine.godot_solana_sdk.mwa.client.dto.AuthResult
+import com.godotengine.godot_solana_sdk.mwa.client.dto.SignResult
 import com.godotengine.godot_solana_sdk.mwa.generated.MwaError
 import com.godotengine.godot_solana_sdk.mwa.plugin.DefaultNativeBridge
 import com.godotengine.godot_solana_sdk.mwa.plugin.InflightMap
@@ -35,6 +36,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.UsedByGodot
+import org.json.JSONArray
 import org.json.JSONObject
 
 class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
@@ -868,7 +870,40 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      */
     @UsedByGodot
     fun mwaSignMessages(requestId: String, messages: List<ByteArray>, timeoutMs: Long) {
-        TODO("Story 3-1 T2 fills in — DD-3-1-6 preflight + DD-3-1-8 sessionState reconstruction + runSigningOp invocation")
+        val authToken = sessionState.getAuthToken() ?: return emitNotConnectedSign(requestId)
+        val publicKey = sessionState.getConnectedKey() ?: error("setKey was never called — see Story 2-2 C-T2-A")
+        val identity = ConnectionIdentity(
+            identityUri = android.net.Uri.parse(sessionState.getIdentityUri()),
+            iconUri = android.net.Uri.parse(sessionState.getIconUri()),
+            identityName = sessionState.getIdentityName(),
+        )
+        scope.launch {
+            val result = runSigningOp(SigningOp.SIGN_MESSAGES, requestId, timeoutMs) {
+                signMessages(senderProvider(), identity, authToken, messages, listOf(publicKey))
+            }
+            if (result is MwaResult.Success) handleSignMessagesSuccess(requestId, result.value)
+        }
+    }
+
+    /**
+     * Story 3-1 T2 — DD-3-1-6 NOT_CONNECTED preflight emission helper. Extracted
+     * from `mwaSignMessages` to keep that method's body under the AC-1 ≤20-LOC
+     * budget (per DD-3-1-9 counter rule). Synchronous; emits one terminal
+     * `mwa_error{code=NOT_CONNECTED, source_method="sign_messages"}` signal and
+     * returns Unit. NO scope.launch and NO inflightMap.register on this branch
+     * (DD-3-1-6 LOCK — preflight runs entirely on the calling thread).
+     */
+    private fun emitNotConnectedSign(requestId: String) {
+        nativeBridge.postMwaError(
+            buildErrorJson(
+                requestId,
+                MwaError.NotConnected,
+                "Not connected to a wallet. Call MWA.connect() first.",
+                "kotlin",
+                null,
+                "sign_messages",
+            ).toString(),
+        )
     }
 
     /**
@@ -923,13 +958,107 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         requestId: String,
         timeoutMs: Long,
         block: suspend MwaClient.() -> MwaResult<X>,
-    ): MwaResult<X> {
-        TODO(
-            "Story 3-1 T2 fills in — CAS register + withContext(mainDispatcher) + " +
-                "withTimeoutOrNull(effectiveWatchdog(timeoutMs)) { client.block() }; " +
-                "inspect MwaResult.Failure → route via nativeBridge.postMwaError + " +
-                "buildErrorJson(... op.sourceMethod); preserve MwaResult.Success unchanged. " +
-                "Per DD-3-1-9 single-wrap signature.",
+    ): MwaResult<X> = withContext(mainDispatcher) {
+        // CAS register — duplicate request id is a caller contract violation.
+        if (!inflightMap.register(requestId, clock())) {
+            nativeBridge.postMwaError(
+                buildErrorJson(
+                    requestId,
+                    MwaError.ProtocolError,
+                    "duplicate requestId on ${op.sourceMethod} — caller must use fresh UUIDs per op",
+                    "kotlin",
+                    "duplicate_request_id",
+                    op.sourceMethod,
+                ).toString(),
+            )
+            return@withContext MwaResult.Failure(MwaError.ProtocolError, null)
+        }
+        val effectiveMs = effectiveWatchdog(timeoutMs)
+        try {
+            val client = mwaClientFactory()
+            try {
+                val rawResult: MwaResult<X>? = withTimeoutOrNull(effectiveMs) {
+                    client.block()
+                }
+                when (rawResult) {
+                    null -> {
+                        // Watchdog cancelled the lambda; emitTimeoutSign CAS-gates the post.
+                        emitTimeoutSign(requestId, effectiveMs, op)
+                        MwaResult.Failure(MwaError.Timeout, null)
+                    }
+                    is MwaResult.Failure -> {
+                        // D-3-1-11 single-wrap: route wallet-level Failure (USER_CANCELED, etc.)
+                        // through nativeBridge.postMwaError with op.sourceMethod. Caller (e.g.,
+                        // mwaSignMessages) only handles Success; all error paths terminate here.
+                        if (inflightMap.tryTerminate(requestId)) {
+                            nativeBridge.postMwaError(
+                                buildErrorJson(
+                                    requestId,
+                                    rawResult.error,
+                                    developerDetails = null,
+                                    layer = "kotlin",
+                                    cause = null,
+                                    sourceMethod = op.sourceMethod,
+                                ).toString(),
+                            )
+                        } else {
+                            diagnostics.incrementLateResult()
+                            SdkLog.w(TAG, requestId) { "late_result outcome=${rawResult.error.code}" }
+                        }
+                        rawResult
+                    }
+                    is MwaResult.Success -> rawResult
+                }
+            } finally {
+                runCatching { client.close() }
+            }
+        } catch (ce: CancellationException) {
+            throw ce
+        } catch (ex: Throwable) {
+            SdkLog.e(TAG, requestId) {
+                "${op.sourceMethod} crashed: ${ex.javaClass.simpleName}: ${ex.message}"
+            }
+            if (inflightMap.tryTerminate(requestId)) {
+                nativeBridge.postMwaError(
+                    buildErrorJson(
+                        requestId,
+                        MwaError.ProtocolError,
+                        developerDetails = "${op.sourceMethod} coroutine crashed: ${ex.javaClass.simpleName}",
+                        layer = "kotlin",
+                        cause = ex.javaClass.simpleName,
+                        sourceMethod = op.sourceMethod,
+                    ).toString(),
+                )
+            } else {
+                diagnostics.incrementLateResult()
+                SdkLog.w(TAG, requestId) { "late_result outcome=crash" }
+            }
+            MwaResult.Failure(MwaError.ProtocolError, null)
+        }
+    }
+
+    /**
+     * Story 3-1 T2 — success path for sign_messages.
+     *
+     * CAS-terminates the inflight request and emits `sign_messages_completed` via
+     * [NativeBridge.postSignMessagesCompleted] with the 2-key payload shape per
+     * arch §3 line 236-242 + DD-3-1-5 (`{request_id, signed_payloads}`). On
+     * `tryTerminate` failure (lost CAS race), increments `lateResult` diagnostics
+     * and silently drops — terminal-signal invariant per arch §7.3.
+     *
+     * Note: signing does NOT mutate `MwaSessionState` — the auth_token stays
+     * unchanged after a sign call (DD-2-2-5 token rotation contract is
+     * reauth-only; CR-48 N/A for sign_messages confirms the invariant).
+     */
+    private fun handleSignMessagesSuccess(requestId: String, result: SignResult) {
+        if (!inflightMap.tryTerminate(requestId)) {
+            diagnostics.incrementLateResult()
+            SdkLog.w(TAG, requestId) { "late_result outcome=sign_messages" }
+            return
+        }
+        nativeBridge.postSignMessagesCompleted(
+            requestId,
+            buildSignSuccessJson(requestId, result.signedPayloads).toString(),
         )
     }
 
@@ -939,7 +1068,12 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * so Stories 3-1 / 3-2 / 3-3 share the helper.
      */
     private fun emitTimeoutSign(requestId: String, watchdogMs: Long, op: SigningOp) {
-        TODO("Story 3-1 T2 fills in — CAS-gated postMwaTimeout per DD-3-1-3")
+        if (inflightMap.tryTerminate(requestId)) {
+            nativeBridge.postMwaTimeout(buildTimeoutJson(requestId, watchdogMs, op.sourceMethod).toString())
+        } else {
+            diagnostics.incrementLateResult()
+            SdkLog.w(TAG, requestId) { "late_result outcome=timeout" }
+        }
     }
 
     private suspend fun runAuthorize(requestId: String, identityJson: String, cluster: String, chainId: String, effectiveMs: Long) {
@@ -1279,7 +1413,20 @@ internal val SigningOp.sourceMethod: String
  * builders following the same pattern.
  */
 internal fun buildSignSuccessJson(requestId: String, signedPayloads: List<ByteArray>): JSONObject {
-    TODO("Story 3-1 T2 fills in — JSONObject().apply { put(request_id), put(signed_payloads, JSONArray of base64 strings) }")
+    val payloads = JSONArray()
+    signedPayloads.forEach { bytes ->
+        // base64 encoding matches the FakeMwaClient / clientlib-ktx wire format
+        // (sign_messages_success.json fixture stores signed_payloads as base64
+        // strings; the C++/GDScript side decodes back to PackedByteArray per the
+        // arch §3 line 236-242 signal schema). java.util.Base64 (JVM built-in)
+        // is preferred over android.util.Base64 to keep the helper testable on
+        // the JVM unit-test classpath without Robolectric.
+        payloads.put(java.util.Base64.getEncoder().encodeToString(bytes))
+    }
+    return JSONObject().apply {
+        put("request_id", requestId)
+        put("signed_payloads", payloads)
+    }
 }
 
 /**
