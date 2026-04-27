@@ -7,13 +7,7 @@
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": {
-    "storyId": "4-1",
-    "slug": "deauthorize-finally-block",
-    "startedAt": "2026-04-27T09:49:35Z",
-    "size": "M",
-    "wave": 5
-  },
+  "currentStory": null,
   "phases": {
     "research": {
       "status": "complete",
@@ -40,7 +34,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 10,
+  "storiesDone": 11,
   "storiesTotal": 21,
   "changeStories": [],
   "completedStories": [
@@ -445,6 +439,31 @@
         "note": "Story ships with unit baseline green; on-device validation happens asynchronously once the next `git push origin feature/mwa-android` runs the CI matrix."
       },
       "notes": "Fourth Wave 5 story (after 2-1, 2-3, 2-2). First signing-path consumer: introduces runSigningOp shared pipeline (consumed unchanged by Stories 3-2 sign_transactions and 3-3 sign_and_send) + mwaSignMessages instance method + buildSignSuccessJson 2-key payload (DD-3-1-5) distinct from 6-key buildSuccessJson (DD-2-2-4). Code delta: NativeBridge.postSignMessagesCompleted interface method + DefaultNativeBridge override + @UsedByGodot fun mwaSignMessages (≤20-LOC body per AC-1) + runSigningOp helper (single-wrap MwaResult<X> return per D-3-1-11) + emitNotConnectedSign (DD-3-1-6 sync preflight helper) + emitTimeoutSign (parameterized by SigningOp.sourceMethod) + handleSignMessagesSuccess + handleSignMessagesFailure + buildSignSuccessJson + @JvmStatic external fun postSignMessagesCompletedNative + mwaSignMessagesFromJni T2 rewrite + JNIEXPORT mirror in C++ + MWA.gd sign_messages facade (`-> void` per Story 2-1 T7 LOCKED convention via D-3-1-12). 13 design decisions locked (DD-3-1-1..DD-3-1-13). 10 commits: T1 (49418ed4) + T1 fixup (87692808) + T2 (ba1e500b) + T2 fixup (b89d9a18) + T3 (89c76b5d) + T4 (0aa48efc) + T5 (8953425a) + T6 (f51fbd20) + T7 (4f5b6c3c) + code-review fix (9b0f5db2). Unit baseline 204 → 213 (+8 from T1, +1 from T6 contract enabled); androidTest pre-3-1 11 ACs → post-3-1 expected 12. T6 substantive re-scope (D-3-1-13 Rule 2) — pre-impl audit caught the v1 spec's false premise that FakeMwaClient constructs a JSON-RPC frame (it does not; runOp delegates to parseSignResponse with no wire-format step). AC-5 evidence collapses to fixture-input contract verification; D-3-1-5 superseded; D-3-1-6 (inferred recording) and D-3-1-7 (instrumented-tier shift) retracted. T4 substantive interface audit (D-3-1-12 Rule 1) — story v1 said `-> String` but Story 2-1 T7 LOCKED convention at mobile_wallet_adapter.hpp:55-59 says 'remaining 6 op methods stay void'; aligned. Code-review-agent ran with 3 spawn attempts (~25 tool calls + 130k tokens); produced 5 findings (1 fixed drive-by, 4 dismissed). CR sweep: CR-18/CR-32/CR-41 transitively exercised; CR-35 deferred; CR-45 inherited; CR-46 not surfaced; CR-47/CR-48 not in scope (sign_messages doesn't use listAllKeys or putToken)."
+    },
+    {
+      "storyId": "4-1",
+      "slug": "deauthorize-finally-block",
+      "completedAt": "2026-04-27T13:00:00Z",
+      "gate5Result": "pass",
+      "tasks": 7,
+      "commits": 8,
+      "deviations": 2,
+      "amendments": [],
+      "concerns": [
+        "CR-49",
+        "CR-50",
+        "CR-51",
+        "CR-52"
+      ],
+      "testsAdded": 9,
+      "reviewFindings": {
+        "high": 0,
+        "medium": 1,
+        "low": 4,
+        "fixed": 4,
+        "deferred": 1
+      },
+      "notes": "Fifth Wave 5 story (after 2-1, 2-3, 2-2, 3-1). Second auth-lifecycle method (paired with 2-3 disconnect): 4-1 adds best-effort remote revoke + UNCONDITIONAL local-cache wipe per AC-NFR-SEC-5. Code delta: @UsedByGodot fun mwaDeauthorize (~100-LOC body — D-4-1-2 over guideline; rationale logged) with try/catch/finally + DD-4-1-6 listAllKeys filter on identityUri (multi-key wipe across clusters/walletPackages) + DD-4-1-3 flag-based post-finally branch (wipeCrashed flag; NEVER return@withContext from inside finally per C-4-1-F resolution) + DD-4-1-4 idempotent skip-remote fork (authToken==null OR identityUri.isEmpty()) + DD-4-1-2 sessionState.clear() not clearOnLogout() + DD-4-1-1 MwaResult.Failure → remote_unreachable (NEVER mwa_error for remote failure). NativeBridge.postDeauthorizeCompleted interface + DefaultNativeBridge override + @JvmStatic external fun postDeauthorizeCompletedNative + mwaDeauthorizeFromJni shim rewrite + JNIEXPORT mirror at mwa_android_bridge_jni.cpp + MWA.gd func deauthorize() -> void facade. 6 design decisions locked (DD-4-1-1..DD-4-1-6). 8 commits: T1 (c1f7b8f1) + T2 (059d8c3f) + T3 (eb74fd8f) + T4 (acd0f5aa) + T5 (a3eb0490) + T6 (ba846730) + T7 (f1dab359) + code-review fix (62c1f2f4). Unit baseline 213 → 220 (+6 from T1 unit cases [AC-1/2/3/4/DD-4-1-3 else-branch wipe-crash/DD-4-1-3 idempotent-path wipe-crash from review-finding-1 fix] + 1 from T6 DeauthorizeStructuralTest source-grep); androidTest pre-4-1 12 ACs → post-4-1 expected 14 (+AC-1 happy + AC-2 network-off). Pre-implementation audit (Revision 1.1) resolved 7 concerns C-4-1-A..G surfaced during user-led story-spec review: C-4-1-A added DD-4-1-6 listAllKeys filter (resolved 'currentKey is undefined' trap — CacheKey requires 4 caller-side fields, only identityUri is in sessionState; multi-record wipe per identity is the security-aligned default); C-4-1-B updated T1 case 4 idempotence assertion; C-4-1-C reused Story 3-1 mwa.plugin.source.root system property for T6 path resolution; C-4-1-D renamed DD-4-1-3 title (clearOnLogout-crashed → wipe-crashed); C-4-1-E verified MwaSessionState.clear()+clearOnLogout() both extant; C-4-1-F adopted flag-based post-finally branch (vs return@withContext from inside finally which would swallow in-flight outer-catch exceptions); C-4-1-G added DD-4-1-3 evidence row to AC table. Code-review-agent ran with 3 spawn attempts (3rd produced findings table); 5 findings (1 MEDIUM coverage gap fixed via T1 case 6 symmetric idempotent-path wipe-crash test; 1 LOW kdoc refresh; 1 LOW spec-mandated assertion gap fixed in T1 case 4; 1 LOW design tradeoff deferred to CR-52; 1 LOW spec-naming drift fixed: deauthorize_no_wallet_found.json → deauthorize_wallet_uninstalled.json). CR sweep: CR-32 (closed-by-1-5-inheritance — desktop UNSUPPORTED_PLATFORM), CR-45 inherited (Route B androidTest gap → CR-50), CR-47/CR-48 N/A (reauthorize-only), CR-49 partially-closed (MwaClientImplTest deauthorize success-path mock gap), CR-50 logged (Route B transitive), CR-51 logged (AC-3 androidTest deferred to unit-only), CR-52 logged (idempotent-path listAllKeys disk I/O design tradeoff accepted). 2 retrospect rules added to ~/.claude/rules/retrospect/universal.md from review knowledge gaps: 'Symmetric defensive branches need symmetric tests' + 'Spec compliance includes test-side assertions, not just production behavior'."
     }
   ],
   "baselineTests": {
@@ -472,7 +491,7 @@
     "tddRate": 0,
     "avgTaskMinutes": 0,
     "subagentSpawns": 23,
-    "gatePasses": 9,
+    "gatePasses": 10,
     "gateFails": 0,
     "gateOverrides": 0,
     "agentTeamsUsed": false,

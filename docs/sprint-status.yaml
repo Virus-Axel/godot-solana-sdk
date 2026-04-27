@@ -109,10 +109,13 @@ epics:
         slug: deauthorize-finally-block
         title: "deauthorize + finally-block Semantics + Cache Wipe Independent of Remote"
         size: M
-        status: in-progress
+        status: done
         wave: 5
         dependencies: ["2-1"]
         startedAt: 2026-04-27T09:49:35Z
+        completedAt: 2026-04-27T13:00:00Z
+        gate5Result: pass
+        postTag: post-mwa-android-4-1
       - id: "4-2"
         slug: forget-all-master-key-rotation
         title: "forget_all + MasterKey Rotation + Mutex + Cancel In-Flight"
