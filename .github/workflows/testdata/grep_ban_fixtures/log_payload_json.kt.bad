@@ -1,15 +1,18 @@
 // Fixture for Story 2-1 T5 — banned pattern #8 (log-payload-json).
+// Story 4-3 T2 extended the pattern with `reauthDictJson` (postReauthRequired
+// payload variable name).
 // The .kt.bad extension prevents AGP from compiling this file; the grep
 // script scans by glob, not by file type.
 //
 // Intentional violations on lines below — must NOT be fixed. This file
 // exists so ci/grep_bans.sh --check-only proves pattern #8 fires.
 // Pattern regex (excerpt):
-//   (Log|SdkLog)\.(v|d|i|w|e).*(resultDictJson|errorDictJson|timeoutDictJson|cancelledDictJson)
+//   (Log|SdkLog)\.(v|d|i|w|e).*(resultDictJson|errorDictJson|timeoutDictJson|cancelledDictJson|reauthDictJson)
 // NativeBridge JSON payload parameters carry secret material (auth_token
-// on the connect path; correlation metadata elsewhere) per Story 2-1 T5
-// kdoc; logging or interpolating them is the leak surface this pattern
-// guards.
+// on the connect path; correlation metadata elsewhere; developer_details
+// with exception class names on the reauth_required keystore_corrupt path)
+// per Story 2-1 T5 kdoc + Story 4-3 DD-4-3-2; logging or interpolating
+// them is the leak surface this pattern guards.
 package grep_ban_fixtures
 
 import android.util.Log
@@ -30,4 +33,12 @@ fun badSdkLogTimeoutDictJson(timeoutDictJson: String) {
 
 fun badLogCancelledDictJson(cancelledDictJson: String) {
     Log.w("MWA", "cancelledDictJson=$cancelledDictJson")
+}
+
+fun badLogReauthDictJson(reauthDictJson: String) {
+    // Story 4-3 T2 — reauth_required payload variable name added to pattern-8
+    // banned list. developer_details may carry exception class names; payload
+    // logging is banned to keep the seam discipline uniform across all
+    // *DictJson variables.
+    Log.e("MWA", "postReauthRequired payload=$reauthDictJson")
 }

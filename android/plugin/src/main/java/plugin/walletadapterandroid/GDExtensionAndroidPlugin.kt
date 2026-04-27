@@ -570,19 +570,28 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     // walletPackage is NOT in caller args — iterate listAllKeys + filter.
                     // DD-2-2-1: NO separate cluster comparison branch; the filter itself
                     // is the detection mechanism (empty result → NOT_CONNECTED).
+                    //
+                    // Story 4-3 DD-4-3-1.a — fail-closed plugin-boundary wrapper. Wrap
+                    // the cache-LOOKUP touchpoints (listAllKeys + per-candidate getToken)
+                    // so a Tink corruption event during cache READ surfaces as
+                    // `reauth_required{reason:"keystore_corrupt"}` rather than propagating
+                    // as an uncaught Throwable → `mwa_error{PROTOCOL_ERROR}`. Null-return
+                    // aborts the op (the wrapper has already emitted the terminal signal).
                     val store = storeProvider(requireContext())
-                    val candidates = store.listAllKeys().filter {
-                        it.cluster == cluster &&
-                            it.chainId == chainId &&
-                            it.identityUri == parsed.identityUri
-                    }
-                    // Materialize once: load each candidate's record now (single decrypt per
-                    // candidate). Folds the race-guard ("vanished between listAllKeys and
-                    // getToken") into the same empty-result path — same NOT_CONNECTED
-                    // outcome on the wire either way (AC-2 / AC-4 / race all collapse here).
-                    val candidatesWithRecords = candidates.mapNotNull { k ->
-                        store.getToken(k)?.let { k to it }
-                    }
+                    val candidatesWithRecords = withStorageOrReauthRequired(requestId, "reauthorize") {
+                        val candidates = store.listAllKeys().filter {
+                            it.cluster == cluster &&
+                                it.chainId == chainId &&
+                                it.identityUri == parsed.identityUri
+                        }
+                        // Materialize once: load each candidate's record now (single decrypt per
+                        // candidate). Folds the race-guard ("vanished between listAllKeys and
+                        // getToken") into the same empty-result path — same NOT_CONNECTED
+                        // outcome on the wire either way (AC-2 / AC-4 / race all collapse here).
+                        candidates.mapNotNull { k ->
+                            store.getToken(k)?.let { k to it }
+                        }
+                    } ?: return@withContext
                     if (candidatesWithRecords.isEmpty()) {
                         emitFailureReauth(
                             requestId,
@@ -706,10 +715,10 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         // DD-2-2-5(a) + (b): persist returned authToken bytes + fresh lastUsedAtMs;
         // recompute fingerprint from RETURNED bytes (when not rotated, this equals
         // AuthTokenFingerprint.compute(cached.authToken.reveal(), salt)).
-        // Wrap store ops in StorageCorruptException catch to mirror handleSuccess —
-        // gives callers a consistent MwaError.StorageCorrupt code across authorize +
-        // reauthorize on disk corruption (rather than reauth surfacing PROTOCOL_ERROR
-        // via the outer Throwable handler).
+        // Story 4-3 DD-4-3-1 PIVOT — StorageCorruptException now surfaces as
+        // `reauth_required{reason:"keystore_corrupt"}` via emitReauthRequiredKeystoreCorrupt
+        // (NOT `mwa_error{StorageCorrupt}` — AC-1 contract; legacy emitFailureReauth
+        // call deleted to preserve the terminal-signal CAS invariant — no dual-emit).
         val activeFingerprint: String = try {
             val salt = store.getOrCreatePerInstallSalt()
             store.putToken(
@@ -718,14 +727,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             )
             AuthTokenFingerprint.compute(auth.authToken.reveal(), salt)
         } catch (ex: StorageCorruptException) {
-            SdkLog.w(TAG, requestId) {
-                "storage corrupt on reauthorize success: ${ex.cause?.javaClass?.simpleName}"
-            }
-            emitFailureReauth(
-                requestId,
-                MwaError.StorageCorrupt,
-                developerDetails = "EncryptedSharedPreferences corrupt: ${ex.cause?.javaClass?.simpleName}",
-            )
+            emitReauthRequiredKeystoreCorrupt(requestId, "reauthorize", ex)
             return
         }
 
@@ -1284,6 +1286,19 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             return
         }
 
+        // Story 4-3 DD-4-3-1.a — fail-closed plugin-boundary wrapper. Touch the
+        // SecureTokenStore BEFORE the wallet round-trip so a Tink corruption
+        // event during cache LOOKUP surfaces as `reauth_required{reason:"keystore_corrupt"}`
+        // rather than propagating as an uncaught Throwable → `mwa_error{PROTOCOL_ERROR}`.
+        // The actual `listAllKeys()` result is not consumed here (authorize always
+        // performs a fresh wallet handshake) — the call exists purely to give the
+        // fail-closed wrapper a chance to detect corruption before mwaClientFactory()
+        // is invoked. Null-return aborts the op (the wrapper has already emitted
+        // the terminal `reauth_required` signal).
+        withStorageOrReauthRequired(requestId, "authorize") {
+            storeProvider(requireContext()).listAllKeys()
+        } ?: return
+
         val client = mwaClientFactory()
         try {
             val result = withTimeoutOrNull(effectiveMs) {
@@ -1320,20 +1335,17 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             lastUsedAtMs = nowMs,
         )
         val key = CacheKey(auth.cluster, auth.chainId, walletPackage, identityUri)
+        // Story 4-3 DD-4-3-1 PIVOT — StorageCorruptException now surfaces as
+        // `reauth_required{reason:"keystore_corrupt"}` via emitReauthRequiredKeystoreCorrupt
+        // (NOT `mwa_error{StorageCorrupt}` — AC-1 contract; legacy emitFailure
+        // call deleted to preserve the terminal-signal CAS invariant — no dual-emit).
         val fingerprint: String = try {
             val store = storeProvider(requireContext())
             store.putToken(key, record)
             val salt = store.getOrCreatePerInstallSalt()
             AuthTokenFingerprint.compute(auth.authToken.reveal(), salt)
         } catch (ex: StorageCorruptException) {
-            SdkLog.w(TAG, requestId) {
-                "storage corrupt on authorize success: ${ex.cause?.javaClass?.simpleName}"
-            }
-            emitFailure(
-                requestId,
-                MwaError.StorageCorrupt,
-                developerDetails = "EncryptedSharedPreferences corrupt: ${ex.cause?.javaClass?.simpleName}",
-            )
+            emitReauthRequiredKeystoreCorrupt(requestId, "authorize", ex)
             return
         }
 
@@ -1430,29 +1442,72 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     // D-T1-RULE1-1 (Rule 1 — minor signature deviation from spec, no
     // behavioral change).
 
-    private fun buildReauthRequiredKeystoreCorruptJson(requestId: String, sourceMethod: String, ex: StorageCorruptException): String {
-        TODO(
-            "Story 4-3 T2: build 5-key Dictionary per DD-4-3-1.b — reason='keystore_corrupt', " +
-                "request_id, source_method, developer_details, cause=MwaError.StorageCorrupt.code " +
-                "(args: requestId=$requestId, sourceMethod=$sourceMethod, ex=${ex.javaClass.simpleName})",
-        )
-    }
+    /**
+     * Story 4-3 T2 — DD-4-3-1.b 5-key `reauth_required` Dictionary builder for
+     * the `reason=keystore_corrupt` branch. The `cause` field uses
+     * [MwaError.StorageCorrupt].`code` (per C-4-3-G) so a future codegen change
+     * to the literal string flows through without touching this file.
+     *
+     * Empty-string defaults for `request_id` / `source_method` (per DD-4-3-1.b)
+     * are NOT used by current callers — both PIVOT sites + cache-LOOKUP wrappers
+     * always supply both. The empty-string contract is reserved for hypothetical
+     * future "corruption fired outside an op" paths.
+     */
+    private fun buildReauthRequiredKeystoreCorruptJson(requestId: String, sourceMethod: String, ex: StorageCorruptException): String =
+        JSONObject()
+            .put("reason", "keystore_corrupt")
+            .put("request_id", requestId)
+            .put("source_method", sourceMethod)
+            .put("developer_details", "EncryptedSharedPreferences corrupt: ${ex.cause?.javaClass?.simpleName}")
+            .put("cause", MwaError.StorageCorrupt.code)
+            .toString()
 
+    /**
+     * Story 4-3 T2 — terminal `reauth_required` emitter for the keystore-corrupt
+     * branch. Mirrors [emitFailure] / [emitTimeout] structure: CAS-first via
+     * [InflightMap.tryTerminate]; on lost-CAS, increments late-result diagnostic
+     * and returns silently. On won-CAS, emits via [NativeBridge.postReauthRequired].
+     *
+     * **Token-leak discipline (`ci/grep_bans.sh` pattern-8):** the SdkLog.w call
+     * MUST NOT interpolate the JSON payload — only the human-readable breadcrumb
+     * (reason / source_method / exception class name). The `reauthDictJson`
+     * variable name is banned from `Log.*` / `SdkLog.*` calls per pattern-8.
+     */
     private suspend fun emitReauthRequiredKeystoreCorrupt(requestId: String, sourceMethod: String, ex: StorageCorruptException) {
-        TODO(
-            "Story 4-3 T2: CAS-first via inflightMap.tryTerminate(requestId), late-result guard, " +
-                "SdkLog.w (no payload interpolation per ci/grep_bans.sh pattern-8), " +
-                "nativeBridge.postReauthRequired(buildReauthRequiredKeystoreCorruptJson(...)) " +
-                "(args: requestId=$requestId, sourceMethod=$sourceMethod, ex=${ex.javaClass.simpleName})",
-        )
+        if (!inflightMap.tryTerminate(requestId)) {
+            diagnostics.incrementLateResult()
+            SdkLog.w(TAG, requestId) { "late_result outcome=reauth_required source=$sourceMethod" }
+            return
+        }
+        SdkLog.w(TAG, requestId) {
+            "reauth_required reason=keystore_corrupt source=$sourceMethod cause=${ex.cause?.javaClass?.simpleName}"
+        }
+        nativeBridge.postReauthRequired(buildReauthRequiredKeystoreCorruptJson(requestId, sourceMethod, ex))
     }
 
-    private suspend fun <R> withStorageOrReauthRequired(requestId: String, sourceMethod: String, block: () -> R): R? {
-        TODO(
-            "Story 4-3 T2: try { block() } catch (ex: StorageCorruptException) { " +
-                "emitReauthRequiredKeystoreCorrupt(requestId, sourceMethod, ex); null } " +
-                "(args: requestId=$requestId, sourceMethod=$sourceMethod, block=$block)",
-        )
+    /**
+     * Story 4-3 T2 — fail-closed plugin-boundary wrapper (DD-4-3-1.a). Runs
+     * [block] and converts any [StorageCorruptException] thrown inside it into
+     * a terminal `reauth_required` signal via [emitReauthRequiredKeystoreCorrupt],
+     * returning `null` so the caller treats it as the abort signal (mirrors
+     * the existing `emitX(...) ; return` early-return pattern across this file).
+     *
+     * Non-`StorageCorruptException` throwables propagate uncaught — the outer
+     * `mwaAuthorize` / `mwaReauthorize` `catch (ex: Throwable)` handler still
+     * fires `mwa_error{PROTOCOL_ERROR}` per existing convention.
+     *
+     * **D-T1-RULE1-1:** kept `suspend` (not `inline`) because
+     * [emitReauthRequiredKeystoreCorrupt] is `suspend` — an `inline` function
+     * cannot call suspend functions without `crossinline` + `suspend`
+     * constraints that would force the lambda parameter to also be suspend.
+     * The non-inline form imposes only a small lambda allocation per call,
+     * which happens at most once per op.
+     */
+    private suspend fun <R> withStorageOrReauthRequired(requestId: String, sourceMethod: String, block: () -> R): R? = try {
+        block()
+    } catch (ex: StorageCorruptException) {
+        emitReauthRequiredKeystoreCorrupt(requestId, sourceMethod, ex)
+        null
     }
 
     /**

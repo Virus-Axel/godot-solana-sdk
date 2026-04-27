@@ -28,8 +28,8 @@ import plugin.walletadapterandroid.GDExtensionAndroidPlugin
  * include in exception messages, or otherwise materialize these values in
  * output. `ci/grep_bans.sh` pattern-8 bans the variable names
  * (`resultDictJson`, `errorDictJson`, `timeoutDictJson`,
- * `cancelledDictJson`) from any `Log.*` or `SdkLog.*` call — that catch
- * enforces the rule at CI-time.
+ * `cancelledDictJson`, `reauthDictJson`) from any `Log.*` or `SdkLog.*`
+ * call — that catch enforces the rule at CI-time.
  *
  * Two implementations:
  *  - [DefaultNativeBridge] — Story 2-1 T4 stub that logs method NAME only (no
@@ -178,7 +178,8 @@ internal interface NativeBridge {
  *
  * Do NOT log payload content in this class — pattern-8 in
  * `ci/grep_bans.sh` catches accidental leaks (banned variable names:
- * `resultDictJson`, `errorDictJson`, `timeoutDictJson`, `cancelledDictJson`).
+ * `resultDictJson`, `errorDictJson`, `timeoutDictJson`, `cancelledDictJson`,
+ * `reauthDictJson`).
  */
 internal object DefaultNativeBridge : NativeBridge {
     override fun postConnectCompleted(requestId: String, resultDictJson: String) {
@@ -214,6 +215,6 @@ internal object DefaultNativeBridge : NativeBridge {
     }
 
     override fun postReauthRequired(reauthDictJson: String) {
-        TODO("Story 4-3 T2: route to GDExtensionAndroidPlugin.postReauthRequiredNative(reauthDictJson)")
+        GDExtensionAndroidPlugin.postReauthRequiredNative(reauthDictJson)
     }
 }
