@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Story 4-3 T6 — synthetic-warning manifest (AC-7 negative case).
+
+The <application> element intentionally declares android:allowBackup="true"
+WITH tools:replace="android:allowBackup" — this overrides the plugin's
+android:allowBackup="false" (which also has tools:replace) because the
+consumer is the merge root and "last writer wins" when both sides assert
+tools:replace.
+
+Per AC-7 ("the plugin itself does not fail but the warning is visible"),
+the merged manifest at build/intermediates/merged_manifest/release/
+AndroidManifest.xml shows allowBackup="true". The
+.github/workflows/manifest_merge_audit.yml::audit-warning job greps for
+allowBackup="true", emits a ::warning:: annotation pointing at this file
++ line, and exits 0.
+
+DO NOT remove android:allowBackup or tools:replace here — that would
+collapse the AC-7 negative case into the AC-2 positive case (handled by
+../synthetic-consumer/).
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application
+        android:allowBackup="true"
+        android:label="MwaSyntheticWarning"
+        tools:replace="android:allowBackup" />
+</manifest>

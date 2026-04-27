@@ -154,6 +154,26 @@ android {
     }
 
     testOptions {
+        // Story 4-3 T6 (C-4-3-E spike GREEN) — opt-in release-variant
+        // androidTest. Default stays "debug" so the existing
+        // .github/workflows/instrumented_tests.yml::instrumented job
+        // (which invokes :plugin:connectedDebugAndroidTest) remains
+        // unchanged. The new instrumented_tests.yml::r8-smoke "R8
+        // release-variant authorize E2E" step (T6 step F) opts in via
+        //   ./gradlew :plugin:assembleAndroidTest -PtestBuildType=release
+        // which flips this to "release" and produces the
+        // releaseAndroidTest APK that R8 has minified the test runner
+        // alongside (verifies AC-5 end-to-end coverage on minified code).
+        //
+        // Why a Gradle property (not env var, not always-on): keeps the
+        // historical 14 androidTest cases on the debug variant by default
+        // (CR-45/CR-50 Route B FakeMwaClient injection has been validated
+        // against debug only); release-variant runs are an additive R8
+        // smoke surface. AGP 7.4.1 + R8 8.5.35 spike confirmed
+        // assembleAndroidTest is GREEN for release; deferring debug→release
+        // pivot for ALL androidTest cases to a follow-up hardening story.
+        val testVariant = (project.findProperty("testBuildType") as? String) ?: "debug"
+        testBuildType = testVariant
         unitTests.all {
             it.useJUnitPlatform()
 

@@ -1,0 +1,155 @@
+name: 🧬 Manifest Merge Audit (AC-2 + AC-7)
+# Story 4-3 T6 — verifies manifest-merger behavior across two synthetic
+# Android applications:
+#
+#   1. audit-positive (AC-2):  consumer declares NO android:allowBackup;
+#      plugin's android:allowBackup="false" + tools:replace wins; merged
+#      manifest must show allowBackup="false" AND
+#      android:dataExtractionRules="@xml/data_extraction_rules".
+#
+#   2. audit-warning (AC-7):  consumer declares android:allowBackup="true"
+#      WITH its OWN tools:replace; consumer is merge-root so its value
+#      sticks; merged manifest shows allowBackup="true". Per AC-7 wording
+#      ("the plugin itself does not fail but the warning is visible") the
+#      job EMITS a workflow ::warning:: annotation pointing at the
+#      consumer's manifest line + EXITS 0 (does NOT fail). A maintainer
+#      reviewing the PR sees the warning and can choose to block the merge.
+#
+# Both jobs run on ubuntu-latest per Story 2-1 round-3 D-F4/D-F5 baseline
+# (instrumented_tests.yml comment block) — established CI runner OS.
+
+on:
+  push:
+    branches:
+      - master
+      - 'feature/**'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  audit-positive:
+    name: AC-2 — synthetic-consumer inherits plugin allowBackup=false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Assemble synthetic-consumer release (triggers manifest merge)
+        run: |
+          cd android
+          ./gradlew :synthetic-consumer:assembleRelease --info --stacktrace
+
+      - name: Verify merged manifest preserves plugin allowBackup=false + dataExtractionRules
+        run: |
+          MANIFEST="$GITHUB_WORKSPACE/tools/consumer-merge-audit/synthetic-consumer/build/intermediates/merged_manifest/release/AndroidManifest.xml"
+          if [ ! -f "$MANIFEST" ]; then
+            echo "::error::merged manifest not found at $MANIFEST"
+            exit 1
+          fi
+          echo "Found merged manifest: $MANIFEST"
+          echo "--- relevant <application> attrs ---"
+          grep -E 'android:(allowBackup|dataExtractionRules|fullBackupContent)' "$MANIFEST" || true
+          echo "--- end ---"
+
+          # AC-2.a — allowBackup=false survives the merge.
+          if ! grep -q 'android:allowBackup="false"' "$MANIFEST"; then
+            echo "::error file=tools/consumer-merge-audit/synthetic-consumer/src/main/AndroidManifest.xml::AC-2 FAILED — merged manifest does NOT show android:allowBackup=\"false\". Plugin's hardening was overridden."
+            exit 1
+          fi
+          echo "✓ AC-2.a — allowBackup=\"false\" preserved in merged manifest"
+
+          # AC-2.b — dataExtractionRules entry survives the merge.
+          if ! grep -q 'android:dataExtractionRules="@xml/data_extraction_rules"' "$MANIFEST"; then
+            echo "::error file=tools/consumer-merge-audit/synthetic-consumer/src/main/AndroidManifest.xml::AC-2 FAILED — merged manifest does NOT show android:dataExtractionRules=\"@xml/data_extraction_rules\". DD-4-3-3 twin file lost in merge."
+            exit 1
+          fi
+          echo "✓ AC-2.b — dataExtractionRules entry preserved in merged manifest"
+
+          # AC-2.c — fullBackupContent (legacy API 23-30 fallback per DD-4-3-3) survives.
+          if ! grep -q 'android:fullBackupContent="@xml/backup_rules"' "$MANIFEST"; then
+            echo "::error file=tools/consumer-merge-audit/synthetic-consumer/src/main/AndroidManifest.xml::AC-2 FAILED — merged manifest does NOT show android:fullBackupContent=\"@xml/backup_rules\". API 23-30 backup-exclude fallback lost."
+            exit 1
+          fi
+          echo "✓ AC-2.c — fullBackupContent (legacy API 23-30 fallback) preserved in merged manifest"
+
+          echo "✓ AC-2 — manifest merge inherits all three plugin hardening attributes"
+
+      - name: Upload merged manifest on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-consumer-merged-manifest
+          path: |
+            tools/consumer-merge-audit/synthetic-consumer/build/intermediates/merged_manifest/release/AndroidManifest.xml
+            tools/consumer-merge-audit/synthetic-consumer/build/outputs/logs/manifest-merger-release-report.txt
+
+  audit-warning:
+    name: AC-7 — synthetic-warning re-enables allowBackup; warning annotation emitted
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Assemble synthetic-warning release (triggers manifest merge)
+        run: |
+          cd android
+          ./gradlew :synthetic-warning:assembleRelease --info --stacktrace
+
+      - name: Verify merged manifest shows consumer override AND emit warning annotation
+        run: |
+          MANIFEST="$GITHUB_WORKSPACE/tools/consumer-merge-audit/synthetic-warning/build/intermediates/merged_manifest/release/AndroidManifest.xml"
+          CONSUMER_MANIFEST_REL="tools/consumer-merge-audit/synthetic-warning/src/main/AndroidManifest.xml"
+          if [ ! -f "$MANIFEST" ]; then
+            echo "::error::merged manifest not found at $MANIFEST"
+            exit 1
+          fi
+          echo "Found merged manifest: $MANIFEST"
+          echo "--- relevant <application> attrs ---"
+          grep -E 'android:(allowBackup|dataExtractionRules|fullBackupContent)' "$MANIFEST" || true
+          echo "--- end ---"
+
+          # AC-7.a — confirm the warning case actually exhibits allowBackup=true
+          # (sanity check on the synthetic fixture; if this fails the fixture
+          # itself drifted).
+          if ! grep -q 'android:allowBackup="true"' "$MANIFEST"; then
+            echo "::error file=$CONSUMER_MANIFEST_REL::AC-7 fixture drift — expected merged manifest to show android:allowBackup=\"true\" but it does not. The synthetic-warning fixture no longer exercises the override path."
+            exit 1
+          fi
+
+          # AC-7.b — locate the consumer's allowBackup="true" line and emit a
+          # workflow ::warning:: annotation pointing at it. A reviewer reading
+          # the PR's Files-changed tab will see the annotation in the gutter.
+          # Find line number deterministically.
+          LINE=$(grep -n 'android:allowBackup="true"' "$GITHUB_WORKSPACE/$CONSUMER_MANIFEST_REL" | head -1 | cut -d: -f1 || echo "1")
+          echo "::warning file=$CONSUMER_MANIFEST_REL,line=$LINE::AC-7 — downstream consumer re-enabled android:allowBackup=\"true\" via tools:replace, overriding the plugin's allowBackup=\"false\" hardening. The plugin does not fail the build (per AC-7), but a reviewer should confirm this is intentional and that the consumer has its own backup-exclude rules for the godot-sdk-mwa-tokens-v1.xml prefs file."
+
+          echo "✓ AC-7 — synthetic-warning merge audit complete; warning annotation emitted; job exits 0 per AC-7 wording."
+
+      - name: Upload merged manifest on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-warning-merged-manifest
+          path: |
+            tools/consumer-merge-audit/synthetic-warning/build/intermediates/merged_manifest/release/AndroidManifest.xml
+            tools/consumer-merge-audit/synthetic-warning/build/outputs/logs/manifest-merger-release-report.txt

@@ -87,9 +87,12 @@ jobs:
             android/plugin/build/outputs/androidTest-results/**
 
   r8-smoke:
-    name: R8 smoke — @UsedByGodot method names survive minification
+    name: R8 smoke — @UsedByGodot method names survive minification + AC-5 release E2E
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Story 4-3 T6 step F — bumped 15→45 to accommodate the new
+    # AC3ConnectE2ETest emulator step (mirrors the `instrumented` job's
+    # 45-minute budget).
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -102,6 +105,28 @@ jobs:
 
       - name: Set up Gradle cache
         uses: gradle/actions/setup-gradle@v3
+
+      # Story 4-3 T6 step F — KVM perms required for the AC-5
+      # release-variant authorize E2E step (uses
+      # reactivecircus/android-emulator-runner@v2 like the `instrumented`
+      # job above).
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # Story 4-3 T6 step F — AVD cache shared with the `instrumented` job
+      # via the same key (the AVD setup is identical: API 33 google_apis
+      # x86_64). First job to populate the cache wins; subsequent jobs hit.
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api33-google-x86_64-v3
 
       - name: Assemble release AAR (runs R8 — isMinifyEnabled=true per CR-7)
         run: |
@@ -225,3 +250,46 @@ jobs:
           grep -q '^-keep class com.solanamobile.mobilewalletadapter\.\*\* { \*; }' "$PROGUARD" || { echo "::error::AC-4 missing clientlib-ktx keep"; exit 1; }
           grep -q '^-assumenosideeffects class com.godotengine.godot_solana_sdk.mwa.util.SdkLog' "$PROGUARD" || { echo "::error::AC-4 missing SdkLog -assumenosideeffects"; exit 1; }
           echo "✓ AC-4 — all 4 consumer-rules.pro rule families shipped"
+
+      # Story 4-3 T6 step F (AC-5 — release-variant authorize E2E).
+      # C-4-3-E spike outcome: GREEN — AGP 7.4.1 + R8 8.5.35 + bundled R8
+      # successfully assemble the release-variant androidTest APK with
+      # androidx.test.runner + kotlinx-coroutines-test + mockk-android
+      # symbols intact (no R8 strip errors).
+      #
+      # The step opts in to release variant via -PtestBuildType=release
+      # (build.gradle.kts testOptions reads project.findProperty); default
+      # remains debug for the existing `instrumented` job above.
+      #
+      # AC3ConnectE2ETest is the canonical authorize E2E test (Story 2-1
+      # T9): exercises mwaAuthorize() → fake wallet round-trip → emits
+      # connect_completed signal with public_key + auth_token_fingerprint
+      # → SecureTokenStore round-trips via real EncryptedSharedPreferences
+      # + real Keystore. Per CR-45 / CR-50: FakeMwaClient injection bypasses
+      # real NativeBridge → JNI → C++ → GDScript chain (Route B); the R8
+      # smoke confirms the @UsedByGodot Kotlin-side surface survives
+      # minification. Full E2E (real intent → real wallet APK) is deferred
+      # to CR-35 (headless-Godot tier).
+      - name: R8 release-variant authorize E2E (AC-5 — AC3ConnectE2ETest)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
+          disable-animations: true
+          working-directory: android
+          script: |
+            ./gradlew :plugin:connectedReleaseAndroidTest \
+              -PtestBuildType=release \
+              -Pandroid.testInstrumentationRunnerArguments.class=com.godotengine.godot_solana_sdk.mwa.AC3ConnectE2ETest \
+              --info --stacktrace
+
+      - name: Upload R8 release-variant androidTest reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r8-release-androidTest-reports
+          path: |
+            android/plugin/build/reports/androidTests/**
+            android/plugin/build/outputs/androidTest-results/**
