@@ -49,11 +49,13 @@ import java.io.File
  *   7. Duplicate requestId emits PROTOCOL_ERROR on register (carries from 2-1/2-2/2-3)
  *   8. Late-result-after-terminate is dropped (carries from 2-1/2-2)
  *
- * Tests compile but fail at runtime against `TODO("Story 3-1 T2 fills in")` stub
- * bodies — that is the intended RED state for T1. T2 replaces stubs with real
- * impl. Test #1 (AC-1 LOC budget) is a special case: it MAY pass at T1 because
- * the stub body is 1 LOC (well under the 20 budget); it serves to enforce the
- * budget against future T2/T3 impls.
+ * As of Story 3-1 T2, all 8 tests pass against the real impl. Pre-T2 (TDD-red
+ * baseline) had 7 tests failing at runtime against stub bodies that threw
+ * `kotlin.NotImplementedError`; T2 replaced the stubs with the real impl per
+ * DD-3-1-1..11. Test #1 (AC-1 LOC budget) was the only test that passed at T1
+ * (stub body was 1 LOC under the ≤20 budget); it now enforces the budget against
+ * the real implementation (~13 LOC body in `mwaSignMessages` per DD-3-1-9
+ * counter rule).
  *
  * Plugin is built via the `@VisibleForTesting` ctor with injected collaborators
  * (identical to [MwaAndroidPluginReauthorizeTest]):

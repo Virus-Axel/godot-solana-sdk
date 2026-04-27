@@ -173,17 +173,17 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
         @JvmStatic
         fun mwaSignMessagesFromJni(reqId: String) {
-            // Story 3-1 T1 — JNI shim signature stays at `(reqId)` for T1 (the C++ side
-            // at `MobileWalletAdapter::sign_messages` still calls the 1-arg form).
-            // Story 3-1 T3 evolves BOTH sides together: C++ passes through real `messages`
-            // + `timeoutMs`, and this shim's signature evolves to `(reqId, messagesJson,
-            // timeoutMs)` (or equivalent) at that point. For T1, the shim delegates to
-            // the new `mwaSignMessages(...)` instance method with empty messages so the
-            // JNI surface "lights up" — production callers that route through C++
-            // currently hit `mwaSignMessages`'s `TODO("Story 3-1 T2 fills in")` body
-            // and crash with NotImplementedError, which is the expected pre-T2 state.
-            // Tests bypass the JNI shim and call `mwaSignMessages(...)` directly with
-            // real values per DD-3-1-9 responsibility split.
+            // Story 3-1 T2 — JNI shim signature stays at `(reqId)` for T1+T2 (the
+            // C++ side at `MobileWalletAdapter::sign_messages` still calls the 1-arg
+            // form). Story 3-1 T3 evolves BOTH sides together: C++ passes through
+            // real `messages` + `timeoutMs`, and this shim's signature evolves to
+            // `(reqId, messagesJson, timeoutMs)` (or equivalent) at that point. For
+            // T1+T2 the shim delegates to `mwaSignMessages(...)` with empty messages
+            // so the JNI surface lights up at link time — production callers that
+            // route through C++ currently hit a no-op signing path (empty payload
+            // never produces a wallet round-trip) until T3 wires real messages
+            // through. Kotlin unit tests bypass this shim and call `mwaSignMessages`
+            // directly with real values per DD-3-1-9 responsibility split.
             instance?.mwaSignMessages(reqId, emptyList(), 0L) ?: emitInstanceNullError(reqId, "sign_messages")
         }
 
@@ -827,18 +827,27 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         }
     }
 
-    // ---------------- Story 3-1 T1 stubs — sign_messages + runSigningOp ----------------
+    // ---------------- Story 3-1 — sign_messages + runSigningOp ----------------
     //
-    // T1 lands these as compile-only stubs so the new TDD-red test file
-    // (`MwaAndroidPluginSignMessagesTest`) compiles. T2 replaces the `TODO(...)`
-    // bodies with the real impl per DD-3-1-1 (private member function form),
-    // DD-3-1-2 (block receiver = MwaClient — preserves Fake test seam),
-    // DD-3-1-3 (signature evolved with `timeoutMs: Long` for watchdog parity),
-    // DD-3-1-4 (SigningOp enum with `sourceMethod` extension property),
-    // DD-3-1-6 (NOT_CONNECTED preflight BEFORE InflightMap.register),
-    // DD-3-1-8 (ConnectionIdentity reconstruction via sessionState fields),
-    // DD-3-1-9 (responsibility split: helper does CAS+watchdog+errors; call site
-    // does sessionState reads). See `docs/stories/3-1.md` for full detail.
+    // Single-wrap shared signing pipeline implementing the locked design:
+    //   DD-3-1-1: runSigningOp is a private (`@VisibleForTesting internal`)
+    //             member function on GDExtensionAndroidPlugin.
+    //   DD-3-1-2: block receiver = MwaClient (the SDK seam — preserves
+    //             FakeMwaClient test injection).
+    //   DD-3-1-3: signature carries `timeoutMs: Long`; helper passes through
+    //             `effectiveWatchdog(timeoutMs)` for watchdog parity with the
+    //             auth path.
+    //   DD-3-1-4: SigningOp enum + `sourceMethod` extension property.
+    //   DD-3-1-6: NOT_CONNECTED preflight runs BEFORE InflightMap.register
+    //             (synchronous, no scope.launch on disconnected branch).
+    //   DD-3-1-8: ConnectionIdentity reconstructed from sessionState fields.
+    //   DD-3-1-9: responsibility split — helper does CAS+watchdog+errors;
+    //             call site does sessionState reads.
+    //   D-3-1-11: single-wrap return MwaResult<X> — block returns MwaResult<X>
+    //             directly, helper inspects Failure and routes via
+    //             nativeBridge.postMwaError + op.sourceMethod, caller only
+    //             handles Success. Stories 3-2 / 3-3 inherit the same shape.
+    // See `docs/stories/3-1.md` for full detail.
 
     /**
      * Story 3-1 — `sign_messages` entry point. Called from the JNI
