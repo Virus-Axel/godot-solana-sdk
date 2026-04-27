@@ -79,6 +79,28 @@ internal interface NativeBridge {
     fun postReauthorizeCompleted(requestId: String, resultDictJson: String)
 
     /**
+     * 2-param `sign_messages_completed` per A-12 — Story 3-1. `requestId` is the
+     * first signal argument; `resultDictJson` is the second (Dictionary carrying
+     * `{request_id, signed_payloads: Array[PackedByteArray]}` per arch §3
+     * line 236-242 — 2-key shape, NOT the 6-key auth-success shape).
+     *
+     * Unlike `postConnectCompleted` / `postReauthorizeCompleted`, the
+     * `resultDictJson` here does NOT carry secret material — `signed_payloads`
+     * are detached signatures (public bytes by definition; the wallet has
+     * already returned them and the caller intends to forward them to the
+     * blockchain). The 2-param `*_completed` family uniformly warns against
+     * payload logging to keep the seam convention uniform and the grep-ban
+     * surface consistent.
+     *
+     * **WARNING — do NOT log or interpolate `resultDictJson`.** Even though
+     * signing payloads are not secret, uniform payload-log discipline avoids
+     * accidental leaks if a future maintainer copy-pastes this method into a
+     * branch that DOES carry secrets (e.g., a hypothetical `sign_personal`
+     * variant that round-trips the auth_token).
+     */
+    fun postSignMessagesCompleted(requestId: String, resultDictJson: String)
+
+    /**
      * 1-param `mwa_error` per A-12. `request_id` is embedded inside
      * `errorDictJson` at the `request_id` field (A-14 10-key shape).
      *
@@ -130,6 +152,10 @@ internal object DefaultNativeBridge : NativeBridge {
 
     override fun postReauthorizeCompleted(requestId: String, resultDictJson: String) {
         GDExtensionAndroidPlugin.postReauthorizeCompletedNative(requestId, resultDictJson)
+    }
+
+    override fun postSignMessagesCompleted(requestId: String, resultDictJson: String) {
+        GDExtensionAndroidPlugin.postSignMessagesCompletedNative(requestId, resultDictJson)
     }
 
     override fun postMwaError(errorDictJson: String) {

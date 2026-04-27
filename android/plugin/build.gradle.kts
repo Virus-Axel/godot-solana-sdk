@@ -147,6 +147,20 @@ android {
                 "mwa.fixtures.dir",
                 rootDir.parentFile.resolve("testdata/mwa-fixtures").absolutePath,
             )
+
+            // Story 3-1 T1 — AC-1 LOC-budget test reads `GDExtensionAndroidPlugin.kt`
+            // source at runtime to assert `mwaSignMessages` body is ≤20 LOC. Standard
+            // Gradle test classpath contains compiled `.class` files only, not `.kt`
+            // sources. This system property exposes the absolute path to the plugin's
+            // `src/main` directory so the test can read source files via
+            // `File(System.getProperty("mwa.plugin.source.root"), "java/...").readText()`.
+            // System-property pattern (vs. `sourceSets.test.resources.srcDir(...)`) keeps
+            // .kt source out of the test JAR — referenced only by absolute path during
+            // test execution. Same pattern as `mwa.fixtures.dir` above (Story 1-6 D-6).
+            it.systemProperty(
+                "mwa.plugin.source.root",
+                project.projectDir.resolve("src/main").absolutePath,
+            )
         }
     }
 

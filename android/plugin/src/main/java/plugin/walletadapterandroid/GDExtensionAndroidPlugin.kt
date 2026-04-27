@@ -171,8 +171,18 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
         @JvmStatic
         fun mwaSignMessagesFromJni(reqId: String) {
-            Log.i(TAG, "mwaSignMessagesFromJni: Story 3-1 scope; reqId=$reqId")
-            instance?.emitNotImplemented(reqId, "sign_messages") ?: emitInstanceNullError(reqId, "sign_messages")
+            // Story 3-1 T1 — JNI shim signature stays at `(reqId)` for T1 (the C++ side
+            // at `MobileWalletAdapter::sign_messages` still calls the 1-arg form).
+            // Story 3-1 T3 evolves BOTH sides together: C++ passes through real `messages`
+            // + `timeoutMs`, and this shim's signature evolves to `(reqId, messagesJson,
+            // timeoutMs)` (or equivalent) at that point. For T1, the shim delegates to
+            // the new `mwaSignMessages(...)` instance method with empty messages so the
+            // JNI surface "lights up" — production callers that route through C++
+            // currently hit `mwaSignMessages`'s `TODO("Story 3-1 T2 fills in")` body
+            // and crash with NotImplementedError, which is the expected pre-T2 state.
+            // Tests bypass the JNI shim and call `mwaSignMessages(...)` directly with
+            // real values per DD-3-1-9 responsibility split.
+            instance?.mwaSignMessages(reqId, emptyList(), 0L) ?: emitInstanceNullError(reqId, "sign_messages")
         }
 
         @JvmStatic
@@ -265,6 +275,12 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
          */
         @JvmStatic
         external fun postReauthorizeCompletedNative(reqId: String, resultDictJson: String)
+
+        // Story 3-1 T1 — parallel external fun for sign_messages_completed's
+        // Kotlin→C++ callback path. JNI symbol linked at runtime via the
+        // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3).
+        @JvmStatic
+        external fun postSignMessagesCompletedNative(reqId: String, resultDictJson: String)
 
         @JvmStatic
         external fun postMwaErrorNative(errorDictJson: String)
@@ -809,6 +825,123 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         }
     }
 
+    // ---------------- Story 3-1 T1 stubs — sign_messages + runSigningOp ----------------
+    //
+    // T1 lands these as compile-only stubs so the new TDD-red test file
+    // (`MwaAndroidPluginSignMessagesTest`) compiles. T2 replaces the `TODO(...)`
+    // bodies with the real impl per DD-3-1-1 (private member function form),
+    // DD-3-1-2 (block receiver = MwaClient — preserves Fake test seam),
+    // DD-3-1-3 (signature evolved with `timeoutMs: Long` for watchdog parity),
+    // DD-3-1-4 (SigningOp enum with `sourceMethod` extension property),
+    // DD-3-1-6 (NOT_CONNECTED preflight BEFORE InflightMap.register),
+    // DD-3-1-8 (ConnectionIdentity reconstruction via sessionState fields),
+    // DD-3-1-9 (responsibility split: helper does CAS+watchdog+errors; call site
+    // does sessionState reads). See `docs/stories/3-1.md` for full detail.
+
+    /**
+     * Story 3-1 — `sign_messages` entry point. Called from the JNI
+     * [mwaSignMessagesFromJni] shim on a worker thread (T3 evolves the JNI
+     * shim signature to pass `messages` + `timeoutMs` through), or directly
+     * by Kotlin unit tests with real values per DD-3-1-9.
+     *
+     * Body shape (T2 fills in):
+     *  1. DD-3-1-6 preflight — synchronous `is_connected()` check BEFORE
+     *     `InflightMap.register`; emit `mwa_error{NOT_CONNECTED}` and return
+     *     if disconnected. NO `scope.launch` on this branch (AC-3 "within 1
+     *     frame, no wallet UI").
+     *  2. DD-3-1-8 reconstruction — read `sessionState.getAuthToken()`,
+     *     `getConnectedKey()` (NOT `getKey()` — asymmetric naming inherited
+     *     from Story 2-1 T4), `getIdentityUri()` / `getIconUri()` /
+     *     `getIdentityName()`, build `ConnectionIdentity`.
+     *  3. `scope.launch { runSigningOp(SIGN_MESSAGES, requestId, timeoutMs) {
+     *     signMessages(senderProvider(), identity, authToken, messages,
+     *     listOf(publicKey)) } }` — DD-3-1-2 receiver is `MwaClient`; the
+     *     lambda calls the 5-arg `signMessages(...)` (NOT the clientlib-ktx
+     *     `signMessagesDetached(...)`).
+     *  4. On `MwaResult.Success`, route to `handleSignMessagesSuccess`
+     *     (T2 lands this helper) which CAS-terminates and emits
+     *     `sign_messages_completed` via `postSignMessagesCompleted`.
+     *
+     * AC-1 enforces a ≤20-LOC budget on this body — see
+     * `MwaAndroidPluginSignMessagesTest."AC-1 mwaSignMessages body is at most
+     * 20 LOC"` (T1) for the source-line counter rule.
+     */
+    @UsedByGodot
+    fun mwaSignMessages(requestId: String, messages: List<ByteArray>, timeoutMs: Long) {
+        TODO("Story 3-1 T2 fills in — DD-3-1-6 preflight + DD-3-1-8 sessionState reconstruction + runSigningOp invocation")
+    }
+
+    /**
+     * Story 3-1 T2 — shared signing pipeline. Consumed by `mwaSignMessages`
+     * (this story), `mwaSignTransactions` (Story 3-2), and
+     * `mwaSignAndSendTransactions` (Story 3-3).
+     *
+     * Per DD-3-1-9 responsibility split: this helper handles CAS register,
+     * watchdog, client invoke, error translation. The CALL SITE handles
+     * sessionState reads (identity / cluster / authToken) — those flow into
+     * the lambda closure.
+     *
+     * Per DD-3-1-2 the block receiver is `MwaClient` (the SDK seam), NOT
+     * `MobileWalletAdapterClient` (clientlib-ktx — would break FakeMwaClient
+     * test injection). Per DD-3-1-3 the `timeoutMs: Long` parameter
+     * propagates through `effectiveWatchdog(timeoutMs)` → `withTimeoutOrNull`.
+     *
+     * Returns `MwaResult<T>`. Note: when callers pass `MwaClient.signMessages`
+     * (which itself returns `MwaResult<SignResult>`), the resulting
+     * `MwaResult<MwaResult<SignResult>>` is the documented double-wrap shape
+     * (helper-level success/failure distinguished from wallet-level
+     * success/failure). Callers pattern-match on the outer `Success`/`Failure`
+     * and unwrap the inner result. Stories 3-2 / 3-3 inherit this shape.
+     *
+     * T2 fills in the body per the pseudocode in `docs/stories/3-1.md`
+     * "Private `runSigningOp` helper" section.
+     */
+    // `@VisibleForTesting internal` (rather than the DD-3-1-1 nominal `private`) to
+    // permit T1 tests #5 ("runSigningOp passes through MwaResult.Success unchanged")
+    // and #6 ("runSigningOp watchdog timeout returns Failure(MwaError.Timeout)")
+    // to invoke the helper directly per the story's 8-test contract. Semantically
+    // still file-private — production code outside `GDExtensionAndroidPlugin` has no
+    // legitimate caller. Stories 3-2 / 3-3 are in this same file and use it as a
+    // sibling member. Same idiom as `internal val sessionState` (line 95) +
+    // `@VisibleForTesting`-style overloads on the ctor. Logged as D-3-1-N (Rule 1
+    // — visibility relaxed for cross-package test access; DD-3-1-1 narrative
+    // updated in Revision 2 of the story file).
+    //
+    // **C-3-1-W single-wrap signature (Revision 2):** the block returns
+    // `MwaResult<X>` (NOT a generic `T`); the helper inspects `Failure` cases
+    // internally and routes them through `nativeBridge.postMwaError(...)` with
+    // `op.sourceMethod`. Callers receive a flat `MwaResult<X>` (single wrap),
+    // NOT `MwaResult<MwaResult<X>>`. This unifies wallet-level Failures
+    // (USER_CANCELED, etc.) with helper-level Failures (Timeout, ProtocolError)
+    // into one signal-emission path; the CALL SITE only needs to pattern-match
+    // on `Success(payload)` and route to `handleSignMessagesSuccess` — all error
+    // paths are already terminal-emitted by the helper. Stories 3-2 / 3-3
+    // inherit the single-wrap shape unchanged.
+    @VisibleForTesting
+    internal suspend fun <X> runSigningOp(
+        op: SigningOp,
+        requestId: String,
+        timeoutMs: Long,
+        block: suspend MwaClient.() -> MwaResult<X>,
+    ): MwaResult<X> {
+        TODO(
+            "Story 3-1 T2 fills in — CAS register + withContext(mainDispatcher) + " +
+                "withTimeoutOrNull(effectiveWatchdog(timeoutMs)) { client.block() }; " +
+                "inspect MwaResult.Failure → route via nativeBridge.postMwaError + " +
+                "buildErrorJson(... op.sourceMethod); preserve MwaResult.Success unchanged. " +
+                "Per DD-3-1-9 single-wrap signature.",
+        )
+    }
+
+    /**
+     * Story 3-1 T2 — emits `mwa_timeout` for the signing path family.
+     * Parallel to [emitTimeoutReauth]; uses `sourceMethod = op.sourceMethod`
+     * so Stories 3-1 / 3-2 / 3-3 share the helper.
+     */
+    private fun emitTimeoutSign(requestId: String, watchdogMs: Long, op: SigningOp) {
+        TODO("Story 3-1 T2 fills in — CAS-gated postMwaTimeout per DD-3-1-3")
+    }
+
     private suspend fun runAuthorize(requestId: String, identityJson: String, cluster: String, chainId: String, effectiveMs: Long) {
         val parsed = parseIdentity(identityJson)
         if (parsed == null) {
@@ -1091,6 +1224,62 @@ private fun buildSuccessJson(
     put("wallet_label", walletLabel)
     put("wallet_icon_uri", walletIconUri)
     put("cluster", cluster)
+}
+
+// ---------------- Story 3-1 T1 stubs — SigningOp enum + buildSignSuccessJson ----------------
+
+/**
+ * Story 3-1 — closed enumeration of signing op-types. Used by [runSigningOp]'s
+ * `op` parameter to (a) tag the CAS-register entry for diagnostics and (b)
+ * select the `source_method` string for `mwa_error` envelopes. Per DD-3-1-4
+ * an enum is sufficient (the three values are closed; the helper does not
+ * carry op-specific payload data — that flows via the `block` lambda).
+ *
+ * Stories 3-2 (`signTransactions`) and 3-3 (`signAndSendTransactions`)
+ * inherit `SIGN_TRANSACTIONS` and `SIGN_AND_SEND` respectively without
+ * adding new values.
+ */
+internal enum class SigningOp {
+    SIGN_MESSAGES,
+    SIGN_TRANSACTIONS,
+    SIGN_AND_SEND,
+}
+
+/**
+ * Maps each [SigningOp] value to its `source_method` string per arch §3
+ * line 288 (the enumeration of valid `source_method` values for `mwa_error`
+ * envelopes). Used inside [runSigningOp] when emitting timeouts / failures.
+ *
+ * Snake-case wire format matches the GDScript signal naming convention
+ * (Story 1-6 D-4 op-name parity contract).
+ */
+internal val SigningOp.sourceMethod: String
+    get() = when (this) {
+        SigningOp.SIGN_MESSAGES -> "sign_messages"
+        SigningOp.SIGN_TRANSACTIONS -> "sign_transactions"
+        SigningOp.SIGN_AND_SEND -> "sign_and_send"
+    }
+
+/**
+ * Story 3-1 T2 — success-payload builder for `sign_messages_completed`.
+ * Per arch §3 line 236-242 the schema is 2-key:
+ * `{request_id, signed_payloads: Array[PackedByteArray]}`. Each
+ * `signed_payload` is base64-encoded on the wire (FakeMwaClient /
+ * clientlib-ktx convention; the C++/GDScript side decodes back to
+ * `PackedByteArray` per the signal schema).
+ *
+ * Per DD-3-1-5 (Revision-1 renumbering — was DD-3-1-4 in v1) this helper
+ * is parallel to [buildSuccessJson] but with a SMALLER, op-specific shape
+ * (no auth_token_fingerprint / public_key / wallet metadata since those
+ * don't change on a sign call). DO NOT reuse [buildSuccessJson] — its
+ * 6-key auth shape is wrong for sign-completed signals.
+ *
+ * T2 fills in the body. Stories 3-2 / 3-3 will introduce parallel
+ * `buildSignTransactionsSuccessJson` / `buildSignAndSendSuccessJson`
+ * builders following the same pattern.
+ */
+internal fun buildSignSuccessJson(requestId: String, signedPayloads: List<ByteArray>): JSONObject {
+    TODO("Story 3-1 T2 fills in — JSONObject().apply { put(request_id), put(signed_payloads, JSONArray of base64 strings) }")
 }
 
 /**
