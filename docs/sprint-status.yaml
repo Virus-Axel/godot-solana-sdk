@@ -80,9 +80,10 @@ epics:
         slug: sign-messages-run-signing-op
         title: "sign_messages + runSigningOp Shared Pipeline + Contract Test"
         size: M
-        status: backlog
+        status: in-progress
         wave: 5
         dependencies: ["2-1"]
+        startedAt: 2026-04-26T20:12:53Z
       - id: "3-2"
         slug: sign-transactions
         title: "sign_transactions + Contract Test"
