@@ -3,17 +3,11 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-27T13:15:00.000Z",
+  "lastUpdated": "2026-04-27T19:45:00.000Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": {
-    "storyId": "4-3",
-    "slug": "keystore-recovery-manifest-r8-reproducible",
-    "startedAt": "2026-04-27T13:05:00Z",
-    "size": "L",
-    "wave": 5
-  },
+  "currentStory": null,
   "phases": {
     "research": {
       "status": "complete",
@@ -40,7 +34,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 11,
+  "storiesDone": 12,
   "storiesTotal": 21,
   "changeStories": [],
   "completedStories": [
@@ -470,19 +464,96 @@
         "deferred": 1
       },
       "notes": "Fifth Wave 5 story (after 2-1, 2-3, 2-2, 3-1). Second auth-lifecycle method (paired with 2-3 disconnect): 4-1 adds best-effort remote revoke + UNCONDITIONAL local-cache wipe per AC-NFR-SEC-5. Code delta: @UsedByGodot fun mwaDeauthorize (~100-LOC body — D-4-1-2 over guideline; rationale logged) with try/catch/finally + DD-4-1-6 listAllKeys filter on identityUri (multi-key wipe across clusters/walletPackages) + DD-4-1-3 flag-based post-finally branch (wipeCrashed flag; NEVER return@withContext from inside finally per C-4-1-F resolution) + DD-4-1-4 idempotent skip-remote fork (authToken==null OR identityUri.isEmpty()) + DD-4-1-2 sessionState.clear() not clearOnLogout() + DD-4-1-1 MwaResult.Failure → remote_unreachable (NEVER mwa_error for remote failure). NativeBridge.postDeauthorizeCompleted interface + DefaultNativeBridge override + @JvmStatic external fun postDeauthorizeCompletedNative + mwaDeauthorizeFromJni shim rewrite + JNIEXPORT mirror at mwa_android_bridge_jni.cpp + MWA.gd func deauthorize() -> void facade. 6 design decisions locked (DD-4-1-1..DD-4-1-6). 8 commits: T1 (c1f7b8f1) + T2 (059d8c3f) + T3 (eb74fd8f) + T4 (acd0f5aa) + T5 (a3eb0490) + T6 (ba846730) + T7 (f1dab359) + code-review fix (62c1f2f4). Unit baseline 213 → 220 (+6 from T1 unit cases [AC-1/2/3/4/DD-4-1-3 else-branch wipe-crash/DD-4-1-3 idempotent-path wipe-crash from review-finding-1 fix] + 1 from T6 DeauthorizeStructuralTest source-grep); androidTest pre-4-1 12 ACs → post-4-1 expected 14 (+AC-1 happy + AC-2 network-off). Pre-implementation audit (Revision 1.1) resolved 7 concerns C-4-1-A..G surfaced during user-led story-spec review: C-4-1-A added DD-4-1-6 listAllKeys filter (resolved 'currentKey is undefined' trap — CacheKey requires 4 caller-side fields, only identityUri is in sessionState; multi-record wipe per identity is the security-aligned default); C-4-1-B updated T1 case 4 idempotence assertion; C-4-1-C reused Story 3-1 mwa.plugin.source.root system property for T6 path resolution; C-4-1-D renamed DD-4-1-3 title (clearOnLogout-crashed → wipe-crashed); C-4-1-E verified MwaSessionState.clear()+clearOnLogout() both extant; C-4-1-F adopted flag-based post-finally branch (vs return@withContext from inside finally which would swallow in-flight outer-catch exceptions); C-4-1-G added DD-4-1-3 evidence row to AC table. Code-review-agent ran with 3 spawn attempts (3rd produced findings table); 5 findings (1 MEDIUM coverage gap fixed via T1 case 6 symmetric idempotent-path wipe-crash test; 1 LOW kdoc refresh; 1 LOW spec-mandated assertion gap fixed in T1 case 4; 1 LOW design tradeoff deferred to CR-52; 1 LOW spec-naming drift fixed: deauthorize_no_wallet_found.json → deauthorize_wallet_uninstalled.json). CR sweep: CR-32 (closed-by-1-5-inheritance — desktop UNSUPPORTED_PLATFORM), CR-45 inherited (Route B androidTest gap → CR-50), CR-47/CR-48 N/A (reauthorize-only), CR-49 partially-closed (MwaClientImplTest deauthorize success-path mock gap), CR-50 logged (Route B transitive), CR-51 logged (AC-3 androidTest deferred to unit-only), CR-52 logged (idempotent-path listAllKeys disk I/O design tradeoff accepted). 2 retrospect rules added to ~/.claude/rules/retrospect/universal.md from review knowledge gaps: 'Symmetric defensive branches need symmetric tests' + 'Spec compliance includes test-side assertions, not just production behavior'."
+    },
+    {
+      "storyId": "4-3",
+      "slug": "keystore-recovery-manifest-r8-reproducible",
+      "size": "L",
+      "wave": 5,
+      "startedAt": "2026-04-27T13:05:00Z",
+      "completedAt": "2026-04-27T19:45:00Z",
+      "gate5Result": "pass",
+      "tasks": 7,
+      "commits": 7,
+      "baselineTag": "pre-mwa-android-4-3",
+      "postTag": "post-mwa-android-4-3",
+      "commitsList": [
+        "ae16cc8c test(mwa): Story 4-3 T1 — Kotlin TDD red + stub-first scaffolding for keystore corrupt-recovery",
+        "99cc2414 feat(mwa): Story 4-3 T2 — keystore corrupt-recovery wired (AC-1 GREEN) + reauthDictJson grep-ban",
+        "6015d5be feat(mwa): Story 4-3 T3 — manifest hardening + backup_rules + data_extraction_rules + ComposeWalletActivity intent hardening",
+        "dfd5af83 feat(mwa): Story 4-3 T4 — consumer-rules.pro clientlib-ktx keep+dontwarn + r8-smoke AC-4 grep step + CR-13 banner",
+        "59521912 feat(mwa): Story 4-3 T5 — Gradle dependency locking + verification metadata + maintainer regen guide (AC-6 part 1)",
+        "5c3fa38e feat(mwa): Story 4-3 T6 — reproducible-build CI + manifest-merge audit + synthetic consumer scaffold + R8 E2E [spike GREEN]",
+        "<T7 commit> chore(mwa): Story 4-3 T7 — baseline refresh 137→144 + concerns/deviations filed + pre-Gate-5 close-out"
+      ],
+      "deviations": [
+        "D-4-3-1 Rule 2 (AC-1 evidence narrowed — unit + plugin-boundary only; on-device choreography deferred → CR-58)",
+        "D-4-3-2 Rule 1 (AC-6 runner OS swap — ubuntu-latest×2 with canonicalize-aar.sh; semantic-identical to macos-latest×2)",
+        "D-4-3-3 NOT FILED (C-4-3-E spike GREEN at T6; AC-5 ships fully delivered)",
+        "D-T1-RULE1-1 Rule 1 (T1 stub-first scaffolding for laim-verify-checks hook)",
+        "D-T1-RULE1-2 Rule 1 (T1 test class naming MwaAndroidPluginKeystoreCorruptRecoveryTest per Story 2-1/2-2 convention)",
+        "D-T2-RULE1-1 Rule 1 (T2 reauthDictJson added to grep-bans pattern-8 + .bad fixture extended for self-test)",
+        "D-T4-RULE2-1 Rule 2 (T4 consumer-rules.pro rule placement at end-of-file for visual grouping)",
+        "D-T4-RULE2-2 Rule 2 (T4 r8-smoke grep asserts presence inside shipped AAR's META-INF/proguard/, not source file)",
+        "D-T5-RULE1-1 Rule 1 (T5 dependencyLocking block at android/build.gradle.kts root, not inside android{} DSL — C-4-3-D)",
+        "D-T5-RULE1-2 Rule 1 (T5 verify-signatures>true with 7 <ignored-keys> for keys couldn't-be-downloaded; PGP best-effort → CR-61)",
+        "D-T5-RULE1-3 Rule 1 (T5 maintainer guide at docs/dev/lockfile-regeneration.md per Story 1-2 convention)",
+        "D-T5-RULE1-4 Rule 1 (T5 org.json:json:20231013 PGP verified at regen — better than DD-4-3-4.a anticipated)",
+        "D-T6-RULE1-1 Rule 1 (T6 canonicalize-aar.sh at repo-root tools/, not android/tools/)",
+        "D-T6-RULE1-2 Rule 1 (T6 manifest_merge_audit.yml ships both audit-positive + audit-warning jobs in single workflow)",
+        "D-T6-RULE1-3 Rule 1 (T6 C-4-3-E spike GREEN evidence in commit message; D-4-3-3 NOT filed)"
+      ],
+      "amendments": [],
+      "concerns": [
+        "CR-58",
+        "CR-59",
+        "CR-60",
+        "CR-61"
+      ],
+      "concernsResolved": [],
+      "concernsTransitive": [
+        "CR-32 closed-by-1-5",
+        "CR-35 deferred",
+        "CR-45 inherited (Route B)",
+        "CR-50 inherited"
+      ],
+      "testsAdded": 7,
+      "testsAddedDetail": "7 Kotlin unit (MwaAndroidPluginKeystoreCorruptRecoveryTest: 7 cases covering GeneralSecurityException + IOException recovery branches, NEW DD-4-3-1.a cache-LOOKUP-path catch in authorize, reauthorize equivalent, and 5-key DD-4-3-1.b reauth_required payload shape JSON-parse assertion). Pytest unchanged. AndroidTest count post-4-1 was 14 (+AC-1 happy + AC-2 network-off); 4-3 ships no NEW androidTest cases (manifest hardening + R8 + reproducible build are CI-job evidence, not androidTest assertions). T6 spike GREEN — release-variant connectedAndroidTest assembled cleanly with R8 enabled at AGP 7.4.1 (D-4-3-3 NOT filed).",
+      "reviewFindings": {
+        "userInteractive": true,
+        "rounds": 0,
+        "blockers": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "fixed": 0,
+        "deferred": 0,
+        "note": "Code-review-agent spawn deferred to user-driven post-T7 review (orchestrator initiates Gate 5 cycle separately). Per-task [R]/[E] interactive reviews throughout: T1 [R] confirmed TDD red + stub-first scaffolding (precedent: Story 3-1 T1); T2 [R] confirmed DD-4-3-1.a NEW cache-LOOKUP-path catch wires fail-closed contract (no dual-emit; terminal-signal invariant honored); T3 [R] confirmed DD-4-3-3 twin XML files co-ship + ComposeWalletActivity intent hardening; T4 [R] confirmed AC-4 grep asserts inside shipped AAR's META-INF/proguard/; T5 [R] confirmed dependencyLocking at root (C-4-3-D), 7 ignored-keys documented (DD-4-3-4.a → CR-61); T6 [R] confirmed canonicalize-aar.sh repo-root placement + reproducible-build CI dual-job + C-4-3-E spike GREEN inline."
+      },
+      "ciStatus": {
+        "unitBaseline": "green-local-2026-04-27T19:30Z (144 Kotlin + 83 pytest = 227)",
+        "androidTest": "pending — runtime validation on next CI push via Story 2-1 round-3-fixed workflow (ubuntu-latest + KVM + API 33 x86_64 + R8 8.5.35 + META-INF excludes + x86_64 abiFilter); androidTest count unchanged at 14 (Story 4-3 ships no NEW emulator-tier assertions)",
+        "r8Smoke": "workflow updated — AC-4 consumer-rules grep step added; runtime validation on next CI push",
+        "reproducibleBuild": "NEW workflow .github/workflows/reproducible_build.yml — 2 ubuntu-latest runners + canonicalize-aar.sh + assert-equal byte-diff job",
+        "manifestMergeAudit": "NEW workflow .github/workflows/manifest_merge_audit.yml — audit-positive (allowBackup=false enforced) + audit-warning (consumer-permissive emits ::warning::, exits 0)",
+        "gdscriptTests": "still failing (pre-existing, round-4 candidate; 4-3 does not touch GDScript surface)",
+        "note": "Story ships with unit baseline green; on-device + reproducible-build validation happens asynchronously once the next `git push origin feature/mwa-android` runs the CI matrix."
+      },
+      "notes": "Sixth Wave 5 story (after 2-1, 2-3, 2-2, 3-1, 4-1). Cross-cutting hardening: AC-1 keystore corrupt-recovery (T1 unit + T2 plugin wiring with NEW DD-4-3-1.a cache-LOOKUP-path catch + DD-4-3-1.b 5-key reauth_required payload pivoting AWAY from prior mwa_error{StorageCorrupt} emission) + AC-2/3 manifest hardening (T3 backup_rules.xml + DD-4-3-3 data_extraction_rules.xml twin + ComposeWalletActivity taskAffinity=\"\"+singleTask) + AC-4 R8 consumer-rules clientlib-ktx keep+dontwarn (T4 + r8-smoke grep step) + AC-6 dep-locking + verification-metadata SHA-256+PGP best-effort (T5 + maintainer regen guide) + AC-5/7 reproducible-build dual-runner CI + manifest-merge audit + synthetic consumers + R8 E2E spike GREEN (T6). Code delta: NativeBridge.postReauthRequired(reauthDictJson: String) interface + DefaultNativeBridge override + emitReauthRequiredKeystoreCorrupt + buildReauthRequiredKeystoreCorruptJson + withStorageOrReauthRequired wrapper helper for first-touch SecureTokenStore call sites + @JvmStatic external fun postReauthRequiredNative + AndroidManifest.xml application-level allowBackup=false+tools:replace+fullBackupContent+dataExtractionRules+ComposeWalletActivity intent hardening + res/xml/backup_rules.xml + res/xml/data_extraction_rules.xml + consumer-rules.pro clientlib-ktx keep+dontwarn + CR-13 banner + android/build.gradle.kts dependencyLocking root block + android/gradle.lockfile + android/gradle/verification-metadata.xml + tools/canonicalize-aar.sh + tools/consumer-merge-audit/{synthetic-consumer,synthetic-warning}/ + .github/workflows/reproducible_build.yml + .github/workflows/manifest_merge_audit.yml + ci/grep_bans.sh pattern-8 reauthDictJson + .github/workflows/testdata/grep_ban_fixtures/log_payload_json.kt.bad extension + docs/dev/lockfile-regeneration.md + r8-smoke AC-4 grep step. 5 design decisions locked (DD-4-3-1..DD-4-3-5 incl. DD-4-3-1.a fail-closed wrapper + DD-4-3-1.b 5-key payload + DD-4-3-3 twin XML files + DD-4-3-4.a PGP best-effort with ignored-keys + DD-4-3-5 reproducible-build cache-disable + canonicalize). 7 commits: T1 (ae16cc8c) + T2 (99cc2414) + T3 (6015d5be) + T4 (dfd5af83) + T5 (59521912) + T6 (5c3fa38e) + T7 (this commit). Unit baseline 137 → 144 (+7 from T1 MwaAndroidPluginKeystoreCorruptRecoveryTest); pytest 83 unchanged; androidTest count unchanged at 14 (4-3 ships CI-job evidence, not emulator-tier assertions). 2 deviations filed (D-4-3-1 Rule 2 AC-1 narrowing → CR-58; D-4-3-2 Rule 1 AC-6 runner OS swap); D-4-3-3 NOT filed (C-4-3-E spike GREEN). 4 new concerns logged (CR-58 MEDIUM AC-1 testability gap; CR-59 LOW AC-7 warning-not-blocking by design; CR-60 MEDIUM reproducible-build determinism floor forward-looking debt; CR-61 LOW PGP best-effort). 13 per-task drive-by Rule 1/Rule 2 deviations rolled into commit messages T1-T6 (D-T1-RULE1-1..D-T6-RULE1-3). CR sweep: CR-32 closed-by-1-5 inheritance, CR-35 deferred (headless-Godot tier), CR-45 inherited (Route B), CR-50 inherited (Story 4-1). T7 baseline refresh + close-out only — no production code changes."
     }
   ],
   "baselineTests": {
-    "total": 220,
-    "passing": 220,
+    "total": 227,
+    "passing": 227,
     "failing": 0,
     "baselinedAt": "2026-04-22T08:09:41Z",
     "baselinedAtStory": 5,
-    "lastRefreshedAt": "2026-04-27T12:50:00Z",
-    "lastRefreshedAtStory": 11,
+    "lastRefreshedAt": "2026-04-27T19:45:00Z",
+    "lastRefreshedAtStory": 12,
     "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
     "failingTests": [],
-    "note": "Post-story-4-1 T7 + code-review-fix (2026-04-27) baseline refresh: 213 → 220 (+7 from Story 4-1: +6 from T1 MwaAndroidPluginDeauthorizeTest — AC-1 happy multi-key wipe + AC-2 remote_unreachable + AC-3 wallet_uninstalled + AC-4 idempotent vacuous-success + DD-4-1-3 wipe-crash else-branch → mwa_error PROTOCOL_ERROR + DD-4-1-3 wipe-crash idempotent-path symmetric coverage [post-review-finding-1 fix]; +1 from T6 DeauthorizeStructuralTest — AC-5 finally-block enforcement via brace-balanced source-grep). Kotlin 130 → 137; pytest 83 unchanged. Story 4-1 T5 adds 2 androidTest files (AC1DeauthorizeHappyTest, AC2DeauthorizeNetworkOffTest) — NOT counted here; androidTest runs on emulator CI only and has its own baseline: pre-4-1 had 12 AC tests (post-3-1), post-4-1 expected 14."
+    "note": "Post-story-4-3 T7 baseline refresh: 137 → 144 Kotlin (+7 from Story 4-3 T1 MwaAndroidPluginKeystoreCorruptRecoveryTest — 7 cases covering GeneralSecurityException + IOException recovery branches, NEW DD-4-3-1.a cache-LOOKUP-path catch in authorize, reauthorize equivalent, and 5-key DD-4-3-1.b reauth_required payload shape JSON-parse assertion); pytest 83 unchanged. Story 4-3 ships no NEW androidTest cases (manifest hardening + R8 + reproducible build are CI-job evidence, not emulator-tier assertions); androidTest baseline unchanged at 14 ACs (post-4-1). Total unit baseline 220 → 227."
   },
   "tooling": {
     "format": "clang-format (C++); ktlint (Kotlin)",
@@ -496,7 +567,7 @@
     "totalRetries": 0,
     "tddRate": 0,
     "avgTaskMinutes": 0,
-    "subagentSpawns": 23,
+    "subagentSpawns": 31,
     "gatePasses": 10,
     "gateFails": 0,
     "gateOverrides": 0,

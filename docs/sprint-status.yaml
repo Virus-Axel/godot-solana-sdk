@@ -127,10 +127,15 @@ epics:
         slug: keystore-recovery-manifest-r8-reproducible
         title: "Keystore Corruption Recovery + Manifest Hardening + R8 Rules + Dep Lockfile + Reproducible Build"
         size: L
-        status: in-progress
+        status: done
         wave: 5
         dependencies: ["2-1"]
         startedAt: 2026-04-27T13:05:00Z
+        completedAt: 2026-04-27T19:45:00Z
+        gate5Result: pass
+        postTag: post-mwa-android-4-3
+        amendments: []
+        concerns: ["CR-58", "CR-59", "CR-60", "CR-61"]
 
   - id: 5
     name: "Polish — Observability, Lifecycle, Example, Docs, CI"
