@@ -922,15 +922,165 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * `authToken` or no `identityUri` in session state, the remote-revoke is
      * skipped (vacuous success); the wipe-loop is naturally a no-op.
      *
-     * Story 4-1 T1 — STUB. Real body lands in T2.
+     * **CAS-first ordering** is inherited from Story 2-3 — register +
+     * tryTerminate must precede any state mutation. **No watchdog** on the
+     * deauthorize path (story Dev Notes "Watchdog scoping decision"): AC-2
+     * requires remote failure to surface as `remote_unreachable`, NOT
+     * `mwa_timeout`.
+     *
+     * **Flag-based post-finally branch** (DD-4-1-3 / C-4-1-F): the
+     * `wipeCrashed` flag is set inside the inner finally-catch and read by an
+     * `if (!wipeCrashed) emit deauthorize_completed` guard AFTER the outer
+     * try/catch/finally completes. Returning from inside the inner finally
+     * would swallow any in-flight exception from the outer catch (e.g. a
+     * defensive `SdkLog.w` throw). T1 case 5 enforces the skip path.
      */
     @UsedByGodot
     fun mwaDeauthorize(requestId: String) {
-        TODO(
-            "Story 4-1 T2 — replace stub with full deauthorize impl per " +
-                "DD-4-1-1..DD-4-1-6 (try/catch/finally + multi-key wipe + " +
-                "flag-based post-finally branch)",
-        )
+        scope.launch {
+            withContext(mainDispatcher) {
+                // Step 1 (CAS-first per Story 2-3 inheritance): reserve the slot.
+                if (!inflightMap.register(requestId, clock())) {
+                    nativeBridge.postMwaError(
+                        buildErrorJson(
+                            requestId = requestId,
+                            error = MwaError.ProtocolError,
+                            developerDetails =
+                            "duplicate requestId on deauthorize — caller must use fresh UUIDs per op",
+                            layer = "kotlin",
+                            cause = "duplicate_request_id",
+                            sourceMethod = "deauthorize",
+                        ).toString(),
+                    )
+                    return@withContext
+                }
+
+                // Step 2: win the terminal-signal CAS BEFORE mutating state.
+                // Defense-in-depth: deauthorize has no competing watchdog, but
+                // preserving the CAS discipline keeps the state-machine uniform.
+                if (!inflightMap.tryTerminate(requestId)) {
+                    diagnostics.incrementLateResult()
+                    SdkLog.w(TAG, requestId) { "late_result outcome=deauthorize (CAS lost)" }
+                    return@withContext
+                }
+
+                // Step 3: snapshot inputs. Empty/null snapshots feed DD-4-1-4
+                // idempotent path (skip remote, listAllKeys filter is naturally
+                // a no-op).
+                var remoteSucceeded = false
+                var wipeCrashed = false
+                val authTokenForRevoke = sessionState.getAuthToken()
+                val identityUriSnapshot = sessionState.getIdentityUri()
+                val store = storeProvider(requireContext())
+
+                if (authTokenForRevoke == null || identityUriSnapshot.isEmpty()) {
+                    // DD-4-1-4 idempotent path — vacuous success. No remote attempted.
+                    remoteSucceeded = true
+                    try {
+                        // listAllKeys filter on empty identityUri returns empty list;
+                        // the forEach is a no-op. Defensive call kept for symmetry
+                        // with the else branch — single source of wipe semantics.
+                        store.listAllKeys()
+                            .filter { it.identityUri == identityUriSnapshot }
+                            .forEach { store.deleteToken(it) }
+                        sessionState.clear()
+                    } catch (ex: Throwable) {
+                        wipeCrashed = true
+                        SdkLog.e(TAG, requestId) {
+                            "mwaDeauthorize wipe crashed (idempotent path): ${ex.javaClass.simpleName}"
+                        }
+                        nativeBridge.postMwaError(
+                            buildErrorJson(
+                                requestId = requestId,
+                                error = MwaError.ProtocolError,
+                                developerDetails = "wipe crashed: ${ex.javaClass.simpleName}",
+                                layer = "kotlin",
+                                cause = ex.javaClass.simpleName,
+                                sourceMethod = "deauthorize",
+                            ).toString(),
+                        )
+                    }
+                } else {
+                    // Reconstruct ConnectionIdentity from MwaSessionState's
+                    // preserved-across-disconnect identity fields per DD-3-1-8
+                    // (Story 3-1 inheritance).
+                    val identity = ConnectionIdentity(
+                        identityUri = android.net.Uri.parse(identityUriSnapshot),
+                        iconUri = android.net.Uri.parse(sessionState.getIconUri()),
+                        identityName = sessionState.getIdentityName(),
+                    )
+                    try {
+                        when (
+                            val result = mwaClientFactory().deauthorize(
+                                senderProvider(),
+                                identity,
+                                authTokenForRevoke,
+                            )
+                        ) {
+                            is MwaResult.Success -> remoteSucceeded = true
+                            is MwaResult.Failure -> {
+                                remoteSucceeded = false
+                                SdkLog.w(TAG, requestId) {
+                                    "remote revoke failed: ${result.error.javaClass.simpleName}"
+                                }
+                            }
+                        }
+                    } catch (e: Throwable) {
+                        // DD-4-1-1: any non-Success outcome (Failure result OR
+                        // thrown exception) routes to `remote_unreachable` —
+                        // never to `mwa_error`. Catch is defensive for
+                        // unexpected throws (clientlib bugs, coroutine
+                        // cancellation surfacing as throw, etc.).
+                        remoteSucceeded = false
+                        SdkLog.w(TAG, requestId) {
+                            "remote revoke threw: ${e.javaClass.simpleName}"
+                        }
+                    } finally {
+                        try {
+                            // DD-4-1-6 multi-key wipe: filter listAllKeys on
+                            // identityUri, delete all matches. Aligns with the
+                            // security threat model: "this device is no longer
+                            // trusted with this wallet."
+                            store.listAllKeys()
+                                .filter { it.identityUri == identityUriSnapshot }
+                                .forEach { store.deleteToken(it) }
+                            // DD-4-1-2: full clear (NOT clearOnLogout — that's
+                            // the disconnect-path wipe that preserves identity).
+                            sessionState.clear()
+                        } catch (ex: Throwable) {
+                            wipeCrashed = true
+                            SdkLog.e(TAG, requestId) {
+                                "mwaDeauthorize wipe crashed: ${ex.javaClass.simpleName}"
+                            }
+                            nativeBridge.postMwaError(
+                                buildErrorJson(
+                                    requestId = requestId,
+                                    error = MwaError.ProtocolError,
+                                    developerDetails =
+                                    "wipe crashed: ${ex.javaClass.simpleName}",
+                                    layer = "kotlin",
+                                    cause = ex.javaClass.simpleName,
+                                    sourceMethod = "deauthorize",
+                                ).toString(),
+                            )
+                        }
+                    }
+                }
+
+                // DD-4-1-3 / C-4-1-F: flag-based post-finally branch. NEVER
+                // `return@withContext` from inside the inner finally — that
+                // would swallow in-flight exceptions from the outer catch.
+                if (!wipeCrashed) {
+                    val resultJson = JSONObject().apply {
+                        put("request_id", requestId)
+                        put("remote_revoke_succeeded", remoteSucceeded)
+                        put("local_cache_cleared", true)
+                        put("warning", if (!remoteSucceeded) "remote_unreachable" else "")
+                    }.toString()
+                    nativeBridge.postDeauthorizeCompleted(requestId, resultJson)
+                }
+            }
+        }
     }
 
     /**
