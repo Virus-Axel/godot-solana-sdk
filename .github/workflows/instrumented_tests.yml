@@ -145,6 +145,11 @@ jobs:
             # introduced in T2. Inherits A-10 keep rules automatically; the smoke
             # grep asserts R8 did not strip or rename the symbol.
             mwaReauthorize
+            # Story 3-1 T5 — mwaSignMessages is a new @UsedByGodot instance method
+            # introduced in T2 (the per-call entry point that dispatches through
+            # the runSigningOp shared pipeline). Inherits A-10 keep rules; the
+            # smoke grep asserts R8 did not strip or rename the symbol.
+            mwaSignMessages
             mwaQuerySessionStateFromJni
             mwaAuthorizeFromJni
             mwaReauthorizeFromJni
@@ -164,6 +169,11 @@ jobs:
             # Kotlin→C++ callback path. JNI symbol linked at runtime via the
             # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3).
             postReauthorizeCompletedNative
+            # Story 3-1 T2 — parallel external fun for sign_messages_completed's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
+            # post_arity2_completed("sign_messages_completed", ...)).
+            postSignMessagesCompletedNative
             postMwaErrorNative
             postMwaTimeoutNative
             postMwaCancelledLifecycleNative
