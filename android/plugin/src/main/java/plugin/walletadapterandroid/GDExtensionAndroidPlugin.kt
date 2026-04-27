@@ -169,10 +169,13 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             instance?.mwaDisconnect(reqId) ?: emitInstanceNullError(reqId, "disconnect")
         }
 
+        // Story 4-1 T1 — JNI shim forwards to the `mwaDeauthorize(...)` instance
+        // method. The instance method body lands as a TODO stub in T1 (TDD-RED)
+        // and gets the real impl in T2 per DD-4-1-3 / DD-4-1-6.
         @JvmStatic
         fun mwaDeauthorizeFromJni(reqId: String) {
             Log.i(TAG, "mwaDeauthorizeFromJni: Story 4-1 scope; reqId=$reqId")
-            instance?.emitNotImplemented(reqId, "deauthorize") ?: emitInstanceNullError(reqId, "deauthorize")
+            instance?.mwaDeauthorize(reqId) ?: emitInstanceNullError(reqId, "deauthorize")
         }
 
         @JvmStatic
@@ -287,6 +290,14 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3).
         @JvmStatic
         external fun postSignMessagesCompletedNative(reqId: String, resultDictJson: String)
+
+        // Story 4-1 T1 — parallel external fun for deauthorize_completed's
+        // Kotlin→C++ callback path. JNI symbol linked at runtime via the
+        // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 of 4-1).
+        // Result Dictionary is the 4-key shape `{request_id,
+        // remote_revoke_succeeded, local_cache_cleared, warning}` per arch.md:669.
+        @JvmStatic
+        external fun postDeauthorizeCompletedNative(reqId: String, resultDictJson: String)
 
         @JvmStatic
         external fun postMwaErrorNative(errorDictJson: String)
@@ -896,6 +907,30 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             }
             if (result is MwaResult.Success) handleSignMessagesSuccess(requestId, result.value)
         }
+    }
+
+    /**
+     * Story 4-1 — `deauthorize` revoke + unconditional local-cache wipe (FR-5 /
+     * AC-NFR-SEC-5). Best-effort remote `clientlib.revoke(authToken)` wrapped in
+     * `try { ... } catch { ... } finally { wipe }` per DD-4-1-3; on remote
+     * failure the path emits `deauthorize_completed{remote_revoke_succeeded:
+     * false, warning: "remote_unreachable"}` (NOT `mwa_error`) per DD-4-1-1.
+     * The `finally`-block multi-key wipe (DD-4-1-6: `listAllKeys` filter on
+     * `identityUri`) deletes ALL CacheRecord entries scoped to this caller's
+     * identity, then `MwaSessionState.clear()` (full clear, NOT
+     * `clearOnLogout()` — DD-4-1-2). Idempotence (DD-4-1-4): if no
+     * `authToken` or no `identityUri` in session state, the remote-revoke is
+     * skipped (vacuous success); the wipe-loop is naturally a no-op.
+     *
+     * Story 4-1 T1 — STUB. Real body lands in T2.
+     */
+    @UsedByGodot
+    fun mwaDeauthorize(requestId: String) {
+        TODO(
+            "Story 4-1 T2 — replace stub with full deauthorize impl per " +
+                "DD-4-1-1..DD-4-1-6 (try/catch/finally + multi-key wipe + " +
+                "flag-based post-finally branch)",
+        )
     }
 
     /**

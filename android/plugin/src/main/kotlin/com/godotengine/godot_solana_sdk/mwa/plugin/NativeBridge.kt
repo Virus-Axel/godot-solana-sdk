@@ -101,6 +101,24 @@ internal interface NativeBridge {
     fun postSignMessagesCompleted(requestId: String, resultDictJson: String)
 
     /**
+     * 2-param `deauthorize_completed` per A-12 — Story 4-1. `requestId` is the
+     * first signal argument; `resultDictJson` is the second (Dictionary
+     * carrying the 4-key shape `{request_id, remote_revoke_succeeded,
+     * local_cache_cleared, warning}` per arch.md:669 — distinct from the
+     * 6-key auth-success shape and the 2-key sign-success shape).
+     *
+     * The `resultDictJson` does NOT carry secret material (no auth_token, no
+     * fingerprint) — `remote_revoke_succeeded` and `local_cache_cleared` are
+     * Boolean state flags; `warning` is the literal `"remote_unreachable"` or
+     * empty. The 2-param `*_completed` family uniformly warns against payload
+     * logging anyway to keep the seam convention uniform and the grep-ban
+     * surface consistent.
+     *
+     * **WARNING — do NOT log or interpolate `resultDictJson`.**
+     */
+    fun postDeauthorizeCompleted(requestId: String, resultDictJson: String)
+
+    /**
      * 1-param `mwa_error` per A-12. `request_id` is embedded inside
      * `errorDictJson` at the `request_id` field (A-14 10-key shape).
      *
@@ -156,6 +174,10 @@ internal object DefaultNativeBridge : NativeBridge {
 
     override fun postSignMessagesCompleted(requestId: String, resultDictJson: String) {
         GDExtensionAndroidPlugin.postSignMessagesCompletedNative(requestId, resultDictJson)
+    }
+
+    override fun postDeauthorizeCompleted(requestId: String, resultDictJson: String) {
+        GDExtensionAndroidPlugin.postDeauthorizeCompletedNative(requestId, resultDictJson)
     }
 
     override fun postMwaError(errorDictJson: String) {

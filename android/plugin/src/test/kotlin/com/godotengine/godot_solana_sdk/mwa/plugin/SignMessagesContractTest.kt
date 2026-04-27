@@ -135,7 +135,8 @@ class SignMessagesContractTest {
         val expectedInput = fixture.getJSONObject("expected_input")
         val response = fixture.getJSONObject("response")
         assertEquals(
-            "success", response.getString("type"),
+            "success",
+            response.getString("type"),
             "fixture response.type must be 'success' for the happy-path contract test",
         )
         val payload = response.getJSONObject("payload")
