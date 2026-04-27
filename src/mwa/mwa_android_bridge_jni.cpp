@@ -831,6 +831,29 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postRea
     post_arity2_completed(env, reqId, resultDictJson, "reauthorize_completed", "postReauthorizeCompletedNative");
 }
 
+// Story 3-1 T3 — 2-param `sign_messages_completed` JNIEXPORT per A-12.
+// Kotlin side: GDExtensionAndroidPlugin.Companion.postSignMessagesCompletedNative (external fun)
+// → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
+//       "sign_messages_completed", Array::make(req_id, result_dict))
+// under CR-41 CallbackLease — parallel to postReauthorizeCompletedNative above.
+//
+// The result_dict carries `{request_id, signed_payloads: [base64...]}` per
+// arch.md §3 sign_messages_completed signal schema (DD-3-1-5). Signed
+// payloads are public material (signatures of caller-supplied messages) —
+// no secret-key material crosses this boundary; SecretString does NOT
+// participate in this signal. On JSON parse failure (unlikely; the Kotlin
+// side builds the JSON via JSONObject + JSONArray in buildSignSuccessJson),
+// post_parse_failure_error falls back to mwa_error{PROTOCOL_ERROR,
+// source_method="sign_messages", cause="parse_failure"} via the existing
+// helper — preserves the terminal-signal invariant per DD-15.
+// No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
+// Signals are posted via dispatcher only — no direct signal emission here.
+JNIEXPORT void JNICALL
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postSignMessagesCompletedNative(
+    JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
+    post_arity2_completed(env, reqId, resultDictJson, "sign_messages_completed", "postSignMessagesCompletedNative");
+}
+
 JNIEXPORT void JNICALL
 Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postMwaErrorNative(
     JNIEnv* env, jobject /*companion*/, jstring errorDictJson) {
