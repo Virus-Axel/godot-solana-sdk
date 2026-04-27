@@ -854,6 +854,29 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postSig
     post_arity2_completed(env, reqId, resultDictJson, "sign_messages_completed", "postSignMessagesCompletedNative");
 }
 
+// Story 4-1 T3 — 2-param `deauthorize_completed` JNIEXPORT per A-12.
+// Kotlin side: GDExtensionAndroidPlugin.Companion.postDeauthorizeCompletedNative (external fun)
+// → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
+//       "deauthorize_completed", Array::make(req_id, result_dict))
+// under CR-41 CallbackLease — parallel to postDisconnectCompletedNative / postSignMessagesCompletedNative above.
+//
+// The result_dict carries the 4-key shape `{request_id, remote_revoke_succeeded,
+// local_cache_cleared, warning}` per arch.md:669 + DD-4-1-1. No secret material
+// (no auth_token, no fingerprint) — `remote_revoke_succeeded` and
+// `local_cache_cleared` are Boolean state flags; `warning` is the literal
+// `"remote_unreachable"` or empty. On JSON parse failure (unlikely; the Kotlin
+// side builds via JSONObject), post_parse_failure_error falls back to
+// mwa_error{PROTOCOL_ERROR, source_method="deauthorize", cause="parse_failure"}
+// via the existing helper — preserves the terminal-signal invariant per DD-15
+// + DD-4-1-3 flag-based post-finally branch on the Kotlin side.
+// No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
+// Signals are posted via dispatcher only — no direct signal emission here.
+JNIEXPORT void JNICALL
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postDeauthorizeCompletedNative(
+    JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
+    post_arity2_completed(env, reqId, resultDictJson, "deauthorize_completed", "postDeauthorizeCompletedNative");
+}
+
 JNIEXPORT void JNICALL
 Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postMwaErrorNative(
     JNIEnv* env, jobject /*companion*/, jstring errorDictJson) {
