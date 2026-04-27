@@ -134,6 +134,35 @@ func reauthorize(opts: Dictionary = {}) -> void:
 	_node.reauthorize(opts)
 
 
+## Sign one or more byte-array messages with the connected wallet (wallet UI
+## shown for confirmation per AC-2). Completion arrives via one terminal
+## signal per request:
+##   - `sign_messages_completed(request_id, result)` on success — `result`
+##     carries `{request_id, signed_payloads: [PackedByteArray, ...]}` per
+##     AC-2 / DD-3-1-5; signed payloads are caller message bytes prefixed
+##     with the wallet's 64-byte ed25519 signature (decoded length ≥ input
+##     length + 64).
+##   - `mwa_error{code=NOT_CONNECTED}` if `is_connected()` is false at call
+##     time — synchronous preflight per DD-3-1-6 / AC-3 (no scope.launch on
+##     the disconnected branch).
+##   - `mwa_error{code=USER_CANCELED}` if the wallet user dismisses the
+##     signing prompt — AC-4, routed through the single `mwa_error` signal
+##     per DD-15 (no per-op error signals across the surface).
+##   - `mwa_timeout` on watchdog expiry (DD-3-1-3 effectiveWatchdog parity).
+##
+## Caller correlates terminal signals via the `request_id` field. The C++
+## node mints the ID via `generate_request_id` (D-4 from Story 1-5); per the
+## LOCKED Story 2-1 T7 convention (mobile_wallet_adapter.hpp:55-59 "the
+## remaining 6 op methods stay void") the facade returns void — same shape
+## as `disconnect` / `reauthorize` above.
+##
+## `messages`: list of message byte arrays (1+ entries).
+## `opts` (optional): {"timeout_ms": int} — clamped to internal default per
+## DD-3-1-3. Omitted keys fall to the C++ node's defaults.
+func sign_messages(messages: Array[PackedByteArray], opts: Dictionary = {}) -> void:
+	_node.sign_messages(messages, opts)
+
+
 ## Synchronous state read — true after a successful connect, false otherwise.
 ## Backed by MwaSessionState.authToken != null (arch §7.1; round-tripped via
 ## MwaJniContext::query_session_state).
