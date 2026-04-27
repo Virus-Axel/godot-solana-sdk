@@ -109,9 +109,10 @@ epics:
         slug: deauthorize-finally-block
         title: "deauthorize + finally-block Semantics + Cache Wipe Independent of Remote"
         size: M
-        status: backlog
+        status: in-progress
         wave: 5
         dependencies: ["2-1"]
+        startedAt: 2026-04-27T09:49:35Z
       - id: "4-2"
         slug: forget-all-master-key-rotation
         title: "forget_all + MasterKey Rotation + Mutex + Cancel In-Flight"

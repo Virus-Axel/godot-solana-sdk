@@ -3,11 +3,17 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-27T09:10:00Z",
+  "lastUpdated": "2026-04-27T10:34:24.073Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": null,
+  "currentStory": {
+    "storyId": "4-1",
+    "slug": "deauthorize-finally-block",
+    "startedAt": "2026-04-27T09:49:35Z",
+    "size": "M",
+    "wave": 5
+  },
   "phases": {
     "research": {
       "status": "complete",
@@ -442,16 +448,16 @@
     }
   ],
   "baselineTests": {
-    "total": 213,
-    "passing": 213,
+    "total": 219,
+    "passing": 219,
     "failing": 0,
     "baselinedAt": "2026-04-22T08:09:41Z",
     "baselinedAtStory": 5,
-    "lastRefreshedAt": "2026-04-27T08:55:00Z",
-    "lastRefreshedAtStory": 10,
+    "lastRefreshedAt": "2026-04-27T12:30:00Z",
+    "lastRefreshedAtStory": 11,
     "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
     "failingTests": [],
-    "note": "Post-story-3-1 T7 (2026-04-27) baseline refresh: 204 → 213 (+9 from Story 3-1: +8 from T1 MwaAndroidPluginSignMessagesTest — AC-1 LOC budget + AC-2 happy path + AC-3 NOT_CONNECTED preflight + AC-4 USER_CANCELED + watchdog timeout + late-result drop + duplicate-requestId PROTOCOL_ERROR + dispatcher CAS race; +1 from T6 SignMessagesContractTest — fixture-input contract verification per D-3-1-13 re-scope, @Disabled annotation removed). Kotlin 121 → 130; pytest 83 unchanged. Story 3-1 T5 adds 1 androidTest file (AC2SignMessagesHappyE2ETest) — NOT counted here; androidTest runs on emulator CI only and has its own baseline: pre-3-1 had 11 AC tests (post-2-2), post-3-1 expected 12."
+    "note": "Post-story-4-1 T7 (2026-04-27) baseline refresh: 213 → 219 (+6 from Story 4-1: +5 from T1 MwaAndroidPluginDeauthorizeTest — AC-1 happy multi-key wipe + AC-2 remote_unreachable + AC-3 wallet_uninstalled + AC-4 idempotent vacuous-success + DD-4-1-3 wipe-crash → mwa_error PROTOCOL_ERROR; +1 from T6 DeauthorizeStructuralTest — AC-5 finally-block enforcement via brace-balanced source-grep). Kotlin 130 → 136; pytest 83 unchanged. Story 4-1 T5 adds 2 androidTest files (AC1DeauthorizeHappyTest, AC2DeauthorizeNetworkOffTest) — NOT counted here; androidTest runs on emulator CI only and has its own baseline: pre-4-1 had 12 AC tests (post-3-1), post-4-1 expected 14."
   },
   "tooling": {
     "format": "clang-format (C++); ktlint (Kotlin)",
@@ -472,9 +478,9 @@
     "agentTeamsUsed": false,
     "parallelWaves": 0,
     "parallelStories": 0,
-    "interfaceAudits": 9,
+    "interfaceAudits": 10,
     "interfaceMismatches": 4,
-    "pauseResumeCount": 7
+    "pauseResumeCount": 8
   },
   "waveStrategy": {
     "2": "sequential",
@@ -495,5 +501,12 @@
     "archStats": "13 components, 34 DDs (all LOCKED), 11 signal schemas, 13 error codes, 6 workflows, 6 test tiers",
     "planStats": "21 stories (4S/13M/4L), 5 epics, 7 waves, 8 interface contracts, 4 PD-* all LOCKED",
     "architectureImmutable": true
+  },
+  "recovery": {
+    "interrupted": true,
+    "interruptedAt": "2026-04-27T10:34:24.066Z",
+    "errorType": "unknown",
+    "errorMessage": "",
+    "uncommittedChanges": true
   }
 }
