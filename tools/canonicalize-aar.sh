@@ -30,6 +30,33 @@
 #   - Two different machines with the same Gradle + JDK build of the same
 #     source → identical SHA256 (verified by .github/workflows/reproducible_build.yml).
 #
+# Determinism boundary (Story 4-3 code-review F1 + universal retrospect rule
+# 2026-04-27 "Build-output canonicalization scripts must document their
+# determinism boundary") — what THIS script owns vs. what we DELEGATE to
+# Gradle's documented reproducible-jar contract:
+#   - HANDLED here (outer AAR layer):
+#       * file mtimes → zeroed via `touch -t 197001010000`
+#       * central-directory ordering → enforced via `LC_ALL=C sort`
+#       * extra-fields (UID/GID, extended timestamps) → stripped via `zip -X`
+#   - DELEGATED to Gradle's reproducible-jar contract (nested archives —
+#     `classes.jar`, `R.jar`, etc. inside the AAR):
+#       * inner-jar entry mtimes → Gradle `Jar.preserveFileTimestamps=false`
+#         (AGP-default since AGP 7.x; verifiable via `unzip -l classes.jar`
+#         showing all entries dated `01-01-1981 01:01` — Gradle's deterministic
+#         constant)
+#       * inner-jar central-directory ordering → Gradle
+#         `Jar.reproducibleFileOrder=true` (AGP-default since AGP 7.x)
+#       * Refs: https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives
+#   - RE-EVALUATION TRIGGERS — audit this script's delegation list AND watch
+#     reproducible_build.yml on next push whenever ANY of these happen:
+#       * AGP major upgrade (7.x → 8.x — known AGP 8.x build-uuid header risk
+#         tracked as CR-60 MEDIUM)
+#       * Gradle major upgrade (8.x → 9.x)
+#       * JDK toolchain bump (e.g., temurin-17 → temurin-21)
+#       * New file inside AAR that this script doesn't enumerate (e.g., a new
+#         META-INF/com/android/build/gradle/app-metadata.properties carrying
+#         a time-of-build field)
+#
 # Exit codes:
 #   0 — success (SHA256 emitted to stdout)
 #   1 — usage error (missing or invalid AAR argument)
