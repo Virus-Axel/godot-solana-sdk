@@ -473,3 +473,35 @@ Deferred items from code reviews and implementation. Tracked for future resoluti
       // auth_token_fingerprint reflects the NEW value (not preFingerprint).
   }
   ```
+
+## Story 3-1 deviations (Rule 1+) and CR sweep
+- **Story:** 3-1 (sign_messages + runSigningOp shared pipeline + contract test) | **Closed:** 2026-04-27 (pre-Gate-5)
+
+### Deviations
+
+13 deviations logged. Full narrative is in `docs/stories/3-1.md` T7 deviation list — summary here for post-story audit:
+
+- **D-3-1-1 (Rule 1):** `runSigningOp` is a private member of `GDExtensionAndroidPlugin`, not a top-level extension function on `MwaAndroidPlugin` (per DD-3-1-1).
+- **D-3-1-2 (Rule 1):** `runSigningOp` block receiver is `MwaClient` (the SDK seam), not `MobileWalletAdapterClient` (preserves test seam per DD-3-1-2).
+- **D-3-1-3 (Rule 1):** Return type aligned to existing sealed `MwaResult<X>` (not `Result<T, MwaError>`); evolved signature adds `timeoutMs: Long`.
+- **D-3-1-4 (Rule 1):** plan.md spec omitted `timeoutMs` parameter; impl signature adds it for DD-3-1-3 watchdog parity.
+- **D-3-1-5 (Rule 2 — superseded by D-3-1-13):** Earlier AC-5 evidence narrowing from "byte-identical against vendor fixtures" to "Fake↔real-recorded agreement" per DD-3-1-7. Now superseded by D-3-1-13's further re-scope.
+- **D-3-1-6 (Rule 2 — RETRACTED):** "Inferred recording" fallback retracted at T6 pre-impl audit (shared the same false premise about FakeMwaClient frame construction).
+- **D-3-1-7 (Rule 2 — N/A):** Instrumented-tier escalation N/A under D-3-1-13's re-scope (test stays in unit tier).
+- **D-3-1-8 (Rule 1):** Pre-Impl Audit Revision 1.5 — `MwaSessionState.getKey()` → `getConnectedKey()` (asymmetric setter/getter naming inherited from Story 2-1 T4).
+- **D-3-1-9 (Rule 1):** Pre-Impl Audit Revision 1.5 — `setIdentity` is one combined setter (not 3 separate setters); getters remain individual.
+- **D-3-1-10 (Rule 1):** Revision 2 T1 review — `runSigningOp` visibility relaxed from `private` to `@VisibleForTesting internal` (T1 cross-package test access; aligns with `inflightMapForTest()` precedent).
+- **D-3-1-11 (Rule 1):** Revision 2 T1 review — `runSigningOp` block-result type tightened from generic `T` to `MwaResult<X>` (single-wrap return; double-wrap left wallet-level Failures unrouted at call site). Per C-3-1-W review fix.
+- **D-3-1-12 (Rule 1):** T4 facade interface audit — MWA.gd `sign_messages` aligned to `void` per LOCKED Story 2-1 T7 convention (`include/mwa/mobile_wallet_adapter.hpp:55-59` "the remaining 6 op methods stay void"); story v1 said `-> String`. No C++ change.
+- **D-3-1-13 (Rule 2 — supersedes D-3-1-5):** T6 contract test re-scope from "Fake↔recorded-real frame agreement" to "fixture-input contract verification". Pre-impl audit caught that `FakeMwaClient` does NOT construct a JSON-RPC frame at any point — its `signMessages()` body is `runOp("sign_messages") { _, fixture -> parseSignResponse(...) }` (FakeMwaClient.kt:97-103). The wire-format layer lives in clientlib-ktx (imported only by MwaClientImpl). The v1 spec's "one-line `lastRequestFrame` hook" was not actionable; frame construction in the Fake is a thicker-fake redesign tracked by Story 1-6 CR-21 (out of scope for 3-1). AC-5 evidence collapses to fixture-input contract; D-3-1-6 (inferred-recording fallback) and D-3-1-7 (instrumented-tier escalation) retracted because both shared the same false premise. Real-wallet wire-format invariants (each signed_payload is a bare 64-byte ed25519 signature per `SignResult.kt:8-11`) move to manual release-gate (Phantom/Solflare during 3-1 close-out window).
+
+### CR sweep
+
+- **CR-18 (RESOLVED in 2-1 T6):** Story 3-1 is the first signing-path consumer of the resolved Callable+Array form. T5 androidTest exercises the path end-to-end; no drift observed. CI runtime confirmation pending the next push.
+- **CR-32 (RESOLVED in 2-1 T10):** Desktop backstop coverage is via the shared `build_unsupported_platform_payload` helper (mobile_wallet_adapter.cpp:188), which 3-1 reuses unchanged for the `sign_messages` source_method. The existing `addons/SolanaSDK/mwa/tests/test_unsupported_platform.gd` covers connect/disconnect/reauthorize on the desktop NoOp path; sign_messages takes the same code path. Optional follow-up (non-blocking): add a `sign_messages` invocation to the desktop backstop for symmetric coverage. Tracked as a future-story enhancement candidate; not opened as a new CR (no risk delta).
+- **CR-35 (HIGH, deferred):** Headless-Godot test tier — still deferred; no closure in 3-1.
+- **CR-41 (RESOLVED in 2-1 T10):** Teardown-race barrier. T1 mock + T5 androidTest exercise the same CallbackLease + inflight-registration ordering as 2-1 T10; no regression.
+- **CR-45 (LOW, transitive):** Route B harness gap continues to apply to 3-1 (FakeMwaClient injection bypasses real NativeBridge → JNI → C++ → GDScript path). Mitigations: T5 R8 smoke + future CR-35 headless-Godot tier. No new closure attempt in 3-1.
+- **CR-46 (LOW):** ed25519 submodule env gap — not surfaced in 3-1 scope (T3 ran ban-greps + assemble; full Android scons NDK build deferred to CI; same precedent as 2-2/2-3 T3).
+- **CR-47 (LOW):** DD-2-2-7 multi-match tie-break — not in scope for 3-1. `mwaSignMessages` does not invoke `store.listAllKeys()`; the preflight uses the synchronous `sessionState.getAuthToken() != null` check per DD-3-1-6, not the 3-tuple filter from `mwaReauthorize`.
+- **CR-48 (LOW):** DD-2-2-5 token rotation branch — N/A for sign_messages. Per DD-2-2-5 contract, rotation occurs only in the reauthorize success path; `handleSignMessagesSuccess` does NOT call `store.putToken` (signed_payloads return to caller; the cached `auth_token` is read but never re-written by the signing path). Explicit non-applicability.
