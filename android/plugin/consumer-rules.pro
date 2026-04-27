@@ -1,6 +1,8 @@
 # -----------------------------------------------------------------------------
 # MWA consumer-rules.pro  (Story 1-2 Task 6)
 # -----------------------------------------------------------------------------
+# See also: proguard-library-self.pro -- library-self-only rules (-dontobfuscate). (CR-13)
+#
 # Authoritative source: docs/architecture.md §8.5 (amended A-6).
 #
 # These rules ship TO CONSUMERS of the AAR via `consumerProguardFiles` AND are
@@ -97,3 +99,22 @@
 -keep class plugin.walletadapterandroid.GDExtensionAndroidPlugin$Companion {
     *;
 }
+
+# -----------------------------------------------------------------------------
+# clientlib-ktx reflection entry points (AC-4)
+# -----------------------------------------------------------------------------
+# The Solana Mobile mobile-wallet-adapter clientlib-ktx (com.solanamobile:
+# mobile-wallet-adapter-clientlib-ktx:2.0.3) reflects across its public surface
+# during association/transact dispatch (AssociationContract, MobileWalletAdapter
+# entry points, Scenario classes, Web3-Solana payload (de)serializers). Without
+# a -keep on the package subtree, R8 in a downstream minified app would rename
+# or DCE the symbols the library reaches via reflection -- producing runtime
+# `ClassNotFoundException` / `NoSuchMethodError` from inside the library at the
+# moment authorize/sign is invoked.
+#
+# `-dontwarn` paired with the `-keep` suppresses R8 warnings for optional
+# transitive references inside the same package subtree (e.g. Bouncy Castle
+# providers the library declares but does not always link against in the
+# Godot consumer profile).
+-keep class com.solanamobile.mobilewalletadapter.** { *; }
+-dontwarn com.solanamobile.mobilewalletadapter.**
