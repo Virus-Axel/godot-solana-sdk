@@ -145,6 +145,27 @@ internal interface NativeBridge {
      * **WARNING — do NOT log or interpolate `cancelledDictJson`.**
      */
     fun postMwaCancelledLifecycle(cancelledDictJson: String)
+
+    /**
+     * 1-param `reauth_required` per A-12. Story 4-3 — emits a lifecycle signal
+     * carrying a corrupt-recovery or session-renewal payload. The argument is
+     * the FULL JSON Dictionary blob built by
+     * [GDExtensionAndroidPlugin]'s `buildReauthRequiredKeystoreCorruptJson`
+     * helper (DD-4-3-1.b 5-key shape: `reason`, `request_id`, `source_method`,
+     * `developer_details`, `cause`).
+     *
+     * Used by the plugin-boundary fail-closed wrapper
+     * `withStorageOrReauthRequired` so [com.godotengine.godot_solana_sdk.mwa.store.StorageCorruptException]
+     * surfaces as a typed lifecycle signal to GDScript instead of an opaque
+     * `mwa_error{PROTOCOL_ERROR}` (AC-1).
+     *
+     * **WARNING — `reauthDictJson` MAY contain `developer_details` with
+     * exception class names but never authToken bytes per DD-4-3-1.b.** Do
+     * NOT log, interpolate, or include in exception messages. Story 4-3 T2
+     * extends `ci/grep_bans.sh` pattern-8 to ban this variable name from any
+     * `Log.*` / `SdkLog.*` call.
+     */
+    fun postReauthRequired(reauthDictJson: String)
 }
 
 /**
@@ -190,5 +211,9 @@ internal object DefaultNativeBridge : NativeBridge {
 
     override fun postMwaCancelledLifecycle(cancelledDictJson: String) {
         GDExtensionAndroidPlugin.postMwaCancelledLifecycleNative(cancelledDictJson)
+    }
+
+    override fun postReauthRequired(reauthDictJson: String) {
+        TODO("Story 4-3 T2: route to GDExtensionAndroidPlugin.postReauthRequiredNative(reauthDictJson)")
     }
 }

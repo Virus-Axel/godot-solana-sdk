@@ -1401,6 +1401,60 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         }
     }
 
+    // ---------------- Story 4-3 T1 — STUB-FIRST scaffolding (C-4-3-A) ----------------
+    //
+    // The 3 helpers below are declared with `TODO("Story 4-3 T2: ...")` bodies so:
+    //   1. The new RED test file `MwaAndroidPluginKeystoreCorruptRecoveryTest.kt`
+    //      compiles (MockK + verify call sites need the symbols to resolve).
+    //   2. Test cases that exercise these helpers fail at runtime with
+    //      NotImplementedError — distinct-RED contract per C-4-3-A; each TODO
+    //      message names which T2 deliverable still needs implementation.
+    //
+    // T2 replaces these bodies with the real impl:
+    //   - buildReauthRequiredKeystoreCorruptJson — DD-4-3-1.b 5-key Dictionary shape
+    //   - emitReauthRequiredKeystoreCorrupt — InflightMap CAS-first + nativeBridge.postReauthRequired
+    //   - withStorageOrReauthRequired — fail-closed plugin-boundary wrapper (DD-4-3-1.a)
+    //
+    // T2 ALSO pivots the existing catch sites at lines ~720 (reauthorize success)
+    // and ~1328 (authorize success) from `emitFailure(...MwaError.StorageCorrupt...)`
+    // / `emitFailureReauth(...)` to call `emitReauthRequiredKeystoreCorrupt(...)` —
+    // those call sites are intentionally LEFT UNCHANGED in T1 so cases 1, 2 of the
+    // RED test fail via "verify { postReauthRequired } never invoked" (the cleanest
+    // RED signal for the catch-site-pivot half of T2).
+
+    // `inline` form planned by the story spec for `withStorageOrReauthRequired`
+    // was downgraded to a non-inline `suspend` helper because
+    // `emitReauthRequiredKeystoreCorrupt` is `suspend` and an inline function
+    // may not call suspend functions without matching `crossinline` + `suspend`
+    // constraints. T2 may refactor if a clean inline form lands; logged as
+    // D-T1-RULE1-1 (Rule 1 — minor signature deviation from spec, no
+    // behavioral change).
+
+    private fun buildReauthRequiredKeystoreCorruptJson(requestId: String, sourceMethod: String, ex: StorageCorruptException): String {
+        TODO(
+            "Story 4-3 T2: build 5-key Dictionary per DD-4-3-1.b — reason='keystore_corrupt', " +
+                "request_id, source_method, developer_details, cause=MwaError.StorageCorrupt.code " +
+                "(args: requestId=$requestId, sourceMethod=$sourceMethod, ex=${ex.javaClass.simpleName})",
+        )
+    }
+
+    private suspend fun emitReauthRequiredKeystoreCorrupt(requestId: String, sourceMethod: String, ex: StorageCorruptException) {
+        TODO(
+            "Story 4-3 T2: CAS-first via inflightMap.tryTerminate(requestId), late-result guard, " +
+                "SdkLog.w (no payload interpolation per ci/grep_bans.sh pattern-8), " +
+                "nativeBridge.postReauthRequired(buildReauthRequiredKeystoreCorruptJson(...)) " +
+                "(args: requestId=$requestId, sourceMethod=$sourceMethod, ex=${ex.javaClass.simpleName})",
+        )
+    }
+
+    private suspend fun <R> withStorageOrReauthRequired(requestId: String, sourceMethod: String, block: () -> R): R? {
+        TODO(
+            "Story 4-3 T2: try { block() } catch (ex: StorageCorruptException) { " +
+                "emitReauthRequiredKeystoreCorrupt(requestId, sourceMethod, ex); null } " +
+                "(args: requestId=$requestId, sourceMethod=$sourceMethod, block=$block)",
+        )
+    }
+
     /**
      * `requireContext()` defers to the Godot activity; tests override via
      * [storeProvider]. If the activity is unavailable (plugin lifecycle
