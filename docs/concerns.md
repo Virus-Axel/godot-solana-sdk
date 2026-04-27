@@ -515,3 +515,15 @@ Deferred items from code reviews and implementation. Tracked for future resoluti
 - **CR-51 (LOW):** AC-3 wallet-uninstalled androidTest deferred to unit level only (T1 case 3). Emulator-driven mid-test wallet uninstall is fragile; the unit-tier `MwaResult.Failure(WalletUninstalled)` injection exercises the same code path as AC-2 (DD-4-1-1: any non-Success → remote_unreachable). androidTest tier covers AC-1 + AC-2 only. If a future incident shows unit-level coverage of this classification was insufficient, file a closure story.
 - **CR-32 (closed-by-inheritance):** Desktop UNSUPPORTED_PLATFORM for deauthorize — already wired at `mobile_wallet_adapter.cpp:174-181` from Story 1-5. No new work in 4-1; explicit non-applicability acknowledged in the story file.
 - **CR-47 / CR-48 (N/A for 4-1):** Both are reauthorize-specific. `mwaDeauthorize` does NOT invoke `store.listAllKeys` for tie-breaking (it uses the listAllKeys filter for WIPE per DD-4-1-6 — different purpose) and does NOT call `store.putToken` (only `deleteToken`). Story 4-1 does not surface or close these CRs.
+
+## CR-52 (LOW): Idempotent-path `listAllKeys()` runs even on empty-identityUri vacuous deauth
+
+- **Story:** 4-1 | **Severity:** LOW | **Discovered:** code review post-T7 (2026-04-27)
+- **Detail:** `mwaDeauthorize` lines 979-1002 unconditionally execute `store.listAllKeys().filter { it.identityUri == identityUriSnapshot }.forEach { store.deleteToken(it) }` inside the DD-4-1-4 idempotent path. When `identityUriSnapshot.isEmpty()` (cold-start vacuous deauth), the filter returns empty and no `deleteToken` runs — but `listAllKeys()` still hits SharedPreferences disk I/O (single keys() scan; sub-millisecond on modern hardware).
+- **Risk:** Negligible (~1 disk read per cold-start deauth). The optimization `if (identityUriSnapshot.isNotEmpty()) { listAllKeys()... }` would skip the disk read when there's nothing to wipe.
+- **Resolution:** ACCEPTED as-is. Rationale:
+  - **Symmetry with DD-4-1-2 + DD-4-1-6**: the wipe pattern is identical in both the idempotent branch (lines 979-1002) and the else-branch finally (lines 1038-1067). A guard on ONE branch creates an asymmetry future maintainers would have to think through. Current parallel structure is self-documenting.
+  - **Branch coverage cost**: a new conditional needs test coverage on both sides; test surface grows without commensurate behavioral gain.
+  - **No spec violation**: Story 4-1 line 287 says "Assert: NO `secureTokenStore.deleteToken` invocation" on second deauth (no-op for the destructive call) — silent on `listAllKeys()`. Current impl honors the destructive-no-op while keeping the read-side symmetric.
+  - Cold-start vacuous deauth is rare (typical: connect → deauth; idempotent path triggers only on re-deauth). Production cost negligible.
+- **Action:** None. Documented for future maintainers who may rediscover the same micro-optimization.

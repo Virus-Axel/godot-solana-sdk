@@ -448,16 +448,16 @@
     }
   ],
   "baselineTests": {
-    "total": 219,
-    "passing": 219,
+    "total": 220,
+    "passing": 220,
     "failing": 0,
     "baselinedAt": "2026-04-22T08:09:41Z",
     "baselinedAtStory": 5,
-    "lastRefreshedAt": "2026-04-27T12:30:00Z",
+    "lastRefreshedAt": "2026-04-27T12:50:00Z",
     "lastRefreshedAtStory": 11,
     "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
     "failingTests": [],
-    "note": "Post-story-4-1 T7 (2026-04-27) baseline refresh: 213 → 219 (+6 from Story 4-1: +5 from T1 MwaAndroidPluginDeauthorizeTest — AC-1 happy multi-key wipe + AC-2 remote_unreachable + AC-3 wallet_uninstalled + AC-4 idempotent vacuous-success + DD-4-1-3 wipe-crash → mwa_error PROTOCOL_ERROR; +1 from T6 DeauthorizeStructuralTest — AC-5 finally-block enforcement via brace-balanced source-grep). Kotlin 130 → 136; pytest 83 unchanged. Story 4-1 T5 adds 2 androidTest files (AC1DeauthorizeHappyTest, AC2DeauthorizeNetworkOffTest) — NOT counted here; androidTest runs on emulator CI only and has its own baseline: pre-4-1 had 12 AC tests (post-3-1), post-4-1 expected 14."
+    "note": "Post-story-4-1 T7 + code-review-fix (2026-04-27) baseline refresh: 213 → 220 (+7 from Story 4-1: +6 from T1 MwaAndroidPluginDeauthorizeTest — AC-1 happy multi-key wipe + AC-2 remote_unreachable + AC-3 wallet_uninstalled + AC-4 idempotent vacuous-success + DD-4-1-3 wipe-crash else-branch → mwa_error PROTOCOL_ERROR + DD-4-1-3 wipe-crash idempotent-path symmetric coverage [post-review-finding-1 fix]; +1 from T6 DeauthorizeStructuralTest — AC-5 finally-block enforcement via brace-balanced source-grep). Kotlin 130 → 137; pytest 83 unchanged. Story 4-1 T5 adds 2 androidTest files (AC1DeauthorizeHappyTest, AC2DeauthorizeNetworkOffTest) — NOT counted here; androidTest runs on emulator CI only and has its own baseline: pre-4-1 had 12 AC tests (post-3-1), post-4-1 expected 14."
   },
   "tooling": {
     "format": "clang-format (C++); ktlint (Kotlin)",

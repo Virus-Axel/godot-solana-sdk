@@ -169,9 +169,8 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             instance?.mwaDisconnect(reqId) ?: emitInstanceNullError(reqId, "disconnect")
         }
 
-        // Story 4-1 T1 — JNI shim forwards to the `mwaDeauthorize(...)` instance
-        // method. The instance method body lands as a TODO stub in T1 (TDD-RED)
-        // and gets the real impl in T2 per DD-4-1-3 / DD-4-1-6.
+        // Story 4-1 — JNI shim forwards to the `mwaDeauthorize(...)` instance
+        // method (try/catch/finally + multi-key wipe per DD-4-1-3/DD-4-1-6).
         @JvmStatic
         fun mwaDeauthorizeFromJni(reqId: String) {
             Log.i(TAG, "mwaDeauthorizeFromJni: Story 4-1 scope; reqId=$reqId")

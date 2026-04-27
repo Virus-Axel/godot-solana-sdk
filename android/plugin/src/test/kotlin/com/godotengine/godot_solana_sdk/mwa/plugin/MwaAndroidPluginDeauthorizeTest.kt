@@ -497,7 +497,30 @@ class MwaAndroidPluginDeauthorizeTest {
             "warning empty on vacuous success (no remote attempted)",
         )
 
-        // (d) Idempotence is at the listAllKeys-filter level, not the
+        // (d) Spec-mandated assertion (review finding #3): sessionState
+        // remains fully cleared after the second call. `clear()` on
+        // already-empty state is a no-op, but this anchors the invariant.
+        assertNull(
+            GDExtensionAndroidPlugin.sessionState.getAuthToken(),
+            "authToken still null after second deauthorize",
+        )
+        assertEquals(
+            "",
+            GDExtensionAndroidPlugin.sessionState.getIdentityUri(),
+            "identityUri still empty after second deauthorize",
+        )
+        assertEquals(
+            "",
+            GDExtensionAndroidPlugin.sessionState.getIdentityName(),
+            "identityName still empty after second deauthorize",
+        )
+        assertEquals(
+            "",
+            GDExtensionAndroidPlugin.sessionState.getPublicKeyBase58(),
+            "publicKeyBase58 still empty after second deauthorize",
+        )
+
+        // (e) Idempotence is at the listAllKeys-filter level, not the
         // deleteToken-call level: zero deleteToken invocations on the second
         // call (storedRecords was already empty from the first call's wipe).
         // The post-mockk-clear count would require `clearMocks` or a
@@ -572,6 +595,94 @@ class MwaAndroidPluginDeauthorizeTest {
         verify(exactly = 0) { nativeBridge.postDeauthorizeCompleted(any(), any()) }
 
         // (c) Likewise no other terminal signal.
+        verify(exactly = 0) { nativeBridge.postMwaTimeout(any()) }
+        verify(exactly = 0) { nativeBridge.postMwaCancelledLifecycle(any()) }
+    }
+
+    // ---------------- DD-4-1-3 evidence (idempotent-path wipe-crash) ----------------
+
+    @Test
+    fun `idempotent path with wipe crash also routes to mwa_error PROTOCOL_ERROR`() {
+        // Symmetric coverage with case 5: DD-4-1-3's defensive `try { wipe }
+        // catch { wipeCrashed=true; mwa_error }` exists in BOTH the idempotent
+        // path (lines 979-1002 of GDExtensionAndroidPlugin.kt) and the
+        // else-branch finally (lines 1038-1067). Case 5 covers the else-branch;
+        // this case covers the idempotent path, so a regression that breaks
+        // just one of the two catches (e.g. forgets `wipeCrashed = true` in
+        // the idempotent branch) is caught — preventing a phantom
+        // `deauthorize_completed` + `mwa_error` double-emission that would
+        // violate the terminal-signal invariant.
+        //
+        // Realistic state setup: post-disconnect (Story 2-3 path), authToken
+        // is null but identityUri is preserved. If the user calls deauth on
+        // this state, the idempotent path activates (DD-4-1-4: authToken==null
+        // skip-remote). The wipe loop runs because identityUri is non-empty
+        // and listAllKeys returns matching records. Throwing on the first
+        // deleteToken triggers the inner catch.
+        val crashingStore = mockk<SecureTokenStore>(relaxed = true) {
+            every { putToken(any(), any()) } answers {
+                val key: CacheKey = firstArg()
+                val record: CacheRecord = secondArg()
+                storedRecords[key] = record
+            }
+            every { getToken(any()) } answers {
+                val key: CacheKey = firstArg()
+                storedRecords[key]
+            }
+            every { listAllKeys() } returns listOf(
+                CacheKey("devnet", "solana:devnet", walletPackageA, identityUri),
+            )
+            every { deleteToken(any()) } throws IllegalStateException("corrupt prefs")
+            every { getOrCreatePerInstallSalt() } returns salt
+        }
+
+        // Post-disconnect state: identity preserved, auth-only fields wiped.
+        // Mirrors the result of `clearOnLogout()` from Story 2-3's mwaDisconnect.
+        GDExtensionAndroidPlugin.sessionState.apply {
+            setIdentity(identityUri, iconUri, identityName)
+            setCluster(2)
+            // Note: NO setAuthToken(...) — explicitly leaving authToken null
+            // to trigger the DD-4-1-4 idempotent fork.
+        }
+
+        val plugin = buildPlugin(
+            clientFactory = {
+                error("DD-4-1-4 violation: idempotent path invoked mwaClientFactory")
+            },
+            storeOverride = crashingStore,
+        )
+
+        val errorSlot = slot<String>()
+        plugin.mwaDeauthorize("req-idempotent-wipecrash")
+
+        awaitCondition(3000L) {
+            runCatching {
+                verify(exactly = 1) { nativeBridge.postMwaError(capture(errorSlot)) }
+            }.isSuccess
+        }
+
+        // (a) mwa_error envelope — same shape as case 5's else-branch crash.
+        val err = JSONObject(errorSlot.captured)
+        assertEquals("req-idempotent-wipecrash", err.getString("request_id"))
+        assertEquals("PROTOCOL_ERROR", err.getString("code"))
+        assertEquals("deauthorize", err.getString("source_method"))
+        val devDetails = err.getString("developer_details")
+        assertTrue(
+            devDetails.contains("wipe", ignoreCase = true) ||
+                devDetails.contains("IllegalStateException", ignoreCase = true) ||
+                devDetails.contains("corrupt", ignoreCase = true),
+            "developer_details mentions wipe crash; got: $devDetails",
+        )
+
+        // (b) Terminal-signal invariant — idempotent-path wipe-crash MUST NOT
+        // also emit deauthorize_completed (the wipeCrashed flag-based
+        // post-finally branch reads the flag and skips). This is the
+        // load-bearing assertion: if a regression forgets to set
+        // `wipeCrashed = true` in the idempotent branch, this test fails
+        // because both `mwa_error` AND `deauthorize_completed` would fire.
+        verify(exactly = 0) { nativeBridge.postDeauthorizeCompleted(any(), any()) }
+
+        // (c) No other terminal signal.
         verify(exactly = 0) { nativeBridge.postMwaTimeout(any()) }
         verify(exactly = 0) { nativeBridge.postMwaCancelledLifecycle(any()) }
     }
