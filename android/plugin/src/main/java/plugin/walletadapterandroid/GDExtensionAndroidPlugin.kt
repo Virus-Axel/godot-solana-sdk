@@ -34,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.godotengine.godot.Godot
@@ -41,6 +42,7 @@ import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.UsedByGodot
 import org.json.JSONArray
 import org.json.JSONObject
+import java.security.KeyStore
 
 class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     godot: Godot,
@@ -428,7 +430,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     @UsedByGodot
     fun mwaAuthorize(requestId: String, identityJson: String, cluster: String, chainId: String, timeoutMs: Long) {
         val effectiveMs = effectiveWatchdog(timeoutMs)
-        if (!inflightMap.register(requestId, clock())) {
+        if (!inflightMap.register(requestId, clock(), "authorize")) {
             // Caller contract violation: requestId must be unique per call. Rather
             // than silently launching a second coroutine racing for the terminal
             // signal, log + emit a typed PROTOCOL_ERROR so the caller's bug
@@ -447,31 +449,39 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             return
         }
         scope.launch {
-            try {
-                runAuthorize(requestId, identityJson, cluster, chainId, effectiveMs)
-            } catch (ce: CancellationException) {
-                // Preserve cancellation propagation — graceful scope teardown, not a crash.
-                // Do NOT emit a terminal signal; the caller's scope cancel expects
-                // everything to unwind cleanly.
-                throw ce
-            } catch (ex: Throwable) {
-                SdkLog.e(TAG, requestId) {
-                    "mwaAuthorize crashed: ${ex.javaClass.simpleName}: ${ex.message}"
-                }
-                if (inflightMap.tryTerminate(requestId)) {
-                    nativeBridge.postMwaError(
-                        buildErrorJson(
-                            requestId = requestId,
-                            error = MwaError.ProtocolError,
-                            developerDetails = "mwaAuthorize coroutine crashed: ${ex.javaClass.simpleName}",
-                            layer = "kotlin",
-                            cause = ex.javaClass.simpleName,
-                            sourceMethod = "connect",
-                        ).toString(),
-                    )
-                } else {
-                    diagnostics.incrementLateResult()
-                    SdkLog.w(TAG, requestId) { "late_result outcome=crash" }
+            // Story 4-2 D-4-2-T2-3 (Rule 3) — DD-4-2-2 mutex serialization. A
+            // concurrent `forget_all` holds [forgetAllMutex] across its wipe;
+            // wait here so [runAuthorize] only ever sees pre-wipe or post-
+            // wipe state, never an interleaved partial. The synchronous
+            // register CAS above already happened, so a same-id duplicate is
+            // already rejected. AC-3 invariant: NO partial state observable.
+            forgetAllMutex.withLock {
+                try {
+                    runAuthorize(requestId, identityJson, cluster, chainId, effectiveMs)
+                } catch (ce: CancellationException) {
+                    // Preserve cancellation propagation — graceful scope teardown, not a crash.
+                    // Do NOT emit a terminal signal; the caller's scope cancel expects
+                    // everything to unwind cleanly.
+                    throw ce
+                } catch (ex: Throwable) {
+                    SdkLog.e(TAG, requestId) {
+                        "mwaAuthorize crashed: ${ex.javaClass.simpleName}: ${ex.message}"
+                    }
+                    if (inflightMap.tryTerminate(requestId)) {
+                        nativeBridge.postMwaError(
+                            buildErrorJson(
+                                requestId = requestId,
+                                error = MwaError.ProtocolError,
+                                developerDetails = "mwaAuthorize coroutine crashed: ${ex.javaClass.simpleName}",
+                                layer = "kotlin",
+                                cause = ex.javaClass.simpleName,
+                                sourceMethod = "connect",
+                            ).toString(),
+                        )
+                    } else {
+                        diagnostics.incrementLateResult()
+                        SdkLog.w(TAG, requestId) { "late_result outcome=crash" }
+                    }
                 }
             }
         }
@@ -515,7 +525,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             withContext(mainDispatcher) {
                 // Step 1: reserve the slot. Same-requestId duplicate is a caller contract
                 // violation — emit PROTOCOL_ERROR and abort without touching state.
-                if (!inflightMap.register(requestId, clock())) {
+                if (!inflightMap.register(requestId, clock(), "disconnect")) {
                     nativeBridge.postMwaError(
                         buildErrorJson(
                             requestId = requestId,
@@ -607,7 +617,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     @UsedByGodot
     fun mwaReauthorize(requestId: String, identityJson: String, cluster: String, chainId: String, timeoutMs: Long) {
         val effectiveMs = effectiveWatchdog(timeoutMs)
-        if (!inflightMap.register(requestId, clock())) {
+        if (!inflightMap.register(requestId, clock(), "reauthorize")) {
             SdkLog.w(TAG, requestId) { "duplicate requestId at mwaReauthorize; refusing re-register" }
             nativeBridge.postMwaError(
                 buildErrorJson(
@@ -1113,7 +1123,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             // waiting for sign_and_send_completed, and the
             // terminal-signal invariant per arch §7.3 would be violated
             // on the corrupt-cache cluster-bleed path.
-            if (inflightMap.register(requestId, clock()) && inflightMap.tryTerminate(requestId)) {
+            if (inflightMap.register(requestId, clock(), "sign_and_send") && inflightMap.tryTerminate(requestId)) {
                 SdkLog.w(TAG, requestId) {
                     "reauth_required reason=keystore_corrupt source=sign_and_send cause=${ex.cause?.javaClass?.simpleName}"
                 }
@@ -1184,7 +1194,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         scope.launch {
             withContext(mainDispatcher) {
                 // Step 1 (CAS-first per Story 2-3 inheritance): reserve the slot.
-                if (!inflightMap.register(requestId, clock())) {
+                if (!inflightMap.register(requestId, clock(), "deauthorize")) {
                     nativeBridge.postMwaError(
                         buildErrorJson(
                             requestId = requestId,
@@ -1375,12 +1385,91 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * cached wallets" case gracefully and proceeds to the keystore-side
      * rotation (which also wipes the corrupt prefs file as a side-effect
      * of `deleteSharedPreferences`).
-     *
-     * T2 fills in the body.
      */
     @UsedByGodot
     fun mwaForgetAll(requestId: String) {
-        TODO("Story 4-2 T2 fills in")
+        scope.launch {
+            forgetAllMutex.withLock {
+                // DD-4-2-3 + AC-2 — cancel in-flight slots BEFORE wipe starts.
+                // snapshot() returns a defensive copy (requestId → sourceMethod);
+                // tryTerminate CAS-removes the entry so the original op's
+                // would-be terminal signal becomes a `late_result` no-op.
+                val snapshot = inflightMap.snapshot()
+                for ((reqId, srcMethod) in snapshot) {
+                    if (inflightMap.tryTerminate(reqId)) {
+                        nativeBridge.postMwaCancelledLifecycle(
+                            buildCancelledLifecycleJson(reqId, srcMethod, "forget_all_invoked").toString(),
+                        )
+                    } else {
+                        diagnostics.incrementLateResult()
+                    }
+                }
+
+                // DD-4-2-5 + AC-4 — best-effort per-wallet remote deauth. DD-4-2-6
+                // bypasses the withStorageOrReauthRequired wrapper: a
+                // listAllKeys StorageCorruptException becomes an empty list
+                // (the keystore-side rotation below will wipe the corrupt
+                // prefs file as a side-effect via deleteSharedPreferences).
+                val store = storeProvider(requireContext())
+                val keys = try {
+                    store.listAllKeys()
+                } catch (ex: StorageCorruptException) {
+                    SdkLog.w(TAG, requestId) {
+                        "forget_all_listAllKeys_failed cause=${ex.cause?.javaClass?.simpleName}"
+                    }
+                    emptyList()
+                }
+                for (key in keys) {
+                    val cached = try {
+                        store.getToken(key)
+                    } catch (_: StorageCorruptException) {
+                        null
+                    } ?: continue
+                    val identity = ConnectionIdentity(
+                        identityUri = android.net.Uri.parse(cached.identityUri),
+                        iconUri = android.net.Uri.parse(cached.walletIconUri),
+                        identityName = cached.walletLabel,
+                    )
+                    val client = mwaClientFactory()
+                    try {
+                        // DD-4-2-7 — 2s per-deauth budget caps wall-time on
+                        // offline / unresponsive wallets so the loop completes
+                        // bounded for AC-1's 10s end-to-end.
+                        withTimeoutOrNull(2_000L) {
+                            client.deauthorize(senderProvider(), identity, cached.authToken)
+                        }
+                    } catch (ex: Throwable) {
+                        SdkLog.w(TAG, requestId) {
+                            "forget_all_deauth_failed walletPackage=${key.walletPackage} " +
+                                "cause=${ex.javaClass.simpleName}"
+                        }
+                    } finally {
+                        runCatching { client.close() }
+                    }
+                }
+
+                // DD-4-2-4 — local wipe + MasterKey rotation. runCatching
+                // around each step so a single failure (e.g. SharedPreferences
+                // already missing on first-run forget_all) doesn't abort the
+                // remaining steps. The next storeProvider(ctx) call returns a
+                // fresh SecureTokenStore whose lazy MasterKey regenerates on
+                // access (DD-4-2-9 post-rotation instance teardown).
+                runCatching { store.deleteAll() }
+                runCatching { requireContext().deleteSharedPreferences(SecureTokenStore.PREFS_FILE_NAME) }
+                runCatching {
+                    val keystore = KeyStore.getInstance("AndroidKeyStore")
+                    keystore.load(null)
+                    if (keystore.containsAlias(SecureTokenStore.MASTER_KEY_ALIAS)) {
+                        keystore.deleteEntry(SecureTokenStore.MASTER_KEY_ALIAS)
+                    }
+                }
+
+                // DD-4-1-2 LOCKED inheritance — full clear (NOT clearOnLogout()).
+                // Marshalled to mainDispatcher to match Story 4-1's
+                // sessionState mutation discipline.
+                withContext(mainDispatcher) { sessionState.clear() }
+            }
+        }
     }
 
     /**
@@ -1397,11 +1486,13 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * NOTE: `mwa_cancelled_lifecycle` is 1-param per A-12 (the requestId
      * is embedded in the payload at the `request_id` field, NOT a separate
      * signal arg) — distinct from the 2-param `*_completed` family.
-     *
-     * T2 fills in the body.
      */
     private fun buildCancelledLifecycleJson(requestId: String, sourceMethod: String, reason: String): JSONObject {
-        TODO("Story 4-2 T2 fills in")
+        return JSONObject().apply {
+            put("request_id", requestId)
+            put("source_method", sourceMethod)
+            put("reason", reason)
+        }
     }
 
     /**
@@ -1485,7 +1576,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         block: suspend MwaClient.() -> MwaResult<X>,
     ): MwaResult<X> = withContext(mainDispatcher) {
         // CAS register — duplicate request id is a caller contract violation.
-        if (!inflightMap.register(requestId, clock())) {
+        if (!inflightMap.register(requestId, clock(), op.sourceMethod)) {
             nativeBridge.postMwaError(
                 buildErrorJson(
                     requestId,
@@ -2112,7 +2203,12 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         // CAS slot is guaranteed to exist; on already-registered callers the
         // extra register is a no-op (putIfAbsent returns the existing value,
         // register returns false, no double-allocation).
-        inflightMap.register(requestId, clock())
+        // Story 4-2 D-4-2-T2-1 (Rule 1): pass `sourceMethod` (already in
+        // scope) so first-register callers (e.g. sign_and_send breadcrumb-
+        // write before runSigningOp register lands) tag the slot with the
+        // correct origin instead of falling back to the "unknown" default.
+        // Already-registered callers are unaffected (putIfAbsent no-op).
+        inflightMap.register(requestId, clock(), sourceMethod)
         emitReauthRequiredKeystoreCorrupt(requestId, sourceMethod, ex)
         null
     }

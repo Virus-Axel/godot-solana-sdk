@@ -374,7 +374,7 @@ class MwaAndroidPluginDisconnectTest {
     fun `duplicate requestId emits PROTOCOL_ERROR and does not wipe state`() {
         val fakeInflight = mockk<InflightMap>(relaxed = true)
         // Simulate a duplicate: register returns false on the first call.
-        every { fakeInflight.register(any(), any()) } returns false
+        every { fakeInflight.register(any(), any(), any()) } returns false
 
         val plugin = buildPlugin(inflightOverride = fakeInflight)
         seedPostConnectSession()

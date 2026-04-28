@@ -475,7 +475,7 @@ class MwaAndroidPluginSignMessagesTest {
         // or a competing emit). The success path MUST detect the late_result and drop
         // the signal (carries from 2-1/2-2 terminal-signal invariant).
         val inflight = mockk<InflightMap>(relaxed = true)
-        every { inflight.register(any(), any()) } returns true
+        every { inflight.register(any(), any(), any()) } returns true
         every { inflight.tryTerminate(any()) } returns false
 
         val plugin = buildPlugin(

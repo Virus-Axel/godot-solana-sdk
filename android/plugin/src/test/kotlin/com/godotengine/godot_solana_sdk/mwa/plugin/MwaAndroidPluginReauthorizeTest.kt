@@ -502,7 +502,7 @@ class MwaAndroidPluginReauthorizeTest {
     @Test
     fun `late-result-after-terminate is dropped (terminal-signal invariant)`() {
         val fakeInflight = mockk<InflightMap>(relaxed = true)
-        every { fakeInflight.register(any(), any()) } returns true
+        every { fakeInflight.register(any(), any(), any()) } returns true
         // Force CAS loss on tryTerminate — simulates a late result after watchdog already fired.
         every { fakeInflight.tryTerminate(any()) } returns false
 
@@ -535,7 +535,7 @@ class MwaAndroidPluginReauthorizeTest {
     fun `duplicate requestId emits PROTOCOL_ERROR on register`() {
         val fakeInflight = mockk<InflightMap>(relaxed = true)
         // Simulate duplicate: register returns false immediately.
-        every { fakeInflight.register(any(), any()) } returns false
+        every { fakeInflight.register(any(), any(), any()) } returns false
 
         val plugin = buildPlugin(inflightOverride = fakeInflight)
         seedPostConnectSession()

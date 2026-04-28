@@ -286,7 +286,7 @@ class AuthorizePathTest {
         // MockK 1.13.13's agent mocks final Kotlin classes; matches the mockkConstructor pattern
         // used for `MasterKey.Builder` in SecureTokenStoreTest.
         val fakeInflight = mockk<InflightMap>(relaxed = true)
-        every { fakeInflight.register(any(), any()) } returns true
+        every { fakeInflight.register(any(), any(), any()) } returns true
         every { fakeInflight.tryTerminate(any()) } returns false
 
         val plugin = buildPlugin(
