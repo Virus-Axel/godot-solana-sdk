@@ -8,6 +8,7 @@ import com.godotengine.godot_solana_sdk.mwa.client.MwaClient
 import com.godotengine.godot_solana_sdk.mwa.client.MwaClientImpl
 import com.godotengine.godot_solana_sdk.mwa.client.MwaResult
 import com.godotengine.godot_solana_sdk.mwa.client.dto.AuthResult
+import com.godotengine.godot_solana_sdk.mwa.client.dto.SignAndSendResult
 import com.godotengine.godot_solana_sdk.mwa.client.dto.SignResult
 import com.godotengine.godot_solana_sdk.mwa.generated.MwaError
 import com.godotengine.godot_solana_sdk.mwa.plugin.DefaultNativeBridge
@@ -212,8 +213,19 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
         @JvmStatic
         fun mwaSignAndSendFromJni(reqId: String) {
-            Log.i(TAG, "mwaSignAndSendFromJni: Story 3-3 scope; reqId=$reqId")
-            instance?.emitNotImplemented(reqId, "sign_and_send") ?: emitInstanceNullError(reqId, "sign_and_send")
+            // Story 3-3 T1 — JNI shim signature stays at `(reqId)` for T1+T2 (the
+            // C++ side at `MobileWalletAdapter::sign_and_send` still calls the
+            // 1-arg form). Story 3-3 T3 evolves BOTH sides together: C++ passes
+            // through real `transactions` + `timeoutMs`, and this shim's signature
+            // evolves to `(reqId, transactionsJson, timeoutMs)` (or equivalent) at
+            // that point. For T1+T2 the shim delegates to `mwaSignAndSendTransactions(...)`
+            // with empty transactions so the JNI surface lights up at link time —
+            // production callers that route through C++ currently hit a no-op
+            // signing path (empty payload never produces a wallet round-trip) until
+            // T3 wires real transactions through. Kotlin unit tests bypass this
+            // shim and call `mwaSignAndSendTransactions` directly with real values per
+            // DD-3-1-9 responsibility split inherited via DD-3-2-5.
+            instance?.mwaSignAndSendTransactions(reqId, emptyList(), 0L) ?: emitInstanceNullError(reqId, "sign_and_send")
         }
 
         @JvmStatic
@@ -308,6 +320,16 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         @JvmStatic
         external fun postSignTransactionsCompletedNative(reqId: String, resultDictJson: String)
 
+        // Story 3-3 T1 — parallel external fun for sign_and_send_completed's
+        // Kotlin→C++ callback path. JNI symbol linked at runtime via the
+        // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (Story 3-3 T3 —
+        // post_arity2_completed("sign_and_send_completed", ...)). The
+        // resultDictJson carries the 4-key shape {request_id, signatures: [base58
+        // strings], submitted_at: int, confirmation_status: "submitted"} per AC-1
+        // + DD-3-3-E. Inert at JVM level until the JNI symbol arrives in T3.
+        @JvmStatic
+        external fun postSignAndSendCompletedNative(reqId: String, resultDictJson: String)
+
         // Story 4-1 T1 — parallel external fun for deauthorize_completed's
         // Kotlin→C++ callback path. JNI symbol linked at runtime via the
         // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 of 4-1).
@@ -327,6 +349,17 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
         @JvmStatic
         external fun postReauthRequiredNative(reauthDictJson: String)
+
+        // Story 3-3 T1 — parallel external fun for pending_submission_found's
+        // Kotlin→C++ callback path. JNI symbol linked at runtime via the
+        // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (Story 3-3 T3 —
+        // post_arity1("pending_submission_found", ...)). 1-PARAM signal per A-12
+        // (parallel to postReauthRequiredNative); the pendingDictJson carries the
+        // 6-key shape {request_id, op_type, started_at_ms, tx_count,
+        // tx_preview_hashes, recommendation} per DD-3-3-E. Inert at JVM level
+        // until the JNI symbol arrives in T3.
+        @JvmStatic
+        external fun postPendingSubmissionFoundNative(pendingDictJson: String)
     }
 
     /**
@@ -982,6 +1015,52 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
+     * Story 3-3 — `sign_and_send` entry point. Called from the JNI
+     * [mwaSignAndSendFromJni] shim on a worker thread (T3 evolves the JNI
+     * shim signature to pass `transactions` + `timeoutMs` through), or directly
+     * by Kotlin unit tests with real values per DD-3-1-9 inheritance via
+     * DD-3-2-5.
+     *
+     * Body shape (T2 fills in — mirrors [mwaSignTransactions] with three
+     * structural deltas locked at story-creation per DD-3-3-A..G):
+     *   (a) breadcrumb-write-ahead step BEFORE `runSigningOp` per DD-3-3-B
+     *       (write-then-call ordering); the write is wrapped with
+     *       `withStorageOrReauthRequired` per DD-3-3-G (StorageCorruptException
+     *       surfaces as `reauth_required` and abandons the op with no wallet
+     *       round-trip);
+     *   (b) lambda calls 5-arg `signAndSendTransactions(sender, identity,
+     *       authToken, transactions, cluster)` instead of 4-arg
+     *       `signTransactions(...)` — the cluster arg flows from
+     *       `sessionState.getClusterName()` and is required by the wallet to
+     *       select the RPC endpoint for submission;
+     *   (c) success path routes to [handleSignAndSendSuccess] which
+     *       CAS-terminates, removes the breadcrumb (AC-3 ordering: BEFORE
+     *       the terminal signal fires), and emits `sign_and_send_completed`
+     *       via `postSignAndSendCompleted` with the 4-key payload built by
+     *       [buildSignAndSendSuccessJson] per DD-3-3-E.
+     *
+     * Cleanup on error/timeout/cancellation (AC-4) per DD-3-3-C:
+     *   - Error/timeout: [cleanupBreadcrumb] invoked from the runSigningOp
+     *     Failure branch (after the terminal-signal emission). Wraps
+     *     [SecureTokenStore.removePendingSubmission] in a try/catch — on
+     *     StorageCorruptException, increment diagnostics + log + continue
+     *     (DD-4-1-3 wipe-crashed-flag pattern).
+     *   - Cancellation (mwa_cancelled_lifecycle): DEFERRED to Story 5-3
+     *     lifecycle observer. Story 3-3 lands the [cleanupBreadcrumb]
+     *     helper signature; Story 5-3 wires the lifecycle invocation.
+     *
+     * Cluster-bleed refusal (AC-6) per DD-27 / AC-NFR-SEC-4: the
+     * `sessionState.getClusterName()` value at call time MUST match the
+     * cluster bound at connect/reauth time; if it has been swapped, refuse
+     * with `mwa_error{NOT_CONNECTED, source_method="sign_and_send"}` per the
+     * preflight check (no wallet round-trip on the disconnected branch).
+     */
+    @UsedByGodot
+    fun mwaSignAndSendTransactions(requestId: String, transactions: List<ByteArray>, timeoutMs: Long) {
+        TODO("Story 3-3 T2 fills in")
+    }
+
+    /**
      * Story 4-1 — `deauthorize` revoke + unconditional local-cache wipe (FR-5 /
      * AC-NFR-SEC-5). Best-effort remote `clientlib.revoke(authToken)` wrapped in
      * `try { ... } catch { ... } finally { wipe }` per DD-4-1-3; on remote
@@ -1365,6 +1444,159 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             requestId,
             buildSignSuccessJson(requestId, result.signedPayloads, payloadKey = "signed_transactions").toString(),
         )
+    }
+
+    /**
+     * Story 3-3 T2 — success path for sign_and_send. Distinct from
+     * [handleSignMessagesSuccess] / [handleSignTransactionsSuccess] in three
+     * ways per DD-3-3-E:
+     *   (a) emits `sign_and_send_completed` via
+     *       [NativeBridge.postSignAndSendCompleted];
+     *   (b) uses [buildSignAndSendSuccessJson] (4-key payload —
+     *       `{request_id, signatures, submitted_at, confirmation_status}`),
+     *       NOT [buildSignSuccessJson] (2-key payload);
+     *   (c) removes the breadcrumb via
+     *       [SecureTokenStore.removePendingSubmission] BEFORE emitting the
+     *       terminal signal (AC-3 ordering invariant).
+     *
+     * Per DD-3-3-G the cleanup site here is NOT wrapped with
+     * `withStorageOrReauthRequired`: a cleanup failure on disk corruption
+     * MUST NOT abandon the user's wallet-completed op. Instead the breadcrumb
+     * survives to be cleaned up on next launch via [scanPendingSubmissions]
+     * (AC-5 one-shot path). The cleanup is invoked through [cleanupBreadcrumb]
+     * which centralizes the try/catch + diagnostics-counter pattern.
+     *
+     * On `tryTerminate` CAS loss, increments `lateResult` diagnostics and
+     * silently drops — terminal-signal invariant per arch §7.3 (inherited
+     * from 2-1/2-2/3-1/3-2). The breadcrumb is also left for next-launch
+     * scan to clean up in this case.
+     *
+     * T2 fills in the body.
+     */
+    private fun handleSignAndSendSuccess(requestId: String, result: SignAndSendResult) {
+        TODO("Story 3-3 T2 fills in")
+    }
+
+    /**
+     * Story 3-3 T2 (DD-3-3-C error/timeout cleanup helper) — removes the
+     * pending-submission breadcrumb for [requestId]. Invoked from the
+     * `runSigningOp` Failure branch (mwa_error / mwa_timeout terminal signals)
+     * after the terminal signal has already been emitted. Per DD-3-3-G the
+     * cleanup site is NOT wrapped with `withStorageOrReauthRequired`: a
+     * cleanup failure must NOT abandon the user's already-emitted error
+     * signal.
+     *
+     * On [com.godotengine.godot_solana_sdk.mwa.store.StorageCorruptException]
+     * during the remove, increment `diagnostics.cleanupFailedCount` + log
+     * via SdkLog.w + return (DD-4-1-3 wipe-crashed-flag pattern: the
+     * breadcrumb survives for next-launch scan to clean up; the user's
+     * terminal signal has already fired).
+     *
+     * Story 5-3's lifecycle observer will invoke this same helper on
+     * mwa_cancelled_lifecycle paths once that story lands; T1 stubs an
+     * @Disabled placeholder test for AC-4c to make the gap explicit.
+     *
+     * T2 fills in the body.
+     */
+    private fun cleanupBreadcrumb(requestId: String) {
+        TODO("Story 3-3 T2 fills in")
+    }
+
+    /**
+     * Story 3-3 T2 (DD-3-3-D scan + AC-5 one-shot semantics) — invoked from
+     * [handleConnectSuccess] / [handleReauthSuccess] AFTER the success
+     * signal fires. Identity-scoped: filters
+     * [SecureTokenStore.listAllPendingSubmissions] by matching
+     * `breadcrumbDictJson.identity_uri == identityUri`. For each matching
+     * entry: emits `pending_submission_found` via
+     * [NativeBridge.postPendingSubmissionFound] with the 6-key payload built
+     * by [buildPendingSubmissionFoundJson], THEN calls
+     * [SecureTokenStore.removePendingSubmission] (one-shot — prevents
+     * duplicate notifications across reconnects).
+     *
+     * Per DD-3-3-G the [SecureTokenStore.listAllPendingSubmissions] read
+     * call IS wrapped with `withStorageOrReauthRequired`: if the prefs file
+     * is corrupt at scan time, the wrapper emits `reauth_required` and
+     * abandons the scan (the connect/reauth success signal HAS ALREADY
+     * fired per DD-3-3-D ordering). Per-entry `removePendingSubmission`
+     * calls go through [cleanupBreadcrumb] (NOT wrapped — cleanup failures
+     * survive to the next launch).
+     *
+     * T2 fills in the body.
+     */
+    private fun scanPendingSubmissions(identityUri: String) {
+        TODO("Story 3-3 T2 fills in")
+    }
+
+    /**
+     * Story 3-3 T2 (DD-3-3-E + AC-1) — builds the `sign_and_send_completed`
+     * 4-key payload `{request_id, signatures: JSONArray<base58 strings>,
+     * submitted_at: long, confirmation_status: String}`. Distinct from
+     * [buildSignSuccessJson] (which produces a 2-key payload for
+     * sign_messages / sign_transactions) — DD-3-3-E LOCKS no reuse because
+     * the structural shape diverges (3 keys + the request_id, vs 2 keys +
+     * the request_id; signatures are base58 strings, NOT base64 byte arrays).
+     *
+     * `submittedAtMs` is provided by the caller (typically `clock()` at
+     * `handleSignAndSendSuccess` time — clock injection is testable;
+     * fixture-only would be brittle per the Pre-Impl Audit ambiguity
+     * resolution in story §Dev Notes). `confirmationStatus` is the literal
+     * "submitted" today; future Story 5-x may extend to "confirmed" /
+     * "finalized" if a confirmation-tracking surface lands.
+     *
+     * T2 fills in the body.
+     */
+    private fun buildSignAndSendSuccessJson(
+        requestId: String,
+        signatures: List<String>,
+        submittedAtMs: Long,
+        confirmationStatus: String,
+    ): JSONObject {
+        TODO("Story 3-3 T2 fills in")
+    }
+
+    /**
+     * Story 3-3 T2 (DD-3-3-E + AC-5) — builds the `pending_submission_found`
+     * 6-key payload `{request_id, op_type, started_at_ms, tx_count,
+     * tx_preview_hashes, recommendation}` from the breadcrumb's stored
+     * dict. The input is the JSON object that was originally written by
+     * [buildBreadcrumb] + [SecureTokenStore.putPendingSubmission]; this
+     * helper extracts the relevant fields and adds the
+     * `recommendation: "check_chain_for_signatures"` literal per AC-5.
+     *
+     * NOTE: the input breadcrumb dict has 7 keys per AC-2 (`request_id`,
+     * `op_type`, `cluster`, `identity_uri`, `started_at_ms`, `tx_count`,
+     * `tx_preview_hashes`); the output payload has 6 keys (drops `cluster`
+     * and `identity_uri` — those are correlation metadata for the scan but
+     * not user-facing on the signal — and adds `recommendation`).
+     *
+     * T2 fills in the body.
+     */
+    private fun buildPendingSubmissionFoundJson(breadcrumb: JSONObject): JSONObject {
+        TODO("Story 3-3 T2 fills in")
+    }
+
+    /**
+     * Story 3-3 T2 (AC-2 + DD-3-3-F) — builds the breadcrumb 7-key dict for
+     * disk persistence (the dict that goes through
+     * [SecureTokenStore.putPendingSubmission]). Shape:
+     * `{request_id, op_type:"sign_and_send", cluster, identity_uri,
+     * started_at_ms, tx_count, tx_preview_hashes:[sha256(tx)[:32]]}`.
+     *
+     * `tx_preview_hashes` per DD-3-3-F: lowercase hex string per transaction,
+     * full 64-char (32-byte / 256-bit) SHA-256 digest. NOT base64; NOT
+     * base58; NOT truncated below 64 chars. The plan-spec language
+     * `sha256(tx)[:32]` is Python-slice notation over a `bytes(32)` value
+     * — equivalent to the full digest.
+     *
+     * `started_at_ms` is provided by the caller (typically `clock()` at
+     * `mwaSignAndSendTransactions` entry time — clock injection per the
+     * existing pattern).
+     *
+     * T2 fills in the body.
+     */
+    private fun buildBreadcrumb(requestId: String, cluster: String, transactions: List<ByteArray>, startedAtMs: Long): JSONObject {
+        TODO("Story 3-3 T2 fills in")
     }
 
     /**

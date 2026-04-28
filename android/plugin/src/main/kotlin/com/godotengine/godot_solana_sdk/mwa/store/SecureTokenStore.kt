@@ -132,6 +132,59 @@ class SecureTokenStore(private val context: Context) {
         return salt
     }
 
+    /**
+     * Story 3-3 T1 (DD-3-3-A) — pending-submission breadcrumb storage. String-
+     * keyed under the [PENDING_KEY_PREFIX] (`"pending::"`) namespace inside the
+     * SAME `EncryptedSharedPreferences` instance as the auth-cache entries.
+     * Parallel to [getOrCreatePerInstallSalt]'s special-case [FINGERPRINT_SALT_KEY]
+     * — a non-CacheRecord entry that co-lives in the same prefs file. Values
+     * are JSON strings (NOT [CacheRecord] instances) carrying the 6-key dict
+     * shape per AC-2:
+     * `{request_id, op_type, cluster, identity_uri, started_at_ms, tx_count, tx_preview_hashes}`.
+     *
+     * The breadcrumb body is opaque to this class — the plugin layer builds
+     * and parses the JSON. This API is intentionally a thin string-keyed
+     * facade so the breadcrumb schema can evolve independently of the storage
+     * shell.
+     *
+     * T1 ships TODO bodies; T2 fills in the real impl per DD-3-3-A.
+     */
+    fun putPendingSubmission(requestId: String, breadcrumbDictJson: String) {
+        TODO("Story 3-3 T2 fills in")
+    }
+
+    /**
+     * Story 3-3 T1 (DD-3-3-A) — returns the breadcrumb JSON string for
+     * [requestId], or null if no entry exists. T2 fills in the real impl.
+     */
+    fun getPendingSubmission(requestId: String): String? {
+        TODO("Story 3-3 T2 fills in")
+    }
+
+    /**
+     * Story 3-3 T1 (DD-3-3-A) — returns every pending-submission entry as a
+     * `(requestId, breadcrumbDictJson)` pair list. The requestId is the value
+     * AFTER the [PENDING_KEY_PREFIX] strip (callers do NOT see the
+     * `"pending::"` prefix).
+     *
+     * Wrapped by `withStorageOrReauthRequired` at the plugin layer per
+     * DD-3-3-G — this method MAY throw [StorageCorruptException] via the
+     * lazy `prefs` init.
+     *
+     * T2 fills in the real impl.
+     */
+    fun listAllPendingSubmissions(): List<Pair<String, String>> {
+        TODO("Story 3-3 T2 fills in")
+    }
+
+    /**
+     * Story 3-3 T1 (DD-3-3-A) — removes the pending entry for [requestId].
+     * No-op if the entry does not exist. T2 fills in the real impl.
+     */
+    fun removePendingSubmission(requestId: String) {
+        TODO("Story 3-3 T2 fills in")
+    }
+
     private fun wipeCorruptPrefs() {
         context.deleteSharedPreferences(PREFS_FILE_NAME)
         // MasterKey Keystore entry remains; next `create` regenerates ciphertext.
@@ -144,5 +197,17 @@ class SecureTokenStore(private val context: Context) {
         /** D-9: alias for the per-install HKDF salt entry. Must NOT collide with [CacheKey.KEY_PREFIX]. */
         const val FINGERPRINT_SALT_KEY = "godot-sdk-mwa-fingerprint-salt-v1"
         const val FINGERPRINT_SALT_BYTES = 32
+
+        /**
+         * Story 3-3 T1 (DD-3-3-A) — namespace prefix for pending-submission
+         * breadcrumbs. Entries under this prefix are NOT [CacheRecord] instances
+         * — they are JSON-string blobs carrying the 6-key breadcrumb shape per
+         * AC-2. The prefix MUST NOT collide with [CacheKey.KEY_PREFIX]
+         * (`"mwa::v1::"`) or [FINGERPRINT_SALT_KEY] (`"godot-sdk-mwa-fingerprint-salt-v1"`).
+         * The [listAllKeys] iteration's `startsWith(CacheKey.KEY_PREFIX)` filter
+         * excludes pending entries from the auth-cache view per the same
+         * disambiguation pattern.
+         */
+        const val PENDING_KEY_PREFIX = "pending::"
     }
 }

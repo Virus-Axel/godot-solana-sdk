@@ -119,6 +119,35 @@ internal interface NativeBridge {
     fun postSignTransactionsCompleted(requestId: String, resultDictJson: String)
 
     /**
+     * 2-param `sign_and_send_completed` per A-12 — Story 3-3. `requestId` is
+     * the first signal argument; `resultDictJson` is the second (Dictionary
+     * carrying the 4-key shape `{request_id, signatures: Array[String],
+     * submitted_at: int, confirmation_status: String}` per AC-1 + DD-3-3-E).
+     *
+     * Distinct from the 2-key `sign_messages_completed` /
+     * `sign_transactions_completed` shapes — `sign_and_send` MUST surface the
+     * cluster-submission timestamp + status because the wallet has already
+     * forwarded the transaction(s) to the chosen RPC endpoint by the time
+     * the signal fires. `signatures` are base58-encoded transaction
+     * signatures (NOT base64-encoded byte arrays; the Solana convention for
+     * tx signatures is base58, distinct from the base64 wire format used
+     * for signed payloads in sign_messages / sign_transactions).
+     * `confirmation_status` is the literal "submitted" today; future Story
+     * 5-x may extend with "confirmed" / "finalized" if a confirmation-
+     * tracking surface is added.
+     *
+     * Like the rest of the 2-param `*_completed` family, the `resultDictJson`
+     * here does NOT carry secret material — `signatures` are public on-chain
+     * artifacts; `submitted_at` is a wall-clock timestamp; `confirmation_status`
+     * is a fixed-vocabulary enum string. The 2-param family uniformly warns
+     * against payload logging to keep the seam convention uniform.
+     *
+     * **WARNING — do NOT log or interpolate `resultDictJson`.** `ci/grep_bans.sh`
+     * pattern-8 bans `resultDictJson` from any `Log.*` / `SdkLog.*` call.
+     */
+    fun postSignAndSendCompleted(requestId: String, resultDictJson: String)
+
+    /**
      * 2-param `deauthorize_completed` per A-12 — Story 4-1. `requestId` is the
      * first signal argument; `resultDictJson` is the second (Dictionary
      * carrying the 4-key shape `{request_id, remote_revoke_succeeded,
@@ -184,6 +213,34 @@ internal interface NativeBridge {
      * `Log.*` / `SdkLog.*` call.
      */
     fun postReauthRequired(reauthDictJson: String)
+
+    /**
+     * 1-param `pending_submission_found` per A-12 — Story 3-3 (DD-3-3-E). Fires
+     * on the next successful `connect` or `reauthorize` AFTER the success signal
+     * if a stale sign_and_send breadcrumb survives a process death (AC-5). The
+     * argument is the FULL JSON Dictionary blob built by
+     * [GDExtensionAndroidPlugin]'s `buildPendingSubmissionFoundJson` helper
+     * (DD-3-3-E 6-key shape: `request_id`, `op_type`, `started_at_ms`,
+     * `tx_count`, `tx_preview_hashes`, `recommendation`).
+     *
+     * One-shot semantics per AC-5: each pending breadcrumb produces ONE
+     * `pending_submission_found` emission; the breadcrumb is then removed from
+     * `SecureTokenStore` so reconnects don't double-fire.
+     *
+     * The payload does NOT carry secret material — `request_id` is the
+     * caller-side correlation token; `tx_preview_hashes` are SHA-256 hex
+     * digests of the transaction bytes (NOT the signed bytes; transactions
+     * may not even have signatures yet at the breadcrumb-write moment per
+     * DD-3-3-B write-then-call ordering). `recommendation` is a
+     * fixed-vocabulary enum (today: "check_chain_for_signatures").
+     *
+     * **WARNING — `pendingDictJson` MAY contain `tx_preview_hashes`** which,
+     * while not secret, can correlate transactions across observability
+     * channels. Do NOT log, interpolate, or include in exception messages.
+     * `ci/grep_bans.sh` pattern-8 bans `pendingDictJson` from any `Log.*` /
+     * `SdkLog.*` call (DD-3-3-E.a — extended at Story 3-3 T2).
+     */
+    fun postPendingSubmissionFound(pendingDictJson: String)
 }
 
 /**
@@ -220,6 +277,10 @@ internal object DefaultNativeBridge : NativeBridge {
         GDExtensionAndroidPlugin.postSignTransactionsCompletedNative(requestId, resultDictJson)
     }
 
+    override fun postSignAndSendCompleted(requestId: String, resultDictJson: String) {
+        GDExtensionAndroidPlugin.postSignAndSendCompletedNative(requestId, resultDictJson)
+    }
+
     override fun postDeauthorizeCompleted(requestId: String, resultDictJson: String) {
         GDExtensionAndroidPlugin.postDeauthorizeCompletedNative(requestId, resultDictJson)
     }
@@ -238,5 +299,9 @@ internal object DefaultNativeBridge : NativeBridge {
 
     override fun postReauthRequired(reauthDictJson: String) {
         GDExtensionAndroidPlugin.postReauthRequiredNative(reauthDictJson)
+    }
+
+    override fun postPendingSubmissionFound(pendingDictJson: String) {
+        GDExtensionAndroidPlugin.postPendingSubmissionFoundNative(pendingDictJson)
     }
 }
