@@ -105,6 +105,14 @@ void MobileWalletAdapter::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("mwa_timeout", PropertyInfo(Variant::DICTIONARY, "payload")));
 	ADD_SIGNAL(MethodInfo("mwa_cancelled_lifecycle", PropertyInfo(Variant::DICTIONARY, "payload")));
 	ADD_SIGNAL(MethodInfo("reauth_required", PropertyInfo(Variant::DICTIONARY, "payload")));
+	// Story 3-3 (DD-3-3-E) — 1-param `pending_submission_found` lifecycle signal.
+	// Fires on next successful connect/reauthorize AFTER the success signal if a
+	// stale sign_and_send breadcrumb survives a process death (AC-5). One-shot:
+	// each breadcrumb produces a single emission then clears. Payload is the
+	// 6-key dict {request_id, op_type, started_at_ms, tx_count,
+	// tx_preview_hashes, recommendation:"check_chain_for_signatures"}. Parallel
+	// in arity to mwa_error / mwa_timeout / mwa_cancelled_lifecycle / reauth_required.
+	ADD_SIGNAL(MethodInfo("pending_submission_found", PropertyInfo(Variant::DICTIONARY, "payload")));
 
 	// 7 ops — D-1 rename: mwa_connect, mwa_disconnect (collide with
 	// godot::Object::connect / disconnect). T2 wires delegation.

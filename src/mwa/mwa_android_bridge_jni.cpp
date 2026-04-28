@@ -881,6 +881,33 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postSig
     post_arity2_completed(env, reqId, resultDictJson, "sign_transactions_completed", "postSignTransactionsCompletedNative");
 }
 
+// Story 3-3 T3 — 2-param `sign_and_send_completed` JNIEXPORT per A-12.
+// Kotlin side: GDExtensionAndroidPlugin.Companion.postSignAndSendCompletedNative (external fun)
+// → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
+//       "sign_and_send_completed", Array::make(req_id, result_dict))
+// under CR-41 CallbackLease — parallel to postSignTransactionsCompletedNative above.
+//
+// The result_dict carries the 4-key shape `{request_id, signatures: Array[String],
+// submitted_at: int, confirmation_status: String}` per AC-1 + DD-3-3-E. Distinct
+// from the 2-key sign_messages / sign_transactions shapes — sign_and_send MUST
+// surface the cluster-submission timestamp + status because the wallet has
+// already forwarded the transaction(s) to the chosen RPC endpoint by the time
+// the signal fires. `signatures` are base58-encoded transaction signatures
+// (NOT base64-encoded byte arrays; the Solana convention for tx signatures is
+// base58, distinct from the base64 wire format used for signed payloads in
+// sign_messages / sign_transactions). On JSON parse failure (unlikely; the
+// Kotlin side builds via JSONObject + JSONArray in buildSignAndSendSuccessJson),
+// post_parse_failure_error falls back to mwa_error{PROTOCOL_ERROR,
+// source_method="sign_and_send", cause="parse_failure"} via the existing
+// helper — preserves the terminal-signal invariant per DD-15.
+// No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
+// Signals are posted via dispatcher only — no direct signal emission here.
+JNIEXPORT void JNICALL
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postSignAndSendCompletedNative(
+    JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
+    post_arity2_completed(env, reqId, resultDictJson, "sign_and_send_completed", "postSignAndSendCompletedNative");
+}
+
 // Story 4-1 T3 — 2-param `deauthorize_completed` JNIEXPORT per A-12.
 // Kotlin side: GDExtensionAndroidPlugin.Companion.postDeauthorizeCompletedNative (external fun)
 // → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
@@ -926,6 +953,33 @@ JNIEXPORT void JNICALL
 Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postReauthRequiredNative(
     JNIEnv* env, jobject /*companion*/, jstring reauthDictJson) {
     post_arity1(env, reauthDictJson, "reauth_required", "postReauthRequiredNative");
+}
+
+// Story 3-3 T3 — 1-param `pending_submission_found` JNIEXPORT per A-12 + DD-3-3-E.
+// Kotlin side: GDExtensionAndroidPlugin.Companion.postPendingSubmissionFoundNative (external fun)
+// → this JNIEXPORT → post_arity1 helper → dispatcher->post(
+//       "pending_submission_found", Array::make(payload_dict))
+// under CR-41 CallbackLease — parallel to postReauthRequiredNative above. NOTE:
+// 1-param (NOT 2-param) — `request_id` is embedded inside the payload at the
+// `request_id` field (parallel to mwa_error / mwa_timeout / reauth_required,
+// distinct from the 2-param `*_completed` family).
+//
+// The payload carries the 6-key shape `{request_id, op_type, started_at_ms,
+// tx_count, tx_preview_hashes, recommendation}` per DD-3-3-E. No secret material
+// — `request_id` is the caller-side correlation token; `tx_preview_hashes` are
+// SHA-256 hex digests of the transaction bytes (NOT signed bytes; transactions
+// may not even have signatures yet at the breadcrumb-write moment per DD-3-3-B
+// write-then-call ordering); `recommendation` is the literal
+// "check_chain_for_signatures" today. On JSON parse failure (unlikely; the
+// Kotlin side builds via JSONObject + JSONArray in buildPendingSubmissionFoundJson),
+// post_parse_failure_error falls back to mwa_error{PROTOCOL_ERROR,
+// source_method="<unknown>", cause="parse_failure"} via the existing helper.
+// No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
+// Signals are posted via dispatcher only — no direct signal emission here.
+JNIEXPORT void JNICALL
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postPendingSubmissionFoundNative(
+    JNIEnv* env, jobject /*companion*/, jstring pendingDictJson) {
+    post_arity1(env, pendingDictJson, "pending_submission_found", "postPendingSubmissionFoundNative");
 }
 
 }  // extern "C"
