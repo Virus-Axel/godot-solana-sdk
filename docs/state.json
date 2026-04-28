@@ -3,7 +3,7 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-28T17:43:01.628Z",
+  "lastUpdated": "2026-04-28T18:07:47.187Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
@@ -741,7 +741,7 @@
       "completedAt": "2026-04-28T18:00:00Z",
       "gate5Result": "pending",
       "tasks": 7,
-      "commits": 7,
+      "commits": 8,
       "baselineTag": "pre-mwa-android-4-2",
       "postTag": "post-mwa-android-4-2",
       "commitsList": [
@@ -753,7 +753,8 @@
         "f3f6185b feat(mwa): Story 4-2 T3 — MobileWalletAdapter::forget_all C++ delegation body (per A-15)",
         "97e8d322 feat(mwa): Story 4-2 T4 — MWA.gd forget_all() facade method",
         "8073743d test(mwa): Story 4-2 T5 — androidTest E2E (AC-1 + AC-4) + R8 smoke method-list update",
-        "<T6 close-out commit> chore(mwa): Story 4-2 T6 close-out — baseline refresh 251->257 + pre-Gate-5"
+        "<T6 close-out commit> chore(mwa): Story 4-2 T6 close-out — baseline refresh 251->257 + pre-Gate-5",
+        "<post-review fix commit> fix(mwa): Story 4-2 — extend forgetAllMutex to mwaReauthorize (CR HIGH finding #1) + 4 retrospect rules + 4 deferred CRs (CR-4-2-D/E/F/G)"
       ],
       "deviations": [
         "D-4-2-1 Rule 2 (T1+T2): InflightMap.register signature extension to 3-arg (requestId, startedAtMs, sourceMethod = \"unknown\") per DD-4-2-1. Contract change to Story 2-1 helper depended on by 6 prior-story call sites; mitigated by default arg keeping all callers compiling at T1 (TDD-red) — T2 back-filled explicit sourceMethod values per call site. New internal data class InflightEntry + new snapshot(): Map<String, String> for the cancel-in-flight loop per DD-4-2-3.",
@@ -761,7 +762,8 @@
         "D-4-2-T1-1 Rule 1 (T1): InflightMap.register sourceMethod placed AT END with default = \"unknown\" instead of in middle as DD-4-2-1 spec text suggested. Story-spec placement would break positional-arg compile-compat with 6 existing 2-arg callers; placing default last preserves register(requestId, clock()) call-shape verbatim and lets T2 back-fill per call site.",
         "D-4-2-T2-1 Rule 1 (T2): withStorageOrReauthRequired wrapper register at line 2120 back-filled with sourceMethod parameter (already in scope). Not enumerated in T2 spec 6 sites; back-filled for diagnostic accuracy on corruption-fallback paths. Already-registered callers unaffected (putIfAbsent no-op); first-register callers tag the slot with correct origin.",
         "D-4-2-T2-2 Rule 1 (T2): 5 prior-story unit test mock matchers updated 2-arg -> 3-arg (AuthorizePathTest, MwaAndroidPluginDisconnectTest, MwaAndroidPluginReauthorizeTest x2, MwaAndroidPluginSignMessagesTest, MwaAndroidPluginSignTransactionsTest). Direct side-effect of T1 signature extension; T1 missed because pre-T2 production callers still passed 2 args.",
-        "D-4-2-T2-3 Rule 2 (T2): forgetAllMutex.withLock { ... } wraps mwaAuthorize launched body. DD-4-2-2 LOCKED requires this for AC-3 mutex serialization; T2 spec listed register back-fills explicitly but did not enumerate mutex-on-op-methods. Required to make AC-3 unit test deterministic. Other 6 op methods NOT modified — out of scope for T2; their AC tests do not run them concurrently with forget_all."
+        "D-4-2-T2-3 Rule 2 (T2): forgetAllMutex.withLock { ... } wraps mwaAuthorize launched body. DD-4-2-2 LOCKED requires this for AC-3 mutex serialization; T2 spec listed register back-fills explicitly but did not enumerate mutex-on-op-methods. Required to make AC-3 unit test deterministic. Other 6 op methods NOT modified — out of scope for T2; their AC tests do not run them concurrently with forget_all.",
+        "D-4-2-T8-1 Rule 2 (post-review fix): forgetAllMutex.withLock { ... } extended to mwaReauthorize launched body — closes the concrete sessionState-repopulation race against concurrent forget_all (CR HIGH finding #1). Other 5 op-methods deferred to CR-4-2-D (defense-in-depth — they are read-only or clear-only on sessionState; no observable AC-1 invariant violation)."
       ],
       "amendments": [
         "A-15"
@@ -769,7 +771,11 @@
       "concerns": [
         "CR-4-2-A",
         "CR-4-2-B",
-        "CR-4-2-C"
+        "CR-4-2-C",
+        "CR-4-2-D",
+        "CR-4-2-E",
+        "CR-4-2-F",
+        "CR-4-2-G"
       ],
       "concernsResolved": [],
       "concernsTransitive": [
@@ -788,8 +794,17 @@
       "testsAdded": 6,
       "testsAddedDetail": "6 Kotlin unit (MwaAndroidPluginForgetAllTest authored at T1; turned GREEN at T2): AC-1 happy path 3-token wipe + MasterKey rotation + sessionState clear within 10s; AC-2 cancel in-flight via mwa_cancelled_lifecycle BEFORE wipe with verifyOrder + JSON 3-key payload assertion (request_id, source_method, reason); AC-3 mutex serializes concurrent forget_all + connect (final state cleanAfterForget OR cleanAfterConnect, no partial); AC-4 wallet offline does not block local wipe (counter-based clientFactory routes 2nd deauth to network_offline scenario); DD-4-2-5 per-wallet StorageCorruptException for getToken (skip-and-continue); DD-4-2-6 listAllKeys StorageCorruptException bypasses withStorageOrReauthRequired wrapper (no postReauthRequired). 0 NEW pytest. 2 NEW androidTest (AC1ForgetAllHappyE2ETest + AC4ForgetAllWalletOfflineE2ETest; emulator-only, NOT in unit baseline). androidTest pre-4-2 17 -> post-4-2 expected 19.",
       "reviewFindings": {
-        "userInteractive": "pending",
-        "note": "Code review pending — runs at Gate 5 stage per implement skill protocol."
+        "userInteractive": true,
+        "rounds": 1,
+        "findings": 5,
+        "blockers": 0,
+        "critical": 0,
+        "high": 1,
+        "medium": 3,
+        "low": 1,
+        "fixed": 1,
+        "deferred": 4,
+        "note": "Code-review-agent run after T6 close-out, then user selected [L] Apply fixes + learn. Finding #1 (HIGH, mutex symmetry) fixed inline via forgetAllMutex.withLock around mwaReauthorize launched body — the SOLE remaining op-method whose handleReauthSuccess writes sessionState (causing concrete repopulation race against forget_all clear). Other 5 op-methods (mwaDisconnect/SignMessages/SignTransactions/SignAndSendTransactions/Deauthorize) are read-only or clear-only on sessionState — no concrete race; deferred to CR-4-2-D defense-in-depth follow-up. Findings #2-#4 (MEDIUM) deferred to CR-4-2-E/F/G respectively. Finding #5 (LOW) auto-closes when #1 closes (cancel-snapshot timing race). 4 retrospect rules added: 1 to .claude/rules/retrospect/java.md (mutex symmetry across LOCKED-DD op-method family) + 3 to .claude/rules/retrospect/universal.md (swallowed runCatching observability, disjunctive concurrency assertion bias, test-harness-degenerate failure modes)."
       },
       "ciStatus": {
         "unitBaseline": "green-local-2026-04-28T18:00Z (174 Kotlin = 173 GREEN + 1 expected @Disabled CR-3-3-B + 83 pytest = 257)",
@@ -838,8 +853,19 @@
       "totalSessions": 1
     },
     "tasks": {
-      "totalCompleted": 4,
-      "totalVerificationCycles": 4
+      "totalCompleted": 5,
+      "totalVerificationCycles": 5
+    },
+    "codeReview": {
+      "findingsTotal": 5,
+      "findingsByLevel": {
+        "high": 1,
+        "medium": 3,
+        "low": 1
+      },
+      "findingsFixed": 1,
+      "findingsDeferred": 4,
+      "retrospectRulesAdded": 4
     }
   },
   "waveStrategy": {

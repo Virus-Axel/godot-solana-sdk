@@ -632,106 +632,121 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             return
         }
         scope.launch {
-            try {
-                withContext(mainDispatcher) {
-                    // Step A: parse identity — PROTOCOL_ERROR on malformed input.
-                    val parsed = parseIdentity(identityJson) ?: run {
-                        emitFailureReauth(
-                            requestId,
-                            MwaError.ProtocolError,
-                            developerDetails = "identity.name required; identityJson=<redacted>",
-                        )
-                        return@withContext
-                    }
-
-                    // Step B: discover CacheKey via DD-2-2-7 3-tuple filter.
-                    // walletPackage is NOT in caller args — iterate listAllKeys + filter.
-                    // DD-2-2-1: NO separate cluster comparison branch; the filter itself
-                    // is the detection mechanism (empty result → NOT_CONNECTED).
-                    //
-                    // Story 4-3 DD-4-3-1.a — fail-closed plugin-boundary wrapper. Wrap
-                    // the cache-LOOKUP touchpoints (listAllKeys + per-candidate getToken)
-                    // so a Tink corruption event during cache READ surfaces as
-                    // `reauth_required{reason:"keystore_corrupt"}` rather than propagating
-                    // as an uncaught Throwable → `mwa_error{PROTOCOL_ERROR}`. Null-return
-                    // aborts the op (the wrapper has already emitted the terminal signal).
-                    val store = storeProvider(requireContext())
-                    val candidatesWithRecords = withStorageOrReauthRequired(requestId, "reauthorize") {
-                        val candidates = store.listAllKeys().filter {
-                            it.cluster == cluster &&
-                                it.chainId == chainId &&
-                                it.identityUri == parsed.identityUri
-                        }
-                        // Materialize once: load each candidate's record now (single decrypt per
-                        // candidate). Folds the race-guard ("vanished between listAllKeys and
-                        // getToken") into the same empty-result path — same NOT_CONNECTED
-                        // outcome on the wire either way (AC-2 / AC-4 / race all collapse here).
-                        candidates.mapNotNull { k ->
-                            store.getToken(k)?.let { k to it }
-                        }
-                    } ?: return@withContext
-                    if (candidatesWithRecords.isEmpty()) {
-                        emitFailureReauth(
-                            requestId,
-                            MwaError.NotConnected,
-                            developerDetails = "no readable cached token under (cluster=$cluster, " +
-                                "chainId=$chainId, identityUri=${parsed.identityUri})",
-                        )
-                        return@withContext
-                    }
-
-                    // Tie-break on multi-match (DD-2-2-7): most-recently-used wallet.
-                    val (key, cached) = candidatesWithRecords.maxBy { it.second.lastUsedAtMs }
-
-                    // Step D: call MwaClient.reauthorize inside watchdog (DD-2-2-3).
-                    val client = mwaClientFactory()
-                    try {
-                        val result = withTimeoutOrNull(effectiveMs) {
-                            client.reauthorize(
-                                senderProvider(),
-                                parsed.connectionIdentity,
-                                cached.authToken,
-                                cluster,
-                                chainId,
+            // Story 4-2 post-review fix (CR HIGH finding #1) — DD-4-2-2 mutex
+            // symmetry for the SOLE op method that REPOPULATES sessionState
+            // post-handshake (handleReauthSuccess writes auth_token,
+            // publicKey, walletLabel, ...). Without this withLock, a
+            // concurrent forget_all that wipes sessionState mid-reauth could
+            // see this op's handleReauthSuccess fire AFTER the wipe → AC-1
+            // invariant violation (is_connected()==true post-forget_all).
+            // The other 5 op methods (mwaDisconnect / mwaSignMessages /
+            // mwaSignTransactions / mwaSignAndSendTransactions /
+            // mwaDeauthorize) do NOT repopulate sessionState — they read-
+            // only or clear-only — so the mutex is NOT yet wrapped around
+            // them. CR-4-2-D tracks the defense-in-depth follow-up to
+            // extend mutex symmetry to the full DD-4-2-2 family.
+            forgetAllMutex.withLock {
+                try {
+                    withContext(mainDispatcher) {
+                        // Step A: parse identity — PROTOCOL_ERROR on malformed input.
+                        val parsed = parseIdentity(identityJson) ?: run {
+                            emitFailureReauth(
+                                requestId,
+                                MwaError.ProtocolError,
+                                developerDetails = "identity.name required; identityJson=<redacted>",
                             )
+                            return@withContext
                         }
-                        when (result) {
-                            null -> emitTimeoutReauth(requestId, effectiveMs)
-                            is MwaResult.Success -> handleReauthSuccess(requestId, key, result.value, store)
-                            is MwaResult.Failure -> {
-                                if (result.error is MwaError.TokenExpired) {
-                                    // DD-2-2-2 graceful wipe: CAS → clearOnLogout → deleteToken → postMwaError.
-                                    handleTokenExpired(requestId, key, store)
-                                } else {
-                                    emitFailureReauth(requestId, result.error, developerDetails = null)
+
+                        // Step B: discover CacheKey via DD-2-2-7 3-tuple filter.
+                        // walletPackage is NOT in caller args — iterate listAllKeys + filter.
+                        // DD-2-2-1: NO separate cluster comparison branch; the filter itself
+                        // is the detection mechanism (empty result → NOT_CONNECTED).
+                        //
+                        // Story 4-3 DD-4-3-1.a — fail-closed plugin-boundary wrapper. Wrap
+                        // the cache-LOOKUP touchpoints (listAllKeys + per-candidate getToken)
+                        // so a Tink corruption event during cache READ surfaces as
+                        // `reauth_required{reason:"keystore_corrupt"}` rather than propagating
+                        // as an uncaught Throwable → `mwa_error{PROTOCOL_ERROR}`. Null-return
+                        // aborts the op (the wrapper has already emitted the terminal signal).
+                        val store = storeProvider(requireContext())
+                        val candidatesWithRecords = withStorageOrReauthRequired(requestId, "reauthorize") {
+                            val candidates = store.listAllKeys().filter {
+                                it.cluster == cluster &&
+                                    it.chainId == chainId &&
+                                    it.identityUri == parsed.identityUri
+                            }
+                            // Materialize once: load each candidate's record now (single decrypt per
+                            // candidate). Folds the race-guard ("vanished between listAllKeys and
+                            // getToken") into the same empty-result path — same NOT_CONNECTED
+                            // outcome on the wire either way (AC-2 / AC-4 / race all collapse here).
+                            candidates.mapNotNull { k ->
+                                store.getToken(k)?.let { k to it }
+                            }
+                        } ?: return@withContext
+                        if (candidatesWithRecords.isEmpty()) {
+                            emitFailureReauth(
+                                requestId,
+                                MwaError.NotConnected,
+                                developerDetails = "no readable cached token under (cluster=$cluster, " +
+                                    "chainId=$chainId, identityUri=${parsed.identityUri})",
+                            )
+                            return@withContext
+                        }
+
+                        // Tie-break on multi-match (DD-2-2-7): most-recently-used wallet.
+                        val (key, cached) = candidatesWithRecords.maxBy { it.second.lastUsedAtMs }
+
+                        // Step D: call MwaClient.reauthorize inside watchdog (DD-2-2-3).
+                        val client = mwaClientFactory()
+                        try {
+                            val result = withTimeoutOrNull(effectiveMs) {
+                                client.reauthorize(
+                                    senderProvider(),
+                                    parsed.connectionIdentity,
+                                    cached.authToken,
+                                    cluster,
+                                    chainId,
+                                )
+                            }
+                            when (result) {
+                                null -> emitTimeoutReauth(requestId, effectiveMs)
+                                is MwaResult.Success -> handleReauthSuccess(requestId, key, result.value, store)
+                                is MwaResult.Failure -> {
+                                    if (result.error is MwaError.TokenExpired) {
+                                        // DD-2-2-2 graceful wipe: CAS → clearOnLogout → deleteToken → postMwaError.
+                                        handleTokenExpired(requestId, key, store)
+                                    } else {
+                                        emitFailureReauth(requestId, result.error, developerDetails = null)
+                                    }
                                 }
                             }
+                        } finally {
+                            runCatching { client.close() }
                         }
-                    } finally {
-                        runCatching { client.close() }
                     }
-                }
-            } catch (ce: CancellationException) {
-                // Preserve cancellation propagation — graceful scope teardown, not a crash.
-                throw ce
-            } catch (ex: Throwable) {
-                SdkLog.e(TAG, requestId) {
-                    "mwaReauthorize crashed: ${ex.javaClass.simpleName}: ${ex.message}"
-                }
-                if (inflightMap.tryTerminate(requestId)) {
-                    nativeBridge.postMwaError(
-                        buildErrorJson(
-                            requestId = requestId,
-                            error = MwaError.ProtocolError,
-                            developerDetails = "mwaReauthorize coroutine crashed: ${ex.javaClass.simpleName}",
-                            layer = "kotlin",
-                            cause = ex.javaClass.simpleName,
-                            sourceMethod = "reauthorize",
-                        ).toString(),
-                    )
-                } else {
-                    diagnostics.incrementLateResult()
-                    SdkLog.w(TAG, requestId) { "late_result outcome=crash" }
+                } catch (ce: CancellationException) {
+                    // Preserve cancellation propagation — graceful scope teardown, not a crash.
+                    throw ce
+                } catch (ex: Throwable) {
+                    SdkLog.e(TAG, requestId) {
+                        "mwaReauthorize crashed: ${ex.javaClass.simpleName}: ${ex.message}"
+                    }
+                    if (inflightMap.tryTerminate(requestId)) {
+                        nativeBridge.postMwaError(
+                            buildErrorJson(
+                                requestId = requestId,
+                                error = MwaError.ProtocolError,
+                                developerDetails = "mwaReauthorize coroutine crashed: ${ex.javaClass.simpleName}",
+                                layer = "kotlin",
+                                cause = ex.javaClass.simpleName,
+                                sourceMethod = "reauthorize",
+                            ).toString(),
+                        )
+                    } else {
+                        diagnostics.incrementLateResult()
+                        SdkLog.w(TAG, requestId) { "late_result outcome=crash" }
+                    }
                 }
             }
         }
