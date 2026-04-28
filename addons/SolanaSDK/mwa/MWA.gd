@@ -35,6 +35,16 @@ signal mwa_error(payload: Dictionary)
 signal mwa_timeout(payload: Dictionary)
 signal mwa_cancelled_lifecycle(payload: Dictionary)
 signal reauth_required(payload: Dictionary)
+## Story 3-3 — fired AFTER a successful `connect_completed` /
+## `reauthorize_completed` if a stale sign_and_send breadcrumb survived a
+## process death (AC-5). One-shot semantics per DD-3-3-D: each pending
+## breadcrumb produces ONE emission and is then cleared. Payload is the
+## 6-key dict `{request_id, op_type, started_at_ms, tx_count,
+## tx_preview_hashes, recommendation: "check_chain_for_signatures"}` per
+## DD-3-3-E. Game logic should query the chain for any of the
+## `tx_preview_hashes` to determine whether the previous submission landed
+## before showing UX.
+signal pending_submission_found(payload: Dictionary)
 
 # The underlying C++ MWA node (GDExtension-registered). Instantiated in
 # `_ready` via `MobileWalletAdapter.new()`. Kept private so consumers are
@@ -92,6 +102,7 @@ func _wire_signal_forwarding() -> void:
 	_node.mwa_timeout.connect(mwa_timeout.emit)
 	_node.mwa_cancelled_lifecycle.connect(mwa_cancelled_lifecycle.emit)
 	_node.reauth_required.connect(reauth_required.emit)
+	_node.pending_submission_found.connect(pending_submission_found.emit)
 
 
 # ---------------- Public facade — 8 methods per T7 spec ----------------
@@ -221,6 +232,60 @@ func sign_messages(messages: Array[PackedByteArray], opts: Dictionary = {}) -> v
 ## DD-3-1-3. Omitted keys fall to the C++ node's defaults.
 func sign_transactions(transactions: Array[PackedByteArray], opts: Dictionary = {}) -> void:
 	_node.sign_transactions(transactions, opts)
+
+
+## Sign one or more serialized Solana transactions AND submit them to the
+## connected cluster's RPC endpoint via the wallet (single round-trip).
+## Completion arrives via one terminal signal per request:
+##   - `sign_and_send_completed(request_id, result)` on success — `result`
+##     carries the 4-key shape `{request_id, signatures: Array[String],
+##     submitted_at: int, confirmation_status: "submitted"}` per AC-1 +
+##     DD-3-3-E. `signatures` are base58-encoded transaction signatures
+##     (NOT base64-encoded byte arrays — the Solana convention for tx
+##     signatures is base58, distinct from the base64 wire format used in
+##     `sign_messages` / `sign_transactions`). `submitted_at` is the
+##     wall-clock ms-epoch the wallet acknowledged forwarding the txs to
+##     the RPC; `confirmation_status` is the literal "submitted" today
+##     (future Story 5-x may extend to "confirmed" / "finalized" if a
+##     confirmation-tracking surface lands).
+##   - `mwa_error{code=NOT_CONNECTED}` if `is_connected()` is false OR
+##     the active session's cluster does not match a cached record's
+##     cluster (cluster-bleed defensive guard per DD-27 / AC-NFR-SEC-4 /
+##     AC-6) — synchronous preflight, no scope.launch on the disconnected
+##     branch.
+##   - `mwa_error{code=WALLET_REJECTED}` if the wallet user rejects the
+##     signing prompt — AC-4, routed through the single `mwa_error` signal
+##     per DD-15.
+##   - `mwa_error{code=NETWORK_OFFLINE | RPC_FAILED}` if the wallet cannot
+##     reach the RPC endpoint or the cluster rejects the submission.
+##   - `mwa_timeout` on watchdog expiry (DD-3-1-3 effectiveWatchdog parity,
+##     inherited).
+##   - `reauth_required{reason: "keystore_corrupt"}` if a Tink corruption
+##     event is detected during the breadcrumb-write site (DD-3-3-G
+##     fail-closed wrapper).
+##
+## **Pending-submission breadcrumb** (AC-2 / AC-5): BEFORE the wallet
+## round-trip starts, this op writes a 7-field breadcrumb to encrypted
+## storage `{request_id, op_type:"sign_and_send", cluster, identity_uri,
+## started_at_ms, tx_count, tx_preview_hashes:[sha256(tx)…]}` per
+## DD-3-3-A/B/F. The breadcrumb is removed in ALL terminal paths
+## (success/error/timeout) per DD-3-3-C. If the process is killed
+## mid-op, the breadcrumb survives and the next successful
+## `connect_completed` / `reauthorize_completed` will be followed by a
+## one-shot `pending_submission_found` signal so game logic can query
+## the chain for the preview-hashed transactions.
+##
+## Caller correlates terminal signals via the `request_id` field. The C++
+## node mints the ID via `generate_request_id` (D-4 from Story 1-5); per
+## the LOCKED Story 2-1 T7 convention and Story 3-1 D-3-1-12, the facade
+## returns void — same shape as `sign_messages` / `sign_transactions`
+## above.
+##
+## `transactions`: list of serialized transaction byte arrays (1+ entries).
+## `opts` (optional): {"timeout_ms": int} — clamped to internal default
+## per DD-3-1-3. Omitted keys fall to the C++ node's defaults.
+func sign_and_send(transactions: Array[PackedByteArray], opts: Dictionary = {}) -> void:
+	_node.sign_and_send(transactions, opts)
 
 
 ## Synchronous state read — true after a successful connect, false otherwise.
