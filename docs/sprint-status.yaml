@@ -130,11 +130,14 @@ epics:
         slug: forget-all-master-key-rotation
         title: "forget_all + MasterKey Rotation + Mutex + Cancel In-Flight"
         size: M
-        status: in-progress
+        status: done
         wave: 6
         dependencies: ["4-1"]
         startedAt: 2026-04-28T14:10:00Z
+        completedAt: 2026-04-28T18:00:00Z
+        gate5Result: pending
         baselineTag: pre-mwa-android-4-2
+        postTag: post-mwa-android-4-2
       - id: "4-3"
         slug: keystore-recovery-manifest-r8-reproducible
         title: "Keystore Corruption Recovery + Manifest Hardening + R8 Rules + Dep Lockfile + Reproducible Build"

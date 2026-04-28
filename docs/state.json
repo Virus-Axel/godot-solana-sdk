@@ -3,7 +3,7 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-28T15:00:00Z",
+  "lastUpdated": "2026-04-28T17:43:01.628Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
@@ -12,7 +12,42 @@
     "slug": "forget-all-master-key-rotation",
     "startedAt": "2026-04-28T14:10:00Z",
     "size": "M",
-    "wave": 6
+    "wave": 6,
+    "taskSummary": {
+      "compactedAt": "2026-04-28T17:22:25.568Z",
+      "tasksCompleted": 3,
+      "filesModified": [
+        "android/plugin/src/main/java/plugin/walletadapterandroid/GDExtensionAndroidPlugin.kt",
+        "android/plugin/src/test/kotlin/com/godotengine/godot_solana_sdk/mwa/plugin/AuthorizePathTest.kt",
+        "android/plugin/src/test/kotlin/com/godotengine/godot_solana_sdk/mwa/plugin/MwaAndroidPluginDisconnectTest.kt",
+        "android/plugin/src/test/kotlin/com/godotengine/godot_solana_sdk/mwa/plugin/MwaAndroidPluginReauthorizeTest.kt",
+        "android/plugin/src/test/kotlin/com/godotengine/godot_solana_sdk/mwa/plugin/MwaAndroidPluginSignMessagesTest.kt",
+        "android/plugin/src/test/kotlin/com/godotengine/godot_solana_sdk/mwa/plugin/MwaAndroidPluginSignTransactionsTest.kt",
+        "src/mwa/mobile_wallet_adapter.cpp",
+        "addons/SolanaSDK/mwa/MWA.gd"
+      ],
+      "testsAdded": 0,
+      "testsTurnedGreen": 6,
+      "patternsEstablished": [
+        "forgetAllMutex.withLock { ... } wraps mwaForgetAll body AND mwaAuthorize launched body — DD-4-2-2 mutex serialization (D-4-2-T2-3 Rule 2)",
+        "InflightMap.register 3-arg signature with sourceMethod default \"unknown\" at END (D-4-2-T1-1 Rule 1) — 7 production call sites back-filled with explicit sourceMethod",
+        "mwaForgetAll body shape: snapshot+cancel-in-flight loop → best-effort per-wallet deauth (withTimeoutOrNull 2s) → store.deleteAll → deleteSharedPreferences → KeyStore.deleteEntry(MASTER_KEY_ALIAS) → withContext(mainDispatcher) { sessionState.clear() }",
+        "C++ forget_all delegation: 1-arg bridge_->forget_all(request_id) (NO opts Dictionary; distinct from disconnect/deauthorize 2-arg) + null-bridge guard fires unsupported_platform mwa_error",
+        "MWA.gd facade: reuses existing mwa_cancelled_lifecycle signal+relay (no new signal per DD-4-2-8 fire-and-forget)"
+      ],
+      "deviations": [
+        "D-4-2-T1-1 Rule 1: InflightMap.register sourceMethod placed AT END with default — preserves 2-arg call-shape compile-compat at T1",
+        "D-4-2-T2-1 Rule 1: withStorageOrReauthRequired wrapper register at line 2120 back-filled with sourceMethod parameter (already in scope) — not in T2 spec's enumerated 6 sites; extends by 1 line for diagnostic accuracy",
+        "D-4-2-T2-2 Rule 1: 5 prior-story unit test mock matchers updated 2-arg→3-arg — direct side-effect of T1's signature extension; T1 missed because pre-T2 production callers still passed 2 args",
+        "D-4-2-T2-3 Rule 2: forgetAllMutex.withLock around mwaAuthorize launched body — DD-4-2-2 LOCKED requires this for AC-3 mutex serialization; T2 spec listed register back-fills explicitly but did not enumerate mutex-on-op-methods",
+        "D-4-2-2 Rule 3: T3 scope expanded from audit-only to fill in Story 1-5 stub body — already covered by amendment A-15 (landed at story-creation commit 81c45158)"
+      ],
+      "verificationOnlyTasks": [],
+      "openIssues": [
+        "Pre-existing kdoc stale-stub markers (4 hits across 2 files: GDExtensionAndroidPlugin.kt:1778/2106/2110 + MwaAndroidPluginReauthorizeTest.kt:59) — narrative from prior stories 2-2/3-3/4-3 TDD-red phases. Not in T2-T4 diff; deferred to T6 close-out CR sweep.",
+        "Android Lint (lintDebug) shows 9 NewApi errors: 8 pre-existing (Base64.getEncoder/Decoder + Context.deleteSharedPreferences at SecureTokenStore.kt:192) + 1 new at GDExtensionAndroidPlugin.kt:1458 (matches established pattern). Not in this story's tooling.test verification chain. Project-wide issue."
+      ]
+    }
   },
   "phases": {
     "research": {
@@ -40,7 +75,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 14,
+  "storiesDone": 15,
   "storiesTotal": 21,
   "changeStories": [],
   "completedStories": [
@@ -696,19 +731,86 @@
         "note": "Story ships with unit baseline green; on-device validation happens asynchronously once the next git push origin feature/mwa-android runs the CI matrix."
       },
       "notes": "Second Wave 6 story. Third consumer of the runSigningOp shared signing pipeline (after sign_messages 3-1 + sign_transactions 3-2). FIRST signing-op story to touch disk on the happy path — AC-2 mandates breadcrumb write-ahead BEFORE the wallet round-trip + AC-3/4 cleanup-on-all-terminal-paths + AC-5 next-launch scan via pending_submission_found one-shot signal. CR-3-2-W rationale (signing path is in-memory-only) is RECONCILED here, NOT invalidated; stays valid for mwaSignMessages/mwaSignTransactions, lifted for mwaSignAndSendTransactions. Code delta: SecureTokenStore extension with 4 NEW methods (putPendingSubmission/getPendingSubmission/listAllPendingSubmissions/removePendingSubmission under PENDING_KEY_PREFIX) + MwaDiagnostics.cleanupFailedCount counter (DD-3-3-G non-wrapped cleanup-failure observability) + GDExtensionAndroidPlugin.mwaSignAndSendTransactions @UsedByGodot instance method (sync preflight authToken + connectedKey + cluster + AC-6 cluster-bleed listAllKeys filter + scope.launch breadcrumb-write via withStorageOrReauthRequired wrapper + runSigningOp(SIGN_AND_SEND) + handleSignAndSendSuccess success path / cleanupBreadcrumb error path) + 6 NEW private helpers (handleSignAndSendSuccess AC-3 cleanup-before-terminal, cleanupBreadcrumb DD-3-3-G non-wrapped, scanPendingSubmissions identity-scoped one-shot, buildSignAndSendSuccessJson 4-key payload, buildPendingSubmissionFoundJson 6-key payload drop cluster+identity_uri add recommendation, buildBreadcrumb 7-field with SHA-256 preview hashes via shared sha256Hex helper) + scanPendingSubmissions wired into handleSuccess (connect post-postConnectCompleted) + handleReauthSuccess (post-postReauthorizeCompleted) via scope.launch off-thread per DD-3-3-D ordering + withStorageOrReauthRequired wrapper lazy-register refinement (D-3-3-T2-3 Rule 2) + ci/grep_bans.sh pattern-8 pendingDictJson extension (DD-3-3-E.a) + log_payload_json.kt.bad fixture extension + NativeBridge.postSignAndSendCompleted + postPendingSubmissionFound interface methods + DefaultNativeBridge overrides + Companion external fun declarations + JNIEXPORT postSignAndSendCompletedNative (post_arity2_completed) + JNIEXPORT postPendingSubmissionFoundNative (post_arity1) + ADD_SIGNAL pending_submission_found row in mobile_wallet_adapter.cpp _bind_methods + MWA.gd sign_and_send facade method + pending_submission_found signal + relay row + R8 smoke REQUIRED_METHODS extension (3 new entries). 7 design decisions locked (DD-3-3-A pending storage API + DD-3-3-B write-then-call ordering + DD-3-3-C cleanup helper signature + behavior + DD-3-3-D scan ordering + identity-scope + DD-3-3-E builder distinctness + payload-shape lock + DD-3-3-E.a grep_bans extension + DD-3-3-F sha256 full-64-char-hex + DD-3-3-G wrapper write/cleanup asymmetry). 7 commits. Unit baseline 152 -> 167 (+15 from T1 MwaAndroidPluginSignAndSendTest 9-GREEN + T6 SignAndSendContractTest now-passing + T2 SecureTokenStoreTest 4-new); pytest 83 unchanged; androidTest pre-3-3 15 -> post-3-3 expected 17. 3 spec deviations + 3 mid-impl Rule-1/Rule-2 adjustments filed (D-3-3-1..3 + D-3-3-T2-1/2/3). 3 new concerns logged (CR-3-3-A LOW diagnostics surface for cleanupFailedCount -> Story 5-2; CR-3-3-B LOW lifecycle-cancellation cleanup gap -> Story 5-3; CR-3-3-C LOW cluster-bleed test plausibility vs realistic user-path coverage -> Story 5-x cluster-management review). CR sweep: CR-18/32/41 transitively exercised; CR-35 deferred; CR-45 inherited; CR-46 inherited (host-build env-gap T3); CR-47/48 N/A for signing path; CR-58..61 RECONCILED via DD-3-3-G; CR-3-2-W RECONCILED via DD-3-3-G write-vs-cleanup wrapping asymmetry. T7 baseline refresh + close-out only — no production code changes."
+    },
+    {
+      "storyId": "4-2",
+      "slug": "forget-all-master-key-rotation",
+      "size": "M",
+      "wave": 6,
+      "startedAt": "2026-04-28T14:10:00Z",
+      "completedAt": "2026-04-28T18:00:00Z",
+      "gate5Result": "pending",
+      "tasks": 7,
+      "commits": 7,
+      "baselineTag": "pre-mwa-android-4-2",
+      "postTag": "post-mwa-android-4-2",
+      "commitsList": [
+        "ceb2d278 chore(mwa): Story 4-2 pre-creation bookkeeping — sprint-status + state.json",
+        "81c45158 chore(mwa): Story 4-2 story file authored inline + amendment A-15",
+        "9e7164b8 test(mwa): Story 4-2 T1 — Kotlin TDD red + InflightMap 3-arg + scaffolding stubs for forget_all",
+        "08201c30 chore(mwa): pause Story 4-2 between T1 commit and T2 start",
+        "f91f682b feat(mwa): Story 4-2 T2 — mwaForgetAll body + InflightMap call-site back-fill + AC-3 mutex",
+        "f3f6185b feat(mwa): Story 4-2 T3 — MobileWalletAdapter::forget_all C++ delegation body (per A-15)",
+        "97e8d322 feat(mwa): Story 4-2 T4 — MWA.gd forget_all() facade method",
+        "8073743d test(mwa): Story 4-2 T5 — androidTest E2E (AC-1 + AC-4) + R8 smoke method-list update",
+        "<T6 close-out commit> chore(mwa): Story 4-2 T6 close-out — baseline refresh 251->257 + pre-Gate-5"
+      ],
+      "deviations": [
+        "D-4-2-1 Rule 2 (T1+T2): InflightMap.register signature extension to 3-arg (requestId, startedAtMs, sourceMethod = \"unknown\") per DD-4-2-1. Contract change to Story 2-1 helper depended on by 6 prior-story call sites; mitigated by default arg keeping all callers compiling at T1 (TDD-red) — T2 back-filled explicit sourceMethod values per call site. New internal data class InflightEntry + new snapshot(): Map<String, String> for the cancel-in-flight loop per DD-4-2-3.",
+        "D-4-2-2 Rule 3 (T3): scope expanded from audit-only to fill-in-1-5-stub-body — covered by amendment A-15 landed at story-creation commit 81c45158 (pre-T1).",
+        "D-4-2-T1-1 Rule 1 (T1): InflightMap.register sourceMethod placed AT END with default = \"unknown\" instead of in middle as DD-4-2-1 spec text suggested. Story-spec placement would break positional-arg compile-compat with 6 existing 2-arg callers; placing default last preserves register(requestId, clock()) call-shape verbatim and lets T2 back-fill per call site.",
+        "D-4-2-T2-1 Rule 1 (T2): withStorageOrReauthRequired wrapper register at line 2120 back-filled with sourceMethod parameter (already in scope). Not enumerated in T2 spec 6 sites; back-filled for diagnostic accuracy on corruption-fallback paths. Already-registered callers unaffected (putIfAbsent no-op); first-register callers tag the slot with correct origin.",
+        "D-4-2-T2-2 Rule 1 (T2): 5 prior-story unit test mock matchers updated 2-arg -> 3-arg (AuthorizePathTest, MwaAndroidPluginDisconnectTest, MwaAndroidPluginReauthorizeTest x2, MwaAndroidPluginSignMessagesTest, MwaAndroidPluginSignTransactionsTest). Direct side-effect of T1 signature extension; T1 missed because pre-T2 production callers still passed 2 args.",
+        "D-4-2-T2-3 Rule 2 (T2): forgetAllMutex.withLock { ... } wraps mwaAuthorize launched body. DD-4-2-2 LOCKED requires this for AC-3 mutex serialization; T2 spec listed register back-fills explicitly but did not enumerate mutex-on-op-methods. Required to make AC-3 unit test deterministic. Other 6 op methods NOT modified — out of scope for T2; their AC tests do not run them concurrently with forget_all."
+      ],
+      "amendments": [
+        "A-15"
+      ],
+      "concerns": [
+        "CR-4-2-A",
+        "CR-4-2-B",
+        "CR-4-2-C"
+      ],
+      "concernsResolved": [],
+      "concernsTransitive": [
+        "CR-3-3-A LOW transitive — forget_all increments lateResultCount on tryTerminate CAS-loss in cancel-in-flight loop; same counter, no new metric. Story 5-2 surface candidate.",
+        "CR-3-3-B LOW transitive — Story 4-2 is FIRST emitter of mwa_cancelled_lifecycle in production. Story 5-3 lifecycle observer is second emitter; @Disabled placeholder in MwaAndroidPluginSignAndSendTest still pending Story 5-3.",
+        "CR-3-3-C LOW — N/A for forget_all (no cluster-bleed surface; forget_all is identity-agnostic).",
+        "CR-58/59/60/61 LOW — NOT applicable. forget_all bypasses withStorageOrReauthRequired per DD-4-2-6.",
+        "CR-3-2-W LOW — N/A for forget_all (not a signing-op story).",
+        "CR-49 LOW transitive — forget_all calls client.deauthorize per cached wallet via same MwaClient interface; MwaClientImplTest mock-coverage gap unchanged. T5 androidTest provides integration coverage.",
+        "CR-50 LOW transitive — Route B harness gap continues (T5 in-process FakeMwaClient).",
+        "CR-51/52 LOW — N/A (deauthorize-via-disconnect specific).",
+        "CR-46 LOW inherited — T3 local scons build deferred to CI per 2-2/3-1/3-2/3-3/4-1 T3 precedent.",
+        "CR-45 LOW inherited unchanged.",
+        "CR-35 HIGH still deferred — no host-mode C++ test surface; T6 intentionally empty per story spec."
+      ],
+      "testsAdded": 6,
+      "testsAddedDetail": "6 Kotlin unit (MwaAndroidPluginForgetAllTest authored at T1; turned GREEN at T2): AC-1 happy path 3-token wipe + MasterKey rotation + sessionState clear within 10s; AC-2 cancel in-flight via mwa_cancelled_lifecycle BEFORE wipe with verifyOrder + JSON 3-key payload assertion (request_id, source_method, reason); AC-3 mutex serializes concurrent forget_all + connect (final state cleanAfterForget OR cleanAfterConnect, no partial); AC-4 wallet offline does not block local wipe (counter-based clientFactory routes 2nd deauth to network_offline scenario); DD-4-2-5 per-wallet StorageCorruptException for getToken (skip-and-continue); DD-4-2-6 listAllKeys StorageCorruptException bypasses withStorageOrReauthRequired wrapper (no postReauthRequired). 0 NEW pytest. 2 NEW androidTest (AC1ForgetAllHappyE2ETest + AC4ForgetAllWalletOfflineE2ETest; emulator-only, NOT in unit baseline). androidTest pre-4-2 17 -> post-4-2 expected 19.",
+      "reviewFindings": {
+        "userInteractive": "pending",
+        "note": "Code review pending — runs at Gate 5 stage per implement skill protocol."
+      },
+      "ciStatus": {
+        "unitBaseline": "green-local-2026-04-28T18:00Z (174 Kotlin = 173 GREEN + 1 expected @Disabled CR-3-3-B + 83 pytest = 257)",
+        "androidTest": "pending — runtime validation on next CI push via Story 2-1 round-3-fixed workflow; AC1ForgetAllHappyE2ETest + AC4ForgetAllWalletOfflineE2ETest expected 19 total",
+        "r8Smoke": "workflow updated — REQUIRED_METHODS now includes mwaForgetAll; runtime validation on next CI push",
+        "note": "Story ships with unit baseline green; on-device validation happens asynchronously once next git push origin feature/mwa-android runs the CI matrix."
+      },
+      "notes": "Third Wave 6 story (after 3-2 + 3-3). FIRST production emitter of mwa_cancelled_lifecycle. FIRST production caller of MasterKey rotation (Android Keystore alias deletion + EncryptedSharedPreferences full wipe). InflightMap.register 2-arg -> 3-arg signature extension (D-4-2-1 Rule 2) ripples to 7 production call sites + 5 prior-story unit test mocks (D-4-2-T2-2). DD-4-2-2 mutex coordination extended to mwaAuthorize (D-4-2-T2-3 Rule 2) — required for AC-3 determinism; future story 5-x may extend to other op methods if AC tests demand. T3 fills in Story 1-5 stub body per amendment A-15 (D-4-2-2 Rule 3). T6 intentionally empty (no JSON-RPC contract surface; per-wallet deauth reuses Story 4-1 fixtures). 6 commits + pre-creation bookkeeping + pause + T6 close-out = 9 total commits in branch history. Unit baseline 251 -> 257 (+6 Kotlin); pytest 83 unchanged; androidTest pre-4-2 17 -> post-4-2 expected 19. 6 deviations filed (D-4-2-1/2 spec + D-4-2-T1-1 + D-4-2-T2-1/2/3 mid-impl). 3 new concerns logged (CR-4-2-A/B/C all LOW). 1 amendment referenced (A-15 — landed pre-T1 at story-creation). T6 close-out commit is bookkeeping-only — no production code changes."
     }
   ],
   "baselineTests": {
-    "total": 251,
-    "passing": 251,
+    "total": 257,
+    "passing": 257,
     "failing": 0,
     "baselinedAt": "2026-04-22T08:09:41Z",
     "baselinedAtStory": 5,
-    "lastRefreshedAt": "2026-04-28T13:55:00Z",
-    "lastRefreshedAtStory": 14,
+    "lastRefreshedAt": "2026-04-28T18:00:00Z",
+    "lastRefreshedAtStory": 15,
     "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
     "failingTests": [],
-    "note": "Post-story-3-3 T7 baseline refresh: 152 -> 167 Kotlin (+15 from T1+T2 sign-and-send work — 10 MwaAndroidPluginSignAndSendTest cases (1 @Disabled placeholder for AC-4c lifecycle path -> Story 5-3 per CR-3-3-B; 9 GREEN covering AC-1 happy 4-key payload + AC-2 breadcrumb 6-key write-ahead + AC-3 cleanup-before-terminal + AC-4a/b error/timeout cleanup + AC-5 stale breadcrumb scan + one-shot + AC-6 cluster-bleed + runSigningOp(SIGN_AND_SEND) Failure routing direct + breadcrumb-write StorageCorruptException -> reauth_required), +4 SecureTokenStoreTest pending-submission storage tests (round-trip, list filter+strip, remove single, empty-list), +1 SignAndSendContractTest now-passing (T1 @Disabled placeholder removed at T6 with full fixture-input verification body)); pytest 83 unchanged. androidTest pre-3-3 15 (post-3-2 + 1 expected from CI push) -> post-3-3 expected 17 (+AC1SignAndSendHappyE2ETest + AC5PendingSubmissionFoundOnNextConnectTest — NOT counted in unit baseline; emulator-only). Total unit baseline 235 -> 250. Post-review-fix +1: cluster-bleed listAllKeys StorageCorruptException emits reauth_required synchronously and aborts (closes code-review HIGH finding #1, D-3-3-T7-1)."
+    "note": "Post-story-3-3 T7 baseline refresh: 152 -> 167 Kotlin (+15 from T1+T2 sign-and-send work — 10 MwaAndroidPluginSignAndSendTest cases (1 @Disabled placeholder for AC-4c lifecycle path -> Story 5-3 per CR-3-3-B; 9 GREEN covering AC-1 happy 4-key payload + AC-2 breadcrumb 6-key write-ahead + AC-3 cleanup-before-terminal + AC-4a/b error/timeout cleanup + AC-5 stale breadcrumb scan + one-shot + AC-6 cluster-bleed + runSigningOp(SIGN_AND_SEND) Failure routing direct + breadcrumb-write StorageCorruptException -> reauth_required), +4 SecureTokenStoreTest pending-submission storage tests (round-trip, list filter+strip, remove single, empty-list), +1 SignAndSendContractTest now-passing (T1 @Disabled placeholder removed at T6 with full fixture-input verification body)); pytest 83 unchanged. androidTest pre-3-3 15 (post-3-2 + 1 expected from CI push) -> post-3-3 expected 17 (+AC1SignAndSendHappyE2ETest + AC5PendingSubmissionFoundOnNextConnectTest — NOT counted in unit baseline; emulator-only). Total unit baseline 235 -> 250. Post-review-fix +1: cluster-bleed listAllKeys StorageCorruptException emits reauth_required synchronously and aborts (closes code-review HIGH finding #1, D-3-3-T7-1). Story 4-2 T6 close-out: 251 -> 257 (+6 Kotlin from T1 6 ForgetAll cases turning GREEN at T2: AC-1 happy path / AC-2 cancel-in-flight / AC-3 mutex serialization / AC-4 wallet-offline / DD-4-2-5 per-record StorageCorruptException / DD-4-2-6 listAllKeys-throws wrapper-bypass). androidTest pre-4-2 17 -> post-4-2 expected 19 (+AC1ForgetAllHappy + AC4ForgetAllWalletOffline; emulator-only)."
   },
   "tooling": {
     "format": "clang-format (C++); ktlint (Kotlin)",
@@ -731,7 +833,14 @@
     "parallelStories": 0,
     "interfaceAudits": 13,
     "interfaceMismatches": 4,
-    "pauseResumeCount": 11
+    "pauseResumeCount": 11,
+    "execution": {
+      "totalSessions": 1
+    },
+    "tasks": {
+      "totalCompleted": 4,
+      "totalVerificationCycles": 4
+    }
   },
   "waveStrategy": {
     "2": "sequential",
@@ -753,5 +862,12 @@
     "archStats": "13 components, 34 DDs (all LOCKED), 11 signal schemas, 13 error codes, 6 workflows, 6 test tiers",
     "planStats": "21 stories (4S/13M/4L), 5 epics, 7 waves, 8 interface contracts, 4 PD-* all LOCKED",
     "architectureImmutable": true
+  },
+  "recovery": {
+    "interrupted": true,
+    "interruptedAt": "2026-04-28T14:01:37.748Z",
+    "errorType": "unknown",
+    "errorMessage": "",
+    "uncommittedChanges": true
   }
 }
