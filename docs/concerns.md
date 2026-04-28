@@ -744,3 +744,37 @@ Story 4-2 (`forget_all` + MasterKey rotation + Mutex serialization + cancel-in-f
 - **CR-4-2-F (MEDIUM, test brittleness — AC-3 50ms Thread.sleep concurrency bias):** Story 4-2 code review (CR MEDIUM finding #3) flagged the AC-3 mutex-serialization unit test's 50ms `Thread.sleep` bias. With cold JIT + 3×`withTimeoutOrNull(2_000L)` + FakeMwaClient JSON parse, on slow CI the test silently degrades from "tests forget_all-first ordering" to "tests connect-first ordering" — the disjunctive `cleanAfterForget || cleanAfterConnect` assertion makes the flake INVISIBLE. Fix scope: replace `Thread.sleep(50)` with a `CountDownLatch` released inside `forgetAllMutex.withLock` (or an explicit `mutexAcquiredProbe` callback injected via the test seam). Better: split into TWO tests, each pinning a deterministic ordering with its own latch + asserting the single expected final state. Closure: Story 5-x test-tier-hardening sweep, OR fold into CR-4-2-D's mutex symmetry follow-up if the wrapper extension lands new tests for the 5 remaining op-methods. New retrospect rule landed at `.claude/rules/retrospect/universal.md`: "Disjunctive `assert (orderA || orderB)` in concurrency tests can mask one branch never being exercised."
 
 - **CR-4-2-G (MEDIUM, test fidelity — AC-4 androidTest exercises wrong error path):** Story 4-2 code review (CR MEDIUM finding #4) flagged that `AC4ForgetAllWalletOfflineE2ETest` simulates "wallet offline" by passing scenario `"network_offline"` to `FakeMwaClient.loadFixture` which throws `IllegalStateException` synchronously (no fixture file). `mwaForgetAll`'s `catch (ex: Throwable)` swallows it and continues the loop — but `withTimeoutOrNull(2_000L)` never fires because the inner block threw immediately. AC-4's documented invariant is "wallet offline does not block local wipe within 10s budget" where the 10s budget is `2s × 3 wallets = 6s worst-case`, all of which assumes the 2s timeout actually triggers. Test exercises ZERO timeout firings. If `mwaForgetAll` regressed to `withTimeoutOrNull(20_000L)` per-wallet, AC-4 wallclock would balloon to 60s but the test would still pass. Fix scope: author a new `FakeMwaClient` scenario `"hang_until_timeout"` that suspends indefinitely (`coAnswers { delay(Long.MAX_VALUE) }` in fakes), forcing `withTimeoutOrNull(2_000L)` to return null. Add an AC-4 androidTest variant with this scenario AND assert `elapsedMs >= 2000L && elapsedMs < 10_000L` (proves timeout fires AND budget honored). Closure: Story 5-x test-tier hardening, OR fold into a future fixture sweep. New retrospect rule landed at `.claude/rules/retrospect/universal.md`: "Test-harness-degenerate failure modes ≠ production failure modes."
+
+
+## Story 5-1 AC-1/2/3 Evidence Matrix (T4, 2026-04-28)
+
+CI evidence dossier for Story 5-1 (Non-Android Platform Behavior + 4-Platform GDExtension Load CI). The 4-platform `gdextension-runtime` matrix in `.github/workflows/gdscript_tests.yml` is the AC-1/2/3 evidence source. Run URLs + log excerpts are captured **post-push** (CI executes on the next git push that touches the workflow trigger paths — `master` / `feature/**` / pull_request).
+
+### AC → matrix-entry mapping
+
+| AC | Matrix Entry | Coverage |
+|----|--------------|----------|
+| AC-1 (UNSUPPORTED on desktop) | linux-desktop · windows-desktop · macos-desktop | Full 8-scenario harness (`is_supported() == false` + 7 user-facing op invocations) per DD-5-1-4. Web partial via DD-5-1-2 transitivity (CR-5-1-A). |
+| AC-2 (no crash) | All 4 entries | Headless run completion (linux/windows/macos) OR build artifact non-empty (web). Exit 0 across all 4 = no crash invariant satisfied. |
+| AC-3 (CI matrix) | All 4 entries | The matrix itself IS the evidence; presence in `gdscript_tests.yml` post-T3 = AC-3 structurally satisfied. Runtime green on first push = AC-3 dynamically satisfied. |
+
+### Run evidence (filled post-push)
+
+| # | Matrix Entry | Run URL | Log excerpt | Exit code | Status |
+|---|--------------|---------|-------------|-----------|--------|
+| 1 | linux-desktop | TBD (post-push) | TBD — expect `[CR-32] PASS [<op>]: ...` × 7 + `ALL TESTS PASSED` | TBD | ⏳ Pending CI |
+| 2 | windows-desktop | TBD (post-push) | TBD — expect `[CR-32] PASS [<op>]: ...` × 7 + `ALL TESTS PASSED` | TBD | ⏳ Pending CI |
+| 3 | macos-desktop | TBD (post-push) | TBD — expect `[CR-32] PASS [<op>]: ...` × 7 + `ALL TESTS PASSED` | TBD | ⏳ Pending CI |
+| 4 | web-symbol-resolve | TBD (post-push) | TBD — expect `find bin/ -name '*.wasm' -size +1k -print` exit 0 + `ALL TESTS PASSED` | TBD | ⏳ Pending CI |
+
+### Post-push update protocol
+
+After the next `git push origin feature/mwa-android` triggers the workflow:
+1. Visit `https://github.com/<owner>/godot-sdk/actions` → filter by workflow `🎮 GDScript Tests (Story 5-1 NoOp-bridge UNSUPPORTED_PLATFORM 4-platform matrix)`.
+2. For each of the 4 matrix entries: capture the run URL, paste the relevant log excerpt (the `=== <id> log ===` block + the `grep -q 'ALL TESTS PASSED'` exit indicator), record exit code.
+3. Replace the TBD rows above with the captured evidence.
+4. If any entry fails: gate Story 5-1 Gate 5 PASS until either (a) the failure is fixed, OR (b) the failure is logged as a Story-5-1 deviation with explicit CR rationale (e.g., `D-5-1-3 Rule 2: macos runner action upgrade required` if the upstream chickensoft action changes).
+
+### Baseline note (T4 inheritance)
+
+Story 5-1 adds **0** Kotlin/pytest unit tests — pure CI-tier story. Unit baseline unchanged at `174 Kotlin (173 GREEN + 1 expected @Disabled CR-3-3-B) + 83 pytest = 257`. `androidTest` count unchanged at 19 (5-1 is non-Android coverage; Android-side tests are out of scope per story sizing). The 4 CI matrix entries are NOT counted in any test-tier baseline — they are CI gates, not test artifacts.
