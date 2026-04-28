@@ -962,7 +962,23 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      */
     @UsedByGodot
     fun mwaSignTransactions(requestId: String, transactions: List<ByteArray>, timeoutMs: Long) {
-        TODO("Story 3-2 T2 fills in")
+        val authToken = sessionState.getAuthToken() ?: return emitNotConnectedSign(requestId, "sign_transactions")
+        // Defensive guard mirroring [mwaSignMessages] (Story 3-1 Dev Notes C-T2-A inheritance) —
+        // signTransactions does NOT take an `addresses` arg so the key isn't passed downstream,
+        // but the null-check still surfaces the same setKey-was-never-called failure mode loudly
+        // (instead of letting later code fail with a less-actionable ConnectionIdentity error).
+        sessionState.getConnectedKey() ?: error("setKey was never called — see Story 3-1 Dev Notes C-T2-A inheritance")
+        val identity = ConnectionIdentity(
+            identityUri = android.net.Uri.parse(sessionState.getIdentityUri()),
+            iconUri = android.net.Uri.parse(sessionState.getIconUri()),
+            identityName = sessionState.getIdentityName(),
+        )
+        scope.launch {
+            val result = runSigningOp(SigningOp.SIGN_TRANSACTIONS, requestId, timeoutMs) {
+                signTransactions(senderProvider(), identity, authToken, transactions)
+            }
+            if (result is MwaResult.Success) handleSignTransactionsSuccess(requestId, result.value)
+        }
     }
 
     /**
@@ -1143,11 +1159,17 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * Story 3-1 T2 — DD-3-1-6 NOT_CONNECTED preflight emission helper. Extracted
      * from `mwaSignMessages` to keep that method's body under the AC-1 ≤20-LOC
      * budget (per DD-3-1-9 counter rule). Synchronous; emits one terminal
-     * `mwa_error{code=NOT_CONNECTED, source_method="sign_messages"}` signal and
+     * `mwa_error{code=NOT_CONNECTED, source_method=<sourceMethod>}` signal and
      * returns Unit. NO scope.launch and NO inflightMap.register on this branch
      * (DD-3-1-6 LOCK — preflight runs entirely on the calling thread).
+     *
+     * **Story 3-2 T2 (D-3-2-2 Rule 1):** parameterized [sourceMethod] with a
+     * `"sign_messages"` default so [mwaSignMessages] (the original 3-1 caller)
+     * keeps its single-arg call shape unchanged while [mwaSignTransactions]
+     * (the 3-2 caller) supplies `"sign_transactions"`. Story 3-3 will add the
+     * third caller with `"sign_and_send"`.
      */
-    private fun emitNotConnectedSign(requestId: String) {
+    private fun emitNotConnectedSign(requestId: String, sourceMethod: String = "sign_messages") {
         nativeBridge.postMwaError(
             buildErrorJson(
                 requestId,
@@ -1155,7 +1177,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 "Not connected to a wallet. Call MWA.connect() first.",
                 "kotlin",
                 null,
-                "sign_messages",
+                sourceMethod,
             ).toString(),
         )
     }
@@ -1334,7 +1356,15 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * sign_transactions confirms the invariant).
      */
     private fun handleSignTransactionsSuccess(requestId: String, result: SignResult) {
-        TODO("Story 3-2 T2 fills in")
+        if (!inflightMap.tryTerminate(requestId)) {
+            diagnostics.incrementLateResult()
+            SdkLog.w(TAG, requestId) { "late_result outcome=sign_transactions" }
+            return
+        }
+        nativeBridge.postSignTransactionsCompleted(
+            requestId,
+            buildSignSuccessJson(requestId, result.signedPayloads, payloadKey = "signed_transactions").toString(),
+        )
     }
 
     /**
@@ -1790,11 +1820,17 @@ internal val SigningOp.sourceMethod: String
  * don't change on a sign call). DO NOT reuse [buildSuccessJson] — its
  * 6-key auth shape is wrong for sign-completed signals.
  *
- * T2 fills in the body. Stories 3-2 / 3-3 will introduce parallel
- * `buildSignTransactionsSuccessJson` / `buildSignAndSendSuccessJson`
- * builders following the same pattern.
+ * **Story 3-2 T2 (D-3-2-1 Rule 1 + DD-3-2-3):** the helper is shared across
+ * the signing-op family rather than spawning siblings. [payloadKey] selects
+ * the array's JSON key — `"signed_payloads"` (default — Story 3-1
+ * `sign_messages_completed`) or `"signed_transactions"` (Story 3-2
+ * `sign_transactions_completed`). The default arg preserves the 3-1 call
+ * site unchanged. Story 3-3's `sign_and_send` keeps `"signed_payloads"`
+ * since the wire format and the GDScript signal both reuse that name when
+ * the array carries pre-submission signed transactions; the post-submission
+ * `signature_*` fields ride a separate top-level key, not on this helper.
  */
-internal fun buildSignSuccessJson(requestId: String, signedPayloads: List<ByteArray>): JSONObject {
+internal fun buildSignSuccessJson(requestId: String, signedPayloads: List<ByteArray>, payloadKey: String = "signed_payloads"): JSONObject {
     val payloads = JSONArray()
     signedPayloads.forEach { bytes ->
         // base64 encoding matches the FakeMwaClient / clientlib-ktx wire format
@@ -1807,7 +1843,7 @@ internal fun buildSignSuccessJson(requestId: String, signedPayloads: List<ByteAr
     }
     return JSONObject().apply {
         put("request_id", requestId)
-        put("signed_payloads", payloads)
+        put(payloadKey, payloads)
     }
 }
 
