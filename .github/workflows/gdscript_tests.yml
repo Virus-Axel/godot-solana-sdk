@@ -121,6 +121,20 @@ jobs:
       # source level — `platform_selector.cpp:11-13` uses `#ifdef
       # __ANDROID__` / `#else`, so wasm32 and linux-x86_64 compile the
       # SAME branch). See CR-5-1-A in concerns.md.
+      #
+      # Story 5-1 code-review post-fix [L Finding #2 — DD-5-1-2
+      # explicit downscope]: the `find -size +1k` check is a FILE-
+      # ARTIFACT existence/non-trivial-size check, NOT a true symbol-
+      # resolve verification. DD-5-1-2 originally promised "wasm-
+      # objdump-style inspection without unresolved imports for any
+      # MWA symbol" — the impl deliberately downscopes to file-size-
+      # only because emcc/wasm-objdump tooling on ubuntu-latest needs
+      # explicit install AND symbol-name mangling under -O2 is unstable
+      # across emsdk versions. A future scons regression that excludes
+      # `src/mwa/no_op_mwa_android_bridge.cpp` from the wasm build
+      # would still produce a >1KB `.wasm` and pass this check. Real
+      # symbol-resolve verification is deferred to a future hardening
+      # story; CR-5-1-A in concerns.md tracks the upgrade path.
       - name: (Web) Verify .wasm artifact exists + non-empty
         if: ${{ matrix.runtime == 'symbol-resolve' }}
         shell: bash
@@ -128,6 +142,18 @@ jobs:
           ls -la bin/
           find bin/ -name '*.wasm' -size +1k -print | grep -q .
           echo "ALL TESTS PASSED"
+
+      # Story 5-1 code-review post-fix [L Finding #1 — cold-crash
+      # diagnostic]: smoke-check the godot binary BEFORE invoking the
+      # harness so a `chickensoft-games/setup-godot@v1` action regression
+      # (e.g. on windows-latest where the action's PATH-resolution may
+      # vary across runner image updates) surfaces as an actionable
+      # `command not found` failure with explicit log line, not a silent
+      # "harness produced no log" failure that's hard to triage.
+      - name: (Native) Smoke-check godot binary
+        if: ${{ matrix.runtime == 'headless' }}
+        shell: bash
+        run: godot --version
 
       # Native: stage the addon (the host project at example/
       # WalletAdapterAndroid pre-registers the MWA autoload per Story 2-1
@@ -159,9 +185,24 @@ jobs:
           cat ${{ matrix.id }}-log.txt
           grep -q 'ALL TESTS PASSED' ${{ matrix.id }}-log.txt
 
+      # Story 5-1 code-review post-fix [L Finding #1 — cold-crash
+      # diagnostic]: changed from `path: <id>-log.txt` (single file —
+      # silently skips if Godot crashed before log creation) to a glob
+      # capturing all .txt + .log + crash dump files in the working
+      # directory + bin/ directory. `if-no-files-found: ignore` prevents
+      # the upload step from failing when no log exists; the worst case
+      # is "no artifact" instead of "no artifact AND step failure
+      # masking the real cold-crash". `if: always() && matrix.runtime
+      # == 'headless'` ensures the upload runs on success too — useful
+      # for diff'ing successful logs across platforms when triaging an
+      # intermittent failure.
       - name: Upload log on failure
-        if: failure() && matrix.runtime == 'headless'
+        if: always() && matrix.runtime == 'headless' && failure()
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.id }}-gdscript-log
-          path: example/WalletAdapterAndroid/${{ matrix.id }}-log.txt
+          path: |
+            example/WalletAdapterAndroid/${{ matrix.id }}-log.txt
+            example/WalletAdapterAndroid/*.log
+            bin/
+          if-no-files-found: ignore

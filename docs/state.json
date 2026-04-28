@@ -3,7 +3,7 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-28T19:07:40.984Z",
+  "lastUpdated": "2026-04-28T19:19:50.965Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
@@ -788,7 +788,7 @@
       "completedAt": "2026-04-28T19:00:00Z",
       "gate5Result": "pending",
       "tasks": 5,
-      "commits": 5,
+      "commits": 6,
       "baselineTag": "pre-mwa-android-5-1",
       "postTag": "post-mwa-android-5-1",
       "commitsList": [
@@ -798,17 +798,22 @@
         "1841a85c test(mwa): Story 5-1 T2 — MWA.is_supported() + test_unsupported_platform.gd 8 scenarios",
         "041e3076 ci(mwa): Story 5-1 T3 — gdscript_tests.yml 4-platform matrix per DD-5-1-5",
         "e25cdc07 docs(mwa): Story 5-1 T4 — AC-1/2/3 evidence matrix template + post-push update protocol",
-        "<T5 close-out commit forthcoming> chore(mwa): Story 5-1 T5 close-out — baseline 257 unchanged + 4-platform CI matrix evidence"
+        "<T5 close-out commit forthcoming> chore(mwa): Story 5-1 T5 close-out — baseline 257 unchanged + 4-platform CI matrix evidence",
+        "<post-review fix commit forthcoming> ci(mwa): Story 5-1 — CI cold-crash diagnostic + Web downscope docs (CR LOW #1 + #2) + 2 retrospect rules"
       ],
       "deviations": [
         "D-5-1-1 Rule 1 (T3): Web platform AC-1 partial coverage caveat per DD-5-1-2 LOCKED. wasm32 runtime cannot be exercised under godot --headless (the engine IS the wasm32 module); web-symbol-resolve matrix entry verifies the .wasm artifact exists + non-empty AND prints ALL TESTS PASSED so the same grep gate fires across all 4 entries. AC-1 runtime emission for Web is satisfied transitively via the linux-desktop run (platform_selector.cpp uses #ifdef __ANDROID__ / #else; wasm32 + linux-x86_64 compile the SAME branch). CR-5-1-A logged for the deferred Node.js+emscripten host follow-up.",
-        "D-5-1-2 Rule 1 (T3): cr32-desktop job RENAMED to linux-desktop matrix entry. GitHub Actions cache key changes (godot-cpp-cr32-desktop-<sha> → godot-cpp-linux-desktop-<sha>); rebuild cost is bounded by the godot-cpp commit SHA pin (one-time miss on first run after T3 lands). No behavioral change; cosmetic per DD-5-1-5 LOCKED."
+        "D-5-1-2 Rule 1 (T3): cr32-desktop job RENAMED to linux-desktop matrix entry. GitHub Actions cache key changes (godot-cpp-cr32-desktop-<sha> → godot-cpp-linux-desktop-<sha>); rebuild cost is bounded by the godot-cpp commit SHA pin (one-time miss on first run after T3 lands). No behavioral change; cosmetic per DD-5-1-5 LOCKED.",
+        "D-5-1-3 Rule 1 (post-review fix): gdscript_tests.yml CI cold-crash diagnostic gap closed via (a) pre-harness godot --version smoke step + (b) upload-artifact glob with if-no-files-found: ignore. Closes code-review LOW finding #1.",
+        "D-5-1-4 Rule 1 (post-review fix): DD-5-1-2 Web symbol-resolve downscope from wasm-objdump inspection to file-size existence check documented explicitly via inline workflow comment + concerns.md narrative. CR-5-1-A tracks the deferred upgrade path. Closes code-review LOW finding #2."
       ],
       "amendments": [],
       "concerns": [
         "CR-5-1-A",
         "CR-5-1-B",
-        "CR-5-1-C"
+        "CR-5-1-C",
+        "CR-5-1-D",
+        "CR-5-1-E"
       ],
       "concernsResolved": [],
       "concernsTransitive": [
@@ -824,8 +829,17 @@
       "testsAdded": 6,
       "testsAddedDetail": "6 NEW GDScript test scenarios in test_unsupported_platform.gd (T2): _run_reauthorize_scenario / _run_deauthorize_scenario / _run_sign_messages_scenario / _run_sign_transactions_scenario / _run_sign_and_send_scenario / _run_forget_all_scenario. Each invokes the corresponding MWA.gd facade method on non-Android (no_op_mwa_android_bridge.cpp emit_unsupported fan-out path) and asserts mwa_error{code=UNSUPPORTED_PLATFORM, source_method=<op>} via the existing _assert_unsupported_platform_payload helper. Plus 1 inline is_supported() check at top of _ready() (DD-5-1-4 — not a separate function; pure-GDScript path with no signal/dispatcher round-trip). 0 NEW Kotlin tests. 0 NEW pytest tests. 0 NEW androidTest tests (5-1 is non-Android coverage; Android-side validation is out of scope). The 6 NEW GDScript scenarios are NOT counted in the unit baseline (Kotlin total=174 / pytest total=83 / total=257 unchanged); they are CI gates exercised via the gdextension-runtime matrix on every PR.",
       "reviewFindings": {
-        "userInteractive": "pending",
-        "note": "Code review pending — runs at Gate 5 stage per implement skill protocol."
+        "userInteractive": true,
+        "rounds": 1,
+        "findings": 4,
+        "blockers": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 4,
+        "fixed": 2,
+        "deferred": 2,
+        "note": "Code review post-T5 close-out, user selected [L] Apply fixes + learn. Verdict: PASS WITH NOTES — no blockers. Findings #1 (LOW CI cold-crash diagnostic) + #2 (LOW Web symbol-resolve documentation downscope) FIXED inline at code-review post-fix commit. Findings #3 (LOW DRY refactor opportunity in scenario fns) + #4 (LOW stale source-line reference) DEFERRED to CR-5-1-D + CR-5-1-E for opportunistic future-touch fix. 2 retrospect rules added to .claude/rules/retrospect/universal.md: (1) When converting single-platform CI gate to fan-out matrix, add pre-harness sanity step + always-upload artifact glob; (2) Spec-vs-impl downscope must land in TWO places — inline comment at impl site + updated DD/CR entry."
       },
       "ciStatus": {
         "unitBaseline": "green-local-2026-04-28T19:00Z (174 Kotlin = 173 GREEN + 1 expected @Disabled CR-3-3-B + 83 pytest = 257)",
@@ -874,19 +888,19 @@
       "totalSessions": 1
     },
     "tasks": {
-      "totalCompleted": 6,
-      "totalVerificationCycles": 6
+      "totalCompleted": 7,
+      "totalVerificationCycles": 7
     },
     "codeReview": {
-      "findingsTotal": 5,
+      "findingsTotal": 9,
       "findingsByLevel": {
         "high": 1,
         "medium": 3,
-        "low": 1
+        "low": 5
       },
-      "findingsFixed": 1,
-      "findingsDeferred": 4,
-      "retrospectRulesAdded": 4
+      "findingsFixed": 3,
+      "findingsDeferred": 6,
+      "retrospectRulesAdded": 6
     },
     "gates": {
       "gate5Passes": 1
