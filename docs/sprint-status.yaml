@@ -91,9 +91,11 @@ epics:
         slug: sign-transactions
         title: "sign_transactions + Contract Test"
         size: M
-        status: backlog
+        status: in-progress
         wave: 6
         dependencies: ["3-1"]
+        startedAt: 2026-04-28T08:15:00Z
+        baselineTag: pre-mwa-android-3-2
       - id: "3-3"
         slug: sign-and-send-breadcrumb
         title: "sign_and_send + Pending-Submission Breadcrumb + pending_submission_found Signal"
