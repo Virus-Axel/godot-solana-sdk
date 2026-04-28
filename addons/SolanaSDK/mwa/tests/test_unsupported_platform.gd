@@ -1,13 +1,22 @@
 # Story 2-1 T10 — CR-32 backstop for the NoOp-bridge (non-Android) path.
 # Story 2-3 T6 — extended to cover the disconnect flow's UNSUPPORTED_PLATFORM
 # emission as well, per concern C6.
+# Story 5-1 T2 — extended from 2 scenarios (connect + disconnect) to 8
+# scenarios covering all 7 user-facing ops (connect / disconnect /
+# reauthorize / deauthorize / sign_messages / sign_transactions /
+# sign_and_send / forget_all) plus an inline MWA.is_supported() check
+# at top of _ready() per DD-5-1-4 LOCKED. Each new scenario reuses the
+# existing _assert_unsupported_platform_payload helper (line 84,
+# unchanged) which validates the A-14 10-key envelope shape regardless
+# of source_method. Sequential dispatch with _reset_capture() between
+# phases — same shape as the connect + disconnect scenarios.
 #
 # A-13 retired the C++ host-mode GoogleTest tier that would have covered
 # AC-3's UNSUPPORTED_PLATFORM assertion. CR-32 tracked the replacement; this
 # GDScript-level test is the replacement — runs on desktop (Linux/macOS) via
-# headless Godot, drives the MWA facade for BOTH connect and disconnect
-# scenarios, and asserts the NoOp bridge path fires the correct mwa_error
-# within a bounded number of frames in each case.
+# headless Godot, drives the MWA facade for ALL user-facing ops, and asserts
+# the NoOp bridge path fires the correct mwa_error within a bounded number
+# of frames in each case.
 #
 # C6 (Story 2-3): on desktop, MWA.disconnect() MUST emit
 # mwa_error{code=UNSUPPORTED_PLATFORM, source_method="disconnect"} and MUST
@@ -43,9 +52,19 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 
+	# Story 5-1 AC-1 — pure-GDScript getter; non-Android platforms must report false.
+	# This check runs BEFORE any op invocation since it has no signal/dispatcher
+	# round-trip — the getter returns the result of OS.get_name() == "Android"
+	# directly per DD-5-1-3 LOCKED.
+	if mwa.is_supported():
+		printerr("%s FAIL [is_supported]: expected MWA.is_supported()==false on non-Android (OS.get_name()=%s)" %
+			[TEST_TAG, OS.get_name()])
+		get_tree().quit(1)
+		return
+
 	# Subscribe BEFORE calling any MWA op — mwa_error fires via call_deferred so
 	# it arrives on the next frame; a post-call connect could miss it.
-	# Both scenarios share the error sink; `_reset_capture()` clears state
+	# All scenarios share the error sink; `_reset_capture()` clears state
 	# between phases.
 	mwa.mwa_error.connect(_on_mwa_error)
 	mwa.disconnect_completed.connect(_on_disconnect_completed)
@@ -57,6 +76,29 @@ func _ready() -> void:
 
 	# Scenario 2 — disconnect on desktop emits UNSUPPORTED_PLATFORM (Story 2-3 T6 / C6).
 	if not await _run_disconnect_scenario(mwa):
+		get_tree().quit(1)
+		return
+
+	# Story 5-1 T2 — Scenarios 3-8 cover the remaining 6 user-facing ops.
+	# Each scenario follows the connect/disconnect pattern: _reset_capture +
+	# call op + await up to TIMEOUT_FRAMES + assert 10-key A-14 envelope with
+	# the expected source_method literal.
+	if not await _run_reauthorize_scenario(mwa):
+		get_tree().quit(1)
+		return
+	if not await _run_deauthorize_scenario(mwa):
+		get_tree().quit(1)
+		return
+	if not await _run_sign_messages_scenario(mwa):
+		get_tree().quit(1)
+		return
+	if not await _run_sign_transactions_scenario(mwa):
+		get_tree().quit(1)
+		return
+	if not await _run_sign_and_send_scenario(mwa):
+		get_tree().quit(1)
+		return
+	if not await _run_forget_all_scenario(mwa):
 		get_tree().quit(1)
 		return
 
@@ -183,4 +225,159 @@ func _run_disconnect_scenario(mwa: Node) -> bool:
 		return false
 
 	print("%s PASS [disconnect]: mwa_error{code=UNSUPPORTED_PLATFORM, source_method=disconnect, layer=cpp}" % TEST_TAG)
+	return true
+
+
+# Story 5-1 T2 — reauthorize on desktop emits UNSUPPORTED_PLATFORM.
+# MWA.reauthorize takes an opts Dictionary (default {}); the C++ node's
+# reauthorize() generates a request_id and routes through the NoOp bridge
+# fan-out at no_op_mwa_android_bridge.cpp:reauthorize → emit_unsupported.
+func _run_reauthorize_scenario(mwa: Node) -> bool:
+	_reset_capture()
+
+	mwa.reauthorize({})
+
+	for _i in range(TIMEOUT_FRAMES):
+		await get_tree().process_frame
+		if _error_received:
+			break
+
+	if not _error_received:
+		printerr("%s FAIL [reauthorize]: mwa_error did not fire within %d frames on desktop NoOp bridge" %
+			[TEST_TAG, TIMEOUT_FRAMES])
+		return false
+
+	if not _assert_unsupported_platform_payload("reauthorize"):
+		return false
+
+	print("%s PASS [reauthorize]: mwa_error{code=UNSUPPORTED_PLATFORM, source_method=reauthorize, layer=cpp}" % TEST_TAG)
+	return true
+
+
+# Story 5-1 T2 — deauthorize on desktop emits UNSUPPORTED_PLATFORM.
+# Routes through MobileWalletAdapter::deauthorize null-bridge guard
+# (mobile_wallet_adapter.cpp:184) OR NoOpMwaAndroidBridge::deauthorize
+# fan-out depending on build (DD-5-1-4 inheritance from Story 1-5 D-3).
+func _run_deauthorize_scenario(mwa: Node) -> bool:
+	_reset_capture()
+
+	mwa.deauthorize()
+
+	for _i in range(TIMEOUT_FRAMES):
+		await get_tree().process_frame
+		if _error_received:
+			break
+
+	if not _error_received:
+		printerr("%s FAIL [deauthorize]: mwa_error did not fire within %d frames on desktop NoOp bridge" %
+			[TEST_TAG, TIMEOUT_FRAMES])
+		return false
+
+	if not _assert_unsupported_platform_payload("deauthorize"):
+		return false
+
+	print("%s PASS [deauthorize]: mwa_error{code=UNSUPPORTED_PLATFORM, source_method=deauthorize, layer=cpp}" % TEST_TAG)
+	return true
+
+
+# Story 5-1 T2 — sign_messages on desktop emits UNSUPPORTED_PLATFORM.
+# Trivial 1-byte PackedByteArray payload — content is irrelevant on the
+# NoOp path (no wallet round-trip occurs); the null-bridge guard short-
+# circuits before any payload inspection.
+func _run_sign_messages_scenario(mwa: Node) -> bool:
+	_reset_capture()
+
+	mwa.sign_messages([PackedByteArray([1, 2, 3])])
+
+	for _i in range(TIMEOUT_FRAMES):
+		await get_tree().process_frame
+		if _error_received:
+			break
+
+	if not _error_received:
+		printerr("%s FAIL [sign_messages]: mwa_error did not fire within %d frames on desktop NoOp bridge" %
+			[TEST_TAG, TIMEOUT_FRAMES])
+		return false
+
+	if not _assert_unsupported_platform_payload("sign_messages"):
+		return false
+
+	print("%s PASS [sign_messages]: mwa_error{code=UNSUPPORTED_PLATFORM, source_method=sign_messages, layer=cpp}" % TEST_TAG)
+	return true
+
+
+# Story 5-1 T2 — sign_transactions on desktop emits UNSUPPORTED_PLATFORM.
+# Same payload-irrelevant pattern as sign_messages — the NoOp path
+# short-circuits at the bridge boundary.
+func _run_sign_transactions_scenario(mwa: Node) -> bool:
+	_reset_capture()
+
+	mwa.sign_transactions([PackedByteArray([1, 2, 3])])
+
+	for _i in range(TIMEOUT_FRAMES):
+		await get_tree().process_frame
+		if _error_received:
+			break
+
+	if not _error_received:
+		printerr("%s FAIL [sign_transactions]: mwa_error did not fire within %d frames on desktop NoOp bridge" %
+			[TEST_TAG, TIMEOUT_FRAMES])
+		return false
+
+	if not _assert_unsupported_platform_payload("sign_transactions"):
+		return false
+
+	print("%s PASS [sign_transactions]: mwa_error{code=UNSUPPORTED_PLATFORM, source_method=sign_transactions, layer=cpp}" % TEST_TAG)
+	return true
+
+
+# Story 5-1 T2 — sign_and_send on desktop emits UNSUPPORTED_PLATFORM.
+# Payload-irrelevant on NoOp path (no breadcrumb write — DD-3-3-B
+# write-then-call ordering only fires on the Android Kotlin path).
+func _run_sign_and_send_scenario(mwa: Node) -> bool:
+	_reset_capture()
+
+	mwa.sign_and_send([PackedByteArray([1, 2, 3])])
+
+	for _i in range(TIMEOUT_FRAMES):
+		await get_tree().process_frame
+		if _error_received:
+			break
+
+	if not _error_received:
+		printerr("%s FAIL [sign_and_send]: mwa_error did not fire within %d frames on desktop NoOp bridge" %
+			[TEST_TAG, TIMEOUT_FRAMES])
+		return false
+
+	if not _assert_unsupported_platform_payload("sign_and_send"):
+		return false
+
+	print("%s PASS [sign_and_send]: mwa_error{code=UNSUPPORTED_PLATFORM, source_method=sign_and_send, layer=cpp}" % TEST_TAG)
+	return true
+
+
+# Story 5-1 T2 — forget_all on desktop emits UNSUPPORTED_PLATFORM.
+# Exercises the Story 4-2 T3 fill-in body (per amendment A-15) at
+# mobile_wallet_adapter.cpp:272-280: generate_request_id → null-bridge
+# guard → unsupported_platform mwa_error. NoOp bridge path produces the
+# same shape via emit_unsupported fan-out.
+func _run_forget_all_scenario(mwa: Node) -> bool:
+	_reset_capture()
+
+	mwa.forget_all()
+
+	for _i in range(TIMEOUT_FRAMES):
+		await get_tree().process_frame
+		if _error_received:
+			break
+
+	if not _error_received:
+		printerr("%s FAIL [forget_all]: mwa_error did not fire within %d frames on desktop NoOp bridge" %
+			[TEST_TAG, TIMEOUT_FRAMES])
+		return false
+
+	if not _assert_unsupported_platform_payload("forget_all"):
+		return false
+
+	print("%s PASS [forget_all]: mwa_error{code=UNSUPPORTED_PLATFORM, source_method=forget_all, layer=cpp}" % TEST_TAG)
 	return true

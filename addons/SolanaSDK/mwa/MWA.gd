@@ -322,6 +322,18 @@ func forget_all() -> void:
 	_node.forget_all()
 
 
+## Story 5-1 — Returns true iff this build runs on Android (the only platform
+## where MWA ops can succeed). Game code should gate MWA usage on this:
+##   if not MWA.is_supported(): show_desktop_fallback_ui()
+## Per AC-1 (Story 5-1) every MWA method on non-Android emits
+## mwa_error{code=UNSUPPORTED_PLATFORM} via the NoOp bridge path per
+## DD-A-4 LOCKED single platform-abstraction TU. This getter is a 1-line
+## GDScript-side runtime check (DD-5-1-3 — no C++ binding ceremony for a
+## value that is a pure runtime constant of the Godot platform).
+func is_supported() -> bool:
+	return OS.get_name() == "Android"
+
+
 ## Synchronous state read — true after a successful connect, false otherwise.
 ## Backed by MwaSessionState.authToken != null (arch §7.1; round-tripped via
 ## MwaJniContext::query_session_state).
