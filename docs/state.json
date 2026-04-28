@@ -3,11 +3,17 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-28T13:55:00Z",
+  "lastUpdated": "2026-04-28T14:10:00Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": null,
+  "currentStory": {
+    "storyId": "4-2",
+    "slug": "forget-all-master-key-rotation",
+    "startedAt": "2026-04-28T14:10:00Z",
+    "size": "M",
+    "wave": 6
+  },
   "phases": {
     "research": {
       "status": "complete",
