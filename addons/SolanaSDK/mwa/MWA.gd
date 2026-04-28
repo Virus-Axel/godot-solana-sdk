@@ -288,6 +288,40 @@ func sign_and_send(transactions: Array[PackedByteArray], opts: Dictionary = {}) 
 	_node.sign_and_send(transactions, opts)
 
 
+## Story 4-2 — GDPR/CCPA "Sign out everywhere" reset. Wipes EVERY cached
+## wallet token across all identities, rotates the encryption MasterKey
+## (Android Keystore alias), cancels any in-flight ops by emitting
+## `mwa_cancelled_lifecycle{request_id, source_method, reason:
+## "forget_all_invoked"}` per slot BEFORE the wipe, and best-effort
+## remote-deauthorizes each cached wallet (offline wallets do not block
+## local wipe per AC-4).
+##
+## NO completion signal per DD-4-2-8 — `forget_all` is fire-and-forget.
+## Callers verify completion via state inspection or a short wait:
+##   - `is_connected()` returns `false`
+##   - the SecureTokenStore is empty (no observable Godot-side getter; the
+##     androidTest tier asserts `store.listAllKeys().isEmpty()`)
+##   - the next `connect()` triggers a fresh wallet handshake (no cache hit)
+##
+## DD-4-2-9 post-rotation teardown: every prior `SecureTokenStore`
+## instance becomes invalid because the Keystore-backed MasterKey alias
+## is deleted. The next `storeProvider(ctx)` call returns a fresh
+## instance whose lazy MasterKey regenerates on first access — production
+## behavior is identical to a first-run install.
+##
+## Mutex serialization (DD-4-2-2 + AC-3): concurrent op-method calls
+## block on a plugin-instance Mutex; either complete BEFORE the wipe (and
+## have their in-flight slots cancelled per DD-4-2-3) or run AFTER the
+## wipe completes (observing clean state). NO partial state observable.
+##
+## NO `opts` arg per DD-4-2-7 — `forget_all` is a hard reset; per-call
+## tunables (timeout / retry policy) would only obscure the security
+## intent. Returns void per DD-4-2-8 + D-3-1-12 (no request_id correlation
+## without a completion signal).
+func forget_all() -> void:
+	_node.forget_all()
+
+
 ## Synchronous state read — true after a successful connect, false otherwise.
 ## Backed by MwaSessionState.authToken != null (arch §7.1; round-tripped via
 ## MwaJniContext::query_session_state).
