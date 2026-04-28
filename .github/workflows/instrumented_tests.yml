@@ -181,6 +181,14 @@ jobs:
             # rename per DD-3-2-3). Inherits A-10 keep rules; the smoke grep
             # asserts R8 did not strip or rename the symbol.
             mwaSignTransactions
+            # Story 3-3 T5 — mwaSignAndSendTransactions is a new @UsedByGodot
+            # instance method introduced in T2 (consumer of the same
+            # runSigningOp shared pipeline as mwaSignMessages /
+            # mwaSignTransactions, with the additional pre-runSigningOp
+            # breadcrumb-write step per DD-3-3-B and the AC-6 cluster-bleed
+            # preflight). Inherits A-10 keep rules; the smoke grep asserts R8
+            # did not strip or rename the symbol.
+            mwaSignAndSendTransactions
             # Story 4-1 T7 — mwaDeauthorize is a new @UsedByGodot instance method
             # introduced in T2 (try/catch/finally + multi-key wipe per
             # DD-4-1-3 / DD-4-1-6). Inherits A-10 keep rules; the smoke grep
@@ -215,6 +223,11 @@ jobs:
             # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
             # post_arity2_completed("sign_transactions_completed", ...)).
             postSignTransactionsCompletedNative
+            # Story 3-3 T1 — parallel external fun for sign_and_send_completed's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
+            # post_arity2_completed("sign_and_send_completed", ...)).
+            postSignAndSendCompletedNative
             # Story 4-1 T1 — parallel external fun for deauthorize_completed's
             # Kotlin→C++ callback path. JNI symbol linked at runtime via the
             # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
@@ -224,6 +237,14 @@ jobs:
             postMwaTimeoutNative
             postMwaCancelledLifecycleNative
             postReauthRequiredNative
+            # Story 3-3 T1 — parallel external fun for pending_submission_found's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
+            # post_arity1("pending_submission_found", ...)). 1-param shape
+            # parallel to postReauthRequiredNative (request_id is embedded
+            # inside the payload at the `request_id` field, NOT a separate
+            # JNI arg).
+            postPendingSubmissionFoundNative
           )
           JAVAP_OUT=$(javap -p "$CLASS")
           COMPANION_CLASS=plugin/walletadapterandroid/GDExtensionAndroidPlugin\$Companion.class
