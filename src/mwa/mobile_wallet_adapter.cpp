@@ -259,7 +259,25 @@ godot::Dictionary MobileWalletAdapter::get_diagnostics() {
 	return godot::Dictionary();
 }
 
-void MobileWalletAdapter::forget_all() {}
+// Story 4-2 T3 (per amendment A-15) — fill in the Story 1-5 empty stub.
+// Mirrors the mwa_disconnect / deauthorize sibling pattern at this TU
+// (generate_request_id → null-bridge guard → bridge delegation), with two
+// differences: (a) the bridge call is 1-arg per
+// MwaAndroidBridge::forget_all (no opts Dictionary — distinct from
+// disconnect/deauthorize 2-arg signatures); (b) the unsupported-platform
+// payload's source_method literal is "forget_all". NO ADD_SIGNAL row is
+// added — DD-4-2-8 LOCKS that forget_all has no completion signal; AC-1
+// evidence is post-condition state inspection (listAllKeys empty +
+// MasterKey alias gone + sessionState cleared).
+void MobileWalletAdapter::forget_all() {
+	const godot::String request_id = generate_request_id();
+	if (bridge_ == nullptr) {
+		dispatcher_.post(godot::String("mwa_error"),
+				godot::Array::make(build_unsupported_platform_payload(request_id, godot::String("forget_all"))));
+		return;
+	}
+	bridge_->forget_all(request_id);
+}
 
 #ifdef MWA_TESTING
 void MobileWalletAdapter::set_bridge_for_testing(std::unique_ptr<mwa::MwaAndroidBridge> bridge) {
