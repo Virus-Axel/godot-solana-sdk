@@ -22,9 +22,11 @@ import java.util.concurrent.ConcurrentHashMap
  * Thread-safe: [ConcurrentHashMap.putIfAbsent] and [ConcurrentHashMap.remove]
  * are atomic; CAS at both seams.
  */
+internal data class InflightEntry(val sourceMethod: String, val startedAtMs: Long)
+
 internal class InflightMap {
 
-    private val map = ConcurrentHashMap<String, Long>()
+    private val map = ConcurrentHashMap<String, InflightEntry>()
 
     /**
      * Record a new PENDING op. Caller contract (arch §7.2 correlation IDs):
@@ -34,11 +36,23 @@ internal class InflightMap {
      * the existing entry untouched and return `false`. Retries use a fresh
      * `requestId`, not re-registration of the same one.
      *
+     * **Story 4-2 DD-4-2-1 (LOCKED) — extended to 3-arg with `sourceMethod`
+     * placed AT END for positional-arg compile-compat with the 6 existing
+     * 2-arg callers** (D-4-2-T1-1 Rule 1: story-spec placed `sourceMethod`
+     * in the middle, but Kotlin positional args make that signature break
+     * existing callers; placing the default last preserves
+     * `register(requestId, clock())` call-shape and lets T2 back-fill
+     * explicit `sourceMethod` values per-call-site). Without
+     * `sourceMethod`, [snapshot] reports "unknown" — Story 5-3's
+     * lifecycle observer + Story 4-2's `mwa_cancelled_lifecycle` cancel
+     * loop both consume `sourceMethod` for the cancellation payload; T2
+     * back-fills.
+     *
      * @return `true` if this call created a new entry, `false` if an entry
      *         already existed for `requestId`.
      */
-    fun register(requestId: String, startedAtMs: Long): Boolean {
-        return map.putIfAbsent(requestId, startedAtMs) == null
+    fun register(requestId: String, startedAtMs: Long, sourceMethod: String = "unknown"): Boolean {
+        return map.putIfAbsent(requestId, InflightEntry(sourceMethod, startedAtMs)) == null
     }
 
     /**
@@ -52,6 +66,18 @@ internal class InflightMap {
     fun tryTerminate(requestId: String): Boolean {
         return map.remove(requestId) != null
     }
+
+    /**
+     * Story 4-2 DD-4-2-3 — read-only snapshot of currently-pending ops as
+     * `(requestId → sourceMethod)`. Used by `mwaForgetAll` to iterate
+     * in-flight slots and emit `mwa_cancelled_lifecycle{request_id,
+     * source_method, reason:"forget_all_invoked"}` per slot via
+     * [tryTerminate] CAS BEFORE the wipe starts (AC-2 ordering). The
+     * snapshot is a defensive copy — concurrent mutation of the
+     * underlying map (other ops registering / terminating) does NOT
+     * affect iteration.
+     */
+    fun snapshot(): Map<String, String> = map.mapValues { it.value.sourceMethod }
 
     /** Number of entries currently PENDING. Intended for tests / diagnostics. */
     fun size(): Int = map.size

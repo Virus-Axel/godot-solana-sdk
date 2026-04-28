@@ -33,6 +33,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.godotengine.godot.Godot
@@ -53,6 +54,18 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     private val diagnostics: MwaDiagnostics,
     private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
 ) : GodotPlugin(godot) {
+
+    /**
+     * Story 4-2 DD-4-2-2 (LOCKED) — `forget_all` serialization Mutex.
+     * Wraps the entire `mwaForgetAll` body so concurrent op-method calls
+     * (mwaConnect, mwaSignMessages, etc.) either complete BEFORE the wipe
+     * starts (existing in-flight slots are then cancelled per
+     * DD-4-2-3) or block on the Mutex until the wipe completes (and then
+     * see clean state per AC-3 invariant). Plugin-instance-scoped —
+     * cross-plugin-instance concurrency is OUT OF SCOPE per the Story 2-1
+     * single-autoload-instance design (CR-4-2-C).
+     */
+    private val forgetAllMutex: Mutex = Mutex()
 
     init {
         // Story 2-1 T5 — JNI entry points on the companion (`mwaAuthorizeFromJni` etc.)
@@ -231,8 +244,11 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
         @JvmStatic
         fun mwaForgetAllFromJni(reqId: String) {
-            Log.i(TAG, "mwaForgetAllFromJni: Story 4-2 scope; reqId=$reqId")
-            instance?.emitNotImplemented(reqId, "forget_all") ?: emitInstanceNullError(reqId, "forget_all")
+            // Story 4-2 T1 — JNI shim now delegates to the @UsedByGodot
+            // instance method. T2 fills in the body. The shim itself is a
+            // single-line dispatch (parallel to mwaSignAndSendFromJni at
+            // :214-228 from Story 3-3 T1) — no orchestration here.
+            instance?.mwaForgetAll(reqId) ?: emitInstanceNullError(reqId, "forget_all")
         }
 
         @JvmStatic
@@ -1309,6 +1325,83 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 }
             }
         }
+    }
+
+    /**
+     * Story 4-2 — `forget_all` GDPR/CCPA "Sign out everywhere" entry point. Wipes
+     * every cached wallet token, rotates the encryption MasterKey, and cancels
+     * any in-flight ops by emitting `mwa_cancelled_lifecycle` per slot BEFORE
+     * the wipe starts (AC-2 ordering).
+     *
+     * **Body shape (T2 fills in — mirrors the DD-4-2-1..-9 LOCKED set):**
+     *   (a) `forgetAllMutex.withLock { ... }` wraps the entire body
+     *       (DD-4-2-2): concurrent `mwaConnect` / `mwaSignMessages` / etc.
+     *       block on the Mutex from their `scope.launch { withLock { ... } }`
+     *       site OR fail with `UNSUPPORTED_PLATFORM` BEFORE reaching the
+     *       Mutex. The Mutex is plugin-instance-scoped per CR-4-2-C.
+     *   (b) **Cancel in-flight loop (DD-4-2-3 + AC-2):**
+     *       `inflightMap.snapshot()` returns `(requestId → sourceMethod)`;
+     *       for each slot: `if (inflightMap.tryTerminate(reqId)) {
+     *       postMwaCancelledLifecycle(buildCancelledLifecycleJson(reqId,
+     *       sourceMethod, "forget_all_invoked")) } else
+     *       diagnostics.incrementLateResult()`. Emit BEFORE wipe.
+     *   (c) **Best-effort per-wallet deauth loop (DD-4-2-5 + AC-4):**
+     *       `store.listAllKeys()` (try/catch StorageCorruptException →
+     *       emptyList per DD-4-2-6 wrapper-bypass);
+     *       for each key: `withTimeoutOrNull(2_000L) {
+     *       client.deauthorize(...) }` per DD-4-2-7; failures logged but
+     *       loop continues (continue-on-error policy).
+     *   (d) **Local wipe + MasterKey rotation (DD-4-2-4):**
+     *       `store.deleteAll()` (ciphertext) →
+     *       `requireContext().deleteSharedPreferences(PREFS_FILE_NAME)` →
+     *       `KeyStore.getInstance("AndroidKeyStore").deleteEntry(MASTER_KEY_ALIAS)`.
+     *       The next `storeProvider(ctx)` call returns a fresh
+     *       SecureTokenStore whose lazy `masterKey` regenerates on access
+     *       (DD-4-2-9 post-rotation instance teardown).
+     *   (e) **`sessionState.clear()` (NOT `clearOnLogout()`)** per
+     *       DD-4-1-2 LOCKED inheritance. Full 8-field wipe (auth_token +
+     *       connectedKey + clusterName + walletLabel + walletIconUri +
+     *       identity URIs + signing status + last result).
+     *
+     * **No completion signal** per DD-4-2-8 — AC-1 evidence is post-condition
+     * state inspection (`listAllKeys().isEmpty() == true`,
+     * `KeyStore.containsAlias(MASTER_KEY_ALIAS) == false`,
+     * `sessionState.getAuthToken() == null`, `is_connected() == false`).
+     *
+     * **No `withStorageOrReauthRequired` wrapper** per DD-4-2-6 —
+     * `forget_all` is the user's INTENTIONAL wipe; corruption during the
+     * wipe is irrelevant because the corrupt state is about to be removed
+     * anyway. T2's listAllKeys try/catch handles the "can't enumerate
+     * cached wallets" case gracefully and proceeds to the keystore-side
+     * rotation (which also wipes the corrupt prefs file as a side-effect
+     * of `deleteSharedPreferences`).
+     *
+     * T2 fills in the body.
+     */
+    @UsedByGodot
+    fun mwaForgetAll(requestId: String) {
+        TODO("Story 4-2 T2 fills in")
+    }
+
+    /**
+     * Story 4-2 T2 (DD-4-2-3) — builds the `mwa_cancelled_lifecycle` 1-param
+     * payload (per A-12 1-param family) for in-flight ops cancelled by
+     * [mwaForgetAll]. 3-key dict: `{request_id, source_method, reason}`.
+     *
+     * `reason` is the literal `"forget_all_invoked"` for this story's emit
+     * site. Story 5-3's lifecycle observer will be the SECOND emitter and
+     * will use `reason: "lifecycle_teardown"` (or similar — story 5-3 owns
+     * that literal). The reason field is a fixed-vocabulary enum string;
+     * consumers SHOULD switch on the value.
+     *
+     * NOTE: `mwa_cancelled_lifecycle` is 1-param per A-12 (the requestId
+     * is embedded in the payload at the `request_id` field, NOT a separate
+     * signal arg) — distinct from the 2-param `*_completed` family.
+     *
+     * T2 fills in the body.
+     */
+    private fun buildCancelledLifecycleJson(requestId: String, sourceMethod: String, reason: String): JSONObject {
+        TODO("Story 4-2 T2 fills in")
     }
 
     /**
