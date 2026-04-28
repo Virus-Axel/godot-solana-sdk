@@ -294,3 +294,27 @@ BOTH architecture.md and this file, using amended values where they conflict.
 - **Forward-compat note:** when the Story 1-1 codegen adds a `defaultTechnicalMessage` field to `MwaError` (CR-40 follow-up), `message` and `user_message` can finally carry distinct content. A-14 does NOT require that; the shape is stable either way.
 - **Closes:** CR-26 (arch §3.2 `message` key reconciliation).
 - **Follow-through:** CR-40 (LOW) remains open as the Story 1-1 codegen enhancement; it is non-blocking for A-14.
+
+## A-15: Story 1-5 7-op skeleton — `MobileWalletAdapter::forget_all` impl is empty-stub, NOT delegating; Story 4-2 T3 fills it in via canonical sibling pattern
+
+- **Status:** Filed 2026-04-28 by Story 4-2 pre-implementation interface audit (post-story-creation).
+- **Severity:** Rule 3 (interface contract delta) — moderate scope; T3 work expands from "audit-only or 1-line bind_method add" to "fill in ~10 LOC delegation body". No public surface change (the bind_method exists, the bridge interface declares the method); the change is internal to the C++ TU.
+- **Surface:** `void MobileWalletAdapter::forget_all() {}` at `src/mwa/mobile_wallet_adapter.cpp:262` (empty stub body, marked `// 2 utility — stubs in 1-5.` in the comment block above at line 257).
+- **Diagnosis:** Story 1-5 landed the 7-op skeleton with a mix of delegating impls (mwa_connect / mwa_disconnect / reauthorize / deauthorize / sign_messages / sign_transactions / sign_and_send) and empty-body stubs (`forget_all`, `get_diagnostics`). The empty stubs were intentional placeholders for stories that own the corresponding capability — Story 4-2 owns `forget_all`; Story 5-2 owns `get_diagnostics`. Story 4-2's pre-creation interface-row table (in `docs/stories/4-2.md`) assumed the delegation pattern was already wired; the audit found the stub.
+- **Resolution:** Story 4-2 T3 lands the canonical delegation body (mirror of `mwa_disconnect` / `deauthorize` at the same TU). Pattern:
+  ```cpp
+  void MobileWalletAdapter::forget_all() {
+      const godot::String request_id = generate_request_id();
+      if (bridge_ == nullptr) {
+          dispatcher_.post(godot::String("mwa_error"),
+                  godot::Array::make(build_unsupported_platform_payload(request_id, godot::String("forget_all"))));
+          return;
+      }
+      bridge_->forget_all(request_id);  // 1-arg per MwaAndroidBridge::forget_all (no opts Dictionary)
+  }
+  ```
+  Note: `MwaAndroidBridge::forget_all` at `src/mwa/include/mwa_android_bridge.hpp:84` is **1-arg** (`const godot::String& request_id`) — DIFFERENT from `disconnect`/`deauthorize` which take 2-arg `(request_id, opts: Dictionary)`. The `forget_all` facade does NOT accept an opts dictionary per Story 4-2 DD-4-2-7 (no caller-tunable timeout; per-deauth budget locked at 2s).
+- **Affected story-file row:** `docs/stories/4-2.md` §Verified Interfaces row "MobileWalletAdapter::forget_all C++ binding" status changes from "✓ VERIFIED at story-creation" to "⚠ STUB — T3 fills in delegation". §Tasks row "T3 — C++ surface audit" description changes from "verification-only or 1-line bind_method addition (if missing)" to "land the canonical delegation body (~10 LOC mirroring mwa_disconnect / deauthorize)".
+- **Forward-look:** the same stub-vs-delegation pattern likely applies to `MobileWalletAdapter::get_diagnostics` at line 258 (empty Dictionary return). Story 5-2 will fill that in with the canonical sibling pattern. No action needed at Story 4-2 T3 (out of scope).
+- **Closes:** none (no prior CR tracked this; surfaced fresh by Story 4-2's pre-implementation audit).
+- **Follow-through:** Story 5-2 should run a similar audit at story-creation time for `get_diagnostics`'s empty-Dictionary stub.
