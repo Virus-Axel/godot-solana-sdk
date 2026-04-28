@@ -190,6 +190,39 @@ func sign_messages(messages: Array[PackedByteArray], opts: Dictionary = {}) -> v
 	_node.sign_messages(messages, opts)
 
 
+## Sign one or more serialized Solana transactions with the connected wallet
+## (wallet UI shown for confirmation per AC-1). Completion arrives via one
+## terminal signal per request:
+##   - `sign_transactions_completed(request_id, result)` on success — `result`
+##     carries `{request_id, signed_transactions: [PackedByteArray, ...]}` per
+##     AC-1 / DD-3-2-3; each signed transaction is the caller's serialized
+##     transaction with the wallet's signature(s) populated. The payload-array
+##     key is `signed_transactions` (renamed from the op-agnostic
+##     `signed_payloads` wire format on the Kotlin side via
+##     `buildSignSuccessJson(payloadKey="signed_transactions")` per
+##     DD-3-2-3 + D-3-2-1).
+##   - `mwa_error{code=NOT_CONNECTED}` if `is_connected()` is false at call
+##     time — synchronous preflight per DD-3-1-6 (inherited via DD-3-2-5) /
+##     AC-3 (no scope.launch on the disconnected branch).
+##   - `mwa_error{code=WALLET_REJECTED}` if the wallet user rejects the signing
+##     prompt — AC-4, routed through the single `mwa_error` signal per DD-15
+##     (no per-op error signals across the surface).
+##   - `mwa_timeout` on watchdog expiry (DD-3-1-3 effectiveWatchdog parity,
+##     inherited).
+##
+## Caller correlates terminal signals via the `request_id` field. The C++
+## node mints the ID via `generate_request_id` (D-4 from Story 1-5); per the
+## LOCKED Story 2-1 T7 convention (mobile_wallet_adapter.hpp:55-59 "the
+## remaining 6 op methods stay void") and Story 3-1 D-3-1-12, the facade
+## returns void — same shape as `sign_messages` above.
+##
+## `transactions`: list of serialized transaction byte arrays (1+ entries).
+## `opts` (optional): {"timeout_ms": int} — clamped to internal default per
+## DD-3-1-3. Omitted keys fall to the C++ node's defaults.
+func sign_transactions(transactions: Array[PackedByteArray], opts: Dictionary = {}) -> void:
+	_node.sign_transactions(transactions, opts)
+
+
 ## Synchronous state read — true after a successful connect, false otherwise.
 ## Backed by MwaSessionState.authToken != null (arch §7.1; round-tripped via
 ## MwaJniContext::query_session_state).
