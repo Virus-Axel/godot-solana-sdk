@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 /**
  * Story 3-2 T6 — `sign_transactions` contract test (AC-5). T1 lands the empty
  * stub class so the test-source-set discovers it under the expected
- * `*ContractTest*` glob; T6 fills in the body and removes `@Disabled`.
+ * `*ContractTest*` glob; CR-3-2-T6: T6 fills in the body and removes `@Disabled`.
  *
  * **Scope (per D-3-1-13 Rule 3 — re-scoped at Story 3-1 to avoid the false
  * premise that FakeMwaClient constructs a JSON-RPC frame).** AC-5 evidence
@@ -30,9 +30,9 @@ class SignTransactionsContractTest {
     fun `fixture-input contract honored by FakeMwaClient`() {
         // CR-3-2-T6 placeholder — defense-in-depth dual-stub mirroring Story 3-1's
         // SignMessagesContractTest fixup (commit 87692808). The placeholder fires loud
-        // if T6 removes @Disabled but forgets to replace this line with a real assertion;
+        // CR-3-2-T6: if T6 removes @Disabled but forgets to replace this line with a real assertion;
         // the TODO fires loud if T6 lands a body but forgets to remove the TODO. Both
-        // are unreachable while @Disabled is present.
+        // CR-3-2-T6: are unreachable while @Disabled is present.
         assertTrue(false, "CR-3-2-T6 placeholder — T6 replaces with real fixture-input assertion")
         TODO("CR-3-2-T6: T6 lands the contract test body per DD-3-1-7 + D-3-1-13 re-scope")
     }
