@@ -34,8 +34,7 @@ import org.json.JSONObject
  * intact (no visibility widening), (b) makes the observer fully unit-testable
  * without engaging the plugin's surface, (c) lets the plugin's init-block
  * inject `::buildCancelledLifecycleJson` + `::cleanupBreadcrumb` as method
- * references at registration time. T2 wires the references; T1 ships TDD-red
- * scaffolding only.
+ * references at registration time.
  *
  * **NOT `@UsedByGodot`** — the observer is invoked by Android's lifecycle
  * dispatcher (`androidx.lifecycle:lifecycle-runtime`), NOT Godot's GDScript-
@@ -71,10 +70,19 @@ internal class MwaLifecycleObserver(
      *   4. After the loop, invoke `cancelInFlight()` — the plugin-provided
      *      lambda cancels the plugin's coroutine scope's children so any
      *      suspending op bodies see `CancellationException` and abort.
-     *
-     * T2 fills in the body.
      */
     override fun onDestroy(owner: LifecycleOwner) {
-        TODO("Story 5-3 T2 fills in")
+        val snapshot = inflightMap.snapshot()
+        for ((reqId, srcMethod) in snapshot) {
+            if (inflightMap.tryTerminate(reqId)) {
+                nativeBridge.postMwaCancelledLifecycle(
+                    payloadBuilder(reqId, srcMethod, "activity_destroyed").toString(),
+                )
+                cleanupBreadcrumb(reqId)
+            } else {
+                diagnostics.incrementLateResult()
+            }
+        }
+        cancelInFlight()
     }
 }

@@ -2,6 +2,7 @@ package com.godotengine.godot_solana_sdk.mwa.plugin
 
 import android.net.Uri
 import android.util.Log
+import androidx.lifecycle.LifecycleOwner
 import com.godotengine.godot_solana_sdk.mwa.client.FakeMwaClient
 import com.godotengine.godot_solana_sdk.mwa.client.MwaClient
 import com.godotengine.godot_solana_sdk.mwa.client.MwaResult
@@ -30,7 +31,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import plugin.walletadapterandroid.GDExtensionAndroidPlugin
 import plugin.walletadapterandroid.SigningOp
@@ -53,8 +53,9 @@ import java.io.File
  *      WALLET_REJECTED via fixture
  *   5. AC-4b cleanup-on-timeout — `removePendingSubmission` called once on
  *      watchdog timeout
- *   6. AC-4c cleanup-on-cancellation — @Disabled placeholder (Story 5-3
- *      lifecycle observer wires this; T1 stubs the gap explicit per CR-3-3-B)
+ *   6. AC-4c cleanup-on-cancellation — [MwaLifecycleObserver.onDestroy]
+ *      invokes `cleanupBreadcrumb(requestId)` per snapshotted slot
+ *      (Story 5-3 closed CR-3-3-B)
  *   7. AC-5 stale-breadcrumb-on-next-connect — pre-seed breadcrumb;
  *      mwaAuthorize success fires `postPendingSubmissionFound` AFTER
  *      `postConnectCompleted` and breadcrumb is removed (one-shot); reconnect
@@ -76,9 +77,9 @@ import java.io.File
  * throw `kotlin.NotImplementedError` before reaching the assertion. Test #9
  * (runSigningOp direct) is GREEN at T1 because it bypasses
  * `mwaSignAndSendTransactions` and calls the shared [runSigningOp] helper from
- * Story 3-1 directly. Test #6 (AC-4c) is SKIPPED via @Disabled per CR-3-3-B
- * (Story 5-3 lifecycle observer wires the cancellation path). T2 turns the
- * remaining 8 GREEN.
+ * Story 3-1 directly. Test #6 (AC-4c) exercises the lifecycle-cancellation
+ * cleanup path via [MwaLifecycleObserver] (Story 5-3 closed CR-3-3-B). T2
+ * turned the remaining 9 GREEN.
  *
  * Plugin is built via the `@VisibleForTesting` ctor with injected collaborators
  * (identical to [MwaAndroidPluginSignTransactionsTest] / [MwaAndroidPluginSignMessagesTest]):
@@ -459,15 +460,53 @@ class MwaAndroidPluginSignAndSendTest {
     }
 
     @Test
-    @Disabled("CR-3-3-B: Story 5-3 lifecycle observer wires mwa_cancelled_lifecycle path; T1 stubs the gap explicit per DD-3-3-C")
     fun `AC-4c breadcrumb cleared on lifecycle cancellation`() {
-        // CR-3-3-B placeholder — defense-in-depth dual-stub mirroring Story 3-1's
-        // SignMessagesContractTest fixup (commit 87692808). The placeholder fires
-        // CR-3-3-B: if Story 5-3's lifecycle observer T-N removes @Disabled but
-        // forgets to replace this line with a real assertion;
-        // CR-3-3-B: are unreachable while @Disabled is present.
-        assertTrue(false, "CR-3-3-B placeholder — Story 5-3 replaces with real lifecycle-cancellation cleanup assertion")
-        TODO("CR-3-3-B: Story 5-3 lifecycle observer wires mwa_cancelled_lifecycle cleanup path")
+        // Story 5-3 closure of CR-3-3-B — exercise the production wiring of
+        // MwaLifecycleObserver.onDestroy → cleanupBreadcrumb(requestId) →
+        // store.removePendingSubmission(requestId). The observer is built via
+        // plugin.buildLifecycleObserver() so the plugin's actual method
+        // references (::cleanupBreadcrumb + ::buildCancelledLifecycleJson) are
+        // the path under test (NOT a test-side replica).
+
+        // Pre-seed a stale breadcrumb under the cancelled requestId; mirrors
+        // the AC-2 6-key shape from Story 3-3 DD-3-3-A.
+        val breadcrumb = JSONObject().apply {
+            put("request_id", "sas-ac4c")
+            put("op_type", "sign_and_send")
+            put("cluster", "devnet")
+            put("identity_uri", identityUri)
+            put("started_at_ms", 1_700_000_000_000L)
+            put("tx_count", 1)
+            val previewArr = org.json.JSONArray()
+            previewArr.put("a".repeat(64))
+            put("tx_preview_hashes", previewArr)
+        }.toString()
+        storedPending["sas-ac4c"] = breadcrumb
+
+        // Shared InflightMap so we can pre-register an in-flight slot the
+        // observer will see in its snapshot.
+        val sharedInflight = InflightMap()
+        val plugin = buildPlugin(inflightOverride = sharedInflight)
+        assertTrue(sharedInflight.register("sas-ac4c", 1_700_000_000_000L, "sign_and_send"))
+        assertEquals(1, sharedInflight.size())
+
+        val observer = plugin.buildLifecycleObserver()
+        observer.onDestroy(mockk<LifecycleOwner>(relaxed = true))
+
+        // DD-5-3-3 + DD-5-3-5: observer emits mwa_cancelled_lifecycle for the
+        // claimed slot then invokes cleanupBreadcrumb (same call ordering as
+        // Story 3-3 AC-3 cleanup-on-success — emit-before-cleanup is invariant).
+        verifyOrder {
+            nativeBridge.postMwaCancelledLifecycle(any())
+            store.removePendingSubmission("sas-ac4c")
+        }
+        assertEquals(
+            null,
+            storedPending["sas-ac4c"],
+            "AC-4c: breadcrumb must be removed post-lifecycle-cancellation",
+        )
+        // Slot was tryTerminate'd (CAS-removed); inflight map is empty.
+        assertEquals(0, sharedInflight.size(), "AC-4c: in-flight slot removed via tryTerminate")
     }
 
     // ---------------- AC-5 ----------------

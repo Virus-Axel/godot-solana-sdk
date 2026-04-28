@@ -118,3 +118,17 @@
 # Godot consumer profile).
 -keep class com.solanamobile.mobilewalletadapter.** { *; }
 -dontwarn com.solanamobile.mobilewalletadapter.**
+
+# -----------------------------------------------------------------------------
+# Story 5-3 — preserve MwaLifecycleObserver.onDestroy from R8 inlining.
+# -----------------------------------------------------------------------------
+# The observer is invoked by the androidx.lifecycle dispatcher (NOT Godot's
+# @UsedByGodot reflection surface), so the keep rules above do not apply to
+# this class. Without an explicit keep, R8 in a downstream minified app build
+# could rename or DCE the override, and the lifecycle-cancellation cleanup
+# path (mwa_cancelled_lifecycle{reason:"activity_destroyed"} per slot,
+# breadcrumb cleanup) would silently no-op on Activity destruction (rotation,
+# app teardown). DD-5-3-1 LOCKED documents the rationale.
+-keepclassmembers class com.godotengine.godot_solana_sdk.mwa.plugin.MwaLifecycleObserver {
+    public void onDestroy(androidx.lifecycle.LifecycleOwner);
+}

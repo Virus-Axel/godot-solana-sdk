@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import androidx.lifecycle.LifecycleOwner
 import com.godotengine.godot_solana_sdk.mwa.client.MwaClient
 import com.godotengine.godot_solana_sdk.mwa.client.MwaClientImpl
 import com.godotengine.godot_solana_sdk.mwa.client.MwaResult
@@ -14,6 +15,7 @@ import com.godotengine.godot_solana_sdk.mwa.generated.MwaError
 import com.godotengine.godot_solana_sdk.mwa.plugin.DefaultNativeBridge
 import com.godotengine.godot_solana_sdk.mwa.plugin.InflightMap
 import com.godotengine.godot_solana_sdk.mwa.plugin.MwaDiagnostics
+import com.godotengine.godot_solana_sdk.mwa.plugin.MwaLifecycleObserver
 import com.godotengine.godot_solana_sdk.mwa.plugin.NativeBridge
 import com.godotengine.godot_solana_sdk.mwa.session.MwaSessionState
 import com.godotengine.godot_solana_sdk.mwa.store.AuthTokenFingerprint
@@ -31,7 +33,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -75,6 +79,51 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         // possible under test runners that reload the plugin class).
         @Suppress("LeakingThis")
         instance = this
+        // Story 5-3 DD-5-3-2 — register the lifecycle observer against the Activity's
+        // Lifecycle so in-flight ops are cancelled (with mwa_cancelled_lifecycle{
+        // reason:"activity_destroyed"} per slot) when the Activity is destroyed
+        // (rotation, app teardown, etc.). DefaultLifecycleObserver auto-detaches on
+        // ON_DESTROY so no explicit removeObserver is needed in plugin teardown.
+        registerLifecycleObserver()
+    }
+
+    /**
+     * Story 5-3 DD-5-3-1 — constructs the [MwaLifecycleObserver] wired with the
+     * plugin's actual collaborators via method-reference injection (keeps
+     * [buildCancelledLifecycleJson] + [cleanupBreadcrumb] private). Exposed as
+     * `@VisibleForTesting internal` so unit tests (e.g.,
+     * `MwaAndroidPluginSignAndSendTest.AC-4c breadcrumb cleared on lifecycle
+     * cancellation`) can exercise the production wiring directly without engaging
+     * Android's lifecycle dispatcher.
+     */
+    @VisibleForTesting
+    internal fun buildLifecycleObserver(): MwaLifecycleObserver = MwaLifecycleObserver(
+        inflightMap = inflightMap,
+        nativeBridge = nativeBridge,
+        diagnostics = diagnostics,
+        cleanupBreadcrumb = ::cleanupBreadcrumb,
+        payloadBuilder = ::buildCancelledLifecycleJson,
+        cancelInFlight = { scope.coroutineContext[Job]?.cancelChildren() },
+    )
+
+    /**
+     * Story 5-3 DD-5-3-2 — registers [buildLifecycleObserver]'s observer against
+     * `godot.getActivity()`'s [Lifecycle][androidx.lifecycle.Lifecycle] when the
+     * activity is a [LifecycleOwner]. If the activity is unavailable (early
+     * construction, non-standard test harness) or not a `LifecycleOwner`, logs a
+     * skip warning and returns — the plugin still functions; in-flight ops simply
+     * won't be auto-cancelled on Activity destruction in that environment.
+     */
+    private fun registerLifecycleObserver() {
+        val activity = godot.getActivity()
+        val owner = activity as? LifecycleOwner
+        if (owner == null) {
+            SdkLog.w(TAG, "5-3") {
+                "lifecycle_observer_register_skipped: activity unavailable or not LifecycleOwner"
+            }
+            return
+        }
+        owner.lifecycle.addObserver(buildLifecycleObserver())
     }
 
     /** Production constructor — Godot instantiates the plugin via this reflection target. */
@@ -1492,11 +1541,12 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * payload (per A-12 1-param family) for in-flight ops cancelled by
      * [mwaForgetAll]. 3-key dict: `{request_id, source_method, reason}`.
      *
-     * `reason` is the literal `"forget_all_invoked"` for this story's emit
-     * site. Story 5-3's lifecycle observer will be the SECOND emitter and
-     * will use `reason: "lifecycle_teardown"` (or similar — story 5-3 owns
-     * that literal). The reason field is a fixed-vocabulary enum string;
-     * consumers SHOULD switch on the value.
+     * `reason` is the literal `"forget_all_invoked"` for [mwaForgetAll]'s emit
+     * site (Story 4-2). Story 5-3's [MwaLifecycleObserver] is the SECOND
+     * emitter and uses `reason: "activity_destroyed"` per DD-5-3-4 LOCKED.
+     * The reason field is a fixed-vocabulary enum string (current vocabulary:
+     * `{"forget_all_invoked", "activity_destroyed"}`); consumers SHOULD switch
+     * on the value, and any future literal requires an amendment.
      *
      * NOTE: `mwa_cancelled_lifecycle` is 1-param per A-12 (the requestId
      * is embedded in the payload at the `request_id` field, NOT a separate
@@ -1788,11 +1838,10 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * breadcrumb survives for next-launch scan to clean up; the user's
      * terminal signal has already fired).
      *
-     * Story 5-3's lifecycle observer will invoke this same helper on
-     * mwa_cancelled_lifecycle paths once that story lands; T1 stubs an
-     * @Disabled placeholder test for AC-4c to make the gap explicit.
-     *
-     * T2 fills in the body.
+     * Story 5-3's [MwaLifecycleObserver] invokes this same helper on
+     * `mwa_cancelled_lifecycle` paths (per DD-5-3-5 LOCKED — unconditional
+     * invocation per snapshotted slot; the helper's try/catch + no-op-on-
+     * absent-key behavior makes it idempotent for non-sign_and_send ops).
      */
     private fun cleanupBreadcrumb(requestId: String) {
         try {
