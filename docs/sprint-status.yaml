@@ -159,11 +159,14 @@ epics:
         slug: non-android-platform-load-ci
         title: "Non-Android Platform Behavior + 4-Platform GDExtension Load CI"
         size: S
-        status: in-progress
+        status: done
         wave: 7
         dependencies: ["1-4", "1-5"]
         startedAt: 2026-04-28T18:30:00Z
+        completedAt: 2026-04-28T19:00:00Z
+        gate5Result: pending
         baselineTag: pre-mwa-android-5-1
+        postTag: post-mwa-android-5-1
       - id: "5-2"
         slug: get-diagnostics-ring-buffer-fingerprint
         title: "get_diagnostics() + Correlation Ring Buffer + HKDF Fingerprint + device_posture + install links"

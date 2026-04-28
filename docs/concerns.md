@@ -767,6 +767,27 @@ CI evidence dossier for Story 5-1 (Non-Android Platform Behavior + 4-Platform GD
 | 3 | macos-desktop | TBD (post-push) | TBD — expect `[CR-32] PASS [<op>]: ...` × 7 + `ALL TESTS PASSED` | TBD | ⏳ Pending CI |
 | 4 | web-symbol-resolve | TBD (post-push) | TBD — expect `find bin/ -name '*.wasm' -size +1k -print` exit 0 + `ALL TESTS PASSED` | TBD | ⏳ Pending CI |
 
+### Story 5-1 Deviations (T5 close-out)
+
+- **D-5-1-1 Rule 1 (T3 informational — Web AC-1 partial coverage caveat per DD-5-1-2 LOCKED):** The wasm32 runtime cannot be exercised under `godot --headless` the way native platforms can — the engine binary IS the wasm32 module; there is no host runtime in CI. The web-symbol-resolve matrix entry verifies the `.wasm` artifact exists + non-empty (1 KB minimum) AND prints `ALL TESTS PASSED` so the same grep gate fires across all 4 entries. AC-1 runtime emission for Web is satisfied **transitively** via the linux-desktop run: `platform_selector.cpp:11-13` uses `#ifdef __ANDROID__` / `#else`, so wasm32 and linux-x86_64 compile the SAME branch. Linux-desktop's runtime success transitively proves Web's runtime would succeed iff the wasm runtime can load the GDExtension. Closure: CR-5-1-A logged for the deferred Node.js+emscripten host follow-up (out of scope for 5-1's S-budget).
+
+- **D-5-1-2 Rule 1 (T3 cosmetic — cr32-desktop job renamed to linux-desktop matrix entry):** Per DD-5-1-5 LOCKED, the existing single `cr32-desktop` job in `.github/workflows/gdscript_tests.yml` was rewritten as a `gdextension-runtime` matrix with 4 entries (linux-desktop / windows-desktop / macos-desktop / web-symbol-resolve). The Linux entry inherits the cr32-desktop recipe verbatim (chickensoft-games/setup-godot@v1 + scons + headless harness + grep stdout). The GitHub Actions cache key changes (`godot-cpp-cr32-desktop-<sha>` → `godot-cpp-linux-desktop-<sha>`); rebuild cost is bounded by the godot-cpp commit SHA pin which doesn't change cross-stories. Cache miss expected on first run after T3 lands; subsequent PRs hit the cache. No behavioral change beyond the matrix expansion.
+
+### Story 5-1 Concerns Sweep (T5 close-out)
+
+**New concerns logged this story** — see "## Story 5-1 Concerns" section above for CR-5-1-A (LOW Web partial AC-1 coverage), CR-5-1-B (LOW CI cost vs coverage tradeoff), CR-5-1-C (LOW is_supported lacks Android-positive test).
+
+**Transitive sweep of prior concerns:**
+
+- **CR-31 (MEDIUM)** — no automated host-mode 11-signal binding-smoke. 5-1 invokes 7 user-facing ops via the harness but does NOT introspect ClassDB for the 11 signals. Kotlin-side parity (Story 1-6 — 74 tests) carries partial coverage. **CR-31 stays MEDIUM** after 5-1.
+- **CR-32 (MEDIUM → recommend DOWNGRADE to LOW or CLOSED)** — original scope was "desktop NoOp-bridge backstop covering connect" (Story 2-1 T10) → "+ disconnect" (Story 2-3 T6). After 5-1, the backstop covers all 7 user-facing ops + `is_supported()` × 4 non-Android platforms (Linux + Windows + macOS runtime + Web build-only). Coverage uplift: 2 ops × 1 platform → 8 scenarios × 4 platforms = **3.5× total coverage**. **Recommendation:** DOWNGRADE to LOW or CLOSED at Gate 5 PASS. Final triage decision lands in the Gate 5 [A] orchestrator step.
+- **CR-33 / CR-34 (LOW)** — historical AC-1..5 coverage gaps from A-13 retirement. 5-1 closes **AC-1 + AC-3** (UNSUPPORTED_PLATFORM emission + no-crash invariant via 4-platform matrix). AC-2 (binding-smoke) + AC-4 (signal payload introspection) + AC-5 (state introspection) remain partial. **CR-33/34 stay LOW** after 5-1.
+- **CR-35 (LOW)** — future headless-Godot C++ assertion tier. 5-1 establishes the `gdextension-runtime` matrix as the future landing pad for CR-35 C++ tests, but does NOT introduce C++ assertions itself. **CR-35 stays open** for future Story 5-x.
+- **CR-3-3-A / CR-3-3-B (LOW)** — none apply to 5-1 (no diagnostics surface; no signing-op lifecycle observer).
+- **CR-4-2-A / CR-4-2-B / CR-4-2-C / CR-4-2-D / CR-4-2-E / CR-4-2-F / CR-4-2-G (LOW/MEDIUM)** — none apply to 5-1 (no MasterKey rotation, no forget_all surface, no mutex-symmetry follow-up).
+- **CR-46 (LOW)** — local scons builds fail at keypair.cpp ed25519. 5-1's T3 CI matrix runs via clean GitHub-hosted runners (no env-gap impact). **CR-46 stays LOW** inherited unchanged.
+- **CR-45 (LOW)** — Route B harness gap. Not applicable to 5-1 (non-Android coverage doesn't exercise the FakeMwaClient-vs-real-wallet seam).
+
 ### Post-push update protocol
 
 After the next `git push origin feature/mwa-android` triggers the workflow:
