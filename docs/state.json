@@ -3,52 +3,11 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-28T18:07:47.187Z",
+  "lastUpdated": "2026-04-28T18:11:28.834Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": {
-    "storyId": "4-2",
-    "slug": "forget-all-master-key-rotation",
-    "startedAt": "2026-04-28T14:10:00Z",
-    "size": "M",
-    "wave": 6,
-    "taskSummary": {
-      "compactedAt": "2026-04-28T17:22:25.568Z",
-      "tasksCompleted": 3,
-      "filesModified": [
-        "android/plugin/src/main/java/plugin/walletadapterandroid/GDExtensionAndroidPlugin.kt",
-        "android/plugin/src/test/kotlin/com/godotengine/godot_solana_sdk/mwa/plugin/AuthorizePathTest.kt",
-        "android/plugin/src/test/kotlin/com/godotengine/godot_solana_sdk/mwa/plugin/MwaAndroidPluginDisconnectTest.kt",
-        "android/plugin/src/test/kotlin/com/godotengine/godot_solana_sdk/mwa/plugin/MwaAndroidPluginReauthorizeTest.kt",
-        "android/plugin/src/test/kotlin/com/godotengine/godot_solana_sdk/mwa/plugin/MwaAndroidPluginSignMessagesTest.kt",
-        "android/plugin/src/test/kotlin/com/godotengine/godot_solana_sdk/mwa/plugin/MwaAndroidPluginSignTransactionsTest.kt",
-        "src/mwa/mobile_wallet_adapter.cpp",
-        "addons/SolanaSDK/mwa/MWA.gd"
-      ],
-      "testsAdded": 0,
-      "testsTurnedGreen": 6,
-      "patternsEstablished": [
-        "forgetAllMutex.withLock { ... } wraps mwaForgetAll body AND mwaAuthorize launched body — DD-4-2-2 mutex serialization (D-4-2-T2-3 Rule 2)",
-        "InflightMap.register 3-arg signature with sourceMethod default \"unknown\" at END (D-4-2-T1-1 Rule 1) — 7 production call sites back-filled with explicit sourceMethod",
-        "mwaForgetAll body shape: snapshot+cancel-in-flight loop → best-effort per-wallet deauth (withTimeoutOrNull 2s) → store.deleteAll → deleteSharedPreferences → KeyStore.deleteEntry(MASTER_KEY_ALIAS) → withContext(mainDispatcher) { sessionState.clear() }",
-        "C++ forget_all delegation: 1-arg bridge_->forget_all(request_id) (NO opts Dictionary; distinct from disconnect/deauthorize 2-arg) + null-bridge guard fires unsupported_platform mwa_error",
-        "MWA.gd facade: reuses existing mwa_cancelled_lifecycle signal+relay (no new signal per DD-4-2-8 fire-and-forget)"
-      ],
-      "deviations": [
-        "D-4-2-T1-1 Rule 1: InflightMap.register sourceMethod placed AT END with default — preserves 2-arg call-shape compile-compat at T1",
-        "D-4-2-T2-1 Rule 1: withStorageOrReauthRequired wrapper register at line 2120 back-filled with sourceMethod parameter (already in scope) — not in T2 spec's enumerated 6 sites; extends by 1 line for diagnostic accuracy",
-        "D-4-2-T2-2 Rule 1: 5 prior-story unit test mock matchers updated 2-arg→3-arg — direct side-effect of T1's signature extension; T1 missed because pre-T2 production callers still passed 2 args",
-        "D-4-2-T2-3 Rule 2: forgetAllMutex.withLock around mwaAuthorize launched body — DD-4-2-2 LOCKED requires this for AC-3 mutex serialization; T2 spec listed register back-fills explicitly but did not enumerate mutex-on-op-methods",
-        "D-4-2-2 Rule 3: T3 scope expanded from audit-only to fill in Story 1-5 stub body — already covered by amendment A-15 (landed at story-creation commit 81c45158)"
-      ],
-      "verificationOnlyTasks": [],
-      "openIssues": [
-        "Pre-existing kdoc stale-stub markers (4 hits across 2 files: GDExtensionAndroidPlugin.kt:1778/2106/2110 + MwaAndroidPluginReauthorizeTest.kt:59) — narrative from prior stories 2-2/3-3/4-3 TDD-red phases. Not in T2-T4 diff; deferred to T6 close-out CR sweep.",
-        "Android Lint (lintDebug) shows 9 NewApi errors: 8 pre-existing (Base64.getEncoder/Decoder + Context.deleteSharedPreferences at SecureTokenStore.kt:192) + 1 new at GDExtensionAndroidPlugin.kt:1458 (matches established pattern). Not in this story's tooling.test verification chain. Project-wide issue."
-      ]
-    }
-  },
+  "currentStory": null,
   "phases": {
     "research": {
       "status": "complete",
@@ -739,7 +698,7 @@
       "wave": 6,
       "startedAt": "2026-04-28T14:10:00Z",
       "completedAt": "2026-04-28T18:00:00Z",
-      "gate5Result": "pending",
+      "gate5Result": "pass",
       "tasks": 7,
       "commits": 8,
       "baselineTag": "pre-mwa-android-4-2",
@@ -866,6 +825,12 @@
       "findingsFixed": 1,
       "findingsDeferred": 4,
       "retrospectRulesAdded": 4
+    },
+    "gates": {
+      "gate5Passes": 1
+    },
+    "stories": {
+      "completed": 1
     }
   },
   "waveStrategy": {
