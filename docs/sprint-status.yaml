@@ -164,7 +164,7 @@ epics:
         dependencies: ["1-4", "1-5"]
         startedAt: 2026-04-28T18:30:00Z
         completedAt: 2026-04-28T19:00:00Z
-        gate5Result: pending
+        gate5Result: pass
         baselineTag: pre-mwa-android-5-1
         postTag: post-mwa-android-5-1
       - id: "5-2"

@@ -3,17 +3,11 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-28T19:19:50.965Z",
+  "lastUpdated": "2026-04-28T19:22:19.931Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": {
-    "storyId": "5-1",
-    "slug": "non-android-platform-load-ci",
-    "startedAt": "2026-04-28T18:46:56.772Z",
-    "size": "S",
-    "wave": 7
-  },
+  "currentStory": null,
   "phases": {
     "research": {
       "status": "complete",
@@ -786,7 +780,7 @@
       "wave": 7,
       "startedAt": "2026-04-28T18:30:00Z",
       "completedAt": "2026-04-28T19:00:00Z",
-      "gate5Result": "pending",
+      "gate5Result": "pass",
       "tasks": 5,
       "commits": 6,
       "baselineTag": "pre-mwa-android-5-1",
@@ -815,7 +809,9 @@
         "CR-5-1-D",
         "CR-5-1-E"
       ],
-      "concernsResolved": [],
+      "concernsResolved": [
+        "CR-32 DOWNGRADED MEDIUM -> LOW at Gate 5 [A] approval — 3.5x coverage uplift via 5-1's 8-scenario x 4-platform matrix."
+      ],
       "concernsTransitive": [
         "CR-31 MEDIUM unchanged — no automated host-mode 11-signal binding-smoke. 5-1 invokes 7 user-facing ops via the harness but does NOT introspect ClassDB for the 11 signals. Kotlin-side parity (Story 1-6 — 74 tests) carries partial coverage. CR-31 stays MEDIUM after 5-1.",
         "CR-32 MEDIUM → DOWNGRADE candidate to LOW: the original CR scope was desktop NoOp-bridge backstop covering connect (Story 2-1 T10) → expanded to + disconnect (Story 2-3 T6). After 5-1, the backstop covers all 7 user-facing ops × 4 non-Android platforms. Recommend DOWNGRADE to LOW or CLOSED; final triage at Gate 5 PASS.",
@@ -903,10 +899,10 @@
       "retrospectRulesAdded": 6
     },
     "gates": {
-      "gate5Passes": 1
+      "gate5Passes": 2
     },
     "stories": {
-      "completed": 1,
+      "completed": 2,
       "sizeDistribution": {
         "S": 1
       }
