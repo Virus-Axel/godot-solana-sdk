@@ -3,17 +3,11 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-28T12:30:00.000Z",
+  "lastUpdated": "2026-04-28T13:30:00Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": {
-    "storyId": "3-3",
-    "slug": "sign-and-send-breadcrumb",
-    "startedAt": "2026-04-28T11:20:00Z",
-    "size": "L",
-    "wave": 6
-  },
+  "currentStory": null,
   "phases": {
     "research": {
       "status": "complete",
@@ -40,7 +34,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 13,
+  "storiesDone": 14,
   "storiesTotal": 21,
   "changeStories": [],
   "completedStories": [
@@ -622,19 +616,90 @@
         "note": "Story ships with unit baseline green; on-device validation happens asynchronously once the next `git push origin feature/mwa-android` runs the CI matrix."
       },
       "notes": "First Wave 6 story. Second consumer of the runSigningOp shared signing pipeline introduced at Story 3-1 T2 (third consumer Story 3-3 sign_and_send still pending). Code delta: NativeBridge.postSignTransactionsCompleted(requestId, resultDictJson) interface method + DefaultNativeBridge override + @JvmStatic external fun postSignTransactionsCompletedNative declaration + @UsedByGodot fun mwaSignTransactions instance method (≤20-LOC body — actual 13 LOC) + handleSignTransactionsSuccess private helper + buildSignSuccessJson parameterized with payloadKey: String = \"signed_payloads\" default per DD-3-2-3 (D-3-2-1) + emitNotConnectedSign parameterized with sourceMethod: String = \"sign_messages\" default (D-3-2-2) + LocCountUtil.kt NEW shared file with extracted countMethodLines(...) (D-3-2-3) + JNIEXPORT postSignTransactionsCompletedNative mirror in src/mwa/mwa_android_bridge_jni.cpp delegating to post_arity2_completed + MWA.gd sign_transactions facade method (-> void per Story 2-1 T7 LOCKED + Story 3-1 D-3-1-12) + R8 smoke REQUIRED_METHODS extension + AC1SignTransactionsHappyE2ETest androidTest. 5 design decisions locked (DD-3-2-1..DD-3-2-5 — all defined at story-creation time; no mid-impl additions). 8 commits (chore resume + T1 main + T1 fixup + T2 + T3 + T4 + T5 + T6 + T6 fixup + T7 close-out — counted as 7 task-commits + 1 chore + 2 fixups). Unit baseline 144 → 152 (+7 from T1 MwaAndroidPluginSignTransactionsTest + 1 from T6 SignTransactionsContractTest now-passing); pytest 83 unchanged; androidTest pre-3-2 14 (post-4-1) → post-3-2 expected 15. 5 spec deviations + 3 mid-impl Rule-1 adjustments filed (D-3-2-1..5 + 3 task-prefixed). 1 new concern logged (CR-3-2-W LOW — signing-family does NOT defensively touch SecureTokenStore for Tink-corruption detection per DD-3-2-4 / DD-4-3-1.a inheritance; acceptable today, flagged for Story 5-* hardening review). T1 user-review I-T1-A surfaced + resolved 1 LOW ambiguity concern about FakeMwaClient.withScenario short-form vs long-form (resolved inspection-only — short form correct per FakeMwaClient.kt:155). CR sweep: CR-18/32/41 transitively exercised; CR-35/45/46 inherited; CR-47/48 N/A; CR-58..61 N/A directly (signing path doesn't go through withStorageOrReauthRequired). T7 baseline refresh + close-out only — no production code changes."
+    },
+    {
+      "storyId": "3-3",
+      "slug": "sign-and-send-breadcrumb",
+      "size": "L",
+      "wave": 6,
+      "startedAt": "2026-04-28T11:20:00Z",
+      "completedAt": "2026-04-28T13:30:00Z",
+      "gate5Result": "pass",
+      "tasks": 7,
+      "commits": 7,
+      "baselineTag": "pre-mwa-android-3-3",
+      "postTag": "post-mwa-android-3-3",
+      "commitsList": [
+        "53d4fba3 test(mwa): Story 3-3 T1 — Kotlin TDD red + stub-first scaffolding for sign_and_send",
+        "2edb2b59 feat(mwa): Story 3-3 T2 — sign_and_send + breadcrumb impl + scan helper",
+        "8c8610f8 feat(mwa): Story 3-3 T3 — C++ JNIEXPORT mirrors + pending_submission_found ADD_SIGNAL",
+        "1f841cfd feat(mwa): Story 3-3 T4 — MWA.gd sign_and_send facade + pending_submission_found signal/relay",
+        "8ceb3de9 test(mwa): Story 3-3 T5 — androidTest E2E (AC-1 + AC-5) + R8 smoke method-list update",
+        "eb68c75c test(mwa): Story 3-3 T6 — SignAndSendContractTest fixture-input verification (AC-7)",
+        "<T7 commit> chore(mwa): Story 3-3 T7 — baseline refresh 152->167 + pre-Gate-5 close-out"
+      ],
+      "deviations": [
+        "D-3-3-1 Rule 1 (T2): SecureTokenStore extension API per DD-3-3-A — added 4 pending-submission methods (putPendingSubmission, getPendingSubmission, listAllPendingSubmissions, removePendingSubmission) under PENDING_KEY_PREFIX. Additive-only, no impact on existing CacheKey/CacheRecord surface. No amendment needed.",
+        "D-3-3-2 Rule 2 (T2): NEW pending_submission_found signal — addition to A-12 1-param signal family (parallel to mwa_error / mwa_timeout / mwa_cancelled_lifecycle / reauth_required). Architecture amendment NOT required: AC-A-13 (Story 4-3) explicitly anticipated extensions to the lifecycle signal taxonomy; arch §3 schema is augmented by sibling rows in T3 (mobile_wallet_adapter.cpp ADD_SIGNAL) + T4 (MWA.gd signal/relay). Logged for visibility per the story spec.",
+        "D-3-3-3 Rule 1 (T2): NEW buildSignAndSendSuccessJson distinct from buildSignSuccessJson per DD-3-3-E — 4-key payload (request_id, signatures, submitted_at, confirmation_status) vs the 2-key shape buildSignSuccessJson produces for sign_messages / sign_transactions. Distinct shape locked at story-creation; no reuse attempt was viable.",
+        "D-3-3-T2-1 Rule 1 (T2 test fixup): AC-2 test slot capture at putPendingSubmission instead of post-cleanup storedPending[rid] read. AC-3 ordering (cleanup BEFORE terminal signal) makes the original post-hoc map read unreliable; the slot capture is immune to cleanup timing.",
+        "D-3-3-T2-2 Rule 1 (T2 test fixup): AC-4b test uses explicit `coAnswers { delay(5_000); error }` slow client. Original T1 comment claimed the relaxed-mock signAndSendTransactions would auto-defer, but MockK returns a synthetic non-null MwaResult instantly for sealed return types — withTimeoutOrNull resolves before the watchdog fires. Slow lambda follows canonical Story 3-1 runSigningOp watchdog timeout pattern.",
+        "D-3-3-T2-3 Rule 2 (T2 helper-contract refinement): withStorageOrReauthRequired catch block now lazy-registers the inflight slot before emitReauthRequiredKeystoreCorrupt CAS. Story 4-3 original callers (mwaAuthorize/mwaReauthorize) registered upfront so register returns false here — no behavior change. Story 3-3 breadcrumb-write site is INSIDE scope.launch BEFORE runSigningOp register; without lazy-register, tryTerminate would fail silently and postReauthRequired would not fire on Tink corruption. Strengthens the wrapper contract (works in more scenarios) without breaking existing use."
+      ],
+      "amendments": [],
+      "concerns": [
+        "CR-3-3-A",
+        "CR-3-3-B",
+        "CR-3-3-C"
+      ],
+      "concernsResolved": [],
+      "concernsTransitive": [
+        "CR-18 RESOLVED in 2-1 T6 — exercised transitively",
+        "CR-32 RESOLVED in 2-1 T10",
+        "CR-35 HIGH deferred — headless-Godot tier still unaddressed; T6 contract test serves AC-7 surface in lieu",
+        "CR-41 RESOLVED in 2-1 T10 — exercised by T1 mock + T5 androidTest",
+        "CR-45 LOW transitive — Route B harness gap continues (T5 androidTest is in-process FakeMwaClient)",
+        "CR-46 LOW — surfaced again in T3 local scons build (ed25519 / Crypto host-build env-gap; runtime validation deferred to T5 androidTest on CI emulator per Story 2-2 / 3-1 / 3-2 T3 precedent)",
+        "CR-47 LOW — N/A for sign_and_send happy path (preflight uses listAllKeys for AC-6 cluster-bleed but read-only; not a putToken-tier concern)",
+        "CR-48 LOW — N/A for sign_and_send (no putToken on signing path per DD-2-2-5 contract)",
+        "CR-58 / CR-59 / CR-60 / CR-61 (Story 4-3): RECONCILED — Story 3-3 IS the first signing-op story that goes through withStorageOrReauthRequired (breadcrumb-write site per DD-3-3-G), so CR-58 (AC-1 testability gap on the wrapper) is exercised here at the unit + androidTest tier. Acknowledge transitive coverage.",
+        "CR-3-2-W RECONCILED — DD-3-3-G locks the write-vs-cleanup wrapping asymmetry. CR-3-2-W rationale stays valid for mwaSignMessages / mwaSignTransactions (in-memory-only) but is explicitly lifted for mwaSignAndSendTransactions (the one signing op that touches disk on the happy path)."
+      ],
+      "testsAdded": 15,
+      "testsAddedDetail": "10 Kotlin unit (MwaAndroidPluginSignAndSendTest: AC-1 happy 4-key payload (request_id, signatures, submitted_at, confirmation_status — base58 strings, NOT base64 byte arrays); AC-2 breadcrumb 6-key write-ahead before mwaClientFactory invocation per DD-3-3-B with full-64-char lowercase hex SHA-256 preview hashes per DD-3-3-F; AC-3 cleanup-before-terminal ordering verifyOrder; AC-4a WALLET_REJECTED cleanup; AC-4b watchdog timeout cleanup; AC-4c lifecycle cancellation @Disabled placeholder per CR-3-3-B -> Story 5-3; AC-5 stale breadcrumb pending_submission_found on next connect + one-shot semantics; AC-6 cluster-bleed NOT_CONNECTED preflight; runSigningOp(SIGN_AND_SEND) Failure routing direct; breadcrumb-write StorageCorruptException -> reauth_required + no wallet round-trip per DD-3-3-G fail-closed wrapper) + 1 Kotlin unit (SignAndSendContractTest: T1 landed @Disabled stub; T6 removed @Disabled and landed full fixture-input verification body per Story 3-1 D-3-1-13 re-scope — 3-key expected_input shape with cluster as third key per the 5-arg MwaClient.signAndSendTransactions signature, base58 string-equality on signatures NOT byte-array equality) + 4 Kotlin unit (SecureTokenStoreTest pending-submission storage layer: round-trip prefix, list filter+strip, remove single + no-op for absent, empty-list) + 2 androidTest (AC1SignAndSendHappyE2ETest: 4-stage on-device with spyk-wrapped real ESP store recording AC-2/AC-3 ordering at integration tier; AC5PendingSubmissionFoundOnNextConnectTest: 3-stage real-ESP pre-seed -> mwaAuthorize success -> verifyOrder + 6-key payload assertions + DD-3-3-E negative-key guards + on-disk one-shot cleanup; NOT counted in unit baseline — emulator-only). Pytest unchanged. AndroidTest pre-3-3 15 -> post-3-3 expected 17.",
+      "reviewFindings": {
+        "userInteractive": true,
+        "rounds": 0,
+        "blockers": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "fixed": 0,
+        "deferred": 0,
+        "note": "Code-review-agent spawn deferred to user-driven post-T7 review (orchestrator initiates Gate 5 cycle separately). Per-task [C] approvals throughout T1-T6: T1 stub-first scaffolding pattern confirmed; T2 [C] confirmed 3 in-line deviations (D-3-3-T2-1/2/3) including the withStorageOrReauthRequired lazy-register refinement (Rule 2) inspected against existing mwaAuthorize/mwaReauthorize callers (no behavior change for them) before approving; T3 confirmed C++ JNIEXPORT mirrors via host-build clangd diagnostic pre-existing-noise pattern (deferred to CI per CR-46); T4 inspection-only; T5 spyk-on-real-ESP harness compromise approved at integration tier per task spec; T6 base58-string-equality contract test approved."
+      },
+      "ciStatus": {
+        "unitBaseline": "green-local-2026-04-28T13:30Z (167 Kotlin + 83 pytest = 250)",
+        "androidTest": "pending — runtime validation on next CI push via Story 2-1 round-3-fixed workflow (ubuntu-latest + KVM + API 33 x86_64 + R8 8.5.35 + META-INF excludes + x86_64 abiFilter); AC1SignAndSendHappyE2ETest + AC5PendingSubmissionFoundOnNextConnectTest expected 17 total",
+        "r8Smoke": "workflow updated — REQUIRED_METHODS now includes mwaSignAndSendTransactions + postSignAndSendCompletedNative + postPendingSubmissionFoundNative; runtime validation on next CI push",
+        "gdscriptTests": "still failing (pre-existing, round-4 candidate; T4 facade addition does not fix the existing failures)",
+        "note": "Story ships with unit baseline green; on-device validation happens asynchronously once the next git push origin feature/mwa-android runs the CI matrix."
+      },
+      "notes": "Second Wave 6 story. Third consumer of the runSigningOp shared signing pipeline (after sign_messages 3-1 + sign_transactions 3-2). FIRST signing-op story to touch disk on the happy path — AC-2 mandates breadcrumb write-ahead BEFORE the wallet round-trip + AC-3/4 cleanup-on-all-terminal-paths + AC-5 next-launch scan via pending_submission_found one-shot signal. CR-3-2-W rationale (signing path is in-memory-only) is RECONCILED here, NOT invalidated; stays valid for mwaSignMessages/mwaSignTransactions, lifted for mwaSignAndSendTransactions. Code delta: SecureTokenStore extension with 4 NEW methods (putPendingSubmission/getPendingSubmission/listAllPendingSubmissions/removePendingSubmission under PENDING_KEY_PREFIX) + MwaDiagnostics.cleanupFailedCount counter (DD-3-3-G non-wrapped cleanup-failure observability) + GDExtensionAndroidPlugin.mwaSignAndSendTransactions @UsedByGodot instance method (sync preflight authToken + connectedKey + cluster + AC-6 cluster-bleed listAllKeys filter + scope.launch breadcrumb-write via withStorageOrReauthRequired wrapper + runSigningOp(SIGN_AND_SEND) + handleSignAndSendSuccess success path / cleanupBreadcrumb error path) + 6 NEW private helpers (handleSignAndSendSuccess AC-3 cleanup-before-terminal, cleanupBreadcrumb DD-3-3-G non-wrapped, scanPendingSubmissions identity-scoped one-shot, buildSignAndSendSuccessJson 4-key payload, buildPendingSubmissionFoundJson 6-key payload drop cluster+identity_uri add recommendation, buildBreadcrumb 7-field with SHA-256 preview hashes via shared sha256Hex helper) + scanPendingSubmissions wired into handleSuccess (connect post-postConnectCompleted) + handleReauthSuccess (post-postReauthorizeCompleted) via scope.launch off-thread per DD-3-3-D ordering + withStorageOrReauthRequired wrapper lazy-register refinement (D-3-3-T2-3 Rule 2) + ci/grep_bans.sh pattern-8 pendingDictJson extension (DD-3-3-E.a) + log_payload_json.kt.bad fixture extension + NativeBridge.postSignAndSendCompleted + postPendingSubmissionFound interface methods + DefaultNativeBridge overrides + Companion external fun declarations + JNIEXPORT postSignAndSendCompletedNative (post_arity2_completed) + JNIEXPORT postPendingSubmissionFoundNative (post_arity1) + ADD_SIGNAL pending_submission_found row in mobile_wallet_adapter.cpp _bind_methods + MWA.gd sign_and_send facade method + pending_submission_found signal + relay row + R8 smoke REQUIRED_METHODS extension (3 new entries). 7 design decisions locked (DD-3-3-A pending storage API + DD-3-3-B write-then-call ordering + DD-3-3-C cleanup helper signature + behavior + DD-3-3-D scan ordering + identity-scope + DD-3-3-E builder distinctness + payload-shape lock + DD-3-3-E.a grep_bans extension + DD-3-3-F sha256 full-64-char-hex + DD-3-3-G wrapper write/cleanup asymmetry). 7 commits. Unit baseline 152 -> 167 (+15 from T1 MwaAndroidPluginSignAndSendTest 9-GREEN + T6 SignAndSendContractTest now-passing + T2 SecureTokenStoreTest 4-new); pytest 83 unchanged; androidTest pre-3-3 15 -> post-3-3 expected 17. 3 spec deviations + 3 mid-impl Rule-1/Rule-2 adjustments filed (D-3-3-1..3 + D-3-3-T2-1/2/3). 3 new concerns logged (CR-3-3-A LOW diagnostics surface for cleanupFailedCount -> Story 5-2; CR-3-3-B LOW lifecycle-cancellation cleanup gap -> Story 5-3; CR-3-3-C LOW cluster-bleed test plausibility vs realistic user-path coverage -> Story 5-x cluster-management review). CR sweep: CR-18/32/41 transitively exercised; CR-35 deferred; CR-45 inherited; CR-46 inherited (host-build env-gap T3); CR-47/48 N/A for signing path; CR-58..61 RECONCILED via DD-3-3-G; CR-3-2-W RECONCILED via DD-3-3-G write-vs-cleanup wrapping asymmetry. T7 baseline refresh + close-out only — no production code changes."
     }
   ],
   "baselineTests": {
-    "total": 235,
-    "passing": 235,
+    "total": 250,
+    "passing": 250,
     "failing": 0,
     "baselinedAt": "2026-04-22T08:09:41Z",
     "baselinedAtStory": 5,
-    "lastRefreshedAt": "2026-04-28T11:00:00Z",
-    "lastRefreshedAtStory": 13,
+    "lastRefreshedAt": "2026-04-28T13:30:00Z",
+    "lastRefreshedAtStory": 14,
     "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
     "failingTests": [],
-    "note": "Post-story-3-2 T7 baseline refresh: 144 → 152 Kotlin (+7 from Story 3-2 T1 MwaAndroidPluginSignTransactionsTest — 7 cases covering AC-1 happy path with renamed signed_transactions key per DD-3-2-3, AC-2 LOC budget via shared LocCountUtil, AC-3 NOT_CONNECTED preflight with source_method=sign_transactions, AC-4 WALLET_REJECTED via fixture, runSigningOp(SIGN_TRANSACTIONS) Failure routing, duplicate requestId PROTOCOL_ERROR, late-result-after-terminate drop; +1 from T6 SignTransactionsContractTest now-passing — fixture-input verification per Story 3-1 D-3-1-13 re-scope, replacing the T1 @Disabled stub); pytest 83 unchanged. Story 3-2 androidTest +1 (AC1SignTransactionsHappyE2ETest); pre-3-2 14 (post-4-1) → post-3-2 expected 15 (NOT counted in unit baseline — emulator-only). Total unit baseline 227 → 235."
+    "note": "Post-story-3-3 T7 baseline refresh: 152 -> 167 Kotlin (+15 from T1+T2 sign-and-send work — 10 MwaAndroidPluginSignAndSendTest cases (1 @Disabled placeholder for AC-4c lifecycle path -> Story 5-3 per CR-3-3-B; 9 GREEN covering AC-1 happy 4-key payload + AC-2 breadcrumb 6-key write-ahead + AC-3 cleanup-before-terminal + AC-4a/b error/timeout cleanup + AC-5 stale breadcrumb scan + one-shot + AC-6 cluster-bleed + runSigningOp(SIGN_AND_SEND) Failure routing direct + breadcrumb-write StorageCorruptException -> reauth_required), +4 SecureTokenStoreTest pending-submission storage tests (round-trip, list filter+strip, remove single, empty-list), +1 SignAndSendContractTest now-passing (T1 @Disabled placeholder removed at T6 with full fixture-input verification body)); pytest 83 unchanged. androidTest pre-3-3 15 (post-3-2 + 1 expected from CI push) -> post-3-3 expected 17 (+AC1SignAndSendHappyE2ETest + AC5PendingSubmissionFoundOnNextConnectTest — NOT counted in unit baseline; emulator-only). Total unit baseline 235 -> 250."
   },
   "tooling": {
     "format": "clang-format (C++); ktlint (Kotlin)",

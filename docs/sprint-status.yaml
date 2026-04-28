@@ -103,11 +103,14 @@ epics:
         slug: sign-and-send-breadcrumb
         title: "sign_and_send + Pending-Submission Breadcrumb + pending_submission_found Signal"
         size: L
-        status: in-progress
+        status: done
         wave: 6
         dependencies: ["3-1"]
         startedAt: 2026-04-28T11:20:00Z
+        completedAt: 2026-04-28T13:30:00Z
+        gate5Result: pass
         baselineTag: pre-mwa-android-3-3
+        postTag: post-mwa-android-3-3
 
   - id: 4
     name: "Token Lifecycle & Cache Hardening"

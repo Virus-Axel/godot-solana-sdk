@@ -659,3 +659,39 @@ Deferred items from code reviews and implementation. Tracked for future resoluti
 - **CR-48 (Story 2-2 — DD-2-2-5 rotation branch)** — N/A for sign_transactions. No `putToken` on signing path per DD-2-2-5 contract (rotation-detect is reauth-only).
 - **CR-58 / CR-59 / CR-60 / CR-61 (Story 4-3)** — NOT applicable directly. Signing path doesn't go through `withStorageOrReauthRequired` per DD-3-2-4 / DD-4-3-1.a inheritance; acknowledge transitively.
 - **CR-3-2-W** — NEW (this story). See "New concern logged" above.
+
+## Story 3-3 Deviations + Concerns Sweep (T7, 2026-04-28)
+
+Story 3-3 (`sign_and_send` + pending-submission breadcrumb + `pending_submission_found` signal) introduced 3 spec deviations + 3 mid-impl Rule-1/Rule-2 adjustments. 3 new concerns logged (CR-3-3-A/B/C). T7 close-out occurred 2026-04-28; baseline refreshed 152 → 167 Kotlin (+15) + pytest 83 unchanged. AndroidTest pre-3-3 15 → post-3-3 expected 17.
+
+### Deviations
+
+- **D-3-3-1 (Rule 1, T2)** — `SecureTokenStore` extension API per DD-3-3-A. Added 4 pending-submission methods (`putPendingSubmission`, `getPendingSubmission`, `listAllPendingSubmissions`, `removePendingSubmission`) under `PENDING_KEY_PREFIX = "pending::"`. Additive-only; no impact on existing `CacheKey`/`CacheRecord` surface or the existing `listAllKeys` filter (which keeps its `mwa::v1::` prefix gate so pending entries are excluded from the auth-cache view). No amendment needed.
+- **D-3-3-2 (Rule 2, T2)** — NEW `pending_submission_found` signal. Addition to A-12's 1-param signal family (parallel to `mwa_error` / `mwa_timeout` / `mwa_cancelled_lifecycle` / `reauth_required`). Architecture amendment NOT required: AC-A-13 (Story 4-3) explicitly anticipated extensions to the lifecycle signal taxonomy; arch §3 schema is augmented by sibling rows in T3 (`mobile_wallet_adapter.cpp` ADD_SIGNAL) + T4 (`MWA.gd` signal/relay). Logged for visibility per the story spec; downstream consumers (Story 5-2 diagnostics, Story 5-5 docs bundle) will reference this signal in their respective surfaces.
+- **D-3-3-3 (Rule 1, T2)** — NEW `buildSignAndSendSuccessJson` distinct from `buildSignSuccessJson` per DD-3-3-E. 4-key payload (`request_id`, `signatures`, `submitted_at`, `confirmation_status`) vs the 2-key shape `buildSignSuccessJson` produces for `sign_messages` / `sign_transactions`. Distinct shape locked at story-creation; no reuse attempt was viable (signatures are base58 strings, NOT base64 byte arrays — distinct encoding + 2 extra fields).
+
+### Mid-impl Rule-1/Rule-2 adjustments
+
+- **D-3-3-T2-1 (Rule 1, T2 test fixup)** — AC-2 test slot capture at `putPendingSubmission` instead of post-cleanup `storedPending[rid]` read. AC-3 ordering (cleanup BEFORE terminal signal) makes the original post-hoc map read unreliable; the slot capture is immune to cleanup timing. Original T1 commit comment assumed the breadcrumb would still be in the map at assertion time, but the AC-3 invariant explicitly removes it before the success signal.
+- **D-3-3-T2-2 (Rule 1, T2 test fixup)** — AC-4b test uses explicit `coAnswers { delay(5_000); error }` slow client. Original T1 comment claimed the relaxed-mock `signAndSendTransactions` would auto-defer, but MockK returns a synthetic non-null `MwaResult` instantly for sealed return types — `withTimeoutOrNull` resolves before the watchdog fires. Slow lambda follows the canonical Story 3-1 `runSigningOp watchdog timeout` test pattern; test now reliably fires `mwa_timeout`.
+- **D-3-3-T2-3 (Rule 2, T2 helper-contract refinement)** — `withStorageOrReauthRequired` catch block now lazy-registers the inflight slot before `emitReauthRequiredKeystoreCorrupt` CAS. Story 4-3's original callers (`mwaAuthorize`/`mwaReauthorize`) registered upfront so `register` returns false here — no behavior change. Story 3-3's breadcrumb-write site is INSIDE `scope.launch` BEFORE `runSigningOp`'s register; without lazy-register, `tryTerminate` would fail silently and `postReauthRequired` would not fire on Tink corruption. Strengthens the wrapper's contract (works in more scenarios) without breaking existing use.
+
+### New concerns logged
+
+- **CR-3-3-A (LOW, candidate for Story 5-2)** — `MwaDiagnostics.cleanupFailedCount` increments on cleanup-on-error `StorageCorruptException` per DD-3-3-G but is NOT yet surfaced via `MWA.get_diagnostics()`. Story 5-2's diagnostics surface should include this counter alongside `lateResultCount`. Not a 3-3 deliverable; logged as a 5-2 input.
+- **CR-3-3-B (LOW, lifecycle-cancellation cleanup gap)** — Per DD-3-3-C, the `mwa_cancelled_lifecycle` cleanup path is OUT OF SCOPE for 3-3. Story 3-3 lands the `cleanupBreadcrumb(requestId)` helper signature; Story 5-3's lifecycle observer wires the invocation. T1 + T2 ship an `@Disabled("CR-3-3-B: Story 5-3 lifecycle observer wires mwa_cancelled_lifecycle path")` test case in `MwaAndroidPluginSignAndSendTest` to make the gap explicit. Closure: when Story 5-3 lands the lifecycle observer, that story's T-N must remove the `@Disabled` and turn the test GREEN.
+- **CR-3-3-C (LOW, cluster-bleed test plausibility)** — AC-6 cluster-bleed test (`MwaAndroidPluginSignAndSendTest.AC-6`) relies on swapping `sessionState.setClusterName("mainnet-beta")` mid-test BETWEEN connect and sign. The test is plausible at the unit tier — it verifies the defensive guard works — but the actual production-equivalent cluster-swap path (an in-app cluster picker) is NOT implemented in 3-3. Flag for Story 5-x cluster-management review. Closure: when a real cluster-management surface lands, add an androidTest variant that exercises the defensive guard via that surface's UX path.
+
+### Transitive CR sweep
+
+- **CR-18 (Story 1-4 → 2-1)** — RESOLVED in 2-1 T6. No drift in 3-3; signing path uses `InflightMap` unchanged.
+- **CR-32 (Story 1-5)** — RESOLVED in 2-1 T10. The `MWA.gd sign_and_send` facade method (T4) hits the desktop UNSUPPORTED_PLATFORM backstop on host platforms via `MobileWalletAdapter::sign_and_send` (`src/mwa/mobile_wallet_adapter.cpp:204` `bridge_->sign_and_send(...)` is platform-gated).
+- **CR-35 (Story 1-5 — headless-Godot test tier)** — HIGH deferred. T6 contract test serves AC-7 surface in lieu (fixture-input verification at the FakeMwaClient seam).
+- **CR-41 (Story 2-1 — dtor-race barrier)** — RESOLVED in 2-1 T10. Exercised by 3-3 T1 mock + T5 androidTest; no regression.
+- **CR-45 (Story 2-3 — Route B harness gap)** — LOW transitive. T5 `AC1SignAndSendHappyE2ETest` + `AC5PendingSubmissionFoundOnNextConnectTest` use Route B (in-process FakeMwaClient via `PluginTestHarness.freshPlugin`).
+- **CR-46 (Story 2-2 — ed25519 submodule env gap)** — LOW transitive. Surfaced again in T3 local scons build attempts (host build fails at `keypair.cpp` ed25519 same as Story 2-2 / 3-1 / 3-2 T3); runtime validation deferred to CI per the established precedent.
+- **CR-47 (Story 2-2 — DD-2-2-7 multi-match tie-break)** — N/A for `sign_and_send` happy path. AC-6 cluster-bleed preflight uses `listAllKeys` for read-only filter, not a `putToken`-tier concern.
+- **CR-48 (Story 2-2 — DD-2-2-5 rotation branch)** — N/A for `sign_and_send`. No `putToken` on signing path per DD-2-2-5 contract.
+- **CR-58 / CR-59 / CR-60 / CR-61 (Story 4-3)** — RECONCILED. Story 3-3 IS the first signing-op story that goes through `withStorageOrReauthRequired` (breadcrumb-write site per DD-3-3-G), so CR-58 (AC-1 testability gap on the wrapper) is exercised here at the unit + androidTest tier. Acknowledge transitive coverage.
+- **CR-3-2-W (Story 3-2)** — RECONCILED. DD-3-3-G locks the write-vs-cleanup wrapping asymmetry. CR-3-2-W rationale stays valid for `mwaSignMessages` / `mwaSignTransactions` (in-memory-only) but is explicitly lifted for `mwaSignAndSendTransactions` (the one signing op that touches disk on the happy path).
+- **CR-3-3-A / CR-3-3-B / CR-3-3-C** — NEW (this story). See "New concerns logged" above.
