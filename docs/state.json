@@ -3,11 +3,17 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-28T19:22:19.931Z",
+  "lastUpdated": "2026-04-28T19:23:45.047Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": null,
+  "currentStory": {
+    "storyId": "5-3",
+    "slug": "lifecycle-observer-rotation-test",
+    "startedAt": "2026-04-28T19:23:45.022Z",
+    "size": "S",
+    "wave": 7
+  },
   "phases": {
     "research": {
       "status": "complete",
@@ -904,7 +910,7 @@
     "stories": {
       "completed": 2,
       "sizeDistribution": {
-        "S": 1
+        "S": 2
       }
     }
   },
