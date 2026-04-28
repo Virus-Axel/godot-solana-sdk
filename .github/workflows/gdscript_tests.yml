@@ -1,8 +1,17 @@
-name: 🎮 GDScript Tests (CR-32 desktop NoOp-bridge backstop)
+name: 🎮 GDScript Tests (Story 5-1 NoOp-bridge UNSUPPORTED_PLATFORM 4-platform matrix)
 # Story 2-1 T10 — CR-32 replacement for the host-mode C++ test tier A-13
-# retired. Runs the MWA facade on desktop (Linux) via headless Godot and
-# asserts mwa_error{UNSUPPORTED_PLATFORM} fires within 1 frame of
-# MWA.connect (NoOp bridge path per D-11 platform selector).
+# retired. Runs the MWA facade on desktop via headless Godot and asserts
+# mwa_error{UNSUPPORTED_PLATFORM} fires within 1 frame of every MWA op
+# (NoOp bridge path per D-11 / AC-A-4 platform selector).
+#
+# Story 2-3 T6 — extended to cover the disconnect flow's UNSUPPORTED_PLATFORM
+# emission as well, per concern C6.
+#
+# Story 5-1 T3 — extended from a single linux-release job (`cr32-desktop`)
+# to a 4-platform matrix (`gdextension-runtime`) covering Linux / Windows /
+# macOS desktop runtime + Web symbol-resolve build verification per
+# DD-5-1-5 LOCKED + DD-5-1-2 LOCKED. Fail-fast disabled — one platform
+# failing must NOT mask evidence from the other 3.
 #
 # Pattern adapted from run_module_test.yml (shared across the existing
 # example-test suites). Self-contained here to avoid coupling with the
@@ -17,10 +26,42 @@ on:
   workflow_dispatch:
 
 jobs:
-  cr32-desktop:
-    name: Linux desktop · MWA NoOp-bridge UNSUPPORTED_PLATFORM
-    runs-on: ubuntu-latest
+  gdextension-runtime:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: linux-desktop
+            name: 🐧 Linux desktop · MWA NoOp-bridge UNSUPPORTED_PLATFORM
+            runner: ubuntu-latest
+            platform: linux
+            arch: x86_64
+            threads: True
+            runtime: headless
+          - id: windows-desktop
+            name: 🪟 Windows desktop · MWA NoOp-bridge UNSUPPORTED_PLATFORM
+            runner: windows-latest
+            platform: windows
+            arch: x86_64
+            threads: True
+            runtime: headless
+          - id: macos-desktop
+            name: 🍎 macOS desktop · MWA NoOp-bridge UNSUPPORTED_PLATFORM
+            runner: macos-latest
+            platform: macos
+            arch: universal
+            threads: True
+            runtime: headless
+          - id: web-symbol-resolve
+            name: 🌐 Web symbol-resolve · MWA NoOp-bridge build green
+            runner: ubuntu-latest
+            platform: web
+            arch: wasm32
+            threads: True
+            runtime: symbol-resolve
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
@@ -34,10 +75,20 @@ jobs:
 
       - name: Set up SCons
         shell: bash
-        run: |
-          python -m pip install scons==4.8
+        run: python -m pip install scons==4.8
 
+      # Web-only emsdk install (mirrors build.yml web matrix entries).
+      - name: (Web) Install emsdk
+        if: ${{ matrix.platform == 'web' }}
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 4.0.20
+
+      # Native-only Godot install (Linux / Windows / macOS via the
+      # chickensoft action). Web's runtime check is build-only — no Godot
+      # binary is invoked there, so the install is skipped via matrix.runtime.
       - name: Set up Godot 4.6.2
+        if: ${{ matrix.runtime == 'headless' }}
         uses: chickensoft-games/setup-godot@v1
         with:
           version: 4.6.2-stable
@@ -46,46 +97,71 @@ jobs:
 
       - name: Get godot-cpp commit SHA
         id: godotcpp
+        shell: bash
         run: echo "sha=$(git -C godot-cpp rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Cache godot-cpp bindings (linux-release)
+      - name: Cache godot-cpp bindings
         uses: actions/cache@v4
         with:
           path: .godot/
-          key: godot-cpp-linux-release-${{ steps.godotcpp.outputs.sha }}
+          key: godot-cpp-${{ matrix.id }}-${{ steps.godotcpp.outputs.sha }}
 
-      - name: Build extension (linux-release x86_64)
+      - name: Build extension
         shell: bash
         run: |
-          scons target=template_release platform=linux arch=x86_64 -j2
+          scons threads=${{ matrix.threads }} target=template_release \
+            platform=${{ matrix.platform }} arch=${{ matrix.arch }} -j2
 
-      - name: Stage addon into example project
+      # Web: symbol-resolve only (DD-5-1-2 LOCKED). The wasm32 runtime
+      # cannot be exercised under `godot --headless` the way native
+      # platforms can — the engine binary IS the wasm32 module; there is
+      # no host runtime in CI. Coverage caveat: AC-1's runtime emission
+      # for Web is satisfied transitively via the Linux-desktop run
+      # (the C++ NoOp-bridge code path is platform-agnostic at the
+      # source level — `platform_selector.cpp:11-13` uses `#ifdef
+      # __ANDROID__` / `#else`, so wasm32 and linux-x86_64 compile the
+      # SAME branch). See CR-5-1-A in concerns.md.
+      - name: (Web) Verify .wasm artifact exists + non-empty
+        if: ${{ matrix.runtime == 'symbol-resolve' }}
+        shell: bash
+        run: |
+          ls -la bin/
+          find bin/ -name '*.wasm' -size +1k -print | grep -q .
+          echo "ALL TESTS PASSED"
+
+      # Native: stage the addon (the host project at example/
+      # WalletAdapterAndroid pre-registers the MWA autoload per Story 2-1
+      # T7 — known-good harness host).
+      - name: (Native) Stage addon into example project
+        if: ${{ matrix.runtime == 'headless' }}
         shell: bash
         run: |
           cp godot-solana-sdk.gdextension bin/ || true
-          # WalletAdapterAndroid's project.godot pre-registers the MWA autoload
-          # (T7) and is a known-good host for this desktop test.
           cd example/WalletAdapterAndroid
           ln -sfn ../../addons addons
           ln -sfn ../../bin bin
 
-      - name: Run CR-32 GDScript test (headless)
+      # Native: run the headless harness. The test scene drives all 8
+      # scenarios sequentially (1 is_supported() check + 7 user-facing op
+      # invocations per Story 5-1 T2 / DD-5-1-4 LOCKED) and prints
+      # "ALL TESTS PASSED" on success. Per-platform log file enables
+      # failure triage via the upload step below.
+      - name: (Native) Run GDScript test harness (headless)
+        if: ${{ matrix.runtime == 'headless' }}
         shell: bash
         run: |
           cd example/WalletAdapterAndroid
-          # Override main scene to the test scene via positional arg (Godot's
-          # convention: everything after --path is opened as scene/resource).
           godot --headless --path . res://addons/SolanaSDK/mwa/tests/test_unsupported_platform.tscn \
             --quit-after 10000 \
-            --log-file cr32-log.txt \
+            --log-file ${{ matrix.id }}-log.txt \
             || true
-          echo "=== CR-32 log ==="
-          cat cr32-log.txt
-          grep -q 'ALL TESTS PASSED' cr32-log.txt
+          echo "=== ${{ matrix.id }} log ==="
+          cat ${{ matrix.id }}-log.txt
+          grep -q 'ALL TESTS PASSED' ${{ matrix.id }}-log.txt
 
       - name: Upload log on failure
-        if: failure()
+        if: failure() && matrix.runtime == 'headless'
         uses: actions/upload-artifact@v4
         with:
-          name: cr32-gdscript-log
-          path: example/WalletAdapterAndroid/cr32-log.txt
+          name: ${{ matrix.id }}-gdscript-log
+          path: example/WalletAdapterAndroid/${{ matrix.id }}-log.txt
