@@ -309,6 +309,13 @@ class MwaAndroidPluginSignAndSendTest {
         seedConnectedSession()
         seedCacheRecord()
 
+        // T2 fixup (D-3-3-T2-1, Rule 1) — capture the breadcrumb JSON at
+        // putPendingSubmission time. AC-3 cleanup runs BEFORE the terminal
+        // success signal, so reading storedPending[rid] AFTER the awaitCondition
+        // for postSignAndSendCompleted would observe a removed entry. Slot
+        // capture preserves the breadcrumb body without ordering coupling.
+        val breadcrumbSlot = slot<String>()
+
         plugin.mwaSignAndSendTransactions(
             requestId = "sas-ac2",
             transactions = listOf(byteArrayOf(0x01, 0x02), byteArrayOf(0x03, 0x04)),
@@ -328,9 +335,9 @@ class MwaAndroidPluginSignAndSendTest {
             factoryInvoked()
         }
 
-        // Inspect the captured breadcrumb JSON (read directly from the in-memory map).
-        val breadcrumbJson = storedPending["sas-ac2"]
-            ?: error("breadcrumb must have been persisted under requestId sas-ac2")
+        // Inspect the breadcrumb JSON captured at put time (immune to AC-3 cleanup).
+        verify(exactly = 1) { store.putPendingSubmission("sas-ac2", capture(breadcrumbSlot)) }
+        val breadcrumbJson = breadcrumbSlot.captured
         val breadcrumb = JSONObject(breadcrumbJson)
         // 6 keys per AC-2 (the dict has 7 — request_id + 6 — but the spec lists the 6 carried-forward keys + the request_id).
         assertEquals("sas-ac2", breadcrumb.getString("request_id"), "AC-2: request_id")
@@ -414,21 +421,27 @@ class MwaAndroidPluginSignAndSendTest {
 
     @Test
     fun `AC-4b breadcrumb cleared on watchdog timeout`() {
-        val plugin = buildPlugin(
-            clientFactory = { mockk<MwaClient>(relaxed = true) },
-        )
+        // T2 fixup (D-3-3-T2-2, Rule 1) — original T1 comment claimed the
+        // relaxed mock's signAndSendTransactions "returns the default
+        // MwaResult.Success with default field values, but the watchdog fires
+        // before the lambda's body completes." MockK actually returns a
+        // synthetic MwaResult subclass instantly (no delay), so withTimeoutOrNull
+        // resolves to a non-null synthetic before the watchdog's 100ms wakeup.
+        // Canonical fix mirroring Story 3-1's `runSigningOp watchdog timeout`
+        // test: stub a slow `coAnswers { delay(5_000L); error("unreachable") }`
+        // so withTimeoutOrNull MUST cancel the lambda — same behavior the test
+        // intent calls for.
+        val slowClient = mockk<MwaClient>(relaxed = true)
+        io.mockk.coEvery {
+            slowClient.signAndSendTransactions(any(), any(), any(), any(), any())
+        } coAnswers {
+            kotlinx.coroutines.delay(5_000L)
+            error("unreachable — withTimeoutOrNull should cancel before this")
+        }
+        val plugin = buildPlugin(clientFactory = { slowClient })
         seedConnectedSession()
         seedCacheRecord()
 
-        // Watchdog triggers at timeoutMs=100; FakeMwaClient is bypassed entirely
-        // in favor of the relaxed-mock factory (the relaxed mock's signAndSendTransactions
-        // returns the default MwaResult.Success with default field values, but the
-        // watchdog fires before the lambda's body completes if we set timeoutMs to
-        // a small value. Direct test on runSigningOp's watchdog branch is the
-        // canonical pattern from Story 3-1 T1 case 6.
-        // For T2: route via mwaSignAndSendTransactions → runSigningOp(timeoutMs=100)
-        // with a slow inner lambda. T1 stub means TODO throws first, so this test
-        // is RED at T1 — turns GREEN at T2.
         plugin.mwaSignAndSendTransactions(
             requestId = "sas-ac4b",
             transactions = listOf(byteArrayOf(0x01)),

@@ -285,4 +285,134 @@ class SecureTokenStoreTest {
 
         assertNull(store.getToken(absentKey))
     }
+
+    // ---------------- Story 3-3 T2 — DD-3-3-A pending-submission breadcrumb storage ----------------
+
+    @Test
+    fun `pendingSubmission round-trip - put then get returns identical breadcrumb JSON under pending prefix`() {
+        // DD-3-3-A: pending-submission breadcrumb storage uses a thin string-
+        // keyed facade over the same EncryptedSharedPreferences instance, under
+        // PENDING_KEY_PREFIX ("pending::"). Round-trip parity guards against
+        // accidental key-prefix drift / value transformation.
+        val storedBlobs = mutableMapOf<String, String>()
+        val editor = mockk<SharedPreferences.Editor>(relaxed = true)
+        val capturedKey = slot<String>()
+        val capturedValue = slot<String>()
+        every { editor.putString(capture(capturedKey), capture(capturedValue)) } answers {
+            storedBlobs[capturedKey.captured] = capturedValue.captured
+            editor
+        }
+        every { editor.apply() } just Runs
+
+        val prefs = mockk<SharedPreferences>(relaxed = true)
+        every { prefs.edit() } returns editor
+        every { prefs.getString(any(), null) } answers {
+            storedBlobs[firstArg<String>()]
+        }
+
+        every {
+            EncryptedSharedPreferences.create(any<Context>(), any(), any(), any(), any())
+        } returns prefs
+
+        val store = SecureTokenStore(context)
+        val breadcrumb = """{"request_id":"sas-123","op_type":"sign_and_send"}"""
+        store.putPendingSubmission("sas-123", breadcrumb)
+
+        // On-disk key MUST be prefixed — guards against any future caller passing
+        // raw requestIds that collide with CacheKey.KEY_PREFIX entries.
+        assertEquals(true, capturedKey.captured.startsWith(SecureTokenStore.PENDING_KEY_PREFIX))
+        assertEquals("${SecureTokenStore.PENDING_KEY_PREFIX}sas-123", capturedKey.captured)
+
+        // Round-trip recovery yields the exact same JSON blob (no mutation).
+        assertEquals(breadcrumb, store.getPendingSubmission("sas-123"))
+    }
+
+    @Test
+    fun `listAllPendingSubmissions filters by pending prefix and strips the prefix from returned keys`() {
+        // DD-3-3-A: the pending-submission iteration MUST filter by
+        // PENDING_KEY_PREFIX so co-located CacheKey entries (mwa::v1::*) and the
+        // FINGERPRINT_SALT_KEY entry (per-install salt) are NOT surfaced as
+        // breadcrumbs. The returned requestIds are the values AFTER the
+        // "pending::" strip — callers do NOT need to know the prefix.
+        val prefs = mockk<SharedPreferences>(relaxed = true)
+        every { prefs.all } returns mapOf(
+            // Pending entries (should be returned, prefix-stripped):
+            "${SecureTokenStore.PENDING_KEY_PREFIX}sas-1" to """{"request_id":"sas-1"}""",
+            "${SecureTokenStore.PENDING_KEY_PREFIX}sas-2" to """{"request_id":"sas-2"}""",
+            // Co-located non-pending entries (must be filtered out):
+            "${CacheKey.KEY_PREFIX}deadbeef" to """{"schema":1}""",
+            SecureTokenStore.FINGERPRINT_SALT_KEY to "0011aa",
+        )
+
+        every {
+            EncryptedSharedPreferences.create(any<Context>(), any(), any(), any(), any())
+        } returns prefs
+
+        val store = SecureTokenStore(context)
+        val pending = store.listAllPendingSubmissions()
+
+        assertEquals(2, pending.size)
+        val byId = pending.associate { it.first to it.second }
+        assertEquals("""{"request_id":"sas-1"}""", byId["sas-1"])
+        assertEquals("""{"request_id":"sas-2"}""", byId["sas-2"])
+        // Negative guard: prefix MUST be stripped — no entry's key should still
+        // carry the "pending::" prefix.
+        assertEquals(false, byId.keys.any { it.startsWith(SecureTokenStore.PENDING_KEY_PREFIX) })
+    }
+
+    @Test
+    fun `removePendingSubmission clears only the target entry and is no-op for absent keys`() {
+        // DD-3-3-A: remove targets ONE entry by requestId. The Editor.remove
+        // contract is no-op on absent keys; this test guards against a future
+        // refactor accidentally clearing the entire prefs file (deleteAll
+        // semantics) when the breadcrumb is missing.
+        val editor = mockk<SharedPreferences.Editor>(relaxed = true)
+        val capturedKey = slot<String>()
+        every { editor.remove(capture(capturedKey)) } returns editor
+        every { editor.apply() } just Runs
+
+        val prefs = mockk<SharedPreferences>(relaxed = true)
+        every { prefs.edit() } returns editor
+
+        every {
+            EncryptedSharedPreferences.create(any<Context>(), any(), any(), any(), any())
+        } returns prefs
+
+        val store = SecureTokenStore(context)
+        store.removePendingSubmission("sas-target")
+
+        // Exactly one remove call for the prefixed key — NO clear() (which would
+        // wipe co-located CacheKey + FINGERPRINT_SALT_KEY entries).
+        assertEquals("${SecureTokenStore.PENDING_KEY_PREFIX}sas-target", capturedKey.captured)
+        verify(exactly = 1) { editor.remove(any()) }
+        verify(exactly = 0) { editor.clear() }
+        verify(exactly = 1) { editor.apply() }
+
+        // Absent-key call still flows through Editor.remove (no-op contract);
+        // SharedPreferences spec is "remove is a no-op for unknown keys".
+        store.removePendingSubmission("sas-absent")
+        verify(exactly = 2) { editor.remove(any()) }
+        verify(exactly = 0) { editor.clear() }
+    }
+
+    @Test
+    fun `listAllPendingSubmissions returns empty list when no pending entries exist`() {
+        // DD-3-3-A: the empty-case path must NOT throw and must NOT surface the
+        // co-located non-pending entries. Without this guard, a future
+        // refactor that drops the `startsWith` filter would leak CacheKey blobs
+        // through the breadcrumb iterator.
+        val prefs = mockk<SharedPreferences>(relaxed = true)
+        every { prefs.all } returns mapOf(
+            // Only the salt + a CacheKey entry — no pending breadcrumbs.
+            SecureTokenStore.FINGERPRINT_SALT_KEY to "0011aa",
+            "${CacheKey.KEY_PREFIX}deadbeef" to """{"schema":1}""",
+        )
+
+        every {
+            EncryptedSharedPreferences.create(any<Context>(), any(), any(), any(), any())
+        } returns prefs
+
+        val store = SecureTokenStore(context)
+        assertEquals(emptyList<Pair<String, String>>(), store.listAllPendingSubmissions())
+    }
 }

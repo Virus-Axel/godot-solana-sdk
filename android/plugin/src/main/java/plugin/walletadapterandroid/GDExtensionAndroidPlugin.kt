@@ -21,6 +21,7 @@ import com.godotengine.godot_solana_sdk.mwa.store.CacheKey
 import com.godotengine.godot_solana_sdk.mwa.store.CacheRecord
 import com.godotengine.godot_solana_sdk.mwa.store.SecureTokenStore
 import com.godotengine.godot_solana_sdk.mwa.store.StorageCorruptException
+import com.godotengine.godot_solana_sdk.mwa.store.sha256Hex
 import com.godotengine.godot_solana_sdk.mwa.util.Base58
 import com.godotengine.godot_solana_sdk.mwa.util.SdkLog
 import com.solana.mobilewalletadapter.clientlib.ActivityResultSender
@@ -821,6 +822,10 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 cluster = auth.cluster,
             ).toString(),
         )
+        // Story 3-3 (DD-3-3-D AC-5) — scan for stale sign_and_send breadcrumbs
+        // AFTER the success signal fires. Off-thread via scope.launch to avoid
+        // blocking the reauth happy-path's terminal-signal emission.
+        scope.launch { scanPendingSubmissions(key.identityUri) }
     }
 
     /**
@@ -1057,7 +1062,55 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      */
     @UsedByGodot
     fun mwaSignAndSendTransactions(requestId: String, transactions: List<ByteArray>, timeoutMs: Long) {
-        TODO("Story 3-3 T2 fills in")
+        val authToken = sessionState.getAuthToken() ?: return emitNotConnectedSign(requestId, "sign_and_send")
+        // Defensive guard mirroring [mwaSignTransactions] (Story 3-1 Dev Notes
+        // C-T2-A inheritance) — surfaces the setKey-was-never-called failure
+        // mode loudly instead of letting later code fail with a less-actionable
+        // ConnectionIdentity error.
+        sessionState.getConnectedKey() ?: error("setKey was never called — see Story 3-1 Dev Notes C-T2-A inheritance")
+        val cluster = sessionState.getClusterName()
+        if (cluster.isEmpty()) return emitNotConnectedSign(requestId, "sign_and_send")
+        val identityUri = sessionState.getIdentityUri()
+        // AC-6 cluster-bleed check (DD-27 / AC-NFR-SEC-4) — synchronous preflight.
+        // If sessionState.getClusterName() has been swapped post-connect, no
+        // cached record under (cluster, identityUri) will match — refuse with
+        // NOT_CONNECTED before any wallet round-trip. listAllKeys() is the
+        // narrowest available filter (no chainId / walletPackage in
+        // sessionState; the 2-tuple `(cluster, identityUri)` is sufficient
+        // because connect/reauth always populate sessionState's clusterName
+        // from the cached record's cluster, so a mismatch can only arise from
+        // an explicit setClusterName swap).
+        val matching = storeProvider(requireContext()).listAllKeys().filter {
+            it.cluster == cluster && it.identityUri == identityUri
+        }
+        if (matching.isEmpty()) return emitNotConnectedSign(requestId, "sign_and_send")
+        val identity = ConnectionIdentity(
+            identityUri = android.net.Uri.parse(identityUri),
+            iconUri = android.net.Uri.parse(sessionState.getIconUri()),
+            identityName = sessionState.getIdentityName(),
+        )
+        val breadcrumb = buildBreadcrumb(requestId, cluster, transactions, clock())
+        scope.launch {
+            // DD-3-3-G fail-closed wrapper on the WRITE site — StorageCorruptException
+            // surfaces as `reauth_required{reason:"keystore_corrupt"}` and
+            // abandons the op (NO wallet round-trip).
+            withStorageOrReauthRequired(requestId, "sign_and_send") {
+                storeProvider(requireContext()).putPendingSubmission(requestId, breadcrumb.toString())
+            } ?: return@launch
+            val result = runSigningOp(SigningOp.SIGN_AND_SEND, requestId, timeoutMs) {
+                signAndSendTransactions(senderProvider(), identity, authToken, transactions, cluster)
+            }
+            if (result is MwaResult.Success) {
+                handleSignAndSendSuccess(requestId, result.value)
+            } else {
+                // AC-4a/b — runSigningOp already emitted the terminal mwa_error /
+                // mwa_timeout signal; cleanup the breadcrumb so the disk surface
+                // doesn't accumulate dead entries. cleanupBreadcrumb is NOT
+                // wrapped per DD-3-3-G (cleanup failure must NOT abandon the
+                // already-emitted error signal).
+                cleanupBreadcrumb(requestId)
+            }
+        }
     }
 
     /**
@@ -1474,7 +1527,27 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * T2 fills in the body.
      */
     private fun handleSignAndSendSuccess(requestId: String, result: SignAndSendResult) {
-        TODO("Story 3-3 T2 fills in")
+        if (!inflightMap.tryTerminate(requestId)) {
+            diagnostics.incrementLateResult()
+            SdkLog.w(TAG, requestId) { "late_result outcome=sign_and_send" }
+            return
+        }
+        // AC-3 ordering invariant — breadcrumb cleanup MUST run BEFORE the
+        // terminal success signal fires per DD-3-3-C. cleanupBreadcrumb
+        // centralizes the try/catch + diagnostics-counter pattern (DD-3-3-G:
+        // not wrapped with withStorageOrReauthRequired — a cleanup failure
+        // must NOT abandon the user's wallet-completed op; the breadcrumb
+        // survives for next-launch scanPendingSubmissions to clean up).
+        cleanupBreadcrumb(requestId)
+        nativeBridge.postSignAndSendCompleted(
+            requestId,
+            buildSignAndSendSuccessJson(
+                requestId = requestId,
+                signatures = result.signatures,
+                submittedAtMs = clock(),
+                confirmationStatus = "submitted",
+            ).toString(),
+        )
     }
 
     /**
@@ -1499,7 +1572,16 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * T2 fills in the body.
      */
     private fun cleanupBreadcrumb(requestId: String) {
-        TODO("Story 3-3 T2 fills in")
+        try {
+            storeProvider(requireContext()).removePendingSubmission(requestId)
+        } catch (ex: StorageCorruptException) {
+            // DD-3-3-G — cleanup-site failures do NOT abandon the already-emitted
+            // terminal signal. Increment a non-secret counter + log an event
+            // marker; the breadcrumb survives for next-launch scanPendingSubmissions
+            // to clean up (DD-4-1-3 wipe-crashed-flag pattern, inherited).
+            diagnostics.incrementCleanupFailedCount()
+            SdkLog.w(TAG, requestId) { "breadcrumb_cleanup_failed: ${ex.javaClass.simpleName}" }
+        }
     }
 
     /**
@@ -1524,8 +1606,35 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      *
      * T2 fills in the body.
      */
-    private fun scanPendingSubmissions(identityUri: String) {
-        TODO("Story 3-3 T2 fills in")
+    private suspend fun scanPendingSubmissions(identityUri: String) {
+        // DD-3-3-G — the listAllPendingSubmissions read IS wrapped: a Tink
+        // corruption event during scan surfaces as `reauth_required` and
+        // abandons the scan (the connect/reauth success signal HAS ALREADY
+        // fired per DD-3-3-D ordering, so the wrapper's null-return cleanly
+        // backs out of the scan without affecting the user-visible terminal
+        // signal).
+        val store = storeProvider(requireContext())
+        // requestId arg of the wrapper is the scan's diagnostic correlation
+        // token — not a real op requestId. The scan's own reauth_required
+        // emission (if any) is identity-scoped, mirroring authorize/reauth.
+        val pending = withStorageOrReauthRequired("scan-pending-submissions", "scan_pending_submissions") {
+            store.listAllPendingSubmissions()
+        } ?: return
+        for ((requestId, breadcrumbDictJson) in pending) {
+            val breadcrumb = try {
+                JSONObject(breadcrumbDictJson)
+            } catch (ex: org.json.JSONException) {
+                // Malformed breadcrumb — drop the entry so it doesn't pile up.
+                // No user-visible signal (the breadcrumb shape is internal).
+                SdkLog.w(TAG, requestId) { "scan_pending_submissions_invalid_json: ${ex.javaClass.simpleName}" }
+                cleanupBreadcrumb(requestId)
+                continue
+            }
+            if (breadcrumb.optString("identity_uri") != identityUri) continue
+            // Emit pending_submission_found, THEN remove (one-shot per AC-5).
+            nativeBridge.postPendingSubmissionFound(buildPendingSubmissionFoundJson(breadcrumb).toString())
+            cleanupBreadcrumb(requestId)
+        }
     }
 
     /**
@@ -1552,7 +1661,13 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         submittedAtMs: Long,
         confirmationStatus: String,
     ): JSONObject {
-        TODO("Story 3-3 T2 fills in")
+        val signaturesArr = JSONArray()
+        for (sig in signatures) signaturesArr.put(sig)
+        return JSONObject()
+            .put("request_id", requestId)
+            .put("signatures", signaturesArr)
+            .put("submitted_at", submittedAtMs)
+            .put("confirmation_status", confirmationStatus)
     }
 
     /**
@@ -1573,7 +1688,16 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * T2 fills in the body.
      */
     private fun buildPendingSubmissionFoundJson(breadcrumb: JSONObject): JSONObject {
-        TODO("Story 3-3 T2 fills in")
+        // Drops `cluster` + `identity_uri` (breadcrumb-internal correlation
+        // metadata, NOT user-facing on the signal — kdoc) and adds the
+        // literal `recommendation: "check_chain_for_signatures"` per AC-5.
+        return JSONObject()
+            .put("request_id", breadcrumb.getString("request_id"))
+            .put("op_type", breadcrumb.getString("op_type"))
+            .put("started_at_ms", breadcrumb.getLong("started_at_ms"))
+            .put("tx_count", breadcrumb.getInt("tx_count"))
+            .put("tx_preview_hashes", breadcrumb.getJSONArray("tx_preview_hashes"))
+            .put("recommendation", "check_chain_for_signatures")
     }
 
     /**
@@ -1596,7 +1720,19 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * T2 fills in the body.
      */
     private fun buildBreadcrumb(requestId: String, cluster: String, transactions: List<ByteArray>, startedAtMs: Long): JSONObject {
-        TODO("Story 3-3 T2 fills in")
+        val previewHashes = JSONArray()
+        // DD-3-3-F: lowercase-hex full SHA-256 (64 chars / 32 bytes / 256 bits).
+        // The plan-spec language `sha256(tx)[:32]` is Python-slice notation over
+        // a `bytes(32)` value — equivalent to the full digest.
+        for (tx in transactions) previewHashes.put(sha256Hex(tx))
+        return JSONObject()
+            .put("request_id", requestId)
+            .put("op_type", "sign_and_send")
+            .put("cluster", cluster)
+            .put("identity_uri", sessionState.getIdentityUri())
+            .put("started_at_ms", startedAtMs)
+            .put("tx_count", transactions.size)
+            .put("tx_preview_hashes", previewHashes)
     }
 
     /**
@@ -1716,6 +1852,12 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     cluster = auth.cluster,
                 ).toString(),
             )
+            // Story 3-3 (DD-3-3-D AC-5) — scan for stale sign_and_send
+            // breadcrumbs AFTER the success signal fires. Off-thread via
+            // scope.launch to avoid blocking the connect happy-path's
+            // terminal-signal emission. Late-result branch (CAS loss) skips
+            // the scan because no terminal connect_completed was emitted.
+            scope.launch { scanPendingSubmissions(identityUri) }
         } else {
             diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=success" }
@@ -1844,6 +1986,16 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     private suspend fun <R> withStorageOrReauthRequired(requestId: String, sourceMethod: String, block: () -> R): R? = try {
         block()
     } catch (ex: StorageCorruptException) {
+        // Story 3-3 (DD-3-3-G refinement) — Story 4-3's original callers
+        // (mwaAuthorize / mwaReauthorize) registered the inflight slot BEFORE
+        // entering the wrapper, so emitReauthRequiredKeystoreCorrupt's
+        // tryTerminate CAS always succeeded. Story 3-3 invokes this wrapper at
+        // the breadcrumb-write site INSIDE scope.launch, BEFORE runSigningOp's
+        // register — the slot does not yet exist. Lazy-register here so the
+        // CAS slot is guaranteed to exist; on already-registered callers the
+        // extra register is a no-op (putIfAbsent returns the existing value,
+        // register returns false, no double-allocation).
+        inflightMap.register(requestId, clock())
         emitReauthRequiredKeystoreCorrupt(requestId, sourceMethod, ex)
         null
     }

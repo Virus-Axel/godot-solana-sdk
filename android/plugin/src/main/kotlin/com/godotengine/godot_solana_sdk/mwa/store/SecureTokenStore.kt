@@ -147,22 +147,23 @@ class SecureTokenStore(private val context: Context) {
      * facade so the breadcrumb schema can evolve independently of the storage
      * shell.
      *
-     * T1 ships TODO bodies; T2 fills in the real impl per DD-3-3-A.
+     * Story 3-3 T2 — the implementation is a thin string-keyed put/get/list/
+     * remove facade over [EncryptedSharedPreferences] under [PENDING_KEY_PREFIX].
      */
     fun putPendingSubmission(requestId: String, breadcrumbDictJson: String) {
-        TODO("Story 3-3 T2 fills in")
+        prefs.edit()
+            .putString(PENDING_KEY_PREFIX + requestId, breadcrumbDictJson)
+            .apply()
     }
 
     /**
-     * Story 3-3 T1 (DD-3-3-A) — returns the breadcrumb JSON string for
-     * [requestId], or null if no entry exists. T2 fills in the real impl.
+     * Story 3-3 (DD-3-3-A) — returns the breadcrumb JSON string for [requestId],
+     * or null if no entry exists.
      */
-    fun getPendingSubmission(requestId: String): String? {
-        TODO("Story 3-3 T2 fills in")
-    }
+    fun getPendingSubmission(requestId: String): String? = prefs.getString(PENDING_KEY_PREFIX + requestId, null)
 
     /**
-     * Story 3-3 T1 (DD-3-3-A) — returns every pending-submission entry as a
+     * Story 3-3 (DD-3-3-A) — returns every pending-submission entry as a
      * `(requestId, breadcrumbDictJson)` pair list. The requestId is the value
      * AFTER the [PENDING_KEY_PREFIX] strip (callers do NOT see the
      * `"pending::"` prefix).
@@ -170,19 +171,21 @@ class SecureTokenStore(private val context: Context) {
      * Wrapped by `withStorageOrReauthRequired` at the plugin layer per
      * DD-3-3-G — this method MAY throw [StorageCorruptException] via the
      * lazy `prefs` init.
-     *
-     * T2 fills in the real impl.
      */
-    fun listAllPendingSubmissions(): List<Pair<String, String>> {
-        TODO("Story 3-3 T2 fills in")
-    }
+    fun listAllPendingSubmissions(): List<Pair<String, String>> = prefs.all
+        .filterKeys { it.startsWith(PENDING_KEY_PREFIX) }
+        .mapNotNull { (k, v) ->
+            val value = v as? String ?: return@mapNotNull null
+            k.removePrefix(PENDING_KEY_PREFIX) to value
+        }
 
     /**
-     * Story 3-3 T1 (DD-3-3-A) — removes the pending entry for [requestId].
-     * No-op if the entry does not exist. T2 fills in the real impl.
+     * Story 3-3 (DD-3-3-A) — removes the pending entry for [requestId]. No-op
+     * if the entry does not exist (SharedPreferences.Editor.remove is a no-op
+     * on absent keys).
      */
     fun removePendingSubmission(requestId: String) {
-        TODO("Story 3-3 T2 fills in")
+        prefs.edit().remove(PENDING_KEY_PREFIX + requestId).apply()
     }
 
     private fun wipeCorruptPrefs() {
