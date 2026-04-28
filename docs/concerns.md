@@ -603,3 +603,59 @@ Deferred items from code reviews and implementation. Tracked for future resoluti
   - **Trigger to revisit:** Consumer ask.
 
 - **Concerns NOT logged but worth noting in the merge commit message:** the upstream auto-merged additions to `.gitignore` (3 lines) and `example/WalletAdapterAndroid/flow.yaml` (10-line modification) AND the NEW `SKILL.md` (569 lines, project-skill manifest doc) are KEPT — non-architectural, harmless. SKILL.md is unrelated to LaiM's `~/.claude/skills/` framework (different scope) and may be useful as a project-overview doc for new contributors.
+
+---
+
+## Story 3-2 Deviations + Concerns Sweep (T7, 2026-04-28)
+
+### Deviations (Rule 1)
+
+- **D-3-2-1 Rule 1 (T2 — `buildSignSuccessJson` parameterized):** Added `payloadKey: String = "signed_payloads"` default arg to support 3-2's `signed_transactions` JSON key without spawning a sibling builder (`buildSignTransactionsSuccessJson`). Per DD-3-2-3 + design intent of "one signing-op family, one helper." Default arg preserves Story 3-1's call site at `handleSignMessagesSuccess` (`GDExtensionAndroidPlugin.kt:1337` — 2-arg form unchanged); 3-2 supplies `payloadKey = "signed_transactions"` explicitly at `handleSignTransactionsSuccess` (line 1366). Story 3-3's `sign_and_send` keeps `"signed_payloads"` (the wire-format key the GDScript signal also re-uses for the pre-submission signed-transactions array; the post-submission `signature_*` fields ride a separate top-level key, not on this helper).
+
+- **D-3-2-2 Rule 1 (T2 — `emitNotConnectedSign` parameterized):** Added `sourceMethod: String = "sign_messages"` default arg to support 3-2's `"sign_transactions"` source_method without spawning a sibling helper. Story 3-1's call site at `mwaSignMessages` (`GDExtensionAndroidPlugin.kt:898` — 1-arg form) preserved by the default. 3-2's `mwaSignTransactions` supplies `"sign_transactions"` explicitly. Story 3-3's `sign_and_send` will supply `"sign_and_send"`.
+
+- **D-3-2-3 Rule 1 (T1 PRE-STEP — `countMethodLines` extracted to `LocCountUtil.kt`):** Test helper extracted from `MwaAndroidPluginSignMessagesTest` class body (was `private fun countMethodLines(...)` at line 255) to a top-level `internal fun` in NEW file `LocCountUtil.kt` (same package: `com.godotengine.godot_solana_sdk.mwa.plugin`). Per DD-3-2-2 + the C-3-2-A pre-impl audit fix. Story 3-1 source touch is bounded (1 file edit + 1 new file); 3-1's `MwaAndroidPluginSignMessagesTest` test class loses 1 helper definition (`countMethodLines` is now imported from `LocCountUtil.kt`; same-package + same-module so no `import` required); behavioral semantics unchanged — Story 3-1's AC-1 LOC budget test still GREEN against the shared helper. Story 3-3 inherits the shared helper without further refactor.
+
+- **D-3-2-4 Rule 1 (T2 scope contraction — `ci/grep_bans.sh` pattern-10):** Story 3-2 T2 spec called for a 1-line extension to `ci/grep_bans.sh` pattern-10 to ban `code = "SIGN_TRANSACTIONS_FAILED"` and `code = "sign_transactions_failed"`. Verified at T2 that **pattern-10 already covers all three signing-op variants** via the Story 3-1 T2 forward-thinking regex on line 84:
+  ```
+  (SIGN_(MESSAGES|TRANSACTIONS|AND_SEND)_FAILED|sign_(messages|transactions|and_send)_failed|MwaError\.Sign(Messages|Transactions|AndSend)Failed)
+  ```
+  The self-test fixture (`.github/workflows/testdata/grep_ban_fixtures/per_op_error_signal.kt.bad`) also already exercises the `SIGN_TRANSACTIONS_FAILED` / `sign_transactions_failed` / `SignTransactionsFailed` variants (lines 23-24, 44-45, 65-66). T2's "extension" reduces to a verification step — no code emitted. Logged for T7 audit-trail completeness; Story 3-3's grep_bans extension will likely be the same scope contraction.
+
+- **D-3-2-5 Rule 1 (T3 story-doc inaccuracy — `.hpp` path):** Story §Verified Interfaces row + §216-219 cite `src/mwa/include/mobile_wallet_adapter.hpp` for the `MobileWalletAdapter::sign_transactions` method-declaration file. The actual file is at `include/mwa/mobile_wallet_adapter.hpp` (the `include/` directory lives at repo root, not under `src/mwa/`). Story-doc inaccuracy only; no code impact. T3 spot-check confirmed all 5 anchors (signal at `src/mwa/mobile_wallet_adapter.cpp:98`, ClassDB binding at `:116`, impl at `:194,201`, header decl at the corrected path) per C-3-2-C verification.
+
+### Mid-implementation Rule-1 adjustments (rolled into commit messages, listed here for audit-trail completeness)
+
+- **D-3-2-T2-RULE1-1 Rule 1 (T2 — `buildSignSuccessJson` ktlint shape):** ktlint's `parameter-list-wrapping` rule rejected the multi-line signature with trailing comma:
+  ```kotlin
+  internal fun buildSignSuccessJson(
+      requestId: String,
+      signedPayloads: List<ByteArray>,
+      payloadKey: String = "signed_payloads",
+  ): JSONObject {
+  ```
+  with the pair-rule "no whitespace expected between last parameter and closing parenthesis" + "missing trailing comma before `)`" (ktlint expects EITHER all-on-one-line OR multi-line WITH trailing comma AND the closing paren on its own line — there's a tight format ktlint enforces; this codebase prefers the all-on-one-line form for short-signature helpers). Adjusted to a 116-col single-line signature. ktlint clean.
+
+- **D-3-2-T5-RULE1-1 Rule 1 (T5 — `AC1SignTransactionsHappyE2ETest` line-width):** One `assertTrue` message string literal exceeded the 140-col line-width rule. Broken across 3 string-literal concatenations. Behavior unchanged.
+
+- **D-3-2-T6-FIXUP-RULE1-1 Rule 1 (T6 fixup — stale TODO references in test kdoc):** `MwaAndroidPluginSignTransactionsTest` kdoc (class-level + 1 inline comment) was authored at T1 to describe the TDD-red baseline ("6 of 7 tests fail at runtime against the `TODO("Story 3-2 T2 fills in")` body"). Post-T2 the production TODOs are gone, but the literal `TODO` substring in 4 kdoc lines was triggering `laim-verify-checks`'s stub-marker grep. Rewrote the kdoc class-level "TDD red baseline (T1)" block in past tense (no literal TODO substring) and dropped the "bypasses mwaSignTransactions's TODO body" phrase from the runSigningOp inline comment. Net diff: -13 / +10 lines. No assertion or test-body change. ktlint clean. Mirrors the Story 3-1 T1 fixup precedent (commit `87692808`) which solved the same hook false-positive on `SignMessagesContractTest`.
+
+### New concern logged
+
+- **CR-3-2-W (LOW, design-tradeoff acknowledged — signing family does NOT defensively touch `SecureTokenStore` for Tink-corruption detection):** Per DD-3-2-4 + the DD-4-3-1.a fail-closed-wrapper inheritance from Story 4-3, `mwaSignTransactions` (and `mwaSignMessages` from Story 3-1) does NOT wrap any `SecureTokenStore` call site with `withStorageOrReauthRequired` because the signing path reads `sessionState.getAuthToken()` in-memory only — no disk I/O on the signing happy path (DD-3-1-8 + DD-3-2-5 inheritance). If a future Tink/Keystore corruption event happens BETWEEN connect's wallet-handshake (which writes the token to `EncryptedSharedPreferences` via `store.putToken`) AND the first sign call (which reads only from in-memory `sessionState`), the corruption surfaces only on the next reauth/authorize call (which DOES go through `withStorageOrReauthRequired`), not on the immediate sign call. Acceptable today (signing doesn't read from store; the in-memory token is fresh from connect's response); flagged for Story 5-* hardening review if the signing path's contract ever evolves to re-read the cached record (e.g., for rotation detection on the signing path, which DD-2-2-5 currently scopes to reauth-only). NOT a 3-2 deliverable.
+  - **Risk:** Low — corruption between connect and first sign is rare and surfaces loudly on the next reauth. The single in-memory failure mode is the existing `setKey was never called` `error(...)` defensive guard at the top of `mwaSignTransactions` (D-T2-A inheritance).
+  - **Mitigation:** None today. The `withStorageOrReauthRequired` fail-closed wrapper exists at `GDExtensionAndroidPlugin.kt` (Story 4-3 T2) and is reusable; if a future signing-path rotation-detect feature is added, wrap the new disk-touching call site with this helper.
+  - **Trigger to revisit:** Story 5-* signing-path hardening review, OR a security audit that requires fail-closed semantics on every `@UsedByGodot` entry point regardless of disk I/O.
+
+### Transitive CR sweep
+
+- **CR-18 (Story 1-4 → 2-1)** — RESOLVED in 2-1 T6 (dispatcher Callable+Array form closed the TOCTOU window). No drift in 3-2; signing path uses `InflightMap` unchanged.
+- **CR-32 (Story 1-5)** — RESOLVED in 2-1 T10 (desktop UNSUPPORTED_PLATFORM backstop via shared `build_unsupported_platform_payload` helper). The `MWA.gd sign_transactions` facade method (T4) hits the same backstop on host platforms via `MobileWalletAdapter::sign_transactions` (`src/mwa/mobile_wallet_adapter.cpp:198` `bridge_->sign_transactions(...)` is platform-gated; on host the `unsupported_platform_payload` fires).
+- **CR-35 (Story 1-5 — headless-Godot test tier)** — HIGH deferred. T6 contract test serves AC-5 surface in lieu (fixture-input verification at the FakeMwaClient seam, not a full Godot-runtime contract).
+- **CR-41 (Story 2-1 — dtor-race barrier)** — RESOLVED in 2-1 T10. Exercised by 3-2 T1 mock + T5 androidTest; no regression observed.
+- **CR-45 (Story 2-3 — Route B harness gap)** — LOW transitive. T5 `AC1SignTransactionsHappyE2ETest` uses Route B (in-process FakeMwaClient injected via `PluginTestHarness.freshPlugin`) — same harness gap as 2-1/2-2/2-3/3-1/4-1. Mitigations: T5 R8 smoke + future CR-35 closure.
+- **CR-46 (Story 2-2 — ed25519 submodule env gap)** — LOW transitive. Surfaced again in T3 local scons build (`scons platform=macos target=template_debug` failed at `src/keypair.cpp` on `'ed25519.h' file not found`; the `ed25519` submodule git URL is `git@github.com:orlp/ed25519.git`, requiring SSH credentials not configured in the local dev env). Same blocker accepted by Story 2-2 T3 + Story 3-1 T3 — runtime validation is deferred to T5 androidTest on CI emulator (which has full submodule resolution + Android NDK).
+- **CR-47 (Story 2-2 — DD-2-2-7 multi-match tie-break)** — N/A for sign_transactions. Signing path doesn't invoke `listAllKeys`; preflight uses synchronous `getAuthToken` null-check per DD-3-1-6 inheritance via DD-3-2-5.
+- **CR-48 (Story 2-2 — DD-2-2-5 rotation branch)** — N/A for sign_transactions. No `putToken` on signing path per DD-2-2-5 contract (rotation-detect is reauth-only).
+- **CR-58 / CR-59 / CR-60 / CR-61 (Story 4-3)** — NOT applicable directly. Signing path doesn't go through `withStorageOrReauthRequired` per DD-3-2-4 / DD-4-3-1.a inheritance; acknowledge transitively.
+- **CR-3-2-W** — NEW (this story). See "New concern logged" above.
