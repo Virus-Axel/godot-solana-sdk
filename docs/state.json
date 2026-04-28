@@ -3,11 +3,17 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-28T18:11:28.834Z",
+  "lastUpdated": "2026-04-28T18:46:56.777Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": null,
+  "currentStory": {
+    "storyId": "5-1",
+    "slug": "non-android-platform-load-ci",
+    "startedAt": "2026-04-28T18:46:56.772Z",
+    "size": "S",
+    "wave": 7
+  },
   "phases": {
     "research": {
       "status": "complete",
@@ -830,14 +836,18 @@
       "gate5Passes": 1
     },
     "stories": {
-      "completed": 1
+      "completed": 1,
+      "sizeDistribution": {
+        "S": 1
+      }
     }
   },
   "waveStrategy": {
     "2": "sequential",
     "3": "sequential",
     "5": "sequential",
-    "6": "sequential"
+    "6": "sequential",
+    "7": "sequential"
   },
   "devops": {
     "pass1": "pending",
@@ -856,7 +866,7 @@
   },
   "recovery": {
     "interrupted": true,
-    "interruptedAt": "2026-04-28T14:01:37.748Z",
+    "interruptedAt": "2026-04-28T18:40:55.349Z",
     "errorType": "unknown",
     "errorMessage": "",
     "uncommittedChanges": true
