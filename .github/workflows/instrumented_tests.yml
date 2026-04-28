@@ -175,6 +175,12 @@ jobs:
             # the runSigningOp shared pipeline). Inherits A-10 keep rules; the
             # smoke grep asserts R8 did not strip or rename the symbol.
             mwaSignMessages
+            # Story 3-2 T5 — mwaSignTransactions is a new @UsedByGodot instance
+            # method introduced in T2 (consumer of the same runSigningOp shared
+            # pipeline as mwaSignMessages, with payloadKey="signed_transactions"
+            # rename per DD-3-2-3). Inherits A-10 keep rules; the smoke grep
+            # asserts R8 did not strip or rename the symbol.
+            mwaSignTransactions
             # Story 4-1 T7 — mwaDeauthorize is a new @UsedByGodot instance method
             # introduced in T2 (try/catch/finally + multi-key wipe per
             # DD-4-1-3 / DD-4-1-6). Inherits A-10 keep rules; the smoke grep
@@ -204,6 +210,11 @@ jobs:
             # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
             # post_arity2_completed("sign_messages_completed", ...)).
             postSignMessagesCompletedNative
+            # Story 3-2 T1 — parallel external fun for sign_transactions_completed's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
+            # post_arity2_completed("sign_transactions_completed", ...)).
+            postSignTransactionsCompletedNative
             # Story 4-1 T1 — parallel external fun for deauthorize_completed's
             # Kotlin→C++ callback path. JNI symbol linked at runtime via the
             # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
