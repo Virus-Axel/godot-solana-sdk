@@ -854,6 +854,33 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postSig
     post_arity2_completed(env, reqId, resultDictJson, "sign_messages_completed", "postSignMessagesCompletedNative");
 }
 
+// Story 3-2 T3 — 2-param `sign_transactions_completed` JNIEXPORT per A-12.
+// Kotlin side: GDExtensionAndroidPlugin.Companion.postSignTransactionsCompletedNative (external fun)
+// → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
+//       "sign_transactions_completed", Array::make(req_id, result_dict))
+// under CR-41 CallbackLease — parallel to postSignMessagesCompletedNative above.
+//
+// The result_dict carries the 2-key shape `{request_id, signed_transactions:
+// [base64...]}` per arch.md §3 sign_transactions_completed signal schema +
+// DD-3-2-3 (payloadKey rename — `signed_transactions` instead of
+// `signed_payloads`; see buildSignSuccessJson on the Kotlin side). Signed
+// transactions are wallet-signed serialized Solana txs (public bytes by
+// definition; the wallet has already returned them and the caller will
+// forward to the blockchain) — no secret-key material crosses this boundary;
+// SecretString does NOT participate in this signal. On JSON parse failure
+// (unlikely; the Kotlin side builds via JSONObject + JSONArray in
+// buildSignSuccessJson), post_parse_failure_error falls back to
+// mwa_error{PROTOCOL_ERROR, source_method="sign_transactions",
+// cause="parse_failure"} via the existing helper — preserves the
+// terminal-signal invariant per DD-15.
+// No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
+// Signals are posted via dispatcher only — no direct signal emission here.
+JNIEXPORT void JNICALL
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postSignTransactionsCompletedNative(
+    JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
+    post_arity2_completed(env, reqId, resultDictJson, "sign_transactions_completed", "postSignTransactionsCompletedNative");
+}
+
 // Story 4-1 T3 — 2-param `deauthorize_completed` JNIEXPORT per A-12.
 // Kotlin side: GDExtensionAndroidPlugin.Companion.postDeauthorizeCompletedNative (external fun)
 // → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
