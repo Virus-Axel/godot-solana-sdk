@@ -101,6 +101,24 @@ internal interface NativeBridge {
     fun postSignMessagesCompleted(requestId: String, resultDictJson: String)
 
     /**
+     * 2-param `sign_transactions_completed` per A-12 — Story 3-2. `requestId` is
+     * the first signal argument; `resultDictJson` is the second (Dictionary
+     * carrying `{request_id, signed_transactions: Array[PackedByteArray]}` per
+     * arch §3 — 2-key shape, mirrors `sign_messages_completed` with the
+     * payload-key renamed to `signed_transactions` per DD-3-2-3 + D-3-2-1).
+     *
+     * Like `postSignMessagesCompleted`, the `resultDictJson` here does NOT
+     * carry secret material — `signed_transactions` are wallet-signed serialized
+     * Solana transactions (public bytes by definition). The 2-param `*_completed`
+     * family uniformly warns against payload logging to keep the seam convention
+     * uniform and the grep-ban surface consistent.
+     *
+     * **WARNING — do NOT log or interpolate `resultDictJson`.** `ci/grep_bans.sh`
+     * pattern-8 bans `resultDictJson` from any `Log.*` / `SdkLog.*` call.
+     */
+    fun postSignTransactionsCompleted(requestId: String, resultDictJson: String)
+
+    /**
      * 2-param `deauthorize_completed` per A-12 — Story 4-1. `requestId` is the
      * first signal argument; `resultDictJson` is the second (Dictionary
      * carrying the 4-key shape `{request_id, remote_revoke_succeeded,
@@ -196,6 +214,10 @@ internal object DefaultNativeBridge : NativeBridge {
 
     override fun postSignMessagesCompleted(requestId: String, resultDictJson: String) {
         GDExtensionAndroidPlugin.postSignMessagesCompletedNative(requestId, resultDictJson)
+    }
+
+    override fun postSignTransactionsCompleted(requestId: String, resultDictJson: String) {
+        GDExtensionAndroidPlugin.postSignTransactionsCompletedNative(requestId, resultDictJson)
     }
 
     override fun postDeauthorizeCompleted(requestId: String, resultDictJson: String) {

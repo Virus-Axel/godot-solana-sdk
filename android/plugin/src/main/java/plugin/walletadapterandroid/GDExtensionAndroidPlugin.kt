@@ -195,8 +195,19 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
         @JvmStatic
         fun mwaSignTransactionsFromJni(reqId: String) {
-            Log.i(TAG, "mwaSignTransactionsFromJni: Story 3-2 scope; reqId=$reqId")
-            instance?.emitNotImplemented(reqId, "sign_transactions") ?: emitInstanceNullError(reqId, "sign_transactions")
+            // Story 3-2 T1 — JNI shim signature stays at `(reqId)` for T1+T2 (the
+            // C++ side at `MobileWalletAdapter::sign_transactions` still calls the
+            // 1-arg form). Story 3-2 T3 evolves BOTH sides together: C++ passes
+            // through real `transactions` + `timeoutMs`, and this shim's signature
+            // evolves to `(reqId, transactionsJson, timeoutMs)` (or equivalent) at
+            // that point. For T1+T2 the shim delegates to `mwaSignTransactions(...)`
+            // with empty transactions so the JNI surface lights up at link time —
+            // production callers that route through C++ currently hit a no-op
+            // signing path (empty payload never produces a wallet round-trip) until
+            // T3 wires real transactions through. Kotlin unit tests bypass this
+            // shim and call `mwaSignTransactions` directly with real values per
+            // DD-3-1-9 responsibility split inherited by Story 3-2.
+            instance?.mwaSignTransactions(reqId, emptyList(), 0L) ?: emitInstanceNullError(reqId, "sign_transactions")
         }
 
         @JvmStatic
@@ -289,6 +300,13 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3).
         @JvmStatic
         external fun postSignMessagesCompletedNative(reqId: String, resultDictJson: String)
+
+        // Story 3-2 T1 — parallel external fun for sign_transactions_completed's
+        // Kotlin→C++ callback path. JNI symbol linked at runtime via the
+        // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (Story 3-2 T3).
+        // Inert at JVM level until the JNI symbol arrives in T3.
+        @JvmStatic
+        external fun postSignTransactionsCompletedNative(reqId: String, resultDictJson: String)
 
         // Story 4-1 T1 — parallel external fun for deauthorize_completed's
         // Kotlin→C++ callback path. JNI symbol linked at runtime via the
@@ -911,6 +929,43 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
+     * Story 3-2 — `sign_transactions` entry point. Called from the JNI
+     * [mwaSignTransactionsFromJni] shim on a worker thread (T3 evolves the JNI
+     * shim signature to pass `transactions` + `timeoutMs` through), or directly
+     * by Kotlin unit tests with real values per DD-3-1-9 (inherited).
+     *
+     * Body shape (T2 fills in — mirrors [mwaSignMessages] with two textual deltas:
+     *   (a) lambda calls `signTransactions(sender, identity, authToken, transactions)`
+     *       (4-arg, no `addresses`) instead of `signMessages(... messages, addresses)`
+     *       (5-arg);
+     *   (b) success path emits `sign_transactions_completed` via
+     *       [handleSignTransactionsSuccess] instead of `sign_messages_completed`):
+     *  1. DD-3-1-6 preflight (inherited via 3-2 DD-3-2-5) — synchronous
+     *     `is_connected()` check via `sessionState.getAuthToken()`. Emit
+     *     `mwa_error{NOT_CONNECTED, source_method="sign_transactions"}` and return
+     *     if disconnected. NO `scope.launch` on this branch (AC-3 "within 1 frame").
+     *  2. Identity reconstruction per DD-3-1-8 (inherited).
+     *  3. `scope.launch { runSigningOp(SIGN_TRANSACTIONS, requestId, timeoutMs) {
+     *     signTransactions(senderProvider(), identity, authToken, transactions) } }`
+     *     — DD-3-1-2 receiver is `MwaClient`; the lambda calls the 4-arg
+     *     `signTransactions(...)` (no `addresses`).
+     *  4. On `MwaResult.Success`, route to [handleSignTransactionsSuccess]
+     *     (T2 lands this helper) which CAS-terminates and emits
+     *     `sign_transactions_completed` via `postSignTransactionsCompleted`
+     *     using `buildSignSuccessJson(requestId, signedPayloads,
+     *     payloadKey = "signed_transactions")` per DD-3-2-3.
+     *
+     * AC-2 enforces a ≤20-LOC budget on this body — see
+     * `MwaAndroidPluginSignTransactionsTest."AC-2 mwaSignTransactions body is at most
+     * 20 LOC"` (T1) for the source-line counter rule (shared `countMethodLines`
+     * helper in `LocCountUtil.kt` per DD-3-2-2 + D-3-2-3).
+     */
+    @UsedByGodot
+    fun mwaSignTransactions(requestId: String, transactions: List<ByteArray>, timeoutMs: Long) {
+        TODO("Story 3-2 T2 fills in")
+    }
+
+    /**
      * Story 4-1 — `deauthorize` revoke + unconditional local-cache wipe (FR-5 /
      * AC-NFR-SEC-5). Best-effort remote `clientlib.revoke(authToken)` wrapped in
      * `try { ... } catch { ... } finally { wipe }` per DD-4-1-3; on remote
@@ -1259,6 +1314,27 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             requestId,
             buildSignSuccessJson(requestId, result.signedPayloads).toString(),
         )
+    }
+
+    /**
+     * Story 3-2 T2 — success path for sign_transactions. Mirrors
+     * [handleSignMessagesSuccess] with two textual deltas: (a) emits
+     * `sign_transactions_completed` via [NativeBridge.postSignTransactionsCompleted];
+     * (b) calls [buildSignSuccessJson] with `payloadKey = "signed_transactions"`
+     * per DD-3-2-3 + D-3-2-1 (parameterized helper, default arg keeps Story 3-1
+     * call site unchanged).
+     *
+     * CAS-terminates the inflight request and emits the 2-key
+     * `{request_id, signed_transactions}` payload per DD-3-2-3. On `tryTerminate`
+     * failure (lost CAS race), increments `lateResult` diagnostics and silently
+     * drops — terminal-signal invariant per arch §7.3 (inherited).
+     *
+     * Note: signing does NOT mutate `MwaSessionState` — the auth_token stays
+     * unchanged after a sign call (DD-2-2-5 reauth-only; CR-48 N/A for
+     * sign_transactions confirms the invariant).
+     */
+    private fun handleSignTransactionsSuccess(requestId: String, result: SignResult) {
+        TODO("Story 3-2 T2 fills in")
     }
 
     /**

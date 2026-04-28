@@ -21,7 +21,6 @@ import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.godotengine.godot.Godot
 import org.json.JSONObject
@@ -36,35 +35,44 @@ import plugin.walletadapterandroid.SigningOp
 import java.io.File
 
 /**
- * Story 3-1 T1 — `GDExtensionAndroidPlugin.mwaSignMessages` + `runSigningOp`
- * coverage (TDD red).
+ * Story 3-2 T1 — `GDExtensionAndroidPlugin.mwaSignTransactions` coverage (TDD red).
  *
- * 8 scenarios:
- *   1. AC-1 LOC budget — `mwaSignMessages` body ≤ 20 Kotlin LOC (per DD-3-1-9 counter rule)
- *   2. AC-2 happy E2E — FakeMwaClient `sign_messages_success.json` → `signed_payloads.size == 2`
- *   3. AC-3 not-connected preflight — no cached authToken → NOT_CONNECTED within 1 frame; `mwaClientFactory` never invoked (DD-3-1-6)
- *   4. AC-4 user-canceled fixture — `sign_messages_user_canceled.json` → USER_CANCELED with `recoverable=true`
- *   5. `runSigningOp` passes through `MwaResult.Success` unchanged (DD-3-1-2 + DD-3-1-3 evidence)
- *   6. `runSigningOp` watchdog timeout returns `Failure(MwaError.Timeout)` + emits `mwa_timeout` (DD-3-1-3)
- *   7. Duplicate requestId emits PROTOCOL_ERROR on register (carries from 2-1/2-2/2-3)
- *   8. Late-result-after-terminate is dropped (carries from 2-1/2-2)
+ * 7 scenarios:
+ *   1. AC-1 happy path — FakeMwaClient `sign_transactions_success.json` →
+ *      `signed_transactions.size == 2` (renamed payload key per DD-3-2-3 + D-3-2-1)
+ *   2. AC-2 LOC budget — `mwaSignTransactions` body ≤ 20 Kotlin LOC (per shared
+ *      [countMethodLines] helper in `LocCountUtil.kt`, DD-3-2-2 + D-3-2-3)
+ *   3. AC-3 not-connected preflight — no cached authToken → NOT_CONNECTED within 1
+ *      frame; `mwaClientFactory` never invoked (DD-3-1-6 inherited via DD-3-2-5)
+ *   4. AC-4 wallet_rejected fixture — `sign_transactions_wallet_rejected.json` →
+ *      WALLET_REJECTED (distinct error code from sign_messages's USER_CANCELED;
+ *      same emission path through `runSigningOp`'s Failure branch)
+ *   5. `runSigningOp` routes Failure through mwa_error with
+ *      `source_method=sign_transactions` (DD-3-2-5 inheritance evidence — confirms
+ *      `SigningOp.SIGN_TRANSACTIONS.sourceMethod == "sign_transactions"` flows
+ *      correctly through the helper's Failure branch)
+ *   6. Duplicate requestId emits PROTOCOL_ERROR on register (carries from 2-1/2-2/2-3/3-1)
+ *   7. Late-result-after-terminate is dropped (carries from 2-1/2-2/3-1)
  *
- * As of Story 3-1 T2, all 8 tests pass against the real impl. Pre-T2 (TDD-red
- * baseline) had 7 tests failing at runtime against stub bodies that threw
- * `kotlin.NotImplementedError`; T2 replaced the stubs with the real impl per
- * DD-3-1-1..11. Test #1 (AC-1 LOC budget) was the only test that passed at T1
- * (stub body was 1 LOC under the ≤20 budget); it now enforces the budget against
- * the real implementation (~13 LOC body in `mwaSignMessages` per DD-3-1-9
- * counter rule).
+ * **TDD red baseline (T1):** 6 of 7 tests fail at runtime against the
+ * `TODO("Story 3-2 T2 fills in")` body in [GDExtensionAndroidPlugin.mwaSignTransactions]
+ * + [GDExtensionAndroidPlugin.handleSignTransactionsSuccess] — they throw
+ * `kotlin.NotImplementedError` before reaching the assertion. Test #5 (runSigningOp
+ * direct) is GREEN at T1 because it bypasses `mwaSignTransactions` and calls the
+ * shared [runSigningOp] helper from Story 3-1 directly. Test #2 (AC-2 LOC budget)
+ * is GREEN at T1 because the TODO body is 1 LOC, well under 20. T2 turns the
+ * remaining 5 GREEN by replacing the TODO with the real impl per DD-3-2-1..5.
  *
  * Plugin is built via the `@VisibleForTesting` ctor with injected collaborators
- * (identical to [MwaAndroidPluginReauthorizeTest]):
+ * (identical to [MwaAndroidPluginSignMessagesTest] / [MwaAndroidPluginReauthorizeTest]):
  *   - recording [NativeBridge] mock
  *   - map-backed fake [SecureTokenStore] via `storeProvider`
- *   - FakeMwaClient or slow-client test double via `mwaClientFactory`
+ *   - FakeMwaClient or relaxed-mock test double via `mwaClientFactory`
+ *     (relaxed-mock is needed for runSigningOp direct tests #5 + the AC-3 preflight
+ *     branch's "factory must NOT invoke" assertion — see C-3-2-B note in story §168)
  *   - no-op `senderProvider` (signing path doesn't launch a wallet Activity)
  */
-class MwaAndroidPluginSignMessagesTest {
+class MwaAndroidPluginSignTransactionsTest {
 
     private val fixturesDir: File by lazy {
         val prop = System.getProperty("mwa.fixtures.dir")
@@ -72,7 +80,7 @@ class MwaAndroidPluginSignMessagesTest {
         File(prop).also { require(it.isDirectory) { "fixtures dir missing: $it" } }
     }
 
-    /** AC-1 source-root system property (Story 3-1 T1 build wiring — `mwa.plugin.source.root`). */
+    /** AC-2 source-root system property (Story 3-1 T1 build wiring — `mwa.plugin.source.root`). */
     private val pluginSourceRoot: File by lazy {
         val prop = System.getProperty("mwa.plugin.source.root")
             ?: error("system property 'mwa.plugin.source.root' must be set (wired in build.gradle.kts)")
@@ -92,13 +100,13 @@ class MwaAndroidPluginSignMessagesTest {
     private val walletIconUri = "https://wallet.example/icon.png"
     private val publicKey = "AbcDefGhiJkl1234567890AbcDefGhiJkl1234567890"
 
-    // FakeMwaClient `sign_messages_success.json` fixture's `expected_input.auth_token`
-    // is `dGVzdC1hdXRoLXRva2VuLXNpZ25tc2c=` (UTF-8 bytes; Story 1-6 D-2 opaque-string
-    // contract). Pre-seed with byte-identical value so `is_connected()` is true AND
-    // the FakeMwaClient happy path's auth-token comparison passes if the impl ever
-    // adds one (it doesn't currently, but matching the convention is cheaper than
-    // diverging).
-    private val authTokenBytes = "dGVzdC1hdXRoLXRva2VuLXNpZ25tc2c=".toByteArray(Charsets.UTF_8)
+    // FakeMwaClient `sign_transactions_success.json` fixture's `expected_input.auth_token`
+    // (Story 1-6 D-2 opaque-string contract). Pre-seed with byte-identical value so
+    // `is_connected()` is true AND the FakeMwaClient happy path's auth-token comparison
+    // passes if the impl ever adds one (it doesn't currently, but matching the convention
+    // is cheaper than diverging). Mirrors the SignMessages test convention with the
+    // `-signtxn` suffix to identify which fixture's bytes these came from.
+    private val authTokenBytes = "dGVzdC1hdXRoLXRva2VuLXNpZ250eA==".toByteArray(Charsets.UTF_8)
     private val salt = ByteArray(32) { 0x01 }
 
     @BeforeEach
@@ -110,8 +118,8 @@ class MwaAndroidPluginSignMessagesTest {
         every { Log.w(any<String>(), any<String>()) } returns 0
         every { Log.e(any<String>(), any<String>()) } returns 0
 
-        // ConnectionIdentity construction goes through Uri.parse(...) per DD-3-1-8 —
-        // mock to a relaxed mock so JVM-side construction succeeds.
+        // ConnectionIdentity construction goes through Uri.parse(...) per DD-3-1-8
+        // (inherited) — mock to a relaxed mock so JVM-side construction succeeds.
         mockkStatic(Uri::class)
         every { Uri.parse(any()) } returns mockk(relaxed = true)
 
@@ -175,12 +183,11 @@ class MwaAndroidPluginSignMessagesTest {
     }
 
     /**
-     * Seeds MwaSessionState with a connected-state snapshot per DD-3-1-8 — same
-     * field set [mwaSignMessages] reads via `getAuthToken / getConnectedKey /
-     * getClusterName / getIdentityUri / getIconUri / getIdentityName`. Note the
-     * setter for identity is the COMBINED `setIdentity(identityUri, iconUri,
-     * identityName)` (MwaSessionState.kt:136), NOT three separate setters — fix
-     * tracked as D-3-1-9 from the Pre-Implementation Audit.
+     * Seeds MwaSessionState with a connected-state snapshot per DD-3-1-8 (inherited
+     * via DD-3-2-5) — same field set [mwaSignTransactions] reads via `getAuthToken /
+     * getConnectedKey / getClusterName / getIdentityUri / getIconUri / getIdentityName`.
+     * Setter for identity is the COMBINED `setIdentity(identityUri, iconUri,
+     * identityName)` form (D-3-1-9 inheritance).
      */
     private fun seedConnectedSession() {
         GDExtensionAndroidPlugin.sessionState.apply {
@@ -219,7 +226,47 @@ class MwaAndroidPluginSignMessagesTest {
     // ---------------- AC-1 ----------------
 
     @Test
-    fun `AC-1 mwaSignMessages body is at most 20 LOC`() {
+    fun `AC-1 happy path emits sign_transactions_completed with signed_transactions`() {
+        val plugin = buildPlugin(
+            clientFactory = { FakeMwaClient(fixturesDir).withScenario("success") },
+        )
+        seedConnectedSession()
+        seedCacheRecord()
+
+        val jsonSlot = slot<String>()
+        plugin.mwaSignTransactions(
+            requestId = "st-ac1",
+            transactions = listOf(byteArrayOf(0x01, 0x02), byteArrayOf(0x03, 0x04)),
+            timeoutMs = 5_000L,
+        )
+
+        awaitCondition(3_000L) {
+            runCatching {
+                verify(exactly = 1) { nativeBridge.postSignTransactionsCompleted("st-ac1", capture(jsonSlot)) }
+            }.isSuccess
+        }
+
+        val payload = JSONObject(jsonSlot.captured)
+        assertEquals("st-ac1", payload.getString("request_id"))
+        assertTrue(
+            payload.has("signed_transactions"),
+            "payload must have signed_transactions (DD-3-2-3 + D-3-2-1 — payloadKey rename)",
+        )
+        val signedTransactions = payload.getJSONArray("signed_transactions")
+        assertEquals(
+            2,
+            signedTransactions.length(),
+            "signed_transactions.size must equal input transactions.size (fixture has 2 tx)",
+        )
+
+        verify(exactly = 0) { nativeBridge.postMwaError(any()) }
+        verify(exactly = 0) { nativeBridge.postMwaTimeout(any()) }
+    }
+
+    // ---------------- AC-2 ----------------
+
+    @Test
+    fun `AC-2 mwaSignTransactions body is at most 20 LOC`() {
         // Read source via build.gradle.kts-wired system property `mwa.plugin.source.root`.
         // System property points at `android/plugin/src/main`; navigate to the .kt file.
         val pluginSourceFile = File(
@@ -232,54 +279,20 @@ class MwaAndroidPluginSignMessagesTest {
         }
         val source = pluginSourceFile.readText()
 
-        // Locate `fun mwaSignMessages(`. Method-level indent in the existing class is
-        // 4 spaces; the regex anchors on that. Optional `@UsedByGodot` annotation line
-        // immediately precedes the signature opening line.
-        val sigPattern = Regex("""^    fun mwaSignMessages\(""", RegexOption.MULTILINE)
+        // Locate `fun mwaSignTransactions(`. Method-level indent in the existing class is
+        // 4 spaces; the regex anchors on that. The optional `@UsedByGodot` line precedes
+        // the signature opening line but does NOT need to be matched by the anchor —
+        // [countMethodLines] starts AFTER the signature opening line (`{`) regardless.
+        val sigPattern = Regex("""^    fun mwaSignTransactions\(""", RegexOption.MULTILINE)
         val match = sigPattern.find(source)
-            ?: fail("mwaSignMessages signature not found via regex `^    fun mwaSignMessages\\(`")
+            ?: fail("mwaSignTransactions signature not found via regex `^    fun mwaSignTransactions\\(`")
+        // [countMethodLines] is the shared top-level `internal fun` from `LocCountUtil.kt`
+        // (Story 3-2 T1 PRE-STEP, D-3-2-3 Rule 1) — DD-3-2-2 + DD-3-1-9 counter rule.
         val loc = countMethodLines(source, match.range.first)
         assertTrue(
             loc <= 20,
-            "AC-1: mwaSignMessages body must be ≤ 20 non-blank non-comment lines per DD-3-1-9 counter rule; actual=$loc",
+            "AC-2: mwaSignTransactions body must be ≤ 20 non-blank non-comment lines per DD-3-1-9 counter rule (inherited); actual=$loc",
         )
-    }
-
-    // LOC counter helper [countMethodLines] extracted to LocCountUtil.kt (Story 3-2 T1 PRE-STEP,
-    // D-3-2-3 Rule 1) — shared across signing-op AC-2 budget tests. Same package, internal
-    // top-level, no import required.
-
-    // ---------------- AC-2 ----------------
-
-    @Test
-    fun `AC-2 happy path emits sign_messages_completed with signed_payloads`() {
-        val plugin = buildPlugin(
-            clientFactory = { FakeMwaClient(fixturesDir).withScenario("success") },
-        )
-        seedConnectedSession()
-        seedCacheRecord()
-
-        val jsonSlot = slot<String>()
-        plugin.mwaSignMessages(
-            requestId = "sm-ac2",
-            messages = listOf("hello".toByteArray(), "world".toByteArray()),
-            timeoutMs = 5_000L,
-        )
-
-        awaitCondition(3_000L) {
-            runCatching {
-                verify(exactly = 1) { nativeBridge.postSignMessagesCompleted("sm-ac2", capture(jsonSlot)) }
-            }.isSuccess
-        }
-
-        val payload = JSONObject(jsonSlot.captured)
-        assertEquals("sm-ac2", payload.getString("request_id"))
-        assertTrue(payload.has("signed_payloads"), "payload must have signed_payloads")
-        val signedPayloads = payload.getJSONArray("signed_payloads")
-        assertEquals(2, signedPayloads.length(), "signed_payloads.size must equal input messages.size")
-
-        verify(exactly = 0) { nativeBridge.postMwaError(any()) }
-        verify(exactly = 0) { nativeBridge.postMwaTimeout(any()) }
     }
 
     // ---------------- AC-3 ----------------
@@ -288,13 +301,15 @@ class MwaAndroidPluginSignMessagesTest {
     fun `AC-3 not connected preflight emits NOT_CONNECTED within 1 frame`() {
         // No seedConnectedSession() — sessionState.getAuthToken() returns null.
         val clientFactoryMock = mockk<() -> MwaClient>()
-        every { clientFactoryMock() } answers { error("factory should NOT be invoked on preflight branch (DD-3-1-6)") }
+        every { clientFactoryMock() } answers {
+            error("factory should NOT be invoked on preflight branch (DD-3-1-6 inherited)")
+        }
         val plugin = buildPlugin(clientFactory = { clientFactoryMock() })
 
         val jsonSlot = slot<String>()
-        plugin.mwaSignMessages(
-            requestId = "sm-ac3",
-            messages = listOf("foo".toByteArray()),
+        plugin.mwaSignTransactions(
+            requestId = "st-ac3",
+            transactions = listOf(byteArrayOf(0x01)),
             timeoutMs = 5_000L,
         )
 
@@ -302,33 +317,33 @@ class MwaAndroidPluginSignMessagesTest {
         verify(exactly = 1) { nativeBridge.postMwaError(capture(jsonSlot)) }
 
         val err = JSONObject(jsonSlot.captured)
-        assertEquals("sm-ac3", err.getString("request_id"))
+        assertEquals("st-ac3", err.getString("request_id"))
         assertEquals("NOT_CONNECTED", err.getString("code"))
-        assertEquals("sign_messages", err.getString("source_method"))
+        assertEquals("sign_transactions", err.getString("source_method"))
         assertEquals("connect", err.getString("retry_hint"))
 
         // mwaClientFactory NEVER invoked — preflight short-circuits before any client work.
         verify(exactly = 0) { clientFactoryMock() }
 
         // No other terminal signal raced with the preflight error.
-        verify(exactly = 0) { nativeBridge.postSignMessagesCompleted(any(), any()) }
+        verify(exactly = 0) { nativeBridge.postSignTransactionsCompleted(any(), any()) }
         verify(exactly = 0) { nativeBridge.postMwaTimeout(any()) }
     }
 
     // ---------------- AC-4 ----------------
 
     @Test
-    fun `AC-4 user_canceled fixture emits USER_CANCELED with recoverable=true`() {
+    fun `AC-4 wallet_rejected fixture emits WALLET_REJECTED`() {
         val plugin = buildPlugin(
-            clientFactory = { FakeMwaClient(fixturesDir).withScenario("user_canceled") },
+            clientFactory = { FakeMwaClient(fixturesDir).withScenario("wallet_rejected") },
         )
         seedConnectedSession()
         seedCacheRecord()
 
         val jsonSlot = slot<String>()
-        plugin.mwaSignMessages(
-            requestId = "sm-ac4",
-            messages = listOf("foo".toByteArray()),
+        plugin.mwaSignTransactions(
+            requestId = "st-ac4",
+            transactions = listOf(byteArrayOf(0x01)),
             timeoutMs = 5_000L,
         )
 
@@ -339,101 +354,65 @@ class MwaAndroidPluginSignMessagesTest {
         }
 
         val err = JSONObject(jsonSlot.captured)
-        assertEquals("sm-ac4", err.getString("request_id"))
-        assertEquals("USER_CANCELED", err.getString("code"))
-        assertEquals("sign_messages", err.getString("source_method"))
-        assertTrue(err.getBoolean("recoverable"), "USER_CANCELED is recoverable per ErrorTaxonomy")
+        assertEquals("st-ac4", err.getString("request_id"))
+        assertEquals("WALLET_REJECTED", err.getString("code"))
+        assertEquals("sign_transactions", err.getString("source_method"))
 
-        verify(exactly = 0) { nativeBridge.postSignMessagesCompleted(any(), any()) }
+        verify(exactly = 0) { nativeBridge.postSignTransactionsCompleted(any(), any()) }
     }
 
-    // ---------------- runSigningOp direct tests (#5, #6) ----------------
+    // ---------------- runSigningOp(SIGN_TRANSACTIONS) Failure routing ----------------
 
     @Test
-    fun `runSigningOp passes through MwaResult Success unchanged`() {
-        // DD-3-1-2 + DD-3-1-3: helper has block receiver = MwaClient AND timeoutMs param.
-        // Direct call (helper is internal + @VisibleForTesting per T1 stub).
-        //
-        // C-3-1-V fix: provide a non-crashing MwaClient factory. The default factory in
-        // buildPlugin throws "unexpected mwaClientFactory invocation" — but per the v2
-        // helper pseudocode, mwaClientFactory() is called BEFORE the watchdog wraps the
-        // block, so the throw aborts the helper before our lambda ever runs. A relaxed
-        // mock satisfies the call site without driving any actual wallet behavior.
+    fun `runSigningOp SIGN_TRANSACTIONS routes Failure through mwa_error with source_method sign_transactions`() {
+        // C-3-2-B fix (mirrors Story 3-1 C-3-1-V): runSigningOp calls mwaClientFactory()
+        // BEFORE invoking the block. The default throwing factory in buildPlugin would
+        // abort the helper before our lambda's MwaResult.Failure return is ever reached.
+        // A relaxed mock satisfies the call site without driving any actual wallet behavior.
         val plugin = buildPlugin(
             clientFactory = { mockk<MwaClient>(relaxed = true) },
         )
         seedConnectedSession()
 
-        // Lambda body returns a fake MwaResult.Success directly (no FakeMwaClient invocation).
-        // The block receiver is MwaClient (DD-3-1-2 LOCK); the compile-time `val _: MwaClient = this`
-        // assertion below makes that lock testable at the type-check level (C-3-1-CC polish).
-        val expectedSignResult = SignResult(listOf(byteArrayOf(0x01, 0x02, 0x03)))
+        // Direct call on runSigningOp — bypasses mwaSignTransactions's TODO body entirely.
+        // This test is GREEN at T1 because runSigningOp is from Story 3-1 (already wired);
+        // it acts as a regression guard that DD-3-2-5 inheritance (SigningOp.SIGN_TRANSACTIONS
+        // → "sign_transactions" sourceMethod mapping) flows correctly through the helper's
+        // Failure branch.
         val result = runBlocking {
             plugin.runSigningOp<SignResult>(
-                op = SigningOp.SIGN_MESSAGES,
-                requestId = "rso-1",
+                op = SigningOp.SIGN_TRANSACTIONS,
+                requestId = "rso-st-fail",
                 timeoutMs = 5_000L,
             ) {
-                // C-3-1-CC: compile-time receiver-type lock — fails to compile if DD-3-1-2 ever drifts.
-                @Suppress("UNUSED_VARIABLE")
-                val receiverIsMwaClient: MwaClient = this
-                MwaResult.Success(expectedSignResult, null)
+                MwaResult.Failure(MwaError.WalletRejected, null)
             }
         }
 
-        // C-3-1-W single-wrap shape (Revision 2): helper returns MwaResult<X> directly,
-        // NOT MwaResult<MwaResult<X>>. The lambda's `MwaResult.Success` is forwarded;
-        // callers do NOT need to unwrap an outer/inner pair.
-        assertTrue(result is MwaResult.Success, "runSigningOp must return Success when block returns Success")
-        @Suppress("UNCHECKED_CAST")
-        val success = result as MwaResult.Success<SignResult>
-        assertEquals(expectedSignResult, success.value, "SignResult value preserved byte-for-byte")
-    }
-
-    @Test
-    fun `runSigningOp watchdog timeout returns Failure with Timeout`() {
-        // DD-3-1-3: timeoutMs=100L → effectiveWatchdog clamps → withTimeoutOrNull cancels
-        // a slow lambda (delay(5_000)). Wallclock duration ~100-200ms.
-        //
-        // C-3-1-V fix: same non-crashing factory as test #5 — the helper invokes
-        // mwaClientFactory() before delegating to the block, so the default throwing
-        // factory would abort the helper before withTimeoutOrNull ever wraps the lambda.
-        val plugin = buildPlugin(
-            clientFactory = { mockk<MwaClient>(relaxed = true) },
-        )
-        seedConnectedSession()
-
-        val result = runBlocking {
-            plugin.runSigningOp<SignResult>(
-                op = SigningOp.SIGN_MESSAGES,
-                requestId = "rso-to",
-                timeoutMs = 100L,
-            ) {
-                delay(5_000L)
-                error("unreachable — withTimeoutOrNull should cancel before this")
-            }
-        }
-
-        // Single-wrap shape (C-3-1-W): helper returns MwaResult<SignResult> directly.
-        assertTrue(result is MwaResult.Failure, "watchdog timeout must yield Failure")
+        // C-3-1-W single-wrap shape: helper returns MwaResult<SignResult> directly.
+        assertTrue(result is MwaResult.Failure, "runSigningOp must propagate Failure")
         val failure = result as MwaResult.Failure
-        assertEquals(MwaError.Timeout, failure.error, "Failure carries MwaError.Timeout")
+        assertEquals(MwaError.WalletRejected, failure.error, "Failure carries MwaError.WalletRejected")
 
-        // Side effect: emitTimeoutSign should have fired with source_method=sign_messages.
+        // Side effect: postMwaError fires exactly once with source_method=sign_transactions.
         val jsonSlot = slot<String>()
-        verify(exactly = 1) { nativeBridge.postMwaTimeout(capture(jsonSlot)) }
+        verify(exactly = 1) { nativeBridge.postMwaError(capture(jsonSlot)) }
         val payload = JSONObject(jsonSlot.captured)
-        assertEquals("rso-to", payload.getString("request_id"))
-        assertEquals("sign_messages", payload.getString("source_method"))
+        assertEquals("rso-st-fail", payload.getString("request_id"))
+        assertEquals(
+            "sign_transactions",
+            payload.getString("source_method"),
+            "DD-3-2-5 inheritance — SigningOp.SIGN_TRANSACTIONS.sourceMethod must map to \"sign_transactions\"",
+        )
     }
 
     // ---------------- duplicate requestId + late-result ----------------
 
     @Test
-    fun `duplicate requestId emits PROTOCOL_ERROR on register`() {
+    fun `duplicate requestId on sign_transactions emits PROTOCOL_ERROR`() {
         val inflight = InflightMap()
         // Pre-register the requestId — simulates a caller that re-uses the same id for a retry.
-        inflight.register("sm-dup", 1_700_000_000_000L)
+        inflight.register("st-dup", 1_700_000_000_000L)
 
         val plugin = buildPlugin(
             clientFactory = { FakeMwaClient(fixturesDir).withScenario("success") },
@@ -443,15 +422,15 @@ class MwaAndroidPluginSignMessagesTest {
         seedCacheRecord()
 
         val jsonSlot = slot<String>()
-        plugin.mwaSignMessages(
-            requestId = "sm-dup",
-            messages = listOf("foo".toByteArray()),
+        plugin.mwaSignTransactions(
+            requestId = "st-dup",
+            transactions = listOf(byteArrayOf(0x01)),
             timeoutMs = 5_000L,
         )
 
-        // Duplicate-id path SHOULD emit PROTOCOL_ERROR. Per DD-3-1-6 the preflight passes
-        // (sessionState is connected); the PROTOCOL_ERROR comes from runSigningOp's
-        // InflightMap.register failure branch.
+        // Duplicate-id path SHOULD emit PROTOCOL_ERROR. Per DD-3-1-6 (inherited) the
+        // preflight passes (sessionState is connected); the PROTOCOL_ERROR comes from
+        // runSigningOp's InflightMap.register failure branch.
         awaitCondition(1_000L) {
             runCatching {
                 verify(atLeast = 1) { nativeBridge.postMwaError(capture(jsonSlot)) }
@@ -459,13 +438,13 @@ class MwaAndroidPluginSignMessagesTest {
         }
 
         val err = JSONObject(jsonSlot.captured)
-        assertEquals("sm-dup", err.getString("request_id"))
+        assertEquals("st-dup", err.getString("request_id"))
         assertEquals("PROTOCOL_ERROR", err.getString("code"))
-        assertEquals("sign_messages", err.getString("source_method"))
+        assertEquals("sign_transactions", err.getString("source_method"))
         assertEquals("duplicate_request_id", err.getString("cause"))
 
         // Original Success signal MUST NOT fire (FakeMwaClient never invoked).
-        verify(exactly = 0) { nativeBridge.postSignMessagesCompleted(any(), any()) }
+        verify(exactly = 0) { nativeBridge.postSignTransactionsCompleted(any(), any()) }
     }
 
     @Test
@@ -473,7 +452,7 @@ class MwaAndroidPluginSignMessagesTest {
         // Mock InflightMap so tryTerminate returns false — simulates a coroutine that
         // completes AFTER the terminal-signal slot was already taken (e.g., by a watchdog
         // or a competing emit). The success path MUST detect the late_result and drop
-        // the signal (carries from 2-1/2-2 terminal-signal invariant).
+        // the signal (carries from 2-1/2-2/3-1 terminal-signal invariant per arch §7.3).
         val inflight = mockk<InflightMap>(relaxed = true)
         every { inflight.register(any(), any()) } returns true
         every { inflight.tryTerminate(any()) } returns false
@@ -485,9 +464,9 @@ class MwaAndroidPluginSignMessagesTest {
         seedConnectedSession()
         seedCacheRecord()
 
-        plugin.mwaSignMessages(
-            requestId = "sm-late",
-            messages = listOf("foo".toByteArray()),
+        plugin.mwaSignTransactions(
+            requestId = "st-late",
+            transactions = listOf(byteArrayOf(0x01)),
             timeoutMs = 5_000L,
         )
 
@@ -496,7 +475,7 @@ class MwaAndroidPluginSignMessagesTest {
         Thread.sleep(500)
 
         // No terminal signal of any kind — Success was dropped due to tryTerminate=false.
-        verify(exactly = 0) { nativeBridge.postSignMessagesCompleted(any(), any()) }
+        verify(exactly = 0) { nativeBridge.postSignTransactionsCompleted(any(), any()) }
         // The PROTOCOL_ERROR / NOT_CONNECTED / TIMEOUT paths also must NOT fire on
         // a happy-path that lost the CAS race — the impl must observe the failed
         // CAS and silently drop, NOT emit a different terminal signal.
