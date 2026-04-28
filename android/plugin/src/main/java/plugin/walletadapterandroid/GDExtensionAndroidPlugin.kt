@@ -1080,8 +1080,32 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         // because connect/reauth always populate sessionState's clusterName
         // from the cached record's cluster, so a mismatch can only arise from
         // an explicit setClusterName swap).
-        val matching = storeProvider(requireContext()).listAllKeys().filter {
-            it.cluster == cluster && it.identityUri == identityUri
+        val matching = try {
+            storeProvider(requireContext()).listAllKeys().filter {
+                it.cluster == cluster && it.identityUri == identityUri
+            }
+        } catch (ex: StorageCorruptException) {
+            // DD-3-3-G fail-closed (sync preflight branch — cluster-bleed lookup).
+            // The breadcrumb-write site inside scope.launch uses the suspend
+            // [withStorageOrReauthRequired] wrapper. This SYNC preflight runs
+            // on the JNI thread and cannot await — inline the register+CAS+
+            // emit sequence directly so the user gets the same
+            // `reauth_required{reason:"keystore_corrupt"}` terminal signal
+            // shape as the wrapped path. Without this catch, the
+            // StorageCorruptException would propagate uncaught to the JNI
+            // thread, the user's sign_and_send op would hang forever
+            // waiting for sign_and_send_completed, and the
+            // terminal-signal invariant per arch §7.3 would be violated
+            // on the corrupt-cache cluster-bleed path.
+            if (inflightMap.register(requestId, clock()) && inflightMap.tryTerminate(requestId)) {
+                SdkLog.w(TAG, requestId) {
+                    "reauth_required reason=keystore_corrupt source=sign_and_send cause=${ex.cause?.javaClass?.simpleName}"
+                }
+                nativeBridge.postReauthRequired(buildReauthRequiredKeystoreCorruptJson(requestId, "sign_and_send", ex))
+            } else {
+                diagnostics.incrementLateResult()
+            }
+            return
         }
         if (matching.isEmpty()) return emitNotConnectedSign(requestId, "sign_and_send")
         val identity = ConnectionIdentity(

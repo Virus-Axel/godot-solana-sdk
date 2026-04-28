@@ -620,6 +620,51 @@ class MwaAndroidPluginSignAndSendTest {
     // ---------------- breadcrumb-write StorageCorruptException → reauth_required ----------------
 
     @Test
+    fun `cluster-bleed listAllKeys StorageCorruptException emits reauth_required synchronously and aborts`() {
+        // Code-review post-T7 finding #1 (HIGH): the AC-6 cluster-bleed sync
+        // preflight calls listAllKeys() which triggers SecureTokenStore's lazy
+        // prefs init — that init throws StorageCorruptException on Tink
+        // corruption. The original T2 impl let this exception propagate
+        // uncaught to the JNI thread, violating DD-3-3-G's fail-closed contract
+        // and the terminal-signal invariant per arch §7.3. The fix wraps the
+        // sync preflight in a try/catch and inlines the register+CAS+emit
+        // sequence (the suspend wrapper is unreachable from this preflight
+        // because mwaSignAndSendTransactions is called from the JNI thread
+        // without a coroutine scope).
+        val factoryNeverInvoked = mockk<() -> MwaClient>()
+        every { factoryNeverInvoked() } answers {
+            error("factory should NOT be invoked when cluster-bleed lookup hits Tink corruption (DD-3-3-G)")
+        }
+        // Override the storage mock to throw on listAllKeys (the AC-6
+        // preflight call). NO seedCacheRecord — listAllKeys would throw
+        // before reaching the filter step.
+        every { store.listAllKeys() } throws StorageCorruptException(
+            RuntimeException("simulated Tink corruption during cluster-bleed lookup"),
+        )
+
+        val plugin = buildPlugin(clientFactory = { factoryNeverInvoked() })
+        seedConnectedSession()
+
+        plugin.mwaSignAndSendTransactions(
+            requestId = "sas-cluster-bleed-corrupt",
+            transactions = listOf(byteArrayOf(0x01)),
+            timeoutMs = 5_000L,
+        )
+
+        // DD-3-3-G fail-closed (sync preflight branch): postReauthRequired
+        // must fire SYNCHRONOUSLY (preflight is sync per DD-3-1-6 inheritance
+        // + the AC-6 contract; no awaitCondition needed). mwaClientFactory
+        // must NOT be invoked. postSignAndSendCompleted / postMwaError /
+        // postMwaTimeout / postPendingSubmissionFound must NOT fire.
+        verify(exactly = 1) { nativeBridge.postReauthRequired(any()) }
+        verify(exactly = 0) { factoryNeverInvoked() }
+        verify(exactly = 0) { nativeBridge.postSignAndSendCompleted(any(), any()) }
+        verify(exactly = 0) { nativeBridge.postMwaError(any()) }
+        verify(exactly = 0) { nativeBridge.postMwaTimeout(any()) }
+        verify(exactly = 0) { nativeBridge.postPendingSubmissionFound(any()) }
+    }
+
+    @Test
     fun `breadcrumb-write StorageCorruptException emits reauth_required and aborts wallet round-trip`() {
         val factoryNeverInvoked = mockk<() -> MwaClient>()
         every { factoryNeverInvoked() } answers {
