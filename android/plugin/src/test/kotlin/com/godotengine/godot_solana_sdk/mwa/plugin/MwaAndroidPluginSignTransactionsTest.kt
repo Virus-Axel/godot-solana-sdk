@@ -54,14 +54,12 @@ import java.io.File
  *   6. Duplicate requestId emits PROTOCOL_ERROR on register (carries from 2-1/2-2/2-3/3-1)
  *   7. Late-result-after-terminate is dropped (carries from 2-1/2-2/3-1)
  *
- * **TDD red baseline (T1):** 6 of 7 tests fail at runtime against the
- * `TODO("Story 3-2 T2 fills in")` body in [GDExtensionAndroidPlugin.mwaSignTransactions]
- * + [GDExtensionAndroidPlugin.handleSignTransactionsSuccess] — they throw
- * `kotlin.NotImplementedError` before reaching the assertion. Test #5 (runSigningOp
- * direct) is GREEN at T1 because it bypasses `mwaSignTransactions` and calls the
- * shared [runSigningOp] helper from Story 3-1 directly. Test #2 (AC-2 LOC budget)
- * is GREEN at T1 because the TODO body is 1 LOC, well under 20. T2 turns the
- * remaining 5 GREEN by replacing the TODO with the real impl per DD-3-2-1..5.
+ * **History:** T1 landed this file with stub bodies in
+ * [GDExtensionAndroidPlugin.mwaSignTransactions] +
+ * [GDExtensionAndroidPlugin.handleSignTransactionsSuccess], producing a TDD-red
+ * baseline of 5 failing + 2 passing (AC-2 LOC budget passed at 1-LOC stub;
+ * runSigningOp direct test bypassed the stub). T2 (commit 54798086) replaced
+ * the stub bodies with the real impl per DD-3-2-1..5; all 7 turn GREEN.
  *
  * Plugin is built via the `@VisibleForTesting` ctor with injected collaborators
  * (identical to [MwaAndroidPluginSignMessagesTest] / [MwaAndroidPluginReauthorizeTest]):
@@ -374,11 +372,10 @@ class MwaAndroidPluginSignTransactionsTest {
         )
         seedConnectedSession()
 
-        // Direct call on runSigningOp — bypasses mwaSignTransactions's TODO body entirely.
-        // This test is GREEN at T1 because runSigningOp is from Story 3-1 (already wired);
-        // it acts as a regression guard that DD-3-2-5 inheritance (SigningOp.SIGN_TRANSACTIONS
-        // → "sign_transactions" sourceMethod mapping) flows correctly through the helper's
-        // Failure branch.
+        // Direct call on runSigningOp — bypasses mwaSignTransactions entirely.
+        // Acts as a regression guard that DD-3-2-5 inheritance
+        // (SigningOp.SIGN_TRANSACTIONS → "sign_transactions" sourceMethod
+        // mapping) flows correctly through the shared helper's Failure branch.
         val result = runBlocking {
             plugin.runSigningOp<SignResult>(
                 op = SigningOp.SIGN_TRANSACTIONS,
