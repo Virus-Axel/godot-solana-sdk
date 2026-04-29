@@ -68,6 +68,12 @@ android {
         manifestPlaceholders["godotPluginName"] = pluginName
         manifestPlaceholders["godotPluginPackageName"] = pluginPackageName
         buildConfigField("String", "GODOT_PLUGIN_NAME", "\"${pluginName}\"")
+        // Story 5-2 T2 (D-5-2-T2-1 Rule 1) — version constants surfaced via
+        // `MWA.get_diagnostics()` AC-1 keys `sdk_version` + `clientlib_ktx_version`.
+        // SDK_VERSION is a placeholder until a release-versioning story locks the
+        // bump cadence; CLIENTLIB_KTX_VERSION mirrors the dependency line below.
+        buildConfigField("String", "SDK_VERSION", "\"0.1.0\"")
+        buildConfigField("String", "CLIENTLIB_KTX_VERSION", "\"2.0.3\"")
         setProperty("archivesBaseName", pluginName)
 
         // Ship the R8 strip rules to downstream AAR consumers (architecture.md §8.5,

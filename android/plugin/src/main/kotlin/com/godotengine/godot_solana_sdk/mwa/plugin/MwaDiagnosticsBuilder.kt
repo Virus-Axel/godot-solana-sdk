@@ -1,6 +1,8 @@
 package com.godotengine.godot_solana_sdk.mwa.plugin
 
 import com.godotengine.godot_solana_sdk.mwa.session.MwaSessionState
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * Story 5-2 (DD-5-2-1 LOCKED) — diagnostics-payload builder.
@@ -57,7 +59,58 @@ internal object MwaDiagnosticsBuilder {
         ktxVersion: String,
         godotVersion: String,
         androidApiLevel: Int,
-    ): String = TODO("Story 5-2 T2 fills in")
+    ): String {
+        // Per DD-5-2-1: nest the 5-key sessionState snapshot under `session_state`
+        // by parsing the JSON the existing accessor produces (cheap reuse — keeps
+        // a single source-of-truth shape across `mwaQuerySessionStateFromJni` and
+        // `mwaQueryDiagnosticsFromJni`).
+        val sessionObj = JSONObject(sessionState.snapshotSessionStateJson())
 
-    fun emptyDiagnosticsJson(): String = TODO("Story 5-2 T2 fills in")
+        // wallet_package + wallet_version are NOT surfaced by sessionState
+        // (clientlib-ktx 2.0.3's AuthorizationResult has no walletPackage; see
+        // MwaClientImpl.kt:285). Empty strings per DD-5-2-3 fallback semantics.
+
+        val traceArr = JSONArray()
+        for (entry in diagnostics.lastNCorrelationTrace) {
+            traceArr.put(
+                JSONObject().apply {
+                    put("request_id", entry.requestId)
+                    put("source_method", entry.sourceMethod)
+                    put("terminal_signal", entry.terminalSignal)
+                    put("elapsed_ms", entry.elapsedMs)
+                    put("timestamp_ms", entry.timestampMs)
+                },
+            )
+        }
+
+        return JSONObject().apply {
+            put("sdk_version", sdkVersion)
+            put("clientlib_ktx_version", ktxVersion)
+            put("godot_version", godotVersion)
+            put("android_api_level", androidApiLevel)
+            put("session_state", sessionObj)
+            put("wallet_package", "")
+            put("wallet_version", "")
+            put("auth_token_fingerprint", sessionState.getAuthTokenFingerprint())
+            put("cluster", sessionState.getClusterName())
+            put("last_n_correlation_trace", traceArr)
+            put("late_result_count", diagnostics.lateResultCount)
+            put("pending_submissions_count", pendingSubmissionsCount)
+        }.toString()
+    }
+
+    fun emptyDiagnosticsJson(): String = JSONObject().apply {
+        put("sdk_version", "")
+        put("clientlib_ktx_version", "")
+        put("godot_version", "")
+        put("android_api_level", 0)
+        put("session_state", JSONObject())
+        put("wallet_package", "")
+        put("wallet_version", "")
+        put("auth_token_fingerprint", "")
+        put("cluster", "")
+        put("last_n_correlation_trace", JSONArray())
+        put("late_result_count", 0L)
+        put("pending_submissions_count", 0)
+    }.toString()
 }

@@ -72,10 +72,22 @@ class MwaDiagnostics {
     private val correlationBuffer: ArrayDeque<CorrelationTraceEntry> = ArrayDeque(RING_BUFFER_CAPACITY)
     private val correlationLock: Any = Any()
 
-    fun recordCorrelationTrace(entry: CorrelationTraceEntry): Unit = TODO("Story 5-2 T2 fills in")
+    fun recordCorrelationTrace(entry: CorrelationTraceEntry) {
+        synchronized(correlationLock) {
+            if (correlationBuffer.size == RING_BUFFER_CAPACITY) {
+                correlationBuffer.removeFirst()
+            }
+            correlationBuffer.addLast(entry)
+        }
+    }
 
     val lastNCorrelationTrace: List<CorrelationTraceEntry>
-        get() = TODO("Story 5-2 T2 fills in")
+        // Kotlin's `toList()` short-circuits to `Collections.singletonList()` when
+        // size==1 — a JDK SingletonList throws UnsupportedOperationException on
+        // mutation, breaking the AC-2 defensive-copy contract for the size-1 path.
+        // `toMutableList()` always allocates a fresh ArrayList so callers can mutate
+        // the returned reference without touching the internal buffer.
+        get() = synchronized(correlationLock) { correlationBuffer.toMutableList() }
 
     internal fun resetForTest() {
         _lateResultCount.set(0)

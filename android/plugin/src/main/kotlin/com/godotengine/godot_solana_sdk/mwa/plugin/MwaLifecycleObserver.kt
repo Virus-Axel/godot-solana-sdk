@@ -65,6 +65,19 @@ internal class MwaLifecycleObserver(
     private val cleanupBreadcrumb: (requestId: String) -> Unit,
     private val payloadBuilder: (requestId: String, sourceMethod: String, reason: String) -> JSONObject,
     private val cancelInFlight: () -> Unit,
+    // Story 5-2 T2 (DD-5-2-2 LOCKED) — `mwa_cancelled_lifecycle` per-slot
+    // emit must record into the AC-1 `last_n_correlation_trace` ring buffer
+    // alongside the `mwaForgetAll` cancel-loop's identical post site. Lambda-
+    // injected to keep [GDExtensionAndroidPlugin.recordOnEmit] private; default
+    // no-op preserves the Story 5-3 T1 ctor surface for tests that do not
+    // assert on diagnostics interaction.
+    private val recordOnEmit: (
+        requestId: String,
+        sourceMethod: String,
+        terminalSignal: String,
+        startedAtMs: Long,
+    ) -> Unit = { _, _, _, _ -> },
+    private val clock: () -> Long = System::currentTimeMillis,
 ) : DefaultLifecycleObserver {
 
     /**
@@ -88,6 +101,7 @@ internal class MwaLifecycleObserver(
         val snapshot = inflightMap.snapshot()
         for ((reqId, srcMethod) in snapshot) {
             if (inflightMap.tryTerminate(reqId)) {
+                recordOnEmit(reqId, srcMethod, "mwa_cancelled_lifecycle", clock())
                 nativeBridge.postMwaCancelledLifecycle(
                     payloadBuilder(reqId, srcMethod, "activity_destroyed").toString(),
                 )
