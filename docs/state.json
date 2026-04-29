@@ -3,14 +3,14 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-29T11:30:00.000Z",
+  "lastUpdated": "2026-04-29T11:55:30.000Z",
   "currentPhase": "implement",
   "currentStep": null,
-  "currentCheckpoint": "gate-5",
+  "currentCheckpoint": "story-creation",
   "currentStory": {
-    "storyId": "5-2",
-    "slug": "get-diagnostics-ring-buffer-fingerprint",
-    "startedAt": "2026-04-29T05:01:55.000Z",
+    "storyId": "5-4",
+    "slug": "example-app-review-md",
+    "startedAt": "2026-04-29T11:55:00.000Z",
     "size": "M",
     "wave": 7
   },
@@ -40,7 +40,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 17,
+  "storiesDone": 18,
   "storiesTotal": 21,
   "changeStories": [],
   "completedStories": [
@@ -1038,13 +1038,13 @@
       "retrospectRulesAdded": 6
     },
     "gates": {
-      "gate5Passes": 3
+      "gate5Passes": 4
     },
     "stories": {
-      "completed": 3,
+      "completed": 4,
       "sizeDistribution": {
         "S": 3,
-        "M": 1
+        "M": 3
       }
     }
   },
