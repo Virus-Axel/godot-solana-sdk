@@ -3,10 +3,10 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-29T05:32:00.000Z",
+  "lastUpdated": "2026-04-29T11:30:00.000Z",
   "currentPhase": "implement",
   "currentStep": null,
-  "currentCheckpoint": "task-2",
+  "currentCheckpoint": "gate-5",
   "currentStory": {
     "storyId": "5-2",
     "slug": "get-diagnostics-ring-buffer-fingerprint",
@@ -922,16 +922,76 @@
         "note": "Story ships with unit baseline green; on-device validation happens asynchronously once next git push origin feature/mwa-android runs the CI matrix."
       },
       "notes": "Third Wave 7 story (after 5-1 + 4-2). SECOND production emitter of mwa_cancelled_lifecycle (Story 4-2's mwaForgetAll cancel-in-flight loop is FIRST). FIRST DefaultLifecycleObserver in the codebase. Lambda-injection ctor design (DD-5-3-1 + T1 deviation) keeps plugin's private buildCancelledLifecycleJson + cleanupBreadcrumb intact while letting the observer call them via method references at registration time. CR-3-3-B CLOSED — the @Disabled placeholder at MwaAndroidPluginSignAndSendTest.kt:462 is gone, AC-4c test exercises the full production wiring via plugin.buildLifecycleObserver() with payload + ordering assertions. Cross-Activity-instance observer continuity is OUT OF SCOPE per DD-5-3-2 step 3 + CR-5-3-A — only verifies OLD Activity's ON_DESTROY correctly fires the observer; in-flight ops on the NEW post-rotation Activity are NOT covered (no fresh-registration code runs across recreate cycles). CR-5-3-B documents the 1s AC-2 budget tightness on slow CI emulators — Story 5-6 flake-baseline triage owns. 5 commits (T1 + T2 + T3 + T4 + post-review fix) + pre-creation bookkeeping + pause = 7 total in branch history. Unit baseline 257 → 261 (+3 from T1 3 MwaLifecycleObserverTest cases turning GREEN at T2 + 1 from post-review-fix CAS-loss case). Pytest 83 unchanged; androidTest 19 → 20 expected. 8 deviations filed (D-5-3-T2-1/T2-2/T3-1 from impl + D-5-3-CR-1/2/3/4/5 from post-review). 2 new concerns logged (CR-5-3-A registration continuity LOW + CR-5-3-B 1s budget on slow CI LOW). 1 inherited concern CLOSED (CR-3-3-B). 0 amendments. Code-review verdict PASS WITH NOTES with all 5 findings fixed pre-Gate-5."
+    },
+    {
+      "storyId": "5-2",
+      "slug": "get-diagnostics-ring-buffer-fingerprint",
+      "size": "M",
+      "wave": 7,
+      "startedAt": "2026-04-29T05:01:55Z",
+      "completedAt": "2026-04-29T11:30:00Z",
+      "gate5Result": "pass",
+      "tasks": 6,
+      "commits": 7,
+      "baselineTag": "pre-mwa-android-5-2",
+      "postTag": "post-mwa-android-5-2",
+      "commitsList": [
+        "7423201e chore(mwa): Story 5-2 pre-creation bookkeeping — sprint-status + state.json",
+        "ce732763 docs(mwa): Story 5-2 creation + pre-impl audit — A-16 DD-34 salt-size alignment",
+        "40d6e8e8 test(mwa): Story 5-2 T1 — Kotlin TDD red + scaffolding stubs for diagnostics + posture builders + ring buffer",
+        "a5875cfc chore(mwa): pause Story 5-2 between T1 commit and T2 start",
+        "f15673d2 feat(mwa): Story 5-2 T2 — Kotlin diagnostics impl + sync JNI entries + recordOnEmit cross-cut wiring",
+        "ad477700 feat(mwa): Story 5-2 T3 — C++/JNI seam reshape (sync diagnostics + posture; retire async scaffold; +get_device_posture)",
+        "99c6a45b feat(mwa): Story 5-2 T4 — GDScript wrappers (get_diagnostics + get_device_posture) + AC-5 _SUGGESTED_WALLETS 4-key reconciliation",
+        "5bf8793d test(mwa): Story 5-2 T5 — AC-3 Kotlin PII scan + AC-1/AC-4/AC-5 GDScript shape scenarios on desktop NoOp path"
+      ],
+      "deviations": [
+        "D-5-2-T1-1 Rule 1 (T1 commit) — story said 'extends existing 4 tests' but MwaDiagnosticsTest.kt didn't exist; created new file with 5 ring-buffer tests only",
+        "D-5-2-T1-2 Rule 1 (T1 commit) — cross-cut test class MwaAndroidPluginDiagnosticsCrosscutTest.kt deferred from T1 to T5",
+        "D-5-2-T1-3 Rule 1 (T1 commit) — MwaDevicePostureBuilderTest does NOT directly test rooted/developer_options_on/adb_enabled fields (Build.TAGS / Settings.* statics can't be mocked at unit tier without Robolectric); covered at T5 GDScript integration tier",
+        "D-5-2-T2-1 Rule 1 (T2) — BuildConfig.SDK_VERSION + CLIENTLIB_KTX_VERSION added to plugin/build.gradle.kts (audit row 12 confirmed absence; T2 adds them additively)",
+        "D-5-2-T2-2 Rule 1 (T2) — cancel-loop recordOnEmit uses clock() as startedAtMs; InflightMap.snapshot() returns Map<String,String> not Map<String,InflightSlot> as DD-5-2-2 assumed; documented fallback per DD-5-2-2",
+        "D-5-2-T2-3 Rule 1 (T2) — cross-cut wiring scope narrowed to 14 emit sites per user [B] decision at T2 scope-decision HALT (vs ~25 if every nativeBridge.post* site wired); 11 micro-error-paths within ops use shared runSigningOp Failure funnel",
+        "D-5-2-T3-1 Rule 1 (T3) — mwa_android_bridge_jni.cpp Android-only; local macos build cannot verify; mirrors query_session_state pattern verbatim; CI assembleRelease + Kotlin androidTest tier close the gap",
+        "D-5-2-T3-2 Rule 1 (T3) — scons CacheDir returned stale .os files even after source edits + --cache-disable; worked around via explicit .os deletion + --cache-disable rebuild; pre-existing scons cache-invalidation behavior",
+        "D-5-2-T4-1 Rule 1 (T4) — Backpack package_id is 'app.backpack.mobile' (matches actual play_store_url ?id= param), NOT 'app.backpack' as story T4 spec stated; URL is source of truth (URLs reviewed 2026-04-24 against vendor canonical homepages)",
+        "D-5-2-T5-1 Rule 1 (T5) — story T5 spec assumed tools/test_*.gd pytest-godot harness that doesn't exist; restructured to extend addons/SolanaSDK/mwa/tests/test_unsupported_platform.gd with 3 scenarios + Kotlin MwaDiagnosticsPiiScanTest.kt for AC-3",
+        "D-5-2-T5-2 Rule 1 (T5) — local Godot binary not available; GDScript scenarios verified via CI gdscript_tests.yml 4-platform matrix at PR-open time; Kotlin + pytest tiers verified locally"
+      ],
+      "concerns": [
+        "CR-5-2-A NEW LOW (cleanup_failed_count surface gap)",
+        "CR-5-2-B NEW LOW (non-Android empty-Dict semantics not in arch §6.2)",
+        "CR-5-2-C NEW LOW (ring-buffer overflow under burst load)"
+      ],
+      "concernsClosed": [
+        "CR-3-3-A (LOW lateResultCount surface gap → CLOSED by Story 5-2 T2/T4 — late_result_count surfaced via AC-1 12-key Dictionary)"
+      ],
+      "amendments": [
+        "A-16 (DD-34 salt-size wording: 16-byte → 32-byte to align with FINGERPRINT_SALT_BYTES = 32 actual impl per NIST SP 800-108; landed at story-creation HALT 2026-04-29 commit ce732763)"
+      ],
+      "testsAdded": 16,
+      "testsAddedDetail": "+13 Kotlin from T1 (12 RED → GREEN at T2 + 1 GREEN data-class-shape) + 3 Kotlin from T5 MwaDiagnosticsPiiScanTest (AC-3 disconnected baseline / AC-3 connected pii substring scan / AC-3 fingerprint shape regex). Pytest 83 unchanged. AndroidTest count unchanged at 20 (T5 GDScript scenarios are headless-Godot-tier on desktop matrix, NOT androidTest tier). Unit baseline 261 → 277 (+16). 0 @Disabled.",
+      "reviewFindings": {
+        "userInteractive": true,
+        "rounds": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0,
+        "fixed": 0,
+        "deferred": 0,
+        "note": "Code review (Gate 5 step) not yet run — pre-Gate-5 close-out commit lands first; review + Gate 5 are subsequent HALT points."
+      },
+      "notes": "Fourth Wave 7 story (after 5-1 + 4-2 + 5-3). FIRST ring buffer in MWA Kotlin (CorrelationTraceEntry FIFO, capacity 20 via ArrayDeque + synchronized lock). FIRST sync diagnostics + sync device-posture surface end-to-end (Kotlin entries → C++ JSON parse → GDScript Dictionary). RETIRED Story 1-5 ASYNC get_diagnostics scaffold end-to-end on the Kotlin AND C++ sides (mwaGetDiagnosticsFromJni + g_mid_mwa_get_diagnostics_from_jni + MwaAndroidBridgeJni::get_diagnostics + MwaAndroidBridge interface pure-virtual all deleted). ADDED 2 NEW sync JNI entries (mwaQueryDiagnosticsFromJni + mwaQueryDevicePostureFromJni) mirroring Story 2-1's mwaQuerySessionStateFromJni precedent. ADDED 1 NEW C++ binding (MWA.get_device_posture()). RESHAPED _SUGGESTED_WALLETS const from 3-key to 4-key superset per DD-5-2-4 (backward compat: 3 existing keys preserved + new package_id key added). 5 LOCKED design decisions (DD-5-2-1 sync seam reshape + DD-5-2-2 caller-side recordOnEmit at 14 emit sites + DD-5-2-3 non-Android empty-Dict semantics + DD-5-2-4 4-key superset reconciliation + DD-5-2-5 CR-3-3-A closure scope). 14 cross-cut emit sites wired per Option B narrowing (user-confirmed at T2 scope-decision HALT): connect happy/timeout/error + reauthorize happy/error + disconnect happy/error + deauthorize happy/error + sign_messages/transactions/and_send happy + runSigningOp shared error path + emitReauthRequiredKeystoreCorrupt (reauth_required) + mwaForgetAll cancel-loop + MwaLifecycleObserver.onDestroy. 7 production commits (T1 + T2 + T3 + T4 + T5 + T6 close-out + pre-creation bookkeeping). 1 amendment landed (A-16 DD-34 salt-size wording 16→32 byte at story-creation HALT). 11 deviations filed (D-5-2-T1-1/T1-2/T1-3/T2-1/T2-2/T2-3/T3-1/T3-2/T4-1/T5-1/T5-2). 1 inherited concern CLOSED (CR-3-3-A — late_result_count now surfaced via AC-1 12-key Dictionary). 3 NEW concerns logged (CR-5-2-A cleanup_failed_count gap LOW + CR-5-2-B non-Android empty-Dict semantics not in arch §6.2 LOW + CR-5-2-C ring-buffer overflow under burst load LOW). T5 GDScript scenarios verified via CI gdscript_tests.yml 4-platform matrix (linux/windows/macos desktop + web symbol-resolve) on next PR push. Story 5-2 closes the §6.2 sync getter family — last sync getter in arch §6.2 enumeration."
     }
   ],
   "baselineTests": {
-    "total": 261,
-    "passing": 261,
+    "total": 277,
+    "passing": 277,
     "failing": 0,
     "baselinedAt": "2026-04-22T08:09:41Z",
     "baselinedAtStory": 5,
-    "lastRefreshedAt": "2026-04-29T04:49:03Z",
-    "lastRefreshedAtStory": 17,
+    "lastRefreshedAt": "2026-04-29T11:30:00Z",
+    "lastRefreshedAtStory": 18,
     "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
     "failingTests": [],
     "note": "Post-story-3-3 T7 baseline refresh: 152 -> 167 Kotlin (+15 from T1+T2 sign-and-send work — 10 MwaAndroidPluginSignAndSendTest cases (1 @Disabled placeholder for AC-4c lifecycle path -> Story 5-3 per CR-3-3-B; 9 GREEN covering AC-1 happy 4-key payload + AC-2 breadcrumb 6-key write-ahead + AC-3 cleanup-before-terminal + AC-4a/b error/timeout cleanup + AC-5 stale breadcrumb scan + one-shot + AC-6 cluster-bleed + runSigningOp(SIGN_AND_SEND) Failure routing direct + breadcrumb-write StorageCorruptException -> reauth_required), +4 SecureTokenStoreTest pending-submission storage tests (round-trip, list filter+strip, remove single, empty-list), +1 SignAndSendContractTest now-passing (T1 @Disabled placeholder removed at T6 with full fixture-input verification body)); pytest 83 unchanged. androidTest pre-3-3 15 (post-3-2 + 1 expected from CI push) -> post-3-3 expected 17 (+AC1SignAndSendHappyE2ETest + AC5PendingSubmissionFoundOnNextConnectTest — NOT counted in unit baseline; emulator-only). Total unit baseline 235 -> 250. Post-review-fix +1: cluster-bleed listAllKeys StorageCorruptException emits reauth_required synchronously and aborts (closes code-review HIGH finding #1, D-3-3-T7-1). Story 4-2 T6 close-out: 251 -> 257 (+6 Kotlin from T1 6 ForgetAll cases turning GREEN at T2: AC-1 happy path / AC-2 cancel-in-flight / AC-3 mutex serialization / AC-4 wallet-offline / DD-4-2-5 per-record StorageCorruptException / DD-4-2-6 listAllKeys-throws wrapper-bypass). androidTest pre-4-2 17 -> post-4-2 expected 19 (+AC1ForgetAllHappy + AC4ForgetAllWalletOffline; emulator-only). Story 5-1 T5 close-out: 257 GREEN unchanged (5-1 is pure CI-tier story — 0 Kotlin/pytest deltas; 4-platform gdscript_tests.yml matrix landed as the AC-1/2/3 evidence source per DD-5-1-1/2/5 LOCKED). androidTest count unchanged at 19. Story 5-3 T4 close-out: 257 -> 260 (+3 Kotlin from T1 3 MwaLifecycleObserverTest cases turning GREEN at T2: AC-1 happy / AC-3 already-terminated / multi-slot fan-out; +1 effective-GREEN delta from un-disabling MwaAndroidPluginSignAndSendTest.AC-4c (CR-3-3-B closure) — un-disable does NOT increment JUnit `tests=` total, only flips skipped→passed, so the +1 is not visible in the total count). 0 @Disabled in Kotlin baseline (was 1 placeholder for CR-3-3-B; now closed). androidTest pre-5-3 19 -> post-5-3 expected 20 (+AC2RotationCancelsInflightE2ETest; emulator-only, runtime validation deferred to next CI push). Code-review post-fix +1: 260 -> 261 (+1 Kotlin from MwaLifecycleObserverTest.AC-3 CAS-loss-inside-loop case landed via spyk(InflightMap) — closes code-review finding #1 Medium symmetric defensive branch coverage gap on DD-5-3-3 LOCKED's `else { incrementLateResult() }` path)."
@@ -959,12 +1019,12 @@
     "interfaceMismatches": 6,
     "pauseResumeCount": 12,
     "execution": {
-      "totalSessions": 2,
+      "totalSessions": 3,
       "pauseResumeCount": 2
     },
     "tasks": {
-      "totalCompleted": 12,
-      "totalVerificationCycles": 13
+      "totalCompleted": 17,
+      "totalVerificationCycles": 19
     },
     "codeReview": {
       "findingsTotal": 14,
