@@ -3,7 +3,7 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-29T13:00:00.000Z",
+  "lastUpdated": "2026-04-29T13:10:00.000Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
@@ -12,7 +12,16 @@
     "slug": "example-app-review-md",
     "startedAt": "2026-04-29T11:55:00.000Z",
     "size": "M",
-    "wave": 7
+    "wave": 7,
+    "tasks": [
+      {
+        "id": "T0",
+        "status": "done",
+        "committed": true,
+        "commitSha": "dd05abc5",
+        "completedAt": "2026-04-29T13:10:00.000Z"
+      }
+    ]
   },
   "phases": {
     "research": {
