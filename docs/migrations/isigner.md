@@ -1,3 +1,8 @@
+---
+Owner: @ValentinVPK
+Drift-check: verify_docs.yml
+---
+
 # Migrating to `ISigner` (v1.0 → v1.1 → v1.2)
 
 This guide walks `godot-solana-sdk` consumers through the new `ISigner` abstraction that landed in v1.1. It explains what changed, shows before/after code for every signer flavor, lays out the deprecation timeline, and answers the questions most consumers will hit.
