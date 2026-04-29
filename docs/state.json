@@ -3,11 +3,18 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-29T15:30:00.000Z",
+  "lastUpdated": "2026-04-29T15:35:00.000Z",
   "currentPhase": "implement",
   "currentStep": null,
-  "currentCheckpoint": null,
-  "currentStory": null,
+  "currentCheckpoint": "story-creation",
+  "currentStory": {
+    "storyId": "5-5",
+    "slug": "documentation-bundle",
+    "startedAt": "2026-04-29T15:35:00.000Z",
+    "size": "M",
+    "wave": 7,
+    "tasks": []
+  },
   "phases": {
     "research": {
       "status": "complete",
