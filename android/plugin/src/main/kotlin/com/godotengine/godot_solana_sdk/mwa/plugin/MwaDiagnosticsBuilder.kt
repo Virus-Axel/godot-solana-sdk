@@ -46,8 +46,6 @@ import org.json.JSONObject
  * returns the 12-key all-empty shape (string fields = `""`, int fields = `0`,
  * `last_n_correlation_trace` = `[]`, `session_state` = `{}`); used when the
  * plugin instance is null OR when called on non-Android via the no-op bridge.
- *
- * T2 fills in both bodies. T1 ships the API surface so tests compile against it.
  */
 internal object MwaDiagnosticsBuilder {
 

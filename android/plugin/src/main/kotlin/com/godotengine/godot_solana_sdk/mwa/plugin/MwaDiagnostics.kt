@@ -65,9 +65,7 @@ class MwaDiagnostics {
      * emissions. Population is the responsibility of the plugin's `recordOnEmit`
      * cross-cut helper (invoked at every `nativeBridge.post*Native` site). Capacity
      * 20; on insert when full, the oldest entry is evicted. Thread-safe via
-     * [correlationLock].
-     *
-     * T2 fills in the body. T1 ships the API surface so tests compile against it.
+     * [correlationLock] for both insert and snapshot.
      */
     private val correlationBuffer: ArrayDeque<CorrelationTraceEntry> = ArrayDeque(RING_BUFFER_CAPACITY)
     private val correlationLock: Any = Any()

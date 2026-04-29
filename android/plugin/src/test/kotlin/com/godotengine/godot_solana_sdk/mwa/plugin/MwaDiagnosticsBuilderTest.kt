@@ -19,9 +19,8 @@ import org.junit.jupiter.api.Test
  *   5. AC-1 late_result_count == diagnostics.lateResultCount AND pending_submissions_count
  *      reflects the count parameter passed in (caller injects the listAllPendingSubmissions size).
  *
- * **TDD red baseline (T1):** all 5 tests fail at runtime against the
- * `TODO("Story 5-2 T2 fills in")` body in [MwaDiagnosticsBuilder.buildDiagnosticsJson].
- * T2 turns them GREEN.
+ * 5 scenarios cover the AC-1 12-key payload; all GREEN at T2 (commit
+ * f15673d2) which filled in [MwaDiagnosticsBuilder.buildDiagnosticsJson].
  */
 class MwaDiagnosticsBuilderTest {
 

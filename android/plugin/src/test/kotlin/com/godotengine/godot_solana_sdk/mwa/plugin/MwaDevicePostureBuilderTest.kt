@@ -27,9 +27,9 @@ import org.junit.jupiter.api.Test
  * tier in T5's `tools/test_device_posture.gd`. D-5-2-T1-3 Rule 1 documents
  * this scope-down.
  *
- * **TDD red baseline (T1):** all 3 tests fail at runtime against the
- * `TODO("Story 5-2 T2 fills in")` body in [MwaDevicePostureBuilder.buildDevicePostureJson]
- * + [MwaDevicePostureBuilder.emptyPostureJson]. T2 turns them GREEN.
+ * 3 scenarios cover the AC-4 4-key payload; all GREEN at T2 (commit
+ * f15673d2) which filled in [MwaDevicePostureBuilder.buildDevicePostureJson]
+ * + [MwaDevicePostureBuilder.emptyPostureJson].
  */
 class MwaDevicePostureBuilderTest {
 

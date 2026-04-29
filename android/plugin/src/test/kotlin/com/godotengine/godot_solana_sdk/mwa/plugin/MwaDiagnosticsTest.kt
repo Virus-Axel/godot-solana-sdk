@@ -37,9 +37,9 @@ import org.junit.jupiter.api.Test
  * existing 4 tests" but no `MwaDiagnosticsTest.kt` existed; legacy counter
  * coverage is implicit via plugin-tier integration tests).
  *
- * **TDD red baseline (T1):** all 5 tests fail at runtime against the
- * `TODO("Story 5-2 T2 fills in")` bodies in [MwaDiagnostics.recordCorrelationTrace]
- * and [MwaDiagnostics.lastNCorrelationTrace]. T2 turns them GREEN.
+ * 5 scenarios cover the AC-2 ring-buffer surface; all GREEN at T2 (commit
+ * f15673d2) which filled in [MwaDiagnostics.recordCorrelationTrace] +
+ * [MwaDiagnostics.lastNCorrelationTrace].
  */
 class MwaDiagnosticsTest {
 

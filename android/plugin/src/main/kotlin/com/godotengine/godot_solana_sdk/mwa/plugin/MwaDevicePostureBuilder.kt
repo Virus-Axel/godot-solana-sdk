@@ -32,8 +32,6 @@ import org.json.JSONObject
  * **Non-Android empty-Dict semantics (DD-5-2-3):** [emptyPostureJson] returns
  * the 4-key all-`false` shape; used when the plugin instance is null OR when
  * called on non-Android via the no-op bridge.
- *
- * T2 fills in both bodies. T1 ships the API surface so tests compile against it.
  */
 object MwaDevicePostureBuilder {
 
