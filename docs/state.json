@@ -3,7 +3,7 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-29T13:10:00.000Z",
+  "lastUpdated": "2026-04-29T13:35:00.000Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
@@ -20,6 +20,21 @@
         "committed": true,
         "commitSha": "dd05abc5",
         "completedAt": "2026-04-29T13:10:00.000Z"
+      },
+      {
+        "id": "T1",
+        "status": "done",
+        "committed": true,
+        "commitSha": "0e10a495",
+        "completedAt": "2026-04-29T13:25:00.000Z"
+      },
+      {
+        "id": "T2",
+        "status": "done",
+        "committed": true,
+        "commitSha": null,
+        "completedAt": "2026-04-29T13:35:00.000Z",
+        "note": "commitSha set by T2 close-out commit (this commit); release tag v0.1.0-rc1 cut at https://github.com/ValentinVPK/godot-solana-sdk/releases/tag/v0.1.0-rc1"
       }
     ]
   },
@@ -999,8 +1014,8 @@
     "failing": 0,
     "baselinedAt": "2026-04-22T08:09:41Z",
     "baselinedAtStory": 5,
-    "lastRefreshedAt": "2026-04-29T11:30:00Z",
-    "lastRefreshedAtStory": 18,
+    "lastRefreshedAt": "2026-04-29T13:35:00.000Z",
+    "lastRefreshedAtStory": 19,
     "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
     "failingTests": [],
     "note": "Post-story-3-3 T7 baseline refresh: 152 -> 167 Kotlin (+15 from T1+T2 sign-and-send work — 10 MwaAndroidPluginSignAndSendTest cases (1 @Disabled placeholder for AC-4c lifecycle path -> Story 5-3 per CR-3-3-B; 9 GREEN covering AC-1 happy 4-key payload + AC-2 breadcrumb 6-key write-ahead + AC-3 cleanup-before-terminal + AC-4a/b error/timeout cleanup + AC-5 stale breadcrumb scan + one-shot + AC-6 cluster-bleed + runSigningOp(SIGN_AND_SEND) Failure routing direct + breadcrumb-write StorageCorruptException -> reauth_required), +4 SecureTokenStoreTest pending-submission storage tests (round-trip, list filter+strip, remove single, empty-list), +1 SignAndSendContractTest now-passing (T1 @Disabled placeholder removed at T6 with full fixture-input verification body)); pytest 83 unchanged. androidTest pre-3-3 15 (post-3-2 + 1 expected from CI push) -> post-3-3 expected 17 (+AC1SignAndSendHappyE2ETest + AC5PendingSubmissionFoundOnNextConnectTest — NOT counted in unit baseline; emulator-only). Total unit baseline 235 -> 250. Post-review-fix +1: cluster-bleed listAllKeys StorageCorruptException emits reauth_required synchronously and aborts (closes code-review HIGH finding #1, D-3-3-T7-1). Story 4-2 T6 close-out: 251 -> 257 (+6 Kotlin from T1 6 ForgetAll cases turning GREEN at T2: AC-1 happy path / AC-2 cancel-in-flight / AC-3 mutex serialization / AC-4 wallet-offline / DD-4-2-5 per-record StorageCorruptException / DD-4-2-6 listAllKeys-throws wrapper-bypass). androidTest pre-4-2 17 -> post-4-2 expected 19 (+AC1ForgetAllHappy + AC4ForgetAllWalletOffline; emulator-only). Story 5-1 T5 close-out: 257 GREEN unchanged (5-1 is pure CI-tier story — 0 Kotlin/pytest deltas; 4-platform gdscript_tests.yml matrix landed as the AC-1/2/3 evidence source per DD-5-1-1/2/5 LOCKED). androidTest count unchanged at 19. Story 5-3 T4 close-out: 257 -> 260 (+3 Kotlin from T1 3 MwaLifecycleObserverTest cases turning GREEN at T2: AC-1 happy / AC-3 already-terminated / multi-slot fan-out; +1 effective-GREEN delta from un-disabling MwaAndroidPluginSignAndSendTest.AC-4c (CR-3-3-B closure) — un-disable does NOT increment JUnit `tests=` total, only flips skipped→passed, so the +1 is not visible in the total count). 0 @Disabled in Kotlin baseline (was 1 placeholder for CR-3-3-B; now closed). androidTest pre-5-3 19 -> post-5-3 expected 20 (+AC2RotationCancelsInflightE2ETest; emulator-only, runtime validation deferred to next CI push). Code-review post-fix +1: 260 -> 261 (+1 Kotlin from MwaLifecycleObserverTest.AC-3 CAS-loss-inside-loop case landed via spyk(InflightMap) — closes code-review finding #1 Medium symmetric defensive branch coverage gap on DD-5-3-3 LOCKED's `else { incrementLateResult() }` path)."

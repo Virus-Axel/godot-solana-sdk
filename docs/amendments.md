@@ -385,7 +385,7 @@ BOTH architecture.md and this file, using amended values where they conflict.
   - `ValentinVPK/godot-mwa-example` (external; OUT-OF-LAIM-SCOPE) — full example app implementation.
   - First Git release tag `v0.1.0-rc1` cut from this repo's master at T2 (or first release boundary post-5-4 completion if release-cutting is deferred).
 - **Architectural posture for future SDK demo work:** "Demo for grant reviewers" should default to a separate downstream consumer repo + tagged release artifact, NOT an in-tree example. Same posture for any future demonstration of "single addon install" or equivalent FR-1-style claims. In-tree examples are appropriate for unit-level smoke (a 10-line scene that proves the addon loads), not for end-to-end consumer-facing demos.
-- **Closes:** AC-D-12 (`.gdextension` `compatibility_minimum` drift, originally scoped to Story 1-2 per architecture.md:1147; reopened as DD-5-4-1 in Story 5-4 prior story-file revision; landing as T0 of the rewritten 5-4 under this amendment).
+- **Closes:** AC-D-12 (`.gdextension` `compatibility_minimum` drift, originally scoped to Story 1-2 per architecture.md:1147; reopened as DD-5-4-1 in Story 5-4 prior story-file revision; landed as T0 of the rewritten 5-4 at commit `dd05abc5` 2026-04-29).
 - **Follow-through:**
   - User authors `ValentinVPK/godot-mwa-example` on GitHub with the design guidance in REVIEW.md as the spec; out-of-LaiM-scope but tracked by CR-5-4-E.
   - Story 5-5 docs bundle should reference both this repo (SDK) AND the external repo (canonical demo) — not just the in-tree path.
