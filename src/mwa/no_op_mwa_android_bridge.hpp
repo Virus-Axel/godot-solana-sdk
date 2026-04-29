@@ -36,9 +36,15 @@ public:
                        const godot::TypedArray<godot::PackedByteArray>& transactions,
                        const godot::Dictionary& opts) override;
 
-    // 2 lifecycle ops
+    // 1 lifecycle op
     void forget_all(const godot::String& request_id) override;
-    void get_diagnostics(const godot::String& request_id) override;
+
+    // Story 5-2 T3 (DD-5-2-3) — return the 12-key all-empty / 4-key all-false
+    // JSON shapes on non-Android per DD-5-2-3 LOCKED. GDScript callers MUST
+    // be able to call MWA.get_diagnostics() / MWA.get_device_posture() without
+    // platform branching; the returned shape is stable across platforms.
+    godot::String query_diagnostics_json() const override;
+    godot::String query_device_posture_json() const override;
 
     // Story 2-1 T6 — returns empty defaults (never connected on non-Android).
     godot::Dictionary query_session_state() const override;

@@ -62,7 +62,12 @@ public:
                        const godot::TypedArray<godot::PackedByteArray>& transactions,
                        const godot::Dictionary& opts) override;
     void forget_all(const godot::String& request_id) override;
-    void get_diagnostics(const godot::String& request_id) override;
+
+    // Story 5-2 T3 (DD-5-2-1) — test-controllable diagnostics + posture JSON
+    // snapshots. Defaults to the 12-key all-empty / 4-key all-false shapes
+    // (DD-5-2-3) when no test-driver setter has been called.
+    godot::String query_diagnostics_json() const override;
+    godot::String query_device_posture_json() const override;
 
     // Story 2-1 T6 — test-controllable state snapshot. Returns the dict passed
     // to `set_session_state_for_testing` (empty defaults if never set).

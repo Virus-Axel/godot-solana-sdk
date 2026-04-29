@@ -97,9 +97,33 @@ void MockMwaAndroidBridge::forget_all(const godot::String& request_id) {
     record(godot::String("forget_all"), request_id, args);
 }
 
-void MockMwaAndroidBridge::get_diagnostics(const godot::String& request_id) {
-    godot::Dictionary args;
-    record(godot::String("get_diagnostics"), request_id, args);
+godot::String MockMwaAndroidBridge::query_diagnostics_json() const {
+    // Story 5-2 T3 — mirrors NoOp's 12-key all-empty payload. Tests that
+    // exercise non-empty diagnostics will (in T5+) extend this to a
+    // setter-injected snapshot; today this default keeps existing test
+    // fixtures unchanged.
+    return godot::String(
+        "{\"sdk_version\":\"\","
+        "\"clientlib_ktx_version\":\"\","
+        "\"godot_version\":\"\","
+        "\"android_api_level\":0,"
+        "\"session_state\":{},"
+        "\"wallet_package\":\"\","
+        "\"wallet_version\":\"\","
+        "\"auth_token_fingerprint\":\"\","
+        "\"cluster\":\"\","
+        "\"last_n_correlation_trace\":[],"
+        "\"late_result_count\":0,"
+        "\"pending_submissions_count\":0}");
+}
+
+godot::String MockMwaAndroidBridge::query_device_posture_json() const {
+    // Story 5-2 T3 — mirrors NoOp's 4-key all-false payload.
+    return godot::String(
+        "{\"rooted\":false,"
+        "\"debuggable\":false,"
+        "\"developer_options_on\":false,"
+        "\"adb_enabled\":false}");
 }
 
 godot::Array MockMwaAndroidBridge::get_recorded_calls() const {

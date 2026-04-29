@@ -82,10 +82,14 @@ jmethodID g_mid_mwa_sign_messages_from_jni = nullptr;
 jmethodID g_mid_mwa_sign_transactions_from_jni = nullptr;
 jmethodID g_mid_mwa_sign_and_send_from_jni = nullptr;
 jmethodID g_mid_mwa_forget_all_from_jni = nullptr;
-jmethodID g_mid_mwa_get_diagnostics_from_jni = nullptr;
 // Story 2-1 T6 — reverse-direction sync getter: returns JSON string snapshot
 // of MwaSessionState for the 4 C++ state getters.
 jmethodID g_mid_mwa_query_session_state_from_jni = nullptr;
+// Story 5-2 T3 (DD-5-2-1) — sync diagnostics + device-posture getters
+// mirroring `mwaQuerySessionStateFromJni`. Replace the Story 1-5 async
+// `mwaGetDiagnosticsFromJni` jmethodID + cache (deleted).
+jmethodID g_mid_mwa_query_diagnostics_from_jni = nullptr;
+jmethodID g_mid_mwa_query_device_posture_from_jni = nullptr;
 
 // True once JNI_OnLoad populated the cache without error. Read by op methods
 // to decide between real JNI call vs. `emit_jni_unavailable`.
@@ -530,20 +534,80 @@ void MwaAndroidBridgeJni::forget_all(const godot::String& request_id) {
     call_reqid_only_shape(g_mid_mwa_forget_all_from_jni, dispatcher_, request_id, "forget_all");
 }
 
-void MwaAndroidBridgeJni::get_diagnostics(const godot::String& request_id) {
-    if (!g_jni_ready.load(std::memory_order_acquire)) {
-        emit_jni_unavailable(godot::String("get_diagnostics"), request_id);
-        return;
-    }
-    call_reqid_only_shape(g_mid_mwa_get_diagnostics_from_jni, dispatcher_, request_id, "get_diagnostics");
-}
-
 godot::Dictionary MwaAndroidBridgeJni::query_session_state() const {
     // Delegates to the file-scope helper so non-bridge callers (e.g. diagnostic
     // tooling in Story 5-2) can reach the same snapshot without instantiating
     // a bridge. On any JNI failure path the helper returns empty defaults —
     // the getter then reports "not connected" rather than crashing.
     return MwaJniContext::query_session_state();
+}
+
+namespace {
+
+// Story 5-2 T3 (DD-5-2-3) — 12-key all-empty diagnostics payload returned on
+// any JNI failure path. Mirrors MwaDiagnosticsBuilder.emptyDiagnosticsJson on
+// the Kotlin side.
+godot::String build_empty_diagnostics_json() {
+    return godot::String(
+        "{\"sdk_version\":\"\","
+        "\"clientlib_ktx_version\":\"\","
+        "\"godot_version\":\"\","
+        "\"android_api_level\":0,"
+        "\"session_state\":{},"
+        "\"wallet_package\":\"\","
+        "\"wallet_version\":\"\","
+        "\"auth_token_fingerprint\":\"\","
+        "\"cluster\":\"\","
+        "\"last_n_correlation_trace\":[],"
+        "\"late_result_count\":0,"
+        "\"pending_submissions_count\":0}");
+}
+
+godot::String build_empty_posture_json() {
+    return godot::String(
+        "{\"rooted\":false,"
+        "\"debuggable\":false,"
+        "\"developer_options_on\":false,"
+        "\"adb_enabled\":false}");
+}
+
+// Story 5-2 T3 — shared sync-JNI-getter scaffold. Mirrors
+// MwaJniContext::query_session_state's pattern: ready-flag check, attach,
+// CallStaticObjectMethod, jstring extract. Returns the empty-fallback String
+// on any failure.
+godot::String call_string_sync_getter(jmethodID method_id, godot::String (*empty_fallback)()) {
+    if (!g_jni_ready.load(std::memory_order_acquire) || method_id == nullptr) {
+        return empty_fallback();
+    }
+    ScopedJniAttach attach;
+    JNIEnv* env = attach.env();
+    if (env == nullptr) {
+        return empty_fallback();
+    }
+    jobject result_obj = env->CallStaticObjectMethod(g_plugin_companion_class, method_id);
+    if (env->ExceptionCheck() == JNI_TRUE) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        if (result_obj != nullptr) { env->DeleteLocalRef(result_obj); }
+        return empty_fallback();
+    }
+    if (result_obj == nullptr) {
+        return empty_fallback();
+    }
+    const godot::String json_str =
+        jstring_to_godot_string(env, static_cast<jstring>(result_obj));
+    env->DeleteLocalRef(result_obj);
+    return json_str;
+}
+
+}  // namespace
+
+godot::String MwaAndroidBridgeJni::query_diagnostics_json() const {
+    return call_string_sync_getter(g_mid_mwa_query_diagnostics_from_jni, &build_empty_diagnostics_json);
+}
+
+godot::String MwaAndroidBridgeJni::query_device_posture_json() const {
+    return call_string_sync_getter(g_mid_mwa_query_device_posture_from_jni, &build_empty_posture_json);
 }
 
 }  // namespace godot_solana_sdk::mwa
@@ -609,14 +673,21 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
     godot_solana_sdk::mwa::g_mid_mwa_forget_all_from_jni =
         env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
                                "mwaForgetAllFromJni", reqid_only_sig);
-    godot_solana_sdk::mwa::g_mid_mwa_get_diagnostics_from_jni =
-        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
-                               "mwaGetDiagnosticsFromJni", reqid_only_sig);
 
     // Story 2-1 T6 — sync getter returns String (Ljava/lang/String;).
+    const char* string_sync_getter_sig = "()Ljava/lang/String;";
     godot_solana_sdk::mwa::g_mid_mwa_query_session_state_from_jni =
         env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
-                               "mwaQuerySessionStateFromJni", "()Ljava/lang/String;");
+                               "mwaQuerySessionStateFromJni", string_sync_getter_sig);
+    // Story 5-2 T3 (DD-5-2-1) — sync diagnostics + device-posture getters.
+    // Replace the Story 1-5 async `mwaGetDiagnosticsFromJni(reqId): Unit`
+    // jmethodID load (deleted alongside the Kotlin entry).
+    godot_solana_sdk::mwa::g_mid_mwa_query_diagnostics_from_jni =
+        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
+                               "mwaQueryDiagnosticsFromJni", string_sync_getter_sig);
+    godot_solana_sdk::mwa::g_mid_mwa_query_device_posture_from_jni =
+        env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
+                               "mwaQueryDevicePostureFromJni", string_sync_getter_sig);
 
     if (env->ExceptionCheck() == JNI_TRUE) { env->ExceptionClear(); }
 

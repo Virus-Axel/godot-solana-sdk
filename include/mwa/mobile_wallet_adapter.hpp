@@ -80,8 +80,13 @@ public:
 	// chars post-connect, as computed by AuthTokenFingerprint in T3.
 	[[nodiscard]] godot::String get_auth_token_fingerprint() const;
 
-	// 2 utility — stubs in 1-5; real wire-up in Stories 5-2 / 4-2.
+	// 2 utility — Story 5-2 wires get_diagnostics; Story 4-2 wires forget_all.
 	[[nodiscard]] godot::Dictionary get_diagnostics();
+	// Story 5-2 T3 (AC-4) — synchronous device posture surface. Returns the
+	// 4-key Dictionary `{rooted, debuggable, developer_options_on, adb_enabled}`
+	// (all bool). Non-authoritative — sourced via Android Build/Settings APIs;
+	// see AC-4 + DD-32 runbook reference.
+	[[nodiscard]] godot::Dictionary get_device_posture();
 	void forget_all();
 
 #ifdef MWA_TESTING

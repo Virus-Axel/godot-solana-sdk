@@ -83,7 +83,36 @@ public:
 
     virtual void forget_all(const godot::String& request_id) = 0;
 
-    virtual void get_diagnostics(const godot::String& request_id) = 0;
+    /**
+     * Story 5-2 T3 (DD-5-2-1 LOCKED) — synchronous pull of the AC-1 12-key
+     * diagnostics payload as a JSON String for @c MobileWalletAdapter::get_diagnostics
+     * to parse into a Dictionary. Replaces the Story 1-5 async
+     * @c get_diagnostics(request_id) seam (deleted) — architecture §6.2 has
+     * always specified @c get_diagnostics() as SYNC ≤1ms; the async stub was
+     * a Story 1-5 placeholder that drifted from the spec.
+     *
+     * Impl contract:
+     *   - NoOp returns the 12-key all-empty JSON String per DD-5-2-3.
+     *   - Jni delegates to the Kotlin @c mwaQueryDiagnosticsFromJni companion
+     *     entry; returns the 12-key all-empty JSON on any JNI failure path.
+     *
+     * Synchronous by design: callers are on the Godot main thread; must be
+     * cheap (≤1ms — no coroutine, no disk, no network).
+     */
+    virtual godot::String query_diagnostics_json() const = 0;
+
+    /**
+     * Story 5-2 T3 (AC-4) — synchronous pull of the 4-key device posture
+     * payload as a JSON String for @c MobileWalletAdapter::get_device_posture
+     * to parse into a Dictionary.
+     *
+     * Impl contract:
+     *   - NoOp returns the 4-key all-false JSON String per DD-5-2-3.
+     *   - Jni delegates to the Kotlin @c mwaQueryDevicePostureFromJni
+     *     companion entry; returns the 4-key all-false JSON on any JNI
+     *     failure path.
+     */
+    virtual godot::String query_device_posture_json() const = 0;
 
     /**
      * Story 2-1 T6 — synchronous pull of current session state for

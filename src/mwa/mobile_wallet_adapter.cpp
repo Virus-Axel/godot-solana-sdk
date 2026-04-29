@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <random>
 
+#include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/classes/json.hpp"
+#include "godot_cpp/classes/ref.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/method_bind.hpp"
 #include "godot_cpp/core/object.hpp"
@@ -13,6 +16,7 @@
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/typed_array.hpp"
+#include "godot_cpp/variant/utility_functions.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
 #include "generated/mwa_error_codes.hpp"
@@ -61,6 +65,60 @@ godot::Dictionary build_unsupported_platform_payload(const godot::String &reques
 	payload["cause"] = godot::String("");
 	payload["source_method"] = source_method;
 	return payload;
+}
+
+// Story 5-2 T3 (DD-5-2-3) — 12-key all-empty diagnostics Dictionary returned
+// when the bridge is null (MWA_TESTING null-bridge guard). Mirrors the
+// JSON-string shape produced by MwaDiagnosticsBuilder.emptyDiagnosticsJson on
+// the Kotlin side + the namespace-local build_empty_diagnostics_json on the
+// JNI side; here the same 12-key set is emitted directly as a Dictionary so
+// the GDScript caller sees a consistent shape regardless of the bridge.
+godot::Dictionary build_empty_diagnostics_dict() {
+	godot::Dictionary out;
+	out["sdk_version"] = godot::String();
+	out["clientlib_ktx_version"] = godot::String();
+	out["godot_version"] = godot::String();
+	out["android_api_level"] = static_cast<int64_t>(0);
+	out["session_state"] = godot::Dictionary();
+	out["wallet_package"] = godot::String();
+	out["wallet_version"] = godot::String();
+	out["auth_token_fingerprint"] = godot::String();
+	out["cluster"] = godot::String();
+	out["last_n_correlation_trace"] = godot::Array();
+	out["late_result_count"] = static_cast<int64_t>(0);
+	out["pending_submissions_count"] = static_cast<int64_t>(0);
+	return out;
+}
+
+godot::Dictionary build_empty_posture_dict() {
+	godot::Dictionary out;
+	out["rooted"] = false;
+	out["debuggable"] = false;
+	out["developer_options_on"] = false;
+	out["adb_enabled"] = false;
+	return out;
+}
+
+// Story 5-2 T3 — parse a JSON string from the bridge into a Dictionary.
+// Falls back to the supplied empty-shape builder on parse failure or non-Dict
+// root so the caller receives the spec'd shape regardless of upstream errors.
+godot::Dictionary parse_dict_from_bridge_json(const godot::String &json_str,
+		godot::Dictionary (*empty_fallback)(),
+		const char *source_label) {
+	godot::Ref<godot::JSON> json;
+	json.instantiate();
+	if (json->parse(json_str) != godot::OK) {
+		godot::UtilityFunctions::push_warning(
+				godot::String("MWA: ") + godot::String(source_label) + godot::String(" JSON parse failed"));
+		return empty_fallback();
+	}
+	const godot::Variant data = json->get_data();
+	if (data.get_type() != godot::Variant::DICTIONARY) {
+		godot::UtilityFunctions::push_warning(
+				godot::String("MWA: ") + godot::String(source_label) + godot::String(" JSON root is not a dict"));
+		return empty_fallback();
+	}
+	return godot::Dictionary(data);
 }
 } // anonymous namespace
 
@@ -133,8 +191,9 @@ void MobileWalletAdapter::_bind_methods() {
 	// Story 2-1 T6 — AC-7 fingerprint getter forwarded by MWA.gd facade (T7).
 	ClassDB::bind_method(D_METHOD("get_auth_token_fingerprint"), &MobileWalletAdapter::get_auth_token_fingerprint);
 
-	// 2 utility — stubs in 1-5.
+	// 2 utility + 1 NEW posture surface (Story 5-2 T3 AC-4).
 	ClassDB::bind_method(D_METHOD("get_diagnostics"), &MobileWalletAdapter::get_diagnostics);
+	ClassDB::bind_method(D_METHOD("get_device_posture"), &MobileWalletAdapter::get_device_posture);
 	ClassDB::bind_method(D_METHOD("forget_all"), &MobileWalletAdapter::forget_all);
 }
 
@@ -254,9 +313,49 @@ godot::String MobileWalletAdapter::get_auth_token_fingerprint() const {
 	return godot::String(snapshot.get("auth_token_fingerprint", godot::String()));
 }
 
-// 2 utility — stubs in 1-5.
+// Story 5-2 T3 (DD-5-2-1 LOCKED) — synchronous diagnostics pull. Replaces
+// the Story 1-5 empty-Dict stub. Bridge is queried synchronously for a JSON
+// String (same pattern as `query_session_state`); here we parse it into a
+// Dictionary AND overlay `godot_version` from `Engine::get_version_info()` so
+// the Kotlin side does not need to know the engine version (it already
+// populates the other 11 keys via MwaDiagnosticsBuilder).
+//
+// `is_supported()` is NOT called here — the bridge contract already covers
+// non-Android via the NoOp impl returning the 12-key all-empty JSON shape per
+// DD-5-2-3. Null-bridge (MWA_TESTING) returns the same empty Dict directly.
 godot::Dictionary MobileWalletAdapter::get_diagnostics() {
-	return godot::Dictionary();
+	godot::Dictionary out;
+	if (bridge_ == nullptr) {
+		out = build_empty_diagnostics_dict();
+	} else {
+		const godot::String json_str = bridge_->query_diagnostics_json();
+		out = parse_dict_from_bridge_json(json_str, &build_empty_diagnostics_dict, "get_diagnostics");
+	}
+	// DD-5-2-1 step 3 — overlay godot_version from Engine::get_version_info()
+	// so the Kotlin side's "" placeholder (set in
+	// GDExtensionAndroidPlugin.buildDiagnosticsJsonForJni) is replaced with the
+	// actual engine version on the read side. Falls back to "" if the engine
+	// singleton is unavailable (early init / non-engine test harness).
+	godot::String godot_version_str;
+	if (godot::Engine *engine = godot::Engine::get_singleton()) {
+		const godot::Dictionary version_info = engine->get_version_info();
+		if (version_info.has("string")) {
+			godot_version_str = godot::String(version_info["string"]);
+		}
+	}
+	out["godot_version"] = godot_version_str;
+	return out;
+}
+
+// Story 5-2 T3 (AC-4) — synchronous device posture pull. Mirrors
+// `get_diagnostics`: bridge returns the 4-key JSON, we parse + fall back to
+// the empty-shape dict on any failure.
+godot::Dictionary MobileWalletAdapter::get_device_posture() {
+	if (bridge_ == nullptr) {
+		return build_empty_posture_dict();
+	}
+	const godot::String json_str = bridge_->query_device_posture_json();
+	return parse_dict_from_bridge_json(json_str, &build_empty_posture_dict, "get_device_posture");
 }
 
 // Story 4-2 T3 (per amendment A-15) — fill in the Story 1-5 empty stub.

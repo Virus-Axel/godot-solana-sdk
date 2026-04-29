@@ -124,9 +124,12 @@ public:
                        const godot::TypedArray<godot::PackedByteArray>& transactions,
                        const godot::Dictionary& opts) override;
 
-    // 2 lifecycle ops
+    // 1 lifecycle op
     void forget_all(const godot::String& request_id) override;
-    void get_diagnostics(const godot::String& request_id) override;
+
+    // Story 5-2 T3 (DD-5-2-1) — sync JNI getters mirroring query_session_state.
+    godot::String query_diagnostics_json() const override;
+    godot::String query_device_posture_json() const override;
 
     // Story 2-1 T6 — delegates to MwaJniContext::query_session_state() which
     // performs a synchronous JNI round-trip to MwaSessionState (Kotlin).

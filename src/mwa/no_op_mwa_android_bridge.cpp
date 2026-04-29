@@ -98,8 +98,34 @@ void NoOpMwaAndroidBridge::forget_all(const godot::String& request_id) {
     emit_unsupported(godot::String("forget_all"), request_id);
 }
 
-void NoOpMwaAndroidBridge::get_diagnostics(const godot::String& request_id) {
-    emit_unsupported(godot::String("get_diagnostics"), request_id);
+godot::String NoOpMwaAndroidBridge::query_diagnostics_json() const {
+    // Story 5-2 T3 (DD-5-2-3 LOCKED) — non-Android returns the 12-key
+    // all-empty payload so GDScript callers can read MWA.get_diagnostics()
+    // without platform branching. Shape mirrors
+    // MwaDiagnosticsBuilder.emptyDiagnosticsJson on the Kotlin side.
+    return godot::String(
+        "{\"sdk_version\":\"\","
+        "\"clientlib_ktx_version\":\"\","
+        "\"godot_version\":\"\","
+        "\"android_api_level\":0,"
+        "\"session_state\":{},"
+        "\"wallet_package\":\"\","
+        "\"wallet_version\":\"\","
+        "\"auth_token_fingerprint\":\"\","
+        "\"cluster\":\"\","
+        "\"last_n_correlation_trace\":[],"
+        "\"late_result_count\":0,"
+        "\"pending_submissions_count\":0}");
+}
+
+godot::String NoOpMwaAndroidBridge::query_device_posture_json() const {
+    // Story 5-2 T3 (DD-5-2-3) — non-Android returns the 4-key all-false
+    // payload. Mirrors MwaDevicePostureBuilder.emptyPostureJson on Kotlin.
+    return godot::String(
+        "{\"rooted\":false,"
+        "\"debuggable\":false,"
+        "\"developer_options_on\":false,"
+        "\"adb_enabled\":false}");
 }
 
 }  // namespace godot_solana_sdk::mwa
