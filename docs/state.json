@@ -3,11 +3,17 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-29T05:00:00.000Z",
+  "lastUpdated": "2026-04-29T05:01:55.000Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": null,
+  "currentStory": {
+    "storyId": "5-2",
+    "slug": "get-diagnostics-ring-buffer-fingerprint",
+    "startedAt": "2026-04-29T05:01:55.000Z",
+    "size": "M",
+    "wave": 7
+  },
   "phases": {
     "research": {
       "status": "complete",
@@ -977,7 +983,8 @@
     "stories": {
       "completed": 3,
       "sizeDistribution": {
-        "S": 3
+        "S": 3,
+        "M": 1
       }
     }
   },

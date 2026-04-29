@@ -171,9 +171,11 @@ epics:
         slug: get-diagnostics-ring-buffer-fingerprint
         title: "get_diagnostics() + Correlation Ring Buffer + HKDF Fingerprint + device_posture + install links"
         size: M
-        status: backlog
+        status: in-progress
         wave: 7
         dependencies: ["2-1"]
+        startedAt: 2026-04-29T05:01:55Z
+        baselineTag: pre-mwa-android-5-2
       - id: "5-3"
         slug: lifecycle-observer-rotation-test
         title: "Lifecycle Observer + mwa_cancelled_lifecycle + Rotation Test"
