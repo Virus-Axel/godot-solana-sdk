@@ -3,11 +3,33 @@ package com.godotengine.godot_solana_sdk.mwa.plugin
 import java.util.concurrent.atomic.AtomicLong
 
 /**
+ * Story 5-2 — `last_n_correlation_trace` ring buffer entry per AC-2's 5-key
+ * shape. Recorded by the plugin's `recordOnEmit` helper at every terminal-
+ * signal emission site (DD-5-2-2 LOCKED — caller-side centralization of the
+ * recorder cross-cut). Surfaced via [MwaDiagnostics.lastNCorrelationTrace]
+ * → `MwaDiagnosticsBuilder.buildDiagnosticsJson` → `MWA.get_diagnostics()`.
+ */
+data class CorrelationTraceEntry(
+    val requestId: String,
+    val sourceMethod: String,
+    val terminalSignal: String,
+    val elapsedMs: Long,
+    val timestampMs: Long,
+)
+
+/**
  * Plugin-layer diagnostic counters. Surfaced by `get_diagnostics()` in Story 5-2;
  * populated incrementally by the MWA code paths as they land.
  *
- * Thread-safe via [AtomicLong]. All counters are monotonic (never decrement);
- * [resetForTest] wipes them for unit-test isolation only.
+ * Thread-safe via [AtomicLong] for counters. All counters are monotonic (never
+ * decrement); [resetForTest] wipes them for unit-test isolation only.
+ *
+ * Story 5-2 ADDS: ring buffer `lastNCorrelationTrace` (capacity 20, FIFO eviction)
+ * + recorder [recordCorrelationTrace] populated by the plugin's `recordOnEmit`
+ * cross-cut helper. Thread-safe via `synchronized(correlationLock)` for both
+ * insert and snapshot — recorder may be called from `Dispatchers.Default` (op-
+ * method coroutines) AND main thread (lifecycle observer onDestroy runs on
+ * main); reader (get_diagnostics) is called from main thread.
  */
 class MwaDiagnostics {
 
@@ -38,8 +60,34 @@ class MwaDiagnostics {
 
     val cleanupFailedCount: Long get() = _cleanupFailedCount.get()
 
+    /**
+     * Story 5-2 (DD-5-2-2 LOCKED) — ring buffer of the last 20 terminal-signal
+     * emissions. Population is the responsibility of the plugin's `recordOnEmit`
+     * cross-cut helper (invoked at every `nativeBridge.post*Native` site). Capacity
+     * 20; on insert when full, the oldest entry is evicted. Thread-safe via
+     * [correlationLock].
+     *
+     * T2 fills in the body. T1 ships the API surface so tests compile against it.
+     */
+    private val correlationBuffer: ArrayDeque<CorrelationTraceEntry> = ArrayDeque(RING_BUFFER_CAPACITY)
+    private val correlationLock: Any = Any()
+
+    fun recordCorrelationTrace(entry: CorrelationTraceEntry): Unit = TODO("Story 5-2 T2 fills in")
+
+    val lastNCorrelationTrace: List<CorrelationTraceEntry>
+        get() = TODO("Story 5-2 T2 fills in")
+
     internal fun resetForTest() {
         _lateResultCount.set(0)
         _cleanupFailedCount.set(0)
+        synchronized(correlationLock) { correlationBuffer.clear() }
+    }
+
+    companion object {
+        /**
+         * Story 5-2 AC-2 — ring buffer capacity. 20 chosen per DD-32 LOCKED
+         * "ring buffer N=20 correlation traces". Hardcoded; not configurable.
+         */
+        const val RING_BUFFER_CAPACITY: Int = 20
     }
 }
