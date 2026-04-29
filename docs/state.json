@@ -3,41 +3,11 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-29T15:00:00.000Z",
+  "lastUpdated": "2026-04-29T15:30:00.000Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": {
-    "storyId": "5-4",
-    "slug": "example-app-review-md",
-    "startedAt": "2026-04-29T11:55:00.000Z",
-    "size": "M",
-    "wave": 7,
-    "tasks": [
-      {
-        "id": "T0",
-        "status": "done",
-        "committed": true,
-        "commitSha": "dd05abc5",
-        "completedAt": "2026-04-29T13:10:00.000Z"
-      },
-      {
-        "id": "T1",
-        "status": "done",
-        "committed": true,
-        "commitSha": "0e10a495",
-        "completedAt": "2026-04-29T13:25:00.000Z"
-      },
-      {
-        "id": "T2",
-        "status": "done",
-        "committed": true,
-        "commitSha": null,
-        "completedAt": "2026-04-29T13:35:00.000Z",
-        "note": "Initial T2 attempt at 046a5a00 cut v0.1.0-rc1 (deleted ~14:30 UTC after code-review-agent flagged Critical missing-artifacts bug). Retry with GRADLE_OPTS=-Xmx4096m surfaced CR-5-4-G HIGH (pre-existing C++ compile blocker). T2 reverted to housekeeping-only scope; release-cutting deferred to Story 5-6 release-on-tag CI per amended DD-5-4-5. CR-5-4-F reclassified from LOW-deferred to MANDATED for 5-6."
-      }
-    ]
-  },
+  "currentStory": null,
   "phases": {
     "research": {
       "status": "complete",
@@ -64,7 +34,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 18,
+  "storiesDone": 19,
   "storiesTotal": 21,
   "changeStories": [],
   "completedStories": [
@@ -1014,7 +984,7 @@
     "failing": 0,
     "baselinedAt": "2026-04-22T08:09:41Z",
     "baselinedAtStory": 5,
-    "lastRefreshedAt": "2026-04-29T13:35:00.000Z",
+    "lastRefreshedAt": "2026-04-29T15:30:00.000Z",
     "lastRefreshedAtStory": 19,
     "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
     "failingTests": [],
@@ -1062,14 +1032,15 @@
       "retrospectRulesAdded": 6
     },
     "gates": {
-      "gate5Passes": 4
+      "gate5Passes": 5
     },
     "stories": {
-      "completed": 4,
+      "completed": 5,
       "sizeDistribution": {
         "S": 3,
         "M": 3
-      }
+      },
+      "gate5Passes": 1
     },
     "quality": {
       "interfaceAudits": 1

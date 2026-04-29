@@ -193,13 +193,18 @@ epics:
         gate5Result: pass
       - id: "5-4"
         slug: example-app-review-md
-        title: "Minimal Example App + REVIEW.md + devnet Default + Scripted 7/7 Demo"
+        title: "REVIEW.md + .gdextension Drift Fix + First Addon Release Tag (example app relocates to external repo per A-17)"
         size: M
-        status: in-progress
+        status: done
         wave: 7
         dependencies: ["2-1", "2-2", "2-3", "3-1", "3-2", "3-3", "4-1"]
         startedAt: 2026-04-29T11:55:00Z
+        completedAt: 2026-04-29T15:30:00Z
         baselineTag: pre-mwa-android-5-4
+        postTag: post-mwa-android-5-4
+        gate5Result: pass
+        amendments: ["A-17"]
+        concerns: ["CR-5-4-A", "CR-5-4-B", "CR-5-4-C", "CR-5-4-D", "CR-5-4-E", "CR-5-4-F", "CR-5-4-G"]
       - id: "5-5"
         slug: documentation-bundle
         title: "Documentation Bundle (install, usage, API reference, error-codes, compatibility-matrix, naming-map, rn-parity, api-stability, migrations/isigner, safety, triage, signals-101, accessibility)"
