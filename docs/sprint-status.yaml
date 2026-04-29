@@ -178,11 +178,14 @@ epics:
         slug: lifecycle-observer-rotation-test
         title: "Lifecycle Observer + mwa_cancelled_lifecycle + Rotation Test"
         size: S
-        status: in-progress
+        status: done
         wave: 7
         dependencies: ["1-5"]
         startedAt: 2026-04-28T19:30:00Z
+        completedAt: 2026-04-29T04:49:03Z
         baselineTag: pre-mwa-android-5-3
+        postTag: post-mwa-android-5-3
+        gate5Result: pass
       - id: "5-4"
         slug: example-app-review-md
         title: "Minimal Example App + REVIEW.md + devnet Default + Scripted 7/7 Demo"

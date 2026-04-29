@@ -3,17 +3,11 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-29T04:49:03.000Z",
+  "lastUpdated": "2026-04-29T05:00:00.000Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
-  "currentStory": {
-    "storyId": "5-3",
-    "slug": "lifecycle-observer-rotation-test",
-    "startedAt": "2026-04-28T19:23:45.022Z",
-    "size": "S",
-    "wave": 7
-  },
+  "currentStory": null,
   "phases": {
     "research": {
       "status": "complete",
@@ -40,7 +34,7 @@
       "gateResult": "pass"
     }
   },
-  "storiesDone": 16,
+  "storiesDone": 17,
   "storiesTotal": 21,
   "changeStories": [],
   "completedStories": [
@@ -850,6 +844,78 @@
         "note": "Story ships with unit baseline green; 4-platform CI matrix exercise happens asynchronously once the next git push origin feature/mwa-android triggers the workflow."
       },
       "notes": "First Wave 7 story. Pure CI-tier — 0 Kotlin/pytest unit-test deltas; the AC verification path is a 4-platform gdextension-runtime matrix in .github/workflows/gdscript_tests.yml (T3 extension of the previous single-job cr32-desktop workflow). All 7 user-facing ops + forget_all (Story 4-2 T3 fill-in per A-15) already wire the null-bridge → unsupported_platform fallback (T1 audit verified: 13 hits for null-bridge guard, 10 hits for emit_unsupported fan-out, 0 stray __ANDROID__ outside platform_selector + JNI, A-14 10-key envelope shape preserved). MWA.is_supported() lands as the FIRST GDScript-side platform-gate getter (DD-5-1-3 LOCKED — 1-LOC OS.get_name() check; no C++ binding ceremony). test_unsupported_platform.gd extended from 2 → 8 scenarios (DD-5-1-4) reusing the existing _assert_unsupported_platform_payload helper unchanged. CI matrix: linux-desktop / windows-desktop / macos-desktop / web-symbol-resolve (DD-5-1-5; fail-fast=false; identical recipe modulo platform). Web is build-only per DD-5-1-2 (wasm32 runtime cannot be exercised under godot --headless); AC-1 runtime emission satisfied transitively via linux-desktop. 5 commits + pre-creation bookkeeping = 6 total in branch history (T1 audit-only, no commit). Unit baseline 257 unchanged; androidTest 19 unchanged. 2 spec-acknowledged deviations filed (D-5-1-1 Web partial AC-1 + D-5-1-2 cr32-desktop rename). 3 new concerns logged (CR-5-1-A/B/C all LOW). 1 amendment-equivalent: CR-32 backstop scope expanded from 2 ops/1 platform → 7 ops + is_supported / 4 platforms (3.5× coverage uplift — recommend CR-32 DOWNGRADE to LOW or CLOSED at Gate 5 PASS)."
+    },
+    {
+      "storyId": "5-3",
+      "slug": "lifecycle-observer-rotation-test",
+      "size": "S",
+      "wave": 7,
+      "startedAt": "2026-04-28T19:23:45Z",
+      "completedAt": "2026-04-29T04:49:03Z",
+      "gate5Result": "pass",
+      "tasks": 4,
+      "commits": 5,
+      "baselineTag": "pre-mwa-android-5-3",
+      "postTag": "post-mwa-android-5-3",
+      "commitsList": [
+        "a28cd24f chore(mwa): Story 5-3 pre-creation bookkeeping — sprint-status + state.json",
+        "899c65f2 test(mwa): Story 5-3 T1 — Kotlin TDD red + scaffolding stub for MwaLifecycleObserver",
+        "4ada4d8d chore(mwa): pause Story 5-3 between T1 commit and T2 start",
+        "cd8f6df1 feat(mwa): Story 5-3 T2 — MwaLifecycleObserver.onDestroy impl + plugin registration + close CR-3-3-B",
+        "8695c5c5 test(mwa): Story 5-3 T3 — androidTest AC2RotationCancelsInflightE2ETest via ActivityScenario.recreate()",
+        "dd943941 chore(mwa): Story 5-3 T4 close-out — baseline 257→260 + CR-3-3-B closed + CR-5-3-A/B logged",
+        "a5b6c54b fix(mwa): Story 5-3 post-review fixes — CAS-loss test + AC-4c payload + spillover doc + budget hygiene"
+      ],
+      "deviations": [
+        "D-5-3-T2-1 Rule 1 (T2): registerLifecycleObserver split into registerLifecycleObserver() + @VisibleForTesting internal buildLifecycleObserver() helper. Story T2 spec inlined the construction; the split exposes the wired observer for unit-tier testing without widening private discipline (plugin's buildCancelledLifecycleJson + cleanupBreadcrumb stay private; observer takes them as method-references via lambda-injection ctor from T1). Direct payoff: AC-4c (CR-3-3-B closure) + AC-2 androidTest both invoke plugin.buildLifecycleObserver() to exercise production wiring. Same idiom as runSigningOp's @VisibleForTesting internal pattern from Story 3-1 D-3-1-N.",
+        "D-5-3-T2-2 Rule 1 (T2): Tense-correction kdoc sweep — buildCancelledLifecycleJson kdoc updated 'Story 5-3 will use lifecycle_teardown' → DD-5-3-4 LOCKED activity_destroyed; cleanupBreadcrumb kdoc Story 5-3 future-tense → past-tense closure note; MwaLifecycleObserver class kdoc 'T2 wires the references; T1 ships TDD-red scaffolding only' → cleaner phrasing. NO behavior change.",
+        "D-5-3-T3-1 Rule 1 (T3): AC-2 androidTest pre-registers an in-flight connect slot directly in inflightMap (via shared InflightMap injection through PluginTestHarness.freshPlugin) instead of calling MWA.connect(...) end-to-end. Story T3 spec at story line 255 documents this; downscope rationale: AC-2's load-bearing invariant is 'in-flight slot at ON_DESTROY → mwa_cancelled_lifecycle within 1s + no later terminal', NOT 'connect call runs end-to-end'. Pre-seeding eliminates a fast-FakeMwaClient race where connect could complete BEFORE scenario.recreate() fires ON_DESTROY (the slot would be already-terminated; AC-3 path runs instead of AC-2 path, defeating the test).",
+        "D-5-3-CR-1 Rule 2 (post-review fix — code-review #1 Medium symmetric defensive branch coverage): Added 4th unit case AC-3 CAS-loss inside loop using spyk(InflightMap()) with every { snapshot() } returns mapOf('conn-race' to 'connect') + every { tryTerminate('conn-race') } returns false to deterministically simulate a CAS race between snapshot() (line 75) and the inner tryTerminate(reqId) (line 77) inside MwaLifecycleObserver.onDestroy. Asserts lateResultCount == 1, postMwaCancelledLifecycle invoked 0 times, cleanupBreadcrumb invoked 0 times, cancelInFlight invoked once. Closes the symmetric-defensive-branch coverage gap on DD-5-3-3 LOCKED's else { incrementLateResult() } path. Baseline +1 (260 → 261 Kotlin).",
+        "D-5-3-CR-2 Rule 1 (post-review fix — code-review #2 Low stale narrative cleanup): D-5-3-T2-2's tense-correction sweep covered production kdoc but missed test-file narrative kdoc + parenthetical 'NOT lifecycle_teardown' superseded-literal references inside assertEquals messages. Dropped TDD red baseline narrative paragraph; replaced parenthetical assertions with positive-only DD-5-3-4 LOCKED references.",
+        "D-5-3-CR-3 Rule 1 (post-review fix — code-review #3 Low redundant elapsedMs guard): Removed t0 = System.currentTimeMillis() capture + assertTrue(elapsedMs < 1_000L) guard from AC2RotationCancelsInflightE2ETest. awaitCondition(1_000L) already enforces the AC-2 1s budget by error()-ing on deadline-miss; the redundant manual elapsedMs check had ±20ms polling-granularity + post-return overhead that effectively tightened the budget below spec, exacerbating CR-5-3-B flake risk on slow macos-arm64 emulators.",
+        "D-5-3-CR-4 Rule 1 (post-review fix — code-review #4 Low cancellation-spillover documentation): Added paragraph in MwaLifecycleObserver.kt class kdoc cross-referencing CR-5-3-A and noting that cancelInFlight = { scope.coroutineContext[Job]?.cancelChildren() } cancels children of the plugin's coroutine scope on Activity destroy; if the plugin instance is reused across Activity recreation cycles (CR-5-3-A's open registration gap), an OLD-Activity ON_DESTROY can spuriously cancel ops started against the NEW post-rotation Activity on the same scope. NO behavior change.",
+        "D-5-3-CR-5 Rule 1 (post-review fix — code-review #5 Low AC-4c payload assertion gap): CR-3-3-B closure test previously verified call ordering but not payload contents (verifyOrder { ... any() } would pass if regression emitted wrong request_id / source_method / reason). Replaced any() matcher with slot<String>() capture + parse + assert request_id == 'sas-ac4c', source_method == 'sign_and_send', reason == 'activity_destroyed'. CR-3-3-B closure now mechanically verifies payload, not just ordering."
+      ],
+      "amendments": [],
+      "concerns": [
+        "CR-5-3-A",
+        "CR-5-3-B"
+      ],
+      "concernsResolved": [
+        "CR-3-3-B CLOSED by Story 5-3 T2 (commit cd8f6df1) — MwaLifecycleObserver.onDestroy invokes cleanupBreadcrumb(requestId) per snapshotted slot; AC-4c test un-disabled with payload-asserted production wiring (post-fix D-5-3-CR-5). The @Disabled placeholder at MwaAndroidPluginSignAndSendTest.kt:462 is gone."
+      ],
+      "concernsTransitive": [
+        "CR-3-3-A LOW unchanged — Story 5-3's AC-3 branch increments diagnostics.lateResultCount on tryTerminate CAS-loss (DD-5-3-3 inheritance). No new metric introduced; get_diagnostics() GDScript surface still lands in Story 5-2.",
+        "CR-3-3-C LOW unchanged — N/A for 5-3 (lifecycle observer is identity/cluster-agnostic; no cluster-bleed surface).",
+        "CR-4-2-A/B/C/D/E/F/G LOW/MEDIUM unchanged — none apply to 5-3 (no MasterKey rotation, no forget_all surface, no mutex-symmetry follow-up; lifecycle observer is mutex-agnostic).",
+        "CR-5-1-A/B/C/D/E LOW unchanged — none apply to 5-3 (Story 5-1 is non-Android coverage + GDScript scenario refactor).",
+        "CR-32 LOW unchanged — Story 5-3 introduces no new GDScript-tier coverage.",
+        "CR-35 LOW unchanged — Story 5-3 ships only Kotlin unit + androidTest evidence; C++ assertions deferred per the gdextension-runtime matrix landing pad.",
+        "CR-45 LOW transitive — AC-2 androidTest uses Route B (in-process FakeMwaClient via PluginTestHarness.freshPlugin).",
+        "CR-46 LOW unchanged — Story 5-3 makes no scons/host build changes."
+      ],
+      "testsAdded": 4,
+      "testsAddedDetail": "4 NEW Kotlin unit tests in MwaLifecycleObserverTest.kt (T1 + post-review fix): AC-1 ON_DESTROY with in-flight connect emits mwa_cancelled_lifecycle{reason=activity_destroyed} / AC-3 already-terminated requestId not re-emitted on ON_DESTROY / multi-slot ON_DESTROY emits one mwa_cancelled_lifecycle per slot with correct source_method / AC-3 CAS-loss inside loop increments lateResult and skips emit (post-review fix #1 Medium). 1 un-disabled Kotlin test in MwaAndroidPluginSignAndSendTest.kt (T2): AC-4c breadcrumb cleared on lifecycle cancellation (CR-3-3-B closure; un-disable does NOT increment JUnit tests= total but flips skipped→passed). 1 NEW androidTest in AC2RotationCancelsInflightE2ETest.kt (T3): ac2_rotationCancelsInflightConnectAndEmitsLifecycleSignalWithin1s (instrumented; runtime validation deferred to next CI push). Net Kotlin baseline shift: 174 (173 GREEN + 1 @Disabled) → 178 GREEN, 0 @Disabled. Pytest unchanged at 83. Total 257 → 261. androidTest 19 → 20 expected.",
+      "reviewFindings": {
+        "userInteractive": false,
+        "rounds": 1,
+        "findings": 5,
+        "blockers": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 4,
+        "fixed": 5,
+        "deferred": 0,
+        "note": "Adversarial code-review-agent spawn (zero implementation context). Verdict: PASS WITH NOTES — no Critical/High/blocking findings. Findings: #1 Medium symmetric defensive branch coverage (CAS-loss-inside-loop branch unexercised — DD-5-3-3 LOCKED enumerates BOTH if/else paths); #2 Low stale narrative cleanup (test-file kdoc + parenthetical 'NOT X' references); #3 Low redundant elapsedMs guard (double-counts AC-2 1s budget); #4 Low cancellation-spillover documentation gap (CR-5-3-A documents registration half but not symmetric cancellation half); #5 Low AC-4c payload assertion gap (verifyOrder { any() } verified ordering but not contents). User selected [C] Apply fixes (declined [L] Apply fixes + learn — 4 retrospect-rule candidates from the review documented in concerns.md but NOT persisted to ~/.claude/rules/retrospect/java.md). All 5 findings fixed in single fixup commit a5b6c54b."
+      },
+      "ciStatus": {
+        "unitBaseline": "green-local-2026-04-29T04:49Z (177 Kotlin GREEN at T2; +1 to 178 GREEN at post-review-fix; pytest 83 unchanged; total 261)",
+        "androidTest": "pending — runtime validation on next CI push via instrumented_tests.yml; AC2RotationCancelsInflightE2ETest expected 20 total",
+        "r8Smoke": "workflow unchanged — MwaLifecycleObserver.onDestroy NOT in REQUIRED_METHODS list (the observer is invoked via androidx.lifecycle dispatcher reflection, NOT @UsedByGodot reflection; the explicit -keepclassmembers rule in consumer-rules.pro provides standalone coverage — story line 266 scope-out)",
+        "note": "Story ships with unit baseline green; on-device validation happens asynchronously once next git push origin feature/mwa-android runs the CI matrix."
+      },
+      "notes": "Third Wave 7 story (after 5-1 + 4-2). SECOND production emitter of mwa_cancelled_lifecycle (Story 4-2's mwaForgetAll cancel-in-flight loop is FIRST). FIRST DefaultLifecycleObserver in the codebase. Lambda-injection ctor design (DD-5-3-1 + T1 deviation) keeps plugin's private buildCancelledLifecycleJson + cleanupBreadcrumb intact while letting the observer call them via method references at registration time. CR-3-3-B CLOSED — the @Disabled placeholder at MwaAndroidPluginSignAndSendTest.kt:462 is gone, AC-4c test exercises the full production wiring via plugin.buildLifecycleObserver() with payload + ordering assertions. Cross-Activity-instance observer continuity is OUT OF SCOPE per DD-5-3-2 step 3 + CR-5-3-A — only verifies OLD Activity's ON_DESTROY correctly fires the observer; in-flight ops on the NEW post-rotation Activity are NOT covered (no fresh-registration code runs across recreate cycles). CR-5-3-B documents the 1s AC-2 budget tightness on slow CI emulators — Story 5-6 flake-baseline triage owns. 5 commits (T1 + T2 + T3 + T4 + post-review fix) + pre-creation bookkeeping + pause = 7 total in branch history. Unit baseline 257 → 261 (+3 from T1 3 MwaLifecycleObserverTest cases turning GREEN at T2 + 1 from post-review-fix CAS-loss case). Pytest 83 unchanged; androidTest 19 → 20 expected. 8 deviations filed (D-5-3-T2-1/T2-2/T3-1 from impl + D-5-3-CR-1/2/3/4/5 from post-review). 2 new concerns logged (CR-5-3-A registration continuity LOW + CR-5-3-B 1s budget on slow CI LOW). 1 inherited concern CLOSED (CR-3-3-B). 0 amendments. Code-review verdict PASS WITH NOTES with all 5 findings fixed pre-Gate-5."
     }
   ],
   "baselineTests": {
@@ -906,12 +972,12 @@
       "retrospectRulesAdded": 6
     },
     "gates": {
-      "gate5Passes": 2
+      "gate5Passes": 3
     },
     "stories": {
-      "completed": 2,
+      "completed": 3,
       "sizeDistribution": {
-        "S": 2
+        "S": 3
       }
     }
   },
