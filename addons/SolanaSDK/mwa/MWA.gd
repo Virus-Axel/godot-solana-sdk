@@ -52,25 +52,38 @@ signal pending_submission_found(payload: Dictionary)
 # stay consistent).
 var _node: MobileWalletAdapter = null
 
-# AC-4 support: suggested install links when no MWA-compatible wallet is
-# detected. Static data — no network call; the game prompts the user with
-# this list when `mwa_error{code=NO_MWA_WALLET_INSTALLED}` fires. Three
-# reference wallets (Phantom / Solflare / Backpack); each entry carries a
-# playstore URL for in-Android-store install + a website URL for non-Android
-# fallback. URLs reviewed 2026-04-24 against vendor canonical homepages.
+# AC-4 support (Story 1-5) + AC-5 reconciliation (Story 5-2 DD-5-2-4): suggested
+# install links when no MWA-compatible wallet is detected. Static data — no
+# network call; the game prompts the user with this list when
+# `mwa_error{code=NO_MWA_WALLET_INSTALLED}` fires. Three reference wallets
+# (Phantom / Solflare / Backpack); each entry carries 4 keys per DD-5-2-4
+# superset: `name`, `package_id` (matches the `?id=` query param of
+# `play_store_url`), `play_store_url` (Android Play Store install), and
+# `website_url` (non-Android fallback). DD-5-2-4 LOCKED the superset shape
+# rather than the strict AC-5 3-key (`{name, package_id, play_store_url}`)
+# to keep backward compatibility with existing callers reading `website_url`.
+# URLs reviewed 2026-04-24 against vendor canonical homepages.
 const _SUGGESTED_WALLETS: Array[Dictionary] = [
 	{
 		"name": "Phantom",
+		"package_id": "app.phantom",
 		"play_store_url": "https://play.google.com/store/apps/details?id=app.phantom",
 		"website_url": "https://phantom.com",
 	},
 	{
 		"name": "Solflare",
+		"package_id": "com.solflare.mobile",
 		"play_store_url": "https://play.google.com/store/apps/details?id=com.solflare.mobile",
 		"website_url": "https://solflare.com",
 	},
 	{
+		# Story 5-2 D-5-2-T4-1 Rule 1 — story spec said `app.backpack`, but the
+		# `play_store_url` (reviewed against the vendor's canonical homepage on
+		# 2026-04-24) carries `?id=app.backpack.mobile`. URL is the source of
+		# truth; T5's `tools/test_wallet_install_links.gd` asserts against the
+		# real package id. Documented at story-creation HALT.
 		"name": "Backpack",
+		"package_id": "app.backpack.mobile",
 		"play_store_url": "https://play.google.com/store/apps/details?id=app.backpack.mobile",
 		"website_url": "https://backpack.app",
 	},
@@ -367,9 +380,39 @@ func get_auth_token_fingerprint() -> String:
 	return _node.get_auth_token_fingerprint()
 
 
+## Story 5-2 AC-1 — synchronous diagnostics snapshot. Returns a 12-key
+## Dictionary `{sdk_version, clientlib_ktx_version, godot_version,
+## android_api_level, session_state, wallet_package, wallet_version,
+## auth_token_fingerprint, cluster, last_n_correlation_trace,
+## late_result_count, pending_submissions_count}` for support-engineer triage.
+## Safe to attach to bug reports — AC-3 invariant: zero auth-token bytes /
+## signing key material / PII; the only token-derived field is the
+## 8-hex `auth_token_fingerprint` (HKDF-SHA256 truncated, NOT the token).
+## On non-Android exports returns the same shape with empty values per
+## DD-5-2-3 — callers do NOT need to branch on `is_supported()`.
+func get_diagnostics() -> Dictionary:
+	return _node.get_diagnostics()
+
+
+## Story 5-2 AC-4 — device posture snapshot. Returns a 4-key Dictionary
+## `{rooted, debuggable, developer_options_on, adb_enabled}` (all `bool`).
+## Sourced from `Build.TAGS`, `ApplicationInfo.FLAG_DEBUGGABLE`,
+## `Settings.Secure.DEVELOPMENT_SETTINGS_ENABLED`, and
+## `Settings.Global.ADB_ENABLED`.
+##
+## NON-AUTHORITATIVE — these signals are inexpensive heuristics, NOT
+## cryptographic attestation. A determined attacker can mask each signal at
+## the OS level. Do NOT use as a security gate; surface as informational
+## metadata only (e.g., for support-team triage). On non-Android exports
+## returns 4-key all-false per DD-5-2-3.
+func get_device_posture() -> Dictionary:
+	return _node.get_device_posture()
+
+
 ## Suggested wallet install links for AC-4 UX (display when `mwa_error` fires
-## with code=NO_MWA_WALLET_INSTALLED). Each entry has `name`, `play_store_url`,
-## and `website_url` keys. Three reference wallets: Phantom / Solflare /
-## Backpack. Static data — no network call.
+## with code=NO_MWA_WALLET_INSTALLED). Each entry has 4 keys: `name`,
+## `package_id` (Story 5-2 DD-5-2-4 superset add — matches the play_store_url
+## `?id=` query param), `play_store_url`, and `website_url`. Three reference
+## wallets: Phantom / Solflare / Backpack. Static data — no network call.
 func get_suggested_wallet_install_links() -> Array[Dictionary]:
 	return _SUGGESTED_WALLETS.duplicate(true)
