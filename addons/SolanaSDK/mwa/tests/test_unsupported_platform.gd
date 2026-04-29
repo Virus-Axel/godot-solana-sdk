@@ -102,6 +102,24 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 
+	# Story 5-2 T5 — Scenarios 9-11 cover the new SYNC getters on the desktop
+	# NoOp-bridge path. These are SYNCHRONOUS (no await / no signal hop) per
+	# DD-5-2-1 LOCKED — the GDScript wrappers in MWA.gd forward to the C++
+	# `MobileWalletAdapter::get_diagnostics` / `get_device_posture` bindings
+	# which short-circuit through the NoOp bridge's `query_diagnostics_json` /
+	# `query_device_posture_json` returning the all-empty / all-false JSON
+	# shapes per DD-5-2-3. AC-5's `get_suggested_wallet_install_links` is pure
+	# GDScript (no bridge call), so it's tested in the same scope.
+	if not _run_get_diagnostics_shape_scenario(mwa):
+		get_tree().quit(1)
+		return
+	if not _run_get_device_posture_shape_scenario(mwa):
+		get_tree().quit(1)
+		return
+	if not _run_get_suggested_wallet_install_links_scenario(mwa):
+		get_tree().quit(1)
+		return
+
 	print("ALL TESTS PASSED")
 	get_tree().quit(0)
 
@@ -380,4 +398,112 @@ func _run_forget_all_scenario(mwa: Node) -> bool:
 		return false
 
 	print("%s PASS [forget_all]: mwa_error{code=UNSUPPORTED_PLATFORM, source_method=forget_all, layer=cpp}" % TEST_TAG)
+	return true
+
+
+# Story 5-2 T5 (AC-1 GDScript-tier shape verification) — `MWA.get_diagnostics()`
+# is SYNCHRONOUS per DD-5-2-1 LOCKED. On the desktop NoOp-bridge path, the
+# C++ binding's null-bridge guard or the NoOp's `query_diagnostics_json`
+# returns the 12-key all-empty payload per DD-5-2-3. Asserts the EXACT key
+# set (a regression that adds/drops a key surfaces immediately) plus the
+# DD-5-2-3 invariant that string fields are `""`, integer fields are `0`,
+# `last_n_correlation_trace` is empty Array, `session_state` is empty Dict.
+func _run_get_diagnostics_shape_scenario(mwa: Node) -> bool:
+	var diag: Dictionary = mwa.get_diagnostics()
+	var expected_keys := [
+		"sdk_version", "clientlib_ktx_version", "godot_version", "android_api_level",
+		"session_state", "wallet_package", "wallet_version", "auth_token_fingerprint",
+		"cluster", "last_n_correlation_trace", "late_result_count", "pending_submissions_count",
+	]
+	for k in expected_keys:
+		if not diag.has(k):
+			printerr("%s FAIL [get_diagnostics]: AC-1 12-key shape missing key '%s' (got: %s)" %
+				[TEST_TAG, k, diag.keys()])
+			return false
+	if diag.size() != 12:
+		printerr("%s FAIL [get_diagnostics]: AC-1 expects EXACTLY 12 keys, got %d (keys: %s)" %
+			[TEST_TAG, diag.size(), diag.keys()])
+		return false
+	# DD-5-2-3 invariants for the empty payload (NoOp-bridge desktop path).
+	if str(diag.get("auth_token_fingerprint", "X")) != "":
+		printerr("%s FAIL [get_diagnostics]: AC-3 baseline — disconnected payload's auth_token_fingerprint MUST be '' (got %s)" %
+			[TEST_TAG, diag.get("auth_token_fingerprint")])
+		return false
+	if not (diag.get("last_n_correlation_trace") is Array):
+		printerr("%s FAIL [get_diagnostics]: last_n_correlation_trace MUST be Array (got %s)" %
+			[TEST_TAG, typeof(diag.get("last_n_correlation_trace"))])
+		return false
+	if not (diag.get("session_state") is Dictionary):
+		printerr("%s FAIL [get_diagnostics]: session_state MUST be Dictionary (got %s)" %
+			[TEST_TAG, typeof(diag.get("session_state"))])
+		return false
+	# Story 5-2 DD-5-2-1 step 3 — the C++ side overlays godot_version from
+	# Engine::get_version_info(). On desktop the engine IS available, so the
+	# field MUST be non-empty (regression marker for a future change that
+	# breaks the Engine overlay path).
+	if str(diag.get("godot_version", "")) == "":
+		printerr("%s FAIL [get_diagnostics]: godot_version MUST be populated by Engine::get_version_info() overlay" % TEST_TAG)
+		return false
+	print("%s PASS [get_diagnostics]: 12-key DD-5-2-3 empty payload + Engine::get_version_info() overlay" % TEST_TAG)
+	return true
+
+
+# Story 5-2 T5 (AC-4 GDScript-tier shape verification) — `MWA.get_device_posture()`
+# is SYNCHRONOUS. On desktop NoOp path the bridge returns the 4-key all-false
+# payload per DD-5-2-3.
+func _run_get_device_posture_shape_scenario(mwa: Node) -> bool:
+	var posture: Dictionary = mwa.get_device_posture()
+	var expected_keys := ["rooted", "debuggable", "developer_options_on", "adb_enabled"]
+	for k in expected_keys:
+		if not posture.has(k):
+			printerr("%s FAIL [get_device_posture]: AC-4 4-key shape missing key '%s' (got: %s)" %
+				[TEST_TAG, k, posture.keys()])
+			return false
+	if posture.size() != 4:
+		printerr("%s FAIL [get_device_posture]: AC-4 expects EXACTLY 4 keys, got %d (keys: %s)" %
+			[TEST_TAG, posture.size(), posture.keys()])
+		return false
+	for k in expected_keys:
+		var v: Variant = posture.get(k)
+		if not (v is bool):
+			printerr("%s FAIL [get_device_posture]: AC-4 key '%s' MUST be bool (got %s)" %
+				[TEST_TAG, k, typeof(v)])
+			return false
+		# DD-5-2-3 — non-Android desktop returns 4-key all-false.
+		if v != false:
+			printerr("%s FAIL [get_device_posture]: DD-5-2-3 — desktop NoOp path MUST return %s=false (got %s)" %
+				[TEST_TAG, k, v])
+			return false
+	print("%s PASS [get_device_posture]: 4-key DD-5-2-3 all-false desktop NoOp payload" % TEST_TAG)
+	return true
+
+
+# Story 5-2 T5 (AC-5 GDScript-tier shape verification) — DD-5-2-4 LOCKED 4-key
+# superset `{name, package_id, play_store_url, website_url}` covering Phantom /
+# Solflare / Backpack. Pure-GDScript const lookup; no bridge call.
+func _run_get_suggested_wallet_install_links_scenario(mwa: Node) -> bool:
+	var links: Array = mwa.get_suggested_wallet_install_links()
+	if links.size() < 3:
+		printerr("%s FAIL [wallet_links]: AC-5 expects >= 3 entries, got %d" % [TEST_TAG, links.size()])
+		return false
+	var ac5_required_keys := ["name", "package_id", "play_store_url"]
+	var seen_package_ids := {}
+	for entry: Dictionary in links:
+		for k in ac5_required_keys:
+			if not entry.has(k):
+				printerr("%s FAIL [wallet_links]: AC-5 entry missing key '%s' (entry: %s)" %
+					[TEST_TAG, k, entry])
+				return false
+		var pkg_id: String = entry.get("package_id", "")
+		seen_package_ids[pkg_id] = true
+	# DD-5-2-4 superset — `website_url` is permitted (extra) per the
+	# reconciliation. The 3 known package IDs (D-5-2-T4-1: Backpack uses
+	# `app.backpack.mobile` per the actual play_store_url).
+	var expected_pkgs := ["app.phantom", "com.solflare.mobile", "app.backpack.mobile"]
+	for pkg in expected_pkgs:
+		if not seen_package_ids.has(pkg):
+			printerr("%s FAIL [wallet_links]: AC-5 expected package_id '%s' not in catalog (seen: %s)" %
+				[TEST_TAG, pkg, seen_package_ids.keys()])
+			return false
+	print("%s PASS [wallet_links]: AC-5 >= 3 entries + 4-key DD-5-2-4 superset + 3 known package_ids" % TEST_TAG)
 	return true
