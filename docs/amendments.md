@@ -318,3 +318,20 @@ BOTH architecture.md and this file, using amended values where they conflict.
 - **Forward-look:** the same stub-vs-delegation pattern likely applies to `MobileWalletAdapter::get_diagnostics` at line 258 (empty Dictionary return). Story 5-2 will fill that in with the canonical sibling pattern. No action needed at Story 4-2 T3 (out of scope).
 - **Closes:** none (no prior CR tracked this; surfaced fresh by Story 4-2's pre-implementation audit).
 - **Follow-through:** Story 5-2 should run a similar audit at story-creation time for `get_diagnostics`'s empty-Dictionary stub.
+
+## A-16: DD-34 wording aligned to actual `FINGERPRINT_SALT_BYTES = 32` impl (was 16-byte spec text)
+
+- **Status:** Filed 2026-04-29 by Story 5-2 pre-implementation interface audit (story-creation HALT).
+- **Severity:** Rule 1 (spec wording drift; no behavior change) — the impl has been 32-byte since Story 1-2 landed `AuthTokenFingerprint` + the per-install salt; DD-34's "16-byte" wording in `docs/architecture.md:1210` is the drift, not the impl.
+- **Surface:** `docs/architecture.md:1210` DD-34 text reads `"...uses HKDF-SHA256 with per-install salt stored under Keystore alias godot-sdk-mwa-fingerprint-salt-v1; 8 hex chars output; stable across token refresh, rotated only on forget_all."`. Earlier prose at `architecture.md:737` describes the salt as `"a 16-byte random value generated at first addon init, stored under Keystore alias godot-sdk-mwa-fingerprint-salt-v1"`. Both wordings need to be aligned.
+- **Diagnosis:** Story 5-2's pre-implementation interface audit cross-checked DD-34 spec against the actual impl. Found:
+  - `SecureTokenStore.kt:202` declares `const val FINGERPRINT_SALT_BYTES = 32`.
+  - `SecureTokenStore.kt:128` allocates `ByteArray(FINGERPRINT_SALT_BYTES)` and fills via `SecureRandom().nextBytes(it)` — confirming 32 bytes.
+  - `AuthTokenFingerprint.compute(authTokenBytes, salt)` accepts a `ByteArray` of any length; the HKDF-SHA256 algorithm is salt-length-agnostic (all bytes feed the HMAC IKM step). Output is 8 hex chars regardless of salt size.
+- **Why 32 bytes is correct:** NIST SP 800-108 §5 recommends salt length ≥ output length of the underlying hash (32 bytes for SHA256). 16-byte salt is not unsafe, but 32-byte is the conservative best-practice and matches the codebase's actual choice. The DD-34 spec text was written aspirationally before Story 1-2 landed the impl; nobody updated the wording.
+- **Resolution:** Update both `architecture.md:737` prose and `architecture.md:1210` DD-34 text:
+  - `:737` change `"a 16-byte random value generated at first addon init"` → `"a 32-byte random value generated at first addon init"`.
+  - `:1210` DD-34 add explicit salt-size literal: `"...with per-install 32-byte random salt stored under Keystore alias godot-sdk-mwa-fingerprint-salt-v1..."`.
+- **Affected story-file row:** `docs/stories/5-2.md` §Dev Notes Pre-Implementation Audit item #7 changes status from `OPEN QUESTION` to `RESOLVED at story-creation HALT — A-16 aligns DD-34 wording`. No D-5-2-T1-* deviation needed.
+- **Closes:** none (no prior CR tracked this; surfaced fresh by Story 5-2 pre-implementation interface audit).
+- **Follow-through:** none. Future stories that touch the fingerprint surface should rely on `FINGERPRINT_SALT_BYTES` const for the salt size, not on prose wording. DD-34 is now spec-vs-impl consistent.

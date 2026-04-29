@@ -734,7 +734,7 @@ MWA.get_diagnostics() -> Dictionary                        # debuggability surfa
 }
 ```
 
-**Auth token fingerprint algorithm** (AC-D-26 new): `HKDF-SHA256(ikm = auth_token_bytes, salt = per_install_salt, info = "mwa-fingerprint-v1")` → first 4 bytes → 8 hex chars. `per_install_salt` is a 16-byte random value generated at first addon init, stored under Keystore alias `godot-sdk-mwa-fingerprint-salt-v1`, stable for the app install, rotated only on `forget_all`. Guarantees: (a) 0 token entropy leaked, (b) same token → same fingerprint for the life of the install, (c) different installs of the same app generate different fingerprints for the same token (privacy-preserving), (d) 32-bit output → ~2^16 collision after birthday bound — acceptable for debug correlation, explicitly not a security identifier.
+**Auth token fingerprint algorithm** (AC-D-26 new; salt size aligned by A-16 2026-04-29): `HKDF-SHA256(ikm = auth_token_bytes, salt = per_install_salt, info = "mwa-fingerprint-v1")` → first 4 bytes → 8 hex chars. `per_install_salt` is a 32-byte random value generated at first addon init (per `SecureTokenStore.FINGERPRINT_SALT_BYTES = 32` — aligned to NIST SP 800-108 salt-length ≥ hash-output recommendation for SHA256), stored under Keystore alias `godot-sdk-mwa-fingerprint-salt-v1`, stable for the app install, rotated only on `forget_all`. Guarantees: (a) 0 token entropy leaked, (b) same token → same fingerprint for the life of the install, (c) different installs of the same app generate different fingerprints for the same token (privacy-preserving), (d) 32-bit output → ~2^16 collision after birthday bound — acceptable for debug correlation, explicitly not a security identifier.
 
 ### 6.3 Usage Example (copy-pasteable for docs FR-15)
 
@@ -1207,7 +1207,7 @@ Decisions from research.md are carried forward; new decisions are added here.
 - **DD-31 [LOCKED]** Payload `schema_version` field + semver policy: new error codes = MINOR bump; rename/remove = MAJOR. *Rationale:* architect review #10.
 - **DD-32 [LOCKED]** `MWA.get_diagnostics()` + `docs/triage.md` runbook added; ring buffer N=20 correlation traces; non-sensitive fingerprint surface. *Rationale:* maintainer review #1 (assembled triage path).
 - **DD-33 [LOCKED]** Error-codes generator has golden-file + property tests + failure tests; PR-blocking independent of drift check. *Rationale:* maintainer review #2.
-- **DD-34 [LOCKED]** `get_auth_token_fingerprint()` uses HKDF-SHA256 with per-install salt stored under Keystore alias `godot-sdk-mwa-fingerprint-salt-v1`; 8 hex chars output; stable across token refresh, rotated only on `forget_all`. *Rationale:* maintainer review #5.
+- **DD-34 [LOCKED]** `get_auth_token_fingerprint()` uses HKDF-SHA256 with per-install **32-byte random** salt stored under Keystore alias `godot-sdk-mwa-fingerprint-salt-v1`; 8 hex chars output; stable across token refresh, rotated only on `forget_all`. *Rationale:* maintainer review #5. *Wording aligned by amendment A-16 (2026-04-29) to match `SecureTokenStore.FINGERPRINT_SALT_BYTES = 32` actual impl.*
 
 ### Acknowledged (documented trade-offs; no amendment)
 
