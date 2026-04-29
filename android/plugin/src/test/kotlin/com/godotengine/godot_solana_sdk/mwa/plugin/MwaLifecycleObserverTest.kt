@@ -1,8 +1,10 @@
 package com.godotengine.godot_solana_sdk.mwa.plugin
 
 import androidx.lifecycle.LifecycleOwner
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.verify
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -32,10 +34,15 @@ import org.junit.jupiter.api.Test
  *      `postMwaCancelledLifecycle` invocations, each carrying the
  *      correct `request_id` + `source_method` + `reason:"activity_destroyed"`;
  *      `cleanupBreadcrumb` invoked 3 times (DD-5-3-5 unconditional).
- *
- * **TDD red baseline (T1):** all 3 tests fail at runtime against the
- * `TODO("Story 5-3 T2 fills in")` body in
- * [MwaLifecycleObserver.onDestroy]. T2 turns them GREEN.
+ *   4. AC-3 CAS-loss-inside-loop — defensive symmetric branch coverage
+ *      for the `else { diagnostics.incrementLateResult() }` path of
+ *      [MwaLifecycleObserver.onDestroy]. Uses a `spyk()` `InflightMap`
+ *      whose `snapshot()` returns a slot whose `tryTerminate` deterministically
+ *      rejects (simulating a concurrent terminator that won the CAS between
+ *      `snapshot()` and the inner `tryTerminate(reqId)`). Asserts
+ *      `lateResultCount` increments AND `postMwaCancelledLifecycle` /
+ *      `cleanupBreadcrumb` invoked ZERO times AND `cancelInFlight` invoked
+ *      once (always, regardless of CAS outcome).
  *
  * Observer is constructed via the lambda-injection ctor pattern (per
  * T1 deviation from DD-5-3-1's inline class shape): mock collaborators
@@ -107,7 +114,7 @@ class MwaLifecycleObserverTest {
         assertEquals(
             "activity_destroyed",
             payload.getString("reason"),
-            "AC-1 / DD-5-3-4: reason literal (NOT 'lifecycle_teardown')",
+            "AC-1 / DD-5-3-4 LOCKED: reason literal",
         )
 
         // DD-5-3-5 unconditional cleanup invocation.
@@ -201,5 +208,64 @@ class MwaLifecycleObserverTest {
 
         // Post-emit: all 3 slots removed via tryTerminate.
         assertEquals(0, inflightMap.size(), "multi-slot: all slots removed after onDestroy")
+    }
+
+    // ---------------- AC-3 CAS-loss-inside-loop ----------------
+
+    @Test
+    fun `AC-3 CAS-loss inside loop increments lateResult and skips emit`() {
+        // Code-review fix #1 — symmetric defensive branch coverage for
+        // DD-5-3-3 LOCKED's `else { diagnostics.incrementLateResult() }`
+        // path. The other two AC-3 paths (already-terminated-pre-snapshot
+        // and CAS-win-inside-loop) are covered by the AC-3 + AC-1 cases
+        // above, but the CAS-loss-inside-loop branch only fires when a
+        // concurrent terminator wins the CAS BETWEEN snapshot() (line 75)
+        // and the inner tryTerminate(reqId) (line 77). Use a spyk()
+        // InflightMap to deterministically simulate this race without real
+        // concurrency.
+        val spyMap: InflightMap = spyk(InflightMap())
+        // snapshot() reports a slot the test side seeds.
+        every { spyMap.snapshot() } returns mapOf("conn-race" to "connect")
+        // tryTerminate("conn-race") returns false — simulates a concurrent
+        // terminator that already CAS-removed the entry between snapshot()
+        // and tryTerminate(), satisfying DD-5-3-3's late-result invariant.
+        every { spyMap.tryTerminate("conn-race") } returns false
+
+        val observer = MwaLifecycleObserver(
+            inflightMap = spyMap,
+            nativeBridge = nativeBridge,
+            diagnostics = diagnostics,
+            cleanupBreadcrumb = { requestId -> cleanupCalls.add(requestId) },
+            payloadBuilder = { requestId, sourceMethod, reason ->
+                JSONObject().apply {
+                    put("request_id", requestId)
+                    put("source_method", sourceMethod)
+                    put("reason", reason)
+                }
+            },
+            cancelInFlight = { cancelInFlightCalls += 1 },
+        )
+        val mockOwner: LifecycleOwner = mockk(relaxed = true)
+
+        observer.onDestroy(mockOwner)
+
+        // DD-5-3-3 else branch — late-result counter increments exactly once.
+        assertEquals(
+            1L,
+            diagnostics.lateResultCount,
+            "DD-5-3-3 / else branch: lateResultCount increments on CAS-loss",
+        )
+        // Negative-key guards — emit + cleanup MUST NOT fire when CAS lost.
+        verify(exactly = 0) { nativeBridge.postMwaCancelledLifecycle(any()) }
+        assertTrue(
+            cleanupCalls.isEmpty(),
+            "DD-5-3-3 / else branch: cleanupBreadcrumb NOT invoked when CAS lost",
+        )
+        // cancelInFlight always invoked once regardless of CAS outcome.
+        assertEquals(
+            1,
+            cancelInFlightCalls,
+            "DD-5-3-3 / else branch: cancelInFlight invoked once unconditionally",
+        )
     }
 }

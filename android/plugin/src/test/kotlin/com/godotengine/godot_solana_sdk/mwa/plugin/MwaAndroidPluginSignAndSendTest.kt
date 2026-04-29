@@ -496,10 +496,27 @@ class MwaAndroidPluginSignAndSendTest {
         // DD-5-3-3 + DD-5-3-5: observer emits mwa_cancelled_lifecycle for the
         // claimed slot then invokes cleanupBreadcrumb (same call ordering as
         // Story 3-3 AC-3 cleanup-on-success — emit-before-cleanup is invariant).
+        val payloadSlot = slot<String>()
         verifyOrder {
-            nativeBridge.postMwaCancelledLifecycle(any())
+            nativeBridge.postMwaCancelledLifecycle(capture(payloadSlot))
             store.removePendingSubmission("sas-ac4c")
         }
+        // Code-review fix #5 — payload contents verification: DD-5-3-3 3-key
+        // dict via ::buildCancelledLifecycleJson + DD-5-3-4 reason literal.
+        // Without these asserts a regression emitting wrong request_id /
+        // source_method / reason would still pass the call-ordering verifyOrder.
+        val payload = JSONObject(payloadSlot.captured)
+        assertEquals("sas-ac4c", payload.getString("request_id"), "AC-4c: request_id from in-flight slot")
+        assertEquals(
+            "sign_and_send",
+            payload.getString("source_method"),
+            "AC-4c: source_method from inflightMap",
+        )
+        assertEquals(
+            "activity_destroyed",
+            payload.getString("reason"),
+            "AC-4c / DD-5-3-4 LOCKED: reason literal",
+        )
         assertEquals(
             null,
             storedPending["sas-ac4c"],

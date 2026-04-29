@@ -26,6 +26,19 @@ import org.json.JSONObject
  * recreation continuity (rotation case from AC-2) is OUT OF SCOPE for
  * Story 5-3 and tracked under CR-5-3-A.
  *
+ * **Cancellation-spillover symmetry to CR-5-3-A.** `cancelInFlight` invokes
+ * `scope.coroutineContext[Job]?.cancelChildren()` on the plugin's coroutine
+ * scope. If the plugin instance is reused across Activity recreation cycles
+ * (the open registration gap that CR-5-3-A documents), an OLD-Activity
+ * `ON_DESTROY` can spuriously cancel ops started against the NEW post-
+ * rotation Activity on the same scope — failure mode is silent (the new
+ * op's `CancellationException` propagates through the plugin's catch-CE
+ * branch without emitting a terminal signal, leaving the user's call
+ * hanging). CR-5-3-A's mitigation (per-Activity registration) closes both
+ * the registration gap AND this cancellation-spillover gap on the same
+ * axis; until that lands, the spillover is a documented narrowing rather
+ * than a bug.
+ *
  * **Lambda-injection ctor design (per DD-5-3-1 + T1 deviation from DD-5-3-1's
  * inline class shape):** the observer takes `cleanupBreadcrumb`, `payloadBuilder`,
  * and `cancelInFlight` as `() -> Unit`-style lambdas instead of a hard reference

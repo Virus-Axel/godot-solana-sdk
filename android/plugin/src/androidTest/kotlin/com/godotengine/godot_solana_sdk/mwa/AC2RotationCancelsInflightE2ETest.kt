@@ -121,15 +121,21 @@ class AC2RotationCancelsInflightE2ETest {
                 activity.lifecycle.addObserver(plugin.buildLifecycleObserver())
             }
 
-            // --- Stage 2: capture wallclock + trigger Activity recreation -----
+            // --- Stage 2: trigger Activity recreation -------------------------
             // recreate() blocks until the OLD Activity is destroyed AND the
             // NEW Activity is created and resumed. ON_DESTROY on the OLD
             // Activity's Lifecycle fires our observer synchronously on the
             // main thread.
-            val t0 = System.currentTimeMillis()
             scenario.recreate()
 
             // --- Stage 3: assert mwa_cancelled_lifecycle fired within 1s ------
+            // awaitCondition(1_000L) enforces the AC-2 budget: it `error`s out
+            // if postMwaCancelledLifecycle hasn't fired within 1000ms. No
+            // separate elapsedMs guard layered on top — the harness's deadline
+            // IS the budget assertion, and adding a manual elapsedMs check
+            // would have ±20ms polling granularity + post-return overhead that
+            // tightens the effective budget below spec (CR-5-3-B flake-risk
+            // amplifier per code-review fix #3).
             val payloadSlot = slot<String>()
             PluginTestHarness.awaitCondition(1_000L) {
                 runCatching {
@@ -138,16 +144,10 @@ class AC2RotationCancelsInflightE2ETest {
                     }
                 }.isSuccess
             }
-            val elapsedMs = System.currentTimeMillis() - t0
-            assertTrue(
-                "AC-2: mwa_cancelled_lifecycle must fire within 1s budget (got ${elapsedMs}ms)",
-                elapsedMs < 1_000L,
-            )
 
-            // Payload shape — DD-5-3-3 (3-key dict via buildCancelledLifecycleJson)
-            // + DD-5-3-4 (reason literal "activity_destroyed", NOT
-            // "lifecycle_teardown" — Story 4-2's kdoc speculation was
-            // superseded).
+            // Payload shape — DD-5-3-3 LOCKED (3-key dict via
+            // buildCancelledLifecycleJson) + DD-5-3-4 LOCKED (reason literal
+            // "activity_destroyed").
             val payload = JSONObject(payloadSlot.captured)
             assertEquals(
                 "rot-ac2-conn",
