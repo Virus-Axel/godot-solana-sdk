@@ -31,10 +31,12 @@ The example repo ships only the GDScript example (one scene, one config script, 
 
 ## Step 2 — Download this repo's addon release
 
-Open this repo's GitHub Releases page and grab the latest `v0.1.0-rc*` (or `v0.1.0` once promoted):
+> **Status (Story 5-4 — pending Story 5-6):** Tagged releases are not yet available on this repo. Story 5-4 chose the GitHub-Releases consumption model (DD-5-4-5 in [`docs/amendments.md` A-17](./docs/amendments.md)) but local release-cutting was found infeasible due to pre-existing C++ compile errors in `src/wallet_adapter/wallet_adapter_signer.cpp` + `src/transaction/transaction.cpp` (godot-cpp API drift, tracked as **CR-5-4-G HIGH** in [`docs/concerns.md`](./docs/concerns.md)). Release-on-tag CI is mandated as part of Story 5-6 (escalated from CR-5-4-F LOW). When that CI lands, this section becomes the canonical download path.
+
+When releases are available, navigate to:
 
 - Releases: <https://github.com/ValentinVPK/godot-solana-sdk/releases>
-- Direct download (rc1): <https://github.com/ValentinVPK/godot-solana-sdk/releases/tag/v0.1.0-rc1>
+- Direct download (rc1, when published by Story 5-6 CI): <https://github.com/ValentinVPK/godot-solana-sdk/releases/tag/v0.1.0-rc1>
 
 Download `addons-bundle.zip` from the release assets, then extract into the example repo's `addons/` directory:
 
@@ -48,11 +50,13 @@ unzip -o ~/Downloads/addons-bundle.zip -d addons/
 Verify the addon's `compatibility_minimum`:
 
 ```bash
-grep '^compatibility_minimum' addons/SolanaSDK/godot-solana-sdk.gdextension
+grep '^compatibility_minimum' addons/SolanaSDK/bin/godot-solana-sdk.gdextension
 # expected: compatibility_minimum = "4.3"
 ```
 
 If it reads `"4.4"`, the addon release predates [DD-5-4-1](./docs/stories/5-4.md) — pull a newer release.
+
+**Until Story 5-6's CI lands**, reviewers wishing to validate the example flow can build the addon locally from this repo's source — see this repo's `README` (or run `scons addon`). Note that local cutting requires fixing CR-5-4-G's C++ compile errors first.
 
 ---
 

@@ -3,7 +3,7 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-29T13:35:00.000Z",
+  "lastUpdated": "2026-04-29T15:00:00.000Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
@@ -34,7 +34,7 @@
         "committed": true,
         "commitSha": null,
         "completedAt": "2026-04-29T13:35:00.000Z",
-        "note": "commitSha set by T2 close-out commit (this commit); release tag v0.1.0-rc1 cut at https://github.com/ValentinVPK/godot-solana-sdk/releases/tag/v0.1.0-rc1"
+        "note": "Initial T2 attempt at 046a5a00 cut v0.1.0-rc1 (deleted ~14:30 UTC after code-review-agent flagged Critical missing-artifacts bug). Retry with GRADLE_OPTS=-Xmx4096m surfaced CR-5-4-G HIGH (pre-existing C++ compile blocker). T2 reverted to housekeeping-only scope; release-cutting deferred to Story 5-6 release-on-tag CI per amended DD-5-4-5. CR-5-4-F reclassified from LOW-deferred to MANDATED for 5-6."
       }
     ]
   },
