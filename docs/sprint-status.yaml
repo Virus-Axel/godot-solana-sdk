@@ -223,6 +223,6 @@ epics:
         slug: ci-build-integration
         title: "CI/Build Integration (scons addon, kotlin_lint, codegen drift, generator tests, instrumented tests, manifest audit, R8 smoke, parity cron, SLO monitor, grep bans, @since check, compat-matrix enforcement)"
         size: L
-        status: backlog
+        status: in-progress
         wave: 7
         dependencies: ["1-1", "1-2", "2-1", "4-3"]

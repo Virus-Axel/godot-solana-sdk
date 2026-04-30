@@ -3,11 +3,17 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-30T09:00:00.000Z",
+  "lastUpdated": "2026-04-30T11:00:00.000Z",
   "currentPhase": "implement",
   "currentStep": null,
-  "currentCheckpoint": null,
-  "currentStory": null,
+  "currentCheckpoint": "task-1",
+  "currentStory": {
+    "storyId": "5-6",
+    "slug": "ci-build-integration",
+    "size": "L",
+    "wave": 7,
+    "startedAt": "2026-04-30T11:00:00.000Z"
+  },
   "phases": {
     "research": {
       "status": "complete",
@@ -1009,11 +1015,11 @@
     "agentTeamsUsed": false,
     "parallelWaves": 0,
     "parallelStories": 0,
-    "interfaceAudits": 14,
+    "interfaceAudits": 15,
     "interfaceMismatches": 6,
     "pauseResumeCount": 13,
     "execution": {
-      "totalSessions": 4,
+      "totalSessions": 5,
       "pauseResumeCount": 4
     },
     "tasks": {
@@ -1038,7 +1044,8 @@
       "completed": 6,
       "sizeDistribution": {
         "S": 3,
-        "M": 3
+        "M": 3,
+        "L": 1
       },
       "gate5Passes": 2
     },
@@ -1067,12 +1074,5 @@
     "archStats": "13 components, 34 DDs (all LOCKED), 11 signal schemas, 13 error codes, 6 workflows, 6 test tiers",
     "planStats": "21 stories (4S/13M/4L), 5 epics, 7 waves, 8 interface contracts, 4 PD-* all LOCKED",
     "architectureImmutable": true
-  },
-  "recovery": {
-    "interrupted": true,
-    "interruptedAt": "2026-04-29T16:04:03.522Z",
-    "errorType": "unknown",
-    "errorMessage": "",
-    "uncommittedChanges": true
   }
 }
