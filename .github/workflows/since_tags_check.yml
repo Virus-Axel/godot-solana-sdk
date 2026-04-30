@@ -1,0 +1,67 @@
+name: since-tags-check
+
+# AC-7 (Story 5-6 plan.md:467): @since-tag PR-blocking gate.
+# Invokes scripts/check_since_tags.py to enforce that every NEW public
+# method, signal, or class declaration added in a PR carries an
+# `@since v<X.Y.Z>` doc-comment tag.
+#
+# Per docs/api-stability.md §`@since tags` (lines 112-120):
+# "Every public method, signal, and error code carries an `@since v<X.Y.Z>`
+# XML doc-comment tag identifying the first release that exposed it."
+#
+# Per DD-5-6-4 LOCKED (story 5-6 line 119): regex-based parser (NOT a full
+# XML parser) — diff-aware via `git diff origin/master...HEAD` on .gd + .kt
+# files. v0.1.0 release seeds the baseline; existing public symbols are NOT
+# retroactively flagged.
+#
+# Time budget per arch §10.4: <30 sec wallclock.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - feature/mwa-android
+
+jobs:
+  since-tags-check:
+    name: "AC-7 @since tag check (scripts/check_since_tags.py)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          # Need full history so `git diff origin/master...HEAD` resolves the
+          # merge-base for PR branches. Default is shallow clone (depth=1).
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dev dependencies
+        run: pip install -r tools/requirements-dev.txt
+
+      - name: Pytest the helper script
+        # Run scripts/check_since_tags.py's own pytest cases first so a
+        # regression in the script logic surfaces before the production
+        # diff scan. 8 cases land at story 5-6 T2.
+        run: .venv/bin/pytest scripts/test_check_since_tags.py -v
+        # Fallback to system pytest when .venv is absent (CI fresh checkout
+        # never has a .venv; pip-installed pytest is on PATH).
+        continue-on-error: false
+
+      - name: Diff scan — fail on missing @since tags in new public symbols
+        # On PR runs, GITHUB_BASE_REF holds the target branch (typically `master`).
+        # On push-to-master runs, compare against the previous commit (HEAD~1).
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="origin/${{ github.base_ref }}"
+          else
+            BASE="HEAD~1"
+          fi
+          echo "Diff range: ${BASE}...HEAD"
+          python scripts/check_since_tags.py --diff "${BASE}...HEAD"

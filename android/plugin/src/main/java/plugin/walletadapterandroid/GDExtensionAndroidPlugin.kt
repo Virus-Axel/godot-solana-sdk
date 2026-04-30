@@ -500,6 +500,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * `identityJson` is `{"name": "...", "icon_uri": "...", "identity_uri": "..."}`.
      * `timeoutMs <= 0` selects [INTERNAL_WATCHDOG_DEFAULT_MS]; any positive
      * value is clamped down to the internal default.
+     * @since v0.1.0
      */
     @UsedByGodot
     fun mwaAuthorize(requestId: String, identityJson: String, cluster: String, chainId: String, timeoutMs: Long) {
@@ -592,6 +593,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * AC-3's "disconnect_completed still fires" semantics therefore apply
      * to the GDScript-observable flow (distinct request_ids per call), NOT
      * to same-id programmatic retry within Kotlin.
+     * @since v0.1.0
      */
     @UsedByGodot
     fun mwaDisconnect(requestId: String) {
@@ -689,6 +691,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * **DD-2-2-1 [LOCKED]:** NO separate cluster-comparison branch.
      * Cluster mismatch is detected implicitly by the 3-tuple filter returning
      * empty (DD-27 + DD-2-2-7). `ci/grep_bans.sh` pattern-9 enforces statically.
+     * @since v0.1.0
      */
     @UsedByGodot
     fun mwaReauthorize(requestId: String, identityJson: String, cluster: String, chainId: String, timeoutMs: Long) {
@@ -1067,6 +1070,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * AC-1 enforces a ≤20-LOC budget on this body — see
      * `MwaAndroidPluginSignMessagesTest."AC-1 mwaSignMessages body is at most
      * 20 LOC"` (T1) for the source-line counter rule.
+     * @since v0.1.0
      */
     @UsedByGodot
     fun mwaSignMessages(requestId: String, messages: List<ByteArray>, timeoutMs: Long) {
@@ -1116,6 +1120,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * `MwaAndroidPluginSignTransactionsTest."AC-2 mwaSignTransactions body is at most
      * 20 LOC"` (T1) for the source-line counter rule (shared `countMethodLines`
      * helper in `LocCountUtil.kt` per DD-3-2-2 + D-3-2-3).
+     * @since v0.1.0
      */
     @UsedByGodot
     fun mwaSignTransactions(requestId: String, transactions: List<ByteArray>, timeoutMs: Long) {
@@ -1178,6 +1183,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * cluster bound at connect/reauth time; if it has been swapped, refuse
      * with `mwa_error{NOT_CONNECTED, source_method="sign_and_send"}` per the
      * preflight check (no wallet round-trip on the disconnected branch).
+     * @since v0.1.0
      */
     @UsedByGodot
     fun mwaSignAndSendTransactions(requestId: String, transactions: List<ByteArray>, timeoutMs: Long) {
@@ -1281,6 +1287,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * try/catch/finally completes. Returning from inside the inner finally
      * would swallow any in-flight exception from the outer catch (e.g. a
      * defensive `SdkLog.w` throw). T1 case 5 enforces the skip path.
+     * @since v0.1.0
      */
     @UsedByGodot
     fun mwaDeauthorize(requestId: String) {
@@ -1480,6 +1487,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * cached wallets" case gracefully and proceeds to the keystore-side
      * rotation (which also wipes the corrupt prefs file as a side-effect
      * of `deleteSharedPreferences`).
+     * @since v0.1.0
      */
     @UsedByGodot
     fun mwaForgetAll(requestId: String) {
@@ -2394,8 +2402,14 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         )
     }
 
+    /**
+     * @since v0.1.0
+     */
     // ---------------- scaffold-era @UsedByGodot surface (STAY AS-IS per 2-1 Dev Notes) ----------------
 
+    /**
+     * @since v0.1.0
+     */
     @UsedByGodot
     fun connectWallet(cluster: Int, uri: String, icon: String, name: String) {
         if (sessionState.getLastResult() is TransactionResult.Success<*>) {
@@ -2410,6 +2424,9 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         }
     }
 
+    /**
+     * @since v0.1.0
+     */
     @UsedByGodot
     fun getConnectionStatus(): Int {
         val last = sessionState.getLastResult()
@@ -2420,15 +2437,24 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         }
     }
 
+    /**
+     * @since v0.1.0
+     */
     @UsedByGodot
     fun getSigningStatus(): Int = sessionState.getSigningStatus()
 
+    /**
+     * @since v0.1.0
+     */
     @UsedByGodot
     fun getConnectedKey(): ByteArray {
         sessionState.setAction(0)
         return sessionState.getConnectedKey() ?: ByteArray(0)
     }
 
+    /**
+     * @since v0.1.0
+     */
     @UsedByGodot
     fun signTransaction(serializedTransaction: ByteArray) {
         sessionState.setAction(1)
@@ -2439,6 +2465,9 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         }
     }
 
+    /**
+     * @since v0.1.0
+     */
     @UsedByGodot
     fun signTextMessage(textMessage: String) {
         sessionState.setAction(2)
@@ -2449,12 +2478,21 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         }
     }
 
+    /**
+     * @since v0.1.0
+     */
     @UsedByGodot
     fun getMessageSignature(): ByteArray = sessionState.getLastSignature() ?: ByteArray(0)
 
+    /**
+     * @since v0.1.0
+     */
     @UsedByGodot
     fun getLatestAction(): Int = sessionState.getPendingAction()
 
+    /**
+     * @since v0.1.0
+     */
     @UsedByGodot
     fun clearState() {
         sessionState.clearStatus()

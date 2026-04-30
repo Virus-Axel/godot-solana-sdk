@@ -24,16 +24,27 @@ extends Node
 
 # 7 *_completed signals take (String request_id, Dictionary result) per A-12.
 # 4 error/lifecycle signals take (Dictionary payload) per arch §3.2.
+## @since v0.1.0
 signal connect_completed(request_id: String, result: Dictionary)
+## @since v0.1.0
 signal reauthorize_completed(request_id: String, result: Dictionary)
+## @since v0.1.0
 signal disconnect_completed(request_id: String, result: Dictionary)
+## @since v0.1.0
 signal deauthorize_completed(request_id: String, result: Dictionary)
+## @since v0.1.0
 signal sign_messages_completed(request_id: String, result: Dictionary)
+## @since v0.1.0
 signal sign_transactions_completed(request_id: String, result: Dictionary)
+## @since v0.1.0
 signal sign_and_send_completed(request_id: String, result: Dictionary)
+## @since v0.1.0
 signal mwa_error(payload: Dictionary)
+## @since v0.1.0
 signal mwa_timeout(payload: Dictionary)
+## @since v0.1.0
 signal mwa_cancelled_lifecycle(payload: Dictionary)
+## @since v0.1.0
 signal reauth_required(payload: Dictionary)
 ## Story 3-3 — fired AFTER a successful `connect_completed` /
 ## `reauthorize_completed` if a stale sign_and_send breadcrumb survived a
@@ -44,6 +55,7 @@ signal reauth_required(payload: Dictionary)
 ## DD-3-3-E. Game logic should query the chain for any of the
 ## `tx_preview_hashes` to determine whether the previous submission landed
 ## before showing UX.
+## @since v0.1.0
 signal pending_submission_found(payload: Dictionary)
 
 # The underlying C++ MWA node (GDExtension-registered). Instantiated in
@@ -130,6 +142,7 @@ func _wire_signal_forwarding() -> void:
 ## `opts` (optional): {"timeout_ms": int, "chain_id": String}. Omitted keys
 ##   fall to the C++ node's defaults (DD-23 watchdog; "solana:<cluster>" chain_id).
 @warning_ignore("shadowed_global_identifier")
+## @since v0.1.0
 func connect(identity: Dictionary, cluster: String, opts: Dictionary = {}) -> String:
 	return _node.mwa_connect(identity, cluster, opts)
 
@@ -138,6 +151,7 @@ func connect(identity: Dictionary, cluster: String, opts: Dictionary = {}) -> St
 ## (Story 2-3 wires the real path; Story 2-1 emits NOT_CONNECTED-equivalent
 ## scaffold error).
 @warning_ignore("shadowed_global_identifier")
+## @since v0.1.0
 func disconnect() -> void:
 	_node.mwa_disconnect()
 
@@ -165,6 +179,7 @@ func disconnect() -> void:
 ## No watchdog: AC-2 requires remote failure to surface as `remote_unreachable`,
 ## NOT `mwa_timeout`. clientlib-ktx's internal per-call timeout is the upstream
 ## guard.
+## @since v0.1.0
 func deauthorize() -> void:
 	_node.deauthorize()
 
@@ -181,6 +196,7 @@ func deauthorize() -> void:
 ##
 ## `opts` (optional): {"timeout_ms": int} — clamped to internal default per
 ## DD-23. Omitted keys fall to the C++ node's defaults.
+## @since v0.1.0
 func reauthorize(opts: Dictionary = {}) -> void:
 	_node.reauthorize(opts)
 
@@ -210,6 +226,7 @@ func reauthorize(opts: Dictionary = {}) -> void:
 ## `messages`: list of message byte arrays (1+ entries).
 ## `opts` (optional): {"timeout_ms": int} — clamped to internal default per
 ## DD-3-1-3. Omitted keys fall to the C++ node's defaults.
+## @since v0.1.0
 func sign_messages(messages: Array[PackedByteArray], opts: Dictionary = {}) -> void:
 	_node.sign_messages(messages, opts)
 
@@ -243,6 +260,7 @@ func sign_messages(messages: Array[PackedByteArray], opts: Dictionary = {}) -> v
 ## `transactions`: list of serialized transaction byte arrays (1+ entries).
 ## `opts` (optional): {"timeout_ms": int} — clamped to internal default per
 ## DD-3-1-3. Omitted keys fall to the C++ node's defaults.
+## @since v0.1.0
 func sign_transactions(transactions: Array[PackedByteArray], opts: Dictionary = {}) -> void:
 	_node.sign_transactions(transactions, opts)
 
@@ -297,6 +315,7 @@ func sign_transactions(transactions: Array[PackedByteArray], opts: Dictionary = 
 ## `transactions`: list of serialized transaction byte arrays (1+ entries).
 ## `opts` (optional): {"timeout_ms": int} — clamped to internal default
 ## per DD-3-1-3. Omitted keys fall to the C++ node's defaults.
+## @since v0.1.0
 func sign_and_send(transactions: Array[PackedByteArray], opts: Dictionary = {}) -> void:
 	_node.sign_and_send(transactions, opts)
 
@@ -331,6 +350,7 @@ func sign_and_send(transactions: Array[PackedByteArray], opts: Dictionary = {}) 
 ## tunables (timeout / retry policy) would only obscure the security
 ## intent. Returns void per DD-4-2-8 + D-3-1-12 (no request_id correlation
 ## without a completion signal).
+## @since v0.1.0
 func forget_all() -> void:
 	_node.forget_all()
 
@@ -343,6 +363,7 @@ func forget_all() -> void:
 ## DD-A-4 LOCKED single platform-abstraction TU. This getter is a 1-line
 ## GDScript-side runtime check (DD-5-1-3 — no C++ binding ceremony for a
 ## value that is a pure runtime constant of the Godot platform).
+## @since v0.1.0
 func is_supported() -> bool:
 	return OS.get_name() == "Android"
 
@@ -351,23 +372,27 @@ func is_supported() -> bool:
 ## Backed by MwaSessionState.authToken != null (arch §7.1; round-tripped via
 ## MwaJniContext::query_session_state).
 @warning_ignore("shadowed_global_identifier")
+## @since v0.1.0
 func is_connected() -> bool:
 	return _node.mwa_is_connected()
 
 
 ## Base58 public key of the connected wallet, or empty string pre-connect /
 ## on non-Android.
+## @since v0.1.0
 func get_public_key() -> String:
 	return _node.get_public_key()
 
 
 ## Cluster name (e.g. "devnet") of the active session, or empty string
 ## pre-connect.
+## @since v0.1.0
 func get_cluster() -> String:
 	return _node.get_cluster()
 
 
 ## Wallet-reported human-readable label, or empty string pre-connect.
+## @since v0.1.0
 func get_wallet_label() -> String:
 	return _node.get_wallet_label()
 
@@ -376,6 +401,7 @@ func get_wallet_label() -> String:
 ## string pre-connect. The fingerprint is HKDF-SHA256(auth_token, per-install
 ## salt) — salt rotates on `forget_all` (Story 4-2), so the fingerprint is
 ## stable within a single install lifecycle and changes after deauth+rotate.
+## @since v0.1.0
 func get_auth_token_fingerprint() -> String:
 	return _node.get_auth_token_fingerprint()
 
@@ -390,6 +416,7 @@ func get_auth_token_fingerprint() -> String:
 ## 8-hex `auth_token_fingerprint` (HKDF-SHA256 truncated, NOT the token).
 ## On non-Android exports returns the same shape with empty values per
 ## DD-5-2-3 — callers do NOT need to branch on `is_supported()`.
+## @since v0.1.0
 func get_diagnostics() -> Dictionary:
 	return _node.get_diagnostics()
 
@@ -405,6 +432,7 @@ func get_diagnostics() -> Dictionary:
 ## the OS level. Do NOT use as a security gate; surface as informational
 ## metadata only (e.g., for support-team triage). On non-Android exports
 ## returns 4-key all-false per DD-5-2-3.
+## @since v0.1.0
 func get_device_posture() -> Dictionary:
 	return _node.get_device_posture()
 
@@ -414,5 +442,6 @@ func get_device_posture() -> Dictionary:
 ## `package_id` (Story 5-2 DD-5-2-4 superset add — matches the play_store_url
 ## `?id=` query param), `play_store_url`, and `website_url`. Three reference
 ## wallets: Phantom / Solflare / Backpack. Static data — no network call.
+## @since v0.1.0
 func get_suggested_wallet_install_links() -> Array[Dictionary]:
 	return _SUGGESTED_WALLETS.duplicate(true)
