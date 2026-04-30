@@ -218,6 +218,21 @@ android {
     sourceSets.getByName("main") {
         java.srcDirs("src/generated/kotlin")
     }
+
+    // Story 5-6 T1 (D-5-6-T1-1 Rule 1) — Android Lint baseline wired so
+    // `kotlin_lint.yml` (AC-2) can run as a PR-blocking gate WITHOUT having
+    // to fix 9 pre-existing NewApi errors in production code (CR-5-6-G HIGH:
+    // SecureTokenStore.deleteSharedPreferences requires API 24, current
+    // minSdk=23; Base64.getEncoder/Decoder requires API 26; Iterable.forEach
+    // requires API 24). Mirrors Q2=(b) for Kotlin: document pre-existing tier
+    // breakage as CI-only constraint; baseline preserves PR-blocking semantics
+    // for NEW lint regressions while deferring the API-23 correctness fix to
+    // a follow-up story (tracked at CR-5-6-G in docs/concerns.md). Refresh
+    // baseline via `./gradlew :plugin:updateLintBaseline` after intentional
+    // remediation; never silently amend.
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
 }
 
 dependencies {

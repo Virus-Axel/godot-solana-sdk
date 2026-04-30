@@ -1005,3 +1005,28 @@ None. All T1-T7 work landed within the original spec wording or under explicit a
 ### Baseline note (T8 close-out)
 
 Story 5-5 adds **0** Kotlin / pytest unit tests — pure documentation + CODEOWNERS + workflow extension + 2 helper scripts. Unit baseline unchanged at `277 GREEN (194 Kotlin + 83 pytest), zero test-disable annotations, zero failures`. `androidTest` count unchanged at 20 expected (5-5 has no instrumented-test surface). T1 (4 docs) / T2 (4 docs + validator) / T3 (4 docs) / T4 (frontmatter retrofit) / T5 (CODEOWNERS) / T6 (workflow extension) / T7 (LICENSE byte-diff helper) / T8 (close-out sweep) all have zero source-code surface. Baseline-refresh `lastRefreshedAtStory: 20` written to `state.json` at T8 close-out.
+
+## Story 5-6 — CI/Build Integration (T1 mid-task discovery, 2026-04-30)
+
+### Story 5-6 deviations
+
+- **D-5-6-T1-1 (Rule 1, Android Lint baseline wired in plugin's `build.gradle.kts`):** Added `lint { baseline = file("lint-baseline.xml") }` block to `android/plugin/build.gradle.kts` at T1 to enable Android Lint as a PR-blocking gate (AC-2 wording requires both `ktlint + Android Lint` in `kotlin_lint.yml`) without expanding T1 scope to fix 9 pre-existing NewApi errors in production code. Baseline file `android/plugin/lint-baseline.xml` (10086 bytes; 9 errors + 13 warnings snapshotted; lint 7.4.1 schema). Refresh path documented in build.gradle.kts comment block: `./gradlew :plugin:updateLintBaseline` after intentional remediation. Mirrors the Q2=(b) pattern locked at story-creation HALT for the Kotlin tier (CR-5-4-G's C++ analog: document pre-existing tier breakage as CI-only constraint; defer fix to follow-up story).
+
+### Story 5-6 concerns
+
+- **CR-5-6-G (HIGH, 9 pre-existing Android-Lint NewApi errors in production code; baselined at T1):** *Filed mid-T1 (2026-04-30).* T1's local `:plugin:lint` invocation surfaced 9 errors blocking the kotlin_lint.yml PR-gate landing:
+  - `SecureTokenStore.kt:192` — `Context.deleteSharedPreferences()` requires API 24, current `minSdk = 23` (NFR-2 LOCKED). Production code in the Story 4-2 `forget_all` cleanup path. **Crashes on API 23 devices.**
+  - `GDExtensionAndroidPlugin.kt:1554` — same `Context.deleteSharedPreferences()` call (also Story 4-2 `forget_all` production path).
+  - `GDExtensionAndroidPlugin.kt:2604` — `Iterable.forEach` requires API 24 (Java 8 default-method backport).
+  - `GDExtensionAndroidPlugin.kt:2611` — `Base64.getEncoder()` + `Base64.Encoder.encodeToString()` requires API 26 (Story 3-1 `sign_messages` return-payload encoder; production path).
+  - `FakeMwaClient.kt:170,202` — `Base64.getDecoder()` (×2 + ×2 method-level findings). TEST class but Android Lint can't distinguish for an Android library.
+
+  PLUS 13 informational warnings (8 GradleDependency outdated, 1 manifest dataExtractionRules ignored <API 31, 3 ComposableNaming lowercase functions, 1 Kotlin metadata version drift). Discovered during Story 5-6 T1 local verification of `./gradlew :plugin:lint` after wiring the PR-gate workflow.
+
+  **Mitigation (T1 implementation, D-5-6-T1-1):** baseline file `android/plugin/lint-baseline.xml` snapshots the 9 errors + 13 warnings; the workflow now PASSES on existing debt while still BLOCKING new lint regressions. The user explicitly chose this path (Path A) at the T1 mid-task HALT 2026-04-30 over (B) fix-in-T1-scope-expansion or (C) drop-Android-Lint-from-AC-2-via-amendment.
+
+  **Risk:** the 4 NewApi-24 + 4 NewApi-26 production errors are REAL correctness bugs on API 23 devices. NFR-2 LOCKED at minSdk=23 means these device targets MUST be supported per spec. The deleteSharedPreferences calls (Story 4-2 forget_all) and Base64 encoder calls (Story 3-1 sign_messages) are user-facing op paths — a Phantom user on API 23 would hit either crash. There is NO test coverage exercising these paths on API 23 emulators today (baseline 277 GREEN runs on JVM unit tier; T3 androidTest runs on macos-latest emulator at API ≥ 30 per `instrumented_tests.yml:21-26` choice).
+
+  **Closure:** when a follow-up story (likely a `/quick` ticket or a 5-7-api23-correctness story; user direction needed) lands API-version guards (`Build.VERSION.SDK_INT >= ...` checks + fallback paths) for the 4 production-path calls + adds API-23 emulator coverage to `instrumented_tests.yml`, the baselined errors are removed via `./gradlew :plugin:updateLintBaseline` and the baseline file shrinks. The 4 FakeMwaClient test-class entries can stay baselined indefinitely (test-only; never executes on a real API-23 device).
+
+  **Severity rationale (HIGH):** 4 production calls × API-23-supported devices = real crash exposure on a documented spec-locked target tier. Not LOW because the bugs are present at master HEAD today; not CRITICAL because no telemetry shows API-23 device usage in the wild yet (pre-grant launch). Treat as a launch-blocker for the v0.1.0 release tag (Q4=(c) defers production tag to user; CR-5-6-G must be triaged before v0.1.0 ships).

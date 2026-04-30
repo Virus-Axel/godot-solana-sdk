@@ -1,0 +1,61 @@
+name: kotlin-lint
+
+# AC-2 (Story 5-6 plan.md:462): one of the "new" PR-blocking jobs.
+# Runs ktlint (style) + Android Lint (semantic) over android/plugin/ on every
+# PR + push to master / feature/**. Time budget per architecture.md §10.4:
+# ≤1 min ktlint + ≤2 min Lint = ≤3 min wallclock total.
+#
+# Tasks verified at story 5-6 T1 commit time:
+#   ./gradlew :plugin:ktlintCheck  (ktlint-gradle 12.1.1, plugin module line 6)
+#   ./gradlew :plugin:lint         (Android Gradle Plugin 7.4.1)
+#
+# This workflow does NOT run :plugin:test — that's kotlin_unit.yml's job.
+# Splitting the two workflows keeps line-item visibility per AC-2 wording
+# and preserves separate retry semantics if either becomes flaky.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - feature/mwa-android
+
+jobs:
+  kotlin-lint:
+    name: "AC-2 ktlint + Android Lint (android/plugin/)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: ktlint check (:plugin:ktlintCheck)
+        run: |
+          cd android
+          ./gradlew :plugin:ktlintCheck --stacktrace
+
+      - name: Android Lint (:plugin:lint)
+        run: |
+          cd android
+          ./gradlew :plugin:lint --stacktrace
+
+      - name: Upload Lint reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-lint-reports
+          path: |
+            android/plugin/build/reports/lint-results-*.html
+            android/plugin/build/reports/lint-results-*.xml
+            android/plugin/build/reports/ktlint/
+          if-no-files-found: ignore
+          retention-days: 14

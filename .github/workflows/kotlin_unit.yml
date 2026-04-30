@@ -1,0 +1,62 @@
+name: kotlin-unit
+
+# AC-2 (Story 5-6 plan.md:462): one of the "new" PR-blocking jobs.
+# Runs the JUnit + MockK + FakeMwaClient unit suite (Tier T1 per
+# architecture.md §10.1) on every PR + push to master / feature/**.
+# Time budget per architecture.md §10.4: ≤2 min wallclock.
+#
+# Baseline at story 5-6 start (post-5-5): 194 Kotlin unit tests GREEN
+# (docs/state.json baselineTests). Zero test-disable annotations in
+# the suite. Story 5-6 itself is a CI-tier story (parallel to 5-1
+# which was 0/0 deltas) — Kotlin baseline unchanged at 194 expected.
+#
+# Why a separate workflow from kotlin_lint.yml:
+# AC-2 explicitly enumerates BOTH `kotlin_lint.yml` AND `kotlin_unit.yml`
+# as separate "new" PR-blocking jobs. Splitting also gives each its own
+# line-item in the GitHub Actions UI + independent retry semantics if
+# either turns flaky.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - feature/mwa-android
+
+jobs:
+  kotlin-unit:
+    name: "AC-2 Kotlin unit (:plugin:test, T1 tier)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Kotlin unit tests (:plugin:testDebugUnitTest)
+        # Matches docs/state.json baselineTests.command — runs the debug
+        # variant only (release variant duplicates the same Kotlin sources
+        # for an Android library and would double wallclock without adding
+        # coverage). Per architecture.md §10.4 budget ≤2 min.
+        run: |
+          cd android
+          ./gradlew :plugin:testDebugUnitTest --info --stacktrace
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-unit-reports
+          path: |
+            android/plugin/build/reports/tests/
+            android/plugin/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 14
