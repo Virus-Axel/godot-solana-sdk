@@ -391,3 +391,50 @@ BOTH architecture.md and this file, using amended values where they conflict.
   - Story 5-5 docs bundle should reference both this repo (SDK) AND the external repo (canonical demo) — not just the in-tree path.
   - Story 5-6 must address CR-5-4-D's three CI redesign options before its own Gate 5.
   - Future LaiM features touching the addon publication should converge on the tagged-release model adopted here.
+
+## A-18: Story 5-5 AC-5 LICENSE byte-diff retargets — upstream `solana-mobile/mobile-wallet-adapter` is Apache-2.0, not MIT; AC-5 reworded to reference OSI canonical MIT template instead
+
+- **Status:** Filed 2026-04-30 by Story 5-5 T7 implementation HALT (Rule 3 spec amendment with explicit user approval at the orchestrator's [1]/[2]/[3]/[4] surface). | **Story:** 5-5 | **Scope:** AC-5 wording in `docs/plan.md:443` + `docs/spec.md` AC-NFR-7; helper script `tools/check_license_diff.sh` source-of-truth; Story 5-6 release-on-tag CI gate target.
+- **Original (`docs/plan.md:443` verbatim):** "AC-5 (LICENSE byte-diff): *Given* repo root `LICENSE`, *when* CI compares against upstream `solana-mobile/mobile-wallet-adapter` `LICENSE` (MIT text), *then* they differ only on the copyright-holder line (byte-identical otherwise)."
+- **What was assumed (incorrect):** The spec author assumed `solana-mobile/mobile-wallet-adapter` ships an MIT `LICENSE` file. AC-5's contract was "byte-identical to upstream MIT body except copyright."
+- **Actual state (verified at T7 via `curl + diff`):** Upstream `solana-mobile/mobile-wallet-adapter` is **Apache License 2.0**, not MIT. Upstream's `LICENSE` reads:
+  ```
+  Copyright (c) 2022 Solana Mobile Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  ...
+  http://www.apache.org/licenses/LICENSE-2.0
+  ...
+  ```
+  The local `LICENSE` (`Copyright (c) 2023 Axel`, MIT) shares ZERO body bytes with upstream. AC-5 as literally written is unverifiable — the diff returns the entire body as different.
+- **Legal context (informational):** This is NOT a real license-compatibility issue. MIT-licensed code (this repo) can legally consume Apache-2.0-licensed dependencies (e.g., `mobile-wallet-adapter-clientlib-ktx 2.0.3`); the dependency is consumed, not relicensed. The license mismatch is purely a SPEC AUTHORSHIP error, not a legal hazard.
+- **Four resolution paths considered at T7 HALT (2026-04-30):**
+  - **(1) Diff against OSI canonical MIT template instead.** Helper script verifies LICENSE body matches OSI canonical MIT byte-identical except copyright. LICENSE itself unchanged. Spec amendment narrow (AC-5 wording shift only). **Chosen** per user direction.
+  - **(2) Replace local MIT with Apache 2.0** to match upstream. Big license change; legally significant; out of Story 5-5 scope; rejected.
+  - **(3) Investigate upstream sub-projects** for an MIT-licensed subdirectory. Punted — even if found, the AC-5 contract still benefits from referencing a stable canonical template (OSI) rather than a downstream URL that could drift.
+  - **(4) Defer T7 + spec error CR.** Rejected — abandons the AC-5 verification surface entirely; doesn't actually fix anything.
+- **Rationale for choosing (1):** OSI canonical MIT (`https://opensource.org/license/mit/`) is the single stable reference for "what MIT looks like." Diffing against it captures AC-5's underlying intent (LICENSE body isn't drift-corrupted) without depending on an upstream that happens to use a different license. Local LICENSE stays as-is (`Copyright (c) 2023 Axel` preserved per Story 5-5 T7 Step C default — first-author lineage). Helper script embeds the OSI canonical MIT body inline (no network dependency in CI), making the gate immune to OSI URL changes or rate limits.
+- **Changes this amendment authorizes:**
+  1. **Reword AC-5 in `docs/plan.md:443`** from "upstream `solana-mobile/mobile-wallet-adapter` `LICENSE` (MIT text)" to "the OSI canonical MIT template (https://opensource.org/license/mit/, embedded in `tools/check_license_diff.sh` to avoid network dependency)." Rest of AC-5 wording (byte-identical except copyright-holder line) unchanged.
+  2. **Reword AC-NFR-7 in `docs/spec.md`** if it references the upstream-MIT comparison (verify at T7 close-out; if it cites upstream verbatim, apply the same shift; if it cites canonical MIT generically, no change needed).
+  3. **Author `tools/check_license_diff.sh`** at Story 5-5 T7 with the OSI canonical MIT body embedded as a heredoc; script exits 0 against the current local LICENSE.
+  4. **Local `LICENSE` is NOT modified.** Current body already byte-matches OSI canonical MIT. Copyright line `Copyright (c) 2023 Axel` preserved per Story 5-5 T7 Step C option 1 (first-author lineage); the user retains the option to update copyright in a future small commit (`Copyright (c) 2026 ValentinVPK / godot-solana-sdk contributors` style) without amendment overhead.
+  5. **Story 5-6 release-on-tag CI** invokes `tools/check_license_diff.sh` as a PR-blocking gate (per CR-5-5-D + Story 5-6 AC-2 plan).
+- **Verification coverage impact on Story 5-5:**
+  - **AC-5 (LICENSE byte-diff):** STILL IN-SCOPE; verification path retargeted from upstream-MWA-LICENSE to OSI canonical MIT. T7 helper script `tools/check_license_diff.sh` exits 0 against local LICENSE — AC-5 evidence path satisfied per the rewording.
+  - **AC-1, AC-2, AC-3, AC-4, AC-6, AC-7:** UNCHANGED — A-18 only touches AC-5 wording.
+- **New concerns logged:**
+  - **CR-5-5-D (LOW, AC-5 spec error discovery + retargeting):** captures the "upstream is Apache, not MIT" discovery and the path-(1) resolution. Closure: this amendment + helper script land. Tracked at `docs/concerns.md` Story 5-5 section.
+- **Affected artifacts:**
+  - `docs/plan.md:443` AC-5 wording — reword (T7 close-out OR T8 sweep; verify at T7 commit time and patch if needed).
+  - `docs/spec.md` AC-NFR-7 — verify and align if it cites upstream-MWA verbatim.
+  - `docs/concerns.md` — CR-5-5-D entry appended under Story 5-5 section at T7/T8.
+  - `tools/check_license_diff.sh` (NEW, Story 5-5 T7).
+  - `LICENSE` — UNCHANGED; current local content already conforms to OSI canonical MIT body.
+  - `docs/stories/5-5.md` T7 task description — update at T7 close-out to reflect path (1) decision (cite A-18 + CR-5-5-D).
+- **Architectural posture for future LICENSE work:** Diff against canonical templates (OSI / SPDX) rather than downstream-repo URLs; embed the canonical body in helper scripts to avoid network dependencies; preserve original copyright lineage unless explicitly authorized to consolidate.
+- **Closes:** N/A (no prior CR tracked this; surfaced fresh by Story 5-5 T7 implementation).
+- **Follow-through:**
+  - At T7 commit: patch `docs/plan.md:443` (AC-5 rewording) AND verify/patch `docs/spec.md` AC-NFR-7 if needed.
+  - At T8 close-out: log CR-5-5-D in `docs/concerns.md` Story 5-5 section + run `tools/check_license_diff.sh` as part of the must_have #6 evidence path.
+  - Story 5-6 release-on-tag CI plan: invoke `tools/check_license_diff.sh` from `byte_diff_license.yml` (or extend an existing workflow) as a PR-blocking gate.
