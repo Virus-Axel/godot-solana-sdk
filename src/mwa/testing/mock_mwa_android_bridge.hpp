@@ -30,6 +30,14 @@ namespace godot_solana_sdk::mwa {
 
 class GodotMainDispatcher;
 
+/**
+ * @brief Test double for MwaAndroidBridge — records calls + drives signal callbacks.
+ *
+ * Used by host-mode unit tests that exercise `MobileWalletAdapter`'s thread-hop
+ * path or contract checks without a real wallet. Each MWA op override records
+ * its arguments to an internal log; `drive_signal_from_thread()` simulates the
+ * JNI-side callback by posting to the injected dispatcher.
+ */
 class MockMwaAndroidBridge : public MwaAndroidBridge {
 public:
     // `dispatcher` may be nullptr — for recording-only tests that never

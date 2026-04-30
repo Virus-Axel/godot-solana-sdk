@@ -95,8 +95,14 @@ jmethodID g_mid_mwa_query_device_posture_from_jni = nullptr;
 // to decide between real JNI call vs. `emit_jni_unavailable`.
 std::atomic<bool> g_jni_ready{false};
 
-// Scoped AttachCurrentThread — detaches in dtor iff WE attached. No-op if
-// the calling thread was already attached (e.g., Godot main).
+/**
+ * @brief Scoped JNI thread-attach helper — internal RAII guard.
+ *
+ * Calls `AttachCurrentThread` on construction if needed, detaches in dtor
+ * iff WE attached. No-op if the calling thread was already attached
+ * (e.g., the Godot main thread). Hides under `\internal` since callers
+ * should not depend on this internal helper directly.
+ */
 class ScopedJniAttach {
 public:
     ScopedJniAttach() : env_(nullptr), did_attach_(false) {

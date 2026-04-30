@@ -10,6 +10,15 @@ namespace godot_solana_sdk::mwa {
 
 class GodotMainDispatcher;
 
+/**
+ * @brief Non-Android stub implementation of MwaAndroidBridge.
+ *
+ * Every op overrides emits `mwa_error{code=UNSUPPORTED_PLATFORM}` via the
+ * injected dispatcher. Selected at link time on linux/windows/macos/web/ios
+ * by `platform_selector.cpp` so consumer GDScript can still call MWA ops on
+ * non-Android targets and receive a structured error rather than a crash
+ * (Story 1-4 Task 2, AC-2).
+ */
 class NoOpMwaAndroidBridge : public MwaAndroidBridge {
 public:
     explicit NoOpMwaAndroidBridge(GodotMainDispatcher* dispatcher);

@@ -98,6 +98,18 @@ public:
     static godot::Dictionary query_session_state();
 };
 
+/**
+ * @brief Real Android JNI implementation of MwaAndroidBridge (Story 2-1 T5).
+ *
+ * Forwards each MWA op into the JVM-side `GDExtensionAndroidPlugin` via JNI;
+ * the Kotlin layer drives the wallet-handshake + transaction-signing flows
+ * against the Solana Mobile clientlib-ktx. Results are marshalled back to
+ * the Godot main thread via the injected `GodotMainDispatcher`.
+ *
+ * Only included on Android — `platform_selector.cpp` gates the include
+ * under its sanctioned `#ifdef __ANDROID__`; the .cpp TU is excluded from
+ * non-Android builds by the SConstruct platform filter.
+ */
 class MwaAndroidBridgeJni : public MwaAndroidBridge {
 public:
     explicit MwaAndroidBridgeJni(GodotMainDispatcher* dispatcher);

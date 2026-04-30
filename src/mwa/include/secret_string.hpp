@@ -8,6 +8,13 @@
 
 namespace godot_solana_sdk::mwa {
 
+/**
+ * @brief Owner of secret bytes (e.g. auth tokens) with a redacted string form.
+ *
+ * Wraps a `godot::PackedByteArray` so the bytes never accidentally appear in
+ * logs or error messages. `to_string()` returns the literal `<redacted>`;
+ * `reveal_bytes()` is the sole accessor for the underlying bytes (DD-26 / A-7).
+ */
 class SecretString {
 public:
     explicit SecretString(godot::PackedByteArray bytes) : bytes_(bytes) {}
