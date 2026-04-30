@@ -82,10 +82,3 @@ jobs:
       - name : Check Formatting
         run: |
           CLANG_FORMAT=clang-format-20 scons check-format
-
-  # ---------------------------------------------------------------------------
-  # NOTE: Job 2 (AC-1 / DD-26 header-lint for src/mwa/include/) was MOVED to
-  # .github/workflows/header_lint.yml at Story 5-6 T2 (D-5-6-T2-1 Rule 1) for
-  # AC-2 wording compliance ("header_lint.yml (new)" line-item). Body
-  # extracted verbatim — same allow-list policy, same DD-26 enforcement.
-  # ---------------------------------------------------------------------------
