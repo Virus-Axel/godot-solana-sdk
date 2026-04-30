@@ -197,16 +197,25 @@ void Transaction::sign_at_index(const uint32_t index) {
 
 		const Callable on_signed(this, "_isigner_signed");
 		const Callable on_failed(this, "_isigner_failed");
-		if (!isigner_native->is_connected("sign_completed", on_signed)) {
+		// CR-5-4-G fix (Q2=(a) source fix, 2026-04-30): `ISigner` declares a
+		// zero-arg `is_connected()` that shadows the inherited
+		// `Object::is_connected(StringName, Callable) const` 2-arg overload
+		// (C++ name-hiding). Cast through `Object *` so overload resolution
+		// finds the 2-arg version. See docs/triage/CR-5-4-G-cpp-compile-drift.md.
+		if (!static_cast<Object *>(isigner_native)->is_connected("sign_completed", on_signed)) {
 			isigner_native->connect("sign_completed", on_signed);
 		}
-		if (!isigner_native->is_connected("sign_failed", on_failed)) {
+		if (!static_cast<Object *>(isigner_native)->is_connected("sign_failed", on_failed)) {
 			isigner_native->connect("sign_failed", on_failed);
 		}
 		// Track for clean disconnect in NOTIFICATION_PREDELETE (see _notification +
 		// disconnect_all_isigner_signers below). Defensive lifecycle hygiene — not tied
 		// to a tracked concern.
-		isigner_connected_signer_ids_.insert(isigner_native->get_instance_id());
+		// CR-5-4-G fix (Q2=(a) source fix, 2026-04-30): godot-cpp tightened
+		// `ObjectID` to no longer accept implicit `uint64_t` rvalue (the type
+		// returned by `get_instance_id()`). Wrap with explicit `ObjectID(...)`
+		// constructor.
+		isigner_connected_signer_ids_.insert(ObjectID(isigner_native->get_instance_id()));
 
 		// CR-16: payload is serialize_message() — the message portion that ed25519 signs.
 		// MWA's sign_transactions API expects the FULL serialized tx (with sig slots);

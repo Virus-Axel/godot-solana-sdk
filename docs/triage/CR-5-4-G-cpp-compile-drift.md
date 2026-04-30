@@ -4,7 +4,7 @@
 |---|---|
 | **Concern** | [`docs/concerns.md#CR-5-4-G`](../concerns.md) |
 | **Severity** | HIGH |
-| **Status** | Documented as CI-only constraint per Q2=(b) LOCKED 2026-04-30 (Story 5-6 T14) |
+| **Status** | **ESCALATED to Q2=(a) source fix 2026-04-30** — multi-platform CI confirmed CR-5-4-G fails on BOTH GCC (linux-release) AND clang (ios-release / others). Q2=(b) "multi-platform CI may dodge local blocker" hypothesis FALSIFIED at run 25162790985 (cancelled mid-run). Q2=(a) source fix landed in commit (see `git log --grep='Q2=(a)'`). |
 | **Origin** | Story 5-4 T2 attempted local release-cutting via `scons addon`; pre-existing C++ compile blocker surfaced |
 | **Tracking issue (planned)** | `cpp-compile-drift` label — created by user (origin remote is read-only for the LaiM session; see "Tracking issue creation" below) |
 | **Affected releases** | All releases prior to the C++ source fix landing |
@@ -56,22 +56,39 @@ if (!isigner_native->is_connected("sign_failed", on_failed)) {     // line 203
 
 **Failure mode:** Same root cause as offender 1. `isigner_native` is `godot::Object *` whose runtime type may be `LocalKeypairSigner` or `WalletAdapterSigner` (both `ISigner` implementations); the 2-arg `Object::is_connected` overload should resolve, but the godot-cpp current pin's overload set has shifted such that the resolver picks a wrong overload.
 
-### 3. `src/transaction/transaction.cpp:209` — STATUS UPDATED
+### 3. `src/transaction/transaction.cpp:209` — STATUS CONFIRMED 2026-04-30 (was UNCERTAIN)
 
-The original CR-5-4-G citation listed an `ObjectID(uint64_t_value)` constructor call as a third compile error. **Verified at master HEAD 2026-04-30:** no `ObjectID(...)` constructor invocation exists in `src/transaction/transaction.cpp` at any line. The closest-matching call at line 209 is:
+The original CR-5-4-G citation listed an `ObjectID(uint64_t_value)` constructor call as a third compile error. The runbook's first version (T14, 2026-04-30 morning) marked this STATUS UNCERTAIN because the cited line:
 
 ```cpp
 isigner_connected_signer_ids_.insert(isigner_native->get_instance_id());
 ```
 
-`get_instance_id()` returns `godot::ObjectID` directly — no rvalue construction. This third error may have been:
-- Resolved by a source edit between the CR-5-4-G filing (Story 5-4 T2 attempt, 2026-04-29) and master HEAD (2026-04-30) — but no such fix is visible in `git log src/transaction/transaction.cpp`.
-- Misattributed in the original CR — the line citation may have been off-by-N.
-- Transient under a different godot-cpp pin.
+does NOT contain an explicit `ObjectID(...)` constructor invocation — `get_instance_id()` was assumed to return `godot::ObjectID` directly.
 
-**Action:** the runbook tracks this as an uncertain third offender. T11's synthetic test-tag run is the definitive multi-platform check.
+**Verified CONFIRMED at run 25162790985 2026-04-30 ~11:36 UTC:**
 
-### 4. `src/transaction/transaction.cpp:365,368` (related, NOT in original CR)
+```
+src/transaction/transaction.cpp:209:85: error: cannot convert 'uint64_t' {aka 'long unsigned int'} to 'const godot::ObjectID&'
+```
+
+godot-cpp's `Node::get_instance_id()` (at the current pin `714c9e2c`) returns `uint64_t`, NOT `ObjectID`. The `HashSet<ObjectID>::insert(const ObjectID&)` overload then tries to bind a `uint64_t` rvalue to `const ObjectID&` — which fails because `ObjectID` is not implicitly constructible from `uint64_t` in current godot-cpp (lifetime-safety tightening).
+
+**Q2=(a) fix:** explicit `ObjectID(...)` construction at the call site:
+
+```cpp
+isigner_connected_signer_ids_.insert(ObjectID(isigner_native->get_instance_id()));
+```
+
+The fix landed in the same Q2=(a) commit as the `is_connected` fixes (see `git log --grep='Q2=(a)'`).
+
+### 4. `src/transaction/transaction.cpp:365,368` (originally hypothesized as related; STATUS DISPROVEN 2026-04-30)
+
+The runbook's first version hypothesized that lines 365 + 368 (the `disconnect_all_isigner_signers()` symmetric path) had the same root cause and would need the same fix. **Verified DISPROVEN at run 25162790985 2026-04-30:**
+
+The linux-release compile error log at job 73761236258 reported errors ONLY at lines 200, 203, 209 — NOT at 365 / 368. The reason:
+
+
 
 ```cpp
 // Lines 360-370 (Transaction::disconnect_all_isigner_signers):
@@ -87,7 +104,9 @@ for (const ObjectID &id : isigner_connected_signer_ids_) {
 }
 ```
 
-**Failure mode:** Same overload-resolution drift as offenders 1 + 2. Lines 365 + 368 use the 2-arg `is_connected("string", callable)` against a `godot::Object *` whose runtime type may be a derived class with a zero-arg `is_connected()` shadow. NOT explicitly cited in CR-5-4-G but exhibits the same root cause; will need the same fix when Q2 is escalated to (a).
+**Failure mode:** None observed. `obj` is declared as `godot::Object *` (the BASE static type), NOT a derived-class pointer. `Object::is_connected(StringName, Callable) const` IS the natural method on the static type — overload resolution finds it correctly without needing a cast. The shadow problem only manifests when the call site uses a DERIVED-CLASS static type (`ISigner *` at line 200, `WalletAdapter *` at wallet_adapter_signer.cpp:216). The runtime type of `obj` may indeed be `ISigner` or `WalletAdapter`, but C++ overload resolution operates on STATIC types — so this site is safe.
+
+**Q2=(a) fix scope reduced:** lines 200, 203, 209 in transaction.cpp + 216, 219 in wallet_adapter_signer.cpp = **5 single-line edits** (not 7 as the runbook's first version estimated).
 
 ## Root cause
 
