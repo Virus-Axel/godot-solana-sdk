@@ -1,4 +1,13 @@
 name: 🎮 GDScript Tests (Story 5-1 NoOp-bridge UNSUPPORTED_PLATFORM 4-platform matrix)
+# Story 5-6 T4 (miniT4=(b) decision, locked at story-creation HALT 2026-04-30):
+# this workflow ALSO serves as AC-2's `gdextension_load_multi_platform.yml`
+# line-item per plan.md:462 ("(reuse of existing 4-platform matrix, extended
+# to assert UNSUPPORTED_PLATFORM)"). Filename retained as `gdscript_tests.yml`
+# rather than renamed to `gdextension_load_multi_platform.yml` because Story
+# 5-1's name is well-established + documented in evidence paths; rename
+# would invalidate the established cross-reference. Path (a) rename rejected
+# at HALT.
+#
 # Story 2-1 T10 — CR-32 replacement for the host-mode C++ test tier A-13
 # retired. Runs the MWA facade on desktop via headless Godot and asserts
 # mwa_error{UNSUPPORTED_PLATFORM} fires within 1 frame of every MWA op
