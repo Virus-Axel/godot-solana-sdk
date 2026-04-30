@@ -73,6 +73,15 @@ public:
     // `dispatcher()` returns non-null iff we successfully acquired (not
     // draining + a dispatcher was registered). A null `dispatcher()` means
     // the callback should drop cleanly.
+    /**
+     * @brief RAII lease on a JNI callback in-flight slot.
+     *
+     * Construction increments the in-flight counter; destruction decrements
+     * it. While at least one lease is alive, the JVM cannot detach the
+     * thread without finishing the callback. `dispatcher()` returns the
+     * registered `GodotMainDispatcher*` or nullptr if shutdown is in
+     * progress (caller drops cleanly in the nullptr case).
+     */
     class CallbackLease {
     public:
         CallbackLease();
