@@ -1,0 +1,13 @@
+{
+  "ignorePatterns": [
+    { "pattern": "^http://localhost" },
+    { "pattern": "^https://github\\.com/[^/]+/godot-mwa-example" },
+    { "pattern": "^https://github\\.com/[^/]+/godot-solana-sdk/releases/tag/v" },
+    { "pattern": "^https://example\\.com/godot-mwa-sample" }
+  ],
+  "timeout": "10s",
+  "retryOn429": true,
+  "retryCount": 3,
+  "fallbackRetryDelay": "30s",
+  "aliveStatusCodes": [200, 206, 301, 302]
+}

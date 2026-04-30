@@ -17,3 +17,19 @@ jobs:
       - name: Verify
         run: |
             ( cat docs/Doxyfile ; printf "\nWARN_AS_ERROR = YES\n" ) | doxygen -
+
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Markdown link check
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          use-verbose-mode: 'yes'
+          config-file: '.github/markdown-link-check-config.json'
+          folder-path: 'docs/'
+          file-path: './REVIEW.md'
+          file-extension: '.md'
