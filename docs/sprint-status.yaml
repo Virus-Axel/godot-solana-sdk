@@ -226,3 +226,16 @@ epics:
         status: in-progress
         wave: 7
         dependencies: ["1-1", "1-2", "2-1", "4-3"]
+        startedAt: 2026-04-30T05:00:00Z
+        baselineTag: pre-mwa-android-5-6
+        amendments: []
+        concerns: ["CR-5-6-A", "CR-5-6-B", "CR-5-6-C", "CR-5-6-D", "CR-5-6-E", "CR-5-6-F", "CR-5-6-G"]
+        userResolvedQuestions:
+          Q1: "(c) Defer CR-35 / cpp_host_unit_tests post-grant — T13 lands concerns.md deferral note + README inventory comment"
+          Q2: "(b) Document CR-5-4-G as CI-only constraint — T14 lands docs/triage/CR-5-4-G-cpp-compile-drift.md runbook + cpp-compile-drift tracking issue (deferred to user fork)"
+          Q3: "(a) Standalone byte_diff_license.yml — T10 lands per DD-5-6-1"
+          Q4: "(c) Defer real v0.1.0 release tag post-Gate-5 — T11 verifies via synthetic v0.0.1-test* tags only"
+        closures:
+          - "CR-5-4-D (MEDIUM, CLOSED at T7 — DD-5-6-9 LOCKED option iii)"
+          - "CR-5-4-F (HIGH MANDATED, CLOSED at T11 — release_on_tag.yml lands)"
+          - "CR-5-5-C (LOW, CLOSED at T5 — verify_parity informational-first upstream-fetch)"

@@ -3,10 +3,10 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-30T13:00:00.000Z",
+  "lastUpdated": "2026-04-30T10:30:00.000Z",
   "currentPhase": "implement",
   "currentStep": null,
-  "currentCheckpoint": "task-12",
+  "currentCheckpoint": null,
   "currentStory": {
     "storyId": "5-6",
     "slug": "ci-build-integration",
@@ -14,10 +14,26 @@
     "wave": 7,
     "startedAt": "2026-04-30T11:00:00.000Z",
     "taskSummary": {
-      "compactedAt": "2026-04-30T14:00:00.000Z",
-      "tasksCompleted": 6,
-      "tasksInSummary": [1, 2, 3, 4],
-      "tasksInFullContext": [5, 6],
+      "compactedAt": "2026-04-30T10:30:00.000Z",
+      "tasksCompleted": 14,
+      "tasksInSummary": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "tasksInFullContext": [
+        13,
+        14
+      ],
       "filesModified": [
         ".github/workflows/kotlin_lint.yml (NEW T1)",
         ".github/workflows/kotlin_unit.yml (NEW T1)",
@@ -33,14 +49,26 @@
         "tools/mwa_codegen/templates/mwa_error_codes.gd.j2 (T2: @since added to template)",
         "android/plugin/.../GDExtensionAndroidPlugin.kt (T2: 18 KDoc @since blocks for all @UsedByGodot funs)",
         ".github/workflows/r8_release_smoke.yml (NEW T3; extracted verbatim from instrumented_tests.yml)",
-        ".github/workflows/instrumented_tests.yml (T3: r8-smoke job removed; header redirect comment)",
+        ".github/workflows/instrumented_tests.yml (T3+T7: r8-smoke removed at T3; T7 emulator-boot retry-once + CR-5-4-D header documentation)",
         ".github/workflows/gdscript_tests.yml (T4: AC-2 cross-reference comment for gdextension_load_multi_platform)",
-        "docs/concerns.md (T1: D-5-6-T1-1 + CR-5-6-G HIGH section)"
+        ".github/workflows/verify_parity.yml (NEW T5; weekly Sun 03:00 UTC + DD-5-6-5 informational-first upstream-fetch)",
+        ".github/workflows/ci_slo_audit.yml (NEW T6; monthly 1st 03:00 UTC + DD-5-6-3 GH API queries + tracking issue auto-create)",
+        ".github/workflows/r8_release_smoke.yml (T7: marker-file + retry-once on emulator-boot-timeout — release variant)",
+        "ci/grep_bans.sh (T8: extended 10 → 12 patterns; AC-6 (a) websocket/ECDH + (d) wallet-conditional)",
+        ".github/workflows/testdata/grep_ban_fixtures/wallet_conditional_*.kt + websocket_handrolled_*.kt (NEW T8)",
+        ".github/workflows/compat_matrix_drift.yml (NEW T9; ~210L; DD-5-6-8 6-row enforcement)",
+        "scripts/check_compat_matrix.py + scripts/test_check_compat_matrix.py (NEW T9; 6 pytest cases TDD-red→green)",
+        "tools/testdata/golden_*/expected.gd (T9: 3 golden GDScript fixtures regenerated post-T2 codegen-template change; pytest 91 → 97)",
+        ".github/workflows/byte_diff_license.yml (NEW T10; ~30L; AC-10 / A-18 / DD-5-6-1)",
+        ".github/workflows/release_on_tag.yml (NEW T11; ~280L; 3 jobs build-native + build-aar + bundle-and-publish; DD-5-6-2 7-target matrix; CR-5-4-F MANDATED CLOSED)",
+        "README.md (T12: +50 lines — 'Build the addon' (MWA-bundled distribution) section + 'CI status' inventory of 19 PR-blocking + 2 cron + 1 release-on-tag workflows; Q2=(b) footnote; T13: +2 lines OBSOLETE blockquote for cpp_host_unit_tests Q1=(c) closure path)",
+        "docs/concerns.md (T1: D-5-6-T1-1 + CR-5-6-G HIGH section; T13: CR-35 status DEFERRED + 5-bullet Q1=(c) close-out block; T14: CR-5-4-G title flag + Q2=(b) close-out block; T15: CR-5-6-A through CR-5-6-G + closures + baseline note + close-out summary)",
+        "docs/triage/CR-5-4-G-cpp-compile-drift.md (NEW T14; 188L runbook; 4 verified offenders; root-cause analysis; Q2=(a) escalation source-fix sketch; tracking-issue gh CLI invocation deferred to user)"
       ],
-      "testsAdded": 8,
+      "testsAdded": 14,
       "kotlinDelta": 0,
-      "pytestDelta": 8,
-      "currentBaselineEstimate": "285 GREEN (194 Kotlin + 91 pytest); state.json baselineTests command needs scripts/ added at T15 close-out",
+      "pytestDelta": 14,
+      "currentBaselineEstimate": "291 GREEN (194 Kotlin + 97 pytest); state.json baselineTests command needs scripts/ added at T15 close-out",
       "patternsEstablished": [
         "T1: Android Lint baseline pattern via lint { baseline = file('lint-baseline.xml') } + manual `:plugin:updateLintBaseline` refresh; mirrors Q2=(b) Kotlin analog of CR-5-4-G's C++ document-as-CI-only pattern.",
         "T2: scripts/ package follows tools/conftest.py shape (sys.path bootstrap + Python package marker); pytest from repo root auto-discovers scripts/test_*.py.",
@@ -53,13 +81,23 @@
       "deviations": [
         "D-5-6-T1-1 (Rule 1): Android Lint baseline file added to plugin's build.gradle.kts to enable :plugin:lint as PR-blocking gate without expanding T1 scope to fix 9 pre-existing NewApi errors. Logged + CR-5-6-G HIGH filed.",
         "D-5-6-T2-1 (Rule 1): clang_tools.yml's header-lint-mwa job extracted verbatim to standalone .github/workflows/header_lint.yml for AC-2 wording compliance. Allow-list policy preserved.",
-        "D-5-6-T3-1 (Rule 1): instrumented_tests.yml's r8-smoke job extracted verbatim to standalone .github/workflows/r8_release_smoke.yml for AC-2 wording compliance. Same R8 minification + AC-5 release E2E checks preserved."
+        "D-5-6-T3-1 (Rule 1): instrumented_tests.yml's r8-smoke job extracted verbatim to standalone .github/workflows/r8_release_smoke.yml for AC-2 wording compliance. Same R8 minification + AC-5 release E2E checks preserved.",
+        "D-5-6-T7-1 (Rule 2): retry-once shell wrapper applied to BOTH instrumented_tests.yml (debug variant) AND r8_release_smoke.yml (release variant) — symmetric treatment of emulator-boot exposure. Marker-file gating distinguishes real test failures (re-raise) from boot timeouts (single retry)."
       ],
-      "verificationOnlyTasks": [3, 4],
+      "verificationOnlyTasks": [
+        3,
+        4,
+        15
+      ],
       "concernsRaised": [
         "CR-5-6-G HIGH (T1): 9 pre-existing Android Lint NewApi errors in production code (SecureTokenStore.deleteSharedPreferences requires API 24, Base64 encoder/decoder requires API 26). Real correctness bugs on minSdk=23 devices. Baselined; treat as launch-blocker for v0.1.0 release tag (Q4=(c) defers production tag).",
         "CR-5-5-C CLOSED (T5): verify_parity.yml landed informational-first upstream-fetch step per DD-5-6-5.",
-        "CR-5-6-B (planned, LOW): tracks 4-week stability window before promoting verify_parity's upstream-drift step to job-failing per DD-5-6-5. To be logged formally at T15."
+        "CR-5-6-B (planned, LOW): tracks 4-week stability window before promoting verify_parity's upstream-drift step to job-failing per DD-5-6-5. To be logged formally at T15.",
+        "CR-5-4-D MEDIUM CLOSED (T7): instrumented_emulator_fakewallet.yml external-repo redesign — closed via T7 picking option (iii) release-gate-only INTEGRATION (DD-5-6-9 LOCKED). Documented in workflow header comment + concerns.md.",
+        "CR-5-4-F HIGH MANDATED CLOSED (T11): release-on-tag CI MANDATED — closed at T11 commit 5310fa2e; release_on_tag.yml IS the only viable release path under current CR-5-4-G compile drift state.",
+        "CR-5-6-C (planned, LOW): T11 synthetic v0.0.1-test* tag verifies workflow path but NOT production v0.1.0 release artifact (Q4=(c) defers); to be logged formally at T15.",
+        "CR-5-6-D (planned, depends on Q1): CR-35 closure path (Q1=(a) at T13 / Q1=(b) Story 5-7 / Q1=(c) defer post-grant).",
+        "CR-5-6-E (planned, depends on Q2): CR-5-4-G closure path. Q2=(b) LOCKED at story-creation HALT 2026-04-30 → T14 lands docs/triage/CR-5-4-G-cpp-compile-drift.md runbook + cpp-compile-drift tracking issue."
       ],
       "openIssues": [
         "Hook false-positives: docs/state.json historical commit messages with TODO references trip the stub-marker grep on every commit; harmless but noisy.",
@@ -67,7 +105,13 @@
       ],
       "userResolvedQuestions": {
         "T1 mid-task HALT (Path A)": "Backfill+log via lint baseline (NOT scope expansion / NOT amendment).",
-        "T2 mid-task HALT (Path A)": "Backfill v0.1.0 @since on all 49 SDK public symbols (NOT baseline file / NOT defer)."
+        "T2 mid-task HALT (Path A)": "Backfill v0.1.0 @since on all 49 SDK public symbols (NOT baseline file / NOT defer).",
+        "T3 story-creation HALT": "Q3-T3=(a) Extract r8_release_smoke.yml standalone (NOT in-place documentation).",
+        "T4 story-creation HALT": "Q-T4=(b) Cross-reference comment in gdscript_tests.yml (NOT rename to gdextension_load_multi_platform.yml).",
+        "Q1 story-creation HALT": "Q1=(c) Defer CR-35 / cpp_host_unit_tests post-grant — T13 lands concerns.md deferral note + README inventory comment.",
+        "Q2 story-creation HALT": "Q2=(b) Document CR-5-4-G as CI-only constraint — T14 lands docs/triage/CR-5-4-G-cpp-compile-drift.md runbook + cpp-compile-drift tracking issue.",
+        "Q3 story-creation HALT": "Q3=(a) Standalone byte_diff_license.yml — T10 lands per DD-5-6-1.",
+        "Q4 story-creation HALT": "Q4=(c) Defer real v0.1.0 release tag post-Gate-5 — T11 verifies via synthetic v0.0.1-test* tags only."
       }
     }
   },
@@ -1042,16 +1086,16 @@
     }
   ],
   "baselineTests": {
-    "total": 277,
-    "passing": 277,
+    "total": 291,
+    "passing": 291,
     "failing": 0,
     "baselinedAt": "2026-04-22T08:09:41Z",
     "baselinedAtStory": 5,
-    "lastRefreshedAt": "2026-04-30T08:30:00.000Z",
-    "lastRefreshedAtStory": 20,
-    "command": ".venv/bin/pytest tools/ && ./gradlew -p android :plugin:testDebugUnitTest",
+    "lastRefreshedAt": "2026-04-30T10:30:00.000Z",
+    "lastRefreshedAtStory": 21,
+    "command": ".venv/bin/pytest tools/ scripts/ && ./gradlew -p android :plugin:testDebugUnitTest",
     "failingTests": [],
-    "note": "Post-story-3-3 T7 baseline refresh: 152 -> 167 Kotlin (+15 from T1+T2 sign-and-send work — 10 MwaAndroidPluginSignAndSendTest cases (1 @Disabled placeholder for AC-4c lifecycle path -> Story 5-3 per CR-3-3-B; 9 GREEN covering AC-1 happy 4-key payload + AC-2 breadcrumb 6-key write-ahead + AC-3 cleanup-before-terminal + AC-4a/b error/timeout cleanup + AC-5 stale breadcrumb scan + one-shot + AC-6 cluster-bleed + runSigningOp(SIGN_AND_SEND) Failure routing direct + breadcrumb-write StorageCorruptException -> reauth_required), +4 SecureTokenStoreTest pending-submission storage tests (round-trip, list filter+strip, remove single, empty-list), +1 SignAndSendContractTest now-passing (T1 @Disabled placeholder removed at T6 with full fixture-input verification body)); pytest 83 unchanged. androidTest pre-3-3 15 (post-3-2 + 1 expected from CI push) -> post-3-3 expected 17 (+AC1SignAndSendHappyE2ETest + AC5PendingSubmissionFoundOnNextConnectTest — NOT counted in unit baseline; emulator-only). Total unit baseline 235 -> 250. Post-review-fix +1: cluster-bleed listAllKeys StorageCorruptException emits reauth_required synchronously and aborts (closes code-review HIGH finding #1, D-3-3-T7-1). Story 4-2 T6 close-out: 251 -> 257 (+6 Kotlin from T1 6 ForgetAll cases turning GREEN at T2: AC-1 happy path / AC-2 cancel-in-flight / AC-3 mutex serialization / AC-4 wallet-offline / DD-4-2-5 per-record StorageCorruptException / DD-4-2-6 listAllKeys-throws wrapper-bypass). androidTest pre-4-2 17 -> post-4-2 expected 19 (+AC1ForgetAllHappy + AC4ForgetAllWalletOffline; emulator-only). Story 5-1 T5 close-out: 257 GREEN unchanged (5-1 is pure CI-tier story — 0 Kotlin/pytest deltas; 4-platform gdscript_tests.yml matrix landed as the AC-1/2/3 evidence source per DD-5-1-1/2/5 LOCKED). androidTest count unchanged at 19. Story 5-3 T4 close-out: 257 -> 260 (+3 Kotlin from T1 3 MwaLifecycleObserverTest cases turning GREEN at T2: AC-1 happy / AC-3 already-terminated / multi-slot fan-out; +1 effective-GREEN delta from un-disabling MwaAndroidPluginSignAndSendTest.AC-4c (CR-3-3-B closure) — un-disable does NOT increment JUnit `tests=` total, only flips skipped→passed, so the +1 is not visible in the total count). 0 @Disabled in Kotlin baseline (was 1 placeholder for CR-3-3-B; now closed). androidTest pre-5-3 19 -> post-5-3 expected 20 (+AC2RotationCancelsInflightE2ETest; emulator-only, runtime validation deferred to next CI push). Code-review post-fix +1: 260 -> 261 (+1 Kotlin from MwaLifecycleObserverTest.AC-3 CAS-loss-inside-loop case landed via spyk(InflightMap) — closes code-review finding #1 Medium symmetric defensive branch coverage gap on DD-5-3-3 LOCKED's `else { incrementLateResult() }` path)."
+    "note": "Story 5-6 T15 close-out 2026-04-30: 285 -> 291 GREEN (194 Kotlin unchanged + 91 -> 97 pytest). Pytest delta: +8 from T2 (scripts/test_check_since_tags.py) + +6 from T9 (scripts/test_check_compat_matrix.py) = +14 across two test-first additions. Kotlin: 194 unchanged — no production Kotlin code touched in T1-T14 (T1 wired Android Lint baseline configuration only; T7 modified workflow YAML only). androidTest count unchanged at 22 (no new instrumented tests added; T7's marker-file retry-once is workflow-level, not test-level). baselineTests.command updated from `pytest tools/` -> `pytest tools/ scripts/` to honor the new scripts/ pytest discovery path. lastRefreshedAtStory: 21 (Story 5-6 is story 21 of 21). Prior history: Post-story-3-3 T7 baseline refresh: 152 -> 167 Kotlin (+15 from T1+T2 sign-and-send work — 10 MwaAndroidPluginSignAndSendTest cases (1 @Disabled placeholder for AC-4c lifecycle path -> Story 5-3 per CR-3-3-B; 9 GREEN covering AC-1 happy 4-key payload + AC-2 breadcrumb 6-key write-ahead + AC-3 cleanup-before-terminal + AC-4a/b error/timeout cleanup + AC-5 stale breadcrumb scan + one-shot + AC-6 cluster-bleed + runSigningOp(SIGN_AND_SEND) Failure routing direct + breadcrumb-write StorageCorruptException -> reauth_required), +4 SecureTokenStoreTest pending-submission storage tests, +1 SignAndSendContractTest now-passing). androidTest pre-3-3 15 -> post-3-3 expected 17. Total unit baseline 235 -> 250. Post-review-fix +1: cluster-bleed listAllKeys StorageCorruptException emits reauth_required synchronously and aborts (closes code-review HIGH finding #1, D-3-3-T7-1). Story 4-2 T6 close-out: 251 -> 257 (+6 Kotlin from T1 6 ForgetAll cases turning GREEN at T2). androidTest pre-4-2 17 -> post-4-2 expected 19. Story 5-1 T5 close-out: 257 GREEN unchanged (pure CI-tier story). Story 5-3 T4 close-out: 257 -> 260 (+3 Kotlin from MwaLifecycleObserverTest cases). 0 @Disabled in Kotlin baseline. androidTest pre-5-3 19 -> post-5-3 expected 20. Code-review post-fix +1: 260 -> 261. Story 5-5 T8 close-out: 261 GREEN unchanged + Story 5-4 T2 close-out (housekeeping-only after CR-5-4-G discovery). Story 5-6 grew baseline by +14 pytest (no Kotlin delta) per T15 close-out above. Story 5-6 androidTest count: deferred — no new instrumented test cases authored; T7 retry-once is a workflow-level shell wrapper around the existing `:plugin:connectedDebugAndroidTest` task."
   },
   "tooling": {
     "format": "clang-format (C++); ktlint (Kotlin)",
@@ -1076,12 +1120,12 @@
     "interfaceMismatches": 6,
     "pauseResumeCount": 13,
     "execution": {
-      "totalSessions": 5,
+      "totalSessions": 6,
       "pauseResumeCount": 4
     },
     "tasks": {
-      "totalCompleted": 28,
-      "totalVerificationCycles": 31
+      "totalCompleted": 32,
+      "totalVerificationCycles": 35
     },
     "codeReview": {
       "findingsTotal": 14,
