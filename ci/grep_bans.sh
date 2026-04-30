@@ -2,7 +2,9 @@
 # -----------------------------------------------------------------------------
 # ci/grep_bans.sh  (Story 1-2 Task 7 — AC-4 enforcement;
 #                   Story 1-4 Task 6 — AC-5 extension, pattern 5;
-#                   Story 1-5 Task 6 — DD-22 / D-2 extensions, patterns 6+7)
+#                   Story 1-5 Task 6 — DD-22 / D-2 extensions, patterns 6+7;
+#                   Stories 2-1/2-2/3-1 — payload/cluster/per-op patterns 8-10;
+#                   Story 5-6 Task 8 — AC-6 (a)+(d) extensions, patterns 11+12)
 # -----------------------------------------------------------------------------
 # Scans source files for the banned patterns documented in AC-4 + AC-D-8
 # (patterns 1-4, Story 1-2), AC-5 (pattern 5, Story 1-4), and Story 1-5's
@@ -69,6 +71,8 @@ ids=(
     "log-payload-json"
     "cluster-mismatch-branch"
     "per-op-error-signal"
+    "websocket-or-ecdh-handrolled"
+    "wallet-package-conditional"
 )
 
 patterns=(
@@ -82,6 +86,8 @@ patterns=(
     '(Log|SdkLog)\.(v|d|i|w|e).*(resultDictJson|errorDictJson|timeoutDictJson|cancelledDictJson|reauthDictJson|pendingDictJson)'
     '(cluster_mismatch|cluster[[:space:]]*!=[[:space:]]*activeCluster|cachedRecord\.cluster[[:space:]]*!=)'
     '(SIGN_(MESSAGES|TRANSACTIONS|AND_SEND)_FAILED|sign_(messages|transactions|and_send)_failed|MwaError\.Sign(Messages|Transactions|AndSend)Failed)'
+    '(WebSocket[[:space:]]*\(|ECDH\.create[[:space:]]*\(|new[[:space:]]+WebSocket\b)'
+    'if[[:space:]]*\([^)]*==[[:space:]]*"(com|app)\.[a-zA-Z0-9._]*(phantom|solflare|backpack|jupiter|exodus|trust|coinbase|ledger|brave|coin98)'
 )
 
 # Per-pattern production-scan exclusion (Story 1-4 Task 6, AC-5).
@@ -106,6 +112,8 @@ excludes=(
     ""
     "src/mwa/platform_selector.cpp"
     "src/mwa/godot_main_dispatcher.cpp"
+    ""
+    ""
     ""
     ""
     ""
@@ -178,6 +186,8 @@ descs=(
     "Log.* or SdkLog.* call referencing an MWA NativeBridge payload variable name (Story 2-1 Task 4; Story 4-3 T2 added 'reauthDictJson'; Story 3-3 T2 added 'pendingDictJson' per DD-3-3-E.a). 'resultDictJson' / 'errorDictJson' / 'timeoutDictJson' / 'cancelledDictJson' / 'reauthDictJson' / 'pendingDictJson' are serialized MWA Dictionary payloads that include auth_token (connect path), correlation data to reconstruct a session (error/timeout/cancel paths), developer_details with exception class names (reauth_required keystore_corrupt path), or tx_preview_hashes that correlate transactions across observability channels (pending_submission_found scan path). The existing log-authtoken ban (pattern 1) only catches direct 'authToken' references — payload vars wrap the token inside a JSON string where the literal 'authToken' substring is not present in the logging call arguments (the LITERAL is inside the payload at runtime). This pattern closes that gap at the payload-var name level: if it's named *DictJson and you're logging it, that's a token-leak candidate regardless of how the payload was built."
     "Forbidden cluster-mismatch branch in mwaReauthorize (Story 2-2 T2, DD-2-2-1 LOCKED). The pattern 'cluster_mismatch', 'cluster != activeCluster', or 'cachedRecord.cluster !=' in the Kotlin plugin source signals a prohibited separate cluster-comparison branch in mwaReauthorize. DD-2-2-1 mandates that cluster mismatch is detected IMPLICITLY via the 3-tuple listAllKeys() filter (DD-2-2-7): a caller who connected on devnet but calls reauthorize with cluster=mainnet finds ZERO records under the (mainnet, solana:mainnet, identityUri) filter — the empty result drives the NOT_CONNECTED branch. A separate cachedRecord.cluster comparison is redundant, misleading, and violates DD-2-2-1. Any addition of such a branch is a Rule 2 deviation requiring an amendment. This static guard enforces the invariant at CI-time without relying on unit-test coverage of the implementation's internal control flow."
     "Per-operation error-signal anti-pattern (Story 3-1 T2, DD-15 LOCKED). Matches references to per-op error codes that DO NOT exist in the canonical MwaError codegen: 'SIGN_MESSAGES_FAILED' / 'SIGN_TRANSACTIONS_FAILED' / 'SIGN_AND_SEND_FAILED' (SCREAMING_SNAKE), 'sign_messages_failed' / 'sign_transactions_failed' / 'sign_and_send_failed' (snake_case), or 'MwaError.SignMessagesFailed' / 'MwaError.SignTransactionsFailed' / 'MwaError.SignAndSendFailed' (Kotlin enum reference). DD-15 mandates a SINGLE 'mwa_error' signal that disambiguates per-op failures via the 'source_method' enum field — adding per-op failed codes bloats the signal surface and breaks the 'await race(success, mwa_error)' consumer pattern. Stories 3-1 / 3-2 / 3-3 all route signing failures through 'mwa_error{code=USER_CANCELED|TIMEOUT|PROTOCOL_ERROR|..., source_method=\"sign_messages\"|...}' — never via per-op signals. Any addition of a per-op failure code is a Rule 2 deviation requiring an amendment + concerns.md entry."
+    "Hand-rolled WebSocket or ECDH usage (Story 5-6 T8, AC-6 (a)). NFR-10 mandates ZERO hand-rolled MWA protocol — all wire-level cryptography (ECDH session-key derivation) and transport (WebSocket framing) MUST be delegated to mobile-wallet-adapter-clientlib-ktx (DD-4 LOCKED). Pattern matches three constructor / factory shapes: 'WebSocket(' instantiation, 'new WebSocket' Java-style, and 'ECDH.create(' factory call. The clientlib-ktx itself uses these internally; production scope (android/plugin/src/main/) MUST contain zero matches because the ktx is treated as an opaque dependency. Word-boundary anchoring + paren-required tail prevents false-positives on doc-comment mentions of 'WebSocket' as a noun. Allow-list: zero — there is NO sanctioned hand-roll path."
+    "Per-wallet conditional anti-pattern (Story 5-6 T8, AC-6 (d), NFR-8 / DD-7 LOCKED). The MWA protocol is intentionally wallet-agnostic: 'works with 100% of MWA-compatible wallets, no per-wallet code'. Matches an 'if (X == \"<vendor-or-app>.<wallet>\"...)' equality conditional naming a known wallet package by its Play Store id (com.<wallet> or app.<wallet> prefix; vendor list: phantom / solflare / backpack / jupiter / exodus / trust / coinbase / ledger / brave / coin98). The MWA spec routes wallet selection through the Android OS chooser (FR-3) — there is NO legitimate runtime branch in the SDK that compares against a wallet package name. NOTE: this is distinct from the documented suggested-wallet INSTALL-LINK list at addons/SolanaSDK/mwa/MWA.gd::_SUGGESTED_WALLETS, which is a static metadata array (not an 'if' equality conditional) used solely to surface wallet-install URLs in mwa_error{NO_MWA_WALLET_INSTALLED} payloads. Allow-list: zero. A future per-wallet workaround would be a Rule 4 architectural deviation requiring a HALT and amendment."
 )
 
 # Parse mode flag.
