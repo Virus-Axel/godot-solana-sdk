@@ -1,0 +1,239 @@
+name: verify-parity
+
+# AC-3 (Story 5-6 plan.md:463): weekly cron that diffs the pinned
+# RN SDK / clientlib-ktx API surface against docs/rn-parity.md and opens
+# an issue tagged `parity-drift` when upstream introduces a new method.
+#
+# Per DD-5-6-5 LOCKED (Story 5-6, closes CR-5-5-C):
+#   - Step 1 (schema-conform): runs tools/validate_rn_parity.py to assert
+#     docs/rn-parity.md still matches its DD-5-5-4 schema (top-level
+#     schema_version + pinned_clientlib_ktx_version + 7-entry methods array
+#     with the 6 required keys per entry). Exit 0 = clean; exit 1 = schema
+#     violation (always job-failing).
+#   - Step 2 (upstream-drift, INFORMATIONAL-FIRST): fetches the pinned
+#     mobile-wallet-adapter-clientlib-ktx source via gradle dependency
+#     resolution, parses MobileWalletAdapterClient.kt for `suspend fun `
+#     declarations, and diffs against the `kotlin_method` rows in the
+#     rn-parity.md YAML block. Output: warning annotation (NOT a job
+#     failure) for the first 4 weeks of stability monitoring; promotion
+#     to PR-blocking happens via a follow-up amendment after the upstream-
+#     fetch pipeline is proven reliable (CR-5-6-B tracks).
+#   - On schema fail OR drift detected: opens (or updates) an issue tagged
+#     `parity-drift` via `gh issue create`.
+#
+# Trigger:
+#   - `schedule`: weekly Sunday 03:00 UTC
+#   - `workflow_dispatch`: manual trigger for testing + drift follow-up
+#   - PR-blocking ONLY when the PR carries the `parity-drift-followup`
+#     label (per AC-3 wording: "PR-blocking only during new-method
+#     follow-up PR"). The default PR run is cron-only, so this workflow
+#     does NOT trigger on `pull_request` events without the label.
+#
+# Time budget per arch §10.4: <1 min wallclock for schema check; <2 min
+# for upstream fetch+diff (gradle dependency resolution dominates).
+
+on:
+  schedule:
+    # Sunday 03:00 UTC per AC-3 wording.
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      fetch_upstream:
+        description: 'Run the upstream-drift fetch step (default true)'
+        required: false
+        type: boolean
+        default: true
+  # Label-gated PR-blocking per AC-3:
+  pull_request:
+    types: [labeled, synchronize, reopened]
+
+jobs:
+  verify-parity:
+    name: "AC-3 verify-parity (schema + upstream drift)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Skip on PR runs unless the PR carries the parity-drift-followup label.
+    if: |
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       contains(github.event.pull_request.labels.*.name, 'parity-drift-followup'))
+    permissions:
+      issues: write       # gh issue create / comment
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dev dependencies
+        run: pip install -r tools/requirements-dev.txt
+
+      - name: Step 1 — Schema validation (DD-5-5-4)
+        id: schema_check
+        # ALWAYS run; exit 1 fails the job AND opens a parity-drift issue.
+        run: |
+          set +e
+          python tools/validate_rn_parity.py 2> /tmp/parity-stderr.log
+          rc=$?
+          set -e
+          if [ "$rc" -ne 0 ]; then
+            echo "::error::docs/rn-parity.md schema violation. Output:"
+            cat /tmp/parity-stderr.log
+            echo "schema_failed=true" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "schema_failed=false" >> "$GITHUB_OUTPUT"
+          echo "✓ rn-parity.md schema-clean"
+
+      - name: Step 2 — Set up JDK 17 (for gradle dependency resolution)
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.fetch_upstream }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Step 2 — Set up Gradle cache
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.fetch_upstream }}
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Step 2 — Upstream-drift detection (CR-5-5-C / DD-5-6-5; INFORMATIONAL)
+        # Best-effort upstream fetch + diff. NOT job-failing per DD-5-6-5
+        # informational-first contract; emits ::warning:: annotations + tracks
+        # findings for the issue-create step. CR-5-6-B tracks promotion to
+        # PR-blocking after 4-week stability window.
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.fetch_upstream }}
+        id: upstream_drift
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+
+          # Resolve the pinned clientlib-ktx version from rn-parity.md
+          # (avoids hardcoding a version string in the workflow).
+          PINNED=$(grep -E '^pinned_clientlib_ktx_version:' docs/rn-parity.md \
+                   | sed -E 's/.*"([^"]+)".*/\1/' \
+                   | head -1)
+          if [ -z "$PINNED" ]; then
+            echo "::warning::Could not parse pinned_clientlib_ktx_version from docs/rn-parity.md; skipping upstream-drift check."
+            echo "drift_findings=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Pinned clientlib-ktx version: $PINNED"
+
+          # Use the plugin module's existing dependency to fetch the JAR
+          # (gradle resolves transitively + caches under ~/.gradle).
+          cd android
+          ./gradlew :plugin:dependencies --configuration releaseRuntimeClasspath \
+            > /tmp/gradle-deps.txt 2>&1 || true
+          cd ..
+
+          JAR=$(find ~/.gradle/caches/modules-2/files-2.1/com.solanamobile \
+                -name "mobile-wallet-adapter-clientlib-ktx-${PINNED}.jar" 2>/dev/null \
+                | head -1)
+          if [ -z "$JAR" ]; then
+            echo "::warning::clientlib-ktx-${PINNED} JAR not found in gradle cache; skipping upstream-drift check."
+            echo "drift_findings=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # JAR carries compiled .class files; we extract method names via
+          # `javap` rather than parsing the source (which is published in
+          # a separate -sources.jar that may not be in the cache).
+          mkdir -p /tmp/clientlib-extract
+          (cd /tmp/clientlib-extract && unzip -o "$JAR" > /dev/null)
+          UPSTREAM_METHODS=$(javap -p /tmp/clientlib-extract/com/solana/mobilewalletadapter/clientlib/MobileWalletAdapterClient.class 2>/dev/null \
+                             | grep -oE 'public final [a-zA-Z<>?]+ [a-zA-Z][a-zA-Z0-9]*\(' \
+                             | awk '{print $NF}' \
+                             | sed 's/($//' \
+                             | sort -u)
+
+          if [ -z "$UPSTREAM_METHODS" ]; then
+            echo "::warning::Could not parse methods from MobileWalletAdapterClient.class — javap output empty. Schema check still valid; upstream-drift check skipped this run."
+            echo "drift_findings=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Extract kotlin_method values from the YAML block in rn-parity.md.
+          MANIFEST_METHODS=$(awk '/```yaml/,/```/' docs/rn-parity.md \
+                             | grep -E '^\s*kotlin_method:' \
+                             | sed -E 's/.*"([^"]+)".*/\1/' \
+                             | sort -u)
+
+          # Diff: methods present upstream but missing from the manifest = drift.
+          DRIFT=$(comm -23 <(echo "$UPSTREAM_METHODS") <(echo "$MANIFEST_METHODS") || true)
+          if [ -n "$DRIFT" ]; then
+            echo "::warning::Upstream-drift detected — methods in clientlib-ktx-${PINNED} not in docs/rn-parity.md:"
+            echo "$DRIFT" | sed 's/^/  - /'
+            # Persist for the issue-create step.
+            echo "drift_findings<<EOF" >> "$GITHUB_OUTPUT"
+            echo "$DRIFT" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+          else
+            echo "✓ No upstream-drift detected (clientlib-ktx-${PINNED} matches manifest)"
+            echo "drift_findings=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Step 3 — Open `parity-drift` issue on schema fail or drift
+        # Runs only if step 1 OR step 2 found something. Step 1 is job-failing
+        # so this step won't reach if schema fails (use the `if: failure()`
+        # branch + a separate step instead).
+        if: |
+          steps.upstream_drift.outputs.drift_findings != '' &&
+          (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BODY=$(cat <<EOF
+          Upstream-drift detected by the verify-parity weekly cron
+          (run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}).
+
+          The following methods exist in the pinned clientlib-ktx upstream
+          but are NOT mapped in \`docs/rn-parity.md\`:
+
+          \`\`\`
+          ${{ steps.upstream_drift.outputs.drift_findings }}
+          \`\`\`
+
+          Action: open a follow-up PR adding the new method(s) to
+          \`docs/rn-parity.md\` and any matching SDK-side wiring; tag the
+          PR with \`parity-drift-followup\` to enable PR-blocking
+          enforcement during review.
+
+          Per CR-5-5-C / DD-5-6-5: this run is informational-only
+          (warning annotation, not job failure). Promotion to job-failing
+          status is deferred to a 4-week stability window.
+          EOF
+          )
+          gh issue create \
+            --title "parity-drift: upstream methods missing from docs/rn-parity.md" \
+            --label parity-drift \
+            --body "$BODY" \
+            || echo "::warning::gh issue create failed (likely a duplicate open issue with same title); skipping."
+
+      - name: Step 4 — Open `parity-drift` issue on schema fail
+        # Schema-fail step exits 1 BEFORE this; use `if: failure()` to capture.
+        if: |
+          failure() && steps.schema_check.outputs.schema_failed == 'true' &&
+          (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BODY=$(cat <<EOF
+          Schema violation in \`docs/rn-parity.md\` detected by the verify-parity
+          weekly cron (run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}).
+
+          \`tools/validate_rn_parity.py\` exit code: 1
+          See run logs for the specific schema failure.
+
+          Action: fix the rn-parity.md schema before the next cron tick.
+          EOF
+          )
+          gh issue create \
+            --title "parity-drift: rn-parity.md schema violation" \
+            --label parity-drift \
+            --body "$BODY" \
+            || echo "::warning::gh issue create failed (likely a duplicate open issue); skipping."
