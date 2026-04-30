@@ -1,0 +1,289 @@
+name: R8 release smoke (A-10)
+
+# AC-2 (Story 5-6 plan.md:462): one of the "new" PR-blocking jobs.
+# Story 5-6 T3 (D-5-6-T3-1 Rule 1): EXTRACTED from instrumented_tests.yml's
+# `r8-smoke` job (Story 2-1 T9 origin + Story 4-3 T6 step F extension)
+# into a standalone workflow per AC-2 wording compliance ("r8_release_smoke.yml
+# (new)"). Job body verbatim — same R8 minification verification + same
+# AC-5 release-variant E2E. Mirrors the user's miniT3=(a) decision at
+# story-creation HALT (extract for AC-2 line-item visibility in GitHub UI).
+#
+# Two complementary checks:
+#   1. R8 minification preserves @UsedByGodot method names (Story 2-1 A-10
+#      consumer-rules.pro contract): assembleRelease produces a minified
+#      AAR; we extract classes.jar and assert all REQUIRED_METHODS still
+#      present via `javap -p`. Catches regressions where a future
+#      consumer-rules.pro edit loses an @UsedByGodot keep rule.
+#   2. consumer-rules.pro shipped INSIDE the AAR contains the AC-4 rule
+#      families (JNI native keep, @UsedByGodot keep, clientlib-ktx keep,
+#      SdkLog -assumenosideeffects). Catches regressions where a future
+#      build.gradle.kts edit drops `consumerProguardFiles("consumer-rules.pro")`.
+#   3. AC-5 release-variant authorize E2E — runs AC3ConnectE2ETest (Story
+#      2-1 T9 canonical authorize test) against the R8-minified release
+#      AAR via -PtestBuildType=release. Confirms the @UsedByGodot Kotlin-
+#      side surface survives minification AND functions end-to-end against
+#      the FakeMwaClient injection path (Route B per CR-45 / CR-50).
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - feature/mwa-android
+
+jobs:
+  r8-smoke:
+    name: R8 smoke — @UsedByGodot method names survive minification + AC-5 release E2E
+    runs-on: ubuntu-latest
+    # Story 4-3 T6 step F — bumped 15→45 to accommodate the
+    # AC3ConnectE2ETest emulator step (mirrors the `instrumented` job's
+    # 45-minute budget).
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v3
+
+      # Story 4-3 T6 step F — KVM perms required for the AC-5
+      # release-variant authorize E2E step (uses
+      # reactivecircus/android-emulator-runner@v2 like the `instrumented`
+      # job in instrumented_tests.yml).
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # Story 4-3 T6 step F — AVD cache shared with the `instrumented` job
+      # via the same key (the AVD setup is identical: API 33 google_apis
+      # x86_64). First job to populate the cache wins; subsequent jobs hit.
+      - name: AVD cache
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api33-google-x86_64-v3
+
+      - name: Assemble release AAR (runs R8 — isMinifyEnabled=true per CR-7)
+        run: |
+          cd android
+          ./gradlew :plugin:assembleRelease --info --stacktrace
+
+      - name: Extract classes.jar from release AAR
+        run: |
+          mkdir -p /tmp/mwa-aar
+          cd /tmp/mwa-aar
+          AAR=$(find "$GITHUB_WORKSPACE/android/plugin/build/outputs/aar" -name 'WalletAdapterAndroid-release.aar' | head -1)
+          if [ -z "$AAR" ]; then
+            echo "::error::release AAR not found under android/plugin/build/outputs/aar/"
+            exit 1
+          fi
+          echo "Found AAR: $AAR"
+          unzip -o "$AAR"
+          mkdir -p classes
+          cd classes
+          unzip -o ../classes.jar
+          echo "Extracted class tree root:"
+          ls -la plugin/walletadapterandroid/ || true
+
+      - name: Verify @UsedByGodot method names survive R8 (A-10 + D-12)
+        run: |
+          cd /tmp/mwa-aar/classes
+          CLASS=plugin/walletadapterandroid/GDExtensionAndroidPlugin.class
+          if [ ! -f "$CLASS" ]; then
+            echo "::error::$CLASS not found in release AAR — R8 removed the @UsedByGodot plugin class entirely, or the package layout changed."
+            exit 1
+          fi
+          # A-10 consumer-rules.pro should preserve every @UsedByGodot method name.
+          # Grep javap -p (all members) for the T4/T5/T6/T7 contract surface.
+          REQUIRED_METHODS=(
+            mwaAuthorize
+            # Story 2-3 T5 — mwaDisconnect is a new @UsedByGodot instance method
+            # introduced in T2. Inherits A-10 keep rules automatically; the smoke
+            # grep asserts R8 did not strip or rename the symbol.
+            mwaDisconnect
+            # Story 2-2 T5 — mwaReauthorize is a new @UsedByGodot instance method
+            # introduced in T2. Inherits A-10 keep rules automatically; the smoke
+            # grep asserts R8 did not strip or rename the symbol.
+            mwaReauthorize
+            # Story 3-1 T5 — mwaSignMessages is a new @UsedByGodot instance method
+            # introduced in T2 (the per-call entry point that dispatches through
+            # the runSigningOp shared pipeline). Inherits A-10 keep rules; the
+            # smoke grep asserts R8 did not strip or rename the symbol.
+            mwaSignMessages
+            # Story 3-2 T5 — mwaSignTransactions is a new @UsedByGodot instance
+            # method introduced in T2 (consumer of the same runSigningOp shared
+            # pipeline as mwaSignMessages, with payloadKey="signed_transactions"
+            # rename per DD-3-2-3). Inherits A-10 keep rules; the smoke grep
+            # asserts R8 did not strip or rename the symbol.
+            mwaSignTransactions
+            # Story 3-3 T5 — mwaSignAndSendTransactions is a new @UsedByGodot
+            # instance method introduced in T2 (consumer of the same
+            # runSigningOp shared pipeline as mwaSignMessages /
+            # mwaSignTransactions, with the additional pre-runSigningOp
+            # breadcrumb-write step per DD-3-3-B and the AC-6 cluster-bleed
+            # preflight). Inherits A-10 keep rules; the smoke grep asserts R8
+            # did not strip or rename the symbol.
+            mwaSignAndSendTransactions
+            # Story 4-1 T7 — mwaDeauthorize is a new @UsedByGodot instance method
+            # introduced in T2 (try/catch/finally + multi-key wipe per
+            # DD-4-1-3 / DD-4-1-6). Inherits A-10 keep rules; the smoke grep
+            # asserts R8 did not strip or rename the symbol.
+            mwaDeauthorize
+            # Story 4-2 T5 — mwaForgetAll is a new @UsedByGodot instance method
+            # introduced in T2 (forgetAllMutex.withLock body: cancel-in-flight
+            # via inflightMap.snapshot → tryTerminate → mwa_cancelled_lifecycle
+            # emit BEFORE wipe per DD-4-2-3 / AC-2 ordering, then per-wallet
+            # best-effort deauth loop with withTimeoutOrNull(2s) + DD-4-2-5
+            # continue-on-error, then store.deleteAll → deleteSharedPreferences
+            # → KeyStore.deleteEntry(MASTER_KEY_ALIAS) per DD-4-2-4, then
+            # withContext(mainDispatcher) { sessionState.clear() } per DD-4-1-2
+            # LOCKED inheritance). NO new completion signal per DD-4-2-8 —
+            # AC-1 evidence is post-condition state inspection. NO new
+            # JNIEXPORT — the existing mwaForgetAllFromJni shim (below)
+            # already delegates to this instance method. Inherits A-10 keep
+            # rules; the smoke grep asserts R8 did not strip or rename the
+            # symbol.
+            mwaForgetAll
+            mwaQuerySessionStateFromJni
+            mwaAuthorizeFromJni
+            mwaReauthorizeFromJni
+            mwaDisconnectFromJni
+            mwaDeauthorizeFromJni
+            mwaSignMessagesFromJni
+            mwaSignTransactionsFromJni
+            mwaSignAndSendFromJni
+            mwaForgetAllFromJni
+            mwaGetDiagnosticsFromJni
+            postConnectCompletedNative
+            # Story 2-3 T2 — parallel external fun for disconnect_completed's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3).
+            postDisconnectCompletedNative
+            # Story 2-2 T2 — parallel external fun for reauthorize_completed's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3).
+            postReauthorizeCompletedNative
+            # Story 3-1 T2 — parallel external fun for sign_messages_completed's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
+            # post_arity2_completed("sign_messages_completed", ...)).
+            postSignMessagesCompletedNative
+            # Story 3-2 T1 — parallel external fun for sign_transactions_completed's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
+            # post_arity2_completed("sign_transactions_completed", ...)).
+            postSignTransactionsCompletedNative
+            # Story 3-3 T1 — parallel external fun for sign_and_send_completed's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
+            # post_arity2_completed("sign_and_send_completed", ...)).
+            postSignAndSendCompletedNative
+            # Story 4-1 T1 — parallel external fun for deauthorize_completed's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
+            # post_arity2_completed("deauthorize_completed", ...)).
+            postDeauthorizeCompletedNative
+            postMwaErrorNative
+            postMwaTimeoutNative
+            postMwaCancelledLifecycleNative
+            postReauthRequiredNative
+            # Story 3-3 T1 — parallel external fun for pending_submission_found's
+            # Kotlin→C++ callback path. JNI symbol linked at runtime via the
+            # matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 —
+            # post_arity1("pending_submission_found", ...)). 1-param shape
+            # parallel to postReauthRequiredNative (request_id is embedded
+            # inside the payload at the `request_id` field, NOT a separate
+            # JNI arg).
+            postPendingSubmissionFoundNative
+          )
+          JAVAP_OUT=$(javap -p "$CLASS")
+          COMPANION_CLASS=plugin/walletadapterandroid/GDExtensionAndroidPlugin\$Companion.class
+          COMPANION_OUT=""
+          if [ -f "$COMPANION_CLASS" ]; then
+            COMPANION_OUT=$(javap -p "$COMPANION_CLASS")
+          fi
+          FAIL=0
+          for M in "${REQUIRED_METHODS[@]}"; do
+            if echo "$JAVAP_OUT$COMPANION_OUT" | grep -q " $M("; then
+              echo "✓ $M survived R8"
+            else
+              echo "::error::R8 stripped or renamed '$M' — @UsedByGodot contract broken. Review consumer-rules.pro + A-10."
+              FAIL=1
+            fi
+          done
+          if [ "$FAIL" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Verify consumer-rules.pro shipped inside AAR contains AC-4 rule families
+        run: |
+          cd /tmp/mwa-aar
+          # AGP ships `consumerProguardFiles` at AAR top-level `proguard.txt`
+          # (canonical AAR layout; the JAR-style `META-INF/proguard/*.pro` path
+          # is also probed for forward-compatibility with potential AGP changes).
+          PROGUARD=$(find . -path '*META-INF/proguard/*' -name '*.pro' -o -name 'proguard.txt' | head -1)
+          if [ -z "$PROGUARD" ]; then echo "::error::consumer-rules.pro not shipped inside AAR (neither proguard.txt nor META-INF/proguard/*.pro)"; exit 1; fi
+          echo "Found shipped consumer-rules at: $PROGUARD"
+          # JNI native keep — the rule body spans 2 lines in consumer-rules.pro,
+          # so we assert the class header AND the native-methods member separately.
+          grep -q '^-keepclassmembers class com\.godotengine\.godot_solana_sdk\.mwa\.\*\* {' "$PROGUARD" || { echo "::error::AC-4 missing JNI native keep (class header)"; exit 1; }
+          grep -q '^[[:space:]]*native <methods>;' "$PROGUARD" || { echo "::error::AC-4 missing JNI native keep (native <methods> member)"; exit 1; }
+          grep -q '@org.godotengine.godot.plugin.UsedByGodot' "$PROGUARD" || { echo "::error::AC-4 missing @UsedByGodot keep"; exit 1; }
+          grep -q '^-keep class com.solanamobile.mobilewalletadapter\.\*\* { \*; }' "$PROGUARD" || { echo "::error::AC-4 missing clientlib-ktx keep"; exit 1; }
+          grep -q '^-assumenosideeffects class com.godotengine.godot_solana_sdk.mwa.util.SdkLog' "$PROGUARD" || { echo "::error::AC-4 missing SdkLog -assumenosideeffects"; exit 1; }
+          echo "✓ AC-4 — all 4 consumer-rules.pro rule families shipped"
+
+      # Story 4-3 T6 step F (AC-5 — release-variant authorize E2E).
+      # C-4-3-E spike outcome: GREEN — AGP 7.4.1 + R8 8.5.35 + bundled R8
+      # successfully assemble the release-variant androidTest APK with
+      # androidx.test.runner + kotlinx-coroutines-test + mockk-android
+      # symbols intact (no R8 strip errors).
+      #
+      # The step opts in to release variant via -PtestBuildType=release
+      # (build.gradle.kts testOptions reads project.findProperty); default
+      # remains debug for the existing `instrumented` job in
+      # instrumented_tests.yml.
+      #
+      # AC3ConnectE2ETest is the canonical authorize E2E test (Story 2-1
+      # T9): exercises mwaAuthorize() → fake wallet round-trip → emits
+      # connect_completed signal with public_key + auth_token_fingerprint
+      # → SecureTokenStore round-trips via real EncryptedSharedPreferences
+      # + real Keystore. Per CR-45 / CR-50: FakeMwaClient injection bypasses
+      # real NativeBridge → JNI → C++ → GDScript chain (Route B); the R8
+      # smoke confirms the @UsedByGodot Kotlin-side surface survives
+      # minification. Full E2E (real intent → real wallet APK) is deferred
+      # to CR-35 (headless-Godot tier).
+      - name: R8 release-variant authorize E2E (AC-5 — AC3ConnectE2ETest)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
+          disable-animations: true
+          working-directory: android
+          script: |
+            ./gradlew :plugin:connectedReleaseAndroidTest \
+              -PtestBuildType=release \
+              -Pandroid.testInstrumentationRunnerArguments.class=com.godotengine.godot_solana_sdk.mwa.AC3ConnectE2ETest \
+              --info --stacktrace
+
+      - name: Upload R8 release-variant androidTest reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r8-release-androidTest-reports
+          path: |
+            android/plugin/build/reports/androidTests/**
+            android/plugin/build/outputs/androidTest-results/**
