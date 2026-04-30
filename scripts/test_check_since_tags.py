@@ -108,6 +108,29 @@ class MwaAndroidPlugin {
 }
 """
 
+# Long KDoc with @since at the TOP of the doc-comment block — exercises the
+# 10-line scan window per Story 5-6 code-review finding #2 (was 5; widened
+# to 10 to honor idiomatic Kotlin KDoc length).
+KT_LONG_KDOC_SINCE_NEAR_TOP = """\
+class MwaAndroidPlugin {
+    /**
+     * @since v0.1.0
+     *
+     * Initiates the Mobile Wallet Adapter connect handshake against the
+     * pinned wallet APK. Emits `connect_completed` on success or
+     * `mwa_error` on a recoverable error.
+     *
+     * @param identityName user-facing dApp identity name
+     * @param identityUri user-facing dApp identity URI
+     * @return Boolean true if the JNI call dispatched cleanly
+     */
+    @UsedByGodot
+    fun mwaConnect(identityName: String, identityUri: String): Boolean {
+        return false
+    }
+}
+"""
+
 
 # ---------------------------------------------------------------------------
 # Tests
@@ -163,3 +186,15 @@ def test_kotlin_plain_fun_not_godot_visible_exempt():
     """Functions without @UsedByGodot are not part of the Godot-public surface."""
     findings = find_public_symbols_without_since(KT_PLAIN_FUN_NO_SINCE, "kotlin")
     assert findings == []
+
+
+def test_kotlin_long_kdoc_with_since_near_top_passes():
+    """Long KDoc blocks (≥6 lines) with @since near the top must still be detected.
+
+    Regression for Story 5-6 code-review finding #2: the original 5-line
+    scan window rejected idiomatic long KDocs. Window widened to 10 lines.
+    The fixture places @since on the 2nd line of an 11-line KDoc block to
+    exercise the upper bound.
+    """
+    findings = find_public_symbols_without_since(KT_LONG_KDOC_SINCE_NEAR_TOP, "kotlin")
+    assert findings == [], f"Long-KDoc @since detection regressed: {findings}"

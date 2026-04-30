@@ -92,9 +92,30 @@ def find_public_symbols_without_since(content, language):
 
 
 def _has_since_in_preceding_doc(lines, symbol_idx, language):
+    # Walk upward from the symbol's declaration line, accepting any line
+    # that looks like a doc-comment continuation or annotation, until we
+    # exit the doc-block. The hard line cap (originally 5) was widened
+    # post-T2 per Story 5-6 code-review finding #2: idiomatic Kotlin KDocs
+    # commonly span 6-15 lines (description + `@param` + `@return` blocks)
+    # AND may place `@since` anywhere in the block. The 5-line cap rejected
+    # them as missing-@since false positives.
+    #
+    # New algorithm:
+    #   - GDScript: scan continuous `##` / `#` doc lines (no block-end
+    #     marker) — fall back to a 30-line cap to bound pathological files.
+    #   - Kotlin: walk past annotation lines + the `*/` closer, then scan
+    #     the entire `/** ... */` block by terminating only at `/**` (the
+    #     opener) OR a non-doc line. No line cap (Kotlin block bound is
+    #     intrinsic).
+    #
+    # In both languages the function still returns False on the first blank
+    # line (a blank line interrupts the doc-block per Kotlin / GDScript
+    # conventions — even multi-paragraph KDocs use ` * ` not blank).
     cursor = symbol_idx - 1
     lines_scanned = 0
-    while cursor >= 0 and lines_scanned < 5:
+    HARD_CAP = 30  # safety net against pathological files (very long files
+                   # with no doc-block; bounds the scan even for edge cases)
+    while cursor >= 0 and lines_scanned < HARD_CAP:
         line = lines[cursor].rstrip()
         if line == "":
             return False
@@ -112,6 +133,10 @@ def _has_since_in_preceding_doc(lines, symbol_idx, language):
                 or stripped.startswith("@")
             )
         if not is_doc_or_annotation:
+            return False
+        # Kotlin block-opener `/**` terminates the upward scan — there's
+        # nothing above the KDoc that can semantically contribute @since.
+        if language == "kotlin" and stripped.startswith("/**"):
             return False
         cursor -= 1
         lines_scanned += 1

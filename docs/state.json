@@ -3,7 +3,7 @@
   "flow": "greenfield",
   "version": "next-2.0",
   "created": "2026-04-14T11:40:19Z",
-  "lastUpdated": "2026-04-30T10:30:00.000Z",
+  "lastUpdated": "2026-04-30T10:45:00.000Z",
   "currentPhase": "implement",
   "currentStep": null,
   "currentCheckpoint": null,
@@ -1086,12 +1086,12 @@
     }
   ],
   "baselineTests": {
-    "total": 291,
-    "passing": 291,
+    "total": 292,
+    "passing": 292,
     "failing": 0,
     "baselinedAt": "2026-04-22T08:09:41Z",
     "baselinedAtStory": 5,
-    "lastRefreshedAt": "2026-04-30T10:30:00.000Z",
+    "lastRefreshedAt": "2026-04-30T10:45:00.000Z",
     "lastRefreshedAtStory": 21,
     "command": ".venv/bin/pytest tools/ scripts/ && ./gradlew -p android :plugin:testDebugUnitTest",
     "failingTests": [],
@@ -1128,13 +1128,13 @@
       "totalVerificationCycles": 35
     },
     "codeReview": {
-      "findingsTotal": 14,
+      "findingsTotal": 17,
       "findingsByLevel": {
-        "high": 1,
-        "medium": 4,
-        "low": 9
+        "high": 2,
+        "medium": 5,
+        "low": 10
       },
-      "findingsFixed": 8,
+      "findingsFixed": 11,
       "findingsDeferred": 6,
       "retrospectRulesAdded": 6
     },

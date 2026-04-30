@@ -228,7 +228,7 @@ epics:
         dependencies: ["1-1", "1-2", "2-1", "4-3"]
         startedAt: 2026-04-30T05:00:00Z
         baselineTag: pre-mwa-android-5-6
-        amendments: []
+        amendments: ["A-19"]
         concerns: ["CR-5-6-A", "CR-5-6-B", "CR-5-6-C", "CR-5-6-D", "CR-5-6-E", "CR-5-6-F", "CR-5-6-G"]
         userResolvedQuestions:
           Q1: "(c) Defer CR-35 / cpp_host_unit_tests post-grant — T13 lands concerns.md deferral note + README inventory comment"

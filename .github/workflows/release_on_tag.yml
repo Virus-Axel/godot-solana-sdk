@@ -224,6 +224,19 @@ jobs:
     needs:
       - build-native
       - build-aar
+    # Run when EITHER (a) the build jobs succeeded (real tag / workflow_dispatch
+    # path) OR (b) the build jobs were skipped because this is a synthetic
+    # `v0.0.1-test*` tag (workflow-path verification only — we still want to
+    # exercise the staging + bundling + upload-artifact wiring even when the
+    # build matrix is gated out). Without this `if: always()` block, GitHub
+    # Actions skips this job whenever its `needs:` skip — making the
+    # synthetic-tag verification step at the bottom of this job structurally
+    # unreachable. (CR-5-6-Code-Review-Finding-1, 2026-04-30)
+    if: |
+      always() && (
+        (needs.build-native.result == 'success' && needs.build-aar.result == 'success') ||
+        startsWith(github.ref_name, 'v0.0.1-test')
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -233,6 +246,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download all native artifacts
+        # Only fires when build-native actually ran. On synthetic v0.0.1-test*
+        # tags, build-native is skipped + no `native-*` artifact exists; the
+        # download would error otherwise.
+        if: needs.build-native.result == 'success'
         uses: actions/download-artifact@v4
         with:
           pattern: native-*
@@ -240,6 +257,8 @@ jobs:
           merge-multiple: true
 
       - name: Download AAR artifact
+        # Same gating as the native-artifact download.
+        if: needs.build-aar.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: aar-release
@@ -311,6 +330,12 @@ jobs:
             --notes "$NOTES"
 
       - name: Synthetic-tag verification (no publish)
+        # Fires on synthetic v0.0.1-test* tags AND workflow_dispatch invocations.
+        # On synthetic tags the build matrix is gated out (build-native /
+        # build-aar skipped), so this bundle contains GDScript + docs only —
+        # NO native libs and NO AAR. Verifies the staging + zip + upload-
+        # artifact wiring without producing a real publishable artifact.
+        # (CR-5-6-Code-Review-Finding-1, 2026-04-30)
         if: |
           startsWith(github.ref_name, 'v0.0.1-test') ||
           github.event_name == 'workflow_dispatch'
@@ -318,6 +343,9 @@ jobs:
           echo "::notice::Synthetic / dry-run mode — addons-bundle.zip built but NOT published."
           echo "Bundle path: $(realpath addons-bundle.zip)"
           ls -l addons-bundle.zip
+          if [ "${{ needs.build-native.result }}" = "skipped" ]; then
+            echo "::notice::Build matrix gated out (synthetic v0.0.1-test* tag); bundle contains GDScript + docs only — no native libs / no AAR."
+          fi
           echo "::notice::To publish, push a real release tag (e.g. v0.1.0 or v0.1.0-rc1)."
 
       - name: Upload bundle as workflow artifact (always — for triage)
