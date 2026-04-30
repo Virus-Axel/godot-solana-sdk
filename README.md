@@ -126,6 +126,8 @@ Every PR to `master` is gated by the following CI workflows (PR-blocking unless 
 | [`reproducible_build.yml`](.github/workflows/reproducible_build.yml) | 2-runner byte-identical AAR build | AC-2 |
 | [`verify_docs.yml`](.github/workflows/verify_docs.yml) | doxygen + markdown link-check | AC-2 |
 
+> **Note — AC-2 `cpp_host_unit_tests.yml` (OBSOLETE):** The host-mode C++ test tier was retired per amendment A-13 (see [`docs/amendments.md`](docs/amendments.md)). Headless-Godot replacement is tracked by CR-35 in [`docs/concerns.md`](docs/concerns.md) and **deferred post-grant** per Story 5-6 T13 close-out (Q1=(c) LOCKED 2026-04-30). No `cpp_host_unit_tests.yml` workflow exists or will exist before v0.1.0; C++ assertions ship via the host-mode build's own type-checking + the GDScript / instrumented tiers above.
+
 **Cron-driven (informational):**
 
 | Workflow | Schedule | Purpose |
