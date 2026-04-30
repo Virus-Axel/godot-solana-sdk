@@ -264,7 +264,14 @@ jobs:
       # smoke confirms the @UsedByGodot Kotlin-side surface survives
       # minification. Full E2E (real intent → real wallet APK) is deferred
       # to CR-35 (headless-Godot tier).
-      - name: R8 release-variant authorize E2E (AC-5 — AC3ConnectE2ETest)
+      # AC-5 retry-once-on-boot-timeout (Story 5-6 T7) — same marker-file
+      # pattern as the `instrumented` job in instrumented_tests.yml. Same
+      # rationale: gate retry to genuine boot-timeout (marker absent
+      # post-failure) so real test regressions in attempt 1 are NOT masked
+      # by spurious-pass retries.
+      - name: R8 release-variant authorize E2E (AC-5 — AC3ConnectE2ETest) — attempt 1
+        id: r8_attempt1
+        continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 33
@@ -274,6 +281,39 @@ jobs:
           disable-animations: true
           working-directory: android
           script: |
+            rm -f /tmp/mwa-r8-emulator-booted
+            touch /tmp/mwa-r8-emulator-booted
+            ./gradlew :plugin:connectedReleaseAndroidTest \
+              -PtestBuildType=release \
+              -Pandroid.testInstrumentationRunnerArguments.class=com.godotengine.godot_solana_sdk.mwa.AC3ConnectE2ETest \
+              --info --stacktrace
+
+      - name: Decide whether r8 attempt 1 was a boot-timeout (eligible for retry)
+        id: r8_retry_decision
+        if: steps.r8_attempt1.outcome == 'failure'
+        run: |
+          if [ -f /tmp/mwa-r8-emulator-booted ]; then
+            echo "Marker present — emulator booted, gradle ran. Real test fail; not retrying (AC-5)."
+            echo "retry=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          else
+            echo "Marker absent — emulator never booted. Retrying ONCE per AC-5."
+            echo "retry=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: R8 release-variant authorize E2E (AC-5 — AC3ConnectE2ETest) — attempt 2 (boot-timeout retry)
+        if: steps.r8_retry_decision.outputs.retry == 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
+          disable-animations: true
+          working-directory: android
+          script: |
+            rm -f /tmp/mwa-r8-emulator-booted
+            touch /tmp/mwa-r8-emulator-booted
             ./gradlew :plugin:connectedReleaseAndroidTest \
               -PtestBuildType=release \
               -Pandroid.testInstrumentationRunnerArguments.class=com.godotengine.godot_solana_sdk.mwa.AC3ConnectE2ETest \

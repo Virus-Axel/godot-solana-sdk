@@ -8,6 +8,30 @@ name: 📱 Instrumented Tests (AC-1/3/4/5/6/7/8)
 # compliance ("r8_release_smoke.yml (new)" line-item per plan.md:462).
 # Job body extracted verbatim — no behavioral change. See r8_release_smoke.yml.
 #
+# Story 5-6 T7 (D-5-6-T7-1 Rule 2): retry-once-on-emulator-boot-timeout
+# policy added per AC-5 + DD-5-6-7. Implementation: marker-file approach
+# — the emulator-runner script does `touch /tmp/mwa-emulator-booted`
+# IMMEDIATELY before invoking gradle. If attempt-1 fails AND marker file
+# is absent, the emulator never booted → retry exactly once. If attempt-1
+# fails AND marker file is present, gradle ran (emulator booted) → real
+# test fail → DO NOT RETRY (AC-5: "no retries on T1/T2/T5"; the retry
+# is gated to boot-time failures specifically, not test-result failures,
+# to avoid masking real regressions as flakes). MWA_TESTING_RETRY_COUNT
+# env var bookkeeping ensures no third attempt.
+#
+# Story 5-6 T7 (CR-5-4-D closure / DD-5-6-9 LOCKED): per A-17 the
+# external example app (`ValentinVPK/godot-mwa-example`) owns its own
+# instrumented integration with a real wallet APK; this workflow runs
+# only Route B (FakeMwaClient injection — no Fake Wallet APK install)
+# per D-T9-1 Rule 2. Per A-17 / CR-5-4-D the redesign options were:
+# (i) clone external repo every PR (rejected: tight coupling +
+# external-repo URL hardcoded in this CI), (ii) move workflow external
+# (rejected: lower frequency of integration verification + this CI
+# loses the AC-1/3/4/5/6/7/8 evidence path), (iii) release-gate-only
+# integration (CHOSEN — this workflow stays Route B; external repo's
+# own CI handles real-wallet integration on its cadence). DD-5-6-9
+# documented at this commit; CR-5-4-D MEDIUM is CLOSED.
+#
 # Route B (D-T9-1 Rule 2): no Fake Wallet APK install step. Tests inject
 # FakeMwaClient via @VisibleForTesting plugin ctor — same pattern as the
 # T4 unit tests, but on real device with real EncryptedSharedPreferences
@@ -70,7 +94,15 @@ jobs:
             ~/.android/adb*
           key: avd-api33-google-x86_64-v3
 
-      - name: Run androidTest on API 33 emulator (x86_64 + KVM)
+      # AC-5 retry-once-on-boot-timeout — first attempt with continue-on-error.
+      # `touch /tmp/mwa-emulator-booted` runs INSIDE the emulator-runner script
+      # block, AFTER the emulator finishes booting and BEFORE gradle starts.
+      # If the marker exists post-failure, gradle ran (emulator booted) and the
+      # failure is a real test result — DO NOT RETRY. If absent, the emulator
+      # never booted (boot-timeout) → retry exactly once.
+      - name: Run androidTest on API 33 emulator (x86_64 + KVM) — attempt 1
+        id: androidtest_attempt1
+        continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 33
@@ -80,6 +112,37 @@ jobs:
           disable-animations: true
           working-directory: android
           script: |
+            rm -f /tmp/mwa-emulator-booted
+            touch /tmp/mwa-emulator-booted
+            ./gradlew :plugin:connectedDebugAndroidTest --info --stacktrace
+
+      - name: Decide whether attempt 1 was a boot-timeout (eligible for retry)
+        id: retry_decision
+        if: steps.androidtest_attempt1.outcome == 'failure'
+        run: |
+          if [ -f /tmp/mwa-emulator-booted ]; then
+            echo "Marker file present — emulator booted, gradle ran. Failure is a REAL test result; not retrying (AC-5)."
+            echo "retry=false" >> "$GITHUB_OUTPUT"
+            # Re-raise the failure so the job conclusion reflects the real test fail.
+            exit 1
+          else
+            echo "Marker file absent — emulator never booted (boot-timeout). Retrying ONCE per AC-5."
+            echo "retry=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run androidTest on API 33 emulator (x86_64 + KVM) — attempt 2 (boot-timeout retry)
+        if: steps.retry_decision.outputs.retry == 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
+          disable-animations: true
+          working-directory: android
+          script: |
+            rm -f /tmp/mwa-emulator-booted
+            touch /tmp/mwa-emulator-booted
             ./gradlew :plugin:connectedDebugAndroidTest --info --stacktrace
 
       - name: Upload androidTest reports on failure
