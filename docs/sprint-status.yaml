@@ -223,10 +223,13 @@ epics:
         slug: ci-build-integration
         title: "CI/Build Integration (scons addon, kotlin_lint, codegen drift, generator tests, instrumented tests, manifest audit, R8 smoke, parity cron, SLO monitor, grep bans, @since check, compat-matrix enforcement)"
         size: L
-        status: in-progress
+        status: done
         wave: 7
         dependencies: ["1-1", "1-2", "2-1", "4-3"]
         startedAt: 2026-04-30T05:00:00Z
+        completedAt: 2026-04-30T10:50:00Z
+        postTag: post-mwa-android-5-6
+        gate5Result: pass
         baselineTag: pre-mwa-android-5-6
         amendments: ["A-19"]
         concerns: ["CR-5-6-A", "CR-5-6-B", "CR-5-6-C", "CR-5-6-D", "CR-5-6-E", "CR-5-6-F", "CR-5-6-G"]
