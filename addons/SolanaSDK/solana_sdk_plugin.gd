@@ -59,6 +59,7 @@ class AndroidExportPlugin extends EditorExportPlugin:
 						"androidx.compose.material:material:1.4.3",
 						"androidx.compose.ui:ui-tooling-preview:1.4.3",
 						"androidx.activity:activity-compose:1.8.0",
+						"androidx.security:security-crypto:1.1.0-alpha06",
 						])
 		else:
 			return PackedStringArray([
@@ -69,7 +70,8 @@ class AndroidExportPlugin extends EditorExportPlugin:
 						"androidx.compose.ui:ui:1.4.3",
 						"androidx.compose.material:material:1.4.3",
 						"androidx.compose.ui:ui-tooling-preview:1.4.3",
-						"androidx.activity:activity-compose:1.8.0",])
+						"androidx.activity:activity-compose:1.8.0",
+						"androidx.security:security-crypto:1.1.0-alpha06",])
 
 	func _get_name():
 		return _plugin_name
