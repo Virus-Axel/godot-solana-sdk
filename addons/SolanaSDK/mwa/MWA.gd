@@ -62,7 +62,7 @@ signal pending_submission_found(payload: Dictionary)
 # `_ready` via `MobileWalletAdapter.new()`. Kept private so consumers are
 # forced through the facade (ensures signal forwarding + plan-spec naming
 # stay consistent).
-var _node: MobileWalletAdapter = null
+var _node: Node = null  # MobileWalletAdapter — typed as Node so parse doesn't require GDExtension load order
 
 # AC-4 support (Story 1-5) + AC-5 reconciliation (Story 5-2 DD-5-2-4): suggested
 # install links when no MWA-compatible wallet is detected. Static data — no
@@ -103,10 +103,15 @@ const _SUGGESTED_WALLETS: Array[Dictionary] = [
 
 
 func _ready() -> void:
-	# GDExtension registers `MobileWalletAdapter` at load time (verified by the
-	# Story 1-5 binding-smoke inspection). Using `.new()` avoids the need for
-	# a sibling .tscn and keeps the autoload self-contained.
-	_node = MobileWalletAdapter.new()
+	# GDExtension registers `MobileWalletAdapter` at load time. We use
+	# `ClassDB.instantiate("MobileWalletAdapter")` (runtime lookup) instead of
+	# `MobileWalletAdapter.new()` (parse-time class lookup) so the autoload
+	# script parses cleanly even when GDExtension classes haven't been
+	# registered yet (e.g. on first editor open before scan).
+	_node = ClassDB.instantiate("MobileWalletAdapter")
+	if _node == null:
+		push_error("MWA: ClassDB.instantiate('MobileWalletAdapter') returned null — GDExtension didn't register the class. Check that addons/SolanaSDK/bin/godot-solana-sdk.gdextension loaded successfully (Editor → Output panel for 'Failed to load extension' errors).")
+		return
 	add_child(_node)
 	_wire_signal_forwarding()
 
