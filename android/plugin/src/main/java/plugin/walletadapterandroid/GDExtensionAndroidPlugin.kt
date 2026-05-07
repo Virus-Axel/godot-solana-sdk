@@ -2147,7 +2147,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             }
             when (result) {
                 null -> emitTimeout(requestId, effectiveMs)
-                is MwaResult.Success -> handleSuccess(requestId, parsed.identityUri, result.value)
+                is MwaResult.Success -> handleSuccess(requestId, parsed, result.value)
                 is MwaResult.Failure -> emitFailure(requestId, result.error, developerDetails = null)
             }
         } finally {
@@ -2155,7 +2155,8 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         }
     }
 
-    private suspend fun handleSuccess(requestId: String, identityUri: String, auth: AuthResult) {
+    private suspend fun handleSuccess(requestId: String, parsedIdentity: ParsedIdentity, auth: AuthResult) {
+        val identityUri = parsedIdentity.identityUri
         val walletPackage = auth.walletPackage.orEmpty()
         val nowMs = clock()
         // Arch §3.1 + §3.2: public_key is base58-encoded in both the CacheRecord AND the
@@ -2205,6 +2206,18 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             sessionState.setPublicKeyBase58(publicKeyBase58)
             sessionState.setClusterName(auth.cluster)
             sessionState.setWalletLabel(auth.accountLabel.orEmpty())
+            // CR-67 Bug G: persist the dApp identity so sign-ops can rebuild
+            // a valid ConnectionIdentity from sessionState. Pre-fix: sign-ops
+            // built ConnectionIdentity(Uri.parse(""), Uri.parse(""), "") which
+            // tripped the lib's "identityUri must be absolute, hierarchical"
+            // validator on the reauthorize-via-transact path. Storing the
+            // post-fallback iconUri (e.g. "favicon.ico") keeps sign-ops's
+            // ConnectionIdentity consistent with what authorize used.
+            sessionState.setIdentity(
+                identityUri,
+                parsedIdentity.iconUriResolved,
+                parsedIdentity.identityName,
+            )
         }
 
         if (inflightMap.tryTerminate(requestId)) {
@@ -2555,6 +2568,14 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 private data class ParsedIdentity(
     val connectionIdentity: ConnectionIdentity,
     val identityUri: String,
+    // CR-67 Bug G: persist these alongside identityUri so handleSuccess can
+    // forward them to MwaSessionState. Sign-ops rebuild a ConnectionIdentity
+    // from sessionState and need all three fields to match what the wallet
+    // saw at authorize time. iconUriResolved is the post-fallback string
+    // (e.g. "favicon.ico" when the consumer didn't supply one) — what we
+    // actually passed to ConnectionIdentity above.
+    val iconUriResolved: String,
+    val identityName: String,
 )
 
 private fun parseIdentity(identityJson: String): ParsedIdentity? {
@@ -2564,13 +2585,35 @@ private fun parseIdentity(identityJson: String): ParsedIdentity? {
         val iconUri = obj.optString("icon_uri", "")
         val identityUri = obj.optString("identity_uri", "")
         if (name.isEmpty() || identityUri.isEmpty()) return null
+        // CR-67 Bug F: `MobileWalletAdapterClient.authorize/reauthorize` (called
+        // from `MobileWalletAdapter.transact(...)` on every op) validates iconUri
+        // as MUST BE RELATIVE (when non-null). `ConnectionIdentity.iconUri` is
+        // a non-nullable Uri in clientlib-ktx 2.0.3's wrapper (verified via
+        // `javap` on the cached AAR), even though the underlying `MobileWalletAdapterClient`
+        // accepts `@Nullable Uri`. So we can't pass null — we must pass SOMETHING
+        // that satisfies `isRelative()`. The relative-path sentinel `favicon.ico`
+        // works for any consumer who didn't supply an icon and matches the
+        // standard /favicon.ico discovery convention dApps use anyway.
+        //
+        // `Uri.parse("")` (the previous default) is technically `isRelative()==true`
+        // but trips a different validator inside the wallet activity flow,
+        // hence Connect succeeded but sign-ops failed pre-fix. A non-empty
+        // relative path satisfies all known validators along the path.
+        //
+        // If a consumer DOES supply an absolute `icon_uri` (e.g. a full https://
+        // URL), the lib will reject it with "iconRelativeUri must be a relative
+        // Uri" — that's a consumer error and the SDK's contract is "icon_uri
+        // must be a relative path"; the consumer should pass the path part only.
+        val resolvedIconUri = if (iconUri.isEmpty()) "favicon.ico" else iconUri
         ParsedIdentity(
             connectionIdentity = ConnectionIdentity(
                 identityUri = android.net.Uri.parse(identityUri),
-                iconUri = android.net.Uri.parse(iconUri),
+                iconUri = android.net.Uri.parse(resolvedIconUri),
                 identityName = name,
             ),
             identityUri = identityUri,
+            iconUriResolved = resolvedIconUri,
+            identityName = name,
         )
     } catch (_: org.json.JSONException) {
         null
