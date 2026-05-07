@@ -631,6 +631,17 @@ using godot_solana_sdk::mwa::MwaJniContext;
 using godot_solana_sdk::mwa::GodotMainDispatcher;
 
 // --- forward-path: cache the plugin companion class + method IDs ---
+//
+// CR-67 Bug B fix: lookup the OUTER class, not the inner $Companion. The
+// `mwa*FromJni` methods on the Kotlin Companion are annotated `@JvmStatic`,
+// which compiles to a `public static final` BRIDGE method on the OUTER class
+// + an instance method on the Companion. JNI's `GetStaticMethodID` against
+// `$Companion` therefore returns null (the Companion has only the instance
+// method, no static one). Looking up the outer class makes the existing
+// `GetStaticMethodID(...)` calls below find the static bridges. The legacy
+// variable name `g_plugin_companion_class` is kept to minimize the diff and
+// because the variable is only used as the receiver for `GetStaticMethodID`
+// + `CallStaticVoidMethod` — both work identically on the outer class.
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
     godot_solana_sdk::mwa::g_jvm = vm;
@@ -639,7 +650,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
         return -1;
     }
 
-    jclass local = env->FindClass("plugin/walletadapterandroid/GDExtensionAndroidPlugin$Companion");
+    jclass local = env->FindClass("plugin/walletadapterandroid/GDExtensionAndroidPlugin");
     if (local == nullptr) {
         // FindClass left a pending exception; clear to avoid spilling into
         // future JNI calls on this thread.
@@ -865,7 +876,7 @@ static void post_arity2_completed(JNIEnv* env,
 }
 
 JNIEXPORT void JNICALL
-Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postConnectCompletedNative(
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postConnectCompletedNative(
     JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
     post_arity2_completed(env, reqId, resultDictJson, "connect_completed", "postConnectCompletedNative");
 }
@@ -884,7 +895,7 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postCon
 // terminal-signal invariant (AC-3 idempotence remains safe because each
 // call carries its own request_id per DD-2-3-4).
 JNIEXPORT void JNICALL
-Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postDisconnectCompletedNative(
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postDisconnectCompletedNative(
     JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
     post_arity2_completed(env, reqId, resultDictJson, "disconnect_completed", "postDisconnectCompletedNative");
 }
@@ -903,7 +914,7 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postDis
 // No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
 // Signals are posted via dispatcher only — no direct signal emission here.
 JNIEXPORT void JNICALL
-Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postReauthorizeCompletedNative(
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postReauthorizeCompletedNative(
     JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
     post_arity2_completed(env, reqId, resultDictJson, "reauthorize_completed", "postReauthorizeCompletedNative");
 }
@@ -926,7 +937,7 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postRea
 // No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
 // Signals are posted via dispatcher only — no direct signal emission here.
 JNIEXPORT void JNICALL
-Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postSignMessagesCompletedNative(
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postSignMessagesCompletedNative(
     JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
     post_arity2_completed(env, reqId, resultDictJson, "sign_messages_completed", "postSignMessagesCompletedNative");
 }
@@ -953,7 +964,7 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postSig
 // No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
 // Signals are posted via dispatcher only — no direct signal emission here.
 JNIEXPORT void JNICALL
-Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postSignTransactionsCompletedNative(
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postSignTransactionsCompletedNative(
     JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
     post_arity2_completed(env, reqId, resultDictJson, "sign_transactions_completed", "postSignTransactionsCompletedNative");
 }
@@ -980,7 +991,7 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postSig
 // No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
 // Signals are posted via dispatcher only — no direct signal emission here.
 JNIEXPORT void JNICALL
-Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postSignAndSendCompletedNative(
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postSignAndSendCompletedNative(
     JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
     post_arity2_completed(env, reqId, resultDictJson, "sign_and_send_completed", "postSignAndSendCompletedNative");
 }
@@ -1003,31 +1014,31 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postSig
 // No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
 // Signals are posted via dispatcher only — no direct signal emission here.
 JNIEXPORT void JNICALL
-Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postDeauthorizeCompletedNative(
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postDeauthorizeCompletedNative(
     JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
     post_arity2_completed(env, reqId, resultDictJson, "deauthorize_completed", "postDeauthorizeCompletedNative");
 }
 
 JNIEXPORT void JNICALL
-Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postMwaErrorNative(
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postMwaErrorNative(
     JNIEnv* env, jobject /*companion*/, jstring errorDictJson) {
     post_arity1(env, errorDictJson, "mwa_error", "postMwaErrorNative");
 }
 
 JNIEXPORT void JNICALL
-Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postMwaTimeoutNative(
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postMwaTimeoutNative(
     JNIEnv* env, jobject /*companion*/, jstring timeoutDictJson) {
     post_arity1(env, timeoutDictJson, "mwa_timeout", "postMwaTimeoutNative");
 }
 
 JNIEXPORT void JNICALL
-Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postMwaCancelledLifecycleNative(
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postMwaCancelledLifecycleNative(
     JNIEnv* env, jobject /*companion*/, jstring cancelledDictJson) {
     post_arity1(env, cancelledDictJson, "mwa_cancelled_lifecycle", "postMwaCancelledLifecycleNative");
 }
 
 JNIEXPORT void JNICALL
-Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postReauthRequiredNative(
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postReauthRequiredNative(
     JNIEnv* env, jobject /*companion*/, jstring reauthDictJson) {
     post_arity1(env, reauthDictJson, "reauth_required", "postReauthRequiredNative");
 }
@@ -1054,7 +1065,7 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postRea
 // No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
 // Signals are posted via dispatcher only — no direct signal emission here.
 JNIEXPORT void JNICALL
-Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postPendingSubmissionFoundNative(
+Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postPendingSubmissionFoundNative(
     JNIEnv* env, jobject /*companion*/, jstring pendingDictJson) {
     post_arity1(env, pendingDictJson, "pending_submission_found", "postPendingSubmissionFoundNative");
 }
