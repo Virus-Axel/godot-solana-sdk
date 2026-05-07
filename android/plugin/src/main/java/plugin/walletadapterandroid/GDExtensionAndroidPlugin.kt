@@ -51,6 +51,32 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.security.KeyStore
 
+/**
+ * CR-67 follow-up factory for the production [GDExtensionAndroidPlugin]
+ * constructor's `senderProvider` argument.
+ *
+ * `ActivityResultSender(activity)` calls `registerForActivityResult(...)`
+ * internally, which requires the host `LifecycleOwner` to be in CREATED
+ * state (not yet STARTED). Plugin construction runs inside `Godot.onCreate()`
+ * (verified via the activity backtrace from an earlier crash) — that IS
+ * during CREATED, so we register the sender here and cache it for the
+ * lifetime of the plugin. A lazy `senderProvider` that constructed on first
+ * op-call would race the activity reaching RESUMED and throw
+ * `IllegalStateException: ... register while current state is RESUMED`.
+ * Eager + cached is the only correct shape.
+ *
+ * Godot's `getActivity()` returns the host `GodotActivity`, which on Godot
+ * 4.x extends `FragmentActivity` (a `ComponentActivity`). If a future Godot
+ * release changes the host activity hierarchy the cast throws
+ * `ClassCastException` — louder than a silent stub.
+ */
+private fun createMwaSenderProvider(godot: Godot): () -> ActivityResultSender {
+    val activity = godot.getActivity()
+        ?: error("MWA: Godot activity unavailable when creating ActivityResultSender")
+    val sender = ActivityResultSender(activity as androidx.activity.ComponentActivity)
+    return { sender }
+}
+
 class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     godot: Godot,
     private val mwaClientFactory: () -> MwaClient,
@@ -137,13 +163,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         mwaClientFactory = { MwaClientImpl() },
         storeProvider = { context -> SecureTokenStore(context) },
         nativeBridge = DefaultNativeBridge,
-        senderProvider = {
-            // Production wiring lands with T5/T6 (C++ node + GDScript facade); the
-            // mwaAuthorize @UsedByGodot path is not yet reachable from Godot in T4.
-            throw NotImplementedError(
-                "ActivityResultSender wiring lands in Story 2-1 T5 (real JNI bridge) + T6 (node op body)",
-            )
-        },
+        senderProvider = createMwaSenderProvider(godot),
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
         clock = System::currentTimeMillis,
         inflightMap = InflightMap(),
@@ -178,11 +198,42 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         internal var instance: GDExtensionAndroidPlugin? = null
 
         init {
+            // CR-67 Bug A fix: load the SDK's native library (which contains
+            // `JNI_OnLoad`) instead of a plugin-named library that the build
+            // does not produce. The SDK build emits a single combined .so per
+            // (variant, arch) — `libgodot-solana-sdk.android.template_${variant}.${arch}.so`
+            // — and the JNI bridge translation unit is linked into it.
+            // System.loadLibrary's contract: pass the base name without the
+            // `lib` prefix or `.so` suffix; Android's native loader resolves
+            // it under `lib/<abi>/`. Loading here triggers `JNI_OnLoad` in
+            // the SDK .so, which populates `g_jni_ready` and the cached
+            // jmethodIDs (see `src/mwa/mwa_android_bridge_jni.cpp`).
+            //
+            // The previous `System.loadLibrary(BuildConfig.GODOT_PLUGIN_NAME)`
+            // (= `"WalletAdapterAndroid"`) silently failed with
+            // `UnsatisfiedLinkError` (caught + logged), causing every MWA op
+            // to short-circuit to `NOT_CONNECTED` with user_message
+            // "Mobile wallet is temporarily unavailable. Please restart the
+            // app." See docs/concerns.md CR-67 for the full diagnosis.
+            val variant = if (BuildConfig.DEBUG) "debug" else "release"
+            val abi = Build.SUPPORTED_ABIS.firstOrNull() ?: "arm64-v8a"
+            val arch = when (abi) {
+                "arm64-v8a" -> "arm64"
+                "x86_64" -> "x86_64"
+                // The SDK build (`scons addon`) only emits arm64 + x86_64
+                // for android. Any other ABI (armeabi-v7a / x86) falls back
+                // to arm64 and will UnsatisfiedLinkError if the device truly
+                // is on that ABI — there is no .so to load. Keep arm64 as
+                // the fallback because Apple Silicon / modern devices are
+                // overwhelmingly arm64.
+                else -> "arm64"
+            }
+            val sdkLibName = "godot-solana-sdk.android.template_${variant}.${arch}"
             try {
-                Log.v(TAG, "Loading ${BuildConfig.GODOT_PLUGIN_NAME} library")
-                System.loadLibrary(BuildConfig.GODOT_PLUGIN_NAME)
+                Log.v(TAG, "Loading SDK library $sdkLibName (was: ${BuildConfig.GODOT_PLUGIN_NAME}, CR-67 Bug A)")
+                System.loadLibrary(sdkLibName)
             } catch (e: UnsatisfiedLinkError) {
-                Log.e(TAG, "Unable to load ${BuildConfig.GODOT_PLUGIN_NAME} shared library")
+                Log.e(TAG, "Unable to load SDK library $sdkLibName: ${e.message}")
             }
         }
 
