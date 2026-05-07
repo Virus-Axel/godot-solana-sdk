@@ -146,18 +146,22 @@ func _wire_signal_forwarding() -> void:
 ## `cluster`: "devnet" / "mainnet-beta" / "testnet" / etc.
 ## `opts` (optional): {"timeout_ms": int, "chain_id": String}. Omitted keys
 ##   fall to the C++ node's defaults (DD-23 watchdog; "solana:<cluster>" chain_id).
-@warning_ignore("shadowed_global_identifier")
+##
+## Named `mwa_connect` (not `connect`) to avoid shadowing `Node.connect(signal,
+## callable, flags)`. Calling `MWA.connect(dict, str, dict)` would resolve to
+## the inherited signal-connection method at parse time and fail at runtime.
 ## @since v0.1.0
-func connect(identity: Dictionary, cluster: String, opts: Dictionary = {}) -> String:
+func mwa_connect(identity: Dictionary, cluster: String, opts: Dictionary = {}) -> String:
 	return _node.mwa_connect(identity, cluster, opts)
 
 
 ## Tear down an active session. Completion arrives via `disconnect_completed`
 ## (Story 2-3 wires the real path; Story 2-1 emits NOT_CONNECTED-equivalent
 ## scaffold error).
-@warning_ignore("shadowed_global_identifier")
+##
+## Named `mwa_disconnect` (not `disconnect`) to avoid shadowing `Node.disconnect`.
 ## @since v0.1.0
-func disconnect() -> void:
+func mwa_disconnect() -> void:
 	_node.mwa_disconnect()
 
 
@@ -376,9 +380,11 @@ func is_supported() -> bool:
 ## Synchronous state read — true after a successful connect, false otherwise.
 ## Backed by MwaSessionState.authToken != null (arch §7.1; round-tripped via
 ## MwaJniContext::query_session_state).
-@warning_ignore("shadowed_global_identifier")
+##
+## Named `mwa_is_connected` (not `is_connected`) to avoid shadowing
+## `Node.is_connected(signal, callable)`.
 ## @since v0.1.0
-func is_connected() -> bool:
+func mwa_is_connected() -> bool:
 	return _node.mwa_is_connected()
 
 
