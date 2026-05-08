@@ -478,7 +478,13 @@ void MwaAndroidBridgeJni::reauthorize(const godot::String& request_id,
         emit_jni_unavailable(godot::String("reauthorize"), request_id);
         return;
     }
-    // Story 2-2 lands the full reauth path; empty identity + cluster for now.
+    // Story 2-2 stub: empty identity + cluster + chainId. The Kotlin shim
+    // `mwaReauthorizeFromJni` falls back to MwaSessionState when these args
+    // arrive empty (CR-67 follow-up #3 closure 2026-05-07 — see
+    // GDExtensionAndroidPlugin.kt :: Companion.mwaReauthorizeFromJni).
+    // Filling these in C++-side requires extending `query_session_state` to
+    // expose identity_uri/identity_name/chain_id; deferred because the
+    // Kotlin-side fallback closes the production-path bug with no C++ rebuild.
     call_authorize_shape(g_mid_mwa_reauthorize_from_jni, dispatcher_,
                          request_id, godot::String(""), godot::String(""),
                          godot::String(""), opts_timeout_ms(opts), "reauthorize");

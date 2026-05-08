@@ -216,7 +216,11 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             // "Mobile wallet is temporarily unavailable. Please restart the
             // app." See docs/concerns.md CR-67 for the full diagnosis.
             val variant = if (BuildConfig.DEBUG) "debug" else "release"
-            val abi = Build.SUPPORTED_ABIS.firstOrNull() ?: "arm64-v8a"
+            // Null-safe: `Build.SUPPORTED_ABIS` is `String[]!` (platform type);
+            // Robolectric-less JVM unit tests see a null array. Without `?.`
+            // every test that touches `GDExtensionAndroidPlugin.<clinit>` (e.g.
+            // by referencing `sessionState`) NPEs at class init.
+            val abi = Build.SUPPORTED_ABIS?.firstOrNull() ?: "arm64-v8a"
             val arch = when (abi) {
                 "arm64-v8a" -> "arm64"
                 "x86_64" -> "x86_64"
@@ -276,14 +280,55 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
         // Story 2-2 T2 — JNI shim forwards to the `mwaReauthorize(...)` instance
         // method with the full reauth-args set (identityJson, cluster, chainId,
-        // timeoutMs); the C++ side at `MobileWalletAdapter::reauthorize` populates
-        // these from sessionState before crossing JNI. Null-instance branch routes
-        // to mwa_error{NOT_CONNECTED, source_method="reauthorize"} via the AC-6
-        // emitInstanceNullError helper.
+        // timeoutMs). Story 2-2's design intent was for the C++ side at
+        // `MobileWalletAdapter::reauthorize` to populate these from sessionState
+        // before crossing JNI, but the C++ stub at `mwa_android_bridge_jni.cpp`
+        // ::`MwaAndroidBridgeJni::reauthorize` was never completed (still passes
+        // empty strings — see the same-file "Story 2-2 lands the full reauth
+        // path; empty identity + cluster for now" comment). Symptom: every
+        // production-path Reauthorize tap emits PROTOCOL_ERROR synchronously
+        // within ~75ms because Kotlin's `parseIdentity("")` returns null and
+        // `mwaReauthorize` falls into the "identity.name required" early-return.
+        //
+        // Fix: when this shim receives empty args from the C++ side, fall back
+        // to `MwaSessionState` (which is populated after every successful
+        // authorize by `handleAuthSuccess` at GDExtensionAndroidPlugin.kt
+        // :2216 + :973). If sessionState is also empty (caller invokes
+        // reauthorize without a prior authorize), emit NOT_CONNECTED with a
+        // descriptive developer_details rather than the misleading
+        // PROTOCOL_ERROR. Unit tests pass identityJson explicitly so the
+        // fallback branch is shim-only.
+        //
+        // Null-instance branch routes to mwa_error{NOT_CONNECTED,
+        // source_method="reauthorize"} via the AC-6 emitInstanceNullError
+        // helper.
         @JvmStatic
         fun mwaReauthorizeFromJni(reqId: String, identityJson: String, cluster: String, chainId: String, timeoutMs: Long) {
-            instance?.mwaReauthorize(reqId, identityJson, cluster, chainId, timeoutMs)
-                ?: emitInstanceNullError(reqId, "reauthorize")
+            val plugin = instance ?: return emitInstanceNullError(reqId, "reauthorize")
+
+            val effectiveIdentityJson: String
+            if (identityJson.isEmpty()) {
+                val name = sessionState.getIdentityName()
+                val uri = sessionState.getIdentityUri()
+                if (name.isEmpty() || uri.isEmpty()) {
+                    DefaultNativeBridge.postMwaError(
+                        buildEmptySessionReauthErrorJson(reqId).toString(),
+                    )
+                    return
+                }
+                effectiveIdentityJson = JSONObject().apply {
+                    put("name", name)
+                    put("identity_uri", uri)
+                    put("icon_uri", sessionState.getIconUri())
+                }.toString()
+            } else {
+                effectiveIdentityJson = identityJson
+            }
+
+            val effectiveCluster = if (cluster.isEmpty()) sessionState.getClusterName() else cluster
+            val effectiveChainId = if (chainId.isEmpty()) "solana:$effectiveCluster" else chainId
+
+            plugin.mwaReauthorize(reqId, effectiveIdentityJson, effectiveCluster, effectiveChainId, timeoutMs)
         }
 
         @JvmStatic
@@ -2769,5 +2814,33 @@ internal fun buildInstanceNullErrorJson(requestId: String, sourceMethod: String)
     json.put("layer", "kotlin")
     json.put("cause", "instance_null")
     json.put("source_method", sourceMethod)
+    return json
+}
+
+/**
+ * CR-67 follow-up #3 closure — emitted when [GDExtensionAndroidPlugin
+ * .Companion.mwaReauthorizeFromJni] receives empty identity args from the C++
+ * stub AND `MwaSessionState` has no usable prior-authorize data to fall back
+ * on. In that case the caller has invoked Reauthorize without a prior
+ * Connect (or after a wipe that cleared sessionState), so NOT_CONNECTED
+ * with a descriptive developer_details is the correct terminal signal.
+ */
+internal fun buildEmptySessionReauthErrorJson(requestId: String): JSONObject {
+    val json = JSONObject()
+    json.put("request_id", requestId)
+    json.put("code", MwaError.NotConnected.code)
+    json.put("message", "Reauthorize requires a prior successful authorize")
+    json.put("user_message", MwaError.NotConnected.defaultUserMessage)
+    json.put(
+        "developer_details",
+        "reauthorize invoked with empty identityJson and MwaSessionState carries no prior-authorize identity " +
+            "(C++ JNI bridge stub at mwa_android_bridge_jni.cpp::MwaAndroidBridgeJni::reauthorize " +
+            "does not populate identity/cluster/chainId from query_session_state — Story 2-2 stub).",
+    )
+    json.put("recoverable", MwaError.NotConnected.recoverable)
+    json.put("retry_hint", MwaError.NotConnected.retryHint)
+    json.put("layer", "kotlin")
+    json.put("cause", "no_prior_session")
+    json.put("source_method", "reauthorize")
     return json
 }

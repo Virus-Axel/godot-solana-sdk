@@ -15,8 +15,10 @@ import com.solana.mobilewalletadapter.clientlib.ActivityResultSender
 import com.solana.mobilewalletadapter.clientlib.ConnectionIdentity
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.slot
+import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import io.mockk.verifyOrder
@@ -564,5 +566,80 @@ class MwaAndroidPluginReauthorizeTest {
 
         // (b) No reauthorize_completed — PROTOCOL_ERROR is the sole terminal signal.
         verify(exactly = 0) { nativeBridge.postReauthorizeCompleted(any(), any()) }
+    }
+
+    /**
+     * CR-67 follow-up #3 closure (2026-05-07) — JNI shim must reconstruct
+     * identity / cluster / chainId from MwaSessionState when the C++ stub at
+     * `MwaAndroidBridgeJni::reauthorize` passes empty strings (Story 2-2 stub
+     * never completed). With a populated session, the shim synthesizes
+     * identityJson + cluster + chainId and forwards to mwaReauthorize, which
+     * proceeds to the AC-1 happy path.
+     */
+    @Test
+    fun `JNI shim with empty args falls back to sessionState (CR-67 #3)`() {
+        buildPlugin(
+            clientFactory = { FakeMwaClient(fixturesDir).withScenario("success") },
+        )
+        seedPostConnectSession()
+        seedCacheRecord()
+
+        val jsonSlot = slot<String>()
+        // Static JNI shim called with empty identityJson/cluster/chainId — same
+        // shape as the C++ stub at mwa_android_bridge_jni.cpp:481-484 emits.
+        GDExtensionAndroidPlugin.mwaReauthorizeFromJni("rea-jni-empty", "", "", "", 5000L)
+
+        awaitCondition(3_000L) {
+            runCatching {
+                verify(exactly = 1) { nativeBridge.postReauthorizeCompleted("rea-jni-empty", capture(jsonSlot)) }
+            }.isSuccess
+        }
+
+        val payload = JSONObject(jsonSlot.captured)
+        assertEquals("rea-jni-empty", payload.getString("request_id"))
+        assertEquals(publicKey, payload.getString("public_key"), "public_key retained via sessionState fallback")
+        assertEquals("devnet", payload.getString("cluster"), "cluster reconstructed from sessionState")
+
+        // Terminal-signal invariant — no PROTOCOL_ERROR despite empty C++ args.
+        verify(exactly = 0) { nativeBridge.postMwaError(any()) }
+    }
+
+    /**
+     * CR-67 follow-up #3 closure (2026-05-07) — JNI shim with empty args AND
+     * empty MwaSessionState (caller invokes Reauthorize without a prior
+     * Connect, or after a wipe that cleared sessionState) emits NOT_CONNECTED
+     * with `cause="no_prior_session"` rather than the misleading
+     * `PROTOCOL_ERROR{cause=identity.name required}` that the pre-fix path
+     * produced.
+     */
+    @Test
+    fun `JNI shim with empty args and empty session emits NOT_CONNECTED no_prior_session (CR-67 #3)`() {
+        buildPlugin()
+        // Deliberately do NOT call seedPostConnectSession — sessionState is empty.
+        // Belt-and-suspenders: also explicitly clear in case a prior test polluted
+        // the companion-object singleton (sessionState is process-wide).
+        GDExtensionAndroidPlugin.sessionState.clear()
+
+        mockkObject(DefaultNativeBridge)
+        try {
+            val jsonSlot = slot<String>()
+            every { DefaultNativeBridge.postMwaError(capture(jsonSlot)) } returns Unit
+
+            GDExtensionAndroidPlugin.mwaReauthorizeFromJni("rea-jni-empty-sess", "", "", "", 5000L)
+
+            verify(exactly = 1) { DefaultNativeBridge.postMwaError(any()) }
+
+            val err = JSONObject(jsonSlot.captured)
+            assertEquals("rea-jni-empty-sess", err.getString("request_id"))
+            assertEquals("NOT_CONNECTED", err.getString("code"))
+            assertEquals("reauthorize", err.getString("source_method"))
+            assertEquals("no_prior_session", err.getString("cause"))
+            assertTrue(
+                err.getString("developer_details").contains("Story 2-2 stub"),
+                "developer_details must reference the C++ stub for triage",
+            )
+        } finally {
+            unmockkObject(DefaultNativeBridge)
+        }
     }
 }
