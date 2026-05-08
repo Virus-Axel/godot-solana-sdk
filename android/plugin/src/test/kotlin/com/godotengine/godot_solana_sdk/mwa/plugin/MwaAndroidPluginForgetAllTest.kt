@@ -68,12 +68,6 @@ import java.security.KeyStore
  *      is NEVER invoked (DD-4-2-6 LOCKS bypass); the wipe still proceeds
  *      (KeyStore.deleteEntry IS invoked).
  *
- * **TDD red baseline (T1):** all 6 tests fail at runtime against the
- * `TODO("Story 4-2 T2 fills in")` body in
- * [GDExtensionAndroidPlugin.mwaForgetAll] +
- * [GDExtensionAndroidPlugin.buildCancelledLifecycleJson]. T2 turns them
- * GREEN.
- *
  * Plugin is built via the `@VisibleForTesting` ctor with injected
  * collaborators (identical to [MwaAndroidPluginSignAndSendTest] /
  * [MwaAndroidPluginDeauthorizeTest]):

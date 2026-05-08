@@ -68,18 +68,10 @@ import java.io.File
  *  10. Breadcrumb-write StorageCorruptException → reauth_required, NO wallet
  *      round-trip — DD-3-3-G fail-closed write site
  *
- * **TDD red baseline (T1):** ~8 tests fail at runtime against the
- * `TODO("Story 3-3 T2 fills in")` body in
- * [GDExtensionAndroidPlugin.mwaSignAndSendTransactions] +
- * [GDExtensionAndroidPlugin.handleSignAndSendSuccess] +
- * [GDExtensionAndroidPlugin.cleanupBreadcrumb] +
- * [GDExtensionAndroidPlugin.scanPendingSubmissions] + 3 builder helpers — they
- * throw `kotlin.NotImplementedError` before reaching the assertion. Test #9
- * (runSigningOp direct) is GREEN at T1 because it bypasses
- * `mwaSignAndSendTransactions` and calls the shared [runSigningOp] helper from
- * Story 3-1 directly. Test #6 (AC-4c) exercises the lifecycle-cancellation
- * cleanup path via [MwaLifecycleObserver] (Story 5-3 closed CR-3-3-B). T2
- * turned the remaining 9 GREEN.
+ * Test #9 (runSigningOp direct) bypasses `mwaSignAndSendTransactions` and
+ * calls the shared [runSigningOp] helper from Story 3-1 directly. Test #6
+ * (AC-4c) exercises the lifecycle-cancellation cleanup path via
+ * [MwaLifecycleObserver] (Story 5-3 closed CR-3-3-B).
  *
  * Plugin is built via the `@VisibleForTesting` ctor with injected collaborators
  * (identical to [MwaAndroidPluginSignTransactionsTest] / [MwaAndroidPluginSignMessagesTest]):

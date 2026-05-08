@@ -57,9 +57,6 @@ import java.io.File
  *   - map-backed fake [SecureTokenStore] via `storeProvider`
  *   - FakeMwaClient or slow-client test double via `mwaClientFactory`
  *   - no-op `senderProvider` (reauth path doesn't launch a wallet Activity)
- *
- * Tests compile but fail at runtime against `TODO("Story 2-2 T2 fills in")` stub
- * bodies — that is the intended RED state for T1. T2 replaces stubs with real impl.
  */
 class MwaAndroidPluginReauthorizeTest {
 

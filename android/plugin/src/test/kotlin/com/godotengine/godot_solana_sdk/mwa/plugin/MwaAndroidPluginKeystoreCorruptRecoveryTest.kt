@@ -35,15 +35,8 @@ import java.io.IOException
 import java.security.GeneralSecurityException
 
 /**
- * Story 4-3 T1 (TDD-RED) — keystore corrupt-recovery + `reauth_required`
- * emission shape coverage at the plugin boundary.
- *
- * **C-4-3-A stub-first scaffolding contract:** this test file compiles against
- * the T1 stubs landed in the same commit (`NativeBridge.postReauthRequired` +
- * 3 private helpers on `GDExtensionAndroidPlugin` with `TODO("Story 4-3
- * T2: ...")` bodies), and the test cases are EXPECTED TO FAIL AT RUNTIME until
- * T2 ships the real impl. Each `TODO()` message identifies which T2 deliverable
- * still needs implementation (distinct-RED contract).
+ * Story 4-3 — keystore corrupt-recovery + `reauth_required` emission
+ * shape coverage at the plugin boundary.
  *
  * 7 cases mapped to AC-1 (DD-4-3-1, DD-4-3-1.a, DD-4-3-1.b) + DD-4-3-2:
  *   1. AUTHORIZE success-path corruption (line 1328 catch site) → currently

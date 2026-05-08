@@ -376,9 +376,9 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
         @JvmStatic
         fun mwaForgetAllFromJni(reqId: String) {
-            // Story 4-2 T1 — JNI shim now delegates to the @UsedByGodot
-            // instance method. T2 fills in the body. The shim itself is a
-            // single-line dispatch (parallel to mwaSignAndSendFromJni at
+            // Story 4-2 — JNI shim delegates to the @UsedByGodot instance
+            // method. The shim itself is a single-line dispatch (parallel
+            // to mwaSignAndSendFromJni at
             // :214-228 from Story 3-3 T1) — no orchestration here.
             instance?.mwaForgetAll(reqId) ?: emitInstanceNullError(reqId, "forget_all")
         }
@@ -1125,7 +1125,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * shim signature to pass `messages` + `timeoutMs` through), or directly
      * by Kotlin unit tests with real values per DD-3-1-9.
      *
-     * Body shape (T2 fills in):
+     * Body shape:
      *  1. DD-3-1-6 preflight — synchronous `is_connected()` check BEFORE
      *     `InflightMap.register`; emit `mwa_error{NOT_CONNECTED}` and return
      *     if disconnected. NO `scope.launch` on this branch (AC-3 "within 1
@@ -1171,7 +1171,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * shim signature to pass `transactions` + `timeoutMs` through), or directly
      * by Kotlin unit tests with real values per DD-3-1-9 (inherited).
      *
-     * Body shape (T2 fills in — mirrors [mwaSignMessages] with two textual deltas:
+     * Body shape (mirrors [mwaSignMessages] with two textual deltas:
      *   (a) lambda calls `signTransactions(sender, identity, authToken, transactions)`
      *       (4-arg, no `addresses`) instead of `signMessages(... messages, addresses)`
      *       (5-arg);
@@ -1226,7 +1226,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * by Kotlin unit tests with real values per DD-3-1-9 inheritance via
      * DD-3-2-5.
      *
-     * Body shape (T2 fills in — mirrors [mwaSignTransactions] with three
+     * Body shape (mirrors [mwaSignTransactions] with three
      * structural deltas locked at story-creation per DD-3-3-A..G):
      *   (a) breadcrumb-write-ahead step BEFORE `runSigningOp` per DD-3-3-B
      *       (write-then-call ordering); the write is wrapped with
@@ -1521,7 +1521,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * any in-flight ops by emitting `mwa_cancelled_lifecycle` per slot BEFORE
      * the wipe starts (AC-2 ordering).
      *
-     * **Body shape (T2 fills in — mirrors the DD-4-2-1..-9 LOCKED set):**
+     * **Body shape (mirrors the DD-4-2-1..-9 LOCKED set):**
      *   (a) `forgetAllMutex.withLock { ... }` wraps the entire body
      *       (DD-4-2-2): concurrent `mwaConnect` / `mwaSignMessages` / etc.
      *       block on the Mutex from their `scope.launch { withLock { ... } }`
@@ -1754,7 +1754,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * success/failure). Callers pattern-match on the outer `Success`/`Failure`
      * and unwrap the inner result. Stories 3-2 / 3-3 inherit this shape.
      *
-     * T2 fills in the body per the pseudocode in `docs/stories/3-1.md`
+     * Body follows the pseudocode in `docs/stories/3-1.md`
      * "Private `runSigningOp` helper" section.
      */
     // `@VisibleForTesting internal` (rather than the DD-3-1-1 nominal `private`) to
@@ -1944,8 +1944,6 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * silently drops — terminal-signal invariant per arch §7.3 (inherited
      * from 2-1/2-2/3-1/3-2). The breadcrumb is also left for next-launch
      * scan to clean up in this case.
-     *
-     * T2 fills in the body.
      */
     private fun handleSignAndSendSuccess(requestId: String, result: SignAndSendResult) {
         if (!inflightMap.tryTerminate(requestId)) {
@@ -2024,8 +2022,6 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * fired per DD-3-3-D ordering). Per-entry `removePendingSubmission`
      * calls go through [cleanupBreadcrumb] (NOT wrapped — cleanup failures
      * survive to the next launch).
-     *
-     * T2 fills in the body.
      */
     private suspend fun scanPendingSubmissions(identityUri: String) {
         // DD-3-3-G — the listAllPendingSubmissions read IS wrapped: a Tink
@@ -2073,8 +2069,6 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * resolution in story §Dev Notes). `confirmationStatus` is the literal
      * "submitted" today; future Story 5-x may extend to "confirmed" /
      * "finalized" if a confirmation-tracking surface lands.
-     *
-     * T2 fills in the body.
      */
     private fun buildSignAndSendSuccessJson(
         requestId: String,
@@ -2105,8 +2099,6 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * `tx_preview_hashes`); the output payload has 6 keys (drops `cluster`
      * and `identity_uri` — those are correlation metadata for the scan but
      * not user-facing on the signal — and adds `recommendation`).
-     *
-     * T2 fills in the body.
      */
     private fun buildPendingSubmissionFoundJson(breadcrumb: JSONObject): JSONObject {
         // Drops `cluster` + `identity_uri` (breadcrumb-internal correlation
@@ -2137,8 +2129,6 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * `started_at_ms` is provided by the caller (typically `clock()` at
      * `mwaSignAndSendTransactions` entry time — clock injection per the
      * existing pattern).
-     *
-     * T2 fills in the body.
      */
     private fun buildBreadcrumb(requestId: String, cluster: String, transactions: List<ByteArray>, startedAtMs: Long): JSONObject {
         val previewHashes = JSONArray()
@@ -2330,34 +2320,25 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         }
     }
 
-    // ---------------- Story 4-3 T1 — STUB-FIRST scaffolding (C-4-3-A) ----------------
+    // ---------------- Story 4-3 — keystore-corrupt fail-closed helpers ----------------
     //
-    // The 3 helpers below are declared with `TODO("Story 4-3 T2: ...")` bodies so:
-    //   1. The new RED test file `MwaAndroidPluginKeystoreCorruptRecoveryTest.kt`
-    //      compiles (MockK + verify call sites need the symbols to resolve).
-    //   2. Test cases that exercise these helpers fail at runtime with
-    //      NotImplementedError — distinct-RED contract per C-4-3-A; each TODO
-    //      message names which T2 deliverable still needs implementation.
-    //
-    // T2 replaces these bodies with the real impl:
+    // 3 helpers wired into the storage-corruption path:
     //   - buildReauthRequiredKeystoreCorruptJson — DD-4-3-1.b 5-key Dictionary shape
     //   - emitReauthRequiredKeystoreCorrupt — InflightMap CAS-first + nativeBridge.postReauthRequired
     //   - withStorageOrReauthRequired — fail-closed plugin-boundary wrapper (DD-4-3-1.a)
     //
-    // T2 ALSO pivots the existing catch sites at lines ~720 (reauthorize success)
-    // and ~1328 (authorize success) from `emitFailure(...MwaError.StorageCorrupt...)`
-    // / `emitFailureReauth(...)` to call `emitReauthRequiredKeystoreCorrupt(...)` —
-    // those call sites are intentionally LEFT UNCHANGED in T1 so cases 1, 2 of the
-    // RED test fail via "verify { postReauthRequired } never invoked" (the cleanest
-    // RED signal for the catch-site-pivot half of T2).
-
+    // The catch sites at the reauthorize-success and authorize-success paths
+    // call `emitReauthRequiredKeystoreCorrupt(...)` rather than the legacy
+    // `emitFailure(...MwaError.StorageCorrupt...)` per the DD-4-3-1 PIVOT
+    // (StorageCorruptException now surfaces as `reauth_required{reason:
+    // "keystore_corrupt"}`, NOT `mwa_error{StorageCorrupt}` — AC-1 contract).
+    //
+    // D-T1-RULE1-1 (Rule 1 — minor signature deviation from spec): the
     // `inline` form planned by the story spec for `withStorageOrReauthRequired`
     // was downgraded to a non-inline `suspend` helper because
     // `emitReauthRequiredKeystoreCorrupt` is `suspend` and an inline function
     // may not call suspend functions without matching `crossinline` + `suspend`
-    // constraints. T2 may refactor if a clean inline form lands; logged as
-    // D-T1-RULE1-1 (Rule 1 — minor signature deviation from spec, no
-    // behavioral change).
+    // constraints. No behavioral change.
 
     /**
      * Story 4-3 T2 — DD-4-3-1.b 5-key `reauth_required` Dictionary builder for
