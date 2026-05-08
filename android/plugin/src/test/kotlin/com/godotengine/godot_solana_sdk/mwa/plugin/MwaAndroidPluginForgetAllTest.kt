@@ -495,4 +495,56 @@ class MwaAndroidPluginForgetAllTest {
         // listAllKeys-empty path).
         verify(exactly = 0) { factoryNeverInvoked() }
     }
+
+    /**
+     * CR-67 follow-up #2 closure (2026-05-07) — after the 3-step wipe, two
+     * warm probes via `storeProvider(ctx).listAllKeys()` must run so
+     * Android's `SharedPreferences` in-process cache is replaced with a
+     * Tink-fresh state. Without these probes, the next user-driven
+     * authorize emits `reauth_required{keystore_corrupt}` because the
+     * cached `SharedPreferencesImpl` returns stale Tink keyset bytes that
+     * AEAD-fail with the regenerated MasterKey. This regression test
+     * pins the call count: 1 deauth-loop probe + 2 warm probes = 3
+     * `listAllKeys()` invocations on the happy path. Probe failures
+     * MUST NOT propagate as `postReauthRequired` from forget_all.
+     */
+    @Test
+    fun `forget_all warm-probes the store twice after wipe to flush stale prefs cache (CR-67 #2)`() {
+        // FIRST listAllKeys returns 1 record (deauth loop), SECOND throws
+        // (simulates the cached-keyset / regenerated-master-key AEAD fail
+        // we observed on Android 13 emulator), THIRD returns empty (warm
+        // probe #2 lazy-inits cleanly against the now-evicted cache).
+        var listAllKeysCalls = 0
+        every { store.listAllKeys() } answers {
+            listAllKeysCalls += 1
+            when (listAllKeysCalls) {
+                1 -> listOf(
+                    CacheKey("devnet", "solana:devnet", walletPackage1, identityUri),
+                )
+                2 -> throw StorageCorruptException(RuntimeException("simulated stale prefs cache"))
+                else -> emptyList()
+            }
+        }
+
+        val plugin = buildPlugin(
+            clientFactory = { FakeMwaClient(fixturesDir).withScenario("success") },
+        )
+        seedConnectedSession()
+
+        plugin.mwaForgetAll("fa-warm-probe")
+
+        // 3 invocations: 1 deauth-loop + 2 warm probes (probe #1 throws,
+        // probe #2 succeeds). The wipe steps must still complete.
+        awaitCondition(5_000L) {
+            runCatching {
+                verify(exactly = 3) { store.listAllKeys() }
+                verify(atLeast = 1) { keystoreMock.deleteEntry(SecureTokenStore.MASTER_KEY_ALIAS) }
+            }.isSuccess
+        }
+
+        verify(exactly = 3) { store.listAllKeys() }
+        // Critical UX invariant: `reauth_required` must NEVER fire from the
+        // forget_all path, even when a warm probe trips on stale cache.
+        verify(exactly = 0) { nativeBridge.postReauthRequired(any()) }
+    }
 }

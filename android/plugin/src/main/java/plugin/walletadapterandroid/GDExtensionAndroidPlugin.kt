@@ -1664,6 +1664,35 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     }
                 }
 
+                // CR-67 follow-up #2 closure (2026-05-07) — Android's
+                // in-process `SharedPreferences` cache is not reliably
+                // invalidated by `Context.deleteSharedPreferences` on every
+                // Android version (observed on Android 13 emulator). Without
+                // a warm probe HERE, the next user-driven op (commonly
+                // authorize via the Connect button) opens a fresh
+                // SecureTokenStore whose lazy `prefs` init reads stale Tink
+                // keyset bytes from cache, fails AEAD with the regenerated
+                // MasterKey, and surfaces as
+                // `reauth_required{reason:"keystore_corrupt"}` between
+                // forget_all and the next authorize — confusing UX for a
+                // user who just pressed "Forget All" and expects a clean
+                // wipe.
+                //
+                // Two-probe self-heal: probe #1 may throw
+                // StorageCorruptException; on its lazy-init catch path,
+                // `SecureTokenStore.wipeCorruptPrefs()` runs
+                // `deleteSharedPreferences` AGAIN, which reliably evicts
+                // the cache on the second call. Probe #2 then lazy-inits
+                // cleanly against the regenerated master key + fresh
+                // keysets, leaving a hot SharedPreferencesImpl in Android's
+                // cache that the next user op will ride. Both probes are
+                // wrapped in runCatching — forget_all's GDPR-wipe contract
+                // is already satisfied by the 3-step sequence above; the
+                // warm probe is purely a UX smoothing pass and a probe
+                // failure must NOT abort forget_all.
+                runCatching { storeProvider(requireContext()).listAllKeys() }
+                runCatching { storeProvider(requireContext()).listAllKeys() }
+
                 // DD-4-1-2 LOCKED inheritance — full clear (NOT clearOnLogout()).
                 // Marshalled to mainDispatcher to match Story 4-1's
                 // sessionState mutation discipline.
