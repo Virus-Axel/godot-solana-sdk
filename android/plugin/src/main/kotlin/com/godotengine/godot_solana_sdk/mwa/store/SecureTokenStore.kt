@@ -28,10 +28,9 @@ import java.security.SecureRandom
  * equivalent (D-T1-4, Rule 1). Because `prefs` is lazy, the recovery fires on first READ rather
  * than at store construction — constructing the store is always safe.
  *
- * Story 2-1 T1 lands this shell; `putToken` / `getToken` go through
- * [CacheKey.toHash] + [CacheRecord.toJson] / [CacheRecord.fromJson], whose
- * bodies are stubbed until T2 / T3 (D-T1-3). `listAllKeys` is provisioned
- * here for Story 4-2 `forget_all` and carries a `TODO`.
+ * `putToken` / `getToken` route through [CacheKey.toHash] + [CacheRecord.toJson]
+ * / [CacheRecord.fromJson]. `listAllKeys` is consumed by Story 4-2 `forget_all`
+ * to enumerate cached wallets across identities.
  */
 class SecureTokenStore(private val context: Context) {
 

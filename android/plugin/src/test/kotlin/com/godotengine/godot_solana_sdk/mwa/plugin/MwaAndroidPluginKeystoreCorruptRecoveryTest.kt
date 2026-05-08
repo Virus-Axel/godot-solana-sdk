@@ -301,8 +301,6 @@ class MwaAndroidPluginKeystoreCorruptRecoveryTest {
 
         plugin.mwaAuthorize("req-c3", identityJson, "devnet", "solana:devnet", timeoutMs = 2_000L)
 
-        // RED in T1: withStorageOrReauthRequired stub body is TODO() → NotImplementedError;
-        // OR (if T1 leaves no wrapper installed) postReauthRequired is never called.
         awaitCondition(2_000L) {
             runCatching { verify(exactly = 1) { nativeBridge.postReauthRequired(capture(jsonSlot)) } }.isSuccess
         }

@@ -635,8 +635,7 @@ class MwaAndroidPluginSignAndSendTest {
         )
         seedConnectedSession()
 
-        // Direct call on runSigningOp — bypasses mwaSignAndSendTransactions's TODO body.
-        // GREEN at T1 because runSigningOp is from Story 3-1 (already wired).
+        // Direct call on runSigningOp — bypasses mwaSignAndSendTransactions.
         // Acts as a regression guard that DD-3-2-5 inheritance
         // (SigningOp.SIGN_AND_SEND → "sign_and_send" sourceMethod mapping) flows
         // correctly through the shared helper's Failure branch.
