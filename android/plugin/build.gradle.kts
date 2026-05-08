@@ -9,25 +9,6 @@ val pluginName = "WalletAdapterAndroid"
 
 val pluginPackageName = "plugin.walletadapterandroid"
 
-// Pin transitive deps to specific resolved versions via gradle.lockfile
-// + per-artifact SHA-256 verification via gradle/verification-metadata.xml.
-// PGP signatures are best-effort (some long-tail jars like org.json:json
-// have no Maven Central signature). Regenerate both files on dep bumps via:
-//   ./gradlew :plugin:assembleRelease :plugin:dependencies \
-//       --write-locks --write-verification-metadata pgp,sha256 --refresh-dependencies
-//
-// DO NOT place this block inside `android { }` — the AGP DSL does NOT
-// recognize `dependencyLocking { ... }` and would fail at script-resolve
-// time.
-//
-// `lockFile` is overridden to `$rootDir/gradle.lockfile` (i.e.
-// android/gradle.lockfile). Default would write to `$projectDir/gradle.lockfile`
-// (i.e. android/plugin/gradle.lockfile).
-dependencyLocking {
-    lockAllConfigurations()
-    lockFile.set(file("$rootDir/gradle.lockfile"))
-}
-
 android {
     namespace = pluginPackageName
     compileSdk = 34
@@ -208,11 +189,9 @@ android {
         }
     }
 
-    // Register the codegen output directory from Story 1-1 (`tools/gen_error_codes.py`)
-    // as a main-source-set root so the generated `MwaError` sealed class is visible to
-    // the plugin's Kotlin code. Story 1-1 (line 334) noted this wiring belonged to
-    // Story 1-2, but it was missed there — Story 1-6 Task 1 is the first code to
-    // reference `MwaError` from plugin Kotlin, exposing the gap.
+    // Register `src/generated/kotlin` as a main-source-set root so the
+    // `MwaError` sealed class under `…mwa.generated` is visible to the
+    // plugin's Kotlin code.
     sourceSets.getByName("main") {
         java.srcDirs("src/generated/kotlin")
     }

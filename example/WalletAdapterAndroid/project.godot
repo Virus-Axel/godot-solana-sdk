@@ -12,14 +12,13 @@ config_version=5
 
 config/name="WalletAdapterAndroid"
 run/main_scene="res://wallet_adapter_android.tscn"
-config/features=PackedStringArray("4.4", "Mobile")
+config/features=PackedStringArray("4.5", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
 SolanaService="*res://addons/SolanaSDK/Optional/SolanaService/Autoload/SolanaService.tscn"
 HttpRequestHandler="*res://addons/SolanaSDK/Optional/SolanaService/Autoload/HttpRequestHandler.tscn"
-MWA="*res://addons/SolanaSDK/mwa/MWA.gd"
 
 [editor_plugins]
 

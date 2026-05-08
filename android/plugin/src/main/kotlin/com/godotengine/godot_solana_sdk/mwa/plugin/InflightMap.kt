@@ -59,9 +59,7 @@ internal class InflightMap {
      * Atomically remove `requestId`. Returns `true` if the entry was present
      * (the caller is the FIRST terminal signal and may emit); `false` if
      * the entry was absent (late callback, OR never-registered — either way,
-     * drop the signal). Callers with `false` MUST increment
-     * [MwaDiagnostics.lateResultCount] and log via
-     * `SdkLog.w { "late_result corrId=$requestId" }`.
+     * drop the signal).
      */
     fun tryTerminate(requestId: String): Boolean {
         return map.remove(requestId) != null

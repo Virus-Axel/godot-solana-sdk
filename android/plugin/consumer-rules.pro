@@ -35,15 +35,6 @@
     public static void d(java.lang.String, java.lang.String, kotlin.jvm.functions.Function0);
 }
 
-# Keep the Story 1-2 Task 6 R8-strip-evidence sentinel from default DCE.
-# R8Sentinel.exerciseLogs() is never called from production code so R8's
-# default dead-code-elimination pass would otherwise remove the whole class,
-# and the decompile check could not distinguish "R8 correctly stripped v/d
-# call sites" from "R8 DCE'd the sentinel class wholesale". The -keep
-# preserves R8Sentinel.class in the AAR so the INFO_KEEP sentinel string
-# survives as the positive discriminator.
--keep class com.godotengine.godot_solana_sdk.mwa.util.R8Sentinel { *; }
-
 # Preserve JNI native method bindings across the entire mwa.** subtree
 # (architecture.md:1010). Required so JNI resolution still works when
 # downstream app modules run R8 against this AAR.
