@@ -4,7 +4,7 @@ extends EditorPlugin
 
 const SOLANA_PLUGIN_NAME := "SolanaSDK"
 
-# Story 2-1 T7 — DD-18: MWA facade is a non-optional autoload registered the
+# —: MWA facade is a non-optional autoload registered the
 # moment the plugin enables. Unlike `SolanaService` (Optional/ — opt-in), the
 # MWA entry point is always wired. The plugin is responsible for adding +
 # removing the singleton entry in `project.godot`; users don't need to
@@ -20,7 +20,7 @@ var export_plugin : AndroidExportPlugin
 func _enter_tree():
 	export_plugin = AndroidExportPlugin.new()
 	add_export_plugin(export_plugin)
-	# DD-18: register the MWA singleton so GDScript callers can use
+	# register the MWA singleton so GDScript callers can use
 	# `MWA.connect(...)` without per-project autoload configuration. Exported
 	# games read the [autoload] block from project.godot at runtime, so this
 	# edit persists across editor sessions (Godot writes the change through).

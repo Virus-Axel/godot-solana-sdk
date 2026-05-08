@@ -1,24 +1,24 @@
-# Story 2-1 T10 — CR-32 backstop for the NoOp-bridge (non-Android) path.
-# Story 2-3 T6 — extended to cover the disconnect flow's UNSUPPORTED_PLATFORM
+# backstop for the NoOp-bridge (non-Android) path.
+# extended to cover the disconnect flow's UNSUPPORTED_PLATFORM
 # emission as well, per concern C6.
-# Story 5-1 T2 — extended from 2 scenarios (connect + disconnect) to 8
+# extended from 2 scenarios (connect + disconnect) to 8
 # scenarios covering all 7 user-facing ops (connect / disconnect /
 # reauthorize / deauthorize / sign_messages / sign_transactions /
 # sign_and_send / forget_all) plus an inline MWA.is_supported() check
-# at top of _ready() per DD-5-1-4 LOCKED. Each new scenario reuses the
+# at top of _ready. Each new scenario reuses the
 # existing _assert_unsupported_platform_payload helper (line 84,
-# unchanged) which validates the A-14 10-key envelope shape regardless
+# unchanged) which validates the 10-key envelope shape regardless
 # of source_method. Sequential dispatch with _reset_capture() between
 # phases — same shape as the connect + disconnect scenarios.
 #
-# A-13 retired the C++ host-mode GoogleTest tier that would have covered
-# AC-3's UNSUPPORTED_PLATFORM assertion. CR-32 tracked the replacement; this
+# retired the C++ host-mode GoogleTest tier that would have covered
+# AC-3's UNSUPPORTED_PLATFORM assertion. tracked the replacement; this
 # GDScript-level test is the replacement — runs on desktop (Linux/macOS) via
 # headless Godot, drives the MWA facade for ALL user-facing ops, and asserts
 # the NoOp bridge path fires the correct mwa_error within a bounded number
 # of frames in each case.
 #
-# C6 (Story 2-3): on desktop, MWA.disconnect() MUST emit
+# C6: on desktop, MWA.disconnect() MUST emit
 # mwa_error{code=UNSUPPORTED_PLATFORM, source_method="disconnect"} and MUST
 # NOT emit disconnect_completed — there is no MwaSessionState on desktop
 # (Kotlin-only class); the C++ MobileWalletAdapter node routes through the
@@ -30,13 +30,13 @@
 # failure emits "FAIL:" lines to stderr and exits non-zero.
 extends Node
 
-const TEST_TAG := "[CR-32]"
+const TEST_TAG:= "[]"
 const TIMEOUT_FRAMES := 10  # 1 frame per story spec; allow 10 for CI slack.
 
 # Per-scenario capture. Reset between scenarios via `_reset_capture()`.
 var _error_received := false
 var _error_payload: Dictionary = {}
-# Story 2-3 T6: disconnect scenario additionally asserts disconnect_completed
+# disconnect scenario additionally asserts disconnect_completed
 # MUST NOT fire on desktop — track emission count independently.
 var _disconnect_completed_count := 0
 
@@ -52,10 +52,10 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 
-	# Story 5-1 AC-1 — pure-GDScript getter; non-Android platforms must report false.
+	# AC-1 — pure-GDScript getter; non-Android platforms must report false.
 	# This check runs BEFORE any op invocation since it has no signal/dispatcher
 	# round-trip — the getter returns the result of OS.get_name() == "Android"
-	# directly per DD-5-1-3 LOCKED.
+	# directly.
 	if mwa.is_supported():
 		printerr("%s FAIL [is_supported]: expected MWA.is_supported()==false on non-Android (OS.get_name()=%s)" %
 			[TEST_TAG, OS.get_name()])
@@ -69,19 +69,19 @@ func _ready() -> void:
 	mwa.mwa_error.connect(_on_mwa_error)
 	mwa.disconnect_completed.connect(_on_disconnect_completed)
 
-	# Scenario 1 — connect on desktop emits UNSUPPORTED_PLATFORM (Story 2-1 T10).
+	# Scenario 1 — connect on desktop emits UNSUPPORTED_PLATFORM.
 	if not await _run_connect_scenario(mwa):
 		get_tree().quit(1)
 		return
 
-	# Scenario 2 — disconnect on desktop emits UNSUPPORTED_PLATFORM (Story 2-3 T6 / C6).
+	# Scenario 2 — disconnect on desktop emits UNSUPPORTED_PLATFORM (C6).
 	if not await _run_disconnect_scenario(mwa):
 		get_tree().quit(1)
 		return
 
-	# Story 5-1 T2 — Scenarios 3-8 cover the remaining 6 user-facing ops.
+	# Scenarios 3-8 cover the remaining 6 user-facing ops.
 	# Each scenario follows the connect/disconnect pattern: _reset_capture +
-	# call op + await up to TIMEOUT_FRAMES + assert 10-key A-14 envelope with
+	# call op + await up to TIMEOUT_FRAMES + assert 10-key envelope with
 	# the expected source_method literal.
 	if not await _run_reauthorize_scenario(mwa):
 		get_tree().quit(1)
@@ -102,13 +102,13 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 
-	# Story 5-2 T5 — Scenarios 9-11 cover the new SYNC getters on the desktop
+	# Scenarios 9-11 cover the new SYNC getters on the desktop
 	# NoOp-bridge path. These are SYNCHRONOUS (no await / no signal hop) per
-	# DD-5-2-1 LOCKED — the GDScript wrappers in MWA.gd forward to the C++
+	# the GDScript wrappers in MWA.gd forward to the C++
 	# `MobileWalletAdapter::get_diagnostics` / `get_device_posture` bindings
 	# which short-circuit through the NoOp bridge's `query_diagnostics_json` /
 	# `query_device_posture_json` returning the all-empty / all-false JSON
-	# shapes per DD-5-2-3. AC-5's `get_suggested_wallet_install_links` is pure
+	# shapes. AC-5's `get_suggested_wallet_install_links` is pure
 	# GDScript (no bridge call), so it's tested in the same scope.
 	if not _run_get_diagnostics_shape_scenario(mwa):
 		get_tree().quit(1)
@@ -154,7 +154,7 @@ func _assert_unsupported_platform_payload(source_method: String) -> bool:
 			[TEST_TAG, source_method, source_method, sm])
 		return false
 
-	# AC-3 breadcrumb: arch §3.2 + A-14 want a 10-key envelope. Assert the
+	# AC-3 breadcrumb: arch §3.2 + want a 10-key envelope. Assert the
 	# canonical keys are present so a regression that drops one is caught.
 	var required_keys := [
 		"request_id", "code", "message", "user_message", "developer_details",
@@ -162,11 +162,11 @@ func _assert_unsupported_platform_payload(source_method: String) -> bool:
 	]
 	for k in required_keys:
 		if not _error_payload.has(k):
-			printerr("%s FAIL [%s]: mwa_error payload missing required key '%s' (A-14 10-key shape)" %
+			printerr("%s FAIL [%s]: mwa_error payload missing required key '%s' (10-key shape)" %
 				[TEST_TAG, source_method, k])
 			return false
 
-	# Extra breadcrumb checks per CR-32's test scope.
+	# Extra breadcrumb checks per 's test scope.
 	if _error_payload.get("layer", "") != "cpp":
 		printerr("%s FAIL [%s]: expected layer=cpp (NoOp bridge path), got layer=%s" %
 			[TEST_TAG, source_method, _error_payload.get("layer", "")])
@@ -209,14 +209,14 @@ func _run_connect_scenario(mwa: Node) -> bool:
 	return true
 
 
-# Story 2-3 T6 / concern C6: on desktop, MWA.disconnect() routes through the
+# / concern C6: on desktop, MWA.disconnect() routes through the
 # C++ mwa_disconnect null-bridge branch and emits mwa_error — it MUST NOT emit
 # disconnect_completed (which is Android-path-only, Kotlin-driven).
 func _run_disconnect_scenario(mwa: Node) -> bool:
 	_reset_capture()
 
 	# @warning_ignore("shadowed_global_identifier") is applied in MWA.gd at the
-	# `func disconnect() -> void:` declaration (D-10); caller side needs no
+	# `func disconnect -> void:` declaration; caller side needs no
 	# annotation because `disconnect()` on a Node is a regular method call.
 	mwa.disconnect()
 
@@ -246,7 +246,7 @@ func _run_disconnect_scenario(mwa: Node) -> bool:
 	return true
 
 
-# Story 5-1 T2 — reauthorize on desktop emits UNSUPPORTED_PLATFORM.
+# reauthorize on desktop emits UNSUPPORTED_PLATFORM.
 # MWA.reauthorize takes an opts Dictionary (default {}); the C++ node's
 # reauthorize() generates a request_id and routes through the NoOp bridge
 # fan-out at no_op_mwa_android_bridge.cpp:reauthorize → emit_unsupported.
@@ -272,10 +272,10 @@ func _run_reauthorize_scenario(mwa: Node) -> bool:
 	return true
 
 
-# Story 5-1 T2 — deauthorize on desktop emits UNSUPPORTED_PLATFORM.
+# deauthorize on desktop emits UNSUPPORTED_PLATFORM.
 # Routes through MobileWalletAdapter::deauthorize null-bridge guard
 # (mobile_wallet_adapter.cpp:184) OR NoOpMwaAndroidBridge::deauthorize
-# fan-out depending on build (DD-5-1-4 inheritance from Story 1-5 D-3).
+# fan-out depending on build (inheritance from).
 func _run_deauthorize_scenario(mwa: Node) -> bool:
 	_reset_capture()
 
@@ -298,7 +298,7 @@ func _run_deauthorize_scenario(mwa: Node) -> bool:
 	return true
 
 
-# Story 5-1 T2 — sign_messages on desktop emits UNSUPPORTED_PLATFORM.
+# sign_messages on desktop emits UNSUPPORTED_PLATFORM.
 # Trivial 1-byte PackedByteArray payload — content is irrelevant on the
 # NoOp path (no wallet round-trip occurs); the null-bridge guard short-
 # circuits before any payload inspection.
@@ -324,7 +324,7 @@ func _run_sign_messages_scenario(mwa: Node) -> bool:
 	return true
 
 
-# Story 5-1 T2 — sign_transactions on desktop emits UNSUPPORTED_PLATFORM.
+# sign_transactions on desktop emits UNSUPPORTED_PLATFORM.
 # Same payload-irrelevant pattern as sign_messages — the NoOp path
 # short-circuits at the bridge boundary.
 func _run_sign_transactions_scenario(mwa: Node) -> bool:
@@ -349,8 +349,8 @@ func _run_sign_transactions_scenario(mwa: Node) -> bool:
 	return true
 
 
-# Story 5-1 T2 — sign_and_send on desktop emits UNSUPPORTED_PLATFORM.
-# Payload-irrelevant on NoOp path (no breadcrumb write — DD-3-3-B
+# sign_and_send on desktop emits UNSUPPORTED_PLATFORM.
+# Payload-irrelevant on NoOp path (no breadcrumb write
 # write-then-call ordering only fires on the Android Kotlin path).
 func _run_sign_and_send_scenario(mwa: Node) -> bool:
 	_reset_capture()
@@ -374,8 +374,8 @@ func _run_sign_and_send_scenario(mwa: Node) -> bool:
 	return true
 
 
-# Story 5-1 T2 — forget_all on desktop emits UNSUPPORTED_PLATFORM.
-# Exercises the Story 4-2 T3 fill-in body (per amendment A-15) at
+# forget_all on desktop emits UNSUPPORTED_PLATFORM.
+# Exercises the fill-in body at
 # mobile_wallet_adapter.cpp:272-280: generate_request_id → null-bridge
 # guard → unsupported_platform mwa_error. NoOp bridge path produces the
 # same shape via emit_unsupported fan-out.
@@ -401,12 +401,12 @@ func _run_forget_all_scenario(mwa: Node) -> bool:
 	return true
 
 
-# Story 5-2 T5 (AC-1 GDScript-tier shape verification) — `MWA.get_diagnostics()`
-# is SYNCHRONOUS per DD-5-2-1 LOCKED. On the desktop NoOp-bridge path, the
+# (AC-1 GDScript-tier shape verification) — `MWA.get_diagnostics()`
+# is SYNCHRONOUS. On the desktop NoOp-bridge path, the
 # C++ binding's null-bridge guard or the NoOp's `query_diagnostics_json`
-# returns the 12-key all-empty payload per DD-5-2-3. Asserts the EXACT key
+# returns the 12-key all-empty payload. Asserts the EXACT key
 # set (a regression that adds/drops a key surfaces immediately) plus the
-# DD-5-2-3 invariant that string fields are `""`, integer fields are `0`,
+# invariant that string fields are `""`, integer fields are `0`,
 # `last_n_correlation_trace` is empty Array, `session_state` is empty Dict.
 func _run_get_diagnostics_shape_scenario(mwa: Node) -> bool:
 	var diag: Dictionary = mwa.get_diagnostics()
@@ -424,7 +424,7 @@ func _run_get_diagnostics_shape_scenario(mwa: Node) -> bool:
 		printerr("%s FAIL [get_diagnostics]: AC-1 expects EXACTLY 12 keys, got %d (keys: %s)" %
 			[TEST_TAG, diag.size(), diag.keys()])
 		return false
-	# DD-5-2-3 invariants for the empty payload (NoOp-bridge desktop path).
+	# invariants for the empty payload (NoOp-bridge desktop path).
 	if str(diag.get("auth_token_fingerprint", "X")) != "":
 		printerr("%s FAIL [get_diagnostics]: AC-3 baseline — disconnected payload's auth_token_fingerprint MUST be '' (got %s)" %
 			[TEST_TAG, diag.get("auth_token_fingerprint")])
@@ -437,20 +437,20 @@ func _run_get_diagnostics_shape_scenario(mwa: Node) -> bool:
 		printerr("%s FAIL [get_diagnostics]: session_state MUST be Dictionary (got %s)" %
 			[TEST_TAG, typeof(diag.get("session_state"))])
 		return false
-	# Story 5-2 DD-5-2-1 step 3 — the C++ side overlays godot_version from
+	# step 3 — the C++ side overlays godot_version from
 	# Engine::get_version_info(). On desktop the engine IS available, so the
 	# field MUST be non-empty (regression marker for a future change that
 	# breaks the Engine overlay path).
 	if str(diag.get("godot_version", "")) == "":
 		printerr("%s FAIL [get_diagnostics]: godot_version MUST be populated by Engine::get_version_info() overlay" % TEST_TAG)
 		return false
-	print("%s PASS [get_diagnostics]: 12-key DD-5-2-3 empty payload + Engine::get_version_info() overlay" % TEST_TAG)
+	print("%s PASS [get_diagnostics]: 12-key empty payload + Engine::get_version_info overlay" % TEST_TAG)
 	return true
 
 
-# Story 5-2 T5 (AC-4 GDScript-tier shape verification) — `MWA.get_device_posture()`
+# (AC-4 GDScript-tier shape verification) — `MWA.get_device_posture()`
 # is SYNCHRONOUS. On desktop NoOp path the bridge returns the 4-key all-false
-# payload per DD-5-2-3.
+# payload.
 func _run_get_device_posture_shape_scenario(mwa: Node) -> bool:
 	var posture: Dictionary = mwa.get_device_posture()
 	var expected_keys := ["rooted", "debuggable", "developer_options_on", "adb_enabled"]
@@ -469,16 +469,16 @@ func _run_get_device_posture_shape_scenario(mwa: Node) -> bool:
 			printerr("%s FAIL [get_device_posture]: AC-4 key '%s' MUST be bool (got %s)" %
 				[TEST_TAG, k, typeof(v)])
 			return false
-		# DD-5-2-3 — non-Android desktop returns 4-key all-false.
+		# non-Android desktop returns 4-key all-false.
 		if v != false:
-			printerr("%s FAIL [get_device_posture]: DD-5-2-3 — desktop NoOp path MUST return %s=false (got %s)" %
+			printerr("%s FAIL [get_device_posture]: — desktop NoOp path MUST return %s=false (got %s)" %
 				[TEST_TAG, k, v])
 			return false
-	print("%s PASS [get_device_posture]: 4-key DD-5-2-3 all-false desktop NoOp payload" % TEST_TAG)
+	print("%s PASS [get_device_posture]: 4-key all-false desktop NoOp payload" % TEST_TAG)
 	return true
 
 
-# Story 5-2 T5 (AC-5 GDScript-tier shape verification) — DD-5-2-4 LOCKED 4-key
+# (AC-5 GDScript-tier shape verification) — 4-key
 # superset `{name, package_id, play_store_url, website_url}` covering Phantom /
 # Solflare / Backpack. Pure-GDScript const lookup; no bridge call.
 func _run_get_suggested_wallet_install_links_scenario(mwa: Node) -> bool:
@@ -496,8 +496,8 @@ func _run_get_suggested_wallet_install_links_scenario(mwa: Node) -> bool:
 				return false
 		var pkg_id: String = entry.get("package_id", "")
 		seen_package_ids[pkg_id] = true
-	# DD-5-2-4 superset — `website_url` is permitted (extra) per the
-	# reconciliation. The 3 known package IDs (D-5-2-T4-1: Backpack uses
+	# superset — `website_url` is permitted (extra) per the
+	# reconciliation. The 3 known package IDs (2--1: Backpack uses
 	# `app.backpack.mobile` per the actual play_store_url).
 	var expected_pkgs := ["app.phantom", "com.solflare.mobile", "app.backpack.mobile"]
 	for pkg in expected_pkgs:
@@ -505,5 +505,5 @@ func _run_get_suggested_wallet_install_links_scenario(mwa: Node) -> bool:
 			printerr("%s FAIL [wallet_links]: AC-5 expected package_id '%s' not in catalog (seen: %s)" %
 				[TEST_TAG, pkg, seen_package_ids.keys()])
 			return false
-	print("%s PASS [wallet_links]: AC-5 >= 3 entries + 4-key DD-5-2-4 superset + 3 known package_ids" % TEST_TAG)
+	print("%s PASS [wallet_links]: AC-5 >= 3 entries + 4-key superset + 3 known package_ids" % TEST_TAG)
 	return true

@@ -39,7 +39,7 @@ void NoOpMwaAndroidBridge::emit_unsupported(const godot::String& source_method,
     payload["layer"] = godot::String("cpp");
     payload["cause"] = godot::String("");
     payload["source_method"] = source_method;
-    // D-6: 1-arity error/lifecycle signal — wrap payload in 1-elem Array.
+    // 1-arity error/lifecycle signal — wrap payload in 1-elem Array.
     dispatcher_->post(godot::String("mwa_error"), godot::Array::make(payload));
 }
 
@@ -99,7 +99,7 @@ void NoOpMwaAndroidBridge::forget_all(const godot::String& request_id) {
 }
 
 godot::String NoOpMwaAndroidBridge::query_diagnostics_json() const {
-    // Story 5-2 T3 (DD-5-2-3 LOCKED) — non-Android returns the 12-key
+    // non-Android returns the 12-key
     // all-empty payload so GDScript callers can read MWA.get_diagnostics()
     // without platform branching. Shape mirrors
     // MwaDiagnosticsBuilder.emptyDiagnosticsJson on the Kotlin side.
@@ -119,7 +119,7 @@ godot::String NoOpMwaAndroidBridge::query_diagnostics_json() const {
 }
 
 godot::String NoOpMwaAndroidBridge::query_device_posture_json() const {
-    // Story 5-2 T3 (DD-5-2-3) — non-Android returns the 4-key all-false
+    // non-Android returns the 4-key all-false
     // payload. Mirrors MwaDevicePostureBuilder.emptyPostureJson on Kotlin.
     return godot::String(
         "{\"rooted\":false,"

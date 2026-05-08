@@ -1,5 +1,5 @@
-// ABI hygiene: this header must contain only godot:: types — header-lint (Story 1-4) enforces.
-// See docs/architecture.md §7.1.1 (DD-26) and Story 1-4 AC-1.
+// ABI hygiene: this header must contain only godot:: types — header-lint enforces.
+// See docs/architecture.md §7.1.1 and AC-1.
 #ifndef GODOT_SOLANA_SDK_MWA_ANDROID_BRIDGE_HPP
 #define GODOT_SOLANA_SDK_MWA_ANDROID_BRIDGE_HPP
 
@@ -27,7 +27,7 @@ class GodotMainDispatcher;
  *     The bridge is heap-allocated with `new`; the caller is responsible for
  *     deleting it (typically via `unique_ptr<MwaAndroidBridge>` stored
  *     inside the owning node — `<memory>` is allowed in impl files; it is
- *     banned only in public headers per DD-26). Double-delete and leaks are
+ * banned only in public headers per). Double-delete and leaks are
  *     caller-side bugs.
  *   - The @c dispatcher passed to @ref create is held by the impl as a
  *     non-owning raw pointer for the bridge's lifetime. The CALLER MUST ensure
@@ -36,8 +36,8 @@ class GodotMainDispatcher;
  *     dispatcher is declared first (destroyed last); deleting the dispatcher
  *     before the bridge is UB at the next @c post call.
  *   - Rationale: `unique_ptr` would express ownership at the type level
- *     but requires `<memory>` in the public header, which DD-26 forbids
- *     (ABI hygiene). Documentation on the declaration is the DD-26-compatible
+ * but requires `<memory>` in the public header, which forbids
+ * (ABI hygiene). Documentation on the declaration is the
  *     contract surface.
  */
 class MwaAndroidBridge {
@@ -46,7 +46,7 @@ public:
 
     /**
      * Factory. Returns a caller-owned heap-allocated bridge (non-Android: no-op
-     * impl; Android: JNI stub through Story 1-4, real JNI in Story 2-1+).
+     * impl; Android: JNI stub through , real JNI in +).
      * @param dispatcher MUST be non-null and MUST outlive the returned bridge.
      *                   The impl holds a non-owning pointer to it.
      * @return caller-owned `MwaAndroidBridge*` — `delete` when done.
@@ -84,15 +84,15 @@ public:
     virtual void forget_all(const godot::String& request_id) = 0;
 
     /**
-     * Story 5-2 T3 (DD-5-2-1 LOCKED) — synchronous pull of the AC-1 12-key
+     * synchronous pull of the AC-1 12-key
      * diagnostics payload as a JSON String for @c MobileWalletAdapter::get_diagnostics
-     * to parse into a Dictionary. Replaces the Story 1-5 async
+     * to parse into a Dictionary. Replaces the async
      * @c get_diagnostics(request_id) seam (deleted) — architecture §6.2 has
      * always specified @c get_diagnostics() as SYNC ≤1ms; the async stub was
-     * a Story 1-5 placeholder that drifted from the spec.
+     * a placeholder that drifted from the spec.
      *
      * Impl contract:
-     *   - NoOp returns the 12-key all-empty JSON String per DD-5-2-3.
+     * - NoOp returns the 12-key all-empty JSON String.
      *   - Jni delegates to the Kotlin @c mwaQueryDiagnosticsFromJni companion
      *     entry; returns the 12-key all-empty JSON on any JNI failure path.
      *
@@ -102,12 +102,12 @@ public:
     virtual godot::String query_diagnostics_json() const = 0;
 
     /**
-     * Story 5-2 T3 (AC-4) — synchronous pull of the 4-key device posture
+     * (AC-4) — synchronous pull of the 4-key device posture
      * payload as a JSON String for @c MobileWalletAdapter::get_device_posture
      * to parse into a Dictionary.
      *
      * Impl contract:
-     *   - NoOp returns the 4-key all-false JSON String per DD-5-2-3.
+     * - NoOp returns the 4-key all-false JSON String.
      *   - Jni delegates to the Kotlin @c mwaQueryDevicePostureFromJni
      *     companion entry; returns the 4-key all-false JSON on any JNI
      *     failure path.
@@ -115,8 +115,8 @@ public:
     virtual godot::String query_device_posture_json() const = 0;
 
     /**
-     * Story 2-1 T6 — synchronous pull of current session state for
-     * @c MobileWalletAdapter's four state getters (D-5 + D-6 surface).
+     * synchronous pull of current session state for
+     * @c MobileWalletAdapter's four state getters (+ surface).
      *
      * Returns a @c godot::Dictionary with these keys (all required):
      *   - @c is_connected : @c bool

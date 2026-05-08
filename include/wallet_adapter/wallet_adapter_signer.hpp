@@ -19,7 +19,7 @@ namespace godot_solana_sdk {
  * @brief Bridge that adapts the existing desktop @c godot::WalletAdapter to the
  * @c ISigner abstraction.
  *
- * AC-A-5 requires "narrow ISigner abstraction implemented by both desktop WalletAdapter
+ * requires "narrow ISigner abstraction implemented by both desktop WalletAdapter
  * and Android MWA"; this class is the desktop side of that contract.
  *
  * @par Threading

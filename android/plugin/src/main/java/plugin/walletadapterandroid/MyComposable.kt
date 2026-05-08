@@ -39,7 +39,7 @@ internal fun connectWallet(sender: ActivityResultSender, session: MwaSessionStat
 
         when (result) {
             is TransactionResult.Success -> {
-                // Story 2-1 T4: MwaSessionState.authToken migrated to SecretString?.
+                // MwaSessionState.authToken migrated to SecretString?.
                 // clientlib hands us a raw String; wrap at the seam to keep the field
                 // redacted in toString / logs. Unwrap on the read side below.
                 session.setAuthToken(SecretString(result.authResult.authToken.toByteArray(Charsets.UTF_8)))

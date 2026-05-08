@@ -18,7 +18,7 @@ namespace godot_solana_sdk {
 /**
  * @brief Godot-facing MWA node. Registers 11 signals + 13 methods (7 ops + 4
  * state getters + 2 utility) and delegates op calls to @c MwaAndroidBridge via
- * @c GodotMainDispatcher. Arch §2.2 component B; DD-22 thread-marshalling.
+ * @c GodotMainDispatcher. Arch §2.2 component B; thread-marshalling.
  *
  * @par Ownership
  * Owns one @c GodotMainDispatcher (constructed with @c this as target) and one
@@ -48,11 +48,11 @@ public:
 	// explicit `= delete` here: it would collide with the GDCLASS-generated
 	// `private: void operator=(const m_class&) {}` on redefinition.
 
-	// 7 ops — delegate to bridge (T2 wires bodies). D-1 rename applied to
+	// 7 ops — delegate to bridge (wires bodies). rename applied to
 	// mwa_connect / mwa_disconnect to avoid godot::Object inherited-method
 	// collision.
 	//
-	// Story 2-1 T7 (Rule 2 expansion from T6): mwa_connect returns the
+	// (Rule 2 expansion from): mwa_connect returns the
 	// generated 8-hex-char request_id so the GDScript MWA.gd facade can
 	// return the correlation ID to callers (T7 spec: `connect(...) -> String`).
 	// The remaining 6 op methods stay void — the facade exposes `void` for
@@ -65,32 +65,32 @@ public:
 	void sign_transactions(const godot::TypedArray<godot::PackedByteArray> &transactions, const godot::Dictionary &opts);
 	void sign_and_send(const godot::TypedArray<godot::PackedByteArray> &transactions, const godot::Dictionary &opts);
 
-	// 4 state getters — Story 2-1 T6 wires these to MwaSessionState via
+	// 4 state getters — wires these to MwaSessionState via
 	// bridge->query_session_state() (JNI round-trip on Android; empty defaults
-	// on non-Android / MWA_TESTING null bridge). D-1 rename applied to
+	// on non-Android / MWA_TESTING null bridge). rename applied to
 	// mwa_is_connected.
 	[[nodiscard]] bool mwa_is_connected() const;
 	[[nodiscard]] godot::String get_public_key() const;
 	[[nodiscard]] godot::String get_cluster() const;
 	[[nodiscard]] godot::String get_wallet_label() const;
 
-	// Story 2-1 T6 — AC-7 fingerprint surface for MWA.gd facade (T7). Reads
+	// AC-7 fingerprint surface for MWA.gd facade. Reads
 	// the same MwaSessionState snapshot as the 4 state getters above; returns
 	// empty string pre-connect or on any JNI failure path. 8 lowercase hex
 	// chars post-connect, as computed by AuthTokenFingerprint in T3.
 	[[nodiscard]] godot::String get_auth_token_fingerprint() const;
 
-	// 2 utility — Story 5-2 wires get_diagnostics; Story 4-2 wires forget_all.
+	// 2 utility — wires get_diagnostics; wires forget_all.
 	[[nodiscard]] godot::Dictionary get_diagnostics();
-	// Story 5-2 T3 (AC-4) — synchronous device posture surface. Returns the
+	// (AC-4) — synchronous device posture surface. Returns the
 	// 4-key Dictionary `{rooted, debuggable, developer_options_on, adb_enabled}`
 	// (all bool). Non-authoritative — sourced via Android Build/Settings APIs;
-	// see AC-4 + DD-32 runbook reference.
+	// see AC-4 + runbook reference.
 	[[nodiscard]] godot::Dictionary get_device_posture();
 	void forget_all();
 
 #ifdef MWA_TESTING
-	// D-3: test-only. Replaces the owned bridge with a caller-supplied one
+	// test-only. Replaces the owned bridge with a caller-supplied one
 	// (or nullptr to exercise the AC-3 UNSUPPORTED_PLATFORM pre-op branch).
 	// Production builds do not define MWA_TESTING; this symbol does not exist
 	// in production. CI grep-ban `mwa-testing-define` (T6) guards against

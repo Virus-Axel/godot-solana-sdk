@@ -18,7 +18,7 @@ namespace godot_solana_sdk {
  *
  * @par Threading contract (§2.3.1)
  * Methods return immediately; results arrive via signals on the Godot main thread. Implementations
- * that hop threads (Android JNI) MUST use @c call_deferred via @c GodotMainDispatcher (DD-22).
+ * that hop threads (Android JNI) MUST use @c call_deferred via @c GodotMainDispatcher.
  * Implementations that stay on the calling thread (e.g., @c LocalKeypairSigner whose underlying
  * @c Keypair::sign_message is synchronous) MAY emit synchronously — the §2.3.1 "main thread"
  * guarantee is satisfied trivially when no thread hop occurs (AC-6).

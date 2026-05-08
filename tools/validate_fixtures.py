@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""MWA fixture schema validator (Story 1-6 Task 5 / AC-3).
+"""MWA fixture schema validator (Task 5 / AC-3).
 
 Validates every *.json file under a fixtures directory against the schema
 documented in testdata/mwa-fixtures/SCHEMA.md:

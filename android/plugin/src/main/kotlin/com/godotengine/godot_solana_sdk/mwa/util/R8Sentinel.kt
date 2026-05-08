@@ -1,6 +1,6 @@
 package com.godotengine.godot_solana_sdk.mwa.util
 
-// Compile-time sentinel used by Story 1-2 Task 6 to prove that R8's
+// Compile-time sentinel used by Task 6 to prove that R8's
 // -assumenosideeffects rule on SdkLog.v/d strips both call sites and lambda
 // bodies in the release AAR. The three unique strings below must:
 //   - MWA_R8_SENTINEL_VERBOSE_64cf3a1b  --> 0 occurrences (verbose stripped)
@@ -32,7 +32,7 @@ internal object R8Sentinel {
     // on subsequent releases. @Suppress hard-pins that KDoc intent into the
     // IDE's inspector so the cleanup pass does not touch this method. Do not
     // remove either the annotation or the method without also updating the
-    // Story 1-2 / Task 6 verification protocol and docs/amendments.md A-9.
+    // / Task 6 verification protocol and docs/amendments.md.
     @Suppress("unused")
     fun exerciseLogs(corrId: String) {
         SdkLog.v("MWA", corrId) { "MWA_R8_SENTINEL_VERBOSE_64cf3a1b" }

@@ -1,6 +1,6 @@
 // Non-Android implementation of MwaAndroidBridge. Every op emits
 // mwa_error{code=UNSUPPORTED_PLATFORM} via the injected dispatcher
-// (Story 1-4 Task 2, AC-2).
+// (Task 2, AC-2).
 #ifndef GODOT_SOLANA_SDK_MWA_NO_OP_MWA_ANDROID_BRIDGE_HPP
 #define GODOT_SOLANA_SDK_MWA_NO_OP_MWA_ANDROID_BRIDGE_HPP
 
@@ -17,7 +17,7 @@ class GodotMainDispatcher;
  * injected dispatcher. Selected at link time on linux/windows/macos/web/ios
  * by `platform_selector.cpp` so consumer GDScript can still call MWA ops on
  * non-Android targets and receive a structured error rather than a crash
- * (Story 1-4 Task 2, AC-2).
+ * (Task 2, AC-2).
  */
 class NoOpMwaAndroidBridge : public MwaAndroidBridge {
 public:
@@ -48,14 +48,14 @@ public:
     // 1 lifecycle op
     void forget_all(const godot::String& request_id) override;
 
-    // Story 5-2 T3 (DD-5-2-3) — return the 12-key all-empty / 4-key all-false
-    // JSON shapes on non-Android per DD-5-2-3 LOCKED. GDScript callers MUST
+    // return the 12-key all-empty / 4-key all-false
+    // JSON shapes on non-Android. GDScript callers MUST
     // be able to call MWA.get_diagnostics() / MWA.get_device_posture() without
     // platform branching; the returned shape is stable across platforms.
     godot::String query_diagnostics_json() const override;
     godot::String query_device_posture_json() const override;
 
-    // Story 2-1 T6 — returns empty defaults (never connected on non-Android).
+    // returns empty defaults (never connected on non-Android).
     godot::Dictionary query_session_state() const override;
 
     NoOpMwaAndroidBridge(const NoOpMwaAndroidBridge&) = delete;

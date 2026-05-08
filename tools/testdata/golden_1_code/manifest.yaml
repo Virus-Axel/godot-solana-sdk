@@ -1,8 +1,0 @@
-schema_version: 1
-codes:
-  - name: TEST_ONE
-    cpp_enum: TEST_ONE
-    kotlin_enum: TestOne
-    recoverable: true
-    retry_hint: retry_now
-    default_user_message: "Test one message."

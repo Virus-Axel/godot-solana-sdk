@@ -14,7 +14,7 @@ import java.security.SecureRandom
  * Follows arch §8.3 verbatim: `MasterKey` (Keystore-backed, `AES256_GCM`) wraps
  * `EncryptedSharedPreferences` (`AES256_SIV` keys, `AES256_GCM` values). Storage
  * is keyed by [CacheKey.toHash] — the `"mwa::v1::" + SHA256(canonical())` form
- * from DD-17 / DD-27.
+ * from /.
  *
  * Corrupt-recovery: the lazy `prefs` init catches [GeneralSecurityException]
  * (Tink AEAD failures, MasterKey rotation mismatch) and [IOException] (file
@@ -25,11 +25,11 @@ import java.security.SecureRandom
  * reconnect. Arch §8.3 names the shaded `InvalidProtocolBufferException`
  * explicitly; the shaded namespace is not on the AAR's public compile
  * classpath, so we catch its JDK parent `IOException` — substantively
- * equivalent (D-T1-4, Rule 1). Because `prefs` is lazy, the recovery fires on first READ rather
+ * equivalent (D--4, Rule 1). Because `prefs` is lazy, the recovery fires on first READ rather
  * than at store construction — constructing the store is always safe.
  *
  * `putToken` / `getToken` route through [CacheKey.toHash] + [CacheRecord.toJson]
- * / [CacheRecord.fromJson]. `listAllKeys` is consumed by Story 4-2 `forget_all`
+ * / [CacheRecord.fromJson]. `listAllKeys` is consumed by `forget_all`
  * to enumerate cached wallets across identities.
  */
 class SecureTokenStore(private val context: Context) {
@@ -88,10 +88,10 @@ class SecureTokenStore(private val context: Context) {
      *
      * The key-prefix filter excludes non-CacheRecord entries that co-live in
      * the same prefs file — currently [FINGERPRINT_SALT_KEY] for the
-     * per-install salt (D-9). Any future internal entry MUST use a key that
+     * per-install salt. Any future internal entry MUST use a key that
      * does NOT start with `"mwa::v1::"` to stay out of this iteration.
      *
-     * Used by `forget_all` in Story 4-2.
+     * Used by `forget_all`.
      */
     fun listAllKeys(): List<CacheKey> = prefs.all
         .filterKeys { it.startsWith(CacheKey.KEY_PREFIX) }
@@ -109,15 +109,15 @@ class SecureTokenStore(private val context: Context) {
      *
      * Storage format: lower-hex string (64 chars for 32 bytes). Hex over
      * base64 for API-23 compat — `java.util.Base64` is API-26+ and
-     * `android.util.Base64` isn't available in unit-test JVM (D-T3-1).
+     * `android.util.Base64` isn't available in unit-test JVM (D--1).
      *
-     * Arch §8.3 / D-9 specified `SecureRandom.getInstanceStrong()`; that
+     * Arch §8.3 / specified `SecureRandom.getInstanceStrong()`; that
      * method is API-26+ and this module targets `minSdk = 23`. The default
      * `SecureRandom()` constructor is cryptographically secure on all API-23+
-     * Android devices (delegates to `/dev/urandom`) — logged as D-T3-1
+     * Android devices (delegates to `/dev/urandom`) — logged as D--1
      * (Rule 2 substitution).
      *
-     * Rotated only by `forget_all()` (Story 4-2 scope).
+     * Rotated only by `forget_all` (scope).
      */
     fun getOrCreatePerInstallSalt(): ByteArray {
         val existing = prefs.getString(FINGERPRINT_SALT_KEY, null)
@@ -132,7 +132,7 @@ class SecureTokenStore(private val context: Context) {
     }
 
     /**
-     * Story 3-3 T1 (DD-3-3-A) — pending-submission breadcrumb storage. String-
+     * pending-submission breadcrumb storage. String-
      * keyed under the [PENDING_KEY_PREFIX] (`"pending::"`) namespace inside the
      * SAME `EncryptedSharedPreferences` instance as the auth-cache entries.
      * Parallel to [getOrCreatePerInstallSalt]'s special-case [FINGERPRINT_SALT_KEY]
@@ -146,7 +146,7 @@ class SecureTokenStore(private val context: Context) {
      * facade so the breadcrumb schema can evolve independently of the storage
      * shell.
      *
-     * Story 3-3 T2 — the implementation is a thin string-keyed put/get/list/
+     * the implementation is a thin string-keyed put/get/list/
      * remove facade over [EncryptedSharedPreferences] under [PENDING_KEY_PREFIX].
      */
     fun putPendingSubmission(requestId: String, breadcrumbDictJson: String) {
@@ -156,19 +156,19 @@ class SecureTokenStore(private val context: Context) {
     }
 
     /**
-     * Story 3-3 (DD-3-3-A) — returns the breadcrumb JSON string for [requestId],
+     * returns the breadcrumb JSON string for [requestId],
      * or null if no entry exists.
      */
     fun getPendingSubmission(requestId: String): String? = prefs.getString(PENDING_KEY_PREFIX + requestId, null)
 
     /**
-     * Story 3-3 (DD-3-3-A) — returns every pending-submission entry as a
+     * returns every pending-submission entry as a
      * `(requestId, breadcrumbDictJson)` pair list. The requestId is the value
      * AFTER the [PENDING_KEY_PREFIX] strip (callers do NOT see the
      * `"pending::"` prefix).
      *
      * Wrapped by `withStorageOrReauthRequired` at the plugin layer per
-     * DD-3-3-G — this method MAY throw [StorageCorruptException] via the
+     * this method MAY throw [StorageCorruptException] via the
      * lazy `prefs` init.
      */
     fun listAllPendingSubmissions(): List<Pair<String, String>> = prefs.all
@@ -179,7 +179,7 @@ class SecureTokenStore(private val context: Context) {
         }
 
     /**
-     * Story 3-3 (DD-3-3-A) — removes the pending entry for [requestId]. No-op
+     * removes the pending entry for [requestId]. No-op
      * if the entry does not exist (SharedPreferences.Editor.remove is a no-op
      * on absent keys).
      */
@@ -196,12 +196,12 @@ class SecureTokenStore(private val context: Context) {
         const val MASTER_KEY_ALIAS = "godot-sdk-mwa-master-key-v1"
         const val PREFS_FILE_NAME = "godot-sdk-mwa-tokens-v1"
 
-        /** D-9: alias for the per-install HKDF salt entry. Must NOT collide with [CacheKey.KEY_PREFIX]. */
+        /**: alias for the per-install HKDF salt entry. Must NOT collide with [CacheKey.KEY_PREFIX]. */
         const val FINGERPRINT_SALT_KEY = "godot-sdk-mwa-fingerprint-salt-v1"
         const val FINGERPRINT_SALT_BYTES = 32
 
         /**
-         * Story 3-3 T1 (DD-3-3-A) — namespace prefix for pending-submission
+         * namespace prefix for pending-submission
          * breadcrumbs. Entries under this prefix are NOT [CacheRecord] instances
          * — they are JSON-string blobs carrying the 6-key breadcrumb shape per
          * AC-2. The prefix MUST NOT collide with [CacheKey.KEY_PREFIX]

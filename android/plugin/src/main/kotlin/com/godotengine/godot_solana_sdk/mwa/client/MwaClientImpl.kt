@@ -25,7 +25,7 @@ import java.util.UUID
  * [TransactionResult.Success.authResult] is 2.0.x-specific API shape that a
  * minor-version dep bump could remove).
  *
- * Honors the 6 LOCKED Story 1-6 design decisions — see top-of-file comments in
+ * Honors the 6 LOCKED design decisions — see top-of-file comments in
  * [FakeMwaClient] for parity requirements.
  *
  * Op-name strings passed to [runOp] use **snake_case** identical to
@@ -94,7 +94,7 @@ class MwaClientImpl(
 
     override suspend fun disconnect(): MwaResult<Unit> = runOp("disconnect") { corrId ->
         // Client-layer no-op per MwaClient.disconnect KDoc. Nothing to release
-        // or close at this layer; plugin handles local cache teardown (Story 2-3).
+        // or close at this layer; plugin handles local cache teardown.
         MwaResult.Success(Unit, corrId)
     }
 
@@ -105,7 +105,7 @@ class MwaClientImpl(
         messages: List<ByteArray>,
         addresses: List<ByteArray>,
     ): MwaResult<SignResult> = runOp("sign_messages") { corrId ->
-        // Story 1-6 explicitly rejects multi-signer sign_messages — SignResult
+        // explicitly rejects multi-signer sign_messages — SignResult
         // only carries one ByteArray per message, which is incompatible with
         // N-sigs-per-message. If/when multi-sig becomes a requirement,
         // SignResult shape changes and this guard moves.
@@ -179,7 +179,7 @@ class MwaClientImpl(
                 // skipPreflight/maxRetries to the Godot caller. Named args make
                 // the "take the wallet default" intent unambiguous.
                 //
-                // CR-67 follow-up #4 closure (2026-05-08) — `minContextSlot`
+                // follow-up #4 closure (2026-05-08) — `minContextSlot`
                 // is `0` (NOT `null`). Phantom (and likely other strict
                 // wallets) zod-validates the `sign_and_send_transactions`
                 // params and rejects null/undefined for `min_context_slot`
@@ -299,7 +299,7 @@ class MwaClientImpl(
                     accountLabel = ar.accountLabel,
                     walletUriBase = ar.walletUriBase?.toString(),
                     // clientlib-ktx 2.0.3's AuthorizationResult does not surface walletPackage;
-                    // Story 2-1 derives it via Android Intent resolution at the plugin layer.
+                    // derives it via Android Intent resolution at the plugin layer.
                     walletPackage = null,
                     cluster = cluster,
                     chainId = chainId,
@@ -333,12 +333,12 @@ class MwaClientImpl(
      * | `ERROR_CLUSTER_NOT_SUPPORTED` (-7) | `ProtocolError` |
      * | Other remote codes / non-remote exceptions | `ProtocolError` |
      *
-     * **Fake/real parity asymmetry (DD-28 caveat):** `FakeMwaClient` CAN
+     * **Fake/real parity asymmetry (caveat):** `FakeMwaClient` CAN
      * return `MwaError.WalletRejected` when the fixture's `response.code` is
      * `"WALLET_REJECTED"`. `MwaClientImpl` CANNOT — ERROR_NOT_SIGNED (-3)
      * always maps to `UserCanceled` because the MWA protocol frames user
      * cancel and wallet auto-reject as the same wire-level event. Plugin-layer
-     * code (Story 2-1+) should treat `UserCanceled` and `WalletRejected` as
+     * code (+) should treat `UserCanceled` and `WalletRejected` as
      * semantically interchangeable for retry/recovery decisions.
      *
      * Timeouts (`Timeout`), network failures (`NetworkOffline`), and storage
@@ -368,7 +368,7 @@ class MwaClientImpl(
     /**
      * Reveals the auth token as a String for clientlib-ktx consumption.
      *
-     * **Security acknowledgment (DD-2):** Once revealed, the token lives in
+     * **Security acknowledgment:** Once revealed, the token lives in
      * the JVM's String heap until GC reclaims it. clientlib-ktx's
      * [MobileWalletAdapter.authToken] is typed `String?`, so this escape is
      * unavoidable at the library boundary. SDK redaction hygiene ends here.

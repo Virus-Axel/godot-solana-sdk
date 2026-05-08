@@ -20,13 +20,13 @@ GodotMainDispatcher::GodotMainDispatcher(godot::Object* target) {
     // an invalid Callable produce an internal godot-cpp warning and are dropped.
     ERR_FAIL_NULL_MSG(target,
         "GodotMainDispatcher: target must be a non-null live godot::Object* at construction.");
-    // D-5: bind Callable carrying target+method+ObjectID as an atomic handle.
+    // bind Callable carrying target+method+ObjectID as an atomic handle.
     // Callable internally holds an ObjectID for lifetime-aware dispatch — a
     // freed target produces a no-op internal warning inside godot-cpp rather
-    // than a UAF (CR-18 closure).
+    // than a UAF (closure).
     emit_signal_callable_ = godot::Callable(target, "emit_signal");
 #ifdef MWA_TESTING
-    // D-5: target_id_ retained only for drain_for_testing()'s synchronous
+    // target_id_ retained only for drain_for_testing's synchronous
     // dispatch path (Callable::call_deferred is asynchronous — the test
     // harness contract expects sync emit after workers joined).
     target_id_ = target->get_instance_id();
@@ -36,11 +36,11 @@ GodotMainDispatcher::GodotMainDispatcher(godot::Object* target) {
 void GodotMainDispatcher::post(const godot::String& signal_name,
                                const godot::Array& args) {
 #ifdef MWA_TESTING
-    // D-2: enqueue for synchronous drain_for_testing(). The host test binary has
+    // enqueue for synchronous drain_for_testing. The host test binary has
     // no engine loop, so call_deferred would be a black hole. Test calls
     // drain_for_testing() to flush after std::thread workers have joined.
     //
-    // T6 key rename: `"payload"` (Dictionary) → `"args"` (Array) per D-6.
+    // key rename: `"payload"` (Dictionary) → `"args"` (Array).
     //
     // CR-T6-2: validate arity at ENQUEUE time so tests fail loudly at the
     // call site that produced the bad Array, not later inside
@@ -63,14 +63,14 @@ void GodotMainDispatcher::post(const godot::String& signal_name,
     pending_.push_back(entry);
     return;
 #else
-    // D-6 arity ladder: godot-cpp's Callable exposes `call_deferred` as a
+    // arity ladder: godot-cpp's Callable exposes `call_deferred` as a
     // vararg template (extension_api.json: `is_vararg: true`) but NO
     // `call_deferredv(Array)` equivalent — `callv` is synchronous. Hand-rolling
     // a `const Variant**` argv is not an option on the public surface. So we
     // unpack the Array at the call site with a bounded ladder; `default`
     // fires ERR_FAIL_MSG so an out-of-contract arity cannot ship silently.
     //
-    // Arity upper bound is 2, bounded by A-12 (7 `*_completed` signals carry
+    // Arity upper bound is 2, bounded by (7 `*_completed` signals carry
     // 2 params; 4 error/lifecycle signals carry 1). If a future story needs
     // arity 3, it MUST file a new amendment AND extend this ladder AND the
     // parallel ladder in drain_for_testing() below.
@@ -101,7 +101,7 @@ void GodotMainDispatcher::drain_for_testing() {
         pending_.clear();
     }
 
-    // D-5: drain_for_testing resolves through ObjectDB::get_instance against
+    // drain_for_testing resolves through ObjectDB::get_instance against
     // the MWA_TESTING-only `target_id_` field, not through emit_signal_callable_.
     // Callable::call_deferred is asynchronous; the harness contract is
     // synchronous dispatch after workers joined.
@@ -117,9 +117,9 @@ void GodotMainDispatcher::drain_for_testing() {
         godot::Dictionary entry = snapshot[i];
         godot::String signal_name = entry["signal_name"];
         godot::Array args = entry["args"];
-        // D-6 parallel arity ladder — SYMMETRIC with the production ladder
+        // parallel arity ladder — SYMMETRIC with the production ladder
         // above. Must grow in lockstep with production post() or the
-        // retired-harness guarantee (A-13 retain-source clause) breaks.
+        // retired-harness guarantee (retain-source clause) breaks.
         const int arity = args.size();
         switch (arity) {
             case 1:

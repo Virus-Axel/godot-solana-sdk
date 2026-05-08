@@ -11,7 +11,7 @@
         ComposeWalletActivity is launched ONLY by the plugin itself via explicit
         Intent(ctx, ComposeWalletActivity::class.java) (see GDExtensionAndroidPlugin.kt
         lines 1533, 1562, 1572). It declares no <intent-filter> and is not addressed
-        by any external caller (Story 4-3 T3 grep verified zero external referrers).
+        by any external caller (grep verified zero external referrers).
         Per AC-3 we therefore omit android:exported (defaults to false on API 31+ since
         there is no intent-filter, and explicit-only callers within the same UID can
         still reach it). taskAffinity="" + launchMode="singleTask" prevent the

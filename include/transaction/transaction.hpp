@@ -83,11 +83,11 @@ private:
 	void _signer_signed(const PackedByteArray &signature, int32_t index);
 	void _signer_failed(int32_t index);
 
-	// ISigner-path request routing (Story 1-3 Task 3 — request_id → signer index).
+	// ISigner-path request routing (Task 3 — request_id → signer index).
 	// Each sign_at_index() invocation that dispatches via ISigner generates a unique
 	// request_id; the signer emits sign_completed/sign_failed with that request_id;
 	// _isigner_signed/_isigner_failed look up the index and apply the result.
-	// CR-17: this map is unbounded if signers hang. Per-request timeout deferred to a
+	// this map is unbounded if signers hang. Per-request timeout deferred to a
 	// future story.
 	HashMap<String, int32_t> isigner_request_id_to_index_;
 	uint64_t next_isigner_request_id_ = 0;
@@ -95,7 +95,7 @@ private:
 	// LocalKeypairSigner wrappers — those die with the local Ref). Used by
 	// _notification(NOTIFICATION_PREDELETE) to disconnect cleanly.
 	HashSet<ObjectID> isigner_connected_signer_ids_;
-	// Story 1-3 Task 7: set to true by sign_at_index when the MWA_ISIGNER_REMOVE_V1_2
+	// Task 7: set to true by sign_at_index when the MWA_ISIGNER_REMOVE_V1_2
 	// branch fires (raw Keypair signer encountered in a build with the gate flipped).
 	// Read by sign() / partially_sign() to short-circuit return ERR_METHOD_NOT_FOUND.
 	// Reset at the top of each sign() / partially_sign() invocation.

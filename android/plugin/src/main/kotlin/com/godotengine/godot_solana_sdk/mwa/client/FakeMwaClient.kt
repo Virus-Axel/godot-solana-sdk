@@ -17,14 +17,14 @@ import java.util.UUID
 /**
  * Test double for [MwaClient] that replays canned responses from JSON fixtures
  * under [fixtureDir]. Consumed by:
- *  - Story 1-6 T6 unit tests (this story).
- *  - Story 2-1 through 4-1 plugin-layer unit tests (same JSON fixtures).
+ * -  unit tests (this story).
+ * -  through 4-1 plugin-layer unit tests (same JSON fixtures).
  *  - The T4 contract tier (Story 3/4) — identical suite against this fake and
- *    a thin adapter replaying recorded clientlib-ktx traffic (DD-28 parity).
+ * a thin adapter replaying recorded clientlib-ktx traffic (parity).
  *
  * **Test-only.** Ships in `src/main/kotlin/` rather than `src/test/` so Epic 2+
  * test source-sets in sibling modules can consume it without the Gradle
- * `testFixtures` plumbing (deferred to Story 2-1 — see Story 1-6 Handoff).
+ * `testFixtures` plumbing (deferred to — see Handoff).
  * Never instantiate from production code paths.
  *
  * **Not thread-safe.** [nextScenario] is a plain `var` and interleaved
@@ -43,7 +43,7 @@ import java.util.UUID
  *
  * Each call generates its own `corrId` (8 hex chars) and emits enter/exit log
  * lines at [SdkLog.d] — mirrors [MwaClientImpl] log shape so cross-impl
- * observability parity holds (Story 1-6 Design Decision 3). Exit is logged
+ * observability parity holds (Design Decision 3). Exit is logged
  * even on the exception path (`outcome=exception`) so a test-setup failure is
  * easy to correlate with its enter line.
  *
@@ -51,7 +51,7 @@ import java.util.UUID
  * conventions):
  *  - `auth_token` (opaque string — wallets emit it as base64 characters but
  *    the value is treated as an opaque blob): stored as
- *    `SecretString(string.toByteArray(UTF_8))`. The invariant (Story 1-6
+ * `SecretString(string.toByteArray(UTF_8))`. The invariant (
  *    Design Decision 2) is that [MwaClientImpl] round-trips it back to the
  *    adapter via `adapter.authToken = String(reveal(), UTF_8)` — the UTF-8
  *    bytes are the SecretString's carrier, NOT a base64-decoded payload.
@@ -117,7 +117,7 @@ class FakeMwaClient(
         cluster: String,
     ): MwaResult<SignAndSendResult> = runOp("sign_and_send") { file, fixture -> parseSignAndSendResponse(file, fixture) }
 
-    /** No-op per Story 1-6 Design Decision 1 — FakeMwaClient holds no state to release. */
+    /** No-op per Design Decision 1 — FakeMwaClient holds no state to release. */
     override fun close() {
         // intentionally empty
     }

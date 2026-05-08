@@ -1,19 +1,19 @@
 // MockMwaAndroidBridge — host-platform (Linux/macOS) test double for MwaAndroidBridge.
-// Story 1-4 Task 5 / AC-3. First consumer: Story 1-5 thread-hop unit test.
+// Task 5 / AC-3. First consumer: thread-hop unit test.
 //
 // THREAD-SAFETY CONTRACT (IMPORTANT):
 //   MockMwaAndroidBridge is NOT thread-safe. Recording happens on the calling thread
 //   (typically main thread in tests). `drive_signal_from_thread` does NOT append to
 //   `recorded_calls_` — it only posts through the injected dispatcher. Tests MUST
 //   NOT call `get_recorded_calls()` concurrently with in-flight mock-method
-//   invocations on non-main threads. Story 1-5's test harness uses a
+// invocations on non-main threads. 's test harness uses a
 //   single-threaded test pattern: (1) call mock from main, (2) assert recorded,
 //   (3) drive callback from worker via `drive_signal_from_thread`,
 //   (4) assert dispatcher-observed emit on main.
 //
 // BUILD SCOPE:
 //   Lives at `src/mwa/testing/` (depth 3) — NOT matched by SConstruct's
-//   `Glob("src/*/*.cpp")` production source list. Story 1-5's test-target
+// `Glob("src/*/*.cpp")` production source list. 's test-target
 //   alias links this file explicitly.
 #ifndef GODOT_SOLANA_SDK_MWA_TESTING_MOCK_MWA_ANDROID_BRIDGE_HPP
 #define GODOT_SOLANA_SDK_MWA_TESTING_MOCK_MWA_ANDROID_BRIDGE_HPP
@@ -71,13 +71,13 @@ public:
                        const godot::Dictionary& opts) override;
     void forget_all(const godot::String& request_id) override;
 
-    // Story 5-2 T3 (DD-5-2-1) — test-controllable diagnostics + posture JSON
+    // test-controllable diagnostics + posture JSON
     // snapshots. Defaults to the 12-key all-empty / 4-key all-false shapes
-    // (DD-5-2-3) when no test-driver setter has been called.
+    // when no test-driver setter has been called.
     godot::String query_diagnostics_json() const override;
     godot::String query_device_posture_json() const override;
 
-    // Story 2-1 T6 — test-controllable state snapshot. Returns the dict passed
+    // test-controllable state snapshot. Returns the dict passed
     // to `set_session_state_for_testing` (empty defaults if never set).
     godot::Dictionary query_session_state() const override;
 

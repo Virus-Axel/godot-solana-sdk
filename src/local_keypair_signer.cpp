@@ -54,9 +54,9 @@ void LocalKeypairSigner::sign_messages(const godot::PackedByteArray &messages_co
 	using namespace godot;
 
 	if (!is_connected()) {
-		// CR-14: MwaErrorCode is in namespace godot_solana_sdk::mwa (verified at
+		// MwaErrorCode is in namespace godot_solana_sdk::mwa (verified at
 		// src/generated/mwa_error_codes.hpp:5). Reused here for non-MWA error reporting.
-		// TODO(CR-14): rename to SignerErrorCode in v1.2 cleanup.
+		// TODO: rename to SignerErrorCode in v1.2 cleanup.
 		emit_signal("sign_failed", request_id,
 				String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::NOT_CONNECTED)),
 				String("LocalKeypairSigner has no Keypair"));
@@ -92,7 +92,7 @@ void LocalKeypairSigner::sign_messages(const godot::PackedByteArray &messages_co
 	}
 
 	// Synchronous emit — preserves AC-6 (signatures populated before sign() returns).
-	// See class doc-comment for the §2.3.1 / DD-22 scope clarification.
+	// See class doc-comment for the §2.3.1 / scope clarification.
 	emit_signal("sign_completed", request_id, sigs);
 }
 

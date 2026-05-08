@@ -1,5 +1,5 @@
-// ABI hygiene: this header must contain only godot:: types — header-lint (Story 1-4) enforces.
-// See docs/architecture.md §7.1.1 (DD-26) and Story 1-4 AC-1.
+// ABI hygiene: this header must contain only godot:: types — header-lint enforces.
+// See docs/architecture.md §7.1.1 and AC-1.
 #ifndef GODOT_SOLANA_SDK_MWA_GODOT_MAIN_DISPATCHER_HPP
 #define GODOT_SOLANA_SDK_MWA_GODOT_MAIN_DISPATCHER_HPP
 
@@ -16,22 +16,22 @@ namespace godot_solana_sdk::mwa {
 
 /**
  * Thread-marshalling primitive: every MWA signal emission to GDScript crosses
- * to the Godot main thread through a @c GodotMainDispatcher (DD-22). Bridge
+ * to the Godot main thread through a @c GodotMainDispatcher. Bridge
  * implementations (no-op, JNI) hold a raw pointer to this dispatcher and
  * invoke @ref post from any thread.
  *
- * Story 2-1 T6 evolution (CR-18 + CR-28 resolution):
+ * evolution (+ resolution):
  *   The production path no longer performs raw-pointer virtual dispatch on a
  *   reconstructed @c godot::Object*. Instead, the ctor binds a
  *   @c godot::Callable that carries target+method+ObjectID as an atomic
  *   handle; @ref post forwards through @c Callable::call_deferred. A freed
  *   target produces a no-op internal warning inside godot-cpp, not a UAF —
- *   CR-18's ABA hazard is structurally closed (D-5).
+ * 's ABA hazard is structurally closed.
  *
  *   @ref post now takes a @c godot::Array payload. A hard-coded arity ladder
  *   over {1, 2} unpacks it into the vararg @c call_deferred. Arity is bounded
- *   by A-12 (1 for error/lifecycle signals; 2 for @c *_completed signals);
- *   any arity outside {1, 2} fires @c ERR_FAIL_MSG at the caller (D-6).
+ * by (1 for error/lifecycle signals; 2 for @c *_completed signals);
+ * any arity outside {1, 2} fires @c ERR_FAIL_MSG at the caller.
  *
  * Preconditions:
  *   - The @c target argument to the constructor must be non-null and live.
@@ -45,14 +45,14 @@ namespace godot_solana_sdk::mwa {
  *     raw-pointer hop in the caller's thread.
  *   - Under @c MWA_TESTING, @ref post enqueues into @c pending_ (mutex-guarded)
  *     and @ref drain_for_testing resolves through @c ObjectDB::get_instance
- *     synchronously against the retained @c target_id_ — matches the Story 1-5
+ * synchronously against the retained @c target_id_ — matches the
  *     host-test harness contract (call after workers joined, expects sync
- *     @c emit_signal). Preserved per A-13's retain-source clause for the
- *     future headless-Godot tier (CR-35).
+ * @c emit_signal). Preserved per 's retain-source clause for the
+ * future headless-Godot tier.
  *
  * Lifetime:
  *   - The dispatcher is owned by the target node (constructed in the node's
- *     ctor, destroyed with the node) and is NOT Godot-registered (A-11 — no
+ * ctor, destroyed with the node) and is NOT Godot-registered (no
  *     script-exposed class macro).
  *
  * Copy/move: deleted — a dispatcher is bound to a single node instance.
@@ -68,11 +68,11 @@ public:
      * @param args length-1 or length-2 @c godot::Array matching the signal
      *             registration. Arity outside {1, 2} fires @c ERR_FAIL_MSG.
      *
-     * D-6 arity contract:
+     * arity contract:
      *   - 1-element array: error/lifecycle signals (@c mwa_error,
      *     @c mwa_timeout, @c mwa_cancelled_lifecycle, @c reauth_required).
      *     Build with @c godot::Array::make(payload_dict).
-     *   - 2-element array: @c *_completed signals per A-12
+     * - 2-element array: @c *_completed signals
      *     (@c connect_completed, @c reauthorize_completed, etc.).
      *     Build with @c godot::Array::make(request_id_string, result_dict).
      */
@@ -88,7 +88,7 @@ public:
     GodotMainDispatcher& operator=(GodotMainDispatcher&&) = delete;
 
 #ifdef MWA_TESTING
-    // D-2: test-only synchronous drain. Under MWA_TESTING, `post()` enqueues into
+    // test-only synchronous drain. Under MWA_TESTING, `post` enqueues into
     // `pending_` (mutex-guarded) instead of calling `call_deferred` — the host
     // test binary has no Godot engine loop to drain it. Test code calls this
     // method after any worker thread (e.g.
@@ -101,7 +101,7 @@ public:
     // re-enter post() — must not hold the lock across arbitrary callback code).
     // Snapshot+clear under lock, emit from snapshot without lock.
     //
-    // T6 arity ladder: uses an identical D-6 {1, 2} ladder against the
+    // arity ladder: uses an identical {1, 2} ladder against the
     // post-resolved Object::emit_signal path — symmetrical with the
     // production Callable::call_deferred ladder in post(). If one ladder
     // grows, the other MUST grow in the same commit or the retired-harness
@@ -114,28 +114,28 @@ public:
     // emit_signal has no connected callbacks to observe, so snapshot-then-drain
     // is the practical assertion pattern. Each element is a
     // godot::Dictionary{"signal_name": String, "args": Array}. T6 renamed the
-    // args-key from "payload" (Dictionary) to "args" (Array) per D-6.
+    // args-key from "payload" (Dictionary) to "args" (Array).
     godot::Array snapshot_pending_for_testing() const;
 #endif
 
 private:
-    // D-5 production field: Callable carrying target+method+ObjectID as an
+    // production field: Callable carrying target+method+ObjectID as an
     // atomic handle. Bound in ctor to `godot::Callable(target, "emit_signal")`.
     // Replaces the raw `ObjectDB::get_instance(target_id_) → target->call_deferred`
-    // hop that CR-18 identified as the ABA-hazard seam.
+    // hop that identified as the ABA-hazard seam.
     godot::Callable emit_signal_callable_;
 
 #ifdef MWA_TESTING
-    // D-5: target_id_ is MWA_TESTING-only — retained for drain_for_testing()
+    // target_id_ is MWA_TESTING-only — retained for drain_for_testing
     // because Callable::call_deferred is asynchronous (posts to the message
     // queue) and the test harness contract requires synchronous dispatch after
     // workers join. Resolved via `godot::ObjectDB::get_instance(target_id_)`
     // inside drain_for_testing() only; production path never reads this field.
     godot::ObjectID target_id_;
 
-    // D-2: {signal_name, args} entries awaiting drain. godot::Array + godot::Mutex
+    // {signal_name, args} entries awaiting drain. godot::Array + godot::Mutex
     // (Godot 4 value-member pattern per godot-cpp/include/godot_cpp/core/mutex_lock.hpp:52
-    // `mutable Mutex _thread_safe_;`) instead of the STL `vector`+`mutex` pair — DD-26
+    // `mutable Mutex _thread_safe_;`) instead of the STL `vector`+`mutex` pair
     // allow-list compliance (src/mwa/include/ restricted to godot:: + <cstdint>/<cstddef>).
     //
     // Value-member rationale for godot::Mutex (which inherits godot::RefCounted

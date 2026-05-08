@@ -5,41 +5,41 @@ import androidx.lifecycle.LifecycleOwner
 import org.json.JSONObject
 
 /**
- * Story 5-3 — `DefaultLifecycleObserver` that cancels in-flight MWA ops on
+ * `DefaultLifecycleObserver` that cancels in-flight MWA ops on
  * Activity `ON_DESTROY` (e.g., device rotation, app teardown), emitting
  * `mwa_cancelled_lifecycle{request_id, source_method, reason:"activity_destroyed"}`
  * per snapshotted slot per AC-1.
  *
- * Story 5-3 is the SECOND emitter of `mwa_cancelled_lifecycle` (Story 4-2's
+ * is the SECOND emitter of `mwa_cancelled_lifecycle` ('s
  * `mwaForgetAll` cancel-in-flight loop is the FIRST). The emit shape and
- * CAS-on-`tryTerminate` discipline are inherited verbatim from Story 4-2 per
- * DD-5-3-3 LOCKED — `tryTerminate` returns `false` on already-terminated
+ * CAS-on-`tryTerminate` discipline are inherited verbatim from per
+ * `tryTerminate` returns `false` on already-terminated
  * requestIds, satisfying AC-3 ("no double terminal") automatically. The
  * vocabulary of `reason` literals: `{forget_all_invoked, activity_destroyed}`
- * (per A-12 fixed-vocabulary contract; future literals require an amendment).
+ * (per fixed-vocabulary contract; future literals require an amendment).
  *
- * **Wiring (per DD-5-3-2 LOCKED):** the observer is registered at plugin
+ * **Wiring:** the observer is registered at plugin
  * construction via `(godot.getActivity() as? LifecycleOwner)?.lifecycle
  * ?.addObserver(observer)`. `DefaultLifecycleObserver` auto-detaches on
  * `ON_DESTROY` per the `androidx.lifecycle:lifecycle-runtime` contract — no
  * explicit `removeObserver` is required in plugin teardown. Cross-Activity-
  * recreation continuity (rotation case from AC-2) is OUT OF SCOPE for
- * Story 5-3 and tracked under CR-5-3-A.
+ * and tracked under.
  *
- * **Cancellation-spillover symmetry to CR-5-3-A.** `cancelInFlight` invokes
+ * **Cancellation-spillover symmetry to .** `cancelInFlight` invokes
  * `scope.coroutineContext[Job]?.cancelChildren()` on the plugin's coroutine
  * scope. If the plugin instance is reused across Activity recreation cycles
- * (the open registration gap that CR-5-3-A documents), an OLD-Activity
+ * (the open registration gap that documents), an OLD-Activity
  * `ON_DESTROY` can spuriously cancel ops started against the NEW post-
  * rotation Activity on the same scope — failure mode is silent (the new
  * op's `CancellationException` propagates through the plugin's catch-CE
  * branch without emitting a terminal signal, leaving the user's call
- * hanging). CR-5-3-A's mitigation (per-Activity registration) closes both
+ * hanging). 's mitigation (per-Activity registration) closes both
  * the registration gap AND this cancellation-spillover gap on the same
  * axis; until that lands, the spillover is a documented narrowing rather
  * than a bug.
  *
- * **Lambda-injection ctor design (per DD-5-3-1 + T1 deviation from DD-5-3-1's
+ * **Lambda-injection ctor design (per +  deviation from 's
  * inline class shape):** the observer takes `cleanupBreadcrumb`, `payloadBuilder`,
  * and `cancelInFlight` as `() -> Unit`-style lambdas instead of a hard reference
  * to `GDExtensionAndroidPlugin`. This (a) keeps the plugin's `private fun
@@ -51,7 +51,7 @@ import org.json.JSONObject
  *
  * **NOT `@UsedByGodot`** — the observer is invoked by Android's lifecycle
  * dispatcher (`androidx.lifecycle:lifecycle-runtime`), NOT Godot's GDScript-
- * side method-name resolution. A-10's `@UsedByGodot`-keep rule does NOT apply;
+ * side method-name resolution. 's `@UsedByGodot`-keep rule does NOT apply;
  * T2 lands an explicit `-keepclassmembers` rule in `consumer-rules.pro` for
  * `MwaLifecycleObserver.onDestroy(LifecycleOwner)` to defend against R8
  * inlining (the JNI bridge between androidx.lifecycle and the JVM-loaded
@@ -65,11 +65,11 @@ internal class MwaLifecycleObserver(
     private val cleanupBreadcrumb: (requestId: String) -> Unit,
     private val payloadBuilder: (requestId: String, sourceMethod: String, reason: String) -> JSONObject,
     private val cancelInFlight: () -> Unit,
-    // Story 5-2 T2 (DD-5-2-2 LOCKED) — `mwa_cancelled_lifecycle` per-slot
+    // `mwa_cancelled_lifecycle` per-slot
     // emit must record into the AC-1 `last_n_correlation_trace` ring buffer
     // alongside the `mwaForgetAll` cancel-loop's identical post site. Lambda-
     // injected to keep [GDExtensionAndroidPlugin.recordOnEmit] private; default
-    // no-op preserves the Story 5-3 T1 ctor surface for tests that do not
+    // no-op preserves the ctor surface for tests that do not
     // assert on diagnostics interaction.
     private val recordOnEmit: (
         requestId: String,
@@ -85,8 +85,8 @@ internal class MwaLifecycleObserver(
      *   1. Snapshotting `inflightMap` for `(requestId → sourceMethod)` slots.
      *   2. CAS-claiming each slot via `tryTerminate` (atomic
      *      `ConcurrentHashMap.remove`); if claimed, emit `mwa_cancelled_lifecycle`
-     *      with `reason:"activity_destroyed"` (DD-5-3-4 LOCKED literal) and
-     *      invoke `cleanupBreadcrumb(requestId)` (DD-5-3-5 unconditional —
+     * with `reason:"activity_destroyed"` (literal) and
+     * invoke `cleanupBreadcrumb(requestId)` (unconditional
      *      idempotent for non-sign_and_send via existing helper's
      *      no-op-on-absent-key behavior).
      *   3. If `tryTerminate` returns `false` (already-terminated requestId,

@@ -6,7 +6,7 @@ import java.security.MessageDigest
  * Opaque wrapper around a byte-level secret (auth tokens, keys, etc). Provides:
  *  - `toString()` redaction so logs / debugger stringification never leak bytes.
  *  - Constant-time content equality via `MessageDigest.isEqual`.
- *  - [clear] — deterministic best-effort wipe (Story 2-1 T4, D-T4-3).
+ * - [clear] — deterministic best-effort wipe (D--3).
  *
  * **Lifetime discipline.** `val bytes` holds the reference-immutable handle to
  * the secret's backing array. The backing bytes ARE mutable via [clear], which
@@ -31,7 +31,7 @@ class SecretString(source: ByteArray) {
     // the first mismatched byte, which leaks the common-prefix length
     // through timing. `MessageDigest.isEqual` is documented constant-time
     // on modern Android runtimes and is the standard primitive for
-    // comparing secret byte arrays. Code-review Finding #3 (Story 1-2).
+    // comparing secret byte arrays. Code-review Finding #3.
     override fun equals(other: Any?): Boolean {
         return other is SecretString && MessageDigest.isEqual(bytes, other.bytes)
     }
@@ -39,7 +39,7 @@ class SecretString(source: ByteArray) {
     override fun hashCode(): Int = bytes.contentHashCode()
 
     /**
-     * Overwrite every byte with `0x00`. Closes the Story 2-1 T4 `MwaSessionState`
+     * Overwrite every byte with `0x00`. Closes the `MwaSessionState`
      * logout wipe chain — without this, nulling the `SecretString?` reference
      * only makes the instance GC-eligible; the bytes linger until the GC runs.
      * After [clear], [reveal] returns an all-zero array of the original length,

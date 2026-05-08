@@ -98,7 +98,7 @@ void MockMwaAndroidBridge::forget_all(const godot::String& request_id) {
 }
 
 godot::String MockMwaAndroidBridge::query_diagnostics_json() const {
-    // Story 5-2 T3 — mirrors NoOp's 12-key all-empty payload. Tests that
+    // mirrors NoOp's 12-key all-empty payload. Tests that
     // exercise non-empty diagnostics will (in T5+) extend this to a
     // setter-injected snapshot; today this default keeps existing test
     // fixtures unchanged.
@@ -118,7 +118,7 @@ godot::String MockMwaAndroidBridge::query_diagnostics_json() const {
 }
 
 godot::String MockMwaAndroidBridge::query_device_posture_json() const {
-    // Story 5-2 T3 — mirrors NoOp's 4-key all-false payload.
+    // mirrors NoOp's 4-key all-false payload.
     return godot::String(
         "{\"rooted\":false,"
         "\"debuggable\":false,"
@@ -200,7 +200,7 @@ void MockMwaAndroidBridge::drive_signal_from_thread(const godot::String& thread_
         // Windows / other: no-op. Thread name is for debugging; functional behavior is unaffected.
         (void)name_utf8;
 #endif
-        // D-6: dispatcher->post now takes a godot::Array. For the mock's
+        // dispatcher->post now takes a godot::Array. For the mock's
         // generalized signal-driver, treat every caller payload as a 1-arity
         // wrap. Tests that need 2-arity (*_completed) signals should call
         // dispatcher->post directly or extend this helper with an arity param.

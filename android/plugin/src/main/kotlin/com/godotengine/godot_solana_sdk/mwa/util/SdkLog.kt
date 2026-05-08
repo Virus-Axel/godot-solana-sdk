@@ -3,7 +3,7 @@ package com.godotengine.godot_solana_sdk.mwa.util
 import android.util.Log
 
 /**
- * Release-stripped logger with lambda-safe signatures (DD-30).
+ * Release-stripped logger with lambda-safe signatures.
  *
  * All five methods take a `() -> String` message factory (NOT a concrete `String`). In release
  * builds, R8's `-assumenosideeffects` rule in `consumer-rules.pro` (§8.5) strips both the call
@@ -12,7 +12,7 @@ import android.util.Log
  * happen BEFORE R8 could elide the call — the lambda interposition is what makes the strip safe.
  *
  * Two R8-rule alignment invariants that must not drift:
- *   1. Package path is `com.godotengine.godot_solana_sdk.mwa.util.SdkLog` (amendment A-6). The
+ * 1. Package path is `com.godotengine.godot_solana_sdk.mwa.util.SdkLog`. The
  *      rule matches exact class names; any rename silently matches nothing.
  *   2. `object` + `@JvmStatic` on every member. The rule descriptor is `public static void v(...)`,
  *      which only matches JVM static dispatch. Without `@JvmStatic`, Kotlin compiles to

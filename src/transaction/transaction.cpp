@@ -188,20 +188,20 @@ void Transaction::sign_at_index(const uint32_t index) {
 		return;
 	}
 
-	// PRIMARY PATH (Story 1-3 AC-2): native ISigner. Both godot_solana_sdk::ISigner
+	// PRIMARY PATH (AC-2): native ISigner. Both godot_solana_sdk::ISigner
 	// implementations (LocalKeypairSigner, WalletAdapterSigner, MobileWalletAdapter from
-	// Story 2-1) flow through this branch.
+	//) flow through this branch.
 	auto *isigner_native = Object::cast_to<godot_solana_sdk::ISigner>(signers[index]);
 	if (isigner_native != nullptr) {
 		const String request_id = allocate_isigner_request_id(static_cast<int32_t>(index));
 
 		const Callable on_signed(this, "_isigner_signed");
 		const Callable on_failed(this, "_isigner_failed");
-		// CR-5-4-G fix (Q2=(a) source fix, 2026-04-30): `ISigner` declares a
+		// fix (Q2=(a) source fix, 2026-04-30): `ISigner` declares a
 		// zero-arg `is_connected()` that shadows the inherited
 		// `Object::is_connected(StringName, Callable) const` 2-arg overload
 		// (C++ name-hiding). Cast through `Object *` so overload resolution
-		// finds the 2-arg version. See docs/triage/CR-5-4-G-cpp-compile-drift.md.
+		// finds the 2-arg version. See docs/triage/.md.
 		if (!static_cast<Object *>(isigner_native)->is_connected("sign_completed", on_signed)) {
 			isigner_native->connect("sign_completed", on_signed);
 		}
@@ -211,15 +211,15 @@ void Transaction::sign_at_index(const uint32_t index) {
 		// Track for clean disconnect in NOTIFICATION_PREDELETE (see _notification +
 		// disconnect_all_isigner_signers below). Defensive lifecycle hygiene — not tied
 		// to a tracked concern.
-		// CR-5-4-G fix (Q2=(a) source fix, 2026-04-30): godot-cpp tightened
+		// fix (Q2=(a) source fix, 2026-04-30): godot-cpp tightened
 		// `ObjectID` to no longer accept implicit `uint64_t` rvalue (the type
 		// returned by `get_instance_id()`). Wrap with explicit `ObjectID(...)`
 		// constructor.
 		isigner_connected_signer_ids_.insert(ObjectID(isigner_native->get_instance_id()));
 
-		// CR-16: payload is serialize_message() — the message portion that ed25519 signs.
+		// payload is serialize_message — the message portion that ed25519 signs.
 		// MWA's sign_transactions API expects the FULL serialized tx (with sig slots);
-		// future Story 2-1 MobileWalletAdapter must reconcile this convention. For
+		// future MobileWalletAdapter must reconcile this convention. For
 		// LocalKeypairSigner / WalletAdapterSigner v1.1, message-only is correct.
 		const PackedByteArray msg = serialize_message();
 		PackedInt32Array lengths;
@@ -837,7 +837,7 @@ Error Transaction::sign() {
 	}
 
 	if (removed_path_taken_) {
-		// Story 1-3 Task 7 (AC-5): MWA_ISIGNER_REMOVE_V1_2 build encountered a raw
+		// Task 7 (AC-5): MWA_ISIGNER_REMOVE_V1_2 build encountered a raw
 		// Keypair in signers. Surface to the caller as ERR_METHOD_NOT_FOUND.
 		return Error::ERR_METHOD_NOT_FOUND;
 	}
@@ -888,7 +888,7 @@ Error Transaction::partially_sign(const Array &array) {
 		signers = signers_snapshot;
 		signatures = signatures_snapshot;
 		ready_signature_amount = ready_signature_amount_snapshot;
-		// Story 1-3 Task 7 (AC-5): same v1.2 removal semantics as sign().
+		// Task 7 (AC-5): same v1.2 removal semantics as sign.
 		return Error::ERR_METHOD_NOT_FOUND;
 	}
 

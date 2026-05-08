@@ -22,8 +22,8 @@
 #include "generated/mwa_error_codes.hpp"
 
 namespace {
-// D-4: generate exactly 8 lowercase hex chars ([0-9a-f]{8}) per op-method call.
-// Matches Story 1-6 Kotlin corrId format (UUID.randomUUID().toString().take(8).lowercase()).
+// generate exactly 8 lowercase hex chars ([0-9a-f]{8}) per op-method call.
+// Matches Kotlin corrId format (UUID.randomUUID().toString().take(8).lowercase()).
 // Source pick: std::random_device + std::mt19937 — portable, no scene-tree/engine
 // dependency, no godot-cpp gen/ Crypto class requirement. thread_local keeps
 // construction cost off the hot path without cross-thread contention.
@@ -37,11 +37,11 @@ godot::String generate_request_id() {
 	return godot::String(buf);
 }
 
-// D-3: build the AC-3 mwa_error payload for the null-bridge pre-op branch.
+// build the AC-3 mwa_error payload for the null-bridge pre-op branch.
 // Shape mirrors NoOpMwaAndroidBridge::emit_unsupported (src/mwa/no_op_mwa_android_bridge.cpp:21-43)
 // so consumers see an identical mwa_error{UNSUPPORTED_PLATFORM, ...} envelope regardless of
-// which path fired (non-Android NoOp vs. MWA_TESTING null-bridge). See Story 1-5 Guardrails
-// §D-3 + §"Signal payload semantic" (lines 110-111) for key rationale. developer_details
+// which path fired (non-Android NoOp vs. MWA_TESTING null-bridge). See Guardrails
+// § + §"Signal payload semantic" (lines 110-111) for key rationale. developer_details
 // MUST be exactly "Kotlin plugin not loaded" — T5.3 asserts on this. `message` also carries
 // the same string to satisfy AC-3 prose (`message="Kotlin plugin not loaded"`); this key
 // matches NoOp's shape which likewise populates `message` at
@@ -67,7 +67,7 @@ godot::Dictionary build_unsupported_platform_payload(const godot::String &reques
 	return payload;
 }
 
-// Story 5-2 T3 (DD-5-2-3) — 12-key all-empty diagnostics Dictionary returned
+// 12-key all-empty diagnostics Dictionary returned
 // when the bridge is null (MWA_TESTING null-bridge guard). Mirrors the
 // JSON-string shape produced by MwaDiagnosticsBuilder.emptyDiagnosticsJson on
 // the Kotlin side + the namespace-local build_empty_diagnostics_json on the
@@ -99,7 +99,7 @@ godot::Dictionary build_empty_posture_dict() {
 	return out;
 }
 
-// Story 5-2 T3 — parse a JSON string from the bridge into a Dictionary.
+// parse a JSON string from the bridge into a Dictionary.
 // Falls back to the supplied empty-shape builder on parse failure or non-Dict
 // root so the caller receives the spec'd shape regardless of upstream errors.
 godot::Dictionary parse_dict_from_bridge_json(const godot::String &json_str,
@@ -131,10 +131,10 @@ void MobileWalletAdapter::_bind_methods() {
 	using godot::PropertyInfo;
 	using godot::Variant;
 
-	// 11 signals — shapes per Story 1-5 Guardrails signals table (post-revision):
+	// 11 signals — shapes per Guardrails signals table (post-revision):
 	//   - 7 *_completed: 2 params (request_id: String, result: Dictionary) —
-	//     request_id is first-class typed per D-4 threading, not buried in a
-	//     dict. Amendment A-12 documents the escalation from arch §3.2's
+	// request_id is first-class typed per threading, not buried in a
+	// dict. Amendment documents the escalation from arch §3.2's
 	//     uniform 1-Dict spec; 2-1 MWA.gd + 5-5 API docs must follow this.
 	//   - 4 error/lifecycle: 1 param (payload: Dictionary).
 	// Order matches AC-1 verbatim.
@@ -163,7 +163,7 @@ void MobileWalletAdapter::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("mwa_timeout", PropertyInfo(Variant::DICTIONARY, "payload")));
 	ADD_SIGNAL(MethodInfo("mwa_cancelled_lifecycle", PropertyInfo(Variant::DICTIONARY, "payload")));
 	ADD_SIGNAL(MethodInfo("reauth_required", PropertyInfo(Variant::DICTIONARY, "payload")));
-	// Story 3-3 (DD-3-3-E) — 1-param `pending_submission_found` lifecycle signal.
+	// 1-param `pending_submission_found` lifecycle signal.
 	// Fires on next successful connect/reauthorize AFTER the success signal if a
 	// stale sign_and_send breadcrumb survives a process death (AC-5). One-shot:
 	// each breadcrumb produces a single emission then clears. Payload is the
@@ -172,7 +172,7 @@ void MobileWalletAdapter::_bind_methods() {
 	// in arity to mwa_error / mwa_timeout / mwa_cancelled_lifecycle / reauth_required.
 	ADD_SIGNAL(MethodInfo("pending_submission_found", PropertyInfo(Variant::DICTIONARY, "payload")));
 
-	// 7 ops — D-1 rename: mwa_connect, mwa_disconnect (collide with
+	// 7 ops — rename: mwa_connect, mwa_disconnect (collide with
 	// godot::Object::connect / disconnect). T2 wires delegation.
 	ClassDB::bind_method(D_METHOD("mwa_connect", "identity", "cluster", "opts"), &MobileWalletAdapter::mwa_connect);
 	ClassDB::bind_method(D_METHOD("reauthorize", "opts"), &MobileWalletAdapter::reauthorize);
@@ -182,16 +182,16 @@ void MobileWalletAdapter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("sign_transactions", "transactions", "opts"), &MobileWalletAdapter::sign_transactions);
 	ClassDB::bind_method(D_METHOD("sign_and_send", "transactions", "opts"), &MobileWalletAdapter::sign_and_send);
 
-	// 4 state getters — D-1 rename: mwa_is_connected (collides with
-	// godot::Object::is_connected). Story 2-1 T6 wires to bridge snapshot.
+	// 4 state getters — rename: mwa_is_connected (collides with
+	// godot::Object::is_connected). wires to bridge snapshot.
 	ClassDB::bind_method(D_METHOD("mwa_is_connected"), &MobileWalletAdapter::mwa_is_connected);
 	ClassDB::bind_method(D_METHOD("get_public_key"), &MobileWalletAdapter::get_public_key);
 	ClassDB::bind_method(D_METHOD("get_cluster"), &MobileWalletAdapter::get_cluster);
 	ClassDB::bind_method(D_METHOD("get_wallet_label"), &MobileWalletAdapter::get_wallet_label);
-	// Story 2-1 T6 — AC-7 fingerprint getter forwarded by MWA.gd facade (T7).
+	// AC-7 fingerprint getter forwarded by MWA.gd facade.
 	ClassDB::bind_method(D_METHOD("get_auth_token_fingerprint"), &MobileWalletAdapter::get_auth_token_fingerprint);
 
-	// 2 utility + 1 NEW posture surface (Story 5-2 T3 AC-4).
+	// 2 utility + 1 NEW posture surface (AC-4).
 	ClassDB::bind_method(D_METHOD("get_diagnostics"), &MobileWalletAdapter::get_diagnostics);
 	ClassDB::bind_method(D_METHOD("get_device_posture"), &MobileWalletAdapter::get_device_posture);
 	ClassDB::bind_method(D_METHOD("forget_all"), &MobileWalletAdapter::forget_all);
@@ -201,15 +201,15 @@ MobileWalletAdapter::MobileWalletAdapter() :
 		dispatcher_(this),
 		bridge_(std::unique_ptr<mwa::MwaAndroidBridge>(mwa::MwaAndroidBridge::create(&dispatcher_))) {}
 
-// 7 ops — generate request_id (D-4) and delegate to bridge. Bridge method names
-// stay original (D-1 rename is node-binding-only). Disconnect/deauthorize pass
+// 7 ops — generate request_id and delegate to bridge. Bridge method names
+// stay original (rename is node-binding-only). Disconnect/deauthorize pass
 // an empty Dictionary for opts — bridge signatures require the arg even though
 // the node bindings take none. T3 adds the null-bridge guard above each
 // delegation line.
 godot::String MobileWalletAdapter::mwa_connect(const godot::Dictionary &identity, const godot::String &cluster, const godot::Dictionary &opts) {
 	const godot::String request_id = generate_request_id();
 	if (bridge_ == nullptr) {
-		// D-6: 1-arity error signal — wrap payload in 1-elem Array.
+		// 1-arity error signal — wrap payload in 1-elem Array.
 		dispatcher_.post(godot::String("mwa_error"),
 				godot::Array::make(build_unsupported_platform_payload(request_id, godot::String("connect"))));
 		return request_id;
@@ -281,7 +281,7 @@ void MobileWalletAdapter::sign_and_send(const godot::TypedArray<godot::PackedByt
 // 4 state getters — T6 wires via bridge->query_session_state() (atomic
 // snapshot: NoOp returns empty defaults on non-Android; Jni round-trips to
 // MwaSessionState via MwaJniContext::query_session_state on Android). The
-// null-bridge branch (D-3 MWA_TESTING case) returns the same empty-default
+// null-bridge branch (MWA_TESTING case) returns the same empty-default
 // values NoOp's snapshot would produce.
 bool MobileWalletAdapter::mwa_is_connected() const {
 	if (bridge_ == nullptr) { return false; }
@@ -313,8 +313,8 @@ godot::String MobileWalletAdapter::get_auth_token_fingerprint() const {
 	return godot::String(snapshot.get("auth_token_fingerprint", godot::String()));
 }
 
-// Story 5-2 T3 (DD-5-2-1 LOCKED) — synchronous diagnostics pull. Replaces
-// the Story 1-5 empty-Dict stub. Bridge is queried synchronously for a JSON
+// synchronous diagnostics pull. Replaces
+// the empty-Dict stub. Bridge is queried synchronously for a JSON
 // String (same pattern as `query_session_state`); here we parse it into a
 // Dictionary AND overlay `godot_version` from `Engine::get_version_info()` so
 // the Kotlin side does not need to know the engine version (it already
@@ -322,7 +322,7 @@ godot::String MobileWalletAdapter::get_auth_token_fingerprint() const {
 //
 // `is_supported()` is NOT called here — the bridge contract already covers
 // non-Android via the NoOp impl returning the 12-key all-empty JSON shape per
-// DD-5-2-3. Null-bridge (MWA_TESTING) returns the same empty Dict directly.
+// Null-bridge (MWA_TESTING) returns the same empty Dict directly.
 godot::Dictionary MobileWalletAdapter::get_diagnostics() {
 	godot::Dictionary out;
 	if (bridge_ == nullptr) {
@@ -331,7 +331,7 @@ godot::Dictionary MobileWalletAdapter::get_diagnostics() {
 		const godot::String json_str = bridge_->query_diagnostics_json();
 		out = parse_dict_from_bridge_json(json_str, &build_empty_diagnostics_dict, "get_diagnostics");
 	}
-	// DD-5-2-1 step 3 — overlay godot_version from Engine::get_version_info()
+	// step 3 — overlay godot_version from Engine::get_version_info
 	// so the Kotlin side's "" placeholder (set in
 	// GDExtensionAndroidPlugin.buildDiagnosticsJsonForJni) is replaced with the
 	// actual engine version on the read side. Falls back to "" if the engine
@@ -347,7 +347,7 @@ godot::Dictionary MobileWalletAdapter::get_diagnostics() {
 	return out;
 }
 
-// Story 5-2 T3 (AC-4) — synchronous device posture pull. Mirrors
+// (AC-4) — synchronous device posture pull. Mirrors
 // `get_diagnostics`: bridge returns the 4-key JSON, we parse + fall back to
 // the empty-shape dict on any failure.
 godot::Dictionary MobileWalletAdapter::get_device_posture() {
@@ -358,14 +358,14 @@ godot::Dictionary MobileWalletAdapter::get_device_posture() {
 	return parse_dict_from_bridge_json(json_str, &build_empty_posture_dict, "get_device_posture");
 }
 
-// Story 4-2 T3 (per amendment A-15) — fill in the Story 1-5 empty stub.
+// fill in the empty stub.
 // Mirrors the mwa_disconnect / deauthorize sibling pattern at this TU
 // (generate_request_id → null-bridge guard → bridge delegation), with two
 // differences: (a) the bridge call is 1-arg per
 // MwaAndroidBridge::forget_all (no opts Dictionary — distinct from
 // disconnect/deauthorize 2-arg signatures); (b) the unsupported-platform
 // payload's source_method literal is "forget_all". NO ADD_SIGNAL row is
-// added — DD-4-2-8 LOCKS that forget_all has no completion signal; AC-1
+// added — LOCKS that forget_all has no completion signal; AC-1
 // evidence is post-condition state inspection (listAllKeys empty +
 // MasterKey alias gone + sessionState cleared).
 void MobileWalletAdapter::forget_all() {

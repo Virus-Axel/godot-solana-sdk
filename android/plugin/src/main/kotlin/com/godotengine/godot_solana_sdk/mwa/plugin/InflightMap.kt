@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Tracks the terminal-signal lifecycle state for in-flight MWA operations
- * keyed by `requestId` (arch §7.3 / DD-23). Callers [register] on op start,
+ * keyed by `requestId` (arch §7.3). Callers [register] on op start,
  * then on every would-be terminal emission (success / error / timeout) call
  * [tryTerminate] to CAS-remove the entry. First winner gets `true` and may
  * emit the terminal signal; late callers see `false` and must drop
@@ -36,15 +36,15 @@ internal class InflightMap {
      * the existing entry untouched and return `false`. Retries use a fresh
      * `requestId`, not re-registration of the same one.
      *
-     * **Story 4-2 DD-4-2-1 (LOCKED) — extended to 3-arg with `sourceMethod`
+     * ** — extended to 3-arg with `sourceMethod`
      * placed AT END for positional-arg compile-compat with the 6 existing
-     * 2-arg callers** (D-4-2-T1-1 Rule 1: story-spec placed `sourceMethod`
+     * 2-arg callers** (2--1 Rule 1: story-spec placed `sourceMethod`
      * in the middle, but Kotlin positional args make that signature break
      * existing callers; placing the default last preserves
      * `register(requestId, clock())` call-shape and lets T2 back-fill
      * explicit `sourceMethod` values per-call-site). Without
-     * `sourceMethod`, [snapshot] reports "unknown" — Story 5-3's
-     * lifecycle observer + Story 4-2's `mwa_cancelled_lifecycle` cancel
+     * `sourceMethod`, [snapshot] reports "unknown" — 's
+     * lifecycle observer + 's `mwa_cancelled_lifecycle` cancel
      * loop both consume `sourceMethod` for the cancellation payload; T2
      * back-fills.
      *
@@ -68,7 +68,7 @@ internal class InflightMap {
     }
 
     /**
-     * Story 4-2 DD-4-2-3 — read-only snapshot of currently-pending ops as
+     * read-only snapshot of currently-pending ops as
      * `(requestId → sourceMethod)`. Used by `mwaForgetAll` to iterate
      * in-flight slots and emit `mwa_cancelled_lifecycle{request_id,
      * source_method, reason:"forget_all_invoked"}` per slot via
@@ -82,7 +82,7 @@ internal class InflightMap {
     /** Number of entries currently PENDING. Intended for tests / diagnostics. */
     fun size(): Int = map.size
 
-    /** Drop all entries. Used on `forget_all` (Story 4-2) and in test teardown. */
+    /** Drop all entries. Used on `forget_all` and in test teardown. */
     fun clear() {
         map.clear()
     }

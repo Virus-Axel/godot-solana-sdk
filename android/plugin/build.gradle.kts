@@ -9,21 +9,20 @@ val pluginName = "WalletAdapterAndroid"
 
 val pluginPackageName = "plugin.walletadapterandroid"
 
-// Story 4-3 T5 (AC-6 / DD-4-3-4) — pin transitive deps to specific resolved
-// versions via gradle.lockfile + per-artifact SHA-256 verification via
-// gradle/verification-metadata.xml. PGP signatures are best-effort
-// (DD-4-3-4.a — some long-tail jars like org.json:json have no Maven Central
-// signature). Regenerate both files on dep bumps via:
+// Pin transitive deps to specific resolved versions via gradle.lockfile
+// + per-artifact SHA-256 verification via gradle/verification-metadata.xml.
+// PGP signatures are best-effort (some long-tail jars like org.json:json
+// have no Maven Central signature). Regenerate both files on dep bumps via:
 //   ./gradlew :plugin:assembleRelease :plugin:dependencies \
 //       --write-locks --write-verification-metadata pgp,sha256 --refresh-dependencies
-// (full procedure in docs/dev/lockfile-regeneration.md). DO NOT place this
-// block inside `android { }` — that form does not exist (C-4-3-D); the AGP
-// DSL does NOT recognize `dependencyLocking { ... }` and would fail at
-// script-resolve time.
 //
-// `lockFile` is overridden to `$rootDir/gradle.lockfile` (i.e. android/gradle.lockfile)
-// per Story 4-3 §Tasks T5 must_have ("android/gradle.lockfile exists"). Default
-// would write to `$projectDir/gradle.lockfile` (i.e. android/plugin/gradle.lockfile).
+// DO NOT place this block inside `android { }` — the AGP DSL does NOT
+// recognize `dependencyLocking { ... }` and would fail at script-resolve
+// time.
+//
+// `lockFile` is overridden to `$rootDir/gradle.lockfile` (i.e.
+// android/gradle.lockfile). Default would write to `$projectDir/gradle.lockfile`
+// (i.e. android/plugin/gradle.lockfile).
 dependencyLocking {
     lockAllConfigurations()
     lockFile.set(file("$rootDir/gradle.lockfile"))

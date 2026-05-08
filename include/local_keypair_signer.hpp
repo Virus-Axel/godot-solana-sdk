@@ -28,7 +28,7 @@ namespace godot_solana_sdk {
  *
  * §2.3.1's "Godot main thread" guarantee is satisfied trivially: @c Keypair::sign_message
  * is synchronous on the calling thread, which is Godot main for any GDScript-driven
- * @c tx.sign() invocation. DD-22's @c call_deferred mandate is scoped to cross-thread
+ * @c tx.sign() invocation. 's @c call_deferred mandate is scoped to cross-thread
  * Kotlin→GDScript marshalling (architecture §7.1), and does not apply here.
  *
  * @par Lifetime (Concern 4 resolution)

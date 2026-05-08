@@ -1,5 +1,5 @@
 // Platform selector — the sole #ifdef __ANDROID__ translation unit in the
-// entire C++ source tree (Story 1-4 AC-5, DD-12). `MwaAndroidBridge::create`
+// entire C++ source tree (AC-5). `MwaAndroidBridge::create`
 // is defined ONLY here; every other TU is platform-agnostic and compiles
 // against the pure-virtual ABC. CI grep (ci/grep_bans.sh pattern 5,
 // Task 6) enforces this constraint for all __ANDROID__ spelling variants

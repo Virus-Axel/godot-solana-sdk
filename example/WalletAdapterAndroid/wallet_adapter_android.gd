@@ -1,6 +1,6 @@
 extends Control
 
-# Story 2-2 T6.1 — Release-gate reauthorize wiring.
+# Release-gate reauthorize wiring.
 #
 # This is the WalletAdapterAndroid demo scene script.  It exercises the MWA
 # autoload (registered via project.godot) and serves as the human-operated
@@ -10,7 +10,7 @@ extends Control
 #   DiagnosticLabel  — RichTextLabel; shows Public Key / Fingerprint / Last Cycle
 #   ReauthorizeBtn   — Button; calls MWA.reauthorize({}) on pressed
 #
-# [CR-32-RELEASE-GATE] logcat marker is gated on debug builds (OS.is_debug_build())
+# Release-gate logcat marker is gated on debug builds (OS.is_debug_build())
 # to prevent token-related data from leaking into production logcat streams.
 
 
@@ -85,7 +85,7 @@ func _on_reauthorize_pressed() -> void:
 func _on_mwa_connect_pressed() -> void:
 	# Release-gate bootstrap. Identity URI / icon are placeholders meaningful
 	# only to the wallet's authorize prompt; cluster is "devnet" to match the
-	# AC-5 procedure and the Story 2-2 unit-test seeds.
+	# AC-5 procedure and the unit-test seeds.
 	var identity := {
 		"name": "WalletAdapterAndroid Demo",
 		"icon_uri": "https://example.com/wallet-adapter-android-icon.png",
@@ -102,21 +102,21 @@ func _on_reauthorize_completed(request_id: String, result: Dictionary) -> void:
 	# Defensive: the procedure's regex `grep -oP 'public_key=\K[^ ]+'` would
 	# capture an empty string if pk were "" — and `[ "$CURRENT_PK" != "$INITIAL_PK" ]`
 	# would compare two empty strings as equal, masking a regression as a
-	# false-positive AC-5 success. DD-2-2-4 guarantees the keys are present
+	# false-positive AC-5 success. guarantees the keys are present
 	# and populated, but defense-in-depth is cheap.
 	if pk.is_empty() or fp.is_empty():
 		push_error(
-			"[CR-32-RELEASE-GATE] reauthorize_completed missing pk/fp; pk='"
+			"[] reauthorize_completed missing pk/fp; pk='"
 			+ pk + "' fp='" + fp + "'"
 		)
 		return
 
-	# [CR-32-RELEASE-GATE] marker — debug builds only (token-leak guard).
+	# [] marker — debug builds only (token-leak guard).
 	# The line format is stable: grep -oP 'public_key=\K[^ ]+' and
 	# grep -oP 'fingerprint=\K[^ ]+' extract the fields used by the 10-cycle
 	# procedure script.
 	if OS.is_debug_build():
-		print("[CR-32-RELEASE-GATE] cycle_marker public_key=" + pk + " fingerprint=" + fp)
+		print("[] cycle_marker public_key=" + pk + " fingerprint=" + fp)
 
 	# Update the diagnostic UI label if present.
 	_update_diagnostic_label(pk, fp, ts)

@@ -528,9 +528,8 @@ else:
     env.Command("assemble", None, [Copy(GDEXT_FILE, "godot-solana-sdk.gdextension"), copy_bin_action, copy_aar_action])
     env.Alias("addon", [ANDROID_PLUGIN_DESTINATION, gdext_target])
 
-    # Story 1-5 `scons tests` target (host-mode MobileWalletAdapter / SecretString
-    # GoogleTest harness) was RETIRED by Amendment A-13 on 2026-04-23 — godot-cpp's
-    # GDExtensionBinding interface pointers are null in a host binary with no
-    # running Godot engine, making ClassDB::register_class SIGSEGV at runtime.
-    # C++ test coverage deferred to a future headless-Godot tier (CR-35).
-    # See docs/amendments.md A-13 + docs/concerns.md CR-31..35.
+    # Note: a host-mode `scons tests` target was prototyped earlier but
+    # retired — godot-cpp's GDExtensionBinding interface pointers are null in
+    # a host binary with no running Godot engine, so ClassDB::register_class
+    # SIGSEGVs at runtime. C++ test coverage is expected to land on a future
+    # headless-Godot tier rather than a host-mode test binary.

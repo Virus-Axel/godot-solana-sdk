@@ -97,8 +97,8 @@ void WalletAdapterSigner::sign_messages(const godot::PackedByteArray &messages_c
 
 	if (wa_ == nullptr || !wa_->is_connected()) {
 		// Code-review LOW 8: use generated MwaErrorCode names for parity with
-		// LocalKeypairSigner (CR-14 marker tracks the v1.2 namespace cleanup).
-		// TODO(CR-14): rename to SignerErrorCode in v1.2 cleanup.
+		// LocalKeypairSigner (marker tracks the v1.2 namespace cleanup).
+		// TODO: rename to SignerErrorCode in v1.2 cleanup.
 		emit_signal("sign_failed", request_id,
 				String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::NOT_CONNECTED)),
 				String("WalletAdapterSigner has no connected WalletAdapter"));
@@ -106,7 +106,7 @@ void WalletAdapterSigner::sign_messages(const godot::PackedByteArray &messages_c
 	}
 	if (request_in_flight_) {
 		// "BUSY" not in MwaErrorCode enum; keep as string literal until error-codes.yaml
-		// adds it (Story 1-1 follow-up). // TODO(CR-14): consider adding BUSY to enum.
+		// adds it (follow-up). // TODO: consider adding BUSY to enum.
 		emit_signal("sign_failed", request_id,
 				String("BUSY"),
 				String("WalletAdapterSigner has another request in flight"));
@@ -119,13 +119,13 @@ void WalletAdapterSigner::sign_messages(const godot::PackedByteArray &messages_c
 
 	// Bounds pre-check: sum(lengths) must equal messages_concat.size(). Code-review
 	// MED 7: emit sign_failed (caller hangs without it; previous ERR_FAIL_COND_MSG
-	// returned silently, leaving CR-17 HashMap leak). Matches LocalKeypairSigner's
+	// returned silently, leaving HashMap leak). Matches LocalKeypairSigner's
 	// PROTOCOL_ERROR convention.
 	int64_t total_len = 0;
 	for (int i = 0; i < lengths.size(); i++) {
 		const int len = lengths[i];
 		if (len < 0) {
-			// TODO(CR-14): rename to SignerErrorCode in v1.2 cleanup.
+			// TODO: rename to SignerErrorCode in v1.2 cleanup.
 			emit_signal("sign_failed", request_id,
 					String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::PROTOCOL_ERROR)),
 					String("WalletAdapterSigner: negative length in lengths array"));
@@ -134,7 +134,7 @@ void WalletAdapterSigner::sign_messages(const godot::PackedByteArray &messages_c
 		total_len += len;
 	}
 	if (total_len != messages_concat.size()) {
-		// TODO(CR-14): rename to SignerErrorCode in v1.2 cleanup.
+		// TODO: rename to SignerErrorCode in v1.2 cleanup.
 		emit_signal("sign_failed", request_id,
 				String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::PROTOCOL_ERROR)),
 				String("WalletAdapterSigner: sum(lengths) does not match messages_concat.size()"));
@@ -200,7 +200,7 @@ void WalletAdapterSigner::_on_signing_failed() {
 		return;
 	}
 	// Code-review LOW 8: WALLET_REJECTED is in MwaErrorCode enum (mwa_error_codes.hpp:9).
-	// TODO(CR-14): rename to SignerErrorCode in v1.2 cleanup.
+	// TODO: rename to SignerErrorCode in v1.2 cleanup.
 	fail(godot::String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::WALLET_REJECTED)),
 			godot::String("WalletAdapter emitted signing_failed"));
 }
@@ -213,14 +213,14 @@ void WalletAdapterSigner::disconnect_signals() {
 	}
 	const Callable on_signed(this, "_on_message_signed");
 	const Callable on_failed(this, "_on_signing_failed");
-	// CR-5-4-G fix (Q2=(a) source fix, 2026-04-30): `WalletAdapter` declares
+	// fix (Q2=(a) source fix, 2026-04-30): `WalletAdapter` declares
 	// a zero-arg `is_connected()` (verified at include/wallet_adapter/wallet_
 	// adapter.hpp:153) that shadows the inherited 2-arg `Object::is_connected
 	// (StringName, Callable) const` (C++ name-hiding). The pre-existing inline
 	// NOTE at lines 70-75 documented the resolution rule for the ZERO-arg call
 	// sites (lines 77, 81, 98) but the 2-arg call sites here at 216, 219 were
 	// not addressed. Cast through `Object *` so overload resolution finds the
-	// 2-arg version. See docs/triage/CR-5-4-G-cpp-compile-drift.md.
+	// 2-arg version. See docs/triage/.md.
 	if (static_cast<godot::Object *>(wa_)->is_connected("message_signed", on_signed)) {
 		wa_->disconnect("message_signed", on_signed);
 	}

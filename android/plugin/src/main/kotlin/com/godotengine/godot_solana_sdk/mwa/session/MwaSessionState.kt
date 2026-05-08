@@ -6,9 +6,9 @@ import org.json.JSONObject
 /**
  * In-memory session state for the MWA plugin. Single instance held as a
  * companion-object field on `GDExtensionAndroidPlugin` (scaffold DI pattern
- * from Story 1-2; Story 2-3 hardens this into per-instance state).
+ * from; hardens this into per-instance state).
  *
- * **Thread-safety contract (Story 2-1 T4).** Every accessor here is
+ * **Thread-safety contract .** Every accessor here is
  * `@Synchronized` on the instance lock. This is load-bearing because MWA
  * services multi-threaded callers: Godot main thread (reads for
  * `get_auth_token_fingerprint` etc.), clientlib-ktx coroutine dispatcher
@@ -28,8 +28,8 @@ import org.json.JSONObject
  * minimize the scope between [getAuthToken] and [SecretString.reveal] (or
  * copy the bytes immediately under the lock-holding getter).
  *
- * Story 2-1 T4 migrated `authToken` from raw `String?` to `SecretString?`
- * (closes CR-5). The scaffold-era `@UsedByGodot` methods and their
+ * migrated `authToken` from raw `String?` to `SecretString?`
+ * (closes). The scaffold-era `@UsedByGodot` methods and their
  * `MyComposable` consumers adapt at the seam: wrap inbound `String` from
  * clientlib's `walletAdapter.authToken` in a `SecretString`, and unwrap via
  * `String(token.reveal(), Charsets.UTF_8)` when handing the token back to
@@ -52,7 +52,7 @@ internal class MwaSessionState {
     private var authTokenFingerprint: String = ""
     private var walletIconUri: String = ""
 
-    // Story 2-1 T6 — fields needed by `MobileWalletAdapter`'s C++ state
+    // fields needed by `MobileWalletAdapter`'s C++ state
     // getters via `MwaJniContext::query_session_state`. T4 stored publicKey
     // bytes in [connectedKey] and cluster as an Int on the scaffold surface,
     // neither of which matches the String-typed GDScript getters. Adding
@@ -156,7 +156,7 @@ internal class MwaSessionState {
     @Synchronized
     fun getAuthToken(): SecretString? = authToken
 
-    /** Story 2-1 T4 — AC-7 fingerprint surfaced for `MWA.get_auth_token_fingerprint()`. */
+    /** — AC-7 fingerprint surfaced for `MWA.get_auth_token_fingerprint()`. */
     @Synchronized
     fun setAuthTokenFingerprint(fingerprint: String) {
         this.authTokenFingerprint = fingerprint
@@ -165,7 +165,7 @@ internal class MwaSessionState {
     @Synchronized
     fun getAuthTokenFingerprint(): String = authTokenFingerprint
 
-    /** Story 2-1 T4 — wallet-provided icon URI for the UI (distinct from the game's [iconUri]). */
+    /** — wallet-provided icon URI for the UI (distinct from the game's [iconUri]). */
     @Synchronized
     fun setWalletIconUri(uri: String) {
         this.walletIconUri = uri
@@ -199,7 +199,7 @@ internal class MwaSessionState {
     fun getWalletLabel(): String = walletLabel
 
     /**
-     * Story 2-1 T6 — atomic JSON snapshot of the 5 state-getter values the
+     * atomic JSON snapshot of the 5 state-getter values the
      * C++ node reads via `MwaJniContext::query_session_state`. The
      * `@Synchronized` keyword ensures callers see a consistent post-connect
      * tuple (no torn read between `authToken` going non-null and
@@ -263,8 +263,8 @@ internal class MwaSessionState {
      * Clears only auth-related state — preserves [identityUri] / [iconUri] /
      * [identityName] / [cluster] so a subsequent `connect` can reuse the
      * caller's context. Wipes [authToken] bytes before nulling (same wipe
-     * semantics as [clear]). Invoked on `mwaDisconnect` (Story 2-3) and
-     * after `forget_all` rotation (Story 4-2).
+     * semantics as [clear]). Invoked on `mwaDisconnect` and
+     * after `forget_all` rotation.
      */
     @Synchronized
     fun clearOnLogout() {

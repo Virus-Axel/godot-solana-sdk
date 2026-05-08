@@ -16,7 +16,7 @@ import javax.crypto.spec.SecretKeySpec
  *
  * Intended purpose: a log-friendly / diagnostic-display disambiguator so users
  * and support engineers can identify which wallet session they have (arch §7.2
- * correlation IDs, `get_diagnostics()` Story 5-2) — NOT a cryptographically
+ * correlation IDs, `get_diagnostics`) — NOT a cryptographically
  * identifying credential. The 4-byte truncation gives roughly 32 bits of
  * preimage resistance and only ~16 bits of birthday-collision resistance, so
  * do not use the fingerprint as an authorization input or a primary key.
@@ -24,10 +24,10 @@ import javax.crypto.spec.SecretKeySpec
  * that HKDF derives; the truncation is for display ergonomics only.
  *
  * Per-install salt is a 32-byte `SecureRandom()` value persisted in the same
- * `EncryptedSharedPreferences` file under D-9 alias
+ * `EncryptedSharedPreferences` file under alias
  * `"godot-sdk-mwa-fingerprint-salt-v1"` — see
  * [SecureTokenStore.getOrCreatePerInstallSalt]. Rotation is scoped to
- * `forget_all()` (Story 4-2).
+ * `forget_all`.
  *
  * RFC 5869 compliance:
  * - Extract:  PRK = HMAC-SHA256(salt, IKM)

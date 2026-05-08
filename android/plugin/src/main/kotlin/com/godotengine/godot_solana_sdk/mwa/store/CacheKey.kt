@@ -8,9 +8,9 @@ import java.util.Locale
 
 /**
  * Cache key for [SecureTokenStore] — a 4-tuple identifying a stored MWA auth
- * record (DD-17). On-disk storage keys are `"mwa::v1::" + SHA256(canonical())`
+ * record. On-disk storage keys are `"mwa::v1::" + SHA256(canonical)`
  * where `canonical()` is a length-prefixed concatenation of the 4 fields
- * (DD-27): each field is encoded as `4-byte-big-endian(len(utf8)) ||
+ * each field is encoded as `4-byte-big-endian(len(utf8)) ||
  * utf8-bytes`. A raw `"|".join(...)` joiner would collide when, for example,
  * `identityUri` contains a literal `|` in a URL query (AC-2 load-bearing).
  */
@@ -20,7 +20,7 @@ data class CacheKey(
     val walletPackage: String,
     val identityUri: String,
 ) {
-    /** `"mwa::v1::" + SHA256(canonical())` per DD-17 / DD-27. */
+    /** `"mwa::v1::" + SHA256(canonical)` per /. */
     fun toHash(): String = KEY_PREFIX + sha256Hex(canonical())
 
     /**

@@ -5,7 +5,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Story 5-2 (DD-5-2-1 LOCKED) — diagnostics-payload builder.
+ * diagnostics-payload builder.
  *
  * Produces the AC-1 12-key Dictionary as a JSON String for sync transport
  * across the JNI seam (`mwaQueryDiagnosticsFromJni: () -> String` → C++
@@ -37,12 +37,12 @@ import org.json.JSONObject
  *
  * **AC-3 PII guarantee:** the only token-derived field in the payload is
  * `auth_token_fingerprint` (HKDF-SHA256 truncated to 4 bytes / 8 hex chars per
- * DD-34); the raw `auth_token` bytes never appear in the JSON. The `public_key`
+ *); the raw `auth_token` bytes never appear in the JSON. The `public_key`
  * and Base58 encoded forms are NOT included in this payload (they're surfaced
  * separately via `MWA.get_public_key()`); embedding the public key here would
  * be redundant + arguably PII-adjacent under a strict reading of AC-3.
  *
- * **Non-Android empty-Dict semantics (DD-5-2-3):** [emptyDiagnosticsJson]
+ * **Non-Android empty-Dict semantics:** [emptyDiagnosticsJson]
  * returns the 12-key all-empty shape (string fields = `""`, int fields = `0`,
  * `last_n_correlation_trace` = `[]`, `session_state` = `{}`); used when the
  * plugin instance is null OR when called on non-Android via the no-op bridge.
@@ -58,7 +58,7 @@ internal object MwaDiagnosticsBuilder {
         godotVersion: String,
         androidApiLevel: Int,
     ): String {
-        // Per DD-5-2-1: nest the 5-key sessionState snapshot under `session_state`
+        // Per: nest the 5-key sessionState snapshot under `session_state`
         // by parsing the JSON the existing accessor produces (cheap reuse — keeps
         // a single source-of-truth shape across `mwaQuerySessionStateFromJni` and
         // `mwaQueryDiagnosticsFromJni`).
@@ -66,7 +66,7 @@ internal object MwaDiagnosticsBuilder {
 
         // wallet_package + wallet_version are NOT surfaced by sessionState
         // (clientlib-ktx 2.0.3's AuthorizationResult has no walletPackage; see
-        // MwaClientImpl.kt:285). Empty strings per DD-5-2-3 fallback semantics.
+        // MwaClientImpl.kt:285). Empty strings per fallback semantics.
 
         val traceArr = JSONArray()
         for (entry in diagnostics.lastNCorrelationTrace) {

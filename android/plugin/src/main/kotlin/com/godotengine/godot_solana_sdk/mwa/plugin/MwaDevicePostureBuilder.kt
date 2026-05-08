@@ -7,7 +7,7 @@ import android.provider.Settings
 import org.json.JSONObject
 
 /**
- * Story 5-2 (DD-5-2-1 LOCKED) — device-posture-payload builder.
+ * device-posture-payload builder.
  *
  * Produces the AC-4 4-key Dictionary as a JSON String for sync transport
  * across the JNI seam (`mwaQueryDevicePostureFromJni: () -> String` → C++
@@ -29,7 +29,7 @@ import org.json.JSONObject
  * each signal at the OS level. Do NOT use as a security gate; surface as
  * informational metadata only (e.g., for support-team triage).
  *
- * **Non-Android empty-Dict semantics (DD-5-2-3):** [emptyPostureJson] returns
+ * **Non-Android empty-Dict semantics:** [emptyPostureJson] returns
  * the 4-key all-`false` shape; used when the plugin instance is null OR when
  * called on non-Android via the no-op bridge.
  */

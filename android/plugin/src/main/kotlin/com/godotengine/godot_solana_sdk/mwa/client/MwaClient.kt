@@ -46,7 +46,7 @@ interface MwaClient {
 
     /**
      * Silent re-authorization using a previously cached [authToken]. No wallet UI is
-     * surfaced (per NFR-5). Callers must pass the **same** [SecretString] obtained from
+     * surfaced. Callers must pass the **same** [SecretString] obtained from
      * a prior `authorize` / `reauthorize` result; passing a different token returns
      * `Failure(TokenExpired)`. `(cluster, chainId)` must match the auth-time values;
      * mismatch returns `Failure(ProtocolError)` without touching clientlib.
@@ -62,7 +62,7 @@ interface MwaClient {
     /**
      * Revoke [authToken] with the wallet. Wallet-side the token is marked expired;
      * caller is expected to also clear it locally (the plugin's SecureTokenStore owns
-     * that — see Story 4-1). Returns `Failure(WalletUninstalled)` if the wallet app is
+     * that — see). Returns `Failure(WalletUninstalled)` if the wallet app is
      * gone (local wipe still proceeds per 4-1 AC-2).
      */
     suspend fun deauthorize(sender: ActivityResultSender, identity: ConnectionIdentity, authToken: SecretString): MwaResult<Unit>
@@ -78,7 +78,7 @@ interface MwaClient {
      * client. Local cache teardown (clearing the plugin's cached
      * `is_connected` / `get_public_key` getters, closing the
      * `SecureTokenStore` handle, etc.) is the plugin layer's responsibility
-     * and lands in Story 2-3. Never surfaces wallet UI and never touches the
+     * and lands. Never surfaces wallet UI and never touches the
      * wallet process.
      *
      * Returns `MwaResult.Success(Unit)` unconditionally in the current

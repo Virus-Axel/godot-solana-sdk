@@ -1,4 +1,4 @@
-// Android JNI implementation of MwaAndroidBridge (Story 2-1 T5 — real JNI).
+// Android JNI implementation of MwaAndroidBridge (real JNI).
 // This header is only INCLUDED on Android (platform_selector.cpp gates the
 // include under its sanctioned `#ifdef __ANDROID__`). The CPP TU is excluded
 // from non-Android builds by the SConstruct platform filter.
@@ -20,9 +20,9 @@ class GodotMainDispatcher;
  * Lifetime: [MwaAndroidBridgeJni] calls [register_dispatcher] in its ctor and
  * [unregister_dispatcher] in its dtor.
  *
- * Story 2-1 T10 — CR-41 teardown-race barrier:
+ * teardown-race barrier:
  *   An in-flight callback counter plus a draining flag protect the
- *   hazard-class identified by CR-41 (JNIEXPORT callback already past the
+ * hazard-class identified by (JNIEXPORT callback already past the
  *   null-check + mid-`dispatcher->post(...)` when the owning node is freed).
  *   JNIEXPORT callbacks acquire a scoped RAII lease via
  *   [acquire_callback_lease] BEFORE touching the dispatcher pointer;
@@ -53,7 +53,7 @@ public:
     // Signal draining + spin-wait (bounded ~200ms) for in-flight callbacks
     // to release their leases, then clear the dispatcher pointer. After
     // this returns the counter is zero (or the timeout fired with a
-    // logged warning — see CR-41). Called from [MwaAndroidBridgeJni] dtor.
+    // logged warning — see). Called from [MwaAndroidBridgeJni] dtor.
     static void unregister_dispatcher();
 
     // Non-owning accessor. Prefer [acquire_callback_lease] for JNIEXPORT
@@ -62,7 +62,7 @@ public:
     // callers that do not post through the dispatcher.
     static GodotMainDispatcher* get_dispatcher();
 
-    // CR-41 RAII lease. Holding this guard PINS the dispatcher against a
+    // RAII lease. Holding this guard PINS the dispatcher against a
     // concurrent [unregister_dispatcher]. Usage:
     //
     //   MwaJniContext::CallbackLease lease;
@@ -97,7 +97,7 @@ public:
         bool acquired_;
     };
 
-    // Story 2-1 T6 — synchronous JNI round-trip to the Kotlin plugin that
+    // synchronous JNI round-trip to the Kotlin plugin that
     // returns an atomic snapshot of `MwaSessionState` (is_connected,
     // public_key, cluster, wallet_label, auth_token_fingerprint). Called
     // from MwaAndroidBridgeJni::query_session_state() on the Godot main
@@ -108,7 +108,7 @@ public:
 };
 
 /**
- * @brief Real Android JNI implementation of MwaAndroidBridge (Story 2-1 T5).
+ * @brief Real Android JNI implementation of MwaAndroidBridge.
  *
  * Forwards each MWA op into the JVM-side `GDExtensionAndroidPlugin` via JNI;
  * the Kotlin layer drives the wallet-handshake + transaction-signing flows
@@ -148,11 +148,11 @@ public:
     // 1 lifecycle op
     void forget_all(const godot::String& request_id) override;
 
-    // Story 5-2 T3 (DD-5-2-1) — sync JNI getters mirroring query_session_state.
+    // sync JNI getters mirroring query_session_state.
     godot::String query_diagnostics_json() const override;
     godot::String query_device_posture_json() const override;
 
-    // Story 2-1 T6 — delegates to MwaJniContext::query_session_state() which
+    // delegates to MwaJniContext::query_session_state which
     // performs a synchronous JNI round-trip to MwaSessionState (Kotlin).
     godot::Dictionary query_session_state() const override;
 

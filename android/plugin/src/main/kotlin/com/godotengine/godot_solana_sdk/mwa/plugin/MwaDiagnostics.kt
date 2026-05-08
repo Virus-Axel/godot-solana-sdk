@@ -3,9 +3,9 @@ package com.godotengine.godot_solana_sdk.mwa.plugin
 import java.util.concurrent.atomic.AtomicLong
 
 /**
- * Story 5-2 — `last_n_correlation_trace` ring buffer entry per AC-2's 5-key
+ * `last_n_correlation_trace` ring buffer entry per AC-2's 5-key
  * shape. Recorded by the plugin's `recordOnEmit` helper at every terminal-
- * signal emission site (DD-5-2-2 LOCKED — caller-side centralization of the
+ * signal emission site (caller-side centralization of the
  * recorder cross-cut). Surfaced via [MwaDiagnostics.lastNCorrelationTrace]
  * → `MwaDiagnosticsBuilder.buildDiagnosticsJson` → `MWA.get_diagnostics()`.
  */
@@ -18,13 +18,13 @@ data class CorrelationTraceEntry(
 )
 
 /**
- * Plugin-layer diagnostic counters. Surfaced by `get_diagnostics()` in Story 5-2;
+ * Plugin-layer diagnostic counters. Surfaced by `get_diagnostics`;
  * populated incrementally by the MWA code paths as they land.
  *
  * Thread-safe via [AtomicLong] for counters. All counters are monotonic (never
  * decrement); [resetForTest] wipes them for unit-test isolation only.
  *
- * Story 5-2 ADDS: ring buffer `lastNCorrelationTrace` (capacity 20, FIFO eviction)
+ * ADDS: ring buffer `lastNCorrelationTrace` (capacity 20, FIFO eviction)
  * + recorder [recordCorrelationTrace] populated by the plugin's `recordOnEmit`
  * cross-cut helper. Thread-safe via `synchronized(correlationLock)` for both
  * insert and snapshot — recorder may be called from `Dispatchers.Default` (op-
@@ -47,7 +47,7 @@ class MwaDiagnostics {
     val lateResultCount: Long get() = _lateResultCount.get()
 
     /**
-     * Story 3-3 (DD-3-3-G + DD-4-1-3 wipe-crashed-flag pattern) — incremented
+     * (+ wipe-crashed-flag pattern) — incremented
      * each time a pending-submission breadcrumb cleanup attempt fails because
      * `SecureTokenStore.removePendingSubmission` raised `StorageCorruptException`.
      * The cleanup site is intentionally NOT wrapped with `withStorageOrReauthRequired`
@@ -61,7 +61,7 @@ class MwaDiagnostics {
     val cleanupFailedCount: Long get() = _cleanupFailedCount.get()
 
     /**
-     * Story 5-2 (DD-5-2-2 LOCKED) — ring buffer of the last 20 terminal-signal
+     * ring buffer of the last 20 terminal-signal
      * emissions. Population is the responsibility of the plugin's `recordOnEmit`
      * cross-cut helper (invoked at every `nativeBridge.post*Native` site). Capacity
      * 20; on insert when full, the oldest entry is evicted. Thread-safe via
@@ -95,7 +95,7 @@ class MwaDiagnostics {
 
     companion object {
         /**
-         * Story 5-2 AC-2 — ring buffer capacity. 20 chosen per DD-32 LOCKED
+         * AC-2 — ring buffer capacity. 20 chosen
          * "ring buffer N=20 correlation traces". Hardcoded; not configurable.
          */
         const val RING_BUFFER_CAPACITY: Int = 20

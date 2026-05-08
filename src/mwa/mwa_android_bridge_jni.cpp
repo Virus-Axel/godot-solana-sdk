@@ -1,8 +1,8 @@
-// Story 2-1 T5 / T6 — real Android JNI implementation of MwaAndroidBridge.
+// /  — real Android JNI implementation of MwaAndroidBridge.
 //
 // T5 landed the forward-direction call path (C++ → Kotlin) and the
 // reverse-direction JNIEXPORT callbacks. T6 evolved the dispatcher surface
-// to a `(String, Array)` signature per D-6, dissolving the T5 transitional
+// to a `(String, Array)` signature , dissolving the transitional
 // `post_arity2` into the unified `post` + arity ladder, and added
 // `MwaJniContext::query_session_state` as a synchronous pull of
 // `MwaSessionState` for the C++ node's four state getters (plus
@@ -10,7 +10,7 @@
 //
 // This TU is excluded from non-Android builds by the SConstruct platform
 // filter (src/mwa/mwa_android_bridge_jni.cpp is filtered out when
-// env["platform"] != "android"). Per D-11, NO `#ifdef __ANDROID__` inside
+// env["platform"] != "android"). Per , NO `#ifdef __ANDROID__` inside
 // this file — the platform gate is at SConstruct level.
 //
 // Architecture overview:
@@ -29,7 +29,7 @@
 //             → JNIEXPORT Java_..._postConnectCompletedNative in this file
 //                 → MwaJniContext::get_dispatcher()->post("connect_completed",
 //                       Dictionary{request_id, result_dict})
-//                 → D-5 Callable + D-6 Array ladder (T6) crosses to Godot main.
+// →  Callable + Array ladder crosses to Godot main.
 //
 // JNI caching: JNI_OnLoad captures JavaVM*, the plugin companion class, and
 // every @JvmStatic method ID. FindClass / GetStaticMethodID are expensive and
@@ -85,11 +85,11 @@ jmethodID g_mid_mwa_sign_messages_from_jni = nullptr;
 jmethodID g_mid_mwa_sign_transactions_from_jni = nullptr;
 jmethodID g_mid_mwa_sign_and_send_from_jni = nullptr;
 jmethodID g_mid_mwa_forget_all_from_jni = nullptr;
-// Story 2-1 T6 — reverse-direction sync getter: returns JSON string snapshot
+// reverse-direction sync getter: returns JSON string snapshot
 // of MwaSessionState for the 4 C++ state getters.
 jmethodID g_mid_mwa_query_session_state_from_jni = nullptr;
-// Story 5-2 T3 (DD-5-2-1) — sync diagnostics + device-posture getters
-// mirroring `mwaQuerySessionStateFromJni`. Replace the Story 1-5 async
+// sync diagnostics + device-posture getters
+// mirroring `mwaQuerySessionStateFromJni`. Replace the async
 // `mwaGetDiagnosticsFromJni` jmethodID + cache (deleted).
 jmethodID g_mid_mwa_query_diagnostics_from_jni = nullptr;
 jmethodID g_mid_mwa_query_device_posture_from_jni = nullptr;
@@ -158,7 +158,7 @@ private:
 // Non-ASCII would only arrive if a wallet_label or identity.name with emoji
 // reaches this boundary unescaped, which the current JSON serialization path
 // prevents.
-// CR-38 tracks migrating to GetStringChars/NewString (UTF-16) for future-proofing.
+// tracks migrating to GetStringChars/NewString (UTF-16) for future-proofing.
 godot::String jstring_to_godot_string(JNIEnv* env, jstring jstr) {
     if (jstr == nullptr) { return godot::String(); }
     const char* utf = env->GetStringUTFChars(jstr, nullptr);
@@ -219,7 +219,7 @@ void emit_jni_exception_error(GodotMainDispatcher* dispatcher,
     payload["layer"] = godot::String("cpp");
     payload["cause"] = godot::String("jni_exception");
     payload["source_method"] = godot::String(method_name);
-    // D-6: 1-arity error signal — wrap payload in 1-elem Array.
+    // 1-arity error signal — wrap payload in 1-elem Array.
     dispatcher->post(godot::String("mwa_error"), godot::Array::make(payload));
 }
 
@@ -280,7 +280,7 @@ void call_reqid_only_shape(jmethodID mid,
     env->DeleteLocalRef(j_req);
 }
 
-// CR-67 follow-up #4 closure (2026-05-08) — serialize a TypedArray of
+// follow-up #4 closure (2026-05-08) — serialize a TypedArray of
 // PackedByteArray (the GDScript-side payloads passed to sign_messages /
 // sign_transactions / sign_and_send) into a JSON string of base64-encoded
 // payloads: `["base64-1","base64-2",...]`. The Kotlin shim parses + base64-
@@ -301,11 +301,11 @@ godot::String serialize_byte_arrays_to_json(
     return godot::JSON::stringify(b64_array);
 }
 
-// CR-67 follow-up #4 closure (2026-05-08) — call a cached @JvmStatic void
+// follow-up #4 closure (2026-05-08) — call a cached @JvmStatic void
 // method that takes (reqId, payloadsJson, timeoutMs). Used for the 3 signing
 // JNI shims (sign_messages / sign_transactions / sign_and_send). Distinct
 // shape from `call_authorize_shape` (no identity/cluster/chainId — those
-// come from MwaSessionState on the Kotlin side per DD-3-1-8) and from
+// come from MwaSessionState on the Kotlin side per) and from
 // `call_reqid_only_shape` (carries actual payload data, not just a reqId).
 void call_sign_op_shape(jmethodID mid,
                         GodotMainDispatcher* dispatcher,
@@ -332,15 +332,15 @@ void call_sign_op_shape(jmethodID mid,
 
 }  // anonymous namespace
 
-// ---------------- MwaJniContext impl (+ CR-41 teardown barrier) ----------------
+// ---------------- MwaJniContext impl (+ teardown barrier) ----------------
 //
-// CR-41 resolution (Story 2-1 T10): JNIEXPORT callbacks that post through the
+// resolution: JNIEXPORT callbacks that post through the
 // dispatcher take a CallbackLease before touching the pointer. The lease's
 // ctor atomically increments `g_in_flight_callbacks` iff `g_draining` is
 // clear. `unregister_dispatcher` sets `g_draining`, spin-waits (bounded
 // ~200ms) for the counter to reach zero, then clears the pointer. Net: no
 // lease-holder is ever mid-`post()` when the dispatcher object is destroyed.
-// See CR-41 in concerns.md for the full hazard framing.
+// See in concerns.md for the full hazard framing.
 
 namespace {
 std::atomic<GodotMainDispatcher*> g_dispatcher{nullptr};
@@ -380,12 +380,12 @@ void MwaJniContext::unregister_dispatcher() {
         godot::UtilityFunctions::push_warning(
             godot::String("MWA: dispatcher unregister drain timed out with ") +
             godot::itos(stragglers) +
-            godot::String(" in-flight callback(s); proceeding at UAF risk (CR-41 bound exceeded)."));
+            godot::String(" in-flight callback(s); proceeding at UAF risk (bound exceeded)."));
     }
 
     // Phase 3: clear the pointer. Any stragglers past the deadline still
     // hold the OLD pointer in their lease and will hit a destroyed
-    // dispatcher object — best-effort drop per CR-41's bounded-wait contract.
+    // dispatcher object — best-effort drop per 's bounded-wait contract.
     g_dispatcher.store(nullptr, std::memory_order_release);
 }
 
@@ -393,7 +393,7 @@ GodotMainDispatcher* MwaJniContext::get_dispatcher() {
     return g_dispatcher.load(std::memory_order_acquire);
 }
 
-// CR-41 lease: ctor order is (counter-increment, draining-check, pointer-load,
+// lease: ctor order is (counter-increment, draining-check, pointer-load,
 // counter-decrement-on-failure). The counter increment PRECEDES the draining
 // check so that `unregister_dispatcher` cannot observe counter=0 between a
 // racing ctor's draining-check and its post() call.
@@ -421,7 +421,7 @@ MwaJniContext::CallbackLease::~CallbackLease() {
     }
 }
 
-// Story 2-1 T6 — empty-defaults snapshot. Matches the shape NoOp returns so
+// empty-defaults snapshot. Matches the shape NoOp returns so
 // consumers default-cast to "not connected" on any JNI failure path.
 static godot::Dictionary build_empty_session_state() {
     godot::Dictionary out;
@@ -507,7 +507,7 @@ void MwaAndroidBridgeJni::emit_jni_unavailable(const godot::String& source_metho
     payload["layer"] = godot::String("cpp");
     payload["cause"] = godot::String("jni_uninitialized");
     payload["source_method"] = source_method;
-    // D-6: 1-arity error signal — wrap payload in 1-elem Array.
+    // 1-arity error signal — wrap payload in 1-elem Array.
     dispatcher_->post(godot::String("mwa_error"), godot::Array::make(payload));
 }
 
@@ -531,9 +531,9 @@ void MwaAndroidBridgeJni::reauthorize(const godot::String& request_id,
         emit_jni_unavailable(godot::String("reauthorize"), request_id);
         return;
     }
-    // Story 2-2 stub: empty identity + cluster + chainId. The Kotlin shim
+    // stub: empty identity + cluster + chainId. The Kotlin shim
     // `mwaReauthorizeFromJni` falls back to MwaSessionState when these args
-    // arrive empty (CR-67 follow-up #3 closure 2026-05-07 — see
+    // arrive empty (follow-up #3 closure 2026-05-07 — see
     // GDExtensionAndroidPlugin.kt :: Companion.mwaReauthorizeFromJni).
     // Filling these in C++-side requires extending `query_session_state` to
     // expose identity_uri/identity_name/chain_id; deferred because the
@@ -607,7 +607,7 @@ void MwaAndroidBridgeJni::forget_all(const godot::String& request_id) {
 
 godot::Dictionary MwaAndroidBridgeJni::query_session_state() const {
     // Delegates to the file-scope helper so non-bridge callers (e.g. diagnostic
-    // tooling in Story 5-2) can reach the same snapshot without instantiating
+    // tooling in) can reach the same snapshot without instantiating
     // a bridge. On any JNI failure path the helper returns empty defaults —
     // the getter then reports "not connected" rather than crashing.
     return MwaJniContext::query_session_state();
@@ -615,7 +615,7 @@ godot::Dictionary MwaAndroidBridgeJni::query_session_state() const {
 
 namespace {
 
-// Story 5-2 T3 (DD-5-2-3) — 12-key all-empty diagnostics payload returned on
+// 12-key all-empty diagnostics payload returned on
 // any JNI failure path. Mirrors MwaDiagnosticsBuilder.emptyDiagnosticsJson on
 // the Kotlin side.
 godot::String build_empty_diagnostics_json() {
@@ -642,7 +642,7 @@ godot::String build_empty_posture_json() {
         "\"adb_enabled\":false}");
 }
 
-// Story 5-2 T3 — shared sync-JNI-getter scaffold. Mirrors
+// shared sync-JNI-getter scaffold. Mirrors
 // MwaJniContext::query_session_state's pattern: ready-flag check, attach,
 // CallStaticObjectMethod, jstring extract. Returns the empty-fallback String
 // on any failure.
@@ -697,7 +697,7 @@ using godot_solana_sdk::mwa::GodotMainDispatcher;
 
 // --- forward-path: cache the plugin companion class + method IDs ---
 //
-// CR-67 Bug B fix: lookup the OUTER class, not the inner $Companion. The
+// Bug B fix: lookup the OUTER class, not the inner $Companion. The
 // `mwa*FromJni` methods on the Kotlin Companion are annotated `@JvmStatic`,
 // which compiles to a `public static final` BRIDGE method on the OUTER class
 // + an instance method on the Companion. JNI's `GetStaticMethodID` against
@@ -743,7 +743,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
     godot_solana_sdk::mwa::g_mid_mwa_deauthorize_from_jni =
         env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
                                "mwaDeauthorizeFromJni", reqid_only_sig);
-    // CR-67 follow-up #4 closure (2026-05-08) — sign_* shims evolved from the
+    // follow-up #4 closure (2026-05-08) — sign_* shims evolved from the
     // 1-arg `(reqId)` stub to a 3-arg `(reqId, payloadsJson, timeoutMs)` shape
     // so real payloads survive the C++ → JNI → Kotlin handoff. Pre-fix the
     // bridge discarded payloads and sent `payloads:[]` to the wallet, causing
@@ -763,13 +763,13 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
         env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
                                "mwaForgetAllFromJni", reqid_only_sig);
 
-    // Story 2-1 T6 — sync getter returns String (Ljava/lang/String;).
+    // sync getter returns String (Ljava/lang/String).
     const char* string_sync_getter_sig = "()Ljava/lang/String;";
     godot_solana_sdk::mwa::g_mid_mwa_query_session_state_from_jni =
         env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
                                "mwaQuerySessionStateFromJni", string_sync_getter_sig);
-    // Story 5-2 T3 (DD-5-2-1) — sync diagnostics + device-posture getters.
-    // Replace the Story 1-5 async `mwaGetDiagnosticsFromJni(reqId): Unit`
+    // sync diagnostics + device-posture getters.
+    // Replace the async `mwaGetDiagnosticsFromJni(reqId): Unit`
     // jmethodID load (deleted alongside the Kotlin entry).
     godot_solana_sdk::mwa::g_mid_mwa_query_diagnostics_from_jni =
         env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
@@ -782,7 +782,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
 
     // Readiness: class + at least the authorize method must be resolved.
     // Missing optional methods (reauth, sign, etc.) are acceptable during
-    // Story 2-1 T5 (only authorize is fully wired); the op methods null-check
+    // (only authorize is fully wired); the op methods null-check
     // their specific mid before each call.
     godot_solana_sdk::mwa::g_jni_ready.store(
         godot_solana_sdk::mwa::g_plugin_companion_class != nullptr &&
@@ -799,7 +799,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
 // well-formed mwa_error — a mangled emission isn't silently suppressed and a
 // malformed *_completed isn't delivered with an empty result dict.
 //
-// CR-T6-8 trade-off (Story 2-1 T6 review): for arity-1 paths the request_id
+// trade-off (review): for arity-1 paths the request_id
 // lives INSIDE the payload JSON. When parse fails we have no trustworthy way
 // to recover it — attempting to string-match a `request_id` out of mangled
 // bytes would propagate corruption (the wrong request could be marked
@@ -838,7 +838,7 @@ static void post_parse_failure_error(GodotMainDispatcher* dispatcher,
     fallback["layer"] = godot::String("cpp");
     fallback["cause"] = godot::String("json_parse_error");
     fallback["source_method"] = godot::String(seam_label);
-    // D-6: 1-arity error signal — wrap fallback in 1-elem Array.
+    // 1-arity error signal — wrap fallback in 1-elem Array.
     dispatcher->post(godot::String("mwa_error"), godot::Array::make(fallback));
 }
 
@@ -866,7 +866,7 @@ static bool try_parse_payload(const godot::String& json_str,
 }
 
 // Helper: parse payload JSON + post to dispatcher as arity-1 (1-param error/lifecycle
-// signals per A-12). Used by mwa_error / mwa_timeout / mwa_cancelled_lifecycle /
+// signals per). Used by mwa_error / mwa_timeout / mwa_cancelled_lifecycle /
 // reauth_required. NEVER logs the payload body — only the seam label (which is
 // the signal name: public identifier, not secret). Payload variable naming matches
 // the grep-ban pattern 8.
@@ -876,7 +876,7 @@ static void post_arity1(JNIEnv* env,
                         jstring payload_json,
                         const char* signal_name,
                         const char* seam_label) {
-    // CR-41: acquire lease BEFORE touching dispatcher. Lease dtor releases
+    // acquire lease BEFORE touching dispatcher. Lease dtor releases
     // the in-flight counter even if we early-return below.
     MwaJniContext::CallbackLease lease;
     GodotMainDispatcher* dispatcher = lease.dispatcher();
@@ -904,11 +904,11 @@ static void post_arity1(JNIEnv* env,
         post_parse_failure_error(dispatcher, godot::String(""), seam_label, json_str.length());
         return;
     }
-    // D-6: 1-arity error/lifecycle signal — wrap payload in 1-elem Array.
+    // 1-arity error/lifecycle signal — wrap payload in 1-elem Array.
     dispatcher->post(godot::String(signal_name), godot::Array::make(payload));
 }
 
-// Helper: post to dispatcher as arity-2 `*_completed` signal per A-12. GDScript
+// Helper: post to dispatcher as arity-2 `*_completed` signal. GDScript
 // sees `connect_completed(request_id, result)` — two typed parameters matching
 // the `ADD_SIGNAL` registration. T6: dispatcher->post now takes Array; we
 // wrap (req_id, result) in a 2-elem Array and the production ladder unpacks
@@ -921,7 +921,7 @@ static void post_arity2_completed(JNIEnv* env,
                                   jstring result_json_jstr,
                                   const char* signal_name,
                                   const char* seam_label) {
-    // CR-41: acquire lease BEFORE touching dispatcher. Lease dtor releases
+    // acquire lease BEFORE touching dispatcher. Lease dtor releases
     // the in-flight counter even if we early-return below.
     MwaJniContext::CallbackLease lease;
     GodotMainDispatcher* dispatcher = lease.dispatcher();
@@ -943,7 +943,7 @@ static void post_arity2_completed(JNIEnv* env,
         post_parse_failure_error(dispatcher, req_id, seam_label, json_str.length());
         return;
     }
-    // D-6: 2-arity *_completed signal — Array::make(req_id, result).
+    // 2-arity *_completed signal — Array::make(req_id, result).
     dispatcher->post(godot::String(signal_name), godot::Array::make(req_id, result));
 }
 
@@ -953,11 +953,11 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postConnectCompletedNa
     post_arity2_completed(env, reqId, resultDictJson, "connect_completed", "postConnectCompletedNative");
 }
 
-// Story 2-3 T3 — 2-param `disconnect_completed` JNIEXPORT per A-12.
+// 2-param `disconnect_completed` JNIEXPORT.
 // Kotlin side: GDExtensionAndroidPlugin.Companion.postDisconnectCompletedNative (external fun)
 // → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
 //       "disconnect_completed", Array::make(req_id, result_dict))
-// under CR-41 CallbackLease — parallel to postConnectCompletedNative above.
+// under CallbackLease — parallel to postConnectCompletedNative above.
 //
 // The result_dict carries `{request_id, source_method: "disconnect"}` only —
 // no secret material on the disconnect path. On JSON parse failure (unlikely;
@@ -965,25 +965,25 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postConnectCompletedNa
 // falls back to mwa_error{PROTOCOL_ERROR, source_method="disconnect",
 // cause="parse_failure"} via the existing helper — preserves the
 // terminal-signal invariant (AC-3 idempotence remains safe because each
-// call carries its own request_id per DD-2-3-4).
+// call carries its own request_id per).
 JNIEXPORT void JNICALL
 Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postDisconnectCompletedNative(
     JNIEnv* env, jobject /*companion*/, jstring reqId, jstring resultDictJson) {
     post_arity2_completed(env, reqId, resultDictJson, "disconnect_completed", "postDisconnectCompletedNative");
 }
 
-// Story 2-2 T3 — 2-param `reauthorize_completed` JNIEXPORT per A-12.
+// 2-param `reauthorize_completed` JNIEXPORT.
 // Kotlin side: GDExtensionAndroidPlugin.Companion.postReauthorizeCompletedNative (external fun)
 // → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
 //       "reauthorize_completed", Array::make(req_id, result_dict))
-// under CR-41 CallbackLease — parallel to postDisconnectCompletedNative above.
+// under CallbackLease — parallel to postDisconnectCompletedNative above.
 //
 // The result_dict carries the reauthorize response payload (public_key,
 // auth_token_fingerprint, etc.) built by Kotlin before the call. On JSON
 // parse failure, post_parse_failure_error falls back to
 // mwa_error{PROTOCOL_ERROR, source_method="reauthorize", cause="parse_failure"}
 // via the existing helper — preserves the terminal-signal invariant.
-// No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
+// No #ifdef __ANDROID__: JNI TU is SCons-guarded for Android-only.
 // Signals are posted via dispatcher only — no direct signal emission here.
 JNIEXPORT void JNICALL
 Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postReauthorizeCompletedNative(
@@ -991,22 +991,22 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postReauthorizeComplet
     post_arity2_completed(env, reqId, resultDictJson, "reauthorize_completed", "postReauthorizeCompletedNative");
 }
 
-// Story 3-1 T3 — 2-param `sign_messages_completed` JNIEXPORT per A-12.
+// 2-param `sign_messages_completed` JNIEXPORT.
 // Kotlin side: GDExtensionAndroidPlugin.Companion.postSignMessagesCompletedNative (external fun)
 // → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
 //       "sign_messages_completed", Array::make(req_id, result_dict))
-// under CR-41 CallbackLease — parallel to postReauthorizeCompletedNative above.
+// under CallbackLease — parallel to postReauthorizeCompletedNative above.
 //
 // The result_dict carries `{request_id, signed_payloads: [base64...]}` per
-// arch.md §3 sign_messages_completed signal schema (DD-3-1-5). Signed
+// arch.md §3 sign_messages_completed signal schema. Signed
 // payloads are public material (signatures of caller-supplied messages) —
 // no secret-key material crosses this boundary; SecretString does NOT
 // participate in this signal. On JSON parse failure (unlikely; the Kotlin
 // side builds the JSON via JSONObject + JSONArray in buildSignSuccessJson),
 // post_parse_failure_error falls back to mwa_error{PROTOCOL_ERROR,
 // source_method="sign_messages", cause="parse_failure"} via the existing
-// helper — preserves the terminal-signal invariant per DD-15.
-// No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
+// helper — preserves the terminal-signal invariant.
+// No #ifdef __ANDROID__: JNI TU is SCons-guarded for Android-only.
 // Signals are posted via dispatcher only — no direct signal emission here.
 JNIEXPORT void JNICALL
 Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postSignMessagesCompletedNative(
@@ -1014,15 +1014,15 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postSignMessagesComple
     post_arity2_completed(env, reqId, resultDictJson, "sign_messages_completed", "postSignMessagesCompletedNative");
 }
 
-// Story 3-2 T3 — 2-param `sign_transactions_completed` JNIEXPORT per A-12.
+// 2-param `sign_transactions_completed` JNIEXPORT.
 // Kotlin side: GDExtensionAndroidPlugin.Companion.postSignTransactionsCompletedNative (external fun)
 // → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
 //       "sign_transactions_completed", Array::make(req_id, result_dict))
-// under CR-41 CallbackLease — parallel to postSignMessagesCompletedNative above.
+// under CallbackLease — parallel to postSignMessagesCompletedNative above.
 //
 // The result_dict carries the 2-key shape `{request_id, signed_transactions:
 // [base64...]}` per arch.md §3 sign_transactions_completed signal schema +
-// DD-3-2-3 (payloadKey rename — `signed_transactions` instead of
+// (payloadKey rename — `signed_transactions` instead of
 // `signed_payloads`; see buildSignSuccessJson on the Kotlin side). Signed
 // transactions are wallet-signed serialized Solana txs (public bytes by
 // definition; the wallet has already returned them and the caller will
@@ -1032,8 +1032,8 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postSignMessagesComple
 // buildSignSuccessJson), post_parse_failure_error falls back to
 // mwa_error{PROTOCOL_ERROR, source_method="sign_transactions",
 // cause="parse_failure"} via the existing helper — preserves the
-// terminal-signal invariant per DD-15.
-// No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
+// terminal-signal invariant.
+// No #ifdef __ANDROID__: JNI TU is SCons-guarded for Android-only.
 // Signals are posted via dispatcher only — no direct signal emission here.
 JNIEXPORT void JNICALL
 Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postSignTransactionsCompletedNative(
@@ -1041,14 +1041,14 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postSignTransactionsCo
     post_arity2_completed(env, reqId, resultDictJson, "sign_transactions_completed", "postSignTransactionsCompletedNative");
 }
 
-// Story 3-3 T3 — 2-param `sign_and_send_completed` JNIEXPORT per A-12.
+// 2-param `sign_and_send_completed` JNIEXPORT.
 // Kotlin side: GDExtensionAndroidPlugin.Companion.postSignAndSendCompletedNative (external fun)
 // → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
 //       "sign_and_send_completed", Array::make(req_id, result_dict))
-// under CR-41 CallbackLease — parallel to postSignTransactionsCompletedNative above.
+// under CallbackLease — parallel to postSignTransactionsCompletedNative above.
 //
 // The result_dict carries the 4-key shape `{request_id, signatures: Array[String],
-// submitted_at: int, confirmation_status: String}` per AC-1 + DD-3-3-E. Distinct
+// submitted_at: int, confirmation_status: String}` per AC-1 +. Distinct
 // from the 2-key sign_messages / sign_transactions shapes — sign_and_send MUST
 // surface the cluster-submission timestamp + status because the wallet has
 // already forwarded the transaction(s) to the chosen RPC endpoint by the time
@@ -1059,8 +1059,8 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postSignTransactionsCo
 // Kotlin side builds via JSONObject + JSONArray in buildSignAndSendSuccessJson),
 // post_parse_failure_error falls back to mwa_error{PROTOCOL_ERROR,
 // source_method="sign_and_send", cause="parse_failure"} via the existing
-// helper — preserves the terminal-signal invariant per DD-15.
-// No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
+// helper — preserves the terminal-signal invariant.
+// No #ifdef __ANDROID__: JNI TU is SCons-guarded for Android-only.
 // Signals are posted via dispatcher only — no direct signal emission here.
 JNIEXPORT void JNICALL
 Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postSignAndSendCompletedNative(
@@ -1068,22 +1068,22 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postSignAndSendComplet
     post_arity2_completed(env, reqId, resultDictJson, "sign_and_send_completed", "postSignAndSendCompletedNative");
 }
 
-// Story 4-1 T3 — 2-param `deauthorize_completed` JNIEXPORT per A-12.
+// 2-param `deauthorize_completed` JNIEXPORT.
 // Kotlin side: GDExtensionAndroidPlugin.Companion.postDeauthorizeCompletedNative (external fun)
 // → this JNIEXPORT → post_arity2_completed helper → dispatcher->post(
 //       "deauthorize_completed", Array::make(req_id, result_dict))
-// under CR-41 CallbackLease — parallel to postDisconnectCompletedNative / postSignMessagesCompletedNative above.
+// under CallbackLease — parallel to postDisconnectCompletedNative / postSignMessagesCompletedNative above.
 //
 // The result_dict carries the 4-key shape `{request_id, remote_revoke_succeeded,
-// local_cache_cleared, warning}` per arch.md:669 + DD-4-1-1. No secret material
+// local_cache_cleared, warning}` per arch.md:669 +. No secret material
 // (no auth_token, no fingerprint) — `remote_revoke_succeeded` and
 // `local_cache_cleared` are Boolean state flags; `warning` is the literal
 // `"remote_unreachable"` or empty. On JSON parse failure (unlikely; the Kotlin
 // side builds via JSONObject), post_parse_failure_error falls back to
 // mwa_error{PROTOCOL_ERROR, source_method="deauthorize", cause="parse_failure"}
-// via the existing helper — preserves the terminal-signal invariant per DD-15
-// + DD-4-1-3 flag-based post-finally branch on the Kotlin side.
-// No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
+// via the existing helper — preserves the terminal-signal invariant
+// + flag-based post-finally branch on the Kotlin side.
+// No #ifdef __ANDROID__: JNI TU is SCons-guarded for Android-only.
 // Signals are posted via dispatcher only — no direct signal emission here.
 JNIEXPORT void JNICALL
 Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postDeauthorizeCompletedNative(
@@ -1115,26 +1115,26 @@ Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postReauthRequiredNati
     post_arity1(env, reauthDictJson, "reauth_required", "postReauthRequiredNative");
 }
 
-// Story 3-3 T3 — 1-param `pending_submission_found` JNIEXPORT per A-12 + DD-3-3-E.
+// 1-param `pending_submission_found` JNIEXPORT per +.
 // Kotlin side: GDExtensionAndroidPlugin.Companion.postPendingSubmissionFoundNative (external fun)
 // → this JNIEXPORT → post_arity1 helper → dispatcher->post(
 //       "pending_submission_found", Array::make(payload_dict))
-// under CR-41 CallbackLease — parallel to postReauthRequiredNative above. NOTE:
+// under CallbackLease — parallel to postReauthRequiredNative above. NOTE:
 // 1-param (NOT 2-param) — `request_id` is embedded inside the payload at the
 // `request_id` field (parallel to mwa_error / mwa_timeout / reauth_required,
 // distinct from the 2-param `*_completed` family).
 //
 // The payload carries the 6-key shape `{request_id, op_type, started_at_ms,
-// tx_count, tx_preview_hashes, recommendation}` per DD-3-3-E. No secret material
+// tx_count, tx_preview_hashes, recommendation}`. No secret material
 // — `request_id` is the caller-side correlation token; `tx_preview_hashes` are
 // SHA-256 hex digests of the transaction bytes (NOT signed bytes; transactions
-// may not even have signatures yet at the breadcrumb-write moment per DD-3-3-B
+// may not even have signatures yet at the breadcrumb-write moment
 // write-then-call ordering); `recommendation` is the literal
 // "check_chain_for_signatures" today. On JSON parse failure (unlikely; the
 // Kotlin side builds via JSONObject + JSONArray in buildPendingSubmissionFoundJson),
 // post_parse_failure_error falls back to mwa_error{PROTOCOL_ERROR,
 // source_method="<unknown>", cause="parse_failure"} via the existing helper.
-// No #ifdef __ANDROID__ (D-11): JNI TU is SCons-guarded for Android-only.
+// No #ifdef __ANDROID__: JNI TU is SCons-guarded for Android-only.
 // Signals are posted via dispatcher only — no direct signal emission here.
 JNIEXPORT void JNICALL
 Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_postPendingSubmissionFoundNative(

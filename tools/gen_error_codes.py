@@ -8,7 +8,7 @@ Usage:
 
 CI workflows:
     codegen_drift_check.yml  — runs with --check
-    generator_tests.yml      — runs pytest tools/ (independent, per DD-33)
+    generator_tests.yml — runs pytest tools/ (independent, per)
 """
 
 from __future__ import annotations

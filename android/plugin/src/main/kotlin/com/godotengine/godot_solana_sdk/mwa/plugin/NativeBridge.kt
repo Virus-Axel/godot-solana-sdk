@@ -7,9 +7,9 @@ import plugin.walletadapterandroid.GDExtensionAndroidPlugin
  * layer builds a typed payload (serialized to JSON) and hands it here; the
  * production impl invokes the `external fun` JNI declarations on the plugin
  * companion so the C++ dispatcher can emit to Godot main via
- * `Callable::call_deferred` (D-5 / D-6).
+ * `Callable::call_deferred`.
  *
- * **A-12 arity discipline** — the seam mirrors [docs/amendments.md#A-12]'s signal
+ * ** arity discipline** — the seam mirrors [docs/amendments.md#]'s signal
  * shape directly:
  *   - `connect_completed` (and the other `*_completed` signals) are 2-param on
  *     the GDScript side: `(request_id: String, result: Dictionary)`. The seam
@@ -19,7 +19,7 @@ import plugin.walletadapterandroid.GDExtensionAndroidPlugin
  *     GDScript side: `(payload: Dictionary)` with `request_id` embedded as a
  *     field. The seam methods take ONLY the JSON blob — do NOT add a separate
  *     `requestId` arg; the C++ side would have no place to put it without
- *     violating A-12's arity-1 contract for error/lifecycle signals.
+ * violating 's arity-1 contract for error/lifecycle signals.
  *
  * **Token-leak hazard — read before modifying** — every `*DictJson` parameter
  * on every method here is a serialized Dictionary that includes the wallet's
@@ -32,7 +32,7 @@ import plugin.walletadapterandroid.GDExtensionAndroidPlugin
  * call — that catch enforces the rule at CI-time.
  *
  * Two implementations:
- *  - [DefaultNativeBridge] — Story 2-1 T4 stub that logs method NAME only (no
+ * - [DefaultNativeBridge] — stub that logs method NAME only (no
  *    payload content). The `external fun` wiring + C++ JNI entry points land
  *    in T5. Keeping T4 green without a JNI runtime lets tests inject mocks
  *    and the plugin code compiles standalone.
@@ -42,7 +42,7 @@ import plugin.walletadapterandroid.GDExtensionAndroidPlugin
 internal interface NativeBridge {
 
     /**
-     * 2-param `connect_completed` per A-12 — `requestId` becomes the first
+     * 2-param `connect_completed` — `requestId` becomes the first
      * signal argument, `resultDictJson` becomes the second (Dictionary).
      *
      * **WARNING — `resultDictJson` contains the wallet's auth_token.** Do NOT
@@ -51,7 +51,7 @@ internal interface NativeBridge {
     fun postConnectCompleted(requestId: String, resultDictJson: String)
 
     /**
-     * 2-param `disconnect_completed` per A-12 — Story 2-3. `requestId` is the
+     * 2-param `disconnect_completed`. `requestId` is the
      * first signal argument; `resultDictJson` is the second (Dictionary
      * carrying `{request_id, source_method: "disconnect"}` only — no secret
      * material).
@@ -65,11 +65,11 @@ internal interface NativeBridge {
     fun postDisconnectCompleted(requestId: String, resultDictJson: String)
 
     /**
-     * 2-param `reauthorize_completed` per A-12 — Story 2-2. `requestId` is the
+     * 2-param `reauthorize_completed`. `requestId` is the
      * first signal argument; `resultDictJson` is the second (Dictionary carrying
      * `{request_id, auth_token_fingerprint, public_key, wallet_label,
      * wallet_icon_uri, cluster}` — same 6-key shape as `connect_completed`
-     * per DD-2-2-4).
+     * per).
      *
      * **WARNING — `resultDictJson` contains `auth_token_fingerprint` (a
      * derivative of the wallet's auth_token). Do NOT log, interpolate, or
@@ -79,7 +79,7 @@ internal interface NativeBridge {
     fun postReauthorizeCompleted(requestId: String, resultDictJson: String)
 
     /**
-     * 2-param `sign_messages_completed` per A-12 — Story 3-1. `requestId` is the
+     * 2-param `sign_messages_completed`. `requestId` is the
      * first signal argument; `resultDictJson` is the second (Dictionary carrying
      * `{request_id, signed_payloads: Array[PackedByteArray]}` per arch §3
      * line 236-242 — 2-key shape, NOT the 6-key auth-success shape).
@@ -101,11 +101,11 @@ internal interface NativeBridge {
     fun postSignMessagesCompleted(requestId: String, resultDictJson: String)
 
     /**
-     * 2-param `sign_transactions_completed` per A-12 — Story 3-2. `requestId` is
+     * 2-param `sign_transactions_completed`. `requestId` is
      * the first signal argument; `resultDictJson` is the second (Dictionary
      * carrying `{request_id, signed_transactions: Array[PackedByteArray]}` per
      * arch §3 — 2-key shape, mirrors `sign_messages_completed` with the
-     * payload-key renamed to `signed_transactions` per DD-3-2-3 + D-3-2-1).
+     * payload-key renamed to `signed_transactions` per + -2-1).
      *
      * Like `postSignMessagesCompleted`, the `resultDictJson` here does NOT
      * carry secret material — `signed_transactions` are wallet-signed serialized
@@ -119,10 +119,10 @@ internal interface NativeBridge {
     fun postSignTransactionsCompleted(requestId: String, resultDictJson: String)
 
     /**
-     * 2-param `sign_and_send_completed` per A-12 — Story 3-3. `requestId` is
+     * 2-param `sign_and_send_completed`. `requestId` is
      * the first signal argument; `resultDictJson` is the second (Dictionary
      * carrying the 4-key shape `{request_id, signatures: Array[String],
-     * submitted_at: int, confirmation_status: String}` per AC-1 + DD-3-3-E).
+     * submitted_at: int, confirmation_status: String}` per AC-1 +).
      *
      * Distinct from the 2-key `sign_messages_completed` /
      * `sign_transactions_completed` shapes — `sign_and_send` MUST surface the
@@ -148,7 +148,7 @@ internal interface NativeBridge {
     fun postSignAndSendCompleted(requestId: String, resultDictJson: String)
 
     /**
-     * 2-param `deauthorize_completed` per A-12 — Story 4-1. `requestId` is the
+     * 2-param `deauthorize_completed`. `requestId` is the
      * first signal argument; `resultDictJson` is the second (Dictionary
      * carrying the 4-key shape `{request_id, remote_revoke_succeeded,
      * local_cache_cleared, warning}` per arch.md:669 — distinct from the
@@ -166,8 +166,8 @@ internal interface NativeBridge {
     fun postDeauthorizeCompleted(requestId: String, resultDictJson: String)
 
     /**
-     * 1-param `mwa_error` per A-12. `request_id` is embedded inside
-     * `errorDictJson` at the `request_id` field (A-14 10-key shape).
+     * 1-param `mwa_error`. `request_id` is embedded inside
+     * `errorDictJson` at the `request_id` field (10-key shape).
      *
      * **WARNING — `errorDictJson` carries developer-details + correlation data.**
      * Do NOT log or interpolate into messages.
@@ -175,7 +175,7 @@ internal interface NativeBridge {
     fun postMwaError(errorDictJson: String)
 
     /**
-     * 1-param `mwa_timeout` per A-12. `request_id` is embedded inside
+     * 1-param `mwa_timeout`. `request_id` is embedded inside
      * `timeoutDictJson`.
      *
      * **WARNING — do NOT log or interpolate `timeoutDictJson`.**
@@ -183,8 +183,8 @@ internal interface NativeBridge {
     fun postMwaTimeout(timeoutDictJson: String)
 
     /**
-     * 1-param `mwa_cancelled_lifecycle` per A-12. Fires when an in-flight op
-     * is cancelled by Android lifecycle teardown (Story 5-3 lifecycle
+     * 1-param `mwa_cancelled_lifecycle`. Fires when an in-flight op
+     * is cancelled by Android lifecycle teardown (lifecycle
      * observer). Included here so the 4-signal terminal-signal invariant
      * ([InflightMap] kdoc) is backed by a full seam surface; the authorize
      * path does not invoke this method directly.
@@ -194,11 +194,11 @@ internal interface NativeBridge {
     fun postMwaCancelledLifecycle(cancelledDictJson: String)
 
     /**
-     * 1-param `reauth_required` per A-12. Story 4-3 — emits a lifecycle signal
+     * 1-param `reauth_required`. — emits a lifecycle signal
      * carrying a corrupt-recovery or session-renewal payload. The argument is
      * the FULL JSON Dictionary blob built by
      * [GDExtensionAndroidPlugin]'s `buildReauthRequiredKeystoreCorruptJson`
-     * helper (DD-4-3-1.b 5-key shape: `reason`, `request_id`, `source_method`,
+     * helper (5-key shape: `reason`, `request_id`, `source_method`,
      * `developer_details`, `cause`).
      *
      * Used by the plugin-boundary fail-closed wrapper
@@ -207,20 +207,20 @@ internal interface NativeBridge {
      * `mwa_error{PROTOCOL_ERROR}` (AC-1).
      *
      * **WARNING — `reauthDictJson` MAY contain `developer_details` with
-     * exception class names but never authToken bytes per DD-4-3-1.b.** Do
-     * NOT log, interpolate, or include in exception messages. Story 4-3 T2
+     * exception class names but never authToken bytes .** Do
+     * NOT log, interpolate, or include in exception messages.
      * extends `ci/grep_bans.sh` pattern-8 to ban this variable name from any
      * `Log.*` / `SdkLog.*` call.
      */
     fun postReauthRequired(reauthDictJson: String)
 
     /**
-     * 1-param `pending_submission_found` per A-12 — Story 3-3 (DD-3-3-E). Fires
+     * 1-param `pending_submission_found`. Fires
      * on the next successful `connect` or `reauthorize` AFTER the success signal
      * if a stale sign_and_send breadcrumb survives a process death (AC-5). The
      * argument is the FULL JSON Dictionary blob built by
      * [GDExtensionAndroidPlugin]'s `buildPendingSubmissionFoundJson` helper
-     * (DD-3-3-E 6-key shape: `request_id`, `op_type`, `started_at_ms`,
+     * (6-key shape: `request_id`, `op_type`, `started_at_ms`,
      * `tx_count`, `tx_preview_hashes`, `recommendation`).
      *
      * One-shot semantics per AC-5: each pending breadcrumb produces ONE
@@ -231,20 +231,20 @@ internal interface NativeBridge {
      * caller-side correlation token; `tx_preview_hashes` are SHA-256 hex
      * digests of the transaction bytes (NOT the signed bytes; transactions
      * may not even have signatures yet at the breadcrumb-write moment per
-     * DD-3-3-B write-then-call ordering). `recommendation` is a
+     * write-then-call ordering). `recommendation` is a
      * fixed-vocabulary enum (today: "check_chain_for_signatures").
      *
      * **WARNING — `pendingDictJson` MAY contain `tx_preview_hashes`** which,
      * while not secret, can correlate transactions across observability
      * channels. Do NOT log, interpolate, or include in exception messages.
      * `ci/grep_bans.sh` pattern-8 bans `pendingDictJson` from any `Log.*` /
-     * `SdkLog.*` call (DD-3-3-E.a — extended at Story 3-3 T2).
+     * `SdkLog.*` call (extended at).
      */
     fun postPendingSubmissionFound(pendingDictJson: String)
 }
 
 /**
- * Default (production) impl. Story 2-1 T5 wires to the `external fun` JNI
+ * Default (production) impl. wires to the `external fun` JNI
  * declarations on [GDExtensionAndroidPlugin]'s companion —
  * `postConnectCompletedNative` etc. — which the JVM resolves to the
  * `Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_*`

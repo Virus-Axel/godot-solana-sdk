@@ -52,7 +52,7 @@ import org.json.JSONObject
 import java.security.KeyStore
 
 /**
- * CR-67 follow-up factory for the production [GDExtensionAndroidPlugin]
+ * follow-up factory for the production [GDExtensionAndroidPlugin]
  * constructor's `senderProvider` argument.
  *
  * `ActivityResultSender(activity)` calls `registerForActivityResult(...)`
@@ -91,24 +91,24 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 ) : GodotPlugin(godot) {
 
     /**
-     * Story 4-2 DD-4-2-2 (LOCKED) — `forget_all` serialization Mutex.
+     * `forget_all` serialization Mutex.
      * Wraps the entire `mwaForgetAll` body so concurrent op-method calls
      * (mwaConnect, mwaSignMessages, etc.) either complete BEFORE the wipe
      * starts (existing in-flight slots are then cancelled per
-     * DD-4-2-3) or block on the Mutex until the wipe completes (and then
+     *) or block on the Mutex until the wipe completes (and then
      * see clean state per AC-3 invariant). Plugin-instance-scoped —
-     * cross-plugin-instance concurrency is OUT OF SCOPE per the Story 2-1
-     * single-autoload-instance design (CR-4-2-C).
+     * cross-plugin-instance concurrency is OUT OF SCOPE per the
+     * single-autoload-instance design.
      */
     private val forgetAllMutex: Mutex = Mutex()
 
     init {
-        // Story 2-1 T5 — JNI entry points on the companion (`mwaAuthorizeFromJni` etc.)
+        // JNI entry points on the companion (`mwaAuthorizeFromJni` etc.)
         // forward through this instance. Last-writer wins on re-init (uncommon but
         // possible under test runners that reload the plugin class).
         @Suppress("LeakingThis")
         instance = this
-        // Story 5-3 DD-5-3-2 — register the lifecycle observer against the Activity's
+        // register the lifecycle observer against the Activity's
         // Lifecycle so in-flight ops are cancelled (with mwa_cancelled_lifecycle{
         // reason:"activity_destroyed"} per slot) when the Activity is destroyed
         // (rotation, app teardown, etc.). DefaultLifecycleObserver auto-detaches on
@@ -117,7 +117,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 5-3 DD-5-3-1 — constructs the [MwaLifecycleObserver] wired with the
+     * constructs the [MwaLifecycleObserver] wired with the
      * plugin's actual collaborators via method-reference injection (keeps
      * [buildCancelledLifecycleJson] + [cleanupBreadcrumb] private). Exposed as
      * `@VisibleForTesting internal` so unit tests (e.g.,
@@ -138,7 +138,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     )
 
     /**
-     * Story 5-3 DD-5-3-2 — registers [buildLifecycleObserver]'s observer against
+     * registers [buildLifecycleObserver]'s observer against
      * `godot.getActivity()`'s [Lifecycle][androidx.lifecycle.Lifecycle] when the
      * activity is a [LifecycleOwner]. If the activity is unavailable (early
      * construction, non-standard test harness) or not a `LifecycleOwner`, logs a
@@ -175,7 +175,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         val TAG: String = GDExtensionAndroidPlugin::class.java.simpleName
 
         /**
-         * Watchdog caps per DD-23: effective = `min(internal_default, opts.timeout_ms)`
+         * Watchdog caps: effective = `min(internal_default, opts.timeout_ms)`
          * with both clamped to a sensible floor. Exposed so [mwaAuthorize] and tests
          * agree on the same math.
          */
@@ -183,12 +183,12 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
         // Single session-state instance shared between the plugin (Godot-facing API) and
         // ComposeWalletActivity (which reads it to dispatch the right @Composable). A formal DI
-        // solution is out of scope for Story 1-2; Story 2-1 may introduce one. `internal` per
+        // solution is out of scope for; may introduce one. `internal` per
         // T4 visibility narrowing — game code should never touch plugin session state directly.
         internal val sessionState: MwaSessionState = MwaSessionState()
 
         /**
-         * Story 2-1 T5 — active plugin instance, set in [init]. JNI forward-wrapper
+         * active plugin instance, set in [init]. JNI forward-wrapper
          * methods on this companion (`mwaAuthorizeFromJni` etc.) need to find the
          * live instance to delegate. `@Volatile` for cross-thread visibility (JNI
          * calls arrive on worker threads).
@@ -198,7 +198,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         internal var instance: GDExtensionAndroidPlugin? = null
 
         init {
-            // CR-67 Bug A fix: load the SDK's native library (which contains
+            // Bug A fix: load the SDK's native library (which contains
             // `JNI_OnLoad`) instead of a plugin-named library that the build
             // does not produce. The SDK build emits a single combined .so per
             // (variant, arch) — `libgodot-solana-sdk.android.template_${variant}.${arch}.so`
@@ -214,7 +214,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             // `UnsatisfiedLinkError` (caught + logged), causing every MWA op
             // to short-circuit to `NOT_CONNECTED` with user_message
             // "Mobile wallet is temporarily unavailable. Please restart the
-            // app." See docs/concerns.md CR-67 for the full diagnosis.
+            // app." See docs/concerns.md for the full diagnosis.
             val variant = if (BuildConfig.DEBUG) "debug" else "release"
             // Null-safe: `Build.SUPPORTED_ABIS` is `String[]!` (platform type);
             // Robolectric-less JVM unit tests see a null array. Without `?.`
@@ -234,21 +234,21 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             }
             val sdkLibName = "godot-solana-sdk.android.template_${variant}.${arch}"
             try {
-                Log.v(TAG, "Loading SDK library $sdkLibName (was: ${BuildConfig.GODOT_PLUGIN_NAME}, CR-67 Bug A)")
+                Log.v(TAG, "Loading SDK library $sdkLibName (was: ${BuildConfig.GODOT_PLUGIN_NAME}, Bug A)")
                 System.loadLibrary(sdkLibName)
             } catch (e: UnsatisfiedLinkError) {
                 Log.e(TAG, "Unable to load SDK library $sdkLibName: ${e.message}")
             }
         }
 
-        /** DD-23 effective-watchdog clamp, pure-function for tests + [mwaAuthorize]. */
+        /** effective-watchdog clamp, pure-function for tests + [mwaAuthorize]. */
         internal fun effectiveWatchdog(callerTimeoutMs: Long): Long = if (callerTimeoutMs > 0L) {
             minOf(INTERNAL_WATCHDOG_DEFAULT_MS, callerTimeoutMs)
         } else {
             INTERNAL_WATCHDOG_DEFAULT_MS
         }
 
-        // ========== Story 2-1 T5 — JNI forward wrappers (C++ → Kotlin) ==========
+        // ========== — JNI forward wrappers (C++ → Kotlin) ==========
         //
         // `@JvmStatic` so C++ can invoke via `CallStaticVoidMethod`. Each wrapper
         // forwards to the active [instance]; if null (plugin class loaded but no
@@ -278,13 +278,13 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             DefaultNativeBridge.postMwaError(buildInstanceNullErrorJson(reqId, sourceMethod).toString())
         }
 
-        // Story 2-2 T2 — JNI shim forwards to the `mwaReauthorize(...)` instance
+        // JNI shim forwards to the `mwaReauthorize(..)` instance
         // method with the full reauth-args set (identityJson, cluster, chainId,
-        // timeoutMs). Story 2-2's design intent was for the C++ side at
+        // timeoutMs). 's design intent was for the C++ side at
         // `MobileWalletAdapter::reauthorize` to populate these from sessionState
         // before crossing JNI, but the C++ stub at `mwa_android_bridge_jni.cpp`
         // ::`MwaAndroidBridgeJni::reauthorize` was never completed (still passes
-        // empty strings — see the same-file "Story 2-2 lands the full reauth
+        // empty strings — see the same-file " lands the full reauth
         // path; empty identity + cluster for now" comment). Symptom: every
         // production-path Reauthorize tap emits PROTOCOL_ERROR synchronously
         // within ~75ms because Kotlin's `parseIdentity("")` returns null and
@@ -336,69 +336,69 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             instance?.mwaDisconnect(reqId) ?: emitInstanceNullError(reqId, "disconnect")
         }
 
-        // Story 4-1 — JNI shim forwards to the `mwaDeauthorize(...)` instance
-        // method (try/catch/finally + multi-key wipe per DD-4-1-3/DD-4-1-6).
+        // JNI shim forwards to the `mwaDeauthorize(..)` instance
+        // method (try/catch/finally + multi-key wipe per).
         @JvmStatic
         fun mwaDeauthorizeFromJni(reqId: String) {
-            Log.i(TAG, "mwaDeauthorizeFromJni: Story 4-1 scope; reqId=$reqId")
+            Log.i(TAG, "mwaDeauthorizeFromJni: scope; reqId=$reqId")
             instance?.mwaDeauthorize(reqId) ?: emitInstanceNullError(reqId, "deauthorize")
         }
 
         @JvmStatic
         fun mwaSignMessagesFromJni(reqId: String, payloadsJson: String, timeoutMs: Long) {
-            // CR-67 follow-up #4 closure (2026-05-08) — the C++ JNI bridge at
+            // follow-up #4 closure (2026-05-08) — the C++ JNI bridge at
             // `mwa_android_bridge_jni.cpp::MwaAndroidBridgeJni::sign_messages`
             // serializes the GDScript-side `TypedArray<PackedByteArray>` to JSON
             // `["base64-1","base64-2",...]`. This shim parses the array + base64-
             // decodes each entry, then forwards the real `List<ByteArray>` to
-            // [mwaSignMessages]. Pre-CR-67-#4 the shim hardcoded `emptyList()`
+            // [mwaSignMessages]. Pre--#4 the shim hardcoded `emptyList`
             // (Stories 3-1/3-2/3-3 deferred this T3 wire-through), causing
             // wallets to silently reject the malformed `payloads:[]` JSON-RPC
             // request. Kotlin unit tests bypass this shim and call
-            // [mwaSignMessages] directly with real values per DD-3-1-9.
+            // [mwaSignMessages] directly with real values.
             val plugin = instance ?: return emitInstanceNullError(reqId, "sign_messages")
             plugin.mwaSignMessages(reqId, decodeBase64JsonArray(payloadsJson), timeoutMs)
         }
 
         @JvmStatic
         fun mwaSignTransactionsFromJni(reqId: String, payloadsJson: String, timeoutMs: Long) {
-            // CR-67 follow-up #4 closure (2026-05-08) — see [mwaSignMessagesFromJni].
+            // follow-up #4 closure (2026-05-08) — see [mwaSignMessagesFromJni].
             val plugin = instance ?: return emitInstanceNullError(reqId, "sign_transactions")
             plugin.mwaSignTransactions(reqId, decodeBase64JsonArray(payloadsJson), timeoutMs)
         }
 
         @JvmStatic
         fun mwaSignAndSendFromJni(reqId: String, payloadsJson: String, timeoutMs: Long) {
-            // CR-67 follow-up #4 closure (2026-05-08) — see [mwaSignMessagesFromJni].
+            // follow-up #4 closure (2026-05-08) — see [mwaSignMessagesFromJni].
             val plugin = instance ?: return emitInstanceNullError(reqId, "sign_and_send")
             plugin.mwaSignAndSendTransactions(reqId, decodeBase64JsonArray(payloadsJson), timeoutMs)
         }
 
         @JvmStatic
         fun mwaForgetAllFromJni(reqId: String) {
-            // Story 4-2 — JNI shim delegates to the @UsedByGodot instance
+            // JNI shim delegates to the @UsedByGodot instance
             // method. The shim itself is a single-line dispatch (parallel
             // to mwaSignAndSendFromJni at
-            // :214-228 from Story 3-3 T1) — no orchestration here.
+            //:214-228 from) — no orchestration here.
             instance?.mwaForgetAll(reqId) ?: emitInstanceNullError(reqId, "forget_all")
         }
 
         /**
-         * Story 5-2 T2 (DD-5-2-1 LOCKED) — synchronous diagnostics-payload pull
-         * mirroring [mwaQuerySessionStateFromJni]. Replaces the Story 1-5 ASYNC
+         * synchronous diagnostics-payload pull
+         * mirroring [mwaQuerySessionStateFromJni]. Replaces the ASYNC
          * scaffold (`mwaGetDiagnosticsFromJni(reqId): Unit` returning via
          * `emitNotImplemented`). Architecture §6.2 specs `get_diagnostics()` as
          * SYNC ≤1ms — this entry produces the AC-1 12-key Dictionary as a JSON
          * String for [MwaAndroidBridgeJni.query_diagnostics_json] to parse.
          *
-         * Returns the 12-key all-empty shape per DD-5-2-3 when [instance] is
+         * Returns the 12-key all-empty shape per when [instance] is
          * null (matches the no-op-bridge contract on non-Android exports).
          */
         @JvmStatic
         fun mwaQueryDiagnosticsFromJni(): String = instance?.buildDiagnosticsJsonForJni() ?: MwaDiagnosticsBuilder.emptyDiagnosticsJson()
 
         /**
-         * Story 5-2 T2 (AC-4) — synchronous device-posture pull. Returns the
+         * (AC-4) — synchronous device-posture pull. Returns the
          * 4-key Dictionary as a JSON String (`{rooted, debuggable,
          * developer_options_on, adb_enabled}`). Sourced via [Build.TAGS],
          * [android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE],
@@ -410,7 +410,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         fun mwaQueryDevicePostureFromJni(): String = instance?.buildDevicePostureJsonForJni() ?: MwaDevicePostureBuilder.emptyPostureJson()
 
         /**
-         * Story 2-1 T6 — synchronous state-snapshot pull from the C++
+         * synchronous state-snapshot pull from the C++
          * `MwaJniContext::query_session_state`. Returns a JSON object with the
          * 5 keys `MobileWalletAdapter`'s state getters need:
          * `is_connected`, `public_key`, `cluster`, `wallet_label`,
@@ -433,14 +433,14 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             return sessionState.snapshotSessionStateJson()
         }
 
-        // ========== Story 2-1 T5 — JNI callback declarations (Kotlin → C++) ==========
+        // ========== — JNI callback declarations (Kotlin → C++) ==========
         //
         // `external fun` declarations resolved at `System.loadLibrary(...)` (above)
         // to the `Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_*`
         // JNIEXPORT functions in `src/mwa/mwa_android_bridge_jni.cpp`.
         //
         // Invoked by [DefaultNativeBridge] to post signals through the C++
-        // dispatcher. Arity matches A-12: `postConnectCompletedNative` is 2-arg
+        // dispatcher. Arity matches: `postConnectCompletedNative` is 2-arg
         // (request_id + result dict JSON); the rest are 1-arg (request_id embedded
         // in the payload dict).
         //
@@ -453,9 +453,9 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         external fun postConnectCompletedNative(reqId: String, resultDictJson: String)
 
         /**
-         * Story 2-3 T2 — 2-param `disconnect_completed` JNI callback per A-12.
+         * 2-param `disconnect_completed` JNI callback.
          * Kotlin → C++ `Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postDisconnectCompletedNative`
-         * (Story 2-3 T3) → dispatcher.post("disconnect_completed", Array::make(reqId, result_dict)).
+         * → dispatcher.post("disconnect_completed", Array::make(reqId, result_dict)).
          *
          * `resultDictJson` is `{request_id, source_method: "disconnect"}` — NO
          * secret material on the disconnect path. The warning is convention
@@ -465,41 +465,41 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         external fun postDisconnectCompletedNative(reqId: String, resultDictJson: String)
 
         /**
-         * Story 2-2 T1 stub — 2-param `reauthorize_completed` JNI callback per A-12.
+         * stub — 2-param `reauthorize_completed` JNI callback.
          * Kotlin → C++ `Java_plugin_walletadapterandroid_GDExtensionAndroidPlugin_00024Companion_postReauthorizeCompletedNative`
-         * (Story 2-2 T3) → dispatcher.post("reauthorize_completed", Array::make(reqId, result_dict)).
+         * → dispatcher.post("reauthorize_completed", Array::make(reqId, result_dict)).
          *
          * `resultDictJson` carries `{request_id, auth_token_fingerprint, public_key,
-         * wallet_label, wallet_icon_uri, cluster}` per DD-2-2-4. WARNING — do NOT log
+         * wallet_label, wallet_icon_uri, cluster}`. WARNING — do NOT log
          * or interpolate `resultDictJson` (contains auth_token_fingerprint).
          */
         @JvmStatic
         external fun postReauthorizeCompletedNative(reqId: String, resultDictJson: String)
 
-        // Story 3-1 T1 — parallel external fun for sign_messages_completed's
+        // parallel external fun for sign_messages_completed's
         // Kotlin→C++ callback path. JNI symbol linked at runtime via the
         // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3).
         @JvmStatic
         external fun postSignMessagesCompletedNative(reqId: String, resultDictJson: String)
 
-        // Story 3-2 T1 — parallel external fun for sign_transactions_completed's
+        // parallel external fun for sign_transactions_completed's
         // Kotlin→C++ callback path. JNI symbol linked at runtime via the
-        // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (Story 3-2 T3).
+        // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp.
         // Inert at JVM level until the JNI symbol arrives in T3.
         @JvmStatic
         external fun postSignTransactionsCompletedNative(reqId: String, resultDictJson: String)
 
-        // Story 3-3 T1 — parallel external fun for sign_and_send_completed's
+        // parallel external fun for sign_and_send_completed's
         // Kotlin→C++ callback path. JNI symbol linked at runtime via the
-        // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (Story 3-3 T3 —
+        // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (
         // post_arity2_completed("sign_and_send_completed", ...)). The
         // resultDictJson carries the 4-key shape {request_id, signatures: [base58
         // strings], submitted_at: int, confirmation_status: "submitted"} per AC-1
-        // + DD-3-3-E. Inert at JVM level until the JNI symbol arrives in T3.
+        // +. Inert at JVM level until the JNI symbol arrives.
         @JvmStatic
         external fun postSignAndSendCompletedNative(reqId: String, resultDictJson: String)
 
-        // Story 4-1 T1 — parallel external fun for deauthorize_completed's
+        // parallel external fun for deauthorize_completed's
         // Kotlin→C++ callback path. JNI symbol linked at runtime via the
         // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (T3 of 4-1).
         // Result Dictionary is the 4-key shape `{request_id,
@@ -519,20 +519,20 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         @JvmStatic
         external fun postReauthRequiredNative(reauthDictJson: String)
 
-        // Story 3-3 T1 — parallel external fun for pending_submission_found's
+        // parallel external fun for pending_submission_found's
         // Kotlin→C++ callback path. JNI symbol linked at runtime via the
-        // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (Story 3-3 T3 —
-        // post_arity1("pending_submission_found", ...)). 1-PARAM signal per A-12
+        // matching JNIEXPORT in src/mwa/mwa_android_bridge_jni.cpp (
+        // post_arity1("pending_submission_found", ...)). 1-PARAM signal
         // (parallel to postReauthRequiredNative); the pendingDictJson carries the
         // 6-key shape {request_id, op_type, started_at_ms, tx_count,
-        // tx_preview_hashes, recommendation} per DD-3-3-E. Inert at JVM level
+        // tx_preview_hashes, recommendation}. Inert at JVM level
         // until the JNI symbol arrives in T3.
         @JvmStatic
         external fun postPendingSubmissionFoundNative(pendingDictJson: String)
     }
 
     /**
-     * Story 2-1 T5 — emits a typed NOT_CONNECTED mwa_error for ops whose Kotlin
+     * emits a typed NOT_CONNECTED mwa_error for ops whose Kotlin
      * wiring lands in a later story (2-2 / 2-3 / 3-x / 4-x / 5-2). Prevents
      * silent drops when a gamedev invokes a yet-to-ship op from GDScript via
      * the MWA facade.
@@ -542,7 +542,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             buildErrorJson(
                 requestId = reqId,
                 error = MwaError.NotConnected,
-                developerDetails = "Op '$sourceMethod' Kotlin wiring lands in a later Story 2-1 sibling; " +
+                developerDetails = "Op '$sourceMethod' Kotlin wiring lands in a later sibling; " +
                     "this JNI entry point is reachable but returns an immediate error.",
                 layer = "kotlin",
                 cause = null,
@@ -563,11 +563,11 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         setOf("res://addons/${BuildConfig.GODOT_PLUGIN_NAME}/plugin.gdextension")
 
     /**
-     * Story 2-1 T4 — authorize-path entry point. Called from the JNI
+     * authorize-path entry point. Called from the JNI
      * [MwaAndroidBridgeJni] on a worker thread (T5 lands the JNI impl; T6
      * wires the C++ node op body). Launches a coroutine that (a) parses the
      * identity dict, (b) calls [MwaClient.authorize] inside
-     * [withTimeoutOrNull] at the DD-23 effective watchdog, (c) on success
+     * [withTimeoutOrNull] at the effective watchdog, (c) on success
      * persists the [CacheRecord] + fingerprint + session state, (d) emits a
      * single terminal signal via [nativeBridge] gated by
      * [InflightMap.tryTerminate] so AT MOST ONE terminal signal fires per
@@ -600,7 +600,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             return
         }
         scope.launch {
-            // Story 4-2 D-4-2-T2-3 (Rule 3) — DD-4-2-2 mutex serialization. A
+            // -2--3 (Rule 3) — mutex serialization. A
             // concurrent `forget_all` holds [forgetAllMutex] across its wipe;
             // wait here so [runAuthorize] only ever sees pre-wipe or post-
             // wipe state, never an interleaved partial. The synchronous
@@ -639,18 +639,18 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 2-3 T2 — `disconnect` entry point. Called from the JNI
+     * `disconnect` entry point. Called from the JNI
      * [MwaAndroidBridgeJni] on a worker thread. Pure client-side wipe
-     * (DD-2-3-1): wipes [MwaSessionState] auth-only fields via
+     * wipes [MwaSessionState] auth-only fields via
      * [MwaSessionState.clearOnLogout] but leaves [SecureTokenStore] intact
      * so a subsequent `reauthorize` can restore the session silently (Story
      * 2-2).
      *
      * Dispatcher-marshalled to [mainDispatcher] via `scope.launch +
-     * withContext` for DD-22 parity with [mwaAuthorize]. No watchdog —
+     * withContext` for parity with [mwaAuthorize]. No watchdog
      * the body has no suspension points after the dispatcher hop.
      *
-     * Ordering (DD-2-3-2): `register → tryTerminate CAS → clearOnLogout →
+     * Ordering: `register → tryTerminate CAS → clearOnLogout →
      * post`. The CAS gates both state mutation AND emission. Any
      * implementation that wipes before the CAS is a Rule 2 deviation
      * requiring an amendment (breaks state-machine discipline uniformity).
@@ -661,7 +661,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * on already-cleared state.
      *
      * **AC-3 caller contract:** each `MWA.disconnect()` GDScript call
-     * produces a FRESH `requestId` via C++ `generate_request_id()` (D-4 at
+     * produces a FRESH `requestId` via C++ `generate_request_id` (at
      * `src/mwa/mobile_wallet_adapter.cpp`). A caller that re-uses the same
      * `requestId` for a retry hits the `InflightMap.register` CAS below
      * (duplicate_request_id branch) and gets `mwa_error{PROTOCOL_ERROR,
@@ -691,7 +691,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     return@withContext
                 }
 
-                // Step 2 (DD-2-3-2 CAS-first): win the terminal-signal CAS BEFORE
+                // Step 2 (CAS-first): win the terminal-signal CAS BEFORE
                 // mutating state. If we lose the CAS (not expected on the disconnect
                 // path — no competing timeout/failure path — but defense in depth
                 // preserves the state-machine discipline), do NOT wipe and do NOT
@@ -702,9 +702,9 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     return@withContext
                 }
 
-                // Step 3 (DD-2-3-1): wipe auth-only MwaSessionState. Caller identity +
+                // Step 3: wipe auth-only MwaSessionState. Caller identity +
                 // `cluster: Int` are preserved for a subsequent reauthorize. The
-                // SecureTokenStore CacheRecord is NOT touched — Story 4-1 deauthorize
+                // SecureTokenStore CacheRecord is NOT touched — deauthorize
                 // is the path that deletes the token.
                 try {
                     sessionState.clearOnLogout()
@@ -741,32 +741,32 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 2-2 T2 — reauthorize-path entry point. Called from the JNI
+     * reauthorize-path entry point. Called from the JNI
      * [mwaReauthorizeFromJni] on a worker thread and from the
      * `@VisibleForTesting` ctor in unit tests. Implements UC-3 silent
-     * reauthorize per arch §4.2 + DD-2-2-1 through DD-2-2-7:
+     * reauthorize per arch §4.2 + through:
      *
      * 1. Register the request in [InflightMap] (PROTOCOL_ERROR on duplicate).
      * 2. `scope.launch { withContext(mainDispatcher) { ... } }` — all state
-     *    mutations and signal emissions run on the main dispatcher (DD-22 parity).
+     * mutations and signal emissions run on the main dispatcher (parity).
      * 3. Parse identity JSON (PROTOCOL_ERROR on malformed).
      * 4. Discover CacheKey via `store.listAllKeys()` 3-tuple filter
-     *    `(cluster, chainId, identityUri)` — DD-2-2-7. NO walletPackage in
+     * `(cluster, chainId, identityUri)`. NO walletPackage in
      *    caller args; iteration is O(N) where N ≤ small (typically 1-3).
-     *    If the filter returns empty: NOT_CONNECTED (AC-2 + AC-4 via DD-2-2-1).
-     *    Tie-break on multi-match: most-recently-used (DD-2-2-7).
+     * If the filter returns empty: NOT_CONNECTED (AC-2 + AC-4 via).
+     * Tie-break on multi-match: most-recently-used.
      * 5. Load CacheRecord; if vanished between listAllKeys and getToken: NOT_CONNECTED.
      * 6. Call [MwaClient.reauthorize] inside `withTimeoutOrNull(effectiveMs)`
-     *    (DD-2-2-3). On null: [emitTimeoutReauth].
+     * On null: [emitTimeoutReauth].
      * 7. On [MwaResult.Success]: [handleReauthSuccess] (putToken + fingerprint +
      *    sessionState + CAS + postReauthorizeCompleted).
      * 8. On [MwaResult.Failure] with [MwaError.TokenExpired]: [handleTokenExpired]
-     *    (CAS → clearOnLogout → deleteToken → postMwaError, DD-2-2-2).
+     * (CAS → clearOnLogout → deleteToken → postMwaError).
      * 9. On other failures: [emitFailureReauth].
      *
-     * **DD-2-2-1 [LOCKED]:** NO separate cluster-comparison branch.
+     * ** [LOCKED]:** NO separate cluster-comparison branch.
      * Cluster mismatch is detected implicitly by the 3-tuple filter returning
-     * empty (DD-27 + DD-2-2-7). `ci/grep_bans.sh` pattern-9 enforces statically.
+     * empty (+). `ci/grep_bans.sh` pattern-9 enforces statically.
      * @since v0.1.0
      */
     @UsedByGodot
@@ -787,7 +787,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             return
         }
         scope.launch {
-            // Story 4-2 post-review fix (CR HIGH finding #1) — DD-4-2-2 mutex
+            // post-review fix (CR HIGH finding #1) — mutex
             // symmetry for the SOLE op method that REPOPULATES sessionState
             // post-handshake (handleReauthSuccess writes auth_token,
             // publicKey, walletLabel, ...). Without this withLock, a
@@ -798,8 +798,8 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             // mwaSignTransactions / mwaSignAndSendTransactions /
             // mwaDeauthorize) do NOT repopulate sessionState — they read-
             // only or clear-only — so the mutex is NOT yet wrapped around
-            // them. CR-4-2-D tracks the defense-in-depth follow-up to
-            // extend mutex symmetry to the full DD-4-2-2 family.
+            // them. tracks the defense-in-depth follow-up to
+            // extend mutex symmetry to the full family.
             forgetAllMutex.withLock {
                 try {
                     withContext(mainDispatcher) {
@@ -813,12 +813,12 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                             return@withContext
                         }
 
-                        // Step B: discover CacheKey via DD-2-2-7 3-tuple filter.
+                        // Step B: discover CacheKey via 3-tuple filter.
                         // walletPackage is NOT in caller args — iterate listAllKeys + filter.
-                        // DD-2-2-1: NO separate cluster comparison branch; the filter itself
+                        // NO separate cluster comparison branch; the filter itself
                         // is the detection mechanism (empty result → NOT_CONNECTED).
                         //
-                        // Story 4-3 DD-4-3-1.a — fail-closed plugin-boundary wrapper. Wrap
+                        // fail-closed plugin-boundary wrapper. Wrap
                         // the cache-LOOKUP touchpoints (listAllKeys + per-candidate getToken)
                         // so a Tink corruption event during cache READ surfaces as
                         // `reauth_required{reason:"keystore_corrupt"}` rather than propagating
@@ -849,10 +849,10 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                             return@withContext
                         }
 
-                        // Tie-break on multi-match (DD-2-2-7): most-recently-used wallet.
+                        // Tie-break on multi-match: most-recently-used wallet.
                         val (key, cached) = candidatesWithRecords.maxBy { it.second.lastUsedAtMs }
 
-                        // Step D: call MwaClient.reauthorize inside watchdog (DD-2-2-3).
+                        // Step D: call MwaClient.reauthorize inside watchdog.
                         val client = mwaClientFactory()
                         try {
                             val result = withTimeoutOrNull(effectiveMs) {
@@ -869,7 +869,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                                 is MwaResult.Success -> handleReauthSuccess(requestId, key, result.value, store)
                                 is MwaResult.Failure -> {
                                     if (result.error is MwaError.TokenExpired) {
-                                        // DD-2-2-2 graceful wipe: CAS → clearOnLogout → deleteToken → postMwaError.
+                                        // graceful wipe: CAS → clearOnLogout → deleteToken → postMwaError.
                                         handleTokenExpired(requestId, key, store)
                                     } else {
                                         emitFailureReauth(requestId, result.error, developerDetails = null)
@@ -908,14 +908,14 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 2-2 T2 — success path for reauthorize.
+     * success path for reauthorize.
      *
      * Updates [SecureTokenStore] `lastUsedAtMs`, handles wallet-side token rotation
-     * (DD-2-2-5), updates [MwaSessionState], wins the terminal-signal CAS, and emits
+     * , updates [MwaSessionState], wins the terminal-signal CAS, and emits
      * `reauthorize_completed` via [NativeBridge.postReauthorizeCompleted] using
-     * [buildSuccessJson] (DD-2-2-4 — NO sibling builder).
+     * [buildSuccessJson] (NO sibling builder).
      *
-     * **DD-2-2-5 rotation-detection (LOCKED):** compare `auth.authToken.reveal()` vs
+     * ** rotation-detection:** compare `auth.authToken.reveal()` vs
      * `cached.authToken.reveal()` byte-for-byte. The fingerprint, stored [CacheRecord],
      * and [MwaSessionState] writes ALL use the RETURNED bytes (`auth.authToken`).
      * - When NOT rotated (FakeMwaClient happy path + clientlib-ktx 2.0.3 + Phantom
@@ -928,7 +928,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * AC-6 "fingerprint identical pre/post" holds in test scope because the happy-path
      * fixture returns byte-identical bytes (per the LOCKED contract).
      *
-     * **`publicKey` is NOT in DD-2-2-5 scope.** Public key represents the canonical
+     * **`publicKey` is NOT in scope.** Public key represents the canonical
      * session identity and AC-1 "public_key retained" requires the cached base58 value.
      * The wallet confirms the same identity via reauthorize; we do not re-encode
      * `auth.publicKey` (raw bytes) on this path.
@@ -946,24 +946,24 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             return
         }
 
-        // DD-2-2-5 (LOCKED) — rotation-detection. Compare returned vs cached bytes
+        // rotation-detection. Compare returned vs cached bytes
         // byte-for-byte. When rotated, log a non-secret event marker (bytes never
         // logged). Fingerprint, stored CacheRecord, and sessionState writes ALL use
         // the RETURNED bytes (auth.authToken) — when not rotated, returned == cached
         // by construction so the writes are observable no-ops on token bytes; when
         // rotated (defensive contract per story line 126-131), the new bytes flow
         // through. Per-install salt is never rotated by reauth (only forget_all per
-        // Story 4-2). Public key is NOT in DD-2-2-5 scope — AC-1 "public_key retained"
+        //). Public key is NOT in scope — AC-1 "public_key retained"
         // uses cached.publicKey (base58 already).
         val isRotated = !auth.authToken.reveal().contentEquals(cached.authToken.reveal())
         if (isRotated) {
             SdkLog.w(TAG, requestId) { "auth_token_rotated_by_wallet" } // event marker, NO bytes
         }
 
-        // DD-2-2-5(a) + (b): persist returned authToken bytes + fresh lastUsedAtMs;
+        // (a) + (b): persist returned authToken bytes + fresh lastUsedAtMs;
         // recompute fingerprint from RETURNED bytes (when not rotated, this equals
         // AuthTokenFingerprint.compute(cached.authToken.reveal(), salt)).
-        // Story 4-3 DD-4-3-1 PIVOT — StorageCorruptException now surfaces as
+        // PIVOT — StorageCorruptException now surfaces as
         // `reauth_required{reason:"keystore_corrupt"}` via emitReauthRequiredKeystoreCorrupt
         // (NOT `mwa_error{StorageCorrupt}` — AC-1 contract; legacy emitFailureReauth
         // call deleted to preserve the terminal-signal CAS invariant — no dual-emit).
@@ -979,16 +979,16 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             return
         }
 
-        // AC-1 "public_key retained" — use the cached base58 string (DD-2-2-5 covers
+        // AC-1 "public_key retained" — use the cached base58 string (covers
         // authToken rotation only, not publicKey).
         val publicKeyBase58 = cached.publicKey
 
-        // DD-2-2-5(d) + DD-22: update MwaSessionState on mainDispatcher (T2 is already
+        // (d) +: update MwaSessionState on mainDispatcher (is already
         // inside withContext(mainDispatcher) in the caller). Restore the FULL surface
         // that handleSuccess sets — on cold-start, sessionState is freshly empty and
         // mwaReauthorize is the only path that re-populates it. Identity metadata
         // (walletLabel, walletIconUri) comes from the cached record (wallet doesn't
-        // rotate identity on reauth, only authToken per DD-2-2-5). connectedKey raw
+        // rotate identity on reauth, only authToken per). connectedKey raw
         // bytes come from auth.publicKey (parallel to handleSuccess).
         sessionState.setAuthToken(auth.authToken)
         sessionState.setAuthTokenFingerprint(activeFingerprint)
@@ -1005,8 +1005,8 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             return
         }
 
-        // Emit reauthorize_completed — 2-param A-12 shape, 6-key DD-2-2-4 result payload.
-        // DO NOT introduce a sibling builder — reuse buildSuccessJson (DD-2-2-4 LOCKED).
+        // Emit reauthorize_completed — 2-param shape, 6-key result payload.
+        // DO NOT introduce a sibling builder — reuse buildSuccessJson.
         recordOnEmit(requestId, "reauthorize", "reauthorize_completed", clock())
         nativeBridge.postReauthorizeCompleted(
             requestId,
@@ -1019,16 +1019,16 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 cluster = auth.cluster,
             ).toString(),
         )
-        // Story 3-3 (DD-3-3-D AC-5) — scan for stale sign_and_send breadcrumbs
+        // (AC-5) — scan for stale sign_and_send breadcrumbs
         // AFTER the success signal fires. Off-thread via scope.launch to avoid
         // blocking the reauth happy-path's terminal-signal emission.
         scope.launch { scanPendingSubmissions(key.identityUri) }
     }
 
     /**
-     * Story 2-2 T2 — TOKEN_EXPIRED graceful-wipe path (AC-3, DD-2-2-2).
+     * TOKEN_EXPIRED graceful-wipe path (AC-3).
      *
-     * **DD-2-2-2 ordering [LOCKED]:** CAS → wipe in-memory state → wipe on-disk
+     * ** ordering [LOCKED]:** CAS → wipe in-memory state → wipe on-disk
      * record → emit terminal error. This exact lexical order must be preserved;
      * any reordering is a Rule 2 deviation requiring an amendment.
      *
@@ -1043,7 +1043,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             SdkLog.w(TAG, requestId) { "late_result outcome=token_expired" }
             return
         }
-        // DD-2-2-2 ordering: Step 2 in-memory wipe → Step 3 disk wipe → Step 4 emit error.
+        // ordering: Step 2 in-memory wipe → Step 3 disk wipe → Step 4 emit error.
         // First production caller of SecureTokenStore.deleteToken (story T1 spec line 76).
         sessionState.clearOnLogout()
         store.deleteToken(key)
@@ -1061,9 +1061,9 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 2-2 T2 — emits a typed failure for the reauthorize path.
+     * emits a typed failure for the reauthorize path.
      * Parallel to [emitFailure] on the authorize path; uses `sourceMethod =
-     * "reauthorize"` for A-14 payload consistency.
+     * "reauthorize"` for payload consistency.
      */
     private fun emitFailureReauth(requestId: String, error: MwaError, developerDetails: String?) {
         if (inflightMap.tryTerminate(requestId)) {
@@ -1084,7 +1084,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 2-2 T2 — emits `mwa_timeout` for the reauthorize path (DD-2-2-3).
+     * emits `mwa_timeout` for the reauthorize path.
      * Parallel to [emitTimeout] on the authorize path; uses `sourceMethod =
      * "reauthorize"`.
      */
@@ -1097,46 +1097,46 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         }
     }
 
-    // ---------------- Story 3-1 — sign_messages + runSigningOp ----------------
+    // ---------------- — sign_messages + runSigningOp ----------------
     //
     // Single-wrap shared signing pipeline implementing the locked design:
-    //   DD-3-1-1: runSigningOp is a private (`@VisibleForTesting internal`)
+    // runSigningOp is a private (`@VisibleForTesting internal`)
     //             member function on GDExtensionAndroidPlugin.
-    //   DD-3-1-2: block receiver = MwaClient (the SDK seam — preserves
+    // block receiver = MwaClient (the SDK seam — preserves
     //             FakeMwaClient test injection).
-    //   DD-3-1-3: signature carries `timeoutMs: Long`; helper passes through
+    // signature carries `timeoutMs: Long`; helper passes through
     //             `effectiveWatchdog(timeoutMs)` for watchdog parity with the
     //             auth path.
-    //   DD-3-1-4: SigningOp enum + `sourceMethod` extension property.
-    //   DD-3-1-6: NOT_CONNECTED preflight runs BEFORE InflightMap.register
+    // SigningOp enum + `sourceMethod` extension property.
+    // NOT_CONNECTED preflight runs BEFORE InflightMap.register
     //             (synchronous, no scope.launch on disconnected branch).
-    //   DD-3-1-8: ConnectionIdentity reconstructed from sessionState fields.
-    //   DD-3-1-9: responsibility split — helper does CAS+watchdog+errors;
+    // ConnectionIdentity reconstructed from sessionState fields.
+    // responsibility split — helper does CAS+watchdog+errors;
     //             call site does sessionState reads.
-    //   D-3-1-11: single-wrap return MwaResult<X> — block returns MwaResult<X>
+    // -1-11: single-wrap return MwaResult<X> — block returns MwaResult<X>
     //             directly, helper inspects Failure and routes via
     //             nativeBridge.postMwaError + op.sourceMethod, caller only
     //             handles Success. Stories 3-2 / 3-3 inherit the same shape.
     // See `docs/stories/3-1.md` for full detail.
 
     /**
-     * Story 3-1 — `sign_messages` entry point. Called from the JNI
+     * `sign_messages` entry point. Called from the JNI
      * [mwaSignMessagesFromJni] shim on a worker thread (T3 evolves the JNI
      * shim signature to pass `messages` + `timeoutMs` through), or directly
-     * by Kotlin unit tests with real values per DD-3-1-9.
+     * by Kotlin unit tests with real values.
      *
      * Body shape:
-     *  1. DD-3-1-6 preflight — synchronous `is_connected()` check BEFORE
+     * 1. preflight — synchronous `is_connected` check BEFORE
      *     `InflightMap.register`; emit `mwa_error{NOT_CONNECTED}` and return
      *     if disconnected. NO `scope.launch` on this branch (AC-3 "within 1
      *     frame, no wallet UI").
-     *  2. DD-3-1-8 reconstruction — read `sessionState.getAuthToken()`,
+     * 2. reconstruction — read `sessionState.getAuthToken()`,
      *     `getConnectedKey()` (NOT `getKey()` — asymmetric naming inherited
-     *     from Story 2-1 T4), `getIdentityUri()` / `getIconUri()` /
+     * from), `getIdentityUri` / `getIconUri` /
      *     `getIdentityName()`, build `ConnectionIdentity`.
      *  3. `scope.launch { runSigningOp(SIGN_MESSAGES, requestId, timeoutMs) {
      *     signMessages(senderProvider(), identity, authToken, messages,
-     *     listOf(publicKey)) } }` — DD-3-1-2 receiver is `MwaClient`; the
+     * listOf(publicKey)) } }` — receiver is `MwaClient`; the
      *     lambda calls the 5-arg `signMessages(...)` (NOT the clientlib-ktx
      *     `signMessagesDetached(...)`).
      *  4. On `MwaResult.Success`, route to `handleSignMessagesSuccess`
@@ -1151,7 +1151,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     @UsedByGodot
     fun mwaSignMessages(requestId: String, messages: List<ByteArray>, timeoutMs: Long) {
         val authToken = sessionState.getAuthToken() ?: return emitNotConnectedSign(requestId)
-        val publicKey = sessionState.getConnectedKey() ?: error("setKey was never called — see Story 2-2 C-T2-A")
+        val publicKey = sessionState.getConnectedKey() ?: error("setKey was never called — see C--A")
         val identity = ConnectionIdentity(
             identityUri = android.net.Uri.parse(sessionState.getIdentityUri()),
             iconUri = android.net.Uri.parse(sessionState.getIconUri()),
@@ -1166,10 +1166,10 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 3-2 — `sign_transactions` entry point. Called from the JNI
+     * `sign_transactions` entry point. Called from the JNI
      * [mwaSignTransactionsFromJni] shim on a worker thread (T3 evolves the JNI
      * shim signature to pass `transactions` + `timeoutMs` through), or directly
-     * by Kotlin unit tests with real values per DD-3-1-9 (inherited).
+     * by Kotlin unit tests with real values per (inherited).
      *
      * Body shape (mirrors [mwaSignMessages] with two textual deltas:
      *   (a) lambda calls `signTransactions(sender, identity, authToken, transactions)`
@@ -1177,35 +1177,35 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      *       (5-arg);
      *   (b) success path emits `sign_transactions_completed` via
      *       [handleSignTransactionsSuccess] instead of `sign_messages_completed`):
-     *  1. DD-3-1-6 preflight (inherited via 3-2 DD-3-2-5) — synchronous
+     * 1. preflight (inherited via 3-2) — synchronous
      *     `is_connected()` check via `sessionState.getAuthToken()`. Emit
      *     `mwa_error{NOT_CONNECTED, source_method="sign_transactions"}` and return
      *     if disconnected. NO `scope.launch` on this branch (AC-3 "within 1 frame").
-     *  2. Identity reconstruction per DD-3-1-8 (inherited).
+     * 2. Identity reconstruction per (inherited).
      *  3. `scope.launch { runSigningOp(SIGN_TRANSACTIONS, requestId, timeoutMs) {
      *     signTransactions(senderProvider(), identity, authToken, transactions) } }`
-     *     — DD-3-1-2 receiver is `MwaClient`; the lambda calls the 4-arg
+     * receiver is `MwaClient`; the lambda calls the 4-arg
      *     `signTransactions(...)` (no `addresses`).
      *  4. On `MwaResult.Success`, route to [handleSignTransactionsSuccess]
      *     (T2 lands this helper) which CAS-terminates and emits
      *     `sign_transactions_completed` via `postSignTransactionsCompleted`
      *     using `buildSignSuccessJson(requestId, signedPayloads,
-     *     payloadKey = "signed_transactions")` per DD-3-2-3.
+     * payloadKey = "signed_transactions")`.
      *
      * AC-2 enforces a ≤20-LOC budget on this body — see
      * `MwaAndroidPluginSignTransactionsTest."AC-2 mwaSignTransactions body is at most
      * 20 LOC"` (T1) for the source-line counter rule (shared `countMethodLines`
-     * helper in `LocCountUtil.kt` per DD-3-2-2 + D-3-2-3).
+     * helper in `LocCountUtil.kt` per + -2-3).
      * @since v0.1.0
      */
     @UsedByGodot
     fun mwaSignTransactions(requestId: String, transactions: List<ByteArray>, timeoutMs: Long) {
         val authToken = sessionState.getAuthToken() ?: return emitNotConnectedSign(requestId, "sign_transactions")
-        // Defensive guard mirroring [mwaSignMessages] (Story 3-1 Dev Notes C-T2-A inheritance) —
+        // Defensive guard mirroring [mwaSignMessages] (Dev Notes C--A inheritance)
         // signTransactions does NOT take an `addresses` arg so the key isn't passed downstream,
         // but the null-check still surfaces the same setKey-was-never-called failure mode loudly
         // (instead of letting later code fail with a less-actionable ConnectionIdentity error).
-        sessionState.getConnectedKey() ?: error("setKey was never called — see Story 3-1 Dev Notes C-T2-A inheritance")
+        sessionState.getConnectedKey() ?: error("setKey was never called — see Dev Notes C--A inheritance")
         val identity = ConnectionIdentity(
             identityUri = android.net.Uri.parse(sessionState.getIdentityUri()),
             iconUri = android.net.Uri.parse(sessionState.getIconUri()),
@@ -1220,17 +1220,17 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 3-3 — `sign_and_send` entry point. Called from the JNI
+     * `sign_and_send` entry point. Called from the JNI
      * [mwaSignAndSendFromJni] shim on a worker thread (T3 evolves the JNI
      * shim signature to pass `transactions` + `timeoutMs` through), or directly
-     * by Kotlin unit tests with real values per DD-3-1-9 inheritance via
-     * DD-3-2-5.
+     * by Kotlin unit tests with real values per inheritance via
+     *.
      *
      * Body shape (mirrors [mwaSignTransactions] with three
-     * structural deltas locked at story-creation per DD-3-3-A..G):
-     *   (a) breadcrumb-write-ahead step BEFORE `runSigningOp` per DD-3-3-B
+     * structural deltas locked at story-creation ..G):
+     * (a) breadcrumb-write-ahead step BEFORE `runSigningOp`
      *       (write-then-call ordering); the write is wrapped with
-     *       `withStorageOrReauthRequired` per DD-3-3-G (StorageCorruptException
+     * `withStorageOrReauthRequired` per (StorageCorruptException
      *       surfaces as `reauth_required` and abandons the op with no wallet
      *       round-trip);
      *   (b) lambda calls 5-arg `signAndSendTransactions(sender, identity,
@@ -1242,19 +1242,19 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      *       CAS-terminates, removes the breadcrumb (AC-3 ordering: BEFORE
      *       the terminal signal fires), and emits `sign_and_send_completed`
      *       via `postSignAndSendCompleted` with the 4-key payload built by
-     *       [buildSignAndSendSuccessJson] per DD-3-3-E.
+     * [buildSignAndSendSuccessJson].
      *
-     * Cleanup on error/timeout/cancellation (AC-4) per DD-3-3-C:
+     * Cleanup on error/timeout/cancellation (AC-4):
      *   - Error/timeout: [cleanupBreadcrumb] invoked from the runSigningOp
      *     Failure branch (after the terminal-signal emission). Wraps
      *     [SecureTokenStore.removePendingSubmission] in a try/catch — on
      *     StorageCorruptException, increment diagnostics + log + continue
-     *     (DD-4-1-3 wipe-crashed-flag pattern).
-     *   - Cancellation (mwa_cancelled_lifecycle): DEFERRED to Story 5-3
-     *     lifecycle observer. Story 3-3 lands the [cleanupBreadcrumb]
-     *     helper signature; Story 5-3 wires the lifecycle invocation.
+     * (wipe-crashed-flag pattern).
+     * - Cancellation (mwa_cancelled_lifecycle): DEFERRED to
+     * lifecycle observer. lands the [cleanupBreadcrumb]
+     * helper signature; wires the lifecycle invocation.
      *
-     * Cluster-bleed refusal (AC-6) per DD-27 / AC-NFR-SEC-4: the
+     * Cluster-bleed refusal (AC-6) per /: the
      * `sessionState.getClusterName()` value at call time MUST match the
      * cluster bound at connect/reauth time; if it has been swapped, refuse
      * with `mwa_error{NOT_CONNECTED, source_method="sign_and_send"}` per the
@@ -1264,15 +1264,15 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     @UsedByGodot
     fun mwaSignAndSendTransactions(requestId: String, transactions: List<ByteArray>, timeoutMs: Long) {
         val authToken = sessionState.getAuthToken() ?: return emitNotConnectedSign(requestId, "sign_and_send")
-        // Defensive guard mirroring [mwaSignTransactions] (Story 3-1 Dev Notes
+        // Defensive guard mirroring [mwaSignTransactions] (Dev Notes
         // C-T2-A inheritance) — surfaces the setKey-was-never-called failure
         // mode loudly instead of letting later code fail with a less-actionable
         // ConnectionIdentity error.
-        sessionState.getConnectedKey() ?: error("setKey was never called — see Story 3-1 Dev Notes C-T2-A inheritance")
+        sessionState.getConnectedKey() ?: error("setKey was never called — see Dev Notes C--A inheritance")
         val cluster = sessionState.getClusterName()
         if (cluster.isEmpty()) return emitNotConnectedSign(requestId, "sign_and_send")
         val identityUri = sessionState.getIdentityUri()
-        // AC-6 cluster-bleed check (DD-27 / AC-NFR-SEC-4) — synchronous preflight.
+        // AC-6 cluster-bleed check — synchronous preflight.
         // If sessionState.getClusterName() has been swapped post-connect, no
         // cached record under (cluster, identityUri) will match — refuse with
         // NOT_CONNECTED before any wallet round-trip. listAllKeys() is the
@@ -1286,7 +1286,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 it.cluster == cluster && it.identityUri == identityUri
             }
         } catch (ex: StorageCorruptException) {
-            // DD-3-3-G fail-closed (sync preflight branch — cluster-bleed lookup).
+            // fail-closed (sync preflight branch — cluster-bleed lookup).
             // The breadcrumb-write site inside scope.launch uses the suspend
             // [withStorageOrReauthRequired] wrapper. This SYNC preflight runs
             // on the JNI thread and cannot await — inline the register+CAS+
@@ -1316,7 +1316,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         )
         val breadcrumb = buildBreadcrumb(requestId, cluster, transactions, clock())
         scope.launch {
-            // DD-3-3-G fail-closed wrapper on the WRITE site — StorageCorruptException
+            // fail-closed wrapper on the WRITE site — StorageCorruptException
             // surfaces as `reauth_required{reason:"keystore_corrupt"}` and
             // abandons the op (NO wallet round-trip).
             withStorageOrReauthRequired(requestId, "sign_and_send") {
@@ -1331,7 +1331,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 // AC-4a/b — runSigningOp already emitted the terminal mwa_error /
                 // mwa_timeout signal; cleanup the breadcrumb so the disk surface
                 // doesn't accumulate dead entries. cleanupBreadcrumb is NOT
-                // wrapped per DD-3-3-G (cleanup failure must NOT abandon the
+                // wrapped per (cleanup failure must NOT abandon the
                 // already-emitted error signal).
                 cleanupBreadcrumb(requestId)
             }
@@ -1339,25 +1339,25 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 4-1 — `deauthorize` revoke + unconditional local-cache wipe (FR-5 /
-     * AC-NFR-SEC-5). Best-effort remote `clientlib.revoke(authToken)` wrapped in
-     * `try { ... } catch { ... } finally { wipe }` per DD-4-1-3; on remote
+     * `deauthorize` revoke + unconditional local-cache wipe (/
+     *). Best-effort remote `clientlib.revoke(authToken)` wrapped in
+     * `try { ... } catch { ... } finally { wipe }`; on remote
      * failure the path emits `deauthorize_completed{remote_revoke_succeeded:
-     * false, warning: "remote_unreachable"}` (NOT `mwa_error`) per DD-4-1-1.
-     * The `finally`-block multi-key wipe (DD-4-1-6: `listAllKeys` filter on
+     * false, warning: "remote_unreachable"}` (NOT `mwa_error`).
+     * The `finally`-block multi-key wipe (`listAllKeys` filter on
      * `identityUri`) deletes ALL CacheRecord entries scoped to this caller's
      * identity, then `MwaSessionState.clear()` (full clear, NOT
-     * `clearOnLogout()` — DD-4-1-2). Idempotence (DD-4-1-4): if no
+     * `clearOnLogout`). Idempotence: if no
      * `authToken` or no `identityUri` in session state, the remote-revoke is
      * skipped (vacuous success); the wipe-loop is naturally a no-op.
      *
-     * **CAS-first ordering** is inherited from Story 2-3 — register +
+     * **CAS-first ordering** is inherited from — register +
      * tryTerminate must precede any state mutation. **No watchdog** on the
      * deauthorize path (story Dev Notes "Watchdog scoping decision"): AC-2
      * requires remote failure to surface as `remote_unreachable`, NOT
      * `mwa_timeout`.
      *
-     * **Flag-based post-finally branch** (DD-4-1-3 / C-4-1-F): the
+     * **Flag-based post-finally branch**: the
      * `wipeCrashed` flag is set inside the inner finally-catch and read by an
      * `if (!wipeCrashed) emit deauthorize_completed` guard AFTER the outer
      * try/catch/finally completes. Returning from inside the inner finally
@@ -1369,7 +1369,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     fun mwaDeauthorize(requestId: String) {
         scope.launch {
             withContext(mainDispatcher) {
-                // Step 1 (CAS-first per Story 2-3 inheritance): reserve the slot.
+                // Step 1 (CAS-first per inheritance): reserve the slot.
                 if (!inflightMap.register(requestId, clock(), "deauthorize")) {
                     nativeBridge.postMwaError(
                         buildErrorJson(
@@ -1394,7 +1394,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     return@withContext
                 }
 
-                // Step 3: snapshot inputs. Empty/null snapshots feed DD-4-1-4
+                // Step 3: snapshot inputs. Empty/null snapshots feed
                 // idempotent path (skip remote, listAllKeys filter is naturally
                 // a no-op).
                 var remoteSucceeded = false
@@ -1404,7 +1404,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 val store = storeProvider(requireContext())
 
                 if (authTokenForRevoke == null || identityUriSnapshot.isEmpty()) {
-                    // DD-4-1-4 idempotent path — vacuous success. No remote attempted.
+                    // idempotent path — vacuous success. No remote attempted.
                     remoteSucceeded = true
                     try {
                         // listAllKeys filter on empty identityUri returns empty list;
@@ -1432,8 +1432,8 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     }
                 } else {
                     // Reconstruct ConnectionIdentity from MwaSessionState's
-                    // preserved-across-disconnect identity fields per DD-3-1-8
-                    // (Story 3-1 inheritance).
+                    // preserved-across-disconnect identity fields
+                    // (inheritance).
                     val identity = ConnectionIdentity(
                         identityUri = android.net.Uri.parse(identityUriSnapshot),
                         iconUri = android.net.Uri.parse(sessionState.getIconUri()),
@@ -1456,7 +1456,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                             }
                         }
                     } catch (e: Throwable) {
-                        // DD-4-1-1: any non-Success outcome (Failure result OR
+                        // any non-Success outcome (Failure result OR
                         // thrown exception) routes to `remote_unreachable` —
                         // never to `mwa_error`. Catch is defensive for
                         // unexpected throws (clientlib bugs, coroutine
@@ -1467,14 +1467,14 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                         }
                     } finally {
                         try {
-                            // DD-4-1-6 multi-key wipe: filter listAllKeys on
+                            // multi-key wipe: filter listAllKeys on
                             // identityUri, delete all matches. Aligns with the
                             // security threat model: "this device is no longer
                             // trusted with this wallet."
                             store.listAllKeys()
                                 .filter { it.identityUri == identityUriSnapshot }
                                 .forEach { store.deleteToken(it) }
-                            // DD-4-1-2: full clear (NOT clearOnLogout — that's
+                            // full clear (NOT clearOnLogout — that's
                             // the disconnect-path wipe that preserves identity).
                             sessionState.clear()
                         } catch (ex: Throwable) {
@@ -1498,7 +1498,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     }
                 }
 
-                // DD-4-1-3 / C-4-1-F: flag-based post-finally branch. NEVER
+                // /: flag-based post-finally branch. NEVER
                 // `return@withContext` from inside the inner finally — that
                 // would swallow in-flight exceptions from the outer catch.
                 if (!wipeCrashed) {
@@ -1516,47 +1516,47 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 4-2 — `forget_all` GDPR/CCPA "Sign out everywhere" entry point. Wipes
+     * `forget_all` GDPR/CCPA "Sign out everywhere" entry point. Wipes
      * every cached wallet token, rotates the encryption MasterKey, and cancels
      * any in-flight ops by emitting `mwa_cancelled_lifecycle` per slot BEFORE
      * the wipe starts (AC-2 ordering).
      *
-     * **Body shape (mirrors the DD-4-2-1..-9 LOCKED set):**
+     * **Body shape (mirrors the ..-9 LOCKED set):**
      *   (a) `forgetAllMutex.withLock { ... }` wraps the entire body
-     *       (DD-4-2-2): concurrent `mwaConnect` / `mwaSignMessages` / etc.
+     * concurrent `mwaConnect` / `mwaSignMessages` / etc.
      *       block on the Mutex from their `scope.launch { withLock { ... } }`
      *       site OR fail with `UNSUPPORTED_PLATFORM` BEFORE reaching the
-     *       Mutex. The Mutex is plugin-instance-scoped per CR-4-2-C.
-     *   (b) **Cancel in-flight loop (DD-4-2-3 + AC-2):**
+     * Mutex. The Mutex is plugin-instance-scoped.
+     * (b) **Cancel in-flight loop (+ AC-2):**
      *       `inflightMap.snapshot()` returns `(requestId → sourceMethod)`;
      *       for each slot: `if (inflightMap.tryTerminate(reqId)) {
      *       postMwaCancelledLifecycle(buildCancelledLifecycleJson(reqId,
      *       sourceMethod, "forget_all_invoked")) } else
      *       diagnostics.incrementLateResult()`. Emit BEFORE wipe.
-     *   (c) **Best-effort per-wallet deauth loop (DD-4-2-5 + AC-4):**
+     * (c) **Best-effort per-wallet deauth loop (+ AC-4):**
      *       `store.listAllKeys()` (try/catch StorageCorruptException →
-     *       emptyList per DD-4-2-6 wrapper-bypass);
+     * emptyList per wrapper-bypass);
      *       for each key: `withTimeoutOrNull(2_000L) {
-     *       client.deauthorize(...) }` per DD-4-2-7; failures logged but
+     * client.deauthorize(..) }`; failures logged but
      *       loop continues (continue-on-error policy).
-     *   (d) **Local wipe + MasterKey rotation (DD-4-2-4):**
+     * (d) **Local wipe + MasterKey rotation:**
      *       `store.deleteAll()` (ciphertext) →
      *       `requireContext().deleteSharedPreferences(PREFS_FILE_NAME)` →
      *       `KeyStore.getInstance("AndroidKeyStore").deleteEntry(MASTER_KEY_ALIAS)`.
      *       The next `storeProvider(ctx)` call returns a fresh
      *       SecureTokenStore whose lazy `masterKey` regenerates on access
-     *       (DD-4-2-9 post-rotation instance teardown).
+     * (post-rotation instance teardown).
      *   (e) **`sessionState.clear()` (NOT `clearOnLogout()`)** per
-     *       DD-4-1-2 LOCKED inheritance. Full 8-field wipe (auth_token +
+     * inheritance. Full 8-field wipe (auth_token +
      *       connectedKey + clusterName + walletLabel + walletIconUri +
      *       identity URIs + signing status + last result).
      *
-     * **No completion signal** per DD-4-2-8 — AC-1 evidence is post-condition
+     * **No completion signal** — AC-1 evidence is post-condition
      * state inspection (`listAllKeys().isEmpty() == true`,
      * `KeyStore.containsAlias(MASTER_KEY_ALIAS) == false`,
      * `sessionState.getAuthToken() == null`, `is_connected() == false`).
      *
-     * **No `withStorageOrReauthRequired` wrapper** per DD-4-2-6 —
+     * **No `withStorageOrReauthRequired` wrapper**
      * `forget_all` is the user's INTENTIONAL wipe; corruption during the
      * wipe is irrelevant because the corrupt state is about to be removed
      * anyway. T2's listAllKeys try/catch handles the "can't enumerate
@@ -1569,7 +1569,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     fun mwaForgetAll(requestId: String) {
         scope.launch {
             forgetAllMutex.withLock {
-                // DD-4-2-3 + AC-2 — cancel in-flight slots BEFORE wipe starts.
+                // + AC-2 — cancel in-flight slots BEFORE wipe starts.
                 // snapshot() returns a defensive copy (requestId → sourceMethod);
                 // tryTerminate CAS-removes the entry so the original op's
                 // would-be terminal signal becomes a `late_result` no-op.
@@ -1585,7 +1585,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     }
                 }
 
-                // DD-4-2-5 + AC-4 — best-effort per-wallet remote deauth. DD-4-2-6
+                // + AC-4 — best-effort per-wallet remote deauth.
                 // bypasses the withStorageOrReauthRequired wrapper: a
                 // listAllKeys StorageCorruptException becomes an empty list
                 // (the keystore-side rotation below will wipe the corrupt
@@ -1612,7 +1612,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     )
                     val client = mwaClientFactory()
                     try {
-                        // DD-4-2-7 — 2s per-deauth budget caps wall-time on
+                        // 2s per-deauth budget caps wall-time on
                         // offline / unresponsive wallets so the loop completes
                         // bounded for AC-1's 10s end-to-end.
                         withTimeoutOrNull(2_000L) {
@@ -1628,12 +1628,12 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     }
                 }
 
-                // DD-4-2-4 — local wipe + MasterKey rotation. runCatching
+                // local wipe + MasterKey rotation. runCatching
                 // around each step so a single failure (e.g. SharedPreferences
                 // already missing on first-run forget_all) doesn't abort the
                 // remaining steps. The next storeProvider(ctx) call returns a
                 // fresh SecureTokenStore whose lazy MasterKey regenerates on
-                // access (DD-4-2-9 post-rotation instance teardown).
+                // access (post-rotation instance teardown).
                 runCatching { store.deleteAll() }
                 runCatching { requireContext().deleteSharedPreferences(SecureTokenStore.PREFS_FILE_NAME) }
                 runCatching {
@@ -1644,7 +1644,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     }
                 }
 
-                // CR-67 follow-up #2 closure (2026-05-07) — Android's
+                // follow-up #2 closure (2026-05-07) — Android's
                 // in-process `SharedPreferences` cache is not reliably
                 // invalidated by `Context.deleteSharedPreferences` on every
                 // Android version (observed on Android 13 emulator). Without
@@ -1673,8 +1673,8 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 runCatching { storeProvider(requireContext()).listAllKeys() }
                 runCatching { storeProvider(requireContext()).listAllKeys() }
 
-                // DD-4-1-2 LOCKED inheritance — full clear (NOT clearOnLogout()).
-                // Marshalled to mainDispatcher to match Story 4-1's
+                // inheritance — full clear (NOT clearOnLogout).
+                // Marshalled to mainDispatcher to match 's
                 // sessionState mutation discipline.
                 withContext(mainDispatcher) { sessionState.clear() }
             }
@@ -1682,18 +1682,18 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 4-2 T2 (DD-4-2-3) — builds the `mwa_cancelled_lifecycle` 1-param
-     * payload (per A-12 1-param family) for in-flight ops cancelled by
+     * builds the `mwa_cancelled_lifecycle` 1-param
+     * payload (per 1-param family) for in-flight ops cancelled by
      * [mwaForgetAll]. 3-key dict: `{request_id, source_method, reason}`.
      *
      * `reason` is the literal `"forget_all_invoked"` for [mwaForgetAll]'s emit
-     * site (Story 4-2). Story 5-3's [MwaLifecycleObserver] is the SECOND
-     * emitter and uses `reason: "activity_destroyed"` per DD-5-3-4 LOCKED.
+     * site. 's [MwaLifecycleObserver] is the SECOND
+     * emitter and uses `reason: "activity_destroyed"`.
      * The reason field is a fixed-vocabulary enum string (current vocabulary:
      * `{"forget_all_invoked", "activity_destroyed"}`); consumers SHOULD switch
      * on the value, and any future literal requires an amendment.
      *
-     * NOTE: `mwa_cancelled_lifecycle` is 1-param per A-12 (the requestId
+     * NOTE: `mwa_cancelled_lifecycle` is 1-param per (the requestId
      * is embedded in the payload at the `request_id` field, NOT a separate
      * signal arg) — distinct from the 2-param `*_completed` family.
      */
@@ -1706,17 +1706,17 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 3-1 T2 — DD-3-1-6 NOT_CONNECTED preflight emission helper. Extracted
+     * NOT_CONNECTED preflight emission helper. Extracted
      * from `mwaSignMessages` to keep that method's body under the AC-1 ≤20-LOC
-     * budget (per DD-3-1-9 counter rule). Synchronous; emits one terminal
+     * budget (per counter rule). Synchronous; emits one terminal
      * `mwa_error{code=NOT_CONNECTED, source_method=<sourceMethod>}` signal and
      * returns Unit. NO scope.launch and NO inflightMap.register on this branch
-     * (DD-3-1-6 LOCK — preflight runs entirely on the calling thread).
+     * (LOCK — preflight runs entirely on the calling thread).
      *
-     * **Story 3-2 T2 (D-3-2-2 Rule 1):** parameterized [sourceMethod] with a
+     * ** (2-2 Rule 1):** parameterized [sourceMethod] with a
      * `"sign_messages"` default so [mwaSignMessages] (the original 3-1 caller)
      * keeps its single-arg call shape unchanged while [mwaSignTransactions]
-     * (the 3-2 caller) supplies `"sign_transactions"`. Story 3-3 will add the
+     * (the 3-2 caller) supplies `"sign_transactions"`. will add the
      * third caller with `"sign_and_send"`.
      */
     private fun emitNotConnectedSign(requestId: String, sourceMethod: String = "sign_messages") {
@@ -1733,18 +1733,18 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 3-1 T2 — shared signing pipeline. Consumed by `mwaSignMessages`
-     * (this story), `mwaSignTransactions` (Story 3-2), and
-     * `mwaSignAndSendTransactions` (Story 3-3).
+     * shared signing pipeline. Consumed by `mwaSignMessages`
+     * (this story), `mwaSignTransactions` , and
+     * `mwaSignAndSendTransactions`.
      *
-     * Per DD-3-1-9 responsibility split: this helper handles CAS register,
+     * Per responsibility split: this helper handles CAS register,
      * watchdog, client invoke, error translation. The CALL SITE handles
      * sessionState reads (identity / cluster / authToken) — those flow into
      * the lambda closure.
      *
-     * Per DD-3-1-2 the block receiver is `MwaClient` (the SDK seam), NOT
+     * Per the block receiver is `MwaClient` (the SDK seam), NOT
      * `MobileWalletAdapterClient` (clientlib-ktx — would break FakeMwaClient
-     * test injection). Per DD-3-1-3 the `timeoutMs: Long` parameter
+     * test injection). Per the `timeoutMs: Long` parameter
      * propagates through `effectiveWatchdog(timeoutMs)` → `withTimeoutOrNull`.
      *
      * Returns `MwaResult<T>`. Note: when callers pass `MwaClient.signMessages`
@@ -1757,18 +1757,18 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * Body follows the pseudocode in `docs/stories/3-1.md`
      * "Private `runSigningOp` helper" section.
      */
-    // `@VisibleForTesting internal` (rather than the DD-3-1-1 nominal `private`) to
+    // `@VisibleForTesting internal` (rather than the nominal `private`) to
     // permit T1 tests #5 ("runSigningOp passes through MwaResult.Success unchanged")
     // and #6 ("runSigningOp watchdog timeout returns Failure(MwaError.Timeout)")
     // to invoke the helper directly per the story's 8-test contract. Semantically
     // still file-private — production code outside `GDExtensionAndroidPlugin` has no
     // legitimate caller. Stories 3-2 / 3-3 are in this same file and use it as a
     // sibling member. Same idiom as `internal val sessionState` (line 95) +
-    // `@VisibleForTesting`-style overloads on the ctor. Logged as D-3-1-N (Rule 1
-    // — visibility relaxed for cross-package test access; DD-3-1-1 narrative
+    // `@VisibleForTesting`-style overloads on the ctor. Logged as -1-N (Rule 1
+    // visibility relaxed for cross-package test access; narrative
     // updated in Revision 2 of the story file).
     //
-    // **C-3-1-W single-wrap signature (Revision 2):** the block returns
+    // ** single-wrap signature (Revision 2):** the block returns
     // `MwaResult<X>` (NOT a generic `T`); the helper inspects `Failure` cases
     // internally and routes them through `nativeBridge.postMwaError(...)` with
     // `op.sourceMethod`. Callers receive a flat `MwaResult<X>` (single wrap),
@@ -1813,7 +1813,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                         MwaResult.Failure(MwaError.Timeout, null)
                     }
                     is MwaResult.Failure -> {
-                        // D-3-1-11 single-wrap: route wallet-level Failure (USER_CANCELED, etc.)
+                        // -1-11 single-wrap: route wallet-level Failure (USER_CANCELED, etc.)
                         // through nativeBridge.postMwaError with op.sourceMethod. Caller (e.g.,
                         // mwaSignMessages) only handles Success; all error paths terminate here.
                         if (inflightMap.tryTerminate(requestId)) {
@@ -1865,17 +1865,17 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 3-1 T2 — success path for sign_messages.
+     * success path for sign_messages.
      *
      * CAS-terminates the inflight request and emits `sign_messages_completed` via
      * [NativeBridge.postSignMessagesCompleted] with the 2-key payload shape per
-     * arch §3 line 236-242 + DD-3-1-5 (`{request_id, signed_payloads}`). On
+     * arch §3 line 236-242 + (`{request_id, signed_payloads}`). On
      * `tryTerminate` failure (lost CAS race), increments `lateResult` diagnostics
      * and silently drops — terminal-signal invariant per arch §7.3.
      *
      * Note: signing does NOT mutate `MwaSessionState` — the auth_token stays
-     * unchanged after a sign call (DD-2-2-5 token rotation contract is
-     * reauth-only; CR-48 N/A for sign_messages confirms the invariant).
+     * unchanged after a sign call (token rotation contract is
+     * reauth-only; N/A for sign_messages confirms the invariant).
      */
     private fun handleSignMessagesSuccess(requestId: String, result: SignResult) {
         if (!inflightMap.tryTerminate(requestId)) {
@@ -1891,20 +1891,20 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 3-2 T2 — success path for sign_transactions. Mirrors
+     * success path for sign_transactions. Mirrors
      * [handleSignMessagesSuccess] with two textual deltas: (a) emits
      * `sign_transactions_completed` via [NativeBridge.postSignTransactionsCompleted];
      * (b) calls [buildSignSuccessJson] with `payloadKey = "signed_transactions"`
-     * per DD-3-2-3 + D-3-2-1 (parameterized helper, default arg keeps Story 3-1
+     * per + -2-1 (parameterized helper, default arg keeps
      * call site unchanged).
      *
      * CAS-terminates the inflight request and emits the 2-key
-     * `{request_id, signed_transactions}` payload per DD-3-2-3. On `tryTerminate`
+     * `{request_id, signed_transactions}` payload. On `tryTerminate`
      * failure (lost CAS race), increments `lateResult` diagnostics and silently
      * drops — terminal-signal invariant per arch §7.3 (inherited).
      *
      * Note: signing does NOT mutate `MwaSessionState` — the auth_token stays
-     * unchanged after a sign call (DD-2-2-5 reauth-only; CR-48 N/A for
+     * unchanged after a sign call (reauth-only; N/A for
      * sign_transactions confirms the invariant).
      */
     private fun handleSignTransactionsSuccess(requestId: String, result: SignResult) {
@@ -1921,9 +1921,9 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 3-3 T2 — success path for sign_and_send. Distinct from
+     * success path for sign_and_send. Distinct from
      * [handleSignMessagesSuccess] / [handleSignTransactionsSuccess] in three
-     * ways per DD-3-3-E:
+     * ways:
      *   (a) emits `sign_and_send_completed` via
      *       [NativeBridge.postSignAndSendCompleted];
      *   (b) uses [buildSignAndSendSuccessJson] (4-key payload —
@@ -1933,7 +1933,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      *       [SecureTokenStore.removePendingSubmission] BEFORE emitting the
      *       terminal signal (AC-3 ordering invariant).
      *
-     * Per DD-3-3-G the cleanup site here is NOT wrapped with
+     * Per the cleanup site here is NOT wrapped with
      * `withStorageOrReauthRequired`: a cleanup failure on disk corruption
      * MUST NOT abandon the user's wallet-completed op. Instead the breadcrumb
      * survives to be cleaned up on next launch via [scanPendingSubmissions]
@@ -1952,8 +1952,8 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             return
         }
         // AC-3 ordering invariant — breadcrumb cleanup MUST run BEFORE the
-        // terminal success signal fires per DD-3-3-C. cleanupBreadcrumb
-        // centralizes the try/catch + diagnostics-counter pattern (DD-3-3-G:
+        // terminal success signal fires. cleanupBreadcrumb
+        // centralizes the try/catch + diagnostics-counter pattern (
         // not wrapped with withStorageOrReauthRequired — a cleanup failure
         // must NOT abandon the user's wallet-completed op; the breadcrumb
         // survives for next-launch scanPendingSubmissions to clean up).
@@ -1971,22 +1971,22 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 3-3 T2 (DD-3-3-C error/timeout cleanup helper) — removes the
+     * (error/timeout cleanup helper) — removes the
      * pending-submission breadcrumb for [requestId]. Invoked from the
      * `runSigningOp` Failure branch (mwa_error / mwa_timeout terminal signals)
-     * after the terminal signal has already been emitted. Per DD-3-3-G the
+     * after the terminal signal has already been emitted. Per the
      * cleanup site is NOT wrapped with `withStorageOrReauthRequired`: a
      * cleanup failure must NOT abandon the user's already-emitted error
      * signal.
      *
      * On [com.godotengine.godot_solana_sdk.mwa.store.StorageCorruptException]
      * during the remove, increment `diagnostics.cleanupFailedCount` + log
-     * via SdkLog.w + return (DD-4-1-3 wipe-crashed-flag pattern: the
+     * via SdkLog.w + return (wipe-crashed-flag pattern: the
      * breadcrumb survives for next-launch scan to clean up; the user's
      * terminal signal has already fired).
      *
-     * Story 5-3's [MwaLifecycleObserver] invokes this same helper on
-     * `mwa_cancelled_lifecycle` paths (per DD-5-3-5 LOCKED — unconditional
+     * 's [MwaLifecycleObserver] invokes this same helper on
+     * `mwa_cancelled_lifecycle` paths (— unconditional
      * invocation per snapshotted slot; the helper's try/catch + no-op-on-
      * absent-key behavior makes it idempotent for non-sign_and_send ops).
      */
@@ -1994,17 +1994,17 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         try {
             storeProvider(requireContext()).removePendingSubmission(requestId)
         } catch (ex: StorageCorruptException) {
-            // DD-3-3-G — cleanup-site failures do NOT abandon the already-emitted
+            // cleanup-site failures do NOT abandon the already-emitted
             // terminal signal. Increment a non-secret counter + log an event
             // marker; the breadcrumb survives for next-launch scanPendingSubmissions
-            // to clean up (DD-4-1-3 wipe-crashed-flag pattern, inherited).
+            // to clean up (wipe-crashed-flag pattern, inherited).
             diagnostics.incrementCleanupFailedCount()
             SdkLog.w(TAG, requestId) { "breadcrumb_cleanup_failed: ${ex.javaClass.simpleName}" }
         }
     }
 
     /**
-     * Story 3-3 T2 (DD-3-3-D scan + AC-5 one-shot semantics) — invoked from
+     * (scan + AC-5 one-shot semantics) — invoked from
      * [handleConnectSuccess] / [handleReauthSuccess] AFTER the success
      * signal fires. Identity-scoped: filters
      * [SecureTokenStore.listAllPendingSubmissions] by matching
@@ -2015,19 +2015,19 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * [SecureTokenStore.removePendingSubmission] (one-shot — prevents
      * duplicate notifications across reconnects).
      *
-     * Per DD-3-3-G the [SecureTokenStore.listAllPendingSubmissions] read
+     * Per the [SecureTokenStore.listAllPendingSubmissions] read
      * call IS wrapped with `withStorageOrReauthRequired`: if the prefs file
      * is corrupt at scan time, the wrapper emits `reauth_required` and
      * abandons the scan (the connect/reauth success signal HAS ALREADY
-     * fired per DD-3-3-D ordering). Per-entry `removePendingSubmission`
+     * fired per ordering). Per-entry `removePendingSubmission`
      * calls go through [cleanupBreadcrumb] (NOT wrapped — cleanup failures
      * survive to the next launch).
      */
     private suspend fun scanPendingSubmissions(identityUri: String) {
-        // DD-3-3-G — the listAllPendingSubmissions read IS wrapped: a Tink
+        // the listAllPendingSubmissions read IS wrapped: a Tink
         // corruption event during scan surfaces as `reauth_required` and
         // abandons the scan (the connect/reauth success signal HAS ALREADY
-        // fired per DD-3-3-D ordering, so the wrapper's null-return cleanly
+        // fired per ordering, so the wrapper's null-return cleanly
         // backs out of the scan without affecting the user-visible terminal
         // signal).
         val store = storeProvider(requireContext())
@@ -2055,11 +2055,11 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 3-3 T2 (DD-3-3-E + AC-1) — builds the `sign_and_send_completed`
+     * (+ AC-1) — builds the `sign_and_send_completed`
      * 4-key payload `{request_id, signatures: JSONArray<base58 strings>,
      * submitted_at: long, confirmation_status: String}`. Distinct from
      * [buildSignSuccessJson] (which produces a 2-key payload for
-     * sign_messages / sign_transactions) — DD-3-3-E LOCKS no reuse because
+     * sign_messages / sign_transactions) — LOCKS no reuse because
      * the structural shape diverges (3 keys + the request_id, vs 2 keys +
      * the request_id; signatures are base58 strings, NOT base64 byte arrays).
      *
@@ -2086,7 +2086,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 3-3 T2 (DD-3-3-E + AC-5) — builds the `pending_submission_found`
+     * (+ AC-5) — builds the `pending_submission_found`
      * 6-key payload `{request_id, op_type, started_at_ms, tx_count,
      * tx_preview_hashes, recommendation}` from the breadcrumb's stored
      * dict. The input is the JSON object that was originally written by
@@ -2114,13 +2114,13 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 3-3 T2 (AC-2 + DD-3-3-F) — builds the breadcrumb 7-key dict for
+     * (AC-2 +) — builds the breadcrumb 7-key dict for
      * disk persistence (the dict that goes through
      * [SecureTokenStore.putPendingSubmission]). Shape:
      * `{request_id, op_type:"sign_and_send", cluster, identity_uri,
      * started_at_ms, tx_count, tx_preview_hashes:[sha256(tx)[:32]]}`.
      *
-     * `tx_preview_hashes` per DD-3-3-F: lowercase hex string per transaction,
+     * `tx_preview_hashes`: lowercase hex string per transaction,
      * full 64-char (32-byte / 256-bit) SHA-256 digest. NOT base64; NOT
      * base58; NOT truncated below 64 chars. The plan-spec language
      * `sha256(tx)[:32]` is Python-slice notation over a `bytes(32)` value
@@ -2132,7 +2132,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      */
     private fun buildBreadcrumb(requestId: String, cluster: String, transactions: List<ByteArray>, startedAtMs: Long): JSONObject {
         val previewHashes = JSONArray()
-        // DD-3-3-F: lowercase-hex full SHA-256 (64 chars / 32 bytes / 256 bits).
+        // lowercase-hex full SHA-256 (64 chars / 32 bytes / 256 bits).
         // The plan-spec language `sha256(tx)[:32]` is Python-slice notation over
         // a `bytes(32)` value — equivalent to the full digest.
         for (tx in transactions) previewHashes.put(sha256Hex(tx))
@@ -2147,7 +2147,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 3-1 T2 — emits `mwa_timeout` for the signing path family.
+     * emits `mwa_timeout` for the signing path family.
      * Parallel to [emitTimeoutReauth]; uses `sourceMethod = op.sourceMethod`
      * so Stories 3-1 / 3-2 / 3-3 share the helper.
      */
@@ -2171,7 +2171,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             return
         }
 
-        // Story 4-3 DD-4-3-1.a — fail-closed plugin-boundary wrapper. Touch the
+        // fail-closed plugin-boundary wrapper. Touch the
         // SecureTokenStore BEFORE the wallet round-trip so a Tink corruption
         // event during cache LOOKUP surfaces as `reauth_required{reason:"keystore_corrupt"}`
         // rather than propagating as an uncaught Throwable → `mwa_error{PROTOCOL_ERROR}`.
@@ -2204,7 +2204,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         val walletPackage = auth.walletPackage.orEmpty()
         val nowMs = clock()
         // Arch §3.1 + §3.2: public_key is base58-encoded in both the CacheRecord AND the
-        // connect_completed signal payload. Previous D-T4-1 (hex) was off-spec — corrected
+        // connect_completed signal payload. Previous D--1 (hex) was off-spec — corrected
         // here with a minimal in-module Base58 encoder (no new transitive dep).
         val publicKeyBase58 = Base58.encode(auth.publicKey)
         val record = CacheRecord(
@@ -2221,7 +2221,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             lastUsedAtMs = nowMs,
         )
         val key = CacheKey(auth.cluster, auth.chainId, walletPackage, identityUri)
-        // Story 4-3 DD-4-3-1 PIVOT — StorageCorruptException now surfaces as
+        // PIVOT — StorageCorruptException now surfaces as
         // `reauth_required{reason:"keystore_corrupt"}` via emitReauthRequiredKeystoreCorrupt
         // (NOT `mwa_error{StorageCorrupt}` — AC-1 contract; legacy emitFailure
         // call deleted to preserve the terminal-signal CAS invariant — no dual-emit).
@@ -2246,11 +2246,11 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             sessionState.setAuthTokenFingerprint(fingerprint)
             sessionState.setWalletIconUri(auth.walletUriBase.orEmpty())
             sessionState.setKey(auth.publicKey)
-            // Story 2-1 T6 — fields read via MwaJniContext::query_session_state.
+            // fields read via MwaJniContext::query_session_state.
             sessionState.setPublicKeyBase58(publicKeyBase58)
             sessionState.setClusterName(auth.cluster)
             sessionState.setWalletLabel(auth.accountLabel.orEmpty())
-            // CR-67 Bug G: persist the dApp identity so sign-ops can rebuild
+            // Bug G: persist the dApp identity so sign-ops can rebuild
             // a valid ConnectionIdentity from sessionState. Pre-fix: sign-ops
             // built ConnectionIdentity(Uri.parse(""), Uri.parse(""), "") which
             // tripped the lib's "identityUri must be absolute, hierarchical"
@@ -2277,7 +2277,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     cluster = auth.cluster,
                 ).toString(),
             )
-            // Story 3-3 (DD-3-3-D AC-5) — scan for stale sign_and_send
+            // (AC-5) — scan for stale sign_and_send
             // breadcrumbs AFTER the success signal fires. Off-thread via
             // scope.launch to avoid blocking the connect happy-path's
             // terminal-signal emission. Late-result branch (CAS loss) skips
@@ -2291,7 +2291,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
     private fun emitTimeout(requestId: String, effectiveMs: Long) {
         if (inflightMap.tryTerminate(requestId)) {
-            // A-12 1-param: `request_id` is embedded inside the payload, not a separate seam arg.
+            // 1-param: `request_id` is embedded inside the payload, not a separate seam arg.
             recordOnEmit(requestId, "authorize", "mwa_timeout", clock())
             nativeBridge.postMwaTimeout(buildTimeoutJson(requestId, effectiveMs, "connect").toString())
         } else {
@@ -2302,7 +2302,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
     private fun emitFailure(requestId: String, error: MwaError, developerDetails: String?) {
         if (inflightMap.tryTerminate(requestId)) {
-            // A-12 1-param: `request_id` is embedded inside the payload (A-14 10-key shape).
+            // 1-param: `request_id` is embedded inside the payload (10-key shape).
             recordOnEmit(requestId, "authorize", "mwa_error", clock())
             nativeBridge.postMwaError(
                 buildErrorJson(
@@ -2320,20 +2320,20 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         }
     }
 
-    // ---------------- Story 4-3 — keystore-corrupt fail-closed helpers ----------------
+    // ---------------- — keystore-corrupt fail-closed helpers ----------------
     //
     // 3 helpers wired into the storage-corruption path:
-    //   - buildReauthRequiredKeystoreCorruptJson — DD-4-3-1.b 5-key Dictionary shape
+    // - buildReauthRequiredKeystoreCorruptJson — 5-key Dictionary shape
     //   - emitReauthRequiredKeystoreCorrupt — InflightMap CAS-first + nativeBridge.postReauthRequired
-    //   - withStorageOrReauthRequired — fail-closed plugin-boundary wrapper (DD-4-3-1.a)
+    // - withStorageOrReauthRequired — fail-closed plugin-boundary wrapper
     //
     // The catch sites at the reauthorize-success and authorize-success paths
     // call `emitReauthRequiredKeystoreCorrupt(...)` rather than the legacy
-    // `emitFailure(...MwaError.StorageCorrupt...)` per the DD-4-3-1 PIVOT
+    // `emitFailure(..MwaError.StorageCorrupt...)` per the PIVOT
     // (StorageCorruptException now surfaces as `reauth_required{reason:
     // "keystore_corrupt"}`, NOT `mwa_error{StorageCorrupt}` — AC-1 contract).
     //
-    // D-T1-RULE1-1 (Rule 1 — minor signature deviation from spec): the
+    // D--RULE1-1 (Rule 1 — minor signature deviation from spec): the
     // `inline` form planned by the story spec for `withStorageOrReauthRequired`
     // was downgraded to a non-inline `suspend` helper because
     // `emitReauthRequiredKeystoreCorrupt` is `suspend` and an inline function
@@ -2341,12 +2341,12 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     // constraints. No behavioral change.
 
     /**
-     * Story 4-3 T2 — DD-4-3-1.b 5-key `reauth_required` Dictionary builder for
+     * 5-key `reauth_required` Dictionary builder for
      * the `reason=keystore_corrupt` branch. The `cause` field uses
-     * [MwaError.StorageCorrupt].`code` (per C-4-3-G) so a future codegen change
+     * [MwaError.StorageCorrupt].`code` so a future codegen change
      * to the literal string flows through without touching this file.
      *
-     * Empty-string defaults for `request_id` / `source_method` (per DD-4-3-1.b)
+     * Empty-string defaults for `request_id` / `source_method`
      * are NOT used by current callers — both PIVOT sites + cache-LOOKUP wrappers
      * always supply both. The empty-string contract is reserved for hypothetical
      * future "corruption fired outside an op" paths.
@@ -2361,7 +2361,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             .toString()
 
     /**
-     * Story 4-3 T2 — terminal `reauth_required` emitter for the keystore-corrupt
+     * terminal `reauth_required` emitter for the keystore-corrupt
      * branch. Mirrors [emitFailure] / [emitTimeout] structure: CAS-first via
      * [InflightMap.tryTerminate]; on lost-CAS, increments late-result diagnostic
      * and returns silently. On won-CAS, emits via [NativeBridge.postReauthRequired].
@@ -2385,7 +2385,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     /**
-     * Story 4-3 T2 — fail-closed plugin-boundary wrapper (DD-4-3-1.a). Runs
+     * fail-closed plugin-boundary wrapper. Runs
      * [block] and converts any [StorageCorruptException] thrown inside it into
      * a terminal `reauth_required` signal via [emitReauthRequiredKeystoreCorrupt],
      * returning `null` so the caller treats it as the abort signal (mirrors
@@ -2395,7 +2395,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * `mwaAuthorize` / `mwaReauthorize` `catch (ex: Throwable)` handler still
      * fires `mwa_error{PROTOCOL_ERROR}` per existing convention.
      *
-     * **D-T1-RULE1-1:** kept `suspend` (not `inline`) because
+     * **D--RULE1-1:** kept `suspend` (not `inline`) because
      * [emitReauthRequiredKeystoreCorrupt] is `suspend` — an `inline` function
      * cannot call suspend functions without `crossinline` + `suspend`
      * constraints that would force the lambda parameter to also be suspend.
@@ -2405,16 +2405,16 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     private suspend fun <R> withStorageOrReauthRequired(requestId: String, sourceMethod: String, block: () -> R): R? = try {
         block()
     } catch (ex: StorageCorruptException) {
-        // Story 3-3 (DD-3-3-G refinement) — Story 4-3's original callers
+        // (refinement) — 's original callers
         // (mwaAuthorize / mwaReauthorize) registered the inflight slot BEFORE
         // entering the wrapper, so emitReauthRequiredKeystoreCorrupt's
-        // tryTerminate CAS always succeeded. Story 3-3 invokes this wrapper at
+        // tryTerminate CAS always succeeded. invokes this wrapper at
         // the breadcrumb-write site INSIDE scope.launch, BEFORE runSigningOp's
         // register — the slot does not yet exist. Lazy-register here so the
         // CAS slot is guaranteed to exist; on already-registered callers the
         // extra register is a no-op (putIfAbsent returns the existing value,
         // register returns false, no double-allocation).
-        // Story 4-2 D-4-2-T2-1 (Rule 1): pass `sourceMethod` (already in
+        // -2--1 (Rule 1): pass `sourceMethod` (already in
         // scope) so first-register callers (e.g. sign_and_send breadcrumb-
         // write before runSigningOp register lands) tag the slot with the
         // correct origin instead of falling back to the "unknown" default.
@@ -2434,12 +2434,12 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         ?: throw IllegalStateException("Godot activity not available; plugin likely torn down")
 
     /**
-     * Story 5-2 T2 (DD-5-2-1) — instance-side helper for [mwaQueryDiagnosticsFromJni].
+     * instance-side helper for [mwaQueryDiagnosticsFromJni].
      * Wraps [MwaDiagnosticsBuilder.buildDiagnosticsJson] with the live
      * [sessionState] + [diagnostics] + per-install pending-submission count and the
      * version constants surfaced via [BuildConfig]. `godotVersion` is left empty
      * here; the C++ side fills it in via `Engine::get_singleton()->get_version_info()`
-     * before returning the Dictionary to GDScript (DD-5-2-1 retirement scope step 3).
+     * before returning the Dictionary to GDScript (retirement scope step 3).
      *
      * Pending-count read uses a try/catch so a [StorageCorruptException] on the
      * EncryptedSharedPreferences-backed prefs file does not crash the SYNC ≤1ms
@@ -2463,19 +2463,19 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             sdkVersion = BuildConfig.SDK_VERSION,
             ktxVersion = BuildConfig.CLIENTLIB_KTX_VERSION,
             // C++ side overlays Engine::get_version_info() onto the parsed
-            // Dictionary at MobileWalletAdapter::get_diagnostics() (Story 5-2 T3).
+            // Dictionary at MobileWalletAdapter::get_diagnostics.
             godotVersion = "",
             androidApiLevel = Build.VERSION.SDK_INT,
         )
     }
 
     /**
-     * Story 5-2 T2 (AC-4) — instance-side helper for [mwaQueryDevicePostureFromJni].
+     * (AC-4) — instance-side helper for [mwaQueryDevicePostureFromJni].
      */
     private fun buildDevicePostureJsonForJni(): String = MwaDevicePostureBuilder.buildDevicePostureJson(requireContext())
 
     /**
-     * Story 5-2 T2 (DD-5-2-2 LOCKED) — caller-side recorder helper invoked alongside
+     * caller-side recorder helper invoked alongside
      * every [nativeBridge] terminal-signal post. Captures a [CorrelationTraceEntry]
      * for the AC-1 `last_n_correlation_trace` ring buffer.
      *
@@ -2483,9 +2483,9 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      * `elapsed_ms`, `timestamp_ms`) is computed against the caller-supplied
      * `startedAtMs` (sourced from the same `clock()` value passed to
      * [InflightMap.register]). For cancel-loop sites where the original op's
-     * start time is not surfaced by [InflightMap.snapshot] (D-5-2-T2-2 Rule 1
+     * start time is not surfaced by [InflightMap.snapshot] (2--2 Rule 1
      * drift: snapshot returns `Map<String, String>` not `Map<String, InflightSlot>`
-     * as DD-5-2-2 assumed), callers pass `clock()` so `elapsed_ms` reflects
+     * as assumed), callers pass `clock` so `elapsed_ms` reflects
      * the cancel-event time only — acceptable for diagnostics correlation.
      */
     private fun recordOnEmit(requestId: String, sourceMethod: String, terminalSignal: String, startedAtMs: Long) {
@@ -2603,7 +2603,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 private data class ParsedIdentity(
     val connectionIdentity: ConnectionIdentity,
     val identityUri: String,
-    // CR-67 Bug G: persist these alongside identityUri so handleSuccess can
+    // Bug G: persist these alongside identityUri so handleSuccess can
     // forward them to MwaSessionState. Sign-ops rebuild a ConnectionIdentity
     // from sessionState and need all three fields to match what the wallet
     // saw at authorize time. iconUriResolved is the post-fallback string
@@ -2614,7 +2614,7 @@ private data class ParsedIdentity(
 )
 
 /**
- * CR-67 follow-up #4 closure (2026-05-08) — decode a JSON array of base64
+ * follow-up #4 closure (2026-05-08) — decode a JSON array of base64
  * strings (produced by `mwa_android_bridge_jni.cpp::serialize_byte_arrays_to_json`)
  * into a `List<ByteArray>` for forwarding to the plugin's signing-op
  * instance methods. On any parse / decode failure returns `emptyList()` —
@@ -2653,7 +2653,7 @@ private fun parseIdentity(identityJson: String): ParsedIdentity? {
         val iconUri = obj.optString("icon_uri", "")
         val identityUri = obj.optString("identity_uri", "")
         if (name.isEmpty() || identityUri.isEmpty()) return null
-        // CR-67 Bug F: `MobileWalletAdapterClient.authorize/reauthorize` (called
+        // Bug F: `MobileWalletAdapterClient.authorize/reauthorize` (called
         // from `MobileWalletAdapter.transact(...)` on every op) validates iconUri
         // as MUST BE RELATIVE (when non-null). `ConnectionIdentity.iconUri` is
         // a non-nullable Uri in clientlib-ktx 2.0.3's wrapper (verified via
@@ -2689,7 +2689,7 @@ private fun parseIdentity(identityJson: String): ParsedIdentity? {
 }
 
 /**
- * `mwa_error` 10-key shape per Amendment A-14 (CR-26 resolution). `message`
+ * `mwa_error` 10-key shape per Amendment (resolution). `message`
  * is the AC-3 breadcrumb; `developer_details` is the canonical field consumers
  * should read.
  */
@@ -2703,8 +2703,8 @@ private fun buildErrorJson(
 ): JSONObject = JSONObject().apply {
     put("request_id", requestId)
     put("code", error.code)
-    // CR-40: `message` + `user_message` currently carry identical content because
-    // MwaError (codegen from Story 1-1) only exposes one default-message field.
+    // `message` + `user_message` currently carry identical content because
+    // MwaError (codegen from) only exposes one default-message field.
     put("message", error.defaultUserMessage)
     put("user_message", error.defaultUserMessage)
     put("developer_details", developerDetails ?: "")
@@ -2741,12 +2741,12 @@ private fun buildSuccessJson(
     put("cluster", cluster)
 }
 
-// ---------------- Story 3-1 T1 stubs — SigningOp enum + buildSignSuccessJson ----------------
+// ---------------- stubs — SigningOp enum + buildSignSuccessJson ----------------
 
 /**
- * Story 3-1 — closed enumeration of signing op-types. Used by [runSigningOp]'s
+ * closed enumeration of signing op-types. Used by [runSigningOp]'s
  * `op` parameter to (a) tag the CAS-register entry for diagnostics and (b)
- * select the `source_method` string for `mwa_error` envelopes. Per DD-3-1-4
+ * select the `source_method` string for `mwa_error` envelopes. Per
  * an enum is sufficient (the three values are closed; the helper does not
  * carry op-specific payload data — that flows via the `block` lambda).
  *
@@ -2766,7 +2766,7 @@ internal enum class SigningOp {
  * envelopes). Used inside [runSigningOp] when emitting timeouts / failures.
  *
  * Snake-case wire format matches the GDScript signal naming convention
- * (Story 1-6 D-4 op-name parity contract).
+ * (op-name parity contract).
  */
 internal val SigningOp.sourceMethod: String
     get() = when (this) {
@@ -2776,25 +2776,25 @@ internal val SigningOp.sourceMethod: String
     }
 
 /**
- * Story 3-1 T2 — success-payload builder for `sign_messages_completed`.
+ * success-payload builder for `sign_messages_completed`.
  * Per arch §3 line 236-242 the schema is 2-key:
  * `{request_id, signed_payloads: Array[PackedByteArray]}`. Each
  * `signed_payload` is base64-encoded on the wire (FakeMwaClient /
  * clientlib-ktx convention; the C++/GDScript side decodes back to
  * `PackedByteArray` per the signal schema).
  *
- * Per DD-3-1-5 (Revision-1 renumbering — was DD-3-1-4 in v1) this helper
+ * Per (Revision-1 renumbering — was in v1) this helper
  * is parallel to [buildSuccessJson] but with a SMALLER, op-specific shape
  * (no auth_token_fingerprint / public_key / wallet metadata since those
  * don't change on a sign call). DO NOT reuse [buildSuccessJson] — its
  * 6-key auth shape is wrong for sign-completed signals.
  *
- * **Story 3-2 T2 (D-3-2-1 Rule 1 + DD-3-2-3):** the helper is shared across
+ * ** (2-1 Rule 1 +):** the helper is shared across
  * the signing-op family rather than spawning siblings. [payloadKey] selects
- * the array's JSON key — `"signed_payloads"` (default — Story 3-1
- * `sign_messages_completed`) or `"signed_transactions"` (Story 3-2
+ * the array's JSON key — `"signed_payloads"` (default
+ * `sign_messages_completed`) or `"signed_transactions"` (
  * `sign_transactions_completed`). The default arg preserves the 3-1 call
- * site unchanged. Story 3-3's `sign_and_send` keeps `"signed_payloads"`
+ * site unchanged. 's `sign_and_send` keeps `"signed_payloads"`
  * since the wire format and the GDScript signal both reuse that name when
  * the array carries pre-submission signed transactions; the post-submission
  * `signature_*` fields ride a separate top-level key, not on this helper.
@@ -2841,7 +2841,7 @@ internal fun buildInstanceNullErrorJson(requestId: String, sourceMethod: String)
 }
 
 /**
- * CR-67 follow-up #3 closure — emitted when [GDExtensionAndroidPlugin
+ * follow-up #3 closure — emitted when [GDExtensionAndroidPlugin
  * .Companion.mwaReauthorizeFromJni] receives empty identity args from the C++
  * stub AND `MwaSessionState` has no usable prior-authorize data to fall back
  * on. In that case the caller has invoked Reauthorize without a prior
@@ -2858,7 +2858,7 @@ internal fun buildEmptySessionReauthErrorJson(requestId: String): JSONObject {
         "developer_details",
         "reauthorize invoked with empty identityJson and MwaSessionState carries no prior-authorize identity " +
             "(C++ JNI bridge stub at mwa_android_bridge_jni.cpp::MwaAndroidBridgeJni::reauthorize " +
-            "does not populate identity/cluster/chainId from query_session_state — Story 2-2 stub).",
+            "does not populate identity/cluster/chainId from query_session_state — stub).",
     )
     json.put("recoverable", MwaError.NotConnected.recoverable)
     json.put("retry_hint", MwaError.NotConnected.retryHint)

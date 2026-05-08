@@ -31,7 +31,7 @@ data class AuthResult(
      * clientlib-ktx 2.0.3's `AuthorizationResult` does NOT expose this field,
      * so [MwaClientImpl] returns `null` here. [FakeMwaClient] populates it
      * from its fixture JSON for downstream test assertions. The plugin layer
-     * (Story 2-1) resolves the real package via Android Intent inspection.
+     * resolves the real package via Android Intent inspection.
      */
     val walletPackage: String?,
     val cluster: String,
