@@ -54,10 +54,13 @@
 #include <thread>
 
 #include <godot_cpp/classes/json.hpp>
+#include <godot_cpp/classes/marshalls.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/packed_byte_array.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/typed_array.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
@@ -275,6 +278,56 @@ void call_reqid_only_shape(jmethodID mid,
         emit_jni_exception_error(dispatcher, request_id, method_name);
     }
     env->DeleteLocalRef(j_req);
+}
+
+// CR-67 follow-up #4 closure (2026-05-08) — serialize a TypedArray of
+// PackedByteArray (the GDScript-side payloads passed to sign_messages /
+// sign_transactions / sign_and_send) into a JSON string of base64-encoded
+// payloads: `["base64-1","base64-2",...]`. The Kotlin shim parses + base64-
+// decodes each entry and forwards as `List<ByteArray>` to the plugin's
+// instance method, which hands them to clientlib-ktx's `signMessagesDetached`
+// (etc.). Pre-fix: the C++ bridge discarded the payloads and the Kotlin shim
+// hardcoded `emptyList()`, causing wallets (Phantom, Fake Wallet) to silently
+// reject the malformed `payloads:[]` JSON-RPC request.
+godot::String serialize_byte_arrays_to_json(
+    const godot::TypedArray<godot::PackedByteArray>& payloads) {
+    godot::Marshalls* marshalls = godot::Marshalls::get_singleton();
+    godot::Array b64_array;
+    const int64_t n = payloads.size();
+    for (int64_t i = 0; i < n; ++i) {
+        const godot::PackedByteArray bytes = payloads[i];
+        b64_array.push_back(marshalls->raw_to_base64(bytes));
+    }
+    return godot::JSON::stringify(b64_array);
+}
+
+// CR-67 follow-up #4 closure (2026-05-08) — call a cached @JvmStatic void
+// method that takes (reqId, payloadsJson, timeoutMs). Used for the 3 signing
+// JNI shims (sign_messages / sign_transactions / sign_and_send). Distinct
+// shape from `call_authorize_shape` (no identity/cluster/chainId — those
+// come from MwaSessionState on the Kotlin side per DD-3-1-8) and from
+// `call_reqid_only_shape` (carries actual payload data, not just a reqId).
+void call_sign_op_shape(jmethodID mid,
+                        GodotMainDispatcher* dispatcher,
+                        const godot::String& request_id,
+                        const godot::String& payloads_json,
+                        int64_t timeout_ms,
+                        const char* method_name) {
+    if (mid == nullptr) { return; }
+    ScopedJniAttach attach;
+    JNIEnv* env = attach.env();
+    if (env == nullptr) { return; }
+    jstring j_req = godot_string_to_jstring(env, request_id);
+    jstring j_payloads = godot_string_to_jstring(env, payloads_json);
+    env->CallStaticVoidMethod(g_plugin_companion_class, mid, j_req, j_payloads,
+                              static_cast<jlong>(timeout_ms));
+    if (env->ExceptionCheck() == JNI_TRUE) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        emit_jni_exception_error(dispatcher, request_id, method_name);
+    }
+    env->DeleteLocalRef(j_req);
+    env->DeleteLocalRef(j_payloads);
 }
 
 }  // anonymous namespace
@@ -509,33 +562,39 @@ void MwaAndroidBridgeJni::deauthorize(const godot::String& request_id,
 }
 
 void MwaAndroidBridgeJni::sign_messages(const godot::String& request_id,
-                                        const godot::TypedArray<godot::PackedByteArray>& /*messages*/,
-                                        const godot::Dictionary& /*opts*/) {
+                                        const godot::TypedArray<godot::PackedByteArray>& messages,
+                                        const godot::Dictionary& opts) {
     if (!g_jni_ready.load(std::memory_order_acquire)) {
         emit_jni_unavailable(godot::String("sign_messages"), request_id);
         return;
     }
-    call_reqid_only_shape(g_mid_mwa_sign_messages_from_jni, dispatcher_, request_id, "sign_messages");
+    call_sign_op_shape(g_mid_mwa_sign_messages_from_jni, dispatcher_,
+                       request_id, serialize_byte_arrays_to_json(messages),
+                       opts_timeout_ms(opts), "sign_messages");
 }
 
 void MwaAndroidBridgeJni::sign_transactions(const godot::String& request_id,
-                                            const godot::TypedArray<godot::PackedByteArray>& /*transactions*/,
-                                            const godot::Dictionary& /*opts*/) {
+                                            const godot::TypedArray<godot::PackedByteArray>& transactions,
+                                            const godot::Dictionary& opts) {
     if (!g_jni_ready.load(std::memory_order_acquire)) {
         emit_jni_unavailable(godot::String("sign_transactions"), request_id);
         return;
     }
-    call_reqid_only_shape(g_mid_mwa_sign_transactions_from_jni, dispatcher_, request_id, "sign_transactions");
+    call_sign_op_shape(g_mid_mwa_sign_transactions_from_jni, dispatcher_,
+                       request_id, serialize_byte_arrays_to_json(transactions),
+                       opts_timeout_ms(opts), "sign_transactions");
 }
 
 void MwaAndroidBridgeJni::sign_and_send(const godot::String& request_id,
-                                        const godot::TypedArray<godot::PackedByteArray>& /*transactions*/,
-                                        const godot::Dictionary& /*opts*/) {
+                                        const godot::TypedArray<godot::PackedByteArray>& transactions,
+                                        const godot::Dictionary& opts) {
     if (!g_jni_ready.load(std::memory_order_acquire)) {
         emit_jni_unavailable(godot::String("sign_and_send"), request_id);
         return;
     }
-    call_reqid_only_shape(g_mid_mwa_sign_and_send_from_jni, dispatcher_, request_id, "sign_and_send");
+    call_sign_op_shape(g_mid_mwa_sign_and_send_from_jni, dispatcher_,
+                       request_id, serialize_byte_arrays_to_json(transactions),
+                       opts_timeout_ms(opts), "sign_and_send");
 }
 
 void MwaAndroidBridgeJni::forget_all(const godot::String& request_id) {
@@ -684,15 +743,22 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* /*reserved*/) {
     godot_solana_sdk::mwa::g_mid_mwa_deauthorize_from_jni =
         env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
                                "mwaDeauthorizeFromJni", reqid_only_sig);
+    // CR-67 follow-up #4 closure (2026-05-08) — sign_* shims evolved from the
+    // 1-arg `(reqId)` stub to a 3-arg `(reqId, payloadsJson, timeoutMs)` shape
+    // so real payloads survive the C++ → JNI → Kotlin handoff. Pre-fix the
+    // bridge discarded payloads and sent `payloads:[]` to the wallet, causing
+    // silent rejection (Phantom: "opens blank then closes").
+    // (reqId: String, payloadsJson: String, timeoutMs: Long): Unit
+    const char* sign_op_sig = "(Ljava/lang/String;Ljava/lang/String;J)V";
     godot_solana_sdk::mwa::g_mid_mwa_sign_messages_from_jni =
         env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
-                               "mwaSignMessagesFromJni", reqid_only_sig);
+                               "mwaSignMessagesFromJni", sign_op_sig);
     godot_solana_sdk::mwa::g_mid_mwa_sign_transactions_from_jni =
         env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
-                               "mwaSignTransactionsFromJni", reqid_only_sig);
+                               "mwaSignTransactionsFromJni", sign_op_sig);
     godot_solana_sdk::mwa::g_mid_mwa_sign_and_send_from_jni =
         env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
-                               "mwaSignAndSendFromJni", reqid_only_sig);
+                               "mwaSignAndSendFromJni", sign_op_sig);
     godot_solana_sdk::mwa::g_mid_mwa_forget_all_from_jni =
         env->GetStaticMethodID(godot_solana_sdk::mwa::g_plugin_companion_class,
                                "mwaForgetAllFromJni", reqid_only_sig);

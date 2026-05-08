@@ -345,53 +345,33 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         }
 
         @JvmStatic
-        fun mwaSignMessagesFromJni(reqId: String) {
-            // Story 3-1 T2 — JNI shim signature stays at `(reqId)` for T1+T2 (the
-            // C++ side at `MobileWalletAdapter::sign_messages` still calls the 1-arg
-            // form). Story 3-1 T3 evolves BOTH sides together: C++ passes through
-            // real `messages` + `timeoutMs`, and this shim's signature evolves to
-            // `(reqId, messagesJson, timeoutMs)` (or equivalent) at that point. For
-            // T1+T2 the shim delegates to `mwaSignMessages(...)` with empty messages
-            // so the JNI surface lights up at link time — production callers that
-            // route through C++ currently hit a no-op signing path (empty payload
-            // never produces a wallet round-trip) until T3 wires real messages
-            // through. Kotlin unit tests bypass this shim and call `mwaSignMessages`
-            // directly with real values per DD-3-1-9 responsibility split.
-            instance?.mwaSignMessages(reqId, emptyList(), 0L) ?: emitInstanceNullError(reqId, "sign_messages")
+        fun mwaSignMessagesFromJni(reqId: String, payloadsJson: String, timeoutMs: Long) {
+            // CR-67 follow-up #4 closure (2026-05-08) — the C++ JNI bridge at
+            // `mwa_android_bridge_jni.cpp::MwaAndroidBridgeJni::sign_messages`
+            // serializes the GDScript-side `TypedArray<PackedByteArray>` to JSON
+            // `["base64-1","base64-2",...]`. This shim parses the array + base64-
+            // decodes each entry, then forwards the real `List<ByteArray>` to
+            // [mwaSignMessages]. Pre-CR-67-#4 the shim hardcoded `emptyList()`
+            // (Stories 3-1/3-2/3-3 deferred this T3 wire-through), causing
+            // wallets to silently reject the malformed `payloads:[]` JSON-RPC
+            // request. Kotlin unit tests bypass this shim and call
+            // [mwaSignMessages] directly with real values per DD-3-1-9.
+            val plugin = instance ?: return emitInstanceNullError(reqId, "sign_messages")
+            plugin.mwaSignMessages(reqId, decodeBase64JsonArray(payloadsJson), timeoutMs)
         }
 
         @JvmStatic
-        fun mwaSignTransactionsFromJni(reqId: String) {
-            // Story 3-2 T1 — JNI shim signature stays at `(reqId)` for T1+T2 (the
-            // C++ side at `MobileWalletAdapter::sign_transactions` still calls the
-            // 1-arg form). Story 3-2 T3 evolves BOTH sides together: C++ passes
-            // through real `transactions` + `timeoutMs`, and this shim's signature
-            // evolves to `(reqId, transactionsJson, timeoutMs)` (or equivalent) at
-            // that point. For T1+T2 the shim delegates to `mwaSignTransactions(...)`
-            // with empty transactions so the JNI surface lights up at link time —
-            // production callers that route through C++ currently hit a no-op
-            // signing path (empty payload never produces a wallet round-trip) until
-            // T3 wires real transactions through. Kotlin unit tests bypass this
-            // shim and call `mwaSignTransactions` directly with real values per
-            // DD-3-1-9 responsibility split inherited by Story 3-2.
-            instance?.mwaSignTransactions(reqId, emptyList(), 0L) ?: emitInstanceNullError(reqId, "sign_transactions")
+        fun mwaSignTransactionsFromJni(reqId: String, payloadsJson: String, timeoutMs: Long) {
+            // CR-67 follow-up #4 closure (2026-05-08) — see [mwaSignMessagesFromJni].
+            val plugin = instance ?: return emitInstanceNullError(reqId, "sign_transactions")
+            plugin.mwaSignTransactions(reqId, decodeBase64JsonArray(payloadsJson), timeoutMs)
         }
 
         @JvmStatic
-        fun mwaSignAndSendFromJni(reqId: String) {
-            // Story 3-3 T1 — JNI shim signature stays at `(reqId)` for T1+T2 (the
-            // C++ side at `MobileWalletAdapter::sign_and_send` still calls the
-            // 1-arg form). Story 3-3 T3 evolves BOTH sides together: C++ passes
-            // through real `transactions` + `timeoutMs`, and this shim's signature
-            // evolves to `(reqId, transactionsJson, timeoutMs)` (or equivalent) at
-            // that point. For T1+T2 the shim delegates to `mwaSignAndSendTransactions(...)`
-            // with empty transactions so the JNI surface lights up at link time —
-            // production callers that route through C++ currently hit a no-op
-            // signing path (empty payload never produces a wallet round-trip) until
-            // T3 wires real transactions through. Kotlin unit tests bypass this
-            // shim and call `mwaSignAndSendTransactions` directly with real values per
-            // DD-3-1-9 responsibility split inherited via DD-3-2-5.
-            instance?.mwaSignAndSendTransactions(reqId, emptyList(), 0L) ?: emitInstanceNullError(reqId, "sign_and_send")
+        fun mwaSignAndSendFromJni(reqId: String, payloadsJson: String, timeoutMs: Long) {
+            // CR-67 follow-up #4 closure (2026-05-08) — see [mwaSignMessagesFromJni].
+            val plugin = instance ?: return emitInstanceNullError(reqId, "sign_and_send")
+            plugin.mwaSignAndSendTransactions(reqId, decodeBase64JsonArray(payloadsJson), timeoutMs)
         }
 
         @JvmStatic
@@ -2651,6 +2631,39 @@ private data class ParsedIdentity(
     val iconUriResolved: String,
     val identityName: String,
 )
+
+/**
+ * CR-67 follow-up #4 closure (2026-05-08) — decode a JSON array of base64
+ * strings (produced by `mwa_android_bridge_jni.cpp::serialize_byte_arrays_to_json`)
+ * into a `List<ByteArray>` for forwarding to the plugin's signing-op
+ * instance methods. On any parse / decode failure returns `emptyList()` —
+ * the downstream `MwaClientImpl.signMessages/signTransactions/
+ * signAndSendTransactions` impls already handle empty payloads (the
+ * sign_messages path emits PROTOCOL_ERROR via the `addresses.size != 1`
+ * guard; the sign_transactions / sign_and_send paths produce a wallet
+ * round-trip with empty payloads which the wallet rejects), preserving the
+ * pre-fix degenerate behavior for malformed input. Logs a warning so
+ * unexpected JSON malformation surfaces during triage.
+ *
+ * Uses [android.util.Base64] (`NO_WRAP` to match clientlib-ktx's standard
+ * RFC 4648 encoding without line breaks).
+ */
+private fun decodeBase64JsonArray(json: String): List<ByteArray> {
+    if (json.isEmpty()) return emptyList()
+    return try {
+        val arr = JSONArray(json)
+        val out = ArrayList<ByteArray>(arr.length())
+        for (i in 0 until arr.length()) {
+            out.add(android.util.Base64.decode(arr.getString(i), android.util.Base64.NO_WRAP))
+        }
+        out
+    } catch (ex: Throwable) {
+        SdkLog.w("MwaPlugin", "decode") {
+            "decodeBase64JsonArray_failed cause=${ex.javaClass.simpleName}"
+        }
+        emptyList()
+    }
+}
 
 private fun parseIdentity(identityJson: String): ParsedIdentity? {
     return try {

@@ -178,9 +178,25 @@ class MwaClientImpl(
                 // Wallet defaults — v1 of the SDK does not surface commitment/
                 // skipPreflight/maxRetries to the Godot caller. Named args make
                 // the "take the wallet default" intent unambiguous.
+                //
+                // CR-67 follow-up #4 closure (2026-05-08) — `minContextSlot`
+                // is `0` (NOT `null`). Phantom (and likely other strict
+                // wallets) zod-validates the `sign_and_send_transactions`
+                // params and rejects null/undefined for `min_context_slot`
+                // with `RPC ROUTER: Unexpected error in method:
+                // sol_mwa_sign_and_send_transactions, message: [{ "code":
+                // "invalid_type", "expected": "number", "received":
+                // "undefined", "path": ["params", "minContextSlot"],
+                // "message": "Required" }]`. Per the MWA spec
+                // (https://solana-mobile.github.io/mobile-wallet-adapter/spec/spec.html)
+                // `min_context_slot` is OPTIONAL with semantics "only
+                // include this transaction if the cluster slot ≥ this
+                // value" — passing `0` is equivalent to "no minimum slot
+                // constraint" and works against both spec-compliant
+                // wallets (Fake Wallet) AND strict ones (Phantom).
                 TransactionParams(
                     /* minContextSlot = */
-                    null,
+                    0,
                     /* commitment = */
                     null,
                     /* skipPreflight = */
