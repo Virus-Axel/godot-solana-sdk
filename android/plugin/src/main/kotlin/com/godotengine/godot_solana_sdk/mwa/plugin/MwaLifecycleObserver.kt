@@ -61,14 +61,16 @@ import org.json.JSONObject
 internal class MwaLifecycleObserver(
     private val inflightMap: InflightMap,
     private val nativeBridge: NativeBridge,
+    private val diagnostics: MwaDiagnostics,
     private val cleanupBreadcrumb: (requestId: String) -> Unit,
     private val payloadBuilder: (requestId: String, sourceMethod: String, reason: String) -> JSONObject,
     private val cancelInFlight: () -> Unit,
-    // `mwa_cancelled_lifecycle` per-slot emit must record into the
-    // `last_n_correlation_trace` ring buffer alongside the `mwaForgetAll`
-    // cancel-loop's identical post site. Lambda-injected to keep
-    // [GDExtensionAndroidPlugin.recordOnEmit] private; default no-op preserves
-    // the ctor surface for tests.
+    // `mwa_cancelled_lifecycle` per-slot
+    // emit must record into the AC-1 `last_n_correlation_trace` ring buffer
+    // alongside the `mwaForgetAll` cancel-loop's identical post site. Lambda-
+    // injected to keep [GDExtensionAndroidPlugin.recordOnEmit] private; default
+    // no-op preserves the ctor surface for tests that do not
+    // assert on diagnostics interaction.
     private val recordOnEmit: (
         requestId: String,
         sourceMethod: String,
@@ -89,7 +91,8 @@ internal class MwaLifecycleObserver(
      *      no-op-on-absent-key behavior).
      *   3. If `tryTerminate` returns `false` (already-terminated requestId,
      *      e.g., a `connect_completed` already fired before rotation),
-     *      skip emission — AC-3 invariant satisfied.
+     *      increment `diagnostics.lateResultCount` and skip emission —
+     *      AC-3 invariant satisfied.
      *   4. After the loop, invoke `cancelInFlight()` — the plugin-provided
      *      lambda cancels the plugin's coroutine scope's children so any
      *      suspending op bodies see `CancellationException` and abort.
@@ -103,6 +106,8 @@ internal class MwaLifecycleObserver(
                     payloadBuilder(reqId, srcMethod, "activity_destroyed").toString(),
                 )
                 cleanupBreadcrumb(reqId)
+            } else {
+                diagnostics.incrementLateResult()
             }
         }
         cancelInFlight()

@@ -15,6 +15,9 @@ import com.godotengine.godot_solana_sdk.mwa.client.dto.SignResult
 import com.godotengine.godot_solana_sdk.mwa.generated.MwaError
 import com.godotengine.godot_solana_sdk.mwa.plugin.DefaultNativeBridge
 import com.godotengine.godot_solana_sdk.mwa.plugin.InflightMap
+import com.godotengine.godot_solana_sdk.mwa.plugin.MwaDevicePostureBuilder
+import com.godotengine.godot_solana_sdk.mwa.plugin.MwaDiagnostics
+import com.godotengine.godot_solana_sdk.mwa.plugin.MwaDiagnosticsBuilder
 import com.godotengine.godot_solana_sdk.mwa.plugin.MwaLifecycleObserver
 import com.godotengine.godot_solana_sdk.mwa.plugin.NativeBridge
 import com.godotengine.godot_solana_sdk.mwa.session.MwaSessionState
@@ -83,6 +86,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     private val scope: CoroutineScope,
     private val clock: () -> Long,
     private val inflightMap: InflightMap,
+    private val diagnostics: MwaDiagnostics,
     private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
 ) : GodotPlugin(godot) {
 
@@ -125,6 +129,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     internal fun buildLifecycleObserver(): MwaLifecycleObserver = MwaLifecycleObserver(
         inflightMap = inflightMap,
         nativeBridge = nativeBridge,
+        diagnostics = diagnostics,
         cleanupBreadcrumb = ::cleanupBreadcrumb,
         payloadBuilder = ::buildCancelledLifecycleJson,
         cancelInFlight = { scope.coroutineContext[Job]?.cancelChildren() },
@@ -162,6 +167,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
         clock = System::currentTimeMillis,
         inflightMap = InflightMap(),
+        diagnostics = MwaDiagnostics(),
         mainDispatcher = Dispatchers.Main,
     )
 
@@ -389,7 +395,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
          * null (matches the no-op-bridge contract on non-Android exports).
          */
         @JvmStatic
-        fun mwaQueryDiagnosticsFromJni(): String = instance?.buildDiagnosticsJsonForJni() ?: "{}"
+        fun mwaQueryDiagnosticsFromJni(): String = instance?.buildDiagnosticsJsonForJni() ?: MwaDiagnosticsBuilder.emptyDiagnosticsJson()
 
         /**
          * (AC-4) — synchronous device-posture pull. Returns the
@@ -401,7 +407,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
          * GDScript `MWA.get_device_posture()` kdoc (T4).
          */
         @JvmStatic
-        fun mwaQueryDevicePostureFromJni(): String = instance?.buildDevicePostureJsonForJni() ?: "{}"
+        fun mwaQueryDevicePostureFromJni(): String = instance?.buildDevicePostureJsonForJni() ?: MwaDevicePostureBuilder.emptyPostureJson()
 
         /**
          * synchronous state-snapshot pull from the C++
@@ -546,6 +552,9 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     }
 
     @VisibleForTesting
+    internal fun diagnosticsForTest(): MwaDiagnostics = diagnostics
+
+    @VisibleForTesting
     internal fun inflightMapForTest(): InflightMap = inflightMap
 
     override fun getPluginName(): String = BuildConfig.GODOT_PLUGIN_NAME
@@ -621,6 +630,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                             ).toString(),
                         )
                     } else {
+                        diagnostics.incrementLateResult()
                         SdkLog.w(TAG, requestId) { "late_result outcome=crash" }
                     }
                 }
@@ -687,6 +697,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 // preserves the state-machine discipline), do NOT wipe and do NOT
                 // emit; just log the late_result.
                 if (!inflightMap.tryTerminate(requestId)) {
+                    diagnostics.incrementLateResult()
                     SdkLog.w(TAG, requestId) { "late_result outcome=disconnect (CAS lost)" }
                     return@withContext
                 }
@@ -888,6 +899,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                             ).toString(),
                         )
                     } else {
+                        diagnostics.incrementLateResult()
                         SdkLog.w(TAG, requestId) { "late_result outcome=crash" }
                     }
                 }
@@ -988,6 +1000,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
 
         // CAS — win the terminal-signal slot exactly once per requestId.
         if (!inflightMap.tryTerminate(requestId)) {
+            diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=reauthorize" }
             return
         }
@@ -1026,6 +1039,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      */
     private fun handleTokenExpired(requestId: String, key: CacheKey, store: SecureTokenStore) {
         if (!inflightMap.tryTerminate(requestId)) {
+            diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=token_expired" }
             return
         }
@@ -1064,6 +1078,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 ).toString(),
             )
         } else {
+            diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=failure code=${error.code}" }
         }
     }
@@ -1077,6 +1092,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         if (inflightMap.tryTerminate(requestId)) {
             nativeBridge.postMwaTimeout(buildTimeoutJson(requestId, effectiveMs, "reauthorize").toString())
         } else {
+            diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=timeout" }
         }
     }
@@ -1288,6 +1304,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 }
                 nativeBridge.postReauthRequired(buildReauthRequiredKeystoreCorruptJson(requestId, "sign_and_send", ex))
             } else {
+                diagnostics.incrementLateResult()
             }
             return
         }
@@ -1372,6 +1389,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 // Defense-in-depth: deauthorize has no competing watchdog, but
                 // preserving the CAS discipline keeps the state-machine uniform.
                 if (!inflightMap.tryTerminate(requestId)) {
+                    diagnostics.incrementLateResult()
                     SdkLog.w(TAG, requestId) { "late_result outcome=deauthorize (CAS lost)" }
                     return@withContext
                 }
@@ -1563,6 +1581,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                             buildCancelledLifecycleJson(reqId, srcMethod, "forget_all_invoked").toString(),
                         )
                     } else {
+                        diagnostics.incrementLateResult()
                     }
                 }
 
@@ -1810,6 +1829,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                                 ).toString(),
                             )
                         } else {
+                            diagnostics.incrementLateResult()
                             SdkLog.w(TAG, requestId) { "late_result outcome=${rawResult.error.code}" }
                         }
                         rawResult
@@ -1837,6 +1857,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                     ).toString(),
                 )
             } else {
+                diagnostics.incrementLateResult()
                 SdkLog.w(TAG, requestId) { "late_result outcome=crash" }
             }
             MwaResult.Failure(MwaError.ProtocolError, null)
@@ -1858,6 +1879,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      */
     private fun handleSignMessagesSuccess(requestId: String, result: SignResult) {
         if (!inflightMap.tryTerminate(requestId)) {
+            diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=sign_messages" }
             return
         }
@@ -1887,6 +1909,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      */
     private fun handleSignTransactionsSuccess(requestId: String, result: SignResult) {
         if (!inflightMap.tryTerminate(requestId)) {
+            diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=sign_transactions" }
             return
         }
@@ -1924,6 +1947,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      */
     private fun handleSignAndSendSuccess(requestId: String, result: SignAndSendResult) {
         if (!inflightMap.tryTerminate(requestId)) {
+            diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=sign_and_send" }
             return
         }
@@ -1974,6 +1998,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             // terminal signal. Increment a non-secret counter + log an event
             // marker; the breadcrumb survives for next-launch scanPendingSubmissions
             // to clean up (wipe-crashed-flag pattern, inherited).
+            diagnostics.incrementCleanupFailedCount()
             SdkLog.w(TAG, requestId) { "breadcrumb_cleanup_failed: ${ex.javaClass.simpleName}" }
         }
     }
@@ -2130,6 +2155,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
         if (inflightMap.tryTerminate(requestId)) {
             nativeBridge.postMwaTimeout(buildTimeoutJson(requestId, watchdogMs, op.sourceMethod).toString())
         } else {
+            diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=timeout" }
         }
     }
@@ -2258,6 +2284,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             // the scan because no terminal connect_completed was emitted.
             scope.launch { scanPendingSubmissions(identityUri) }
         } else {
+            diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=success" }
         }
     }
@@ -2268,6 +2295,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
             recordOnEmit(requestId, "authorize", "mwa_timeout", clock())
             nativeBridge.postMwaTimeout(buildTimeoutJson(requestId, effectiveMs, "connect").toString())
         } else {
+            diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=timeout" }
         }
     }
@@ -2287,6 +2315,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
                 ).toString(),
             )
         } else {
+            diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=failure code=${error.code}" }
         }
     }
@@ -2344,6 +2373,7 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
      */
     private suspend fun emitReauthRequiredKeystoreCorrupt(requestId: String, sourceMethod: String, ex: StorageCorruptException) {
         if (!inflightMap.tryTerminate(requestId)) {
+            diagnostics.incrementLateResult()
             SdkLog.w(TAG, requestId) { "late_result outcome=reauth_required source=$sourceMethod" }
             return
         }
@@ -2403,13 +2433,72 @@ class GDExtensionAndroidPlugin @VisibleForTesting internal constructor(
     private fun requireContext(): Context = godot.getActivity()
         ?: throw IllegalStateException("Godot activity not available; plugin likely torn down")
 
-    private fun buildDiagnosticsJsonForJni(): String = "{}"
+    /**
+     * instance-side helper for [mwaQueryDiagnosticsFromJni].
+     * Wraps [MwaDiagnosticsBuilder.buildDiagnosticsJson] with the live
+     * [sessionState] + [diagnostics] + per-install pending-submission count and the
+     * version constants surfaced via [BuildConfig]. `godotVersion` is left empty
+     * here; the C++ side fills it in via `Engine::get_singleton()->get_version_info()`
+     * before returning the Dictionary to GDScript (retirement scope step 3).
+     *
+     * Pending-count read uses a try/catch so a [StorageCorruptException] on the
+     * EncryptedSharedPreferences-backed prefs file does not crash the SYNC ≤1ms
+     * diagnostics call — corruption surfaces as `pending_submissions_count: 0` +
+     * a logcat warning, matching the AC-3 PII-safe semantic (no exception text
+     * attached to the support payload).
+     */
+    private fun buildDiagnosticsJsonForJni(): String {
+        val pendingCount = try {
+            storeProvider(requireContext()).listAllPendingSubmissions().size
+        } catch (ex: Throwable) {
+            SdkLog.w(TAG, "5-2") {
+                "diagnostics_pending_count_failed cause=${ex.javaClass.simpleName}"
+            }
+            0
+        }
+        return MwaDiagnosticsBuilder.buildDiagnosticsJson(
+            sessionState = sessionState,
+            diagnostics = diagnostics,
+            pendingSubmissionsCount = pendingCount,
+            sdkVersion = BuildConfig.SDK_VERSION,
+            ktxVersion = BuildConfig.CLIENTLIB_KTX_VERSION,
+            // C++ side overlays Engine::get_version_info() onto the parsed
+            // Dictionary at MobileWalletAdapter::get_diagnostics.
+            godotVersion = "",
+            androidApiLevel = Build.VERSION.SDK_INT,
+        )
+    }
 
-    private fun buildDevicePostureJsonForJni(): String = "{}"
+    /**
+     * (AC-4) — instance-side helper for [mwaQueryDevicePostureFromJni].
+     */
+    private fun buildDevicePostureJsonForJni(): String = MwaDevicePostureBuilder.buildDevicePostureJson(requireContext())
 
-    @Suppress("UNUSED_PARAMETER")
+    /**
+     * caller-side recorder helper invoked alongside
+     * every [nativeBridge] terminal-signal post. Captures a [CorrelationTraceEntry]
+     * for the AC-1 `last_n_correlation_trace` ring buffer.
+     *
+     * The 5-key payload (`request_id`, `source_method`, `terminal_signal`,
+     * `elapsed_ms`, `timestamp_ms`) is computed against the caller-supplied
+     * `startedAtMs` (sourced from the same `clock()` value passed to
+     * [InflightMap.register]). For cancel-loop sites where the original op's
+     * start time is not surfaced by [InflightMap.snapshot] (2--2 Rule 1
+     * drift: snapshot returns `Map<String, String>` not `Map<String, InflightSlot>`
+     * as assumed), callers pass `clock` so `elapsed_ms` reflects
+     * the cancel-event time only — acceptable for diagnostics correlation.
+     */
     private fun recordOnEmit(requestId: String, sourceMethod: String, terminalSignal: String, startedAtMs: Long) {
-        // No-op: diagnostics correlation tracing was removed to slim the PR surface.
+        val now = clock()
+        diagnostics.recordCorrelationTrace(
+            com.godotengine.godot_solana_sdk.mwa.plugin.CorrelationTraceEntry(
+                requestId = requestId,
+                sourceMethod = sourceMethod,
+                terminalSignal = terminalSignal,
+                elapsedMs = now - startedAtMs,
+                timestampMs = now,
+            ),
+        )
     }
 
     /**
