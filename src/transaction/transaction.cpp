@@ -703,6 +703,18 @@ void Transaction::set_signers(const Array &p_value) {
 	result_signature = "";
 	removed_path_taken_ = false;
 	create_message();
+	// `create_message` early-exits without resizing signatures when `instructions` is
+	// empty — the deserialized-then-set_signers flow (`new_from_bytes` + `set_signers`)
+	// hits this. Resize inline so signatures.size() always matches signers.size() after
+	// set_signers, regardless of which create_message branch ran.
+	if (signatures.size() != signers.size()) {
+		signatures.resize(signers.size());
+		for (int i = 0; i < signatures.size(); i++) {
+			PackedByteArray temp;
+			temp.resize(SIGNATURE_LENGTH);
+			signatures[i] = temp;
+		}
+	}
 }
 
 Array Transaction::get_signers() {
