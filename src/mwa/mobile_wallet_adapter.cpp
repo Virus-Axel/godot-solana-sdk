@@ -23,7 +23,7 @@
 #include "godot_cpp/variant/variant.hpp"
 
 #include "generated/mwa_error_codes.hpp"
-#include "mwa/mwa_android_bridge.hpp"
+#include "mwa_android_bridge.hpp"
 
 namespace {
 // Buffer for the 8-hex-char request id + 1 NUL terminator.
