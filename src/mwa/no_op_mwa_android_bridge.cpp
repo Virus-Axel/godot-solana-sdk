@@ -10,7 +10,9 @@
 
 namespace godot_solana_sdk::mwa {
 
-NoOpMwaAndroidBridge::NoOpMwaAndroidBridge(GodotMainDispatcher *dispatcher) : dispatcher_(nullptr) { // default-init; filled in body if dispatcher is valid.
+// default-init dispatcher_; filled in body if dispatcher is valid.
+NoOpMwaAndroidBridge::NoOpMwaAndroidBridge(GodotMainDispatcher *dispatcher) :
+		dispatcher_(nullptr) {
 	// Loud null-check — UB-avoidance. ERR_FAIL_NULL_MSG returns void on failure,
 	// leaving dispatcher_ at nullptr so subsequent op calls early-return.
 	//

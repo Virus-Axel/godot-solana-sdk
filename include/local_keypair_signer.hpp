@@ -58,7 +58,7 @@ public:
 	/// The parameter name @c kp matches the GDScript-exposed argument name in
 	/// @c _bind_methods (@c D_METHOD("set_keypair", "kp")); renaming would break
 	/// GDScript callers using named-argument syntax.
-	void set_keypair(const godot::Ref<godot::Keypair> &kp);  // NOLINT(readability-identifier-length)
+	void set_keypair(const godot::Ref<godot::Keypair> &kp); // NOLINT(readability-identifier-length)
 
 	/// @return The currently wrapped @c Keypair (may be @c null if @ref set_keypair was never called).
 	[[nodiscard]] godot::Ref<godot::Keypair> get_keypair() const;
