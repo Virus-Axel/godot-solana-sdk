@@ -3,7 +3,6 @@
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/variant/string_name.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
 #ifdef MWA_TESTING
@@ -17,9 +16,11 @@ GodotMainDispatcher::GodotMainDispatcher(godot::Object* target) {
     // ERR_FAIL_NULL_MSG returns void on failure, leaving emit_signal_callable_
     // default-constructed (invalid Callable). Subsequent post() calls through
     // an invalid Callable produce an internal godot-cpp warning and are dropped.
-    // NOLINTNEXTLINE(llvm-else-after-return,readability-else-after-return) —
-    // false positive: the godot-cpp ERR_FAIL_NULL_MSG macro expands to
-    // `if (...) { ...; return; } else ((void)0)` for syntactic safety.
+    //
+    // The macro expands to `if (...) { ...; return; } else ((void)0)`, which
+    // trips llvm-else-after-return as a false positive — suppress on the next
+    // line directly above the macro invocation.
+    // NOLINTNEXTLINE(llvm-else-after-return,readability-else-after-return)
     ERR_FAIL_NULL_MSG(target,
         "GodotMainDispatcher: target must be a non-null live godot::Object* at construction.");
     // bind Callable carrying target+method+ObjectID as an atomic handle.

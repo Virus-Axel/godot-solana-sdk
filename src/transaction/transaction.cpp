@@ -183,6 +183,12 @@ void Transaction::reset_state() {
 	removed_path_taken_ = false;
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity) — Story 1-3 ISigner
+// refactor consolidated three signer pathways (native ISigner, raw-Keypair compat
+// path with deprecation+v1.2-removal branch, and raw-WalletAdapter compat path)
+// into a single dispatch. Threshold 25, measured 26 — splitting would obscure
+// the path-symmetry that the unit tests rely on. Future work (Story 5-6) may
+// refactor the compat branches into helpers.
 void Transaction::sign_at_index(const uint32_t index) {
 	if (signers[index].get_type() != Variant::Type::OBJECT) {
 		Array params;

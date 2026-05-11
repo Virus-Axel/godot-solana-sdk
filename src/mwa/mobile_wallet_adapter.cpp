@@ -8,6 +8,7 @@
 #include <random>
 
 #include "godot_cpp/classes/engine.hpp"
+#include "godot_cpp/classes/global_constants.hpp"
 #include "godot_cpp/classes/json.hpp"
 #include "godot_cpp/classes/ref.hpp"
 #include "godot_cpp/core/class_db.hpp"
@@ -40,12 +41,11 @@ godot::String generate_request_id() {
 	std::uniform_int_distribution<std::uint32_t> dist(0U, std::numeric_limits<std::uint32_t>::max());
 	const std::uint32_t random_value = dist(gen);
 	std::array<char, REQUEST_ID_BUFFER_SIZE> buf{};
-	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cert-err33-c) —
 	// snprintf is the standard portable formatted-to-buffer call; the return value
-	// is the length that would be written (always 8 here for "%08x" of a uint32_t),
-	// not a status code that needs checking.
-	std::snprintf(buf.data(), buf.size(), "%08x", random_value);
-	return godot::String(buf.data());
+	// is the length written (always 8 here for "%08x" of a uint32_t), not a status
+	// code that needs checking.
+	std::snprintf(buf.data(), buf.size(), "%08x", random_value);  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cert-err33-c)
+	return godot::String{buf.data()};
 }
 
 // build the AC-3 mwa_error payload for the null-bridge pre-op branch.

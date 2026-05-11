@@ -32,10 +32,10 @@ void LocalKeypairSigner::_bind_methods() {
 			&LocalKeypairSigner::sign_transactions);
 }
 
-// NOLINTNEXTLINE(readability-identifier-length) — `kp` matches the GDScript-exposed
-// argument name set in _bind_methods (D_METHOD("set_keypair", "kp")). Renaming would
-// break GDScript callers that rely on named-argument calls.
-void LocalKeypairSigner::set_keypair(const godot::Ref<godot::Keypair> &kp) {
+// `kp` matches the GDScript-exposed argument name set in _bind_methods
+// (D_METHOD("set_keypair", "kp")). Renaming would break GDScript callers that
+// rely on named-argument calls.
+void LocalKeypairSigner::set_keypair(const godot::Ref<godot::Keypair> &kp) {  // NOLINT(readability-identifier-length)
 	kp_ = kp;
 }
 

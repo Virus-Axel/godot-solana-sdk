@@ -14,8 +14,10 @@ NoOpMwaAndroidBridge::NoOpMwaAndroidBridge(GodotMainDispatcher* dispatcher)
     : dispatcher_(nullptr) {  // default-init; filled in body if dispatcher is valid.
     // Loud null-check — UB-avoidance. ERR_FAIL_NULL_MSG returns void on failure,
     // leaving dispatcher_ at nullptr so subsequent op calls early-return.
-    // NOLINTNEXTLINE(llvm-else-after-return,readability-else-after-return) —
-    // false positive: ERR_FAIL_NULL_MSG expands to `if(...){...;return;} else ((void)0)`.
+    //
+    // The macro expands to `if(...){...;return;} else ((void)0)`, which trips
+    // llvm-else-after-return as a false positive.
+    // NOLINTNEXTLINE(llvm-else-after-return,readability-else-after-return)
     ERR_FAIL_NULL_MSG(dispatcher,
         "NoOpMwaAndroidBridge: dispatcher must be non-null.");
     dispatcher_ = dispatcher;
