@@ -1,12 +1,13 @@
 #pragma once
 
-#include "godot_cpp/classes/ref.hpp"
 #include "godot_cpp/variant/array.hpp"
 #include "godot_cpp/variant/packed_byte_array.hpp"
 #include "godot_cpp/variant/packed_int32_array.hpp"
 #include "godot_cpp/variant/string.hpp"
 
 #include "isigner.hpp"
+// isigner.hpp transitively brings in godot_cpp/classes/ref_counted.hpp which
+// provides the godot::Ref template used in the API below.
 
 namespace godot {
 class Keypair;
@@ -54,7 +55,10 @@ public:
 	~LocalKeypairSigner() override = default;
 
 	/// Install the wrapped @c Keypair. The previous reference is released.
-	void set_keypair(const godot::Ref<godot::Keypair> &kp);
+	/// The parameter name @c kp matches the GDScript-exposed argument name in
+	/// @c _bind_methods (@c D_METHOD("set_keypair", "kp")); renaming would break
+	/// GDScript callers using named-argument syntax.
+	void set_keypair(const godot::Ref<godot::Keypair> &kp);  // NOLINT(readability-identifier-length)
 
 	/// @return The currently wrapped @c Keypair (may be @c null if @ref set_keypair was never called).
 	[[nodiscard]] godot::Ref<godot::Keypair> get_keypair() const;

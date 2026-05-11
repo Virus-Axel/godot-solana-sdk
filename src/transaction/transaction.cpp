@@ -6,7 +6,6 @@
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/hashing_context.hpp>
 #include <godot_cpp/classes/object.hpp>
-#include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/classes/thread.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>
@@ -375,6 +374,11 @@ void Transaction::_notification(const int p_what) {
 void Transaction::disconnect_all_isigner_signers() {
 	const Callable on_signed(this, "_isigner_signed");
 	const Callable on_failed(this, "_isigner_failed");
+	// NOLINTNEXTLINE(clang-analyzer-core.uninitialized.UndefReturn) — analyzer
+	// traces a hypothetical null-keys path inside godot-cpp's HashSet::Iterator
+	// after the loop end has been reached; the analyzer's path is unreachable in
+	// practice (operator!= guards against past-the-end deref). Suppress at the
+	// site where the false-positive surfaces.
 	for (const ObjectID &signer_id : isigner_connected_signer_ids_) {
 		Object *obj = ObjectDB::get_instance(signer_id);
 		if (obj == nullptr) {
