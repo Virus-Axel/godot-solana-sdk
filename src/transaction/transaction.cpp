@@ -6,15 +6,18 @@
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/hashing_context.hpp>
 #include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/classes/thread.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/core/object.hpp>
+#include <godot_cpp/core/object_id.hpp>
 #include <godot_cpp/templates/list.hpp>
 #include <godot_cpp/variant/callable_method_pointer.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
+#include <godot_cpp/variant/typed_array.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include "account_meta.hpp"
@@ -266,7 +269,7 @@ void Transaction::sign_at_index(const uint32_t index) {
 				? signers[index]
 				: Keypair::new_from_variant(signers[index]);
 		ERR_FAIL_COND_EDMSG_CUSTOM(kp_variant.get_type() != Variant::OBJECT, "Signer is not a Keypair or compatible type.");
-		Ref<Keypair> kp_ref = kp_variant;
+		const Ref<Keypair> kp_ref = kp_variant;
 
 		Ref<godot_solana_sdk::LocalKeypairSigner> wrapper;
 		wrapper.instantiate();
@@ -309,7 +312,7 @@ void Transaction::sign_at_index(const uint32_t index) {
 }
 
 String Transaction::allocate_isigner_request_id(const int32_t index) {
-	const String request_id = String("tx-isigner-req-") + String::num_uint64(next_isigner_request_id_++);
+	const String request_id = String("tx-isigner-req-") + String::num_uint64(static_cast<int64_t>(next_isigner_request_id_++));
 	isigner_request_id_to_index_[request_id] = index;
 	return request_id;
 }
@@ -366,8 +369,8 @@ void Transaction::_notification(const int p_what) {
 void Transaction::disconnect_all_isigner_signers() {
 	const Callable on_signed(this, "_isigner_signed");
 	const Callable on_failed(this, "_isigner_failed");
-	for (const ObjectID &id : isigner_connected_signer_ids_) {
-		Object *obj = ObjectDB::get_instance(id);
+	for (const ObjectID &signer_id : isigner_connected_signer_ids_) {
+		Object *obj = ObjectDB::get_instance(signer_id);
 		if (obj == nullptr) {
 			continue; // signer already destroyed; connections went with it
 		}

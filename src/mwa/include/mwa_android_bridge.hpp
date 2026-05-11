@@ -150,7 +150,7 @@ public:
      * Synchronous by design: callers are on the Godot main thread; must be
      * cheap (≤1ms — no coroutine, no disk, no network).
      */
-    virtual godot::String query_diagnostics_json() const = 0;
+    [[nodiscard]] virtual godot::String query_diagnostics_json() const = 0;
 
     /**
      * (AC-4) — synchronous pull of the 4-key device posture
@@ -163,7 +163,7 @@ public:
      *     companion entry; returns the 4-key all-false JSON on any JNI
      *     failure path.
      */
-    virtual godot::String query_device_posture_json() const = 0;
+    [[nodiscard]] virtual godot::String query_device_posture_json() const = 0;
 
     /**
      * synchronous pull of current session state for
@@ -186,7 +186,7 @@ public:
      * / @c get_cluster / @c get_wallet_label / @c get_auth_token_fingerprint on
      * the Godot main thread — no coroutine / signal hop. Must be cheap.
      */
-    virtual godot::Dictionary query_session_state() const = 0;
+    [[nodiscard]] virtual godot::Dictionary query_session_state() const = 0;
 };
 
 }  // namespace godot_solana_sdk::mwa

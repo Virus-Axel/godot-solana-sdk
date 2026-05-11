@@ -1,14 +1,17 @@
 #include "mwa/mobile_wallet_adapter.hpp"
 
-#include <cstdio>
+#include <array>
 #include <cstdint>
+#include <cstdio>
+#include <limits>
+#include <memory>
 #include <random>
 
 #include "godot_cpp/classes/engine.hpp"
 #include "godot_cpp/classes/json.hpp"
 #include "godot_cpp/classes/ref.hpp"
 #include "godot_cpp/core/class_db.hpp"
-#include "godot_cpp/core/method_bind.hpp"
+#include "godot_cpp/core/error_macros.hpp"
 #include "godot_cpp/core/object.hpp"
 #include "godot_cpp/core/property_info.hpp"
 #include "godot_cpp/variant/array.hpp"
@@ -20,21 +23,29 @@
 #include "godot_cpp/variant/variant.hpp"
 
 #include "generated/mwa_error_codes.hpp"
+#include "mwa/mwa_android_bridge.hpp"
 
 namespace {
+// Buffer for the 8-hex-char request id + 1 NUL terminator.
+constexpr std::size_t REQUEST_ID_BUFFER_SIZE = 9;
+
 // generate exactly 8 lowercase hex chars ([0-9a-f]{8}) per op-method call.
 // Matches Kotlin corrId format (UUID.randomUUID().toString().take(8).lowercase()).
 // Source pick: std::random_device + std::mt19937 — portable, no scene-tree/engine
 // dependency, no godot-cpp gen/ Crypto class requirement. thread_local keeps
 // construction cost off the hot path without cross-thread contention.
 godot::String generate_request_id() {
-	static thread_local std::random_device rd;
-	static thread_local std::mt19937 gen(rd());
-	std::uniform_int_distribution<std::uint32_t> dist(0U, 0xFFFFFFFFU);
-	const std::uint32_t r = dist(gen);
-	char buf[9];
-	std::snprintf(buf, sizeof(buf), "%08x", r);
-	return godot::String(buf);
+	static thread_local std::random_device random_device;
+	static thread_local std::mt19937 gen(random_device());
+	std::uniform_int_distribution<std::uint32_t> dist(0U, std::numeric_limits<std::uint32_t>::max());
+	const std::uint32_t random_value = dist(gen);
+	std::array<char, REQUEST_ID_BUFFER_SIZE> buf{};
+	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cert-err33-c) —
+	// snprintf is the standard portable formatted-to-buffer call; the return value
+	// is the length that would be written (always 8 here for "%08x" of a uint32_t),
+	// not a status code that needs checking.
+	std::snprintf(buf.data(), buf.size(), "%08x", random_value);
+	return godot::String(buf.data());
 }
 
 // build the AC-3 mwa_error payload for the null-bridge pre-op branch.
@@ -290,25 +301,25 @@ bool MobileWalletAdapter::mwa_is_connected() const {
 }
 
 godot::String MobileWalletAdapter::get_public_key() const {
-	if (bridge_ == nullptr) { return godot::String(); }
+	if (bridge_ == nullptr) { return {}; }
 	const godot::Dictionary snapshot = bridge_->query_session_state();
 	return godot::String(snapshot.get("public_key", godot::String()));
 }
 
 godot::String MobileWalletAdapter::get_cluster() const {
-	if (bridge_ == nullptr) { return godot::String(); }
+	if (bridge_ == nullptr) { return {}; }
 	const godot::Dictionary snapshot = bridge_->query_session_state();
 	return godot::String(snapshot.get("cluster", godot::String()));
 }
 
 godot::String MobileWalletAdapter::get_wallet_label() const {
-	if (bridge_ == nullptr) { return godot::String(); }
+	if (bridge_ == nullptr) { return {}; }
 	const godot::Dictionary snapshot = bridge_->query_session_state();
 	return godot::String(snapshot.get("wallet_label", godot::String()));
 }
 
 godot::String MobileWalletAdapter::get_auth_token_fingerprint() const {
-	if (bridge_ == nullptr) { return godot::String(); }
+	if (bridge_ == nullptr) { return {}; }
 	const godot::Dictionary snapshot = bridge_->query_session_state();
 	return godot::String(snapshot.get("auth_token_fingerprint", godot::String()));
 }

@@ -1,7 +1,9 @@
 #include "local_keypair_signer.hpp"
 
+#include <cstdint>
+
+#include "godot_cpp/classes/ref.hpp"
 #include "godot_cpp/core/class_db.hpp"
-#include "godot_cpp/core/method_bind.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
@@ -11,7 +13,8 @@
 namespace godot_solana_sdk {
 
 void LocalKeypairSigner::_bind_methods() {
-	using namespace godot;
+	using godot::ClassDB;
+	using godot::D_METHOD;
 
 	ClassDB::bind_method(D_METHOD("set_keypair", "kp"),
 			&LocalKeypairSigner::set_keypair);
@@ -29,6 +32,9 @@ void LocalKeypairSigner::_bind_methods() {
 			&LocalKeypairSigner::sign_transactions);
 }
 
+// NOLINTNEXTLINE(readability-identifier-length) — `kp` matches the GDScript-exposed
+// argument name set in _bind_methods (D_METHOD("set_keypair", "kp")). Renaming would
+// break GDScript callers that rely on named-argument calls.
 void LocalKeypairSigner::set_keypair(const godot::Ref<godot::Keypair> &kp) {
 	kp_ = kp;
 }
@@ -43,7 +49,7 @@ bool LocalKeypairSigner::is_connected() const {
 
 godot::String LocalKeypairSigner::get_public_key() const {
 	if (!kp_.is_valid()) {
-		return godot::String();
+		return {};
 	}
 	return kp_->get_public_string();
 }
@@ -51,12 +57,14 @@ godot::String LocalKeypairSigner::get_public_key() const {
 void LocalKeypairSigner::sign_messages(const godot::PackedByteArray &messages_concat,
 		const godot::PackedInt32Array &lengths,
 		const godot::String &request_id) {
-	using namespace godot;
+	using godot::Array;
+	using godot::PackedByteArray;
+	using godot::String;
 
 	if (!is_connected()) {
 		// MwaErrorCode is in namespace godot_solana_sdk::mwa (verified at
 		// src/generated/mwa_error_codes.hpp:5). Reused here for non-MWA error reporting.
-		// TODO: rename to SignerErrorCode in v1.2 cleanup.
+		// TODO(ValentinVPK): rename to SignerErrorCode in v1.2 cleanup.
 		emit_signal("sign_failed", request_id,
 				String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::NOT_CONNECTED)),
 				String("LocalKeypairSigner has no Keypair"));
@@ -65,8 +73,7 @@ void LocalKeypairSigner::sign_messages(const godot::PackedByteArray &messages_co
 
 	// Defensive bounds: sum(lengths) must equal messages_concat.size().
 	int64_t total_len = 0;
-	for (int i = 0; i < lengths.size(); i++) {
-		const int len = lengths[i];
+	for (const int len : lengths) {
 		if (len < 0) {
 			emit_signal("sign_failed", request_id,
 					String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::PROTOCOL_ERROR)),
@@ -84,8 +91,7 @@ void LocalKeypairSigner::sign_messages(const godot::PackedByteArray &messages_co
 
 	Array sigs;
 	int offset = 0;
-	for (int i = 0; i < lengths.size(); i++) {
-		const int len = lengths[i];
+	for (const int len : lengths) {
 		const PackedByteArray slice = messages_concat.slice(offset, offset + len);
 		sigs.append(kp_->sign_message(slice));
 		offset += len;

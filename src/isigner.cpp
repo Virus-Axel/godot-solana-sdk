@@ -1,13 +1,15 @@
 #include "isigner.hpp"
 
 #include "godot_cpp/core/class_db.hpp"
-#include "godot_cpp/core/method_bind.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
 namespace godot_solana_sdk {
 
 void ISigner::_bind_methods() {
-	using namespace godot;
+	using godot::ClassDB;
+	using godot::MethodInfo;
+	using godot::PropertyInfo;
+	using godot::Variant;
 
 	ClassDB::add_signal("ISigner",
 			MethodInfo("sign_completed",

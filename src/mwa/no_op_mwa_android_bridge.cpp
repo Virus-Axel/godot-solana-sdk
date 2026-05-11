@@ -3,6 +3,7 @@
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/typed_array.hpp>
 
 #include "generated/mwa_error_codes.hpp"
 #include "godot_main_dispatcher.hpp"
@@ -13,6 +14,8 @@ NoOpMwaAndroidBridge::NoOpMwaAndroidBridge(GodotMainDispatcher* dispatcher)
     : dispatcher_(nullptr) {  // default-init; filled in body if dispatcher is valid.
     // Loud null-check — UB-avoidance. ERR_FAIL_NULL_MSG returns void on failure,
     // leaving dispatcher_ at nullptr so subsequent op calls early-return.
+    // NOLINTNEXTLINE(llvm-else-after-return,readability-else-after-return) —
+    // false positive: ERR_FAIL_NULL_MSG expands to `if(...){...;return;} else ((void)0)`.
     ERR_FAIL_NULL_MSG(dispatcher,
         "NoOpMwaAndroidBridge: dispatcher must be non-null.");
     dispatcher_ = dispatcher;
@@ -24,7 +27,7 @@ void NoOpMwaAndroidBridge::emit_unsupported(const godot::String& source_method,
     godot::Dictionary payload;
     payload["request_id"] = request_id;
     payload["code"] = godot::String(code_name(MwaErrorCode::UNSUPPORTED_PLATFORM));
-    godot::String os_name = godot::OS::get_singleton()->get_name();
+    const godot::String os_name = godot::OS::get_singleton()->get_name();
     // `message` keeps the developer-readable form (required by AC-2 verbatim);
     // `user_message` is a UI-safe string with no internal identifiers;
     // `developer_details` carries the implementation-level breadcrumb.
@@ -103,7 +106,7 @@ godot::String NoOpMwaAndroidBridge::query_diagnostics_json() const {
     // all-empty payload so GDScript callers can read MWA.get_diagnostics()
     // without platform branching. Shape mirrors
     // MwaDiagnosticsBuilder.emptyDiagnosticsJson on the Kotlin side.
-    return godot::String(
+    return {
         "{\"sdk_version\":\"\","
         "\"clientlib_ktx_version\":\"\","
         "\"godot_version\":\"\","
@@ -115,17 +118,19 @@ godot::String NoOpMwaAndroidBridge::query_diagnostics_json() const {
         "\"cluster\":\"\","
         "\"last_n_correlation_trace\":[],"
         "\"late_result_count\":0,"
-        "\"pending_submissions_count\":0}");
+        "\"pending_submissions_count\":0}"
+    };
 }
 
 godot::String NoOpMwaAndroidBridge::query_device_posture_json() const {
     // non-Android returns the 4-key all-false
     // payload. Mirrors MwaDevicePostureBuilder.emptyPostureJson on Kotlin.
-    return godot::String(
+    return {
         "{\"rooted\":false,"
         "\"debuggable\":false,"
         "\"developer_options_on\":false,"
-        "\"adb_enabled\":false}");
+        "\"adb_enabled\":false}"
+    };
 }
 
 }  // namespace godot_solana_sdk::mwa

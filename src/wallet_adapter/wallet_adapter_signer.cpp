@@ -1,9 +1,11 @@
 #include "wallet_adapter/wallet_adapter_signer.hpp"
 
+#include <cstdint>
+
 #include "godot_cpp/classes/object.hpp"
+#include "godot_cpp/classes/ref.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/core/error_macros.hpp"
-#include "godot_cpp/core/method_bind.hpp"
 #include "godot_cpp/variant/callable.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
@@ -15,7 +17,8 @@
 namespace godot_solana_sdk {
 
 void WalletAdapterSigner::_bind_methods() {
-	using namespace godot;
+	using godot::ClassDB;
+	using godot::D_METHOD;
 
 	ClassDB::bind_method(D_METHOD("set_wallet_adapter", "wallet_adapter"),
 			&WalletAdapterSigner::set_wallet_adapter);
@@ -79,7 +82,7 @@ bool WalletAdapterSigner::is_connected() const {
 
 godot::String WalletAdapterSigner::get_public_key() const {
 	if (wa_ == nullptr || !wa_->is_connected()) {
-		return godot::String();
+		return {};
 	}
 	// godot::Pubkey lives in `namespace godot` (verified at include/pubkey.hpp:16,
 	// the closing `} //namespace godot` at line 494). godot::Pubkey::string_from_variant
@@ -93,12 +96,15 @@ godot::String WalletAdapterSigner::get_public_key() const {
 void WalletAdapterSigner::sign_messages(const godot::PackedByteArray &messages_concat,
 		const godot::PackedInt32Array &lengths,
 		const godot::String &request_id) {
-	using namespace godot;
+	using godot::Array;
+	using godot::Callable;
+	using godot::Ref;
+	using godot::String;
 
 	if (wa_ == nullptr || !wa_->is_connected()) {
 		// Code-review LOW 8: use generated MwaErrorCode names for parity with
 		// LocalKeypairSigner (marker tracks the v1.2 namespace cleanup).
-		// TODO: rename to SignerErrorCode in v1.2 cleanup.
+		// TODO(ValentinVPK): rename to SignerErrorCode in v1.2 cleanup.
 		emit_signal("sign_failed", request_id,
 				String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::NOT_CONNECTED)),
 				String("WalletAdapterSigner has no connected WalletAdapter"));
@@ -106,7 +112,7 @@ void WalletAdapterSigner::sign_messages(const godot::PackedByteArray &messages_c
 	}
 	if (request_in_flight_) {
 		// "BUSY" not in MwaErrorCode enum; keep as string literal until error-codes.yaml
-		// adds it (follow-up). // TODO: consider adding BUSY to enum.
+		// adds it (follow-up). TODO(ValentinVPK): consider adding BUSY to enum.
 		emit_signal("sign_failed", request_id,
 				String("BUSY"),
 				String("WalletAdapterSigner has another request in flight"));
@@ -122,10 +128,9 @@ void WalletAdapterSigner::sign_messages(const godot::PackedByteArray &messages_c
 	// returned silently, leaving HashMap leak). Matches LocalKeypairSigner's
 	// PROTOCOL_ERROR convention.
 	int64_t total_len = 0;
-	for (int i = 0; i < lengths.size(); i++) {
-		const int len = lengths[i];
+	for (const int len : lengths) {
 		if (len < 0) {
-			// TODO: rename to SignerErrorCode in v1.2 cleanup.
+			// TODO(ValentinVPK): rename to SignerErrorCode in v1.2 cleanup.
 			emit_signal("sign_failed", request_id,
 					String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::PROTOCOL_ERROR)),
 					String("WalletAdapterSigner: negative length in lengths array"));
@@ -134,7 +139,7 @@ void WalletAdapterSigner::sign_messages(const godot::PackedByteArray &messages_c
 		total_len += len;
 	}
 	if (total_len != messages_concat.size()) {
-		// TODO: rename to SignerErrorCode in v1.2 cleanup.
+		// TODO(ValentinVPK): rename to SignerErrorCode in v1.2 cleanup.
 		emit_signal("sign_failed", request_id,
 				String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::PROTOCOL_ERROR)),
 				String("WalletAdapterSigner: sum(lengths) does not match messages_concat.size()"));
@@ -172,9 +177,9 @@ void WalletAdapterSigner::sign_transactions(const godot::PackedByteArray &transa
 }
 
 void WalletAdapterSigner::dispatch_next_slice() {
-	using namespace godot;
+	using godot::PackedByteArray;
 
-	const int slice_index = pending_signatures_.size();
+	const int slice_index = static_cast<int>(pending_signatures_.size());
 	const int slice_len = pending_lengths_[slice_index];
 	const PackedByteArray slice = pending_concat_.slice(pending_offset_, pending_offset_ + slice_len);
 	pending_offset_ += slice_len;
@@ -200,13 +205,13 @@ void WalletAdapterSigner::_on_signing_failed() {
 		return;
 	}
 	// Code-review LOW 8: WALLET_REJECTED is in MwaErrorCode enum (mwa_error_codes.hpp:9).
-	// TODO: rename to SignerErrorCode in v1.2 cleanup.
+	// TODO(ValentinVPK): rename to SignerErrorCode in v1.2 cleanup.
 	fail(godot::String(godot_solana_sdk::mwa::code_name(godot_solana_sdk::mwa::MwaErrorCode::WALLET_REJECTED)),
 			godot::String("WalletAdapter emitted signing_failed"));
 }
 
 void WalletAdapterSigner::disconnect_signals() {
-	using namespace godot;
+	using godot::Callable;
 
 	if (wa_ == nullptr) {
 		return;

@@ -2,7 +2,6 @@
 
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/core/error_macros.hpp>
-#include <godot_cpp/core/object.hpp>
 #include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -18,6 +17,9 @@ GodotMainDispatcher::GodotMainDispatcher(godot::Object* target) {
     // ERR_FAIL_NULL_MSG returns void on failure, leaving emit_signal_callable_
     // default-constructed (invalid Callable). Subsequent post() calls through
     // an invalid Callable produce an internal godot-cpp warning and are dropped.
+    // NOLINTNEXTLINE(llvm-else-after-return,readability-else-after-return) —
+    // false positive: the godot-cpp ERR_FAIL_NULL_MSG macro expands to
+    // `if (...) { ...; return; } else ((void)0)` for syntactic safety.
     ERR_FAIL_NULL_MSG(target,
         "GodotMainDispatcher: target must be a non-null live godot::Object* at construction.");
     // bind Callable carrying target+method+ObjectID as an atomic handle.
@@ -74,8 +76,8 @@ void GodotMainDispatcher::post(const godot::String& signal_name,
     // 2 params; 4 error/lifecycle signals carry 1). If a future story needs
     // arity 3, it MUST file a new amendment AND extend this ladder AND the
     // parallel ladder in drain_for_testing() below.
-    const int n = args.size();
-    switch (n) {
+    const int arity = static_cast<int>(args.size());
+    switch (arity) {
         case 1:
             emit_signal_callable_.call_deferred(signal_name, args[0]);
             break;
@@ -85,7 +87,7 @@ void GodotMainDispatcher::post(const godot::String& signal_name,
         default:
             ERR_FAIL_MSG(godot::vformat(
                 "GodotMainDispatcher::post: unsupported arity %d for signal '%s' (expected 1 or 2)",
-                n, signal_name));
+                arity, signal_name));
     }
 #endif
 }
