@@ -245,6 +245,12 @@ env = SConscript("godot-cpp/SConstruct")
 # - CPPDEFINES are for pre-processor defines
 # - LINKFLAGS are for linking flags
 
+# Story 1-3 Task 7: opt-in compile-define gate that flips Transaction.sign(Keypair) compat
+# from a deprecation warning (v1.1) to ERR_METHOD_NOT_FOUND (v1.2). Set via
+# `scons addon mwa_isigner_remove_v1_2=1`. Default 0 — v1.1 compat behavior preserved.
+if int(ARGUMENTS.get('mwa_isigner_remove_v1_2', 0)):
+    env.Append(CPPDEFINES=['MWA_ISIGNER_REMOVE_V1_2'])
+
 # tweak this if you want to use different folders, or more folders, to store your source code in.
 env.Append(CPPPATH=["src/"])
 env.Append(CPPPATH=["include/"])
@@ -261,6 +267,7 @@ env.Append(CPPPATH=["include/transaction"])
 env.Append(CPPPATH=["src/transaction"])
 env.Append(CPPPATH=["include/wallet_adapter/"])
 env.Append(CPPPATH=["src/wallet_adapter/"])
+env.Append(CPPPATH=["src/mwa/include/"])  # Story 1-4: MWA public headers (DD-26 header-lint scope)
 env.Append(CPPPATH=["src/candy_machine/"])
 env.Append(CPPPATH=["src/honeycomb"])
 env.Append(CPPPATH=["src/honeycomb/types"])
@@ -276,6 +283,16 @@ wallet_sources = Glob("wallet_adapter/*.cpp")
 instruction_sources = Glob("instructions/src/*.cpp")
 other_sources = Glob("src/*/*.cpp")
 honey_sources = Glob("src/honeycomb/types/*.cpp")
+
+# Story 2-1 T5 — the real MwaAndroidBridgeJni implementation #includes <jni.h>,
+# which is only available in the Android NDK. On non-Android platforms the TU
+# must be excluded entirely (D-11: no `#ifdef __ANDROID__` inside source files
+# outside src/mwa/platform_selector.cpp; platform gating lives at SConstruct).
+# `platform_selector.cpp` wraps its include of `mwa_android_bridge_jni.hpp`
+# under its own `#ifdef __ANDROID__`, so the HEADER is only included on Android
+# too — we do NOT filter the header, only the .cpp.
+if env["platform"] != "android":
+    other_sources = [s for s in other_sources if "mwa_android_bridge_jni" not in str(s)]
 
 
 # Handle the container build
@@ -510,3 +527,9 @@ else:
 
     env.Command("assemble", None, [Copy(GDEXT_FILE, "godot-solana-sdk.gdextension"), copy_bin_action, copy_aar_action])
     env.Alias("addon", [ANDROID_PLUGIN_DESTINATION, gdext_target])
+
+    # Note: a host-mode `scons tests` target was prototyped earlier but
+    # retired — godot-cpp's GDExtensionBinding interface pointers are null in
+    # a host binary with no running Godot engine, so ClassDB::register_class
+    # SIGSEGVs at runtime. C++ test coverage is expected to land on a future
+    # headless-Godot tier rather than a host-mode test binary.
