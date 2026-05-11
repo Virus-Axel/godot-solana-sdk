@@ -59,6 +59,17 @@ namespace godot_solana_sdk::mwa {
  */
 class GodotMainDispatcher {
 public:
+    /**
+     * Bind the dispatcher to a target node. Constructs an internal
+     * @c godot::Callable carrying @p target plus its @c ObjectID so subsequent
+     * @ref post calls can resolve the target atomically across threads.
+     *
+     * @param target the owning Godot @c Object whose @c emit_signal slot will
+     *               receive forwarded calls. Must be non-null and live; a null
+     *               @p target triggers @c ERR_FAIL_NULL_MSG and leaves the
+     *               internal Callable default-constructed (subsequent
+     *               @ref post calls produce godot-cpp internal warnings).
+     */
     explicit GodotMainDispatcher(godot::Object* target);
 
     /**
