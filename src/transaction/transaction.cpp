@@ -6,6 +6,7 @@
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/hashing_context.hpp>
 #include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/classes/ref.hpp>  // NOLINT(misc-header-include-cycle)
 #include <godot_cpp/classes/thread.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>

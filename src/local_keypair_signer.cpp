@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "godot_cpp/classes/ref.hpp"  // NOLINT(misc-header-include-cycle)
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
