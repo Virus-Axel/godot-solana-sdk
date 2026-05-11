@@ -6,7 +6,7 @@
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/hashing_context.hpp>
 #include <godot_cpp/classes/object.hpp>
-#include <godot_cpp/classes/ref.hpp>  // NOLINT(misc-header-include-cycle)
+#include <godot_cpp/classes/ref.hpp> // NOLINT(misc-header-include-cycle)
 #include <godot_cpp/classes/thread.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>
@@ -264,7 +264,7 @@ void Transaction::sign_at_index(const uint32_t index) {
 		// AC-3 deprecation warning. Fires exactly once per process the first time
 		// any Transaction signs via the raw-Keypair compat path. Removed in v1.2
 		// (the #ifdef branch above replaces this when MWA_ISIGNER_REMOVE_V1_2 is set).
-		static std::atomic<bool> deprecation_warned{false};
+		static std::atomic<bool> deprecation_warned{ false };
 		if (!deprecation_warned.exchange(true)) {
 			UtilityFunctions::push_warning(
 					"Transaction.sign(Keypair) is deprecated; use ISigner. "

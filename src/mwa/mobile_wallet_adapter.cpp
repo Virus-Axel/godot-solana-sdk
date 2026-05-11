@@ -44,8 +44,8 @@ godot::String generate_request_id() {
 	// snprintf is the standard portable formatted-to-buffer call; the return value
 	// is the length written (always 8 here for "%08x" of a uint32_t), not a status
 	// code that needs checking.
-	std::snprintf(buf.data(), buf.size(), "%08x", random_value);  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cert-err33-c)
-	return godot::String{buf.data()};
+	std::snprintf(buf.data(), buf.size(), "%08x", random_value); // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cert-err33-c)
+	return godot::String{ buf.data() };
 }
 
 // build the AC-3 mwa_error payload for the null-bridge pre-op branch.
@@ -295,31 +295,41 @@ void MobileWalletAdapter::sign_and_send(const godot::TypedArray<godot::PackedByt
 // null-bridge branch (MWA_TESTING case) returns the same empty-default
 // values NoOp's snapshot would produce.
 bool MobileWalletAdapter::mwa_is_connected() const {
-	if (bridge_ == nullptr) { return false; }
+	if (bridge_ == nullptr) {
+		return false;
+	}
 	const godot::Dictionary snapshot = bridge_->query_session_state();
 	return static_cast<bool>(snapshot.get("is_connected", false));
 }
 
 godot::String MobileWalletAdapter::get_public_key() const {
-	if (bridge_ == nullptr) { return {}; }
+	if (bridge_ == nullptr) {
+		return {};
+	}
 	const godot::Dictionary snapshot = bridge_->query_session_state();
 	return godot::String(snapshot.get("public_key", godot::String()));
 }
 
 godot::String MobileWalletAdapter::get_cluster() const {
-	if (bridge_ == nullptr) { return {}; }
+	if (bridge_ == nullptr) {
+		return {};
+	}
 	const godot::Dictionary snapshot = bridge_->query_session_state();
 	return godot::String(snapshot.get("cluster", godot::String()));
 }
 
 godot::String MobileWalletAdapter::get_wallet_label() const {
-	if (bridge_ == nullptr) { return {}; }
+	if (bridge_ == nullptr) {
+		return {};
+	}
 	const godot::Dictionary snapshot = bridge_->query_session_state();
 	return godot::String(snapshot.get("wallet_label", godot::String()));
 }
 
 godot::String MobileWalletAdapter::get_auth_token_fingerprint() const {
-	if (bridge_ == nullptr) { return {}; }
+	if (bridge_ == nullptr) {
+		return {};
+	}
 	const godot::Dictionary snapshot = bridge_->query_session_state();
 	return godot::String(snapshot.get("auth_token_fingerprint", godot::String()));
 }

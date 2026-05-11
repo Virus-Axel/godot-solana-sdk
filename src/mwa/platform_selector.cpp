@@ -14,16 +14,16 @@
 
 namespace godot_solana_sdk::mwa {
 
-MwaAndroidBridge* MwaAndroidBridge::create(GodotMainDispatcher* dispatcher) {
+MwaAndroidBridge *MwaAndroidBridge::create(GodotMainDispatcher *dispatcher) {
 #ifdef __ANDROID__
-    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory) — factory deliberately returns
-    // a raw pointer; the caller takes ownership (typically stored in unique_ptr at
-    // the call site). Header documents the ownership contract.
-    return new MwaAndroidBridgeJni(dispatcher);
+	// NOLINTNEXTLINE(cppcoreguidelines-owning-memory) — factory deliberately returns
+	// a raw pointer; the caller takes ownership (typically stored in unique_ptr at
+	// the call site). Header documents the ownership contract.
+	return new MwaAndroidBridgeJni(dispatcher);
 #else
-    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory) — see ownership note above.
-    return new NoOpMwaAndroidBridge(dispatcher);
+	// NOLINTNEXTLINE(cppcoreguidelines-owning-memory) — see ownership note above.
+	return new NoOpMwaAndroidBridge(dispatcher);
 #endif
 }
 
-}  // namespace godot_solana_sdk::mwa
+} // namespace godot_solana_sdk::mwa

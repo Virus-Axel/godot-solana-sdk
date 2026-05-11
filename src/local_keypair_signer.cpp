@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "godot_cpp/classes/ref.hpp"  // NOLINT(misc-header-include-cycle)
+#include "godot_cpp/classes/ref.hpp" // NOLINT(misc-header-include-cycle)
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/string.hpp"
 #include "godot_cpp/variant/variant.hpp"
@@ -35,7 +35,7 @@ void LocalKeypairSigner::_bind_methods() {
 // `kp` matches the GDScript-exposed argument name set in _bind_methods
 // (D_METHOD("set_keypair", "kp")). Renaming would break GDScript callers that
 // rely on named-argument calls.
-void LocalKeypairSigner::set_keypair(const godot::Ref<godot::Keypair> &kp) {  // NOLINT(readability-identifier-length)
+void LocalKeypairSigner::set_keypair(const godot::Ref<godot::Keypair> &kp) { // NOLINT(readability-identifier-length)
 	kp_ = kp;
 }
 
