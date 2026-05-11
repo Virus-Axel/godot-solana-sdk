@@ -46,22 +46,35 @@ private:
 	godot::Ref<godot::Keypair> kp_;
 
 protected:
+	/// Registers the GDScript-exposed methods (inherited @c ISigner signals are bound on the parent).
 	static void _bind_methods();
 
 public:
 	LocalKeypairSigner() = default;
 	~LocalKeypairSigner() override = default;
 
+	/// Install the wrapped @c Keypair. The previous reference is released.
 	void set_keypair(const godot::Ref<godot::Keypair> &kp);
+
+	/// @return The currently wrapped @c Keypair (may be @c null if @ref set_keypair was never called).
 	[[nodiscard]] godot::Ref<godot::Keypair> get_keypair() const;
 
+	/// @copydoc ISigner::is_connected
+	/// True iff a non-null @c Keypair is wrapped.
 	[[nodiscard]] bool is_connected() const override;
+
+	/// @copydoc ISigner::get_public_key
 	[[nodiscard]] godot::String get_public_key() const override;
 
+	/// @copydoc ISigner::sign_messages
+	/// Emits @c sign_completed @b synchronously on the calling thread (the wrapped
+	/// @c Keypair::sign_message is synchronous). See class-level threading note.
 	void sign_messages(const godot::PackedByteArray &messages_concat,
 			const godot::PackedInt32Array &lengths,
 			const godot::String &request_id) override;
 
+	/// @copydoc ISigner::sign_transactions
+	/// Emits @c sign_completed @b synchronously on the calling thread. See class-level threading note.
 	void sign_transactions(const godot::PackedByteArray &transactions_concat,
 			const godot::PackedInt32Array &lengths,
 			const godot::String &request_id) override;

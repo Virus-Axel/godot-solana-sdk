@@ -44,7 +44,7 @@ namespace godot_solana_sdk::mwa {
  *     the target atomically and posts to Godot's main message queue; no
  *     raw-pointer hop in the caller's thread.
  *   - Under @c MWA_TESTING, @ref post enqueues into @c pending_ (mutex-guarded)
- *     and @ref drain_for_testing resolves through @c ObjectDB::get_instance
+ *     and @c drain_for_testing resolves through @c ObjectDB::get_instance
  * synchronously against the retained @c target_id_ — matches the
  *     host-test harness contract (call after workers joined, expects sync
  * @c emit_signal). Preserved per 's retain-source clause for the
@@ -83,7 +83,7 @@ public:
      *   - 1-element array: error/lifecycle signals (@c mwa_error,
      *     @c mwa_timeout, @c mwa_cancelled_lifecycle, @c reauth_required).
      *     Build with @c godot::Array::make(payload_dict).
-     * - 2-element array: @c *_completed signals
+     *   - 2-element array: @c *_completed signals
      *     (@c connect_completed, @c reauthorize_completed, etc.).
      *     Build with @c godot::Array::make(request_id_string, result_dict).
      */

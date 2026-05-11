@@ -55,32 +55,83 @@ public:
      */
     static MwaAndroidBridge* create(GodotMainDispatcher* dispatcher);
 
+    /**
+     * Begin a wallet-connect (authorize) op. Asynchronous; the terminal result is delivered
+     * via @c connect_completed / @c mwa_error / @c mwa_timeout signals carrying @p request_id.
+     * @param request_id caller-supplied correlation id (8-lowercase-hex).
+     * @param identity wallet-facing identity dict (@c name, @c icon_uri, @c identity_uri).
+     * @param cluster e.g. @c "devnet" / @c "mainnet-beta".
+     * @param opts optional overrides (@c timeout_ms, @c chain_id).
+     */
     virtual void connect(const godot::String& request_id,
                          const godot::Dictionary& identity,
                          const godot::String& cluster,
                          const godot::Dictionary& opts) = 0;
 
+    /**
+     * Silent re-authorization using the cached auth_token (no wallet UI). Asynchronous; result
+     * arrives on @c reauthorize_completed / @c mwa_error / @c mwa_timeout.
+     * @param request_id caller-supplied correlation id.
+     * @param opts optional @c {timeout_ms}.
+     */
     virtual void reauthorize(const godot::String& request_id,
                              const godot::Dictionary& opts) = 0;
 
+    /**
+     * Tear down the active session (local-only — token cache retained). Asynchronous; result
+     * arrives on @c disconnect_completed / @c mwa_error.
+     */
     virtual void disconnect(const godot::String& request_id,
                             const godot::Dictionary& opts) = 0;
 
+    /**
+     * Revoke the wallet's auth_token AND wipe the local cache for this identity. Always wipes
+     * local state. Result arrives on @c deauthorize_completed (always — carries
+     * @c remote_revoke_succeeded flag) or @c mwa_error for catastrophic local failures only.
+     */
     virtual void deauthorize(const godot::String& request_id,
                              const godot::Dictionary& opts) = 0;
 
+    /**
+     * Sign one or more raw message buffers with the connected wallet (wallet UI shown).
+     * Result arrives on @c sign_messages_completed / @c mwa_error / @c mwa_timeout.
+     * @param request_id caller-supplied correlation id.
+     * @param messages 1+ message byte buffers.
+     * @param opts optional @c {timeout_ms}.
+     */
     virtual void sign_messages(const godot::String& request_id,
                                const godot::TypedArray<godot::PackedByteArray>& messages,
                                const godot::Dictionary& opts) = 0;
 
+    /**
+     * Sign one or more serialized Solana transactions (wallet UI shown).
+     * Result arrives on @c sign_transactions_completed / @c mwa_error / @c mwa_timeout.
+     * @param request_id caller-supplied correlation id.
+     * @param transactions 1+ serialized transaction byte buffers.
+     * @param opts optional @c {timeout_ms}.
+     */
     virtual void sign_transactions(const godot::String& request_id,
                                    const godot::TypedArray<godot::PackedByteArray>& transactions,
                                    const godot::Dictionary& opts) = 0;
 
+    /**
+     * Sign one or more transactions and submit them via the wallet to the cluster RPC.
+     * Writes an encrypted breadcrumb before the wallet round-trip for crash recovery
+     * (see @c pending_submission_found). Result arrives on @c sign_and_send_completed /
+     * @c mwa_error / @c mwa_timeout / @c reauth_required.
+     * @param request_id caller-supplied correlation id.
+     * @param transactions 1+ serialized transaction byte buffers.
+     * @param opts optional @c {timeout_ms}.
+     */
     virtual void sign_and_send(const godot::String& request_id,
                                const godot::TypedArray<godot::PackedByteArray>& transactions,
                                const godot::Dictionary& opts) = 0;
 
+    /**
+     * GDPR/CCPA "Sign out everywhere" reset — best-effort remote deauth + full local wipe +
+     * Keystore master-key rotation + cancellation of every in-flight op. Fire-and-forget;
+     * no completion signal is emitted by this bridge.
+     */
     virtual void forget_all(const godot::String& request_id) = 0;
 
     /**

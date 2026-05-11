@@ -56,27 +56,53 @@ private:
 	void fail(const godot::String &error_code, const godot::String &message);
 
 protected:
+	/// Registers the GDScript-exposed methods and binds the slot handlers
+	/// @ref _on_message_signed / @ref _on_signing_failed.
 	static void _bind_methods();
 
 public:
 	WalletAdapterSigner() = default;
 	~WalletAdapterSigner() override = default;
 
+	/**
+	 * Install the underlying desktop @c WalletAdapter. Accepts @c godot::Object* to keep
+	 * the public API decoupled from the @c WalletAdapter type at the binding layer;
+	 * an internal @c cast_to populates the typed pointer. Disconnects any previous
+	 * adapter's signals before swapping. Must not be called while a request is in flight.
+	 */
 	void set_wallet_adapter(godot::Object *p_wa);
+
+	/// @return The currently installed @c WalletAdapter as a @c godot::Object*, or @c nullptr
+	/// if @ref set_wallet_adapter was never called.
 	[[nodiscard]] godot::Object *get_wallet_adapter() const;
 
+	/// @copydoc ISigner::is_connected
+	/// True iff a non-null @c WalletAdapter is installed and reports itself connected.
 	[[nodiscard]] bool is_connected() const override;
+
+	/// @copydoc ISigner::get_public_key
 	[[nodiscard]] godot::String get_public_key() const override;
 
+	/// @copydoc ISigner::sign_messages
+	/// Drives the wrapped @c WalletAdapter slice-by-slice; emits @c sign_completed
+	/// asynchronously once every message has been signed. Concurrent calls return
+	/// @c sign_failed with code @c BUSY (v1.1 single-in-flight limit).
 	void sign_messages(const godot::PackedByteArray &messages_concat,
 			const godot::PackedInt32Array &lengths,
 			const godot::String &request_id) override;
 
+	/// @copydoc ISigner::sign_transactions
+	/// Routes through the same single-in-flight path as @ref sign_messages.
 	void sign_transactions(const godot::PackedByteArray &transactions_concat,
 			const godot::PackedInt32Array &lengths,
 			const godot::String &request_id) override;
 
+	/// Slot wired to @c WalletAdapter::message_signed. Appends @p signature to the pending
+	/// result and either advances to the next slice or finalizes the request.
 	void _on_message_signed(const godot::PackedByteArray &signature);
+
+	/// Slot wired to @c WalletAdapter::signing_failed. Emits @c sign_failed and releases
+	/// the in-flight slot (clears the self-pin).
 	void _on_signing_failed();
 };
 

@@ -42,24 +42,29 @@ class GodotMainDispatcher;
  */
 class MwaJniContext {
 public:
-    // Register the active dispatcher + clear the draining flag. Called from
-    // [MwaAndroidBridgeJni] ctor. A preceding
-    // [unregister_dispatcher] MUST have completed (its bounded spin-drain
-    // guarantees zero in-flight callbacks at that point); re-registering
-    // without an intervening unregister overwrites the pointer and accepts
-    // the ambiguity for any still-leased call.
+    /**
+     * Register the active dispatcher and clear the draining flag. Called from the
+     * @c MwaAndroidBridgeJni ctor. A preceding @ref unregister_dispatcher MUST
+     * have completed (its bounded spin-drain guarantees zero in-flight callbacks
+     * at that point); re-registering without an intervening unregister overwrites
+     * the pointer and accepts the ambiguity for any still-leased call.
+     */
     static void register_dispatcher(GodotMainDispatcher* dispatcher);
 
-    // Signal draining + spin-wait (bounded ~200ms) for in-flight callbacks
-    // to release their leases, then clear the dispatcher pointer. After
-    // this returns the counter is zero (or the timeout fired with a
-    // logged warning — see). Called from [MwaAndroidBridgeJni] dtor.
+    /**
+     * Signal draining + spin-wait (bounded ~200 ms) for in-flight callbacks to
+     * release their leases, then clear the dispatcher pointer. After return the
+     * in-flight counter is zero (or the timeout fired with a logged warning).
+     * Called from the @c MwaAndroidBridgeJni dtor.
+     */
     static void unregister_dispatcher();
 
-    // Non-owning accessor. Prefer [acquire_callback_lease] for JNIEXPORT
-    // callbacks — this bare accessor returns a POINTER SNAPSHOT that can
-    // become dangling after return. Retained for diagnostic/test-only
-    // callers that do not post through the dispatcher.
+    /**
+     * Non-owning accessor. Prefer @ref CallbackLease for JNIEXPORT callbacks —
+     * this bare accessor returns a pointer SNAPSHOT that can become dangling
+     * after return. Retained for diagnostic/test-only callers that do not post
+     * through the dispatcher.
+     */
     static GodotMainDispatcher* get_dispatcher();
 
     // RAII lease. Holding this guard PINS the dispatcher against a
@@ -90,6 +95,10 @@ public:
         CallbackLease& operator=(const CallbackLease&) = delete;
         CallbackLease(CallbackLease&&) = delete;
         CallbackLease& operator=(CallbackLease&&) = delete;
+
+        /// @return The registered dispatcher pointer, or @c nullptr if the
+        /// lease did not acquire (shutdown in progress / no dispatcher set).
+        /// Safe to use while the lease object is alive.
         GodotMainDispatcher* dispatcher() const { return dispatcher_; }
 
     private:
@@ -97,13 +106,15 @@ public:
         bool acquired_;
     };
 
-    // synchronous JNI round-trip to the Kotlin plugin that
-    // returns an atomic snapshot of `MwaSessionState` (is_connected,
-    // public_key, cluster, wallet_label, auth_token_fingerprint). Called
-    // from MwaAndroidBridgeJni::query_session_state() on the Godot main
-    // thread. Returns an empty Dictionary if the JNI symbol cache is not
-    // ready, if the plugin instance is null, or if the CallStatic throws —
-    // all recoverable "not yet connected" states that match NoOp's shape.
+    /**
+     * Synchronous JNI round-trip to the Kotlin plugin returning an atomic
+     * snapshot of @c MwaSessionState (@c is_connected, @c public_key,
+     * @c cluster, @c wallet_label, @c auth_token_fingerprint). Called from
+     * @c MwaAndroidBridgeJni's @c query_session_state override on the Godot main thread.
+     * Returns an empty Dictionary if the JNI symbol cache is not ready, the
+     * plugin instance is null, or the JVM call throws — all recoverable
+     * "not yet connected" states that match the @c NoOp shape.
+     */
     static godot::Dictionary query_session_state();
 };
 
@@ -121,47 +132,66 @@ public:
  */
 class MwaAndroidBridgeJni : public MwaAndroidBridge {
 public:
+    /**
+     * Construct the JNI bridge and register @p dispatcher with @ref MwaJniContext
+     * so JNIEXPORT reverse callbacks can route through it.
+     * @param dispatcher non-owning; MUST outlive this bridge instance.
+     */
     explicit MwaAndroidBridgeJni(GodotMainDispatcher* dispatcher);
+
+    /**
+     * Drain in-flight JNI callbacks (bounded ~200 ms spin) and unregister the
+     * dispatcher from @ref MwaJniContext before destruction.
+     */
     ~MwaAndroidBridgeJni() override;
 
-    // 7 MWA ops — override signatures exactly match MwaAndroidBridge's pure-virtuals.
+    /// @copydoc MwaAndroidBridge::connect
     void connect(const godot::String& request_id,
                  const godot::Dictionary& identity,
                  const godot::String& cluster,
                  const godot::Dictionary& opts) override;
+    /// @copydoc MwaAndroidBridge::reauthorize
     void reauthorize(const godot::String& request_id,
                      const godot::Dictionary& opts) override;
+    /// @copydoc MwaAndroidBridge::disconnect
     void disconnect(const godot::String& request_id,
                     const godot::Dictionary& opts) override;
+    /// @copydoc MwaAndroidBridge::deauthorize
     void deauthorize(const godot::String& request_id,
                      const godot::Dictionary& opts) override;
+    /// @copydoc MwaAndroidBridge::sign_messages
     void sign_messages(const godot::String& request_id,
                        const godot::TypedArray<godot::PackedByteArray>& messages,
                        const godot::Dictionary& opts) override;
+    /// @copydoc MwaAndroidBridge::sign_transactions
     void sign_transactions(const godot::String& request_id,
                            const godot::TypedArray<godot::PackedByteArray>& transactions,
                            const godot::Dictionary& opts) override;
+    /// @copydoc MwaAndroidBridge::sign_and_send
     void sign_and_send(const godot::String& request_id,
                        const godot::TypedArray<godot::PackedByteArray>& transactions,
                        const godot::Dictionary& opts) override;
 
-    // 1 lifecycle op
+    /// @copydoc MwaAndroidBridge::forget_all
     void forget_all(const godot::String& request_id) override;
 
-    // sync JNI getters mirroring query_session_state.
+    /// @copydoc MwaAndroidBridge::query_diagnostics_json
     godot::String query_diagnostics_json() const override;
+    /// @copydoc MwaAndroidBridge::query_device_posture_json
     godot::String query_device_posture_json() const override;
 
-    // delegates to MwaJniContext::query_session_state which
-    // performs a synchronous JNI round-trip to MwaSessionState (Kotlin).
+    /// @copydoc MwaAndroidBridge::query_session_state
+    /// Delegates to @ref MwaJniContext::query_session_state for the synchronous JNI round-trip.
     godot::Dictionary query_session_state() const override;
 
     MwaAndroidBridgeJni(const MwaAndroidBridgeJni&) = delete;
     MwaAndroidBridgeJni& operator=(const MwaAndroidBridgeJni&) = delete;
 
 private:
-    // Helper: emit NOT_CONNECTED when JNI_OnLoad failed and callers need an
-    // actionable error envelope (not a silent drop).
+    /**
+     * Emit @c NOT_CONNECTED through @p dispatcher_ when JNI symbol resolution failed
+     * (@c JNI_OnLoad bug) and callers need an actionable error envelope instead of a silent drop.
+     */
     void emit_jni_unavailable(const godot::String& source_method,
                               const godot::String& request_id);
 

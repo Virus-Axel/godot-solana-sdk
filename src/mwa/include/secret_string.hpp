@@ -17,12 +17,15 @@ namespace godot_solana_sdk::mwa {
  */
 class SecretString {
 public:
+    /// Construct from a raw secret byte buffer. The buffer is owned by this instance.
     explicit SecretString(godot::PackedByteArray bytes) : bytes_(bytes) {}
 
-    // Godot PackedByteArray is copy-on-write — a copy here is cheap.
+    /// @return A copy of the underlying secret bytes. @c PackedByteArray is copy-on-write,
+    /// so the copy itself is cheap; the caller is responsible for not logging the result.
     godot::PackedByteArray reveal_bytes() const { return bytes_; }
 
-    // Sole stringification path: operator<< is intentionally absent.
+    /// @return The redaction marker @c "<redacted>". Sole stringification path —
+    /// @c operator<< is intentionally absent so logs cannot leak secrets via @c std::ostream.
     godot::String to_string() const { return godot::String("<redacted>"); }
 
 private:
@@ -31,7 +34,8 @@ private:
 
 }  // namespace godot_solana_sdk::mwa
 
-// godot::String concatenation convenience (engine types only). Never exposes bytes_.
+/// @c godot::String concatenation convenience. Forwards to @c SecretString::to_string and
+/// therefore never exposes the underlying bytes.
 inline godot::String operator+(const godot::String &prefix, const godot_solana_sdk::mwa::SecretString &s) {
     return prefix + s.to_string();
 }
