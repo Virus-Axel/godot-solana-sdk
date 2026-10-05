@@ -134,7 +134,7 @@ jobs:
 
       - name: (Android) Setup Android SDK
         if: ${{ endsWith(inputs.example_path, 'Android/') }}
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           packages: 'tools platform-tools emulator system-images;android-30;default;x86_64'
 
