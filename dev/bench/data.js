@@ -1,37 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776670268410,
+  "lastUpdate": 1791311646995,
   "repoUrl": "https://github.com/Virus-Axel/godot-solana-sdk",
   "entries": {
     "Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "axel.benjaminsson@live.se",
-            "name": "Axel",
-            "username": "Virus-Axel"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a77f3671d5387f9a1bf82223f09756ec778567cb",
-          "message": "Merge pull request #356 from Virus-Axel/docs/api_docs\n\nAdd class method and enum documentations",
-          "timestamp": "2025-04-05T07:12:46+02:00",
-          "tree_id": "09844735bafb6ec3a678bf169025a3e1dea34b2e",
-          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/a77f3671d5387f9a1bf82223f09756ec778567cb"
-        },
-        "date": 1743830471613,
-        "tool": "customBiggerIsBetter",
-        "benches": [
-          {
-            "name": "Simple Transaction Performance Index",
-            "value": 0.373287671232877,
-            "unit": "Percent"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1819,6 +1790,40 @@ window.BENCHMARK_DATA = {
           {
             "name": "Simple Transaction Performance Index (With helper class)",
             "value": 0.0681003584229391,
+            "unit": "Percent"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "axel.benjaminsson@live.se",
+            "name": "Axel",
+            "username": "Virus-Axel"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "05560944be2495e014787b04cef6e1b22b7b5b1c",
+          "message": "Merge pull request #457 from Virus-Axel/bugfix/deprecated_action\n\nBump action version",
+          "timestamp": "2026-10-06T20:26:45+02:00",
+          "tree_id": "57e51e0f1859d73f5056c4209a977ac56b24cc95",
+          "url": "https://github.com/Virus-Axel/godot-solana-sdk/commit/05560944be2495e014787b04cef6e1b22b7b5b1c"
+        },
+        "date": 1791311644936,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Simple Transaction Performance Index",
+            "value": 0.420494699646643,
+            "unit": "Percent"
+          },
+          {
+            "name": "Simple Transaction Performance Index (With helper class)",
+            "value": 0.0777385159010601,
             "unit": "Percent"
           }
         ]
