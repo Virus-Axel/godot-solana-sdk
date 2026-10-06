@@ -66,7 +66,7 @@ jobs:
 
       - name: (Android) Set up Android SDK
         if: ${{ startsWith(matrix.identifier, 'android-') }}
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v4
 
       - name: (Android) Install Android Tools
         if: ${{ startsWith(matrix.identifier, 'android-') }}
