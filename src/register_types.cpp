@@ -56,6 +56,7 @@
 #include "spl_token.hpp"
 #include "spl_token_2022.hpp"
 #include "system_program.hpp"
+#include "test_validator.hpp"
 #include "transaction.hpp"
 #include "wallet_adapter.hpp"
 
@@ -140,6 +141,7 @@ void initialize_solana_sdk_module(ModuleInitializationLevel p_level) {
 	ClassDB::register_class<StorageAccountV2>();
 	ClassDB::register_class<RpcSingleHttpRequestClient>();
 	ClassDB::register_class<RpcMultiHttpRequestClient>();
+	ClassDB::register_class<TestValidator>();
 	ClassDB::register_class<HoneyComb>();
 
 	REGISTER_HONEYCOMB_TYPES
