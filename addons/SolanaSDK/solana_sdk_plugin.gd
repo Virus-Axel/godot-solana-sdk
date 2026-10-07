@@ -4,6 +4,14 @@ extends EditorPlugin
 
 const SOLANA_PLUGIN_NAME := "SolanaSDK"
 
+# —: MWA facade is a non-optional autoload registered the
+# moment the plugin enables. Unlike `SolanaService` (Optional/ — opt-in), the
+# MWA entry point is always wired. The plugin is responsible for adding +
+# removing the singleton entry in `project.godot`; users don't need to
+# manually edit ProjectSettings → Autoload.
+const MWA_AUTOLOAD_NAME := "MWA"
+const MWA_AUTOLOAD_PATH := "res://addons/" + SOLANA_PLUGIN_NAME + "/mwa/MWA.gd"
+
 var solana_service_path:String = "res://addons/" + SOLANA_PLUGIN_NAME + "/Optional/SolanaService/Autoload/SolanaService.tscn"
 var http_request_handler_path:String = "res://addons/" + SOLANA_PLUGIN_NAME + "/Optional/SolanaService/Autoload/HttpRequestHandler.tscn"
 var export_plugin : AndroidExportPlugin
@@ -12,12 +20,18 @@ var export_plugin : AndroidExportPlugin
 func _enter_tree():
 	export_plugin = AndroidExportPlugin.new()
 	add_export_plugin(export_plugin)
+	# register the MWA singleton so GDScript callers can use
+	# `MWA.connect(...)` without per-project autoload configuration. Exported
+	# games read the [autoload] block from project.godot at runtime, so this
+	# edit persists across editor sessions (Godot writes the change through).
+	add_autoload_singleton(MWA_AUTOLOAD_NAME, MWA_AUTOLOAD_PATH)
 
 
 func _exit_tree():
 	# Clean-up of the plugin goes here.
 	remove_export_plugin(export_plugin)
 	export_plugin = null
+	remove_autoload_singleton(MWA_AUTOLOAD_NAME)
 
 
 class AndroidExportPlugin extends EditorExportPlugin:
@@ -45,6 +59,7 @@ class AndroidExportPlugin extends EditorExportPlugin:
 						"androidx.compose.material:material:1.4.3",
 						"androidx.compose.ui:ui-tooling-preview:1.4.3",
 						"androidx.activity:activity-compose:1.8.0",
+						"androidx.security:security-crypto:1.1.0-alpha06",
 						])
 		else:
 			return PackedStringArray([
@@ -55,7 +70,8 @@ class AndroidExportPlugin extends EditorExportPlugin:
 						"androidx.compose.ui:ui:1.4.3",
 						"androidx.compose.material:material:1.4.3",
 						"androidx.compose.ui:ui-tooling-preview:1.4.3",
-						"androidx.activity:activity-compose:1.8.0",])
+						"androidx.activity:activity-compose:1.8.0",
+						"androidx.security:security-crypto:1.1.0-alpha06",])
 
 	func _get_name():
 		return _plugin_name

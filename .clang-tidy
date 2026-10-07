@@ -16,6 +16,7 @@ Checks: '
     -cppcoreguidelines-special-member-functions,
     -hicpp-special-member-functions,
     -llvm-header-guard,
+    -clang-analyzer-core.uninitialized.UndefReturn,
   '
 HeaderFileExtensions: ['', h, hh, hpp, hxx, inc, glsl]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]

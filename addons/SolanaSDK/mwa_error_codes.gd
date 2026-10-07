@@ -1,0 +1,36 @@
+# This file is generated, do not edit.
+
+## Canonical MWA error-code constants for GDScript callers (`mwa_error.code` payload).
+## See `docs/error-codes.md` for the full taxonomy + recoverable / retry_hint matrix.
+## @since v0.1.0
+class_name MwaErrorCodes
+
+const MWA_ERR_USER_CANCELED := "USER_CANCELED"
+const MWA_ERR_WALLET_REJECTED := "WALLET_REJECTED"
+const MWA_ERR_NO_MWA_WALLET_INSTALLED := "NO_MWA_WALLET_INSTALLED"
+const MWA_ERR_WALLET_UNINSTALLED := "WALLET_UNINSTALLED"
+const MWA_ERR_TOKEN_EXPIRED := "TOKEN_EXPIRED"
+const MWA_ERR_RPC_FAILED := "RPC_FAILED"
+const MWA_ERR_NETWORK_OFFLINE := "NETWORK_OFFLINE"
+const MWA_ERR_TIMEOUT := "TIMEOUT"
+const MWA_ERR_NOT_CONNECTED := "NOT_CONNECTED"
+const MWA_ERR_UNSUPPORTED_PLATFORM := "UNSUPPORTED_PLATFORM"
+const MWA_ERR_PROTOCOL_ERROR := "PROTOCOL_ERROR"
+const MWA_ERR_STORAGE_CORRUPT := "STORAGE_CORRUPT"
+const MWA_ERR_REAUTH_REQUIRED := "REAUTH_REQUIRED"
+
+const ALL_CODES: Array[String] = [
+    "USER_CANCELED",
+    "WALLET_REJECTED",
+    "NO_MWA_WALLET_INSTALLED",
+    "WALLET_UNINSTALLED",
+    "TOKEN_EXPIRED",
+    "RPC_FAILED",
+    "NETWORK_OFFLINE",
+    "TIMEOUT",
+    "NOT_CONNECTED",
+    "UNSUPPORTED_PLATFORM",
+    "PROTOCOL_ERROR",
+    "STORAGE_CORRUPT",
+    "REAUTH_REQUIRED",
+]
